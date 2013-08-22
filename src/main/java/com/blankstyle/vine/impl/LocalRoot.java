@@ -1,3 +1,18 @@
+/*
+* Copyright 2013 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package com.blankstyle.vine.impl;
 
 import java.util.HashMap;
@@ -8,12 +23,12 @@ import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.RootException;
+import com.blankstyle.vine.VineContext;
 
 /**
  * A local root implementation.
@@ -26,9 +41,7 @@ import com.blankstyle.vine.RootException;
  */
 public class LocalRoot implements Root {
 
-  protected static final String ADDRESS_KEY = "address";
-
-  protected static final String SEEDS_KEY = "seeds";
+  protected static final String VINE_VERTICLE_CLASS = "com.blankstyle.vine.VineVerticle";
 
   protected Vertx vertx;
 
@@ -62,29 +75,22 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(JsonObject config, final Handler<AsyncResult<Feeder>> feedHandler) {
-    String name = config.getString("name");
-    if (name == null) {
-      name = config.getString("address");
-    }
-    deploy(name, config, feedHandler);
+  public void deploy(VineContext context, final Handler<AsyncResult<Feeder>> feedHandler) {
+    deploy(context.getAddress(), context, feedHandler);
   }
 
   @Override
-  public void deploy(final String name, JsonObject config, final Handler<AsyncResult<Feeder>> feedHandler) {
+  public void deploy(final String name, VineContext context, final Handler<AsyncResult<Feeder>> feedHandler) {
     final Future<Feeder> future = new DefaultFutureResult<Feeder>();
     future.setHandler(feedHandler);
 
-    JsonObject context = new JsonObject();
-    final String address = config.getString(ADDRESS_KEY);
+    final String address = context.getAddress();
     if (deploymentMap.containsKey(address)) {
       future.setFailure(new RootException("Cannot redeploy vine."));
       return;
     }
 
-    context.putString("address", address);
-    context.putObject(SEEDS_KEY, config.getObject(SEEDS_KEY));
-    container.deployVerticle("com.blankstyle.vine.VineVerticle", context, new Handler<AsyncResult<String>>() {
+    container.deployVerticle(VINE_VERTICLE_CLASS, context.toJsonObject(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {

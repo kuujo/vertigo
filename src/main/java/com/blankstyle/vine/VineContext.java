@@ -16,12 +16,56 @@
 package com.blankstyle.vine;
 
 /**
- * A vine context.
+ * A Vine context.
  *
  * @author Jordan Halterman
  */
-public interface VineContext {
+public interface VineContext extends Context<VineContext> {
 
-  public String getAddress();
+  /**
+   * Adds a new seed to the vine.
+   *
+   * @param context
+   *   The seed context.
+   * @return
+   *   The seed context.
+   */
+  public SeedContext feed(SeedContext context);
+
+  /**
+   * Adds a new seed to the vine.
+   *
+   * @param address
+   *   The seed address.
+   * @return
+   *   The seed context.
+   */
+  public SeedContext feed(String address);
+
+  /**
+   * Adds a new seed to the vine.
+   *
+   * @param address
+   *   The seed address.
+   * @param main
+   *   The seed main.
+   * @return
+   *   The seed context.
+   */
+  public SeedContext feed(String address, String main);
+
+  /**
+   * Adds a new seed to the vine.
+   *
+   * @param address
+   *   The seed address.
+   * @param main
+   *   The seed main.
+   * @param workers
+   *   The number of seed workers.
+   * @return
+   *   The seed context.
+   */
+  public SeedContext feed(String address, String main, int workers);
 
 }

@@ -23,7 +23,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Feeder;
-import com.blankstyle.vine.VineContext;
 
 /**
  * A basic vine feeder.
@@ -32,24 +31,39 @@ import com.blankstyle.vine.VineContext;
  */
 public class DefaultFeeder implements Feeder {
 
+  protected String address;
+
   protected EventBus eventBus;
 
-  protected final VineContext context;
-
-  public DefaultFeeder(EventBus eventBus, VineContext context) {
+  public DefaultFeeder(String address, EventBus eventBus) {
+    this.address = address;
     this.eventBus = eventBus;
-    this.context = context;
+  }
+
+  @Override
+  public boolean feedQueueFull() {
+    return false;
+  }
+
+  @Override
+  public Feeder setFeedQueueMaxSize(int maxSize) {
+    return this;
+  }
+
+  @Override
+  public Feeder drainHandler(Handler<Void> drainHandler) {
+    return this;
   }
 
   @Override
   public void feed(Object data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   @SuppressWarnings("rawtypes")
   public void feed(Object data, final Handler resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message>() {
+    eventBus.send(address, data, new Handler<Message>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(Message message) {
@@ -60,12 +74,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(JsonObject data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(JsonObject data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -75,12 +89,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(JsonArray data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(JsonArray data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -90,12 +104,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Buffer data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Buffer data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -105,12 +119,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(byte[] data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(byte[] data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -120,12 +134,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(String data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(String data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -135,12 +149,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Integer data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Integer data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -150,12 +164,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Long data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Long data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -165,12 +179,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Float data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Float data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -180,12 +194,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Double data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Double data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -195,12 +209,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Boolean data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Boolean data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -210,12 +224,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Short data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Short data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -225,12 +239,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Character data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Character data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());
@@ -240,12 +254,12 @@ public class DefaultFeeder implements Feeder {
 
   @Override
   public void feed(Byte data) {
-    eventBus.send(context.getAddress(), data);
+    eventBus.send(address, data);
   }
 
   @Override
   public <T> void feed(Byte data, final Handler<T> resultHandler) {
-    eventBus.send(context.getAddress(), data, new Handler<Message<T>>() {
+    eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
         resultHandler.handle(message.body());

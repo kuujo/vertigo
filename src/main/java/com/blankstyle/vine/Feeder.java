@@ -28,6 +28,34 @@ import org.vertx.java.core.json.JsonObject;
 public interface Feeder {
 
   /**
+   * Indicates whether the feed queue is full.
+   *
+   * @return
+   *   The called object.
+   */
+  public boolean feedQueueFull();
+
+  /**
+   * Sets the feed queue max size.
+   *
+   * @param maxSize
+   *   The max feed queue size.
+   * @return
+   *   The called object.
+   */
+  public Feeder setFeedQueueMaxSize(int maxSize);
+
+  /**
+   * Sets a drain handler on the feeder.
+   *
+   * @param drainHandler
+   *   The drain handler.
+   * @return
+   *   The called object.
+   */
+  public Feeder drainHandler(Handler<Void> drainHandler);
+
+  /**
    * Feeds a value to the vine.
    *
    * @param data

@@ -22,8 +22,6 @@ package com.blankstyle.vine;
  */
 public interface VineContext {
 
-  public VineContext setAddress(String address);
-
   public String getAddress();
 
 }

@@ -15,16 +15,58 @@
 */
 package com.blankstyle.vine;
 
+import java.util.Iterator;
+
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+
 /**
  * A vine.
  *
  * @author Jordan Halterman
  */
-public interface Vine {
+public class Vine  {
 
-  /**
-   * Feeds data to the vine.
-   */
-  public void feed(Object data);
+  private JsonObject config;
+
+  public Vine() {
+    this.config = new JsonObject();
+  }
+
+  public Vine(JsonObject config) {
+    this.config = config;
+  }
+
+  public SeedConfig addVerticle(String main) {
+    SeedConfig seed = new SeedConfig();
+    seed.setType("verticle").setMain(main);
+    config.getObject("seeds").putObject(main, seed.toObject());
+    return seed;
+  }
+
+  public SeedConfig addModule(String moduleName) {
+    SeedConfig seed = new SeedConfig();
+    seed.setType("module").setModule(moduleName);
+    config.getObject("seeds").putObject(moduleName, seed.toObject());
+    return seed;
+  }
+
+  public void deploy(Handler<Feeder> feedHandler) {
+    JsonObject seeds = config.getObject("seeds");
+    Iterator<String> fields = seeds.getFieldNames().iterator();
+    while (fields.hasNext()) {
+      SeedConfig seed = new SeedConfig(seeds.getObject(fields.next()));
+      if (seed.getType() == "module") {
+        
+      }
+      else if (seed.getType() == "verticle") {
+        
+      }
+    }
+  }
+
+  public JsonObject toObject() {
+    return config;
+  }
 
 }

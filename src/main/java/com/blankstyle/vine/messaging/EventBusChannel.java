@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.impl;
+package com.blankstyle.vine.messaging;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -22,8 +22,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-
-import com.blankstyle.vine.Channel;
 
 /**
  * A Vert.x EventBus channel implementation.

@@ -13,11 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.impl;
+package com.blankstyle.vine.messaging;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Message;
 import com.blankstyle.vine.Serializeable;
 
 /**

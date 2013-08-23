@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.impl;
+package com.blankstyle.vine;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +25,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.Feeder;
-import com.blankstyle.vine.Root;
-import com.blankstyle.vine.RootException;
 import com.blankstyle.vine.context.VineContext;
 
 /**
@@ -95,7 +92,7 @@ public class LocalRoot implements Root {
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {
           deploymentMap.put(address, result.result());
-          future.setResult(new DefaultFeeder(address, vertx.eventBus()));
+          future.setResult(new BasicFeeder(address, vertx.eventBus()));
         }
         else {
           future.setFailure(result.cause());

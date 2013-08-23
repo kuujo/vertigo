@@ -15,47 +15,41 @@
 */
 package com.blankstyle.vine;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+
 /**
- * A Vine message.
+ * A local vine implementation.
  *
  * @author Jordan Halterman
  */
-public interface Message<T> {
+public class LocalVine extends Vine {
+
+  public LocalVine(JsonObject context) {
+    super(context);
+  }
 
   /**
-   * Sets the unique message identifier.
+   * Creates a new vine from a JSON context.
    *
-   * @param id
-   *   The unique message identifier.
+   * @param context
+   *   The JSON object context.
    * @return
-   *   The called message object.
+   *   A new vine.
    */
-  public Message<T> setIdentifier(String id);
+  public static Vine create(JsonObject context) {
+    return new LocalVine(context);
+  }
 
-  /**
-   * Gets the unique message identifier.
-   *
-   * @return
-   *   The unique message identifier.
-   */
-  public String getIdentifier();
+  @Override
+  public void deploy() {
+    
+  }
 
-  /**
-   * Sets the message body.
-   *
-   * @param body
-   *   The message body.
-   * @return
-   *   The called object.
-   */
-  public Message<T> setBody(T body);
-
-  /**
-   * Gets the message body.
-   *
-   * @return
-   *   The message body.
-   */
-  public T getBody();
+  @Override
+  public void deploy(Handler<AsyncResult<Void>> doneHandler) {
+    
+  }
 
 }

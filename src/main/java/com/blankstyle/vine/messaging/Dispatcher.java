@@ -17,9 +17,6 @@ package com.blankstyle.vine.messaging;
 
 import java.util.Collection;
 
-import com.blankstyle.vine.Channel;
-import com.blankstyle.vine.Message;
-
 /**
  * A message dispatcher.
  *

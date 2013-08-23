@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.impl;
+package com.blankstyle.vine;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
@@ -22,20 +22,18 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Feeder;
-
 /**
  * A basic vine feeder.
  *
  * @author Jordan Halterman
  */
-public class DefaultFeeder implements Feeder {
+public class BasicFeeder implements Feeder {
 
   protected String address;
 
   protected EventBus eventBus;
 
-  public DefaultFeeder(String address, EventBus eventBus) {
+  public BasicFeeder(String address, EventBus eventBus) {
     this.address = address;
     this.eventBus = eventBus;
   }

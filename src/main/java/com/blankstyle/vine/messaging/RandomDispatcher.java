@@ -20,9 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.blankstyle.vine.Channel;
-import com.blankstyle.vine.Message;
-
 /**
  * A random dispatcher implementation.
  *

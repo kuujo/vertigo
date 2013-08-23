@@ -45,7 +45,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public void send(Object message, Handler<?> replyHandler);
+  public void send(Object message, @SuppressWarnings("rawtypes") Handler<Message> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -63,7 +63,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(JsonObject message, Handler<T> replyHandler);
+  public <T> void send(JsonObject message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -81,7 +81,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(JsonArray message, Handler<T> replyHandler);
+  public <T> void send(JsonArray message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -99,7 +99,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Buffer message, Handler<T> replyHandler);
+  public <T> void send(Buffer message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -117,7 +117,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(byte[] message, Handler<T> replyHandler);
+  public <T> void send(byte[] message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -135,7 +135,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(String message, Handler<T> replyHandler);
+  public <T> void send(String message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -153,7 +153,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Integer message, Handler<T> replyHandler);
+  public <T> void send(Integer message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -171,7 +171,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Long message, Handler<T> replyHandler);
+  public <T> void send(Long message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -189,7 +189,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Float message, Handler<T> replyHandler);
+  public <T> void send(Float message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -207,7 +207,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Double message, Handler<T> replyHandler);
+  public <T> void send(Double message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -225,7 +225,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Boolean message, Handler<T> replyHandler);
+  public <T> void send(Boolean message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -243,7 +243,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Short message, Handler<T> replyHandler);
+  public <T> void send(Short message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -261,7 +261,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Character message, Handler<T> replyHandler);
+  public <T> void send(Character message, Handler<Message<T>> replyHandler);
 
   /**
    * Sends a message through the channel.
@@ -279,7 +279,7 @@ public interface Channel {
    * @param replyHandler
    *   A reply handler.
    */
-  public <T> void send(Byte message, Handler<T> replyHandler);
+  public <T> void send(Byte message, Handler<Message<T>> replyHandler);
 
   /**
    * Registers a message handler.

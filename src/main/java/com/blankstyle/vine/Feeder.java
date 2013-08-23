@@ -71,7 +71,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public void feed(Object data, Handler resultHandler);
+  public void feed(Object data, @SuppressWarnings("rawtypes") Handler resultHandler);
 
   /**
    * Feeds a JSON object to the vine.

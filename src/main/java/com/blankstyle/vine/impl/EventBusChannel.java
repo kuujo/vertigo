@@ -41,6 +41,10 @@ public class EventBusChannel implements Channel {
     this.eventBus = eventBus;
   }
 
+  public String getAddress() {
+    return address;
+  }
+
   @Override
   public void send(Object message) {
     eventBus.send(address, message);

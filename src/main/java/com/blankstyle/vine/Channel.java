@@ -30,6 +30,14 @@ import org.vertx.java.core.json.JsonObject;
 public interface Channel {
 
   /**
+   * Gets the remote channel address.
+   *
+   * @return
+   *   The remote channel address.
+   */
+  public String getAddress();
+
+  /**
    * Sends a message through the channel.
    *
    * @param message

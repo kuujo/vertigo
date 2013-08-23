@@ -17,7 +17,8 @@ package com.blankstyle.vine;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.impl.DefaultVineContext;
+import com.blankstyle.vine.context.DefaultVineContext;
+import com.blankstyle.vine.context.VineContext;
 
 /**
  * An abstract vine.

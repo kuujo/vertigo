@@ -20,6 +20,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
+import com.blankstyle.vine.context.VineContext;
+
 public interface Root {
 
   /**

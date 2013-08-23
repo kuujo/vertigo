@@ -28,7 +28,7 @@ import org.vertx.java.platform.Container;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.RootException;
-import com.blankstyle.vine.VineContext;
+import com.blankstyle.vine.context.VineContext;
 
 /**
  * A local root implementation.

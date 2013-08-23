@@ -15,7 +15,8 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.impl.DefaultSeedContext;
+import com.blankstyle.vine.context.DefaultSeedContext;
+import com.blankstyle.vine.context.SeedContext;
 
 /**
  * An abstract seed.

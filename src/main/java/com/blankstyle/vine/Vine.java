@@ -15,6 +15,8 @@
 */
 package com.blankstyle.vine;
 
+import org.vertx.java.core.json.JsonObject;
+
 import com.blankstyle.vine.impl.DefaultVineContext;
 
 /**
@@ -44,6 +46,12 @@ public abstract class Vine implements Deployable<Void> {
    */
   public static VineContext createContext(String address) {
     return new DefaultVineContext().setAddress(address);
+  }
+
+  protected JsonObject context;
+
+  public Vine(JsonObject context) {
+    this.context = context;
   }
 
 }

@@ -13,34 +13,34 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.impl;
+package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import java.util.Collection;
 
-import com.blankstyle.vine.Seed;
+import com.blankstyle.vine.Channel;
+import com.blankstyle.vine.Message;
 
 /**
- * A local seed implementation.
+ * A message dispatcher.
  *
  * @author Jordan Halterman
  */
-public class LocalSeed extends Seed {
+public interface Dispatcher {
 
-  protected String address;
+  /**
+   * Initializes the dispatcher.
+   *
+   * @param channels
+   *   A collection of channels to which the dispatcher will dispatch messages.
+   */
+  public void init(Collection<Channel> channels);
 
-  public LocalSeed(String address) {
-    this.address = address;
-  }
-
-  @Override
-  public void deploy() {
-    
-  }
-
-  @Override
-  public void deploy(Handler<AsyncResult<String>> doneHandler) {
-    
-  }
+  /**
+   * Dispatches a message.
+   *
+   * @param message
+   *   The message to dispatch.
+   */
+  public <T> void dispatch(Message<T> message);
 
 }

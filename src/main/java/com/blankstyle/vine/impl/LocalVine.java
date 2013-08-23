@@ -15,10 +15,9 @@
 */
 package com.blankstyle.vine.impl;
 
-import java.util.Set;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Vine;
 
@@ -29,13 +28,20 @@ import com.blankstyle.vine.Vine;
  */
 public class LocalVine extends Vine {
 
-  protected String address;
+  public LocalVine(JsonObject context) {
+    super(context);
+  }
 
-  protected Set<LocalSeed> seeds;
-
-  public LocalVine(String address, Set<LocalSeed> seeds) {
-    this.address = address;
-    this.seeds = seeds;
+  /**
+   * Creates a new vine from a JSON context.
+   *
+   * @param context
+   *   The JSON object context.
+   * @return
+   *   A new vine.
+   */
+  public static Vine create(JsonObject context) {
+    return new LocalVine(context);
   }
 
   @Override

@@ -15,35 +15,27 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.impl.DefaultVineContext;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 
 /**
- * An abstract vine.
+ * A deployable component.
  *
  * @author Jordan Halterman
  */
-public abstract class Vine implements Deployable<Void> {
+public interface Deployable<R> {
 
   /**
-   * Creates a new vine context.
-   *
-   * @return
-   *   A new vine context.
+   * Deploys the component.
    */
-  public static VineContext createContext() {
-    return new DefaultVineContext();
-  }
+  public void deploy();
 
   /**
-   * Creates a new vine context.
+   * Deploys the component.
    *
-   * @param address
-   *   The context address.
-   * @return
-   *   A new vine context.
+   * @param doneHandler
+   *   A handler to be invoked once deployment is complete.
    */
-  public static VineContext createContext(String address) {
-    return new DefaultVineContext().setAddress(address);
-  }
+  public void deploy(Handler<AsyncResult<R>> doneHandler);
 
 }

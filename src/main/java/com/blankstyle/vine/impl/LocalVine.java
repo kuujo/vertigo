@@ -13,37 +13,39 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.impl;
 
-import com.blankstyle.vine.impl.DefaultVineContext;
+import java.util.Set;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
+import com.blankstyle.vine.Vine;
 
 /**
- * An abstract vine.
+ * A local vine implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class Vine implements Deployable<Void> {
+public class LocalVine extends Vine {
 
-  /**
-   * Creates a new vine context.
-   *
-   * @return
-   *   A new vine context.
-   */
-  public static VineContext createContext() {
-    return new DefaultVineContext();
+  protected String address;
+
+  protected Set<LocalSeed> seeds;
+
+  public LocalVine(String address, Set<LocalSeed> seeds) {
+    this.address = address;
+    this.seeds = seeds;
   }
 
-  /**
-   * Creates a new vine context.
-   *
-   * @param address
-   *   The context address.
-   * @return
-   *   A new vine context.
-   */
-  public static VineContext createContext(String address) {
-    return new DefaultVineContext().setAddress(address);
+  @Override
+  public void deploy() {
+    
+  }
+
+  @Override
+  public void deploy(Handler<AsyncResult<Void>> doneHandler) {
+    
   }
 
 }

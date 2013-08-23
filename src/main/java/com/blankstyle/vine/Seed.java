@@ -15,9 +15,6 @@
 */
 package com.blankstyle.vine;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 import com.blankstyle.vine.impl.DefaultSeedContext;
 
 /**
@@ -25,7 +22,7 @@ import com.blankstyle.vine.impl.DefaultSeedContext;
  *
  * @author Jordan Halterman
  */
-public abstract class Seed {
+public abstract class Seed implements Deployable<String> {
 
   /**
    * Creates a new seed context.
@@ -78,18 +75,5 @@ public abstract class Seed {
   public SeedContext createContext(String address, String main, int workers) {
     return new DefaultSeedContext().setAddress(address).setMain(main).setWorkers(workers);
   }
-
-  /**
-   * Deploys the seed.
-   */
-  public abstract void deploy();
-
-  /**
-   * Deploys the seed.
-   *
-   * @param doneHandler
-   *   A handler to be invoked once the seed is deployed.
-   */
-  public abstract void deploy(Handler<AsyncResult<String>> doneHandler);
 
 }

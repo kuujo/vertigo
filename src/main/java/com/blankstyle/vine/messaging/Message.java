@@ -41,6 +41,24 @@ public interface Message<T> {
   public String getIdentifier();
 
   /**
+   * Adds a tag to the message.
+   *
+   * @param tag
+   *   The message tag.
+   * @return
+   *   The called message object.
+   */
+  public Message<T> addTag(String tag);
+
+  /**
+   * Gets a set of tags from the message.
+   *
+   * @return
+   *   A set of message tags.
+   */
+  public String[] getTags();
+
+  /**
    * Sets the message body.
    *
    * @param body

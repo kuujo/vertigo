@@ -15,10 +15,6 @@
 */
 package com.blankstyle.vine;
 
-import java.util.Iterator;
-
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 /**
@@ -30,7 +26,7 @@ public class VineVerticle extends Verticle {
 
   @Override
   public void start() {
-    
+    Vine vine = new LocalVine(container.config());
   }
 
 }

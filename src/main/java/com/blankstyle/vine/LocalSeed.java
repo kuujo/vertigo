@@ -37,7 +37,7 @@ public class LocalSeed extends Seed {
   }
 
   @Override
-  public void deploy(Handler<AsyncResult<String>> doneHandler) {
+  public void deploy(Handler<AsyncResult<?>> doneHandler) {
     
   }
 

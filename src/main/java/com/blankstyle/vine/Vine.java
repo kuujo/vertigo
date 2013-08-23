@@ -15,6 +15,8 @@
 */
 package com.blankstyle.vine;
 
+import java.util.Collection;
+
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.DefaultVineContext;
@@ -25,7 +27,7 @@ import com.blankstyle.vine.context.VineContext;
  *
  * @author Jordan Halterman
  */
-public abstract class Vine implements Deployable<Void> {
+public abstract class Vine implements Deployer<Collection<Seed>> {
 
   /**
    * Creates a new vine context.

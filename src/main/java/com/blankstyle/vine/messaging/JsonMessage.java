@@ -15,6 +15,7 @@
 */
 package com.blankstyle.vine.messaging;
 
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Serializeable;
@@ -26,10 +27,6 @@ import com.blankstyle.vine.Serializeable;
  */
 public class JsonMessage<T> implements Message<T>, Serializeable<JsonObject> {
 
-  protected String id;
-
-  protected T body;
-
   /**
    * Creates a JSON message from a JSON object.
    *
@@ -39,40 +36,60 @@ public class JsonMessage<T> implements Message<T>, Serializeable<JsonObject> {
    *   A JSON message instance.
    */
   public static <T> JsonMessage<T> fromJsonObject(JsonObject json) {
-    JsonMessage<T> message = new JsonMessage<T>();
-    message.setIdentifier(json.getString("id"));
-    message.setBody(json.<T>getValue("body"));
-    return message;
+    return new JsonMessage<T>(json);
+  }
+
+  protected JsonObject json;
+
+  public JsonMessage(JsonObject json) {
+    this.json = json;
   }
 
   @Override
   public Message<T> setIdentifier(String id) {
-    this.id = id;
+    json.putString("id", id);
     return this;
   }
 
   @Override
   public String getIdentifier() {
-    return id;
+    return json.getString("id");
+  }
+
+  @Override
+  public Message<T> addTag(String tag) {
+    JsonArray tags = json.getArray("tags");
+    if (tags == null) {
+      tags = new JsonArray();
+      json.putArray("tags", tags);
+    }
+    tags.add(tag);
+    return this;
+  }
+
+  @Override
+  public String[] getTags() {
+    JsonArray tags = json.getArray("tags");
+    if (tags != null) {
+      return (String[]) tags.toArray();
+    }
+    return null;
   }
 
   @Override
   public Message<T> setBody(T body) {
-    this.body = body;
+    json.putValue("body", body);
     return this;
   }
 
   @Override
   public T getBody() {
-    return body;
+    return json.getValue("body");
   }
 
   @Override
   public JsonObject toJsonObject() {
-    JsonObject message = new JsonObject();
-    message.putString("id", id);
-    message.putValue("body", getBody());
-    return message;
+    return json;
   }
 
 }

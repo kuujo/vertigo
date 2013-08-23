@@ -23,7 +23,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface Deployable<R> {
+public interface Deployable {
 
   /**
    * Deploys the component.
@@ -36,6 +36,6 @@ public interface Deployable<R> {
    * @param doneHandler
    *   A handler to be invoked once deployment is complete.
    */
-  public void deploy(Handler<AsyncResult<R>> doneHandler);
+  public void deploy(Handler<AsyncResult<?>> doneHandler);
 
 }

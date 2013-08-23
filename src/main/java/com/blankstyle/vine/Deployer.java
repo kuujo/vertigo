@@ -15,43 +15,32 @@
 */
 package com.blankstyle.vine;
 
-import java.util.Collection;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 /**
- * A local vine implementation.
+ * A component deployer.
  *
  * @author Jordan Halterman
  */
-public class LocalVine extends Vine {
-
-  public LocalVine(JsonObject context) {
-    super(context);
-  }
+public interface Deployer<T> {
 
   /**
-   * Creates a new vine from a JSON context.
+   * Deploys a component.
    *
-   * @param context
-   *   The JSON object context.
-   * @return
-   *   A new vine.
+   * @param component
+   *   The component to deploy.
    */
-  public static Vine create(JsonObject context) {
-    return new LocalVine(context);
-  }
+  public void deploy(T component);
 
-  @Override
-  public void deploy(Collection<Seed> seeds) {
-    
-  }
-
-  @Override
-  public void deploy(Collection<Seed> seeds, Handler<AsyncResult<?>> doneHandler) {
-    
-  }
+  /**
+   * Deploys a component.
+   *
+   * @param component
+   *   The component to deploy.
+   * @param doneHandler
+   *   A handler to invoke once deployment is complete.
+   */
+  public void deploy(T component, Handler<AsyncResult<?>> doneHandler);
 
 }

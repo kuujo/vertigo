@@ -23,7 +23,7 @@ import com.blankstyle.vine.context.SeedContext;
  *
  * @author Jordan Halterman
  */
-public abstract class Seed implements Deployable<String> {
+public abstract class Seed implements Deployable {
 
   /**
    * Creates a new seed context.

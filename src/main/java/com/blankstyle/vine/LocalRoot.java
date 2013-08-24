@@ -25,7 +25,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.context.VineContext;
+import com.blankstyle.vine.context.VineDefinition;
 
 /**
  * A local root implementation.
@@ -72,33 +72,38 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(VineContext context, final Handler<AsyncResult<Feeder>> feedHandler) {
-    deploy(context.getAddress(), context, feedHandler);
+  public void deploy(VineDefinition definition) {
+    deploy(definition, null);
   }
 
   @Override
-  public void deploy(final String name, VineContext context, final Handler<AsyncResult<Feeder>> feedHandler) {
+  public void deploy(VineDefinition definition, final Handler<AsyncResult<Feeder>> feedHandler) {
     final Future<Feeder> future = new DefaultFutureResult<Feeder>();
     future.setHandler(feedHandler);
 
-    final String address = context.getAddress();
+    final String address = definition.getAddress();
     if (deploymentMap.containsKey(address)) {
       future.setFailure(new RootException("Cannot redeploy vine."));
       return;
     }
 
-    container.deployVerticle(VINE_VERTICLE_CLASS, context.toJsonObject(), new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.succeeded()) {
-          deploymentMap.put(address, result.result());
-          future.setResult(new BasicFeeder(address, vertx.eventBus()));
+    if (feedHandler == null) {
+      container.deployVerticle(VINE_VERTICLE_CLASS, definition.serialize());
+    }
+    else {
+      container.deployVerticle(VINE_VERTICLE_CLASS, definition.serialize(), new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.succeeded()) {
+            deploymentMap.put(address, result.result());
+            future.setResult(new BasicFeeder(address, vertx.eventBus()));
+          }
+          else {
+            future.setFailure(result.cause());
+          }
         }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
+      });
+    }
   }
 
 }

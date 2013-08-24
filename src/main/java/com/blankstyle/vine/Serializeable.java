@@ -15,12 +15,14 @@
 */
 package com.blankstyle.vine;
 
+import org.vertx.java.core.json.JsonElement;
+
 /**
  * A JSON serializeable object.
  *
  * @author Jordan Halterman
  */
-public interface Serializeable<T> {
+public interface Serializeable<T extends JsonElement> {
 
   /**
    * Returns a T representation of the object.
@@ -28,6 +30,6 @@ public interface Serializeable<T> {
    * @return
    *   A T representation of the object.
    */
-  public T toJsonObject();
+  public T serialize();
 
 }

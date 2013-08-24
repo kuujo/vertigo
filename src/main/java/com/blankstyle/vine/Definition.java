@@ -22,7 +22,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Context<T> extends Serializeable<JsonObject> {
+public interface Definition<T> extends Serializeable<JsonObject> {
 
   /**
    * Sets the component address.

@@ -50,7 +50,7 @@ public class LocalVine extends Vine {
   }
 
   @Override
-  public void deploy(Collection<Seed> seeds, Handler<AsyncResult<?>> doneHandler) {
+  public void deploy(Collection<Seed> seeds, Handler<AsyncResult<String>> doneHandler) {
     
   }
 

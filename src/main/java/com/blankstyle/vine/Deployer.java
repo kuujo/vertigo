@@ -22,8 +22,11 @@ import org.vertx.java.core.Handler;
  * A component deployer.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The type being deployed.
+ * @param <R> The asynchronous result type.
  */
-public interface Deployer<T> {
+public interface Deployer<T, R> {
 
   /**
    * Deploys a component.
@@ -41,6 +44,6 @@ public interface Deployer<T> {
    * @param doneHandler
    *   A handler to invoke once deployment is complete.
    */
-  public void deploy(T component, Handler<AsyncResult<?>> doneHandler);
+  public void deploy(T component, Handler<AsyncResult<R>> doneHandler);
 
 }

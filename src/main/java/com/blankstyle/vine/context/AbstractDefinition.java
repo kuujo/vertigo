@@ -22,18 +22,18 @@ import java.util.Set;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Definition;
 
 /**
  * An abstract context implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class AbstractContext<T> implements Context<T> {
+public abstract class AbstractDefinition<T> implements Definition<T> {
 
   protected String address;
 
-  protected Set<Context<?>> connections = new HashSet<Context<?>>();
+  protected Set<SeedDefinition> connections = new HashSet<SeedDefinition>();
 
   @Override
   public String getAddress() {
@@ -41,23 +41,23 @@ public abstract class AbstractContext<T> implements Context<T> {
   }
 
   /**
-   * Adds a context to the connections set.
+   * Adds a seed definition to the connections set.
    */
-  protected Context<?> addConnection(Context<?> context) {
-    if (!connections.contains(context)) {
-      connections.add(context);
+  protected Definition<?> addConnection(SeedDefinition definition) {
+    if (!connections.contains(definition)) {
+      connections.add(definition);
     }
-    return context;
+    return definition;
   }
 
   @Override
-  public JsonObject toJsonObject() {
+  public JsonObject serialize() {
     JsonObject json = new JsonObject();
     json.putString("address", address);
     JsonArray connectionsArray = new JsonArray();
-    Iterator<Context<?>> iter = connections.iterator();
+    Iterator<SeedDefinition> iter = connections.iterator();
     while (iter.hasNext()) {
-      connectionsArray.addObject(iter.next().toJsonObject());
+      connectionsArray.addObject(iter.next().serialize());
     }
     json.putArray("connections", connectionsArray);
     return json;

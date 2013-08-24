@@ -15,14 +15,14 @@
 */
 package com.blankstyle.vine.context;
 
-import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Definition;
 
 /**
  * A Vine context.
  *
  * @author Jordan Halterman
  */
-public interface VineContext extends Context<VineContext> {
+public interface VineDefinition extends Definition<VineDefinition> {
 
   /**
    * Adds a new seed to the vine.
@@ -32,7 +32,7 @@ public interface VineContext extends Context<VineContext> {
    * @return
    *   The seed context.
    */
-  public SeedContext feed(SeedContext context);
+  public SeedDefinition feed(SeedDefinition context);
 
   /**
    * Adds a new seed to the vine.
@@ -42,7 +42,7 @@ public interface VineContext extends Context<VineContext> {
    * @return
    *   The seed context.
    */
-  public SeedContext feed(String address);
+  public SeedDefinition feed(String address);
 
   /**
    * Adds a new seed to the vine.
@@ -54,7 +54,7 @@ public interface VineContext extends Context<VineContext> {
    * @return
    *   The seed context.
    */
-  public SeedContext feed(String address, String main);
+  public SeedDefinition feed(String address, String main);
 
   /**
    * Adds a new seed to the vine.
@@ -68,6 +68,6 @@ public interface VineContext extends Context<VineContext> {
    * @return
    *   The seed context.
    */
-  public SeedContext feed(String address, String main, int workers);
+  public SeedDefinition feed(String address, String main, int workers);
 
 }

@@ -15,14 +15,17 @@
 */
 package com.blankstyle.vine;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.context.VineContext;
+import com.blankstyle.vine.context.VineDefinition;
 
-public interface Root {
+/**
+ * A vine root.
+ *
+ * @author Jordan Halterman
+ */
+public interface Root extends Deployer<VineDefinition, Feeder> {
 
   /**
    * Sets the root vertx instance.
@@ -55,27 +58,5 @@ public interface Root {
    *   A container instance.
    */
   public Container getContainer();
-
-  /**
-   * Deploys a vine.
-   *
-   * @param context
-   *   The vine context.
-   * @param feedHandler
-   *   A handler to invoke with a feeder to the vine.
-   */
-  public void deploy(VineContext context, Handler<AsyncResult<Feeder>> feedHandler);
-
-  /**
-   * Deploys a vine.
-   *
-   * @param name
-   *   The vine name.
-   * @param context
-   *   The vine context.
-   * @param feedHandler
-   *   A handler to invoke with a feeder to the vine.
-   */
-  public void deploy(String name, VineContext context, Handler<AsyncResult<Feeder>> feedHandler);
 
 }

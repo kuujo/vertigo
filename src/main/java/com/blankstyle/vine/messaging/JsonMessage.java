@@ -88,7 +88,7 @@ public class JsonMessage<T> implements Message<T>, Serializeable<JsonObject> {
   }
 
   @Override
-  public JsonObject toJsonObject() {
+  public JsonObject serialize() {
     return json;
   }
 

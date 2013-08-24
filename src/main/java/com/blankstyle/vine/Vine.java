@@ -19,15 +19,15 @@ import java.util.Collection;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.context.DefaultVineContext;
-import com.blankstyle.vine.context.VineContext;
+import com.blankstyle.vine.context.JsonVineDefinition;
+import com.blankstyle.vine.context.VineDefinition;
 
 /**
  * An abstract vine.
  *
  * @author Jordan Halterman
  */
-public abstract class Vine implements Deployer<Collection<Seed>> {
+public abstract class Vine implements Deployer<Collection<Seed>, String> {
 
   /**
    * Creates a new vine context.
@@ -35,8 +35,8 @@ public abstract class Vine implements Deployer<Collection<Seed>> {
    * @return
    *   A new vine context.
    */
-  public static VineContext createContext() {
-    return new DefaultVineContext();
+  public static VineDefinition createContext() {
+    return new JsonVineDefinition();
   }
 
   /**
@@ -47,8 +47,8 @@ public abstract class Vine implements Deployer<Collection<Seed>> {
    * @return
    *   A new vine context.
    */
-  public static VineContext createContext(String address) {
-    return new DefaultVineContext().setAddress(address);
+  public static VineDefinition createContext(String address) {
+    return new JsonVineDefinition().setAddress(address);
   }
 
   protected JsonObject context;

@@ -21,20 +21,20 @@ package com.blankstyle.vine.context;
  *
  * @author Jordan Halterman
  */
-public class DefaultSeedContext extends AbstractContext<SeedContext> implements SeedContext {
+public class JsonSeedDefinition extends AbstractDefinition<SeedDefinition> implements SeedDefinition {
 
   private String main;
 
   private int workers = 1;
 
   @Override
-  public SeedContext setAddress(String address) {
+  public SeedDefinition setAddress(String address) {
     this.address = address;
     return this;
   }
 
   @Override
-  public SeedContext setMain(String main) {
+  public SeedDefinition setMain(String main) {
     this.main = main;
     return this;
   }
@@ -45,7 +45,7 @@ public class DefaultSeedContext extends AbstractContext<SeedContext> implements 
   }
 
   @Override
-  public SeedContext setWorkers(int workers) {
+  public SeedDefinition setWorkers(int workers) {
     this.workers = workers;
     return this;
   }
@@ -56,26 +56,26 @@ public class DefaultSeedContext extends AbstractContext<SeedContext> implements 
   }
 
   @Override
-  public SeedContext to(SeedContext context) {
-    if (!connections.contains(context)) {
-      connections.add(context);
+  public SeedDefinition to(SeedDefinition definition) {
+    if (!connections.contains(definition)) {
+      connections.add(definition);
     }
-    return context;
+    return definition;
   }
 
   @Override
-  public SeedContext to(String address) {
+  public SeedDefinition to(String address) {
     return to(address, null, 1);
   }
 
   @Override
-  public SeedContext to(String address, String main) {
+  public SeedDefinition to(String address, String main) {
     return to(address, main, 1);
   }
 
   @Override
-  public SeedContext to(String address, String main, int workers) {
-    return (SeedContext) addConnection(new DefaultSeedContext().setAddress(address).setMain(main).setWorkers(workers));
+  public SeedDefinition to(String address, String main, int workers) {
+    return (SeedDefinition) addConnection(new JsonSeedDefinition().setAddress(address).setMain(main).setWorkers(workers));
   }
 
 }

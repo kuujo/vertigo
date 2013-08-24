@@ -15,14 +15,14 @@
 */
 package com.blankstyle.vine.context;
 
-import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Definition;
 
 /**
  * A seed context.
  *
  * @author Jordan Halterman
  */
-public interface SeedContext extends Context<SeedContext> {
+public interface SeedDefinition extends Definition<SeedDefinition> {
 
   /**
    * Sets the seed main.
@@ -32,7 +32,7 @@ public interface SeedContext extends Context<SeedContext> {
    * @return
    *   The seed context.
    */
-  public SeedContext setMain(String main);
+  public SeedDefinition setMain(String main);
 
   /**
    * Gets the seed main.
@@ -50,7 +50,7 @@ public interface SeedContext extends Context<SeedContext> {
    * @return
    *   The seed context.
    */
-  public SeedContext setWorkers(int workers);
+  public SeedDefinition setWorkers(int workers);
 
   /**
    * Gets the number of seed workers.
@@ -68,7 +68,7 @@ public interface SeedContext extends Context<SeedContext> {
    * @return
    *   The new seed context.
    */
-  public SeedContext to(SeedContext context);
+  public SeedDefinition to(SeedDefinition context);
 
   /**
    * Sets a new output channel on the seed.
@@ -78,7 +78,7 @@ public interface SeedContext extends Context<SeedContext> {
    * @return
    *   The new seed context.
    */
-  public SeedContext to(String address);
+  public SeedDefinition to(String address);
 
   /**
    * Sets a new output channel on the seed.
@@ -90,7 +90,7 @@ public interface SeedContext extends Context<SeedContext> {
    * @return
    *   The new seed context.
    */
-  public SeedContext to(String address, String main);
+  public SeedDefinition to(String address, String main);
 
   /**
    * Sets a new output channel on the seed.
@@ -104,6 +104,6 @@ public interface SeedContext extends Context<SeedContext> {
    * @return
    *   The new seed context.
    */
-  public SeedContext to(String address, String main, int workers);
+  public SeedDefinition to(String address, String main, int workers);
 
 }

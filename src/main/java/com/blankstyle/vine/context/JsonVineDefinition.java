@@ -21,35 +21,35 @@ package com.blankstyle.vine.context;
  *
  * @author Jordan Halterman
  */
-public class DefaultVineContext extends AbstractContext<VineContext> implements VineContext {
+public class JsonVineDefinition extends AbstractDefinition<VineDefinition> implements VineDefinition {
 
   @Override
-  public VineContext setAddress(String address) {
+  public VineDefinition setAddress(String address) {
     this.address = address;
     return this;
   }
 
   @Override
-  public SeedContext feed(SeedContext context) {
-    if (!connections.contains(context)) {
-      connections.add(context);
+  public SeedDefinition feed(SeedDefinition definition) {
+    if (!connections.contains(definition)) {
+      connections.add(definition);
     }
-    return context;
+    return definition;
   }
 
   @Override
-  public SeedContext feed(String address) {
+  public SeedDefinition feed(String address) {
     return feed(address, null, 1);
   }
 
   @Override
-  public SeedContext feed(String address, String main) {
+  public SeedDefinition feed(String address, String main) {
     return feed(address, main, 1);
   }
 
   @Override
-  public SeedContext feed(String address, String main, int workers) {
-    return (SeedContext) addConnection(new DefaultSeedContext().setAddress(address).setMain(main).setWorkers(workers));
+  public SeedDefinition feed(String address, String main, int workers) {
+    return (SeedDefinition) addConnection(new JsonSeedDefinition().setAddress(address).setMain(main).setWorkers(workers));
   }
 
 }

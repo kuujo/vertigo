@@ -15,8 +15,8 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.context.DefaultSeedContext;
-import com.blankstyle.vine.context.SeedContext;
+import com.blankstyle.vine.context.JsonSeedDefinition;
+import com.blankstyle.vine.context.SeedDefinition;
 
 /**
  * An abstract seed.
@@ -31,8 +31,8 @@ public abstract class Seed implements Deployable {
    * @return
    *   A new seed context.
    */
-  public SeedContext createContext() {
-    return new DefaultSeedContext();
+  public SeedDefinition createContext() {
+    return new JsonSeedDefinition();
   }
 
   /**
@@ -43,8 +43,8 @@ public abstract class Seed implements Deployable {
    * @return
    *   A new seed context.
    */
-  public SeedContext createContext(String address) {
-    return new DefaultSeedContext().setAddress(address);
+  public SeedDefinition createContext(String address) {
+    return new JsonSeedDefinition().setAddress(address);
   }
 
   /**
@@ -57,8 +57,8 @@ public abstract class Seed implements Deployable {
    * @return
    *   A new seed context.
    */
-  public SeedContext createContext(String address, String main) {
-    return new DefaultSeedContext().setAddress(address).setMain(main);
+  public SeedDefinition createContext(String address, String main) {
+    return new JsonSeedDefinition().setAddress(address).setMain(main);
   }
 
   /**
@@ -73,8 +73,8 @@ public abstract class Seed implements Deployable {
    * @return
    *   A new seed context.
    */
-  public SeedContext createContext(String address, String main, int workers) {
-    return new DefaultSeedContext().setAddress(address).setMain(main).setWorkers(workers);
+  public SeedDefinition createContext(String address, String main, int workers) {
+    return new JsonSeedDefinition().setAddress(address).setMain(main).setWorkers(workers);
   }
 
 }

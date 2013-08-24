@@ -13,33 +13,26 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.context;
 
-import org.vertx.java.core.json.JsonObject;
+import java.util.Collection;
+
+import com.blankstyle.vine.Observable;
+import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
- * A component context.
+ * A Seed context.
  *
  * @author Jordan Halterman
  */
-public interface Definition<T> extends Serializeable<JsonObject> {
+public interface SeedContext<T> extends Observable<T, SeedContext<T>> {
 
-  /**
-   * Sets the component name.
-   *
-   * @param name
-   *   The component name.
-   * @return
-   *   The called context.
-   */
-  public T setName(String name);
+  public Collection<WorkerContext<T>> getWorkerContexts();
 
-  /**
-   * Gets the component name.
-   *
-   * @return
-   *   The component name.
-   */
-  public String getName();
+  public SeedDefinition getDefinition();
+
+  public VineContext<T> getContext();
+
+  public SeedContext<T> setContext(VineContext<T> context);
 
 }

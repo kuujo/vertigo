@@ -15,31 +15,29 @@
 */
 package com.blankstyle.vine;
 
-import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.Handler;
 
 /**
- * A component context.
+ * An observable object.
  *
  * @author Jordan Halterman
  */
-public interface Definition<T> extends Serializeable<JsonObject> {
+public interface Observable<T, E> {
 
   /**
-   * Sets the component name.
+   * Updates the observable.
    *
-   * @param name
-   *   The component name.
-   * @return
-   *   The called context.
+   * @param data
+   *   The data with which to update.
    */
-  public T setName(String name);
+  public void update(T data);
 
   /**
-   * Gets the component name.
+   * Sets an observable update handler.
    *
-   * @return
-   *   The component name.
+   * @param handler
+   *   The update handler.
    */
-  public String getName();
+  public void updateHandler(Handler<E> handler);
 
 }

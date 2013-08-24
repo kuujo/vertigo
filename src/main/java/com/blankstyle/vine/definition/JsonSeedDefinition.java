@@ -15,67 +15,93 @@
 */
 package com.blankstyle.vine.definition;
 
+import org.vertx.java.core.json.JsonObject;
+
 
 /**
  * A default seed context implementation.
  *
  * @author Jordan Halterman
  */
-public class JsonSeedDefinition extends AbstractDefinition<SeedDefinition> implements SeedDefinition {
+public class JsonSeedDefinition implements SeedDefinition {
 
-  private String main;
+  private JsonObject definition = new JsonObject();
 
-  private int workers = 1;
+  public JsonSeedDefinition() {
+  }
 
-  @Override
-  public SeedDefinition setAddress(String address) {
-    this.address = address;
-    return this;
+  public JsonSeedDefinition(JsonObject json) {
+    definition = json;
   }
 
   @Override
-  public SeedDefinition setMain(String main) {
-    this.main = main;
+  public String getName() {
+    return definition.getString("name");
+  }
+
+  @Override
+  public SeedDefinition setName(String name) {
+    definition.putString("name", name);
     return this;
   }
 
   @Override
   public String getMain() {
-    return main;
+    return definition.getString("main");
+  }
+
+  @Override
+  public SeedDefinition setMain(String main) {
+    definition.putString("main", main);
+    return this;
   }
 
   @Override
   public SeedDefinition setWorkers(int workers) {
-    this.workers = workers;
+    definition.putNumber("workers", workers);
     return this;
   }
 
   @Override
   public int getWorkers() {
-    return workers;
+    return definition.getInteger("workers");
   }
 
-  @Override
-  public SeedDefinition to(SeedDefinition definition) {
-    if (!connections.contains(definition)) {
-      connections.add(definition);
+  private SeedDefinition addDefinition(SeedDefinition definition) {
+    JsonObject connections = this.definition.getObject("connections");
+    if (connections == null) {
+      connections = new JsonObject();
+      this.definition.putObject("connections", connections);
+    }
+    if (!connections.getFieldNames().contains(definition.getName())) {
+      connections.putObject(definition.getName(), definition.serialize());
     }
     return definition;
   }
 
   @Override
-  public SeedDefinition to(String address) {
-    return to(address, null, 1);
+  public SeedDefinition to(SeedDefinition definition) {
+    return addDefinition(definition);
   }
 
   @Override
-  public SeedDefinition to(String address, String main) {
-    return to(address, main, 1);
+  public SeedDefinition to(String name) {
+    return to(name, null, 1);
   }
 
   @Override
-  public SeedDefinition to(String address, String main, int workers) {
-    return (SeedDefinition) addConnection(new JsonSeedDefinition().setAddress(address).setMain(main).setWorkers(workers));
+  public SeedDefinition to(String name, String main) {
+    return to(name, main, 1);
+  }
+
+  @Override
+  public SeedDefinition to(String name, String main, int workers) {
+    return addDefinition(new JsonSeedDefinition().setName(name).setMain(main).setWorkers(workers));
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return definition;
   }
 
 }

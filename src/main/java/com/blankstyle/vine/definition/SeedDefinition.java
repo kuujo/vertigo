@@ -73,30 +73,30 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
   /**
    * Sets a new output channel on the seed.
    *
-   * @param address
-   *   The new seed address.
+   * @param name
+   *   The new seed name.
    * @return
    *   The new seed context.
    */
-  public SeedDefinition to(String address);
+  public SeedDefinition to(String name);
 
   /**
    * Sets a new output channel on the seed.
    *
-   * @param address
-   *   The new seed address.
+   * @param name
+   *   The new seed name.
    * @param main
    *   The new seed main.
    * @return
    *   The new seed context.
    */
-  public SeedDefinition to(String address, String main);
+  public SeedDefinition to(String name, String main);
 
   /**
    * Sets a new output channel on the seed.
    *
-   * @param address
-   *   The new seed address.
+   * @param name
+   *   The new seed name.
    * @param main
    *   The new seed main.
    * @param workers
@@ -104,6 +104,6 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @return
    *   The new seed context.
    */
-  public SeedDefinition to(String address, String main, int workers);
+  public SeedDefinition to(String name, String main, int workers);
 
 }

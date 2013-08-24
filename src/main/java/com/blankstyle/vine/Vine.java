@@ -30,25 +30,39 @@ import com.blankstyle.vine.definition.VineDefinition;
 public abstract class Vine implements Deployer<Collection<Seed>, String> {
 
   /**
-   * Creates a new vine context.
+   * Creates a new vine definition.
    *
    * @return
-   *   A new vine context.
+   *   A new vine definition.
    */
-  public static VineDefinition createContext() {
+  public static VineDefinition createDefinition() {
     return new JsonVineDefinition();
   }
 
   /**
-   * Creates a new vine context.
+   * Creates a new vine definition.
    *
-   * @param address
-   *   The context address.
+   * @param name
+   *   The context name.
    * @return
-   *   A new vine context.
+   *   A new vine definition.
    */
-  public static VineDefinition createContext(String address) {
-    return new JsonVineDefinition().setAddress(address);
+  public static VineDefinition createDefinition(String name) {
+    return new JsonVineDefinition().setName(name);
+  }
+
+  /**
+   * Creates a new vine definition.
+   *
+   * @param name
+   *   The definition name.
+   * @param address
+   *   The vine address.
+   * @return
+   *   A new vine definition.
+   */
+  public static VineDefinition createDefinition(String name, String address) {
+    return new JsonVineDefinition().setName(name).setAddress(address);
   }
 
   protected JsonObject context;

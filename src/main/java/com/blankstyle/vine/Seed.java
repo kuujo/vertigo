@@ -26,55 +26,55 @@ import com.blankstyle.vine.definition.SeedDefinition;
 public abstract class Seed implements Deployable {
 
   /**
-   * Creates a new seed context.
+   * Creates a new seed definition.
    *
    * @return
-   *   A new seed context.
+   *   A new seed definition.
    */
-  public SeedDefinition createContext() {
+  public static SeedDefinition createDefinition() {
     return new JsonSeedDefinition();
   }
 
   /**
-   * Creates a new seed context.
+   * Creates a new seed definition.
    *
-   * @param address
-   *   The context address.
+   * @param name
+   *   The definition name.
    * @return
-   *   A new seed context.
+   *   A new seed definition.
    */
-  public SeedDefinition createContext(String address) {
-    return new JsonSeedDefinition().setAddress(address);
+  public static SeedDefinition createDefinition(String name) {
+    return new JsonSeedDefinition().setName(name);
   }
 
   /**
-   * Creates a new seed context.
+   * Creates a new seed definition.
    *
-   * @param address
-   *   The context address.
+   * @param name
+   *   The definition name.
    * @param main
    *   The seed main.
    * @return
-   *   A new seed context.
+   *   A new seed definition.
    */
-  public SeedDefinition createContext(String address, String main) {
-    return new JsonSeedDefinition().setAddress(address).setMain(main);
+  public static SeedDefinition createDefinition(String name, String main) {
+    return new JsonSeedDefinition().setName(name).setMain(main);
   }
 
   /**
-   * Creates a new seed context.
+   * Creates a new seed definition.
    *
-   * @param address
-   *   The context address.
+   * @param name
+   *   The definition name.
    * @param main
    *   The seed main.
    * @param workers
    *   The number of seed workers.
    * @return
-   *   A new seed context.
+   *   A new seed definition.
    */
-  public SeedDefinition createContext(String address, String main, int workers) {
-    return new JsonSeedDefinition().setAddress(address).setMain(main).setWorkers(workers);
+  public static SeedDefinition createDefinition(String name, String main, int workers) {
+    return new JsonSeedDefinition().setName(name).setMain(main).setWorkers(workers);
   }
 
 }

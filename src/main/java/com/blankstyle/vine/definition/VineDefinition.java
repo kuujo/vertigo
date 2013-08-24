@@ -25,6 +25,24 @@ import com.blankstyle.vine.Definition;
 public interface VineDefinition extends Definition<VineDefinition> {
 
   /**
+   * Gets the vine address.
+   *
+   * @return
+   *   The vine address.
+   */
+  public String getAddress();
+
+  /**
+   * Sets the vine address.
+   *
+   * @param address
+   *   The vine address.
+   * @return
+   *   The called vine definition.
+   */
+  public VineDefinition setAddress(String address);
+
+  /**
    * Adds a new seed to the vine.
    *
    * @param context
@@ -37,30 +55,30 @@ public interface VineDefinition extends Definition<VineDefinition> {
   /**
    * Adds a new seed to the vine.
    *
-   * @param address
-   *   The seed address.
+   * @param name
+   *   The seed name.
    * @return
    *   The seed context.
    */
-  public SeedDefinition feed(String address);
+  public SeedDefinition feed(String name);
 
   /**
    * Adds a new seed to the vine.
    *
-   * @param address
-   *   The seed address.
+   * @param name
+   *   The seed name.
    * @param main
    *   The seed main.
    * @return
    *   The seed context.
    */
-  public SeedDefinition feed(String address, String main);
+  public SeedDefinition feed(String name, String main);
 
   /**
    * Adds a new seed to the vine.
    *
-   * @param address
-   *   The seed address.
+   * @param name
+   *   The seed name.
    * @param main
    *   The seed main.
    * @param workers
@@ -68,6 +86,6 @@ public interface VineDefinition extends Definition<VineDefinition> {
    * @return
    *   The seed context.
    */
-  public SeedDefinition feed(String address, String main, int workers);
+  public SeedDefinition feed(String name, String main, int workers);
 
 }

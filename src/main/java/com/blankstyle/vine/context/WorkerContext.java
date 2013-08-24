@@ -13,33 +13,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.context;
 
-import org.vertx.java.core.json.JsonObject;
+import com.blankstyle.vine.Observable;
 
 /**
- * A component context.
+ * A worker context.
  *
  * @author Jordan Halterman
  */
-public interface Definition<T> extends Serializeable<JsonObject> {
+public interface WorkerContext<T> extends Observable<T, WorkerContext<T>> {
 
-  /**
-   * Sets the component name.
-   *
-   * @param name
-   *   The component name.
-   * @return
-   *   The called context.
-   */
-  public T setName(String name);
+  public String getAddress();
 
-  /**
-   * Gets the component name.
-   *
-   * @return
-   *   The component name.
-   */
-  public String getName();
+  public WorkerContext<T> setAddress(String address);
+
+  public SeedContext<T> getContext();
+
+  public WorkerContext<T> setContext(SeedContext<T> context);
 
 }

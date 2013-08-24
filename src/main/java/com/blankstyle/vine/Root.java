@@ -18,7 +18,7 @@ package com.blankstyle.vine;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.context.VineDefinition;
+import com.blankstyle.vine.definition.VineDefinition;
 
 /**
  * A vine root.

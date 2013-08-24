@@ -19,8 +19,8 @@ import java.util.Collection;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.context.JsonVineDefinition;
-import com.blankstyle.vine.context.VineDefinition;
+import com.blankstyle.vine.definition.JsonVineDefinition;
+import com.blankstyle.vine.definition.VineDefinition;
 
 /**
  * An abstract vine.

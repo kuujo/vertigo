@@ -15,8 +15,8 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.context.JsonSeedDefinition;
-import com.blankstyle.vine.context.SeedDefinition;
+import com.blankstyle.vine.definition.JsonSeedDefinition;
+import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
  * An abstract seed.

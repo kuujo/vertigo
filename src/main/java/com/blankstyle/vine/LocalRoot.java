@@ -25,7 +25,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.context.VineDefinition;
+import com.blankstyle.vine.definition.VineDefinition;
 
 /**
  * A local root implementation.

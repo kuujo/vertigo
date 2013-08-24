@@ -15,12 +15,12 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
- * A vine root.
+ * An abstract stem implementation.
  *
  * @author Jordan Halterman
  */
-public interface Root extends Deployer<VineDefinition, Feeder> {
+public abstract class AbstractStem extends AbstractDeployer<SeedDefinition, Void> implements Stem {
 }

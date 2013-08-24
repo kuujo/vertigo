@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.local;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +25,10 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.platform.Container;
 
+import com.blankstyle.vine.AbstractRoot;
+import com.blankstyle.vine.BasicFeeder;
+import com.blankstyle.vine.Feeder;
+import com.blankstyle.vine.RootException;
 import com.blankstyle.vine.definition.VineDefinition;
 
 /**
@@ -36,39 +40,15 @@ import com.blankstyle.vine.definition.VineDefinition;
  *
  * @author Jordan Halterman
  */
-public class LocalRoot implements Root {
+public class LocalRoot extends AbstractRoot {
 
   protected static final String VINE_VERTICLE_CLASS = "com.blankstyle.vine.VineVerticle";
-
-  protected Vertx vertx;
-
-  private Container container;
 
   private Map<String, String> deploymentMap = new HashMap<String, String>();
 
   public LocalRoot(Vertx vertx, Container container) {
     this.vertx = vertx;
     this.container = container;
-  }
-
-  @Override
-  public void setVertx(Vertx vertx) {
-    this.vertx = vertx;
-  }
-
-  @Override
-  public Vertx getVertx() {
-    return vertx;
-  }
-
-  @Override
-  public void setContainer(Container container) {
-    this.container = container;
-  }
-
-  @Override
-  public Container getContainer() {
-    return container;
   }
 
   @Override

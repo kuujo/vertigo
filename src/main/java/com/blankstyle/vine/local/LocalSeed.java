@@ -13,14 +13,34 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.local;
 
-import com.blankstyle.vine.definition.VineDefinition;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
+import com.blankstyle.vine.Seed;
 
 /**
- * A vine root.
+ * A local seed implementation.
  *
  * @author Jordan Halterman
  */
-public interface Root extends Deployer<VineDefinition, Feeder> {
+public class LocalSeed extends Seed {
+
+  protected String address;
+
+  public LocalSeed(String address) {
+    this.address = address;
+  }
+
+  @Override
+  public void deploy() {
+    
+  }
+
+  @Override
+  public void deploy(Handler<AsyncResult<?>> doneHandler) {
+    
+  }
+
 }

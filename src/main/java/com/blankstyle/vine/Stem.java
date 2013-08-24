@@ -15,12 +15,12 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
- * A vine root.
+ * A vine stem.
  *
  * @author Jordan Halterman
  */
-public interface Root extends Deployer<VineDefinition, Feeder> {
+public interface Stem extends Deployer<SeedDefinition, Void> {
 }

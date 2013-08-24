@@ -15,30 +15,12 @@
 */
 package com.blankstyle.vine;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import com.blankstyle.vine.definition.VineDefinition;
 
 /**
- * A local seed implementation.
+ * An abstract root implementation.
  *
  * @author Jordan Halterman
  */
-public class LocalSeed extends Seed {
-
-  protected String address;
-
-  public LocalSeed(String address) {
-    this.address = address;
-  }
-
-  @Override
-  public void deploy() {
-    
-  }
-
-  @Override
-  public void deploy(Handler<AsyncResult<?>> doneHandler) {
-    
-  }
-
+public abstract class AbstractRoot extends AbstractDeployer<VineDefinition, Feeder> implements Root {
 }

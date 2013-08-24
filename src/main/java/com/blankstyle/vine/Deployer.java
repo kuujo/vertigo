@@ -17,6 +17,8 @@ package com.blankstyle.vine;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 /**
  * A component deployer.
@@ -27,6 +29,38 @@ import org.vertx.java.core.Handler;
  * @param <R> The asynchronous result type.
  */
 public interface Deployer<T, R> {
+
+  /**
+   * Sets the root vertx instance.
+   *
+   * @param vertx
+   *   A vertx instance.
+   */
+  public void setVertx(Vertx vertx);
+
+  /**
+   * Gets the root vertx instance.
+   *
+   * @return
+   *   A vertx instance.
+   */
+  public Vertx getVertx();
+
+  /**
+   * Sets the root container instance.
+   *
+   * @param container
+   *   A container instance.
+   */
+  public void setContainer(Container container);
+
+  /**
+   * Gets the root container instance.
+   *
+   * @return
+   *   A container instance.
+   */
+  public Container getContainer();
 
   /**
    * Deploys a component.

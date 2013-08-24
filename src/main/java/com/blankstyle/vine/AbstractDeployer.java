@@ -15,12 +15,38 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.definition.VineDefinition;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 /**
- * A vine root.
+ * An abstract deployer.
  *
  * @author Jordan Halterman
  */
-public interface Root extends Deployer<VineDefinition, Feeder> {
+public abstract class AbstractDeployer<T, R> implements Deployer<T, R> {
+
+  protected Vertx vertx;
+
+  protected Container container;
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
+  @Override
+  public Vertx getVertx() {
+    return vertx;
+  }
+
+  @Override
+  public void setContainer(Container container) {
+    this.container = container;
+  }
+
+  @Override
+  public Container getContainer() {
+    return container;
+  }
+
 }

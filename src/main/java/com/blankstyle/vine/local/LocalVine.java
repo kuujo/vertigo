@@ -13,13 +13,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.local;
 
 import java.util.Collection;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
+
+import com.blankstyle.vine.Seed;
+import com.blankstyle.vine.Vine;
 
 /**
  * A local vine implementation.
@@ -27,6 +32,10 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class LocalVine extends Vine {
+
+  private Vertx vertx;
+
+  private Container container;
 
   public LocalVine(JsonObject context) {
     super(context);
@@ -42,6 +51,26 @@ public class LocalVine extends Vine {
    */
   public static Vine create(JsonObject context) {
     return new LocalVine(context);
+  }
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
+  @Override
+  public Vertx getVertx() {
+    return vertx;
+  }
+
+  @Override
+  public void setContainer(Container container) {
+    this.container = container;
+  }
+
+  @Override
+  public Container getContainer() {
+    return container;
   }
 
   @Override

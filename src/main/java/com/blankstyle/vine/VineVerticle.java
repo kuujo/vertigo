@@ -17,6 +17,8 @@ package com.blankstyle.vine;
 
 import org.vertx.java.platform.Verticle;
 
+import com.blankstyle.vine.local.LocalVine;
+
 /**
  * A vine controller verticle.
  *

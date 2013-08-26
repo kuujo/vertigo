@@ -38,256 +38,132 @@ public interface Channel {
   public String getAddress();
 
   /**
-   * Sends a message through the channel.
+   * Adds a connection to the channel.
    *
-   * @param message
-   *   The message to send.
+   * @param connection
+   *   The connection to add.
    */
-  public void send(Object message);
+  public void addConnection(Connection connection);
 
   /**
-   * Sends a message through the channel, providing a handler for a return value.
+   * Removes a connection from the channel.
    *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
+   * @param connection
+   *   The connection to remove.
    */
-  public void send(Object message, @SuppressWarnings("rawtypes") Handler<Message> replyHandler);
+  public void removeConnection(Connection connection);
 
   /**
-   * Sends a message through the channel.
+   * Publishes a message to the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(JsonObject message);
+  public void publish(Object message);
 
   /**
-   * Sends a message through the channel, providing a handler for a return value.
+   * Publishes a message to the channel.
    *
    * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
+   *   The message to publish.
    */
-  public <T> void send(JsonObject message, Handler<Message<T>> replyHandler);
+  public void publish(JsonObject message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(JsonArray message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(JsonArray message, Handler<Message<T>> replyHandler);
+  public void publish(JsonArray message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Buffer message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Buffer message, Handler<Message<T>> replyHandler);
+  public void publish(Buffer message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(byte[] message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(byte[] message, Handler<Message<T>> replyHandler);
+  public void publish(byte[] message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(String message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(String message, Handler<Message<T>> replyHandler);
+  public void publish(String message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Integer message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Integer message, Handler<Message<T>> replyHandler);
+  public void publish(Integer message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Long message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Long message, Handler<Message<T>> replyHandler);
+  public void publish(Long message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Float message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Float message, Handler<Message<T>> replyHandler);
+  public void publish(Float message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Double message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Double message, Handler<Message<T>> replyHandler);
+  public void publish(Double message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Boolean message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Boolean message, Handler<Message<T>> replyHandler);
+  public void publish(Boolean message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Short message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Short message, Handler<Message<T>> replyHandler);
+  public void publish(Short message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Character message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Character message, Handler<Message<T>> replyHandler);
+  public void publish(Character message);
 
   /**
    * Sends a message through the channel.
    *
    * @param message
-   *   The message to send.
+   *   The message to publish.
    */
-  public void send(Byte message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A reply handler.
-   */
-  public <T> void send(Byte message, Handler<Message<T>> replyHandler);
+  public void publish(Byte message);
 
   /**
    * Registers a message handler.

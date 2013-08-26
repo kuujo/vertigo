@@ -15,7 +15,6 @@
 */
 package com.blankstyle.vine.messaging;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,19 +26,19 @@ import java.util.Map;
  */
 public class RandomDispatcher implements Dispatcher {
 
-  private Map<Double, Channel> channelMap;
+  private Map<Double, Connection> channelMap;
 
   private int channelCount;
 
   @Override
-  public void init(Collection<Channel> channels) {
-    channelMap = new HashMap<Double, Channel>();
-    Iterator<Channel> iter = channels.iterator();
+  public void init(ConnectionPool connections) {
+    channelMap = new HashMap<Double, Connection>();
+    Iterator<Connection> iter = connections.iterator();
     int i = 0;
     while (iter.hasNext()) {
       channelMap.put(Double.valueOf(i++), iter.next());
     }
-    channelCount = channels.size();
+    channelCount = connections.size();
   }
 
   @Override

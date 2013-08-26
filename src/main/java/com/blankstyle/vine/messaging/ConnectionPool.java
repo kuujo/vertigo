@@ -15,27 +15,12 @@
 */
 package com.blankstyle.vine.messaging;
 
+import java.util.Collection;
+
 /**
- * A message dispatcher.
+ * A pool of point-to-point connections.
  *
  * @author Jordan Halterman
  */
-public interface Dispatcher {
-
-  /**
-   * Initializes the dispatcher.
-   *
-   * @param connections
-   *   A collection of connections to which the dispatcher will dispatch messages.
-   */
-  public void init(ConnectionPool connections);
-
-  /**
-   * Dispatches a message.
-   *
-   * @param message
-   *   The message to dispatch.
-   */
-  public <T> void dispatch(Message<T> message);
-
+public interface ConnectionPool extends Collection<Connection> {
 }

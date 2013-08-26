@@ -16,7 +16,6 @@
 package com.blankstyle.vine.messaging;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,14 +26,14 @@ import java.util.List;
  */
 public class RoundDispatcher implements Dispatcher {
 
-  private List<Channel> items;
+  private List<Connection> items;
 
-  private Iterator<Channel> iterator;
+  private Iterator<Connection> iterator;
 
   @Override
-  public void init(Collection<Channel> channels) {
-    this.items = new ArrayList<Channel>();
-    Iterator<Channel> iterator = channels.iterator();
+  public void init(ConnectionPool connections) {
+    this.items = new ArrayList<Connection>();
+    Iterator<Connection> iterator = connections.iterator();
     while (iterator.hasNext()) {
       items.add(iterator.next());
     }

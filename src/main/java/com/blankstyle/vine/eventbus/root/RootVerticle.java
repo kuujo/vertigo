@@ -46,6 +46,8 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
   @Override
   public void start() {
     context = new JsonRootContext(container.config());
+    dispatcher.setEventBus(vertx.eventBus());
+    dispatcher.setContext(context);
     vertx.eventBus().registerHandler(context.getAddress(), this);
   }
 

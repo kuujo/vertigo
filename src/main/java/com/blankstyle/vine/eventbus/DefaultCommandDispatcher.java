@@ -25,6 +25,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
+import com.blankstyle.vine.Context;
+
 /**
  * A default remote command dispatcher implementation.
  *
@@ -34,13 +36,20 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
 
   private EventBus eventBus;
 
-  private Map<String, Class<? extends Action>> actions = new HashMap<String, Class<? extends Action>>();
+  private Context<?> context;
+
+  private Map<String, Class<? extends Action<?>>> actions = new HashMap<String, Class<? extends Action<?>>>();
 
   public DefaultCommandDispatcher() {
   }
 
   public DefaultCommandDispatcher(EventBus eventBus) {
     this.eventBus = eventBus;
+  }
+
+  public DefaultCommandDispatcher(EventBus eventBus, Context<?> context) {
+    this.eventBus = eventBus;
+    this.context = context;
   }
 
   @Override
@@ -54,7 +63,17 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
   }
 
   @Override
-  public void registerAction(String name, Class<? extends Action> action) {
+  public void setContext(Context<?> context) {
+    this.context = context;
+  }
+
+  @Override
+  public Context<?> getContext() {
+    return context;
+  }
+
+  @Override
+  public void registerAction(String name, Class<? extends Action<?>> action) {
     actions.put(name, action);
   }
 
@@ -74,11 +93,11 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
   public void dispatch(String actionName, Object[] args, Handler<AsyncResult<Object>> resultHandler) {
     if (actions.containsKey(actionName)) {
       if (actions.containsKey(actionName)) {
-        Class<? extends Action> actionClass = actions.get(actionName);
+        Class<? extends Action<?>> actionClass = actions.get(actionName);
         if (actionClass != null) {
-          Action action;
+          Action<?> action;
           try {
-            action = actionClass.getConstructor(new Class[]{EventBus.class}).newInstance(eventBus);
+            action = actionClass.getConstructor(new Class[]{EventBus.class, Context.class}).newInstance(eventBus, context);
 
             // If this is a synchronous action then get the result and invoke the handler.
             if (action instanceof SynchronousAction) {

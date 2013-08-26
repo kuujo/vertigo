@@ -19,6 +19,8 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 
+import com.blankstyle.vine.Context;
+
 /**
  * An remote command dispatcher.
  *
@@ -43,6 +45,22 @@ public interface CommandDispatcher {
   public EventBus getEventBus();
 
   /**
+   * Sets the dispatcher context.
+   *
+   * @param context
+   *   The dispatcher context.
+   */
+  public void setContext(Context<?> context);
+
+  /**
+   * Gets the dispatcher context.
+   *
+   * @return
+   *   The dispatcher context.
+   */
+  public Context<?> getContext();
+
+  /**
    * Registers a new command action.
    *
    * @param name
@@ -50,7 +68,7 @@ public interface CommandDispatcher {
    * @param action
    *   The action to register.
    */
-  public void registerAction(String name, Class<? extends Action> action);
+  public void registerAction(String name, Class<? extends Action<?>> action);
 
   /**
    * Unregisters a command action.

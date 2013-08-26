@@ -20,6 +20,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.context.JsonVineContext;
+import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.CommandDispatcher;
 import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
 import com.blankstyle.vine.eventbus.JsonCommand;
@@ -34,7 +36,7 @@ import com.blankstyle.vine.eventbus.vine.actions.Ping;
  */
 public class VineVerticle extends ReliableBusVerticle implements Handler<Message<JsonObject>> {
 
-  private String address;
+  private VineContext context;
 
   private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
     registerAction(Ping.NAME, Ping.class);
@@ -42,8 +44,10 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   @Override
   protected void start(ReliableEventBus eventBus) {
-    address = getMandatoryStringConfig("address");
-    eventBus.registerHandler(address, this);
+    context = new JsonVineContext(container.config());
+    dispatcher.setEventBus(vertx.eventBus());
+    dispatcher.setContext(context);
+    eventBus.registerHandler(context.getAddress(), this);
   }
 
   @Override

@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.JsonVineDefinition;
 import com.blankstyle.vine.definition.VineDefinition;
 
@@ -30,11 +31,11 @@ import com.blankstyle.vine.definition.VineDefinition;
  *
  * @author Jordan Halterman
  */
-public class JsonVineContext implements VineContext<JsonObject> {
+public class JsonVineContext implements VineContext, Serializeable<JsonObject> {
 
   private JsonObject context = new JsonObject();
 
-  private Handler<VineContext<JsonObject>> updateHandler;
+  private Handler<VineContext> updateHandler;
 
   public JsonVineContext(String name) {
     context.putString("name", name);
@@ -57,7 +58,7 @@ public class JsonVineContext implements VineContext<JsonObject> {
   }
 
   @Override
-  public void updateHandler(Handler<VineContext<JsonObject>> handler) {
+  public void updateHandler(Handler<VineContext> handler) {
     updateHandler = handler;
   }
 
@@ -67,15 +68,15 @@ public class JsonVineContext implements VineContext<JsonObject> {
   }
 
   @Override
-  public VineContext<JsonObject> setAddress(String address) {
+  public VineContext setAddress(String address) {
     context.putString("address", address);
     return this;
   }
 
   @Override
-  public Collection<SeedContext<JsonObject>> getSeedContexts() {
+  public Collection<SeedContext> getSeedContexts() {
     JsonObject seeds = context.getObject("seeds");
-    ArrayList<SeedContext<JsonObject>> contexts = new ArrayList<SeedContext<JsonObject>>();
+    ArrayList<SeedContext> contexts = new ArrayList<SeedContext>();
     Iterator<String> iter = seeds.getFieldNames().iterator();
     while (iter.hasNext()) {
       contexts.add(new JsonSeedContext(seeds.getObject(iter.next()), this));
@@ -84,7 +85,7 @@ public class JsonVineContext implements VineContext<JsonObject> {
   }
 
   @Override
-  public SeedContext<JsonObject> getSeedContext(String name) {
+  public SeedContext getSeedContext(String name) {
     JsonObject seeds = context.getObject("seeds");
     if (seeds == null) {
       return null;
@@ -103,6 +104,11 @@ public class JsonVineContext implements VineContext<JsonObject> {
       return new JsonVineDefinition(definition);
     }
     return new JsonVineDefinition();
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
   }
 
 }

@@ -15,21 +15,21 @@
 */
 package com.blankstyle.vine.context;
 
-import com.blankstyle.vine.Observable;
+import com.blankstyle.vine.Context;
 
 /**
  * A worker context.
  *
  * @author Jordan Halterman
  */
-public interface WorkerContext<T> extends Observable<T, WorkerContext<T>> {
+public interface WorkerContext extends Context<WorkerContext> {
 
   public String getAddress();
 
-  public WorkerContext<T> setAddress(String address);
+  public WorkerContext setAddress(String address);
 
-  public SeedContext<T> getContext();
+  public SeedContext getContext();
 
-  public WorkerContext<T> setContext(SeedContext<T> context);
+  public WorkerContext setContext(SeedContext context);
 
 }

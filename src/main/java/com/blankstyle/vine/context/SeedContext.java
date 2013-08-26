@@ -17,7 +17,7 @@ package com.blankstyle.vine.context;
 
 import java.util.Collection;
 
-import com.blankstyle.vine.Observable;
+import com.blankstyle.vine.Context;
 import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
@@ -25,14 +25,14 @@ import com.blankstyle.vine.definition.SeedDefinition;
  *
  * @author Jordan Halterman
  */
-public interface SeedContext<T> extends Observable<T, SeedContext<T>> {
+public interface SeedContext extends Context<SeedContext> {
 
-  public Collection<WorkerContext<T>> getWorkerContexts();
+  public Collection<WorkerContext> getWorkerContexts();
 
   public SeedDefinition getDefinition();
 
-  public VineContext<T> getContext();
+  public VineContext getContext();
 
-  public SeedContext<T> setContext(VineContext<T> context);
+  public SeedContext setContext(VineContext context);
 
 }

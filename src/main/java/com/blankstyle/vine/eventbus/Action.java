@@ -17,20 +17,71 @@ package com.blankstyle.vine.eventbus;
 
 import org.vertx.java.core.eventbus.EventBus;
 
+import com.blankstyle.vine.Context;
+
 /**
  * An event bus command.
  *
  * @author Jordan Halterman
  */
-public abstract class Action {
+public abstract class Action<T extends Context<T>> {
 
   protected EventBus eventBus;
+
+  protected T context;
 
   public Action() {
   }
 
-  public Action(EventBus eventBus) {
+  public Action(EventBus eventBus, T context) {
     this.eventBus = eventBus;
+    this.context = context;
+  }
+
+  /**
+   * Sets the action eventbus.
+   *
+   * @param eventBus
+   *   The action event bus.
+   * @return
+   *   The called action instance.
+   */
+  public Action<T> setEventBus(EventBus eventBus) {
+    this.eventBus = eventBus;
+    return this;
+  }
+
+  /**
+   * Gets the action event bus.
+   *
+   * @return
+   *   The action eventbus.
+   */
+  public EventBus getEventBus() {
+    return eventBus;
+  }
+
+  /**
+   * Sets the action context.
+   *
+   * @param context
+   *   The action context.
+   * @return
+   *   The called action instance.
+   */
+  public Action<T> setContext(T context) {
+    this.context = context;
+    return this;
+  }
+
+  /**
+   * Gets the action context.
+   *
+   * @return
+   *   The action context.
+   */
+  public Context<T> getContext() {
+    return context;
   }
 
 }

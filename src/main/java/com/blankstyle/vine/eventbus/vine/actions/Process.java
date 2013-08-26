@@ -15,22 +15,30 @@
 */
 package com.blankstyle.vine.eventbus.vine.actions;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.Action;
-import com.blankstyle.vine.eventbus.SynchronousAction;
+import com.blankstyle.vine.eventbus.AsynchronousAction;
+import com.blankstyle.vine.eventbus.ReliableEventBus;
 
 /**
- * A vine verticle ping action.
+ * A vine verticle process action.
  *
  * @author Jordan Halterman
  */
-public class Ping extends Action<VineContext> implements SynchronousAction<String> {
+public class Process extends Action<VineContext> implements AsynchronousAction<Void> {
 
   public static final String NAME = "ping";
 
+  public Process(ReliableEventBus eventBus) {
+    this.eventBus = eventBus;
+  }
+
   @Override
-  public String execute(Object[] args) {
-    return "pong";
+  public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
+    
   }
 
 }

@@ -8,16 +8,17 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.JsonSeedDefinition;
 import com.blankstyle.vine.definition.SeedDefinition;
 
-public class JsonSeedContext implements SeedContext<JsonObject> {
+public class JsonSeedContext implements SeedContext, Serializeable<JsonObject> {
 
   private JsonObject context = new JsonObject();
 
-  private VineContext<JsonObject> parent;
+  private VineContext parent;
 
-  private Handler<SeedContext<JsonObject>> updateHandler;
+  private Handler<SeedContext> updateHandler;
 
   public JsonSeedContext() {
   }
@@ -30,7 +31,7 @@ public class JsonSeedContext implements SeedContext<JsonObject> {
     context = json;
   }
 
-  public JsonSeedContext(JsonObject json, VineContext<JsonObject> parent) {
+  public JsonSeedContext(JsonObject json, VineContext parent) {
     this(json);
     this.parent = parent;
   }
@@ -44,14 +45,14 @@ public class JsonSeedContext implements SeedContext<JsonObject> {
   }
 
   @Override
-  public void updateHandler(Handler<SeedContext<JsonObject>> handler) {
+  public void updateHandler(Handler<SeedContext> handler) {
     updateHandler = handler;
   }
 
   @Override
-  public Collection<WorkerContext<JsonObject>> getWorkerContexts() {
+  public Collection<WorkerContext> getWorkerContexts() {
     JsonArray workers = context.getArray("workers");
-    ArrayList<WorkerContext<JsonObject>> contexts = new ArrayList<WorkerContext<JsonObject>>();
+    ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
     Iterator<Object> iter = workers.iterator();
     while (iter.hasNext()) {
       contexts.add(new JsonWorkerContext((JsonObject) iter.next(), this));
@@ -69,14 +70,19 @@ public class JsonSeedContext implements SeedContext<JsonObject> {
   }
 
   @Override
-  public VineContext<JsonObject> getContext() {
+  public VineContext getContext() {
     return parent;
   }
 
   @Override
-  public SeedContext<JsonObject> setContext(VineContext<JsonObject> context) {
+  public SeedContext setContext(VineContext context) {
     parent = context;
     return this;
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
   }
 
 }

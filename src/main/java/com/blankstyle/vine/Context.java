@@ -13,30 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.context;
+package com.blankstyle.vine;
 
-import java.util.Collection;
-
-import com.blankstyle.vine.Context;
-import com.blankstyle.vine.definition.VineDefinition;
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * A Vine context.
+ * An observable context.
  *
  * @author Jordan Halterman
  */
-public interface VineContext extends Context<VineContext> {
-
-  public String getName();
-
-  public String getAddress();
-
-  public VineContext setAddress(String address);
-
-  public Collection<SeedContext> getSeedContexts();
-
-  public SeedContext getSeedContext(String address);
-
-  public VineDefinition getDefinition();
-
+public interface Context<T> extends Observable<JsonObject, T> {
 }

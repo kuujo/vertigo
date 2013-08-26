@@ -18,18 +18,20 @@ package com.blankstyle.vine.context;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.Serializeable;
+
 /**
  * A JSON based worker context.
  *
  * @author Jordan Halterman
  */
-public class JsonWorkerContext implements WorkerContext<JsonObject> {
+public class JsonWorkerContext implements WorkerContext, Serializeable<JsonObject> {
 
   private JsonObject context = new JsonObject();
 
-  private SeedContext<JsonObject> parent;
+  private SeedContext parent;
 
-  private Handler<WorkerContext<JsonObject>> updateHandler;
+  private Handler<WorkerContext> updateHandler;
 
   public JsonWorkerContext() {
   }
@@ -42,7 +44,7 @@ public class JsonWorkerContext implements WorkerContext<JsonObject> {
     context = json;
   }
 
-  public JsonWorkerContext(JsonObject json, SeedContext<JsonObject> parent) {
+  public JsonWorkerContext(JsonObject json, SeedContext parent) {
     this(json);
     this.parent = parent;
   }
@@ -56,7 +58,7 @@ public class JsonWorkerContext implements WorkerContext<JsonObject> {
   }
 
   @Override
-  public void updateHandler(Handler<WorkerContext<JsonObject>> handler) {
+  public void updateHandler(Handler<WorkerContext> handler) {
     updateHandler = handler;
   }
 
@@ -66,20 +68,25 @@ public class JsonWorkerContext implements WorkerContext<JsonObject> {
   }
 
   @Override
-  public WorkerContext<JsonObject> setAddress(String address) {
+  public WorkerContext setAddress(String address) {
     context.putString("address", address);
     return this;
   }
 
   @Override
-  public SeedContext<JsonObject> getContext() {
+  public SeedContext getContext() {
     return parent;
   }
 
   @Override
-  public WorkerContext<JsonObject> setContext(SeedContext<JsonObject> context) {
+  public WorkerContext setContext(SeedContext context) {
     parent = context;
     return this;
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
   }
 
 }

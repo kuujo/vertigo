@@ -27,7 +27,9 @@ import com.blankstyle.vine.eventbus.CommandDispatcher;
 import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
 import com.blankstyle.vine.eventbus.JsonCommand;
 import com.blankstyle.vine.eventbus.root.actions.Deploy;
+import com.blankstyle.vine.eventbus.root.actions.LoadContext;
 import com.blankstyle.vine.eventbus.root.actions.Undeploy;
+import com.blankstyle.vine.eventbus.root.actions.UpdateContext;
 
 /**
  * A Vine root verticle.
@@ -39,8 +41,10 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
   private RootContext context;
 
   private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
-    this.registerAction(Deploy.NAME, Deploy.class);
-    this.registerAction(Undeploy.NAME, Undeploy.class);
+    registerAction(Deploy.NAME, Deploy.class);
+    registerAction(Undeploy.NAME, Undeploy.class);
+    registerAction(LoadContext.NAME, LoadContext.class);
+    registerAction(UpdateContext.NAME, UpdateContext.class);
   }};
 
   @Override

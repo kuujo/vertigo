@@ -23,13 +23,13 @@ import com.blankstyle.vine.eventbus.Action;
 import com.blankstyle.vine.eventbus.AsynchronousAction;
 
 /**
- * A root undeploy action.
+ * A root load context action.
  *
  * @author Jordan Halterman
  */
-public class Undeploy extends Action<RootContext> implements AsynchronousAction<Void> {
+public class LoadContext extends Action<RootContext> implements AsynchronousAction<Void> {
 
-  public static final String NAME = "undeploy";
+  public static final String NAME = "load";
 
   @Override
   public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {

@@ -17,6 +17,8 @@ package com.blankstyle.vine.context;
 
 import java.util.Collection;
 
+import org.vertx.java.core.eventbus.EventBus;
+
 import com.blankstyle.vine.Context;
 import com.blankstyle.vine.definition.VineDefinition;
 
@@ -27,16 +29,56 @@ import com.blankstyle.vine.definition.VineDefinition;
  */
 public interface VineContext extends Context<VineContext> {
 
-  public String getName();
-
+  /**
+   * Gets the vine address.
+   *
+   * @return
+   *   The vine address.
+   */
   public String getAddress();
 
+  /**
+   * Sets the vine address.
+   *
+   * @param address
+   *   The vine address.
+   * @return
+   *   The called vine instance.
+   */
   public VineContext setAddress(String address);
 
+  /**
+   * Returns all vine seed contexts.
+   *
+   * @return
+   *   A collection of vine seed contexts.
+   */
   public Collection<SeedContext> getSeedContexts();
 
-  public SeedContext getSeedContext(String address);
+  /**
+   * Returns a vine seed context.
+   *
+   * @param name
+   *   The seed name.
+   * @return
+   *   A vine seed context.
+   */
+  public SeedContext getSeedContext(String name);
 
+  /**
+   * Returns the vine definition.
+   *
+   * @return
+   *   The context vine definition.
+   */
   public VineDefinition getDefinition();
+
+  /**
+   * Registers the context on the eventbus.
+   *
+   * @param eventBus
+   *   An eventbus instance.
+   */
+  public void register(EventBus eventBus);
 
 }

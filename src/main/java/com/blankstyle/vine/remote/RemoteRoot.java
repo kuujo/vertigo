@@ -28,6 +28,8 @@ import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.context.JsonVineContext;
 import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 
 /**
  * A remote reference to a root verticle.
@@ -36,38 +38,77 @@ import com.blankstyle.vine.definition.VineDefinition;
  */
 public class RemoteRoot extends AbstractRoot {
 
-  protected final String address;
+  protected String address;
 
   protected EventBus eventBus;
 
   public RemoteRoot(String address, EventBus eventBus) {
+    setAddress(address);
+    setEventBus(eventBus);
+  }
+
+  /**
+   * Sets the remote root address.
+   *
+   * @param address
+   *   The remote root address.
+   * @return
+   *   The called root instance.
+   */
+  public RemoteRoot setAddress(String address) {
     this.address = address;
+    return this;
+  }
+
+  /**
+   * Gets the remote root address.
+   *
+   * @return
+   *   The remote root address.
+   */
+  public String getAddress() {
+    return address;
+  }
+
+  /**
+   * Sets the root eventbus.
+   *
+   * @param eventBus
+   *   The event bus.
+   * @return
+   *   The called root instance.
+   */
+  public RemoteRoot setEventBus(EventBus eventBus) {
+    if (!(eventBus instanceof ReliableEventBus)) {
+      eventBus = new WrappedReliableEventBus(eventBus);
+    }
     this.eventBus = eventBus;
+    return this;
+  }
+
+  /**
+   * Gets the root eventbus.
+   *
+   * @return
+   *   The root eventbus.
+   */
+  public EventBus getEventBus() {
+    return eventBus;
   }
 
   /**
    * Loads a remote vine context.
    *
-   * @param name
-   *   The vine name.
+   * @param address
+   *   The vine address.
    * @return
    *   A remote vine context. The context will be updated once a response is
    *   received from the remote root.
    */
-  public JsonVineContext loadContext(String name) {
-    final JsonVineContext context = createRemoteContext(name);
-    eventBus.send(address, new JsonObject().putString("action", "load").putString("context", name), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        context.update(message.body());
-      }
-    });
-    return context;
-  }
-
-  private JsonVineContext createRemoteContext(String name) {
-    final JsonVineContext context = new JsonVineContext(name);
-    eventBus.registerHandler(String.format("vine.context.%s", name), new Handler<Message<JsonObject>>() {
+  public JsonVineContext loadContext(String address) {
+    final JsonVineContext context = new JsonVineContext(address);
+    context.register(eventBus);
+    eventBus.send(address, new JsonObject().putString("action", "load").putString("context", address), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         context.update(message.body());

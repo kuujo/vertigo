@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Serializeable;
@@ -43,10 +45,6 @@ public class JsonVineContext implements VineContext, Serializeable<JsonObject> {
 
   public JsonVineContext(JsonObject json) {
     context = json;
-  }
-
-  public String getName() {
-    return context.getString("name");
   }
 
   @Override
@@ -104,6 +102,16 @@ public class JsonVineContext implements VineContext, Serializeable<JsonObject> {
       return new JsonVineDefinition(definition);
     }
     return new JsonVineDefinition();
+  }
+
+  @Override
+  public void register(EventBus eventBus) {
+    eventBus.registerHandler(String.format("vertx.context.%s", getAddress()), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        update(message.body());
+      }
+    });
   }
 
   @Override

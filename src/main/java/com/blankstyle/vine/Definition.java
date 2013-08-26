@@ -23,23 +23,4 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public interface Definition<T> extends Serializeable<JsonObject> {
-
-  /**
-   * Sets the component name.
-   *
-   * @param name
-   *   The component name.
-   * @return
-   *   The called context.
-   */
-  public T setName(String name);
-
-  /**
-   * Gets the component name.
-   *
-   * @return
-   *   The component name.
-   */
-  public String getName();
-
 }

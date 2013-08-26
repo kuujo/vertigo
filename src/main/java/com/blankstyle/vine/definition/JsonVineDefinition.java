@@ -34,17 +34,6 @@ public class JsonVineDefinition implements VineDefinition {
     definition = json;
   }
 
-  @Override
-  public VineDefinition setName(String name) {
-    definition.putString("name", name);
-    return this;
-  }
-
-  @Override
-  public String getName() {
-    return definition.getString("name");
-  }
-
   public String getAddress() {
     return definition.getString("address");
   }

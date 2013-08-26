@@ -42,27 +42,13 @@ public abstract class Vine implements Deployer<Collection<Seed>, String> {
   /**
    * Creates a new vine definition.
    *
-   * @param name
-   *   The context name.
-   * @return
-   *   A new vine definition.
-   */
-  public static VineDefinition createDefinition(String name) {
-    return new JsonVineDefinition().setName(name);
-  }
-
-  /**
-   * Creates a new vine definition.
-   *
-   * @param name
-   *   The definition name.
    * @param address
    *   The vine address.
    * @return
    *   A new vine definition.
    */
-  public static VineDefinition createDefinition(String name, String address) {
-    return new JsonVineDefinition().setName(name).setAddress(address);
+  public static VineDefinition createDefinition(String address) {
+    return new JsonVineDefinition().setAddress(address);
   }
 
   protected JsonObject context;

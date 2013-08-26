@@ -15,14 +15,14 @@
 */
 package com.blankstyle.vine;
 
-import org.vertx.java.platform.Verticle;
+import org.vertx.java.busmods.BusModBase;
 
 /**
  * An abstract Vine verticle implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class ReliableBusVerticle extends Verticle {
+public abstract class ReliableBusVerticle extends BusModBase {
 
   @Override
   public void start() {

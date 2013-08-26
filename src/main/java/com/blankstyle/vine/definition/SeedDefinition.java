@@ -25,6 +25,22 @@ import com.blankstyle.vine.Definition;
 public interface SeedDefinition extends Definition<SeedDefinition> {
 
   /**
+   * Sets the seed name.
+   *
+   * @param name
+   *   The seed name.
+   */
+  public SeedDefinition setName(String name);
+
+  /**
+   * Gets the seed name.
+   *
+   * @return
+   *   The seed name.
+   */
+  public String getName();
+
+  /**
    * Sets the seed main.
    *
    * @param main

@@ -13,7 +13,7 @@ public class CountVerticle extends Verticle {
 
   @Override
   public void start() {
-    VineContext context = Vine.createContext("someaddress");
+    VineContext context = Vine.createDefinition("someaddress");
     context.feed(Seed.createContext("seed1").setMain("MySeed.java"));
     context.feed(Seed.createContext("seed2").setMain("MyOtherSeed.java"));
 

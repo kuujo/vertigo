@@ -40,7 +40,7 @@ public class RemoteRoot extends AbstractRoot {
 
   protected String address;
 
-  protected EventBus eventBus;
+  protected ReliableEventBus eventBus;
 
   public RemoteRoot(String address, EventBus eventBus) {
     setAddress(address);
@@ -82,7 +82,7 @@ public class RemoteRoot extends AbstractRoot {
     if (!(eventBus instanceof ReliableEventBus)) {
       eventBus = new WrappedReliableEventBus(eventBus);
     }
-    this.eventBus = eventBus;
+    this.eventBus = (ReliableEventBus) eventBus;
     return this;
   }
 

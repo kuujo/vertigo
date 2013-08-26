@@ -15,31 +15,29 @@
 */
 package com.blankstyle.vine.eventbus;
 
-import java.util.Map;
-
-import org.vertx.java.core.json.JsonObject;
-
 /**
- * A JSON object-based eventbus command.
+ * An eventbus action argument.
  *
  * @author Jordan Halterman
  */
-public class JsonCommand implements Command {
+public interface Argument<T> {
 
-  private JsonObject json;
+  /**
+   * Returns the argument name.
+   *
+   * @return
+   *   The argument name.
+   */
+  public String name();
 
-  public JsonCommand(JsonObject json) {
-    this.json = json;
-  }
-
-  @Override
-  public String getAction() {
-    return json.getString(ACTION_KEY);
-  }
-
-  @Override
-  public Map<String, Object> getArguments() {
-    return json.getObject(ARGUMENTS_KEY).toMap();
-  }
+  /**
+   * Returns a boolean value indicating whether the argument is valid.
+   *
+   * @param value
+   *   The value to validate.
+   * @return
+   *   A boolean indicating whether the argument value is valid.
+   */
+  public boolean isValid(T value);
 
 }

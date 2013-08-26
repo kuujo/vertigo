@@ -17,9 +17,12 @@ package com.blankstyle.vine.eventbus.vine.actions;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.Action;
+import com.blankstyle.vine.eventbus.Argument;
+import com.blankstyle.vine.eventbus.ArgumentsDefinition;
 import com.blankstyle.vine.eventbus.AsynchronousAction;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 
@@ -32,8 +35,26 @@ public class Start extends Action<VineContext> implements AsynchronousAction<Voi
 
   public static final String NAME = "process";
 
+  private static ArgumentsDefinition args = new ArgumentsDefinition() {{
+    addArgument(new Argument<JsonObject>() {
+      @Override
+      public String name() {
+        return "message";
+      }
+      @Override
+      public boolean isValid(JsonObject value) {
+        return value instanceof JsonObject;
+      }
+    });
+  }};
+
   public Start(ReliableEventBus eventBus, VineContext context) {
     super(eventBus, context);
+  }
+
+  @Override
+  public ArgumentsDefinition getArgumentsDefinition() {
+    return args;
   }
 
   @Override

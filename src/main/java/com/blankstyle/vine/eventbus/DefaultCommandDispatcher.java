@@ -16,7 +16,10 @@
 package com.blankstyle.vine.eventbus;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.vertx.java.core.AsyncResult;
@@ -89,8 +92,18 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
     dispatch(command.getAction(), command.getArguments(), resultHandler);
   }
 
+  private Object[] parseArgs(Action<?> action, Map<String, Object> args) {
+    List<Object> parsed = new ArrayList<Object>();
+    ArgumentsDefinition definition = action.getArgumentsDefinition();
+    Iterator<Argument<?>> iter = definition.getArguments().iterator();
+    while (iter.hasNext()) {
+      parsed.add(args.get(iter.next().name()));
+    }
+    return parsed.toArray();
+  }
+
   @Override
-  public void dispatch(String actionName, Object[] args, Handler<AsyncResult<Object>> resultHandler) {
+  public void dispatch(String actionName, Map<String, Object> args, Handler<AsyncResult<Object>> resultHandler) {
     if (actions.containsKey(actionName)) {
       if (actions.containsKey(actionName)) {
         Class<? extends Action<?>> actionClass = actions.get(actionName);
@@ -99,11 +112,13 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
           try {
             action = actionClass.getConstructor(new Class[]{EventBus.class, Context.class}).newInstance(eventBus, context);
 
+            Object[] parsedArgs = parseArgs(action, args);
+
             // If this is a synchronous action then get the result and invoke the handler.
             if (action instanceof SynchronousAction) {
               Future<Object> future = new DefaultFutureResult<Object>().setHandler(resultHandler);
               try {
-                Object result = ((SynchronousAction<?>) action).execute(args);
+                Object result = ((SynchronousAction<?>) action).execute(parsedArgs);
                 future.setResult(result);
               }
               catch (Exception e) {
@@ -112,7 +127,7 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
             }
             // Otherwise, pass the handler to the asynchronous action.
             else if (action instanceof AsynchronousAction) {
-              ((AsynchronousAction<?>) action).execute(args, resultHandler);
+              ((AsynchronousAction<?>) action).execute(parsedArgs, resultHandler);
             }
           } catch (InstantiationException | IllegalAccessException
               | IllegalArgumentException | InvocationTargetException

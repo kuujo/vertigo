@@ -17,9 +17,12 @@ package com.blankstyle.vine.eventbus.stem.actions;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.eventbus.Action;
+import com.blankstyle.vine.eventbus.Argument;
+import com.blankstyle.vine.eventbus.ArgumentsDefinition;
 import com.blankstyle.vine.eventbus.AsynchronousAction;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 
@@ -32,8 +35,26 @@ public class Release extends Action<StemContext> implements AsynchronousAction<V
 
   public static final String NAME = "release";
 
+  private static ArgumentsDefinition args = new ArgumentsDefinition() {{
+    addArgument(new Argument<JsonObject>() {
+      @Override
+      public String name() {
+        return "seed";
+      }
+      @Override
+      public boolean isValid(JsonObject value) {
+        return value instanceof JsonObject;
+      }
+    });
+  }};
+
   public Release(ReliableEventBus eventBus, StemContext context) {
     super(eventBus, context);
+  }
+
+  @Override
+  public ArgumentsDefinition getArgumentsDefinition() {
+    return args;
   }
 
   @Override

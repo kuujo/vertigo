@@ -15,6 +15,8 @@
 */
 package com.blankstyle.vine.eventbus;
 
+import java.util.Map;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -98,6 +100,6 @@ public interface CommandDispatcher {
    * @param resultHandler
    *   A result handler to be invoked with the dispatched command result.
    */
-  public void dispatch(String actionName, Object[] args, Handler<AsyncResult<Object>> resultHandler);
+  public void dispatch(String actionName, Map<String, Object> args, Handler<AsyncResult<Object>> resultHandler);
 
 }

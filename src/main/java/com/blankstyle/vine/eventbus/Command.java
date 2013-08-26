@@ -15,6 +15,8 @@
 */
 package com.blankstyle.vine.eventbus;
 
+import java.util.Map;
+
 /**
  * A remote command.
  *
@@ -40,6 +42,6 @@ public interface Command {
    * @return
    *   The command arguments.
    */
-  public Object[] getArguments();
+  public Map<String, Object> getArguments();
 
 }

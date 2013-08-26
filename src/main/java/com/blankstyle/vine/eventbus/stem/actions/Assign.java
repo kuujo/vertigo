@@ -17,9 +17,12 @@ package com.blankstyle.vine.eventbus.stem.actions;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.eventbus.Action;
+import com.blankstyle.vine.eventbus.Argument;
+import com.blankstyle.vine.eventbus.ArgumentsDefinition;
 import com.blankstyle.vine.eventbus.AsynchronousAction;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 
@@ -32,8 +35,26 @@ public class Assign extends Action<StemContext> implements AsynchronousAction<Vo
 
   public static final String NAME = "assign";
 
+  private static ArgumentsDefinition args = new ArgumentsDefinition() {{
+    addArgument(new Argument<JsonObject>() {
+      @Override
+      public String name() {
+        return "seed";
+      }
+      @Override
+      public boolean isValid(JsonObject value) {
+        return value instanceof JsonObject;
+      }
+    });
+  }};
+
   public Assign(ReliableEventBus eventBus, StemContext context) {
     super(eventBus, context);
+  }
+
+  @Override
+  public ArgumentsDefinition getArgumentsDefinition() {
+    return args;
   }
 
   @Override

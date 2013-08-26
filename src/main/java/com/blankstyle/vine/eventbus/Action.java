@@ -84,4 +84,12 @@ public abstract class Action<T extends Context<T>> {
     return context;
   }
 
+  /**
+   * Returns an action arguments definition.
+   *
+   * @return
+   *   An action arguments definition.
+   */
+  public abstract ArgumentsDefinition getArgumentsDefinition();
+
 }

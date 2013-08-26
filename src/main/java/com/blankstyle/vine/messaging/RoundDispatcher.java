@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author Jordan Halterman
  */
-public class RoundDispatcher implements Dispatcher {
+public class RoundDispatcher extends AbstractDispatcher {
 
   private List<Connection> items;
 
@@ -41,11 +41,11 @@ public class RoundDispatcher implements Dispatcher {
   }
 
   @Override
-  public <T> void dispatch(Message<T> message) {
+  protected Connection getConnection() {
     if (!iterator.hasNext()) {
       iterator = items.iterator();
     }
-    iterator.next().send(message);
+    return iterator.next();
   }
 
 }

@@ -18,14 +18,12 @@ package com.blankstyle.vine.messaging;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Serializeable;
-
 /**
  * A JSON message implementation.
  *
  * @author Jordan Halterman
  */
-public class JsonMessage<T> implements Message<T>, Serializeable<JsonObject> {
+public class JsonMessage<T> implements Message<T> {
 
   /**
    * Creates a JSON message from a JSON object.
@@ -40,6 +38,10 @@ public class JsonMessage<T> implements Message<T>, Serializeable<JsonObject> {
   }
 
   protected JsonObject json;
+
+  public JsonMessage() {
+    this.json = new JsonObject();
+  }
 
   public JsonMessage(JsonObject json) {
     this.json = json;

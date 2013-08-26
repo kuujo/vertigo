@@ -15,6 +15,9 @@
 */
 package com.blankstyle.vine.messaging;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 /**
  * A message dispatcher.
  *
@@ -37,5 +40,57 @@ public interface Dispatcher {
    *   The message to dispatch.
    */
   public <T> void dispatch(Message<T> message);
+
+  /**
+   * Dispatches a message.
+   *
+   * @param message
+   *   The message to dispatch.
+   * @param resultHandler
+   *   A result handler that will be invoked when the message is acknowledged.
+   */
+  public <T> void dispatch(Message<T> message, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Dispatches a message.
+   *
+   * @param message
+   *   The message to dispatch.
+   * @param timeout
+   *   A message timeout.
+   * @param resultHandler
+   *   A result handler that will be invoked when the message is acknowledged.
+   */
+  public <T> void dispatch(Message<T> message, long timeout, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Dispatches a message.
+   *
+   * @param message
+   *   The message to dispatch.
+   * @param timeout
+   *   A message timeout.
+   * @param retry
+   *   A boolean indicating whether to retry dispatching the message if a timeout occurs.
+   * @param resultHandler
+   *   A result handler that will be invoked when the message is acknowledged.
+   */
+  public <T> void dispatch(Message<T> message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler);
+
+  /**
+   * Dispatches a message.
+   *
+   * @param message
+   *   The message to dispatch.
+   * @param timeout
+   *   A message timeout.
+   * @param retry
+   *   A boolean indicating whether to retry dispatching the message if a timeout occurs.
+   * @param attempts
+   *   The maximum number of retry attempts allows before an exception is thrown.
+   * @param resultHandler
+   *   A result handler that will be invoked when the message is acknowledged.
+   */
+  public <T> void dispatch(Message<T> message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Void>> resultHandler);
 
 }

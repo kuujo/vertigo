@@ -24,26 +24,26 @@ import java.util.Map;
  *
  * @author Jordan Halterman
  */
-public class RandomDispatcher implements Dispatcher {
+public class RandomDispatcher extends AbstractDispatcher {
 
-  private Map<Double, Connection> channelMap;
+  private Map<Double, Connection> connectionMap;
 
-  private int channelCount;
+  private int connectionCount;
 
   @Override
   public void init(ConnectionPool connections) {
-    channelMap = new HashMap<Double, Connection>();
+    connectionMap = new HashMap<Double, Connection>();
     Iterator<Connection> iter = connections.iterator();
     int i = 0;
     while (iter.hasNext()) {
-      channelMap.put(Double.valueOf(i++), iter.next());
+      connectionMap.put(Double.valueOf(i++), iter.next());
     }
-    channelCount = connections.size();
+    connectionCount = connections.size();
   }
 
   @Override
-  public <T> void dispatch(Message<T> message) {
-    channelMap.get(Math.random() * channelCount).send(message);
+  protected Connection getConnection() {
+    return connectionMap.get(Math.random() * connectionCount);
   }
 
 }

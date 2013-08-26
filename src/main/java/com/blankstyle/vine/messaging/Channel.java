@@ -15,10 +15,7 @@
 */
 package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -30,12 +27,20 @@ import org.vertx.java.core.json.JsonObject;
 public interface Channel {
 
   /**
-   * Gets the remote channel address.
+   * Sets the channel dispatcher.
+   *
+   * @param dispatcher
+   *   The channel dispatcher.
+   */
+  public void setDispatcher(Dispatcher dispatcher);
+
+  /**
+   * Gets the channel dispatcher.
    *
    * @return
-   *   The remote channel address.
+   *   The channel message dispatcher.
    */
-  public String getAddress();
+  public Dispatcher getDispatcher();
 
   /**
    * Adds a connection to the channel.
@@ -164,51 +169,5 @@ public interface Channel {
    *   The message to publish.
    */
   public void publish(Byte message);
-
-  /**
-   * Registers a message handler.
-   *
-   * @param handler
-   *   The handler to register.
-   */
-  public void registerHandler(Handler<? extends Message<?>> handler);
-
-  /**
-   * Registers a message handler.
-   *
-   * @param handler
-   *   The handler to register.
-   * @param resultHandler
-   *   A handler to be invoked once the registration has been propagated
-   *   across the cluster.
-   */
-  public void registerHandler(Handler<? extends Message<?>> handler, Handler<AsyncResult<Void>> resultHandler);
-
-  /**
-   * Registers a local message handler.
-   *
-   * @param handler
-   *   The handler to register.
-   */
-  public void registerLocalHandler(Handler<? extends Message<?>> handler);
-
-  /**
-   * Unregisters a message handler.
-   *
-   * @param handler
-   *   The handler to unregister.
-   */
-  public void unregisterHandler(Handler<? extends Message<?>> handler);
-
-  /**
-   * Unregisters a message handler.
-   *
-   * @param handler
-   *   The handler to unregister.
-   * @param resultHandler
-   *   A handler to be invoked once the unregistration has been propagated
-   *   across the cluster.
-   */
-  public void unregisterHandler(Handler<? extends Message<?>> handler, Handler<AsyncResult<Void>> resultHandler);
 
 }

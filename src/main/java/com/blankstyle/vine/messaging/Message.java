@@ -15,12 +15,16 @@
 */
 package com.blankstyle.vine.messaging;
 
+import org.vertx.java.core.json.JsonObject;
+
+import com.blankstyle.vine.Serializeable;
+
 /**
  * A Vine message.
  *
  * @author Jordan Halterman
  */
-public interface Message<T> {
+public interface Message<T> extends Serializeable<JsonObject> {
 
   /**
    * Sets the unique message identifier.

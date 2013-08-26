@@ -30,6 +30,7 @@ import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.RootException;
 import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.eventbus.vine.VineVerticle;
 
 /**
  * A local root implementation.
@@ -42,7 +43,7 @@ import com.blankstyle.vine.definition.VineDefinition;
  */
 public class LocalRoot extends AbstractRoot {
 
-  protected static final String VINE_VERTICLE_CLASS = "com.blankstyle.vine.VineVerticle";
+  protected static final String VINE_VERTICLE_CLASS = VineVerticle.class.getName();
 
   private Map<String, String> deploymentMap = new HashMap<String, String>();
 

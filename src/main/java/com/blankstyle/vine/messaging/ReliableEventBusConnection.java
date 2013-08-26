@@ -21,7 +21,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.ReliableEventBus;
+import com.blankstyle.vine.eventbus.ReliableEventBus;
 
 /**
  * A reliable eventbus connection.

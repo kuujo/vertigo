@@ -13,22 +13,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.eventbus;
 
-import org.vertx.java.core.Vertx;
-
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import org.vertx.java.busmods.BusModBase;
 
 /**
- * A ReliableEventBusConnection factory.
+ * An abstract Vine verticle implementation.
  *
  * @author Jordan Halterman
  */
-public class ReliableEventBusConnectionFactory implements ConnectionFactory<ReliableEventBusConnection> {
+public abstract class ReliableBusVerticle extends BusModBase {
 
   @Override
-  public ReliableEventBusConnection createConnection(String address, Vertx vertx) {
-    return new ReliableEventBusConnection(address, new WrappedReliableEventBus(vertx.eventBus(), vertx));
+  public void start() {
+    start(new WrappedReliableEventBus(vertx.eventBus(), vertx));
   }
+
+  /**
+   * Starts the bus verticle.
+   *
+   * @param eventBus
+   *   A reliable event bus.
+   */
+  protected abstract void start(ReliableEventBus eventBus);
 
 }

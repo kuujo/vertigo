@@ -13,33 +13,33 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.vertx;
-
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
+package com.blankstyle.vine.eventbus;
 
 /**
- * An event bus command.
+ * A remote command.
  *
  * @author Jordan Halterman
  */
-public abstract class Command<T> {
+public interface Command {
 
-  protected Vertx vertx;
+  public static final String ACTION_KEY = "action";
 
-  public Command() {
-  }
-
-  public Command(Vertx vertx) {
-    this.vertx = vertx;
-  }
+  public static final String ARGUMENTS_KEY = "args";
 
   /**
-   * Executes the command.
+   * Returns the command action name.
    *
-   * @param args
-   *   Command arguments.
+   * @return
+   *   The command action name.
    */
-  public abstract T execute(JsonObject args);
+  public String getAction();
+
+  /**
+   * Returns the command arguments.
+   *
+   * @return
+   *   The command arguments.
+   */
+  public Object[] getArguments();
 
 }

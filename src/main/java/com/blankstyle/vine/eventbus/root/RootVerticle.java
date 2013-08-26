@@ -13,25 +13,26 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.vertx;
+package com.blankstyle.vine.eventbus.root;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.eventbus.CommandDispatcher;
+import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
+
 /**
- * A Vine stem verticle.
+ * A Vine root verticle.
  *
  * @author Jordan Halterman
  */
-public class StemVerticle extends BusModBase implements Handler<Message<JsonObject>> {
+public class RootVerticle extends BusModBase implements Handler<Message<JsonObject>> {
 
   private String address;
 
-  private CommandDispatcher dispatcher = new CommandDispatcher() {{
-    registerCommand("assign", Assign.class);
-    registerCommand("release", Release.class);
+  private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
   }};
 
   @Override
@@ -42,29 +43,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void handle(Message<JsonObject> message) {
-    String command = getMandatoryString("command", message);
-    JsonObject args = getMandatoryObject("arguments", message);
-    message.reply(dispatcher.dispatch(command, args));
-  }
-
-  /**
-   * Assigns a seed to the stem.
-   */
-  private class Assign extends Command<Boolean> {
-    @Override
-    public Boolean execute(JsonObject definition) {
-      return null;
-    }
-  }
-
-  /**
-   * Releases a seed from the stem.
-   */
-  private class Release extends Command<Boolean> {
-    @Override
-    public Boolean execute(JsonObject definition) {
-      return null;
-    }
+    
   }
 
 }

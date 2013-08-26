@@ -13,22 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.eventbus;
 
-import org.vertx.java.core.Vertx;
-
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import org.vertx.java.core.eventbus.EventBus;
 
 /**
- * A ReliableEventBusConnection factory.
+ * An event bus command.
  *
  * @author Jordan Halterman
  */
-public class ReliableEventBusConnectionFactory implements ConnectionFactory<ReliableEventBusConnection> {
+public abstract class Action {
 
-  @Override
-  public ReliableEventBusConnection createConnection(String address, Vertx vertx) {
-    return new ReliableEventBusConnection(address, new WrappedReliableEventBus(vertx.eventBus(), vertx));
+  protected EventBus eventBus;
+
+  public Action() {
+  }
+
+  public Action(EventBus eventBus) {
+    this.eventBus = eventBus;
   }
 
 }

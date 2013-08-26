@@ -13,22 +13,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.eventbus.vine.actions;
 
-import org.vertx.java.core.Vertx;
-
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.eventbus.Action;
+import com.blankstyle.vine.eventbus.SynchronousAction;
 
 /**
- * A ReliableEventBusConnection factory.
+ * A vine verticle ping action.
  *
  * @author Jordan Halterman
  */
-public class ReliableEventBusConnectionFactory implements ConnectionFactory<ReliableEventBusConnection> {
+public class Ping extends Action implements SynchronousAction<String> {
+
+  public static final String NAME = "ping";
 
   @Override
-  public ReliableEventBusConnection createConnection(String address, Vertx vertx) {
-    return new ReliableEventBusConnection(address, new WrappedReliableEventBus(vertx.eventBus(), vertx));
+  public String execute(Object[] args) {
+    return "pong";
   }
 
 }

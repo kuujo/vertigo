@@ -13,22 +13,26 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.eventbus;
 
-import org.vertx.java.core.Vertx;
-
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 
 /**
- * A ReliableEventBusConnection factory.
+ * An asynchronous action.
  *
  * @author Jordan Halterman
  */
-public class ReliableEventBusConnectionFactory implements ConnectionFactory<ReliableEventBusConnection> {
+public interface AsynchronousAction<T> {
 
-  @Override
-  public ReliableEventBusConnection createConnection(String address, Vertx vertx) {
-    return new ReliableEventBusConnection(address, new WrappedReliableEventBus(vertx.eventBus(), vertx));
-  }
+  /**
+   * Executes the action.
+   *
+   * @param args
+   *   An array of action arguments.
+   * @param resultHandler
+   *   An asynchronous result handler to be invoked with the action result.
+   */
+  public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler);
 
 }

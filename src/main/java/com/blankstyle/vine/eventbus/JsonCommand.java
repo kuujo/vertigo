@@ -13,22 +13,31 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.eventbus;
 
-import org.vertx.java.core.Vertx;
-
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * A ReliableEventBusConnection factory.
+ * A JSON object-based eventbus command.
  *
  * @author Jordan Halterman
  */
-public class ReliableEventBusConnectionFactory implements ConnectionFactory<ReliableEventBusConnection> {
+public class JsonCommand implements Command {
+
+  private JsonObject json;
+
+  public JsonCommand(JsonObject json) {
+    this.json = json;
+  }
 
   @Override
-  public ReliableEventBusConnection createConnection(String address, Vertx vertx) {
-    return new ReliableEventBusConnection(address, new WrappedReliableEventBus(vertx.eventBus(), vertx));
+  public String getAction() {
+    return json.getString(ACTION_KEY);
+  }
+
+  @Override
+  public Object[] getArguments() {
+    return json.getArray(ARGUMENTS_KEY).toArray();
   }
 
 }

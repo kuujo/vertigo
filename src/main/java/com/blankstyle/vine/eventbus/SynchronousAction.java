@@ -13,28 +13,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
-
-import org.vertx.java.busmods.BusModBase;
+package com.blankstyle.vine.eventbus;
 
 /**
- * An abstract Vine verticle implementation.
+ * A synchronous action.
  *
  * @author Jordan Halterman
  */
-public abstract class ReliableBusVerticle extends BusModBase {
-
-  @Override
-  public void start() {
-    start(new WrappedReliableEventBus(vertx.eventBus(), vertx));
-  }
+public interface SynchronousAction<T> {
 
   /**
-   * Starts the bus verticle.
+   * Executes the action.
    *
-   * @param eventBus
-   *   A reliable event bus.
+   * @param args
+   *   Action arguments.
+   * @return
+   *   The action result.
    */
-  protected abstract void start(ReliableEventBus eventBus);
+  public T execute(Object[] args);
 
 }

@@ -28,11 +28,11 @@ import com.blankstyle.vine.eventbus.ReliableEventBus;
  *
  * @author Jordan Halterman
  */
-public class Process extends Action<VineContext> implements AsynchronousAction<Void> {
+public class Finish extends Action<VineContext> implements AsynchronousAction<Void> {
 
-  public static final String NAME = "process";
+  public static final String NAME = "complete";
 
-  public Process(ReliableEventBus eventBus, VineContext context) {
+  public Finish(ReliableEventBus eventBus, VineContext context) {
     super(eventBus, context);
   }
 

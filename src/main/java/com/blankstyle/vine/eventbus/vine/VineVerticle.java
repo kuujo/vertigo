@@ -27,7 +27,9 @@ import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
 import com.blankstyle.vine.eventbus.JsonCommand;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.vine.actions.Finish;
 import com.blankstyle.vine.eventbus.vine.actions.Ping;
+import com.blankstyle.vine.eventbus.vine.actions.Start;
 
 /**
  * A base vine verticle.
@@ -40,6 +42,8 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
     registerAction(Ping.NAME, Ping.class);
+    registerAction(Start.NAME, Start.class);
+    registerAction(Finish.NAME, Finish.class);
   }};
 
   @Override

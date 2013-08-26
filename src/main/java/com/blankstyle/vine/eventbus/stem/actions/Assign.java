@@ -30,7 +30,7 @@ import com.blankstyle.vine.eventbus.ReliableEventBus;
  */
 public class Assign extends Action<StemContext> implements AsynchronousAction<Void> {
 
-  public static final String NAME = "process";
+  public static final String NAME = "assign";
 
   public Assign(ReliableEventBus eventBus, StemContext context) {
     super(eventBus, context);

@@ -13,26 +13,26 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.eventbus.stem.actions;
+package com.blankstyle.vine.eventbus.vine.actions;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
-import com.blankstyle.vine.context.StemContext;
+import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.Action;
 import com.blankstyle.vine.eventbus.AsynchronousAction;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 
 /**
- * Release worker assignment action.
+ * A vine verticle process action.
  *
  * @author Jordan Halterman
  */
-public class Release extends Action<StemContext> implements AsynchronousAction<Void> {
+public class Start extends Action<VineContext> implements AsynchronousAction<Void> {
 
-  public static final String NAME = "release";
+  public static final String NAME = "process";
 
-  public Release(ReliableEventBus eventBus, StemContext context) {
+  public Start(ReliableEventBus eventBus, VineContext context) {
     super(eventBus, context);
   }
 

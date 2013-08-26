@@ -16,12 +16,18 @@
 package com.blankstyle.vine.eventbus.root;
 
 import org.vertx.java.busmods.BusModBase;
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.context.JsonRootContext;
+import com.blankstyle.vine.context.RootContext;
 import com.blankstyle.vine.eventbus.CommandDispatcher;
 import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
+import com.blankstyle.vine.eventbus.JsonCommand;
+import com.blankstyle.vine.eventbus.root.actions.Deploy;
+import com.blankstyle.vine.eventbus.root.actions.Undeploy;
 
 /**
  * A Vine root verticle.
@@ -30,20 +36,32 @@ import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
  */
 public class RootVerticle extends BusModBase implements Handler<Message<JsonObject>> {
 
-  private String address;
+  private RootContext context;
 
   private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
+    this.registerAction(Deploy.NAME, Deploy.class);
+    this.registerAction(Undeploy.NAME, Undeploy.class);
   }};
 
   @Override
   public void start() {
-    address = getMandatoryStringConfig("address");
-    vertx.eventBus().registerHandler(address, this);
+    context = new JsonRootContext(container.config());
+    vertx.eventBus().registerHandler(context.getAddress(), this);
   }
 
   @Override
-  public void handle(Message<JsonObject> message) {
-    
+  public void handle(final Message<JsonObject> message) {
+    dispatcher.dispatch(new JsonCommand(message.body()), new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.succeeded()) {
+          message.reply(result.result());
+        }
+        else {
+          message.reply(result.cause());
+        }
+      }
+    });
   }
 
 }

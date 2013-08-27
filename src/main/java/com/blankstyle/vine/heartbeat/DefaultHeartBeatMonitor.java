@@ -43,6 +43,7 @@ public class DefaultHeartBeatMonitor implements HeartBeatMonitor {
 
   public DefaultHeartBeatMonitor(Vertx vertx) {
     this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
   }
 
   public DefaultHeartBeatMonitor(EventBus eventBus) {
@@ -114,9 +115,9 @@ public class DefaultHeartBeatMonitor implements HeartBeatMonitor {
 
     private long timerID;
 
-    private Handler<Message<Void>> handler = new Handler<Message<Void>>() {
+    private Handler<Message<Boolean>> handler = new Handler<Message<Boolean>>() {
       @Override
-      public void handle(Message<Void> event) {
+      public void handle(Message<Boolean> message) {
         resetTimer();
       }
     };

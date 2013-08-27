@@ -43,6 +43,42 @@ public interface VineDefinition extends Definition<VineDefinition> {
   public VineDefinition setAddress(String address);
 
   /**
+   * Gets the eventbus send timeout.
+   *
+   * @return
+   *   The eventbus sent timeout.
+   */
+  public long getMessageTimeout();
+
+  /**
+   * Sets the eventbus send timeout.
+   *
+   * @param timeout
+   *   The eventbus send timeout.
+   * @return
+   *   The called vine definition.
+   */
+  public VineDefinition setMessageTimeout(long timeout);
+
+  /**
+   * Gets the message process expiration time.
+   *
+   * @return
+   *   The message expiration time.
+   */
+  public long getMessageExpiration();
+
+  /**
+   * Sets the message process expiration time.
+   *
+   * @param expiration
+   *   The message expiration time.
+   * @return
+   *   The called vine definition.
+   */
+  public VineDefinition setMessageExpiration(long expiration);
+
+  /**
    * Adds a new seed to the vine.
    *
    * @param definition

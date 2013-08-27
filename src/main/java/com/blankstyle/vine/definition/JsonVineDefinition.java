@@ -27,6 +27,10 @@ public class JsonVineDefinition implements VineDefinition {
 
   private JsonObject definition = new JsonObject();
 
+  private static final long DEFAULT_TIMEOUT = 5000;
+
+  private static final long DEFAULT_EXPIRATION = 15000;
+
   public JsonVineDefinition() {
   }
 
@@ -41,6 +45,28 @@ public class JsonVineDefinition implements VineDefinition {
   @Override
   public VineDefinition setAddress(String address) {
     definition.putString("address", address);
+    return this;
+  }
+
+  @Override
+  public long getMessageTimeout() {
+    return definition.getLong("timeout", DEFAULT_TIMEOUT);
+  }
+
+  @Override
+  public VineDefinition setMessageTimeout(long timeout) {
+    definition.putNumber("timeout", timeout);
+    return this;
+  }
+
+  @Override
+  public long getMessageExpiration() {
+    return definition.getLong("expiration", DEFAULT_EXPIRATION);
+  }
+
+  @Override
+  public VineDefinition setMessageExpiration(long expiration) {
+    definition.putNumber("expiration", expiration);
     return this;
   }
 

@@ -15,21 +15,52 @@
 */
 package com.blankstyle.vine.context;
 
+import org.vertx.java.core.json.JsonObject;
+
 import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Serializeable;
 
 /**
  * A worker context.
  *
  * @author Jordan Halterman
  */
-public interface WorkerContext extends Context<WorkerContext> {
+public interface WorkerContext extends Context<WorkerContext>, Serializeable<JsonObject> {
 
+  /**
+   * Gets the worker address.
+   *
+   * @return
+   *   The worker address.
+   */
   public String getAddress();
 
+  /**
+   * Sets the worker address.
+   *
+   * @param address
+   *   The worker address.
+   * @return
+   *   The called worker context instance.
+   */
   public WorkerContext setAddress(String address);
 
+  /**
+   * Gets the parent seed context.
+   *
+   * @return
+   *   The parent seed context.
+   */
   public SeedContext getContext();
 
+  /**
+   * Sets the parent seed context.
+   *
+   * @param context
+   *   The parent seed context.
+   * @return
+   *   The called worker context instance.
+   */
   public WorkerContext setContext(SeedContext context);
 
 }

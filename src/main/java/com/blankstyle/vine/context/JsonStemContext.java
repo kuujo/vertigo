@@ -18,14 +18,12 @@ package com.blankstyle.vine.context;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Serializeable;
-
 /**
  * A JSON object-based stem context.
  *
  * @author Jordan Halterman
  */
-public class JsonStemContext implements StemContext, Serializeable<JsonObject> {
+public class JsonStemContext implements StemContext {
 
   private JsonObject context = new JsonObject();
 

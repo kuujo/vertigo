@@ -16,17 +16,14 @@
 package com.blankstyle.vine.context;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
-
-import com.blankstyle.vine.Serializeable;
 
 /**
  * A JSON based worker context.
  *
  * @author Jordan Halterman
  */
-public class JsonWorkerContext implements WorkerContext, Serializeable<JsonObject> {
+public class JsonWorkerContext implements WorkerContext {
 
   private JsonObject context = new JsonObject();
 

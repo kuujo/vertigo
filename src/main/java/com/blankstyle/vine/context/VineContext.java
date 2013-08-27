@@ -18,8 +18,10 @@ package com.blankstyle.vine.context;
 import java.util.Collection;
 
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.VineDefinition;
 
 /**
@@ -27,7 +29,7 @@ import com.blankstyle.vine.definition.VineDefinition;
  *
  * @author Jordan Halterman
  */
-public interface VineContext extends Context<VineContext> {
+public interface VineContext extends Context<VineContext>, Serializeable<JsonObject> {
 
   /**
    * Gets the vine address.

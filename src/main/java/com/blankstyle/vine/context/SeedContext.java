@@ -27,12 +27,38 @@ import com.blankstyle.vine.definition.SeedDefinition;
  */
 public interface SeedContext extends Context<SeedContext> {
 
+  /**
+   * Returns a collection of seed worker contexts.
+   *
+   * @return
+   *   A collection of seed worker contexts.
+   */
   public Collection<WorkerContext> getWorkerContexts();
 
+  /**
+   * Returns the seed definition.
+   *
+   * @return
+   *   The seed definition.
+   */
   public SeedDefinition getDefinition();
 
+  /**
+   * Returns the parent vine context.
+   *
+   * @return
+   *   The parent vine context.
+   */
   public VineContext getContext();
 
+  /**
+   * Sets the parent vine context.
+   *
+   * @param context
+   *   The parent vine context.
+   * @return
+   *   The called context instance.
+   */
   public SeedContext setContext(VineContext context);
 
 }

@@ -24,7 +24,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.JsonVineDefinition;
 import com.blankstyle.vine.definition.VineDefinition;
 
@@ -33,7 +32,7 @@ import com.blankstyle.vine.definition.VineDefinition;
  *
  * @author Jordan Halterman
  */
-public class JsonVineContext implements VineContext, Serializeable<JsonObject> {
+public class JsonVineContext implements VineContext {
 
   private JsonObject context = new JsonObject();
 

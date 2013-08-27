@@ -15,14 +15,17 @@
 */
 package com.blankstyle.vine.context;
 
+import org.vertx.java.core.json.JsonObject;
+
 import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Serializeable;
 
 /**
  * A root context.
  *
  * @author Jordan Halterman
  */
-public interface RootContext extends Context<RootContext> {
+public interface RootContext extends Context<RootContext>, Serializeable<JsonObject> {
 
   /**
    * Returns the root address.

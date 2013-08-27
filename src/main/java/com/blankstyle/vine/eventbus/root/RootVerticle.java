@@ -89,10 +89,22 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
     });
   }
 
+  /**
+   * Registers a stem address.
+   *
+   * @param address
+   *   The stem address.
+   */
   private void registerStem(String address) {
     stems.add(address);
   }
 
+  /**
+   * Unregisters a stem address.
+   *
+   * @param address
+   *   The stem address.
+   */
   private void unregisterStem(String address) {
     if (stems.contains(address)) {
       stems.remove(address);

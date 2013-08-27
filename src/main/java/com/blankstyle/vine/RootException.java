@@ -7,6 +7,7 @@ import org.vertx.java.core.VertxException;
  *
  * @author Jordan Halterman
  */
+@SuppressWarnings("serial")
 public class RootException extends VertxException {
 
   public RootException(String message) {

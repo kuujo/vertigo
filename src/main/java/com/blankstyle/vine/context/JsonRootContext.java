@@ -18,14 +18,12 @@ package com.blankstyle.vine.context;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Serializeable;
-
 /**
  * A JSON object-based root context.
  *
  * @author Jordan Halterman
  */
-public class JsonRootContext implements RootContext, Serializeable<JsonObject> {
+public class JsonRootContext implements RootContext {
 
   private static final String DEFAULT_ADDRESS = "vine.root";
 

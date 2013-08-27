@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 
 import com.blankstyle.vine.Context;
@@ -29,6 +30,22 @@ import com.blankstyle.vine.Context;
  * @author Jordan Halterman
  */
 public interface CommandDispatcher {
+
+  /**
+   * Sets the dispatcher vertx instance.
+   *
+   * @param vertx
+   *   A vertx instance.
+   */
+  public void setVertx(Vertx vertx);
+
+  /**
+   * Gets the dispatcher vertx instance.
+   *
+   * @return
+   *   The dispatcher vertx instance.
+   */
+  public Vertx getVertx();
 
   /**
    * Sets the dispatcher eventbus.

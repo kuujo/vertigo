@@ -17,6 +17,7 @@ package com.blankstyle.vine.eventbus.vine.actions;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.VineContext;
@@ -48,8 +49,8 @@ public class Finish extends Action<VineContext> implements AsynchronousAction<Vo
     });
   }};
 
-  public Finish(ReliableEventBus eventBus, VineContext context) {
-    super(eventBus, context);
+  public Finish(Vertx vertx, ReliableEventBus eventBus, VineContext context) {
+    super(vertx, eventBus, context);
   }
 
   @Override

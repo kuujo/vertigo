@@ -15,6 +15,7 @@
 */
 package com.blankstyle.vine.eventbus;
 
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 
 import com.blankstyle.vine.Context;
@@ -26,6 +27,8 @@ import com.blankstyle.vine.Context;
  */
 public abstract class Action<T extends Context<T>> {
 
+  protected Vertx vertx;
+
   protected EventBus eventBus;
 
   protected T context;
@@ -33,9 +36,31 @@ public abstract class Action<T extends Context<T>> {
   public Action() {
   }
 
-  public Action(EventBus eventBus, T context) {
+  public Action(Vertx vertx, EventBus eventBus, T context) {
+    this.vertx = vertx;
     this.eventBus = eventBus;
     this.context = context;
+  }
+
+  /**
+   * Sets the action vertx instance.
+   *
+   * @param vertx
+   *   A vertx instance.
+   */
+  public Action<T> setVertx(Vertx vertx) {
+    this.vertx = vertx;
+    return this;
+  }
+
+  /**
+   * Gets the action vertx instance.
+   *
+   * @return
+   *   The action vertx instance.
+   */
+  public Vertx getVertx() {
+    return vertx;
   }
 
   /**

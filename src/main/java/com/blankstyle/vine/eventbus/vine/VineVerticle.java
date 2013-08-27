@@ -49,6 +49,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
   @Override
   protected void start(ReliableEventBus eventBus) {
     context = new JsonVineContext(container.config());
+    dispatcher.setVertx(vertx);
     dispatcher.setEventBus(vertx.eventBus());
     dispatcher.setContext(context);
     eventBus.registerHandler(context.getAddress(), this);

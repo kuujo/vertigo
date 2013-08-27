@@ -46,6 +46,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
   @Override
   public void start() {
     context = new JsonStemContext(container.config());
+    dispatcher.setVertx(vertx);
     dispatcher.setEventBus(vertx.eventBus());
     dispatcher.setContext(context);
     vertx.eventBus().registerHandler(context.getAddress(), this);

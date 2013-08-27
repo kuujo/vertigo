@@ -15,6 +15,11 @@
 */
 package com.blankstyle.vine.eventbus.root;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -23,13 +28,16 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.JsonRootContext;
 import com.blankstyle.vine.context.RootContext;
+import com.blankstyle.vine.eventbus.Action;
+import com.blankstyle.vine.eventbus.Argument;
+import com.blankstyle.vine.eventbus.ArgumentsDefinition;
+import com.blankstyle.vine.eventbus.AsynchronousAction;
 import com.blankstyle.vine.eventbus.CommandDispatcher;
 import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
 import com.blankstyle.vine.eventbus.JsonCommand;
-import com.blankstyle.vine.eventbus.root.actions.Deploy;
-import com.blankstyle.vine.eventbus.root.actions.LoadContext;
-import com.blankstyle.vine.eventbus.root.actions.Undeploy;
-import com.blankstyle.vine.eventbus.root.actions.UpdateContext;
+import com.blankstyle.vine.eventbus.SynchronousAction;
+import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
+import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
 
 /**
  * A Vine root verticle.
@@ -41,15 +49,26 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
   private RootContext context;
 
   private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
+    registerAction(Register.NAME, Register.class);
     registerAction(Deploy.NAME, Deploy.class);
     registerAction(Undeploy.NAME, Undeploy.class);
     registerAction(LoadContext.NAME, LoadContext.class);
     registerAction(UpdateContext.NAME, UpdateContext.class);
   }};
 
+  private Map<String, String> heartbeatMap = new HashMap<String, String>();
+
+  private int heartbeatCounter;
+
+  private HeartBeatMonitor heartbeatMonitor;
+
+  private Set<String> stems = new HashSet<String>();
+
   @Override
   public void start() {
+    heartbeatMonitor = new DefaultHeartBeatMonitor().setVertx(vertx).setEventBus(vertx.eventBus());
     context = new JsonRootContext(container.config());
+    dispatcher.setVertx(vertx);
     dispatcher.setEventBus(vertx.eventBus());
     dispatcher.setContext(context);
     vertx.eventBus().registerHandler(context.getAddress(), this);
@@ -68,6 +87,207 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
         }
       }
     });
+  }
+
+  private void registerStem(String address) {
+    stems.add(address);
+  }
+
+  private void unregisterStem(String address) {
+    if (stems.contains(address)) {
+      stems.remove(address);
+    }
+  }
+
+  /**
+   * Returns the next heartbeat address.
+   */
+  private String nextHeartBeatAddress() {
+    heartbeatCounter++;
+    return String.format("%s.heartbeat.%s", context.getAddress(), heartbeatCounter);
+  }
+
+  /**
+   * A root verticle register action.
+   *
+   * This action is called when a new stem is started. The stem will call
+   * this action and in response get a unique address to which to send heartbeats.
+   *
+   * @author Jordan Halterman
+   */
+  public class Register extends Action<RootContext> implements SynchronousAction<String> {
+
+    public static final String NAME = "register";
+
+    private ArgumentsDefinition args = new ArgumentsDefinition() {{
+      addArgument(new Argument<String>() {
+        @Override
+        public String name() {
+          return "address";
+        }
+        @Override
+        public boolean isValid(String value) {
+          return value instanceof String;
+        }
+      });
+    }};
+
+    @Override
+    public ArgumentsDefinition getArgumentsDefinition() {
+      return args;
+    }
+
+    @Override
+    public String execute(Object[] args) {
+      final String address = (String) args[0];
+      String heartbeatAddress = nextHeartBeatAddress();
+      heartbeatMap.put(address, heartbeatAddress);
+      heartbeatMonitor.monitor(heartbeatAddress, new Handler<String>() {
+        @Override
+        public void handle(String hbAddress) {
+          unregisterStem(address);
+        }
+      });
+      registerStem(address);
+      return heartbeatAddress;
+    }
+
+  }
+
+  /**
+   * A root deploy action.
+   *
+   * @author Jordan Halterman
+   */
+  public class Deploy extends Action<RootContext> implements AsynchronousAction<Void> {
+
+    public static final String NAME = "deploy";
+
+    private ArgumentsDefinition args = new ArgumentsDefinition() {{
+      addArgument(new Argument<JsonObject>() {
+        @Override
+        public String name() {
+          return "vine";
+        }
+        @Override
+        public boolean isValid(JsonObject value) {
+          return value instanceof JsonObject;
+        }
+      });
+    }};
+
+    @Override
+    public ArgumentsDefinition getArgumentsDefinition() {
+      return args;
+    }
+
+    @Override
+    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
+      
+    }
+
+  }
+
+  /**
+   * A root undeploy action.
+   *
+   * @author Jordan Halterman
+   */
+  public class Undeploy extends Action<RootContext> implements AsynchronousAction<Void> {
+
+    public static final String NAME = "undeploy";
+
+    private ArgumentsDefinition args = new ArgumentsDefinition() {{
+      addArgument(new Argument<JsonObject>() {
+        @Override
+        public String name() {
+          return "vine";
+        }
+        @Override
+        public boolean isValid(JsonObject value) {
+          return value instanceof JsonObject;
+        }
+      });
+    }};
+
+    @Override
+    public ArgumentsDefinition getArgumentsDefinition() {
+      return args;
+    }
+
+    @Override
+    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
+      
+    }
+
+  }
+
+  /**
+   * A root load context action.
+   *
+   * @author Jordan Halterman
+   */
+  public class LoadContext extends Action<RootContext> implements AsynchronousAction<Void> {
+
+    public static final String NAME = "load";
+
+    private ArgumentsDefinition args = new ArgumentsDefinition() {{
+      addArgument(new Argument<String>() {
+        @Override
+        public String name() {
+          return "context";
+        }
+        @Override
+        public boolean isValid(String value) {
+          return value instanceof String;
+        }
+      });
+    }};
+
+    @Override
+    public ArgumentsDefinition getArgumentsDefinition() {
+      return args;
+    }
+
+    @Override
+    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
+      
+    }
+
+  }
+
+  /**
+   * A root update context action.
+   *
+   * @author Jordan Halterman
+   */
+  public class UpdateContext extends Action<RootContext> implements AsynchronousAction<Void> {
+
+    public static final String NAME = "update";
+
+    private ArgumentsDefinition args = new ArgumentsDefinition() {{
+      addArgument(new Argument<JsonObject>() {
+        @Override
+        public String name() {
+          return "context";
+        }
+        @Override
+        public boolean isValid(JsonObject value) {
+          return value instanceof JsonObject;
+        }
+      });
+    }};
+
+    @Override
+    public ArgumentsDefinition getArgumentsDefinition() {
+      return args;
+    }
+
+    @Override
+    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
+      
+    }
+
   }
 
 }

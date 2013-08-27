@@ -17,6 +17,7 @@ package com.blankstyle.vine.eventbus.stem.actions;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.StemContext;
@@ -48,8 +49,8 @@ public class Assign extends Action<StemContext> implements AsynchronousAction<Vo
     });
   }};
 
-  public Assign(ReliableEventBus eventBus, StemContext context) {
-    super(eventBus, context);
+  public Assign(Vertx vertx, ReliableEventBus eventBus, StemContext context) {
+    super(vertx, eventBus, context);
   }
 
   @Override

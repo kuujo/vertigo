@@ -25,6 +25,7 @@ import java.util.Map;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
@@ -36,6 +37,8 @@ import com.blankstyle.vine.Context;
  * @author Jordan Halterman
  */
 public class DefaultCommandDispatcher implements CommandDispatcher {
+
+  private Vertx vertx;
 
   private EventBus eventBus;
 
@@ -53,6 +56,16 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
   public DefaultCommandDispatcher(EventBus eventBus, Context<?> context) {
     this.eventBus = eventBus;
     this.context = context;
+  }
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
+  @Override
+  public Vertx getVertx() {
+    return vertx;
   }
 
   @Override
@@ -110,7 +123,7 @@ public class DefaultCommandDispatcher implements CommandDispatcher {
         if (actionClass != null) {
           Action<?> action;
           try {
-            action = actionClass.getConstructor(new Class[]{EventBus.class, Context.class}).newInstance(eventBus, context);
+            action = actionClass.getConstructor(new Class[]{Vertx.class, EventBus.class, Context.class}).newInstance(vertx, eventBus, context);
 
             Object[] parsedArgs = parseArgs(action, args);
 

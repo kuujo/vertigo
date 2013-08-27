@@ -18,7 +18,7 @@ package com.blankstyle.vine.definition;
 import com.blankstyle.vine.Definition;
 
 /**
- * A Vine context.
+ * A Vine definition.
  *
  * @author Jordan Halterman
  */
@@ -45,12 +45,12 @@ public interface VineDefinition extends Definition<VineDefinition> {
   /**
    * Adds a new seed to the vine.
    *
-   * @param context
-   *   The seed context.
+   * @param definition
+   *   The seed definition.
    * @return
-   *   The seed context.
+   *   The seed definition.
    */
-  public SeedDefinition feed(SeedDefinition context);
+  public SeedDefinition feed(SeedDefinition definition);
 
   /**
    * Adds a new seed to the vine.
@@ -58,7 +58,7 @@ public interface VineDefinition extends Definition<VineDefinition> {
    * @param name
    *   The seed name.
    * @return
-   *   The seed context.
+   *   The seed definition.
    */
   public SeedDefinition feed(String name);
 
@@ -70,7 +70,7 @@ public interface VineDefinition extends Definition<VineDefinition> {
    * @param main
    *   The seed main.
    * @return
-   *   The seed context.
+   *   The seed definition.
    */
   public SeedDefinition feed(String name, String main);
 
@@ -84,7 +84,7 @@ public interface VineDefinition extends Definition<VineDefinition> {
    * @param workers
    *   The number of seed workers.
    * @return
-   *   The seed context.
+   *   The seed definition.
    */
   public SeedDefinition feed(String name, String main, int workers);
 

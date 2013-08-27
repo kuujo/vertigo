@@ -15,10 +15,13 @@
 */
 package com.blankstyle.vine;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -59,13 +62,13 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public void feed(Object data, final Handler resultHandler) {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public void feed(Object data, final Handler<AsyncResult> resultHandler) {
+    final Future future = new DefaultFutureResult().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message>() {
       @Override
-      @SuppressWarnings("unchecked")
       public void handle(Message message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -76,11 +79,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(JsonObject data, final Handler<T> resultHandler) {
+  public <T> void feed(JsonObject data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -91,11 +95,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(JsonArray data, final Handler<T> resultHandler) {
+  public <T> void feed(JsonArray data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -106,11 +111,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Buffer data, final Handler<T> resultHandler) {
+  public <T> void feed(Buffer data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -121,11 +127,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(byte[] data, final Handler<T> resultHandler) {
+  public <T> void feed(byte[] data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -136,11 +143,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(String data, final Handler<T> resultHandler) {
+  public <T> void feed(String data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -151,11 +159,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Integer data, final Handler<T> resultHandler) {
+  public <T> void feed(Integer data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -166,11 +175,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Long data, final Handler<T> resultHandler) {
+  public <T> void feed(Long data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -181,11 +191,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Float data, final Handler<T> resultHandler) {
+  public <T> void feed(Float data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -196,11 +207,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Double data, final Handler<T> resultHandler) {
+  public <T> void feed(Double data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -211,11 +223,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Boolean data, final Handler<T> resultHandler) {
+  public <T> void feed(Boolean data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -226,11 +239,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Short data, final Handler<T> resultHandler) {
+  public <T> void feed(Short data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -241,11 +255,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Character data, final Handler<T> resultHandler) {
+  public <T> void feed(Character data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }
@@ -256,11 +271,12 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
-  public <T> void feed(Byte data, final Handler<T> resultHandler) {
+  public <T> void feed(Byte data, final Handler<AsyncResult<T>> resultHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<T>>() {
       @Override
       public void handle(Message<T> message) {
-        resultHandler.handle(message.body());
+        future.setResult(message.body());
       }
     });
   }

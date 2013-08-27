@@ -15,6 +15,7 @@
 */
 package com.blankstyle.vine;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;
@@ -71,7 +72,8 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public void feed(Object data, @SuppressWarnings("rawtypes") Handler resultHandler);
+  @SuppressWarnings("rawtypes")
+  public void feed(Object data, Handler<AsyncResult> resultHandler);
 
   /**
    * Feeds a JSON object to the vine.
@@ -89,7 +91,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(JsonObject data, Handler<T> resultHandler);
+  public <T> void feed(JsonObject data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a JSON array to the vine.
@@ -107,7 +109,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(JsonArray data, Handler<T> resultHandler);
+  public <T> void feed(JsonArray data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a buffer to the vine.
@@ -125,7 +127,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Buffer data, Handler<T> resultHandler);
+  public <T> void feed(Buffer data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a byte array to the vine.
@@ -143,7 +145,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(byte[] data, Handler<T> resultHandler);
+  public <T> void feed(byte[] data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a string to the vine.
@@ -161,7 +163,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(String data, Handler<T> resultHandler);
+  public <T> void feed(String data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds an integer to the vine.
@@ -179,7 +181,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Integer data, Handler<T> resultHandler);
+  public <T> void feed(Integer data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a long to the vine.
@@ -197,7 +199,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Long data, Handler<T> resultHandler);
+  public <T> void feed(Long data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a float to the vine.
@@ -215,7 +217,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Float data, Handler<T> resultHandler);
+  public <T> void feed(Float data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a double to the vine.
@@ -233,7 +235,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Double data, Handler<T> resultHandler);
+  public <T> void feed(Double data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a boolean to the vine.
@@ -251,7 +253,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Boolean data, Handler<T> resultHandler);
+  public <T> void feed(Boolean data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a short to the vine.
@@ -269,7 +271,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Short data, Handler<T> resultHandler);
+  public <T> void feed(Short data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a character to the vine.
@@ -287,7 +289,7 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Character data, Handler<T> resultHandler);
+  public <T> void feed(Character data, Handler<AsyncResult<T>> resultHandler);
 
   /**
    * Feeds a byte to the vine.
@@ -305,6 +307,6 @@ public interface Feeder {
    * @param resultHandler
    *   A handler to invoke once the vine has completed processing data.
    */
-  public <T> void feed(Byte data, Handler<T> resultHandler);
+  public <T> void feed(Byte data, Handler<AsyncResult<T>> resultHandler);
 
 }

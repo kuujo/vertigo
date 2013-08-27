@@ -18,7 +18,7 @@ package com.blankstyle.vine.definition;
 import com.blankstyle.vine.Definition;
 
 /**
- * A seed context.
+ * A seed definition.
  *
  * @author Jordan Halterman
  */
@@ -46,7 +46,7 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @param main
    *   The seed main.
    * @return
-   *   The seed context.
+   *   The seed definition.
    */
   public SeedDefinition setMain(String main);
 
@@ -64,7 +64,7 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @param workers
    *   The number of seed workers.
    * @return
-   *   The seed context.
+   *   The seed definition.
    */
   public SeedDefinition setWorkers(int workers);
 
@@ -82,9 +82,9 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @param context
    *   The seed to which the channel connects.
    * @return
-   *   The new seed context.
+   *   The new seed definition.
    */
-  public SeedDefinition to(SeedDefinition context);
+  public SeedDefinition to(SeedDefinition definition);
 
   /**
    * Sets a new output channel on the seed.
@@ -92,7 +92,7 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @param name
    *   The new seed name.
    * @return
-   *   The new seed context.
+   *   The new seed definition.
    */
   public SeedDefinition to(String name);
 
@@ -104,7 +104,7 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @param main
    *   The new seed main.
    * @return
-   *   The new seed context.
+   *   The new seed definition.
    */
   public SeedDefinition to(String name, String main);
 
@@ -118,7 +118,7 @@ public interface SeedDefinition extends Definition<SeedDefinition> {
    * @param workers
    *   The number of new seed workers.
    * @return
-   *   The new seed context.
+   *   The new seed definition.
    */
   public SeedDefinition to(String name, String main, int workers);
 

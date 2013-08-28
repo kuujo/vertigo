@@ -54,8 +54,20 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void setVertx(Vertx vertx) {
+  public RemoteRoot setAddress(String address) {
+    this.address = address;
+    return this;
+  }
+
+  @Override
+  public String getAddress() {
+    return address;
+  }
+
+  @Override
+  public Root setVertx(Vertx vertx) {
     this.vertx = vertx;
+    return this;
   }
 
   @Override
@@ -64,36 +76,14 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void setContainer(Container container) {
+  public Root setContainer(Container container) {
     this.container = container;
+    return this;
   }
 
   @Override
   public Container getContainer() {
     return container;
-  }
-
-  /**
-   * Sets the remote root address.
-   *
-   * @param address
-   *   The remote root address.
-   * @return
-   *   The called root instance.
-   */
-  public RemoteRoot setAddress(String address) {
-    this.address = address;
-    return this;
-  }
-
-  /**
-   * Gets the remote root address.
-   *
-   * @return
-   *   The remote root address.
-   */
-  public String getAddress() {
-    return address;
   }
 
   /**

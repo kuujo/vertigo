@@ -36,6 +36,29 @@ The Vine *root* is the API that handles deploying of vines. In local mode, the
 provides a *vine-root* module - a bus module that monitors a cluster and handles
 assigning tasks to machines.
 
+#### Root Commands
+
+`deploy`
+
+```
+{
+  "action": "deploy",
+  "definition": {
+    "address": "my.vine",
+    ...
+  }
+}
+```
+
+`undeploy`
+
+```
+{
+  "action": "undeploy",
+  "address": "my.vine"
+}
+```
+
 ### Stem
 *Stems* are only relevant in the context of *remote vines*. In the case of local
 vines, the `LocalRoot` handles deploying worker verticles. However, in remote

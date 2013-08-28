@@ -45,11 +45,23 @@ public class LocalRoot implements Root {
 
   protected static final String VINE_VERTICLE_CLASS = VineVerticle.class.getName();
 
+  protected String address = "vine.root";
+
   protected Vertx vertx;
 
   protected Container container;
 
   private Map<String, String> deploymentMap = new HashMap<String, String>();
+
+  public LocalRoot(String address, Vertx vertx, Container container) {
+    this.address = address;
+    this.vertx = vertx;
+    this.container = container;
+  }
+
+  public LocalRoot(String address) {
+    this.address = address;
+  }
 
   public LocalRoot(Vertx vertx, Container container) {
     this.vertx = vertx;
@@ -57,8 +69,20 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void setVertx(Vertx vertx) {
+  public Root setAddress(String address) {
+    this.address = address;
+    return this;
+  }
+
+  @Override
+  public String getAddress() {
+    return address;
+  }
+
+  @Override
+  public Root setVertx(Vertx vertx) {
     this.vertx = vertx;
+    return this;
   }
 
   @Override
@@ -67,8 +91,9 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void setContainer(Container container) {
+  public Root setContainer(Container container) {
     this.container = container;
+    return this;
   }
 
   @Override

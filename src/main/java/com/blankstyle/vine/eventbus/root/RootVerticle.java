@@ -26,8 +26,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.RootContext;
 import com.blankstyle.vine.context.StemContext;
-import com.blankstyle.vine.context.RootContext;
-import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
 import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
 import com.blankstyle.vine.scheduler.Scheduler;

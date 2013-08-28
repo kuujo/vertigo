@@ -28,7 +28,6 @@ import org.vertx.java.platform.Container;
 import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
-import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
@@ -110,28 +109,6 @@ public class RemoteRoot implements Root {
    */
   public EventBus getEventBus() {
     return eventBus;
-  }
-
-  /**
-   * Loads a remote vine context.
-   *
-   * @param address
-   *   The vine address.
-   * @return
-   *   A remote vine context. The context will be updated once a response is
-   *   received from the remote root.
-   */
-  public VineContext loadContext(String address) {
-    final VineContext context = new VineContext();
-    context.setAddress(address);
-    context.register(eventBus);
-    eventBus.send(address, new JsonObject().putString("action", "load").putString("context", address), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        context.update(message.body());
-      }
-    });
-    return context;
   }
 
   @Override

@@ -28,8 +28,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.WorkerContext;
-import com.blankstyle.vine.context.StemContext;
-import com.blankstyle.vine.context.WorkerContext;
 import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
 
 /**

@@ -27,7 +27,6 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.VineContext;
-import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 

@@ -16,7 +16,6 @@
 package com.blankstyle.vine;
 
 import com.blankstyle.vine.definition.SeedDefinition;
-import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
  * An abstract seed.

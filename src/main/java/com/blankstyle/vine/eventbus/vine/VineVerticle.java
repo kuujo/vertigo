@@ -21,7 +21,6 @@ import java.util.Map;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
@@ -29,13 +28,6 @@ import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.JsonVineContext;
 import com.blankstyle.vine.context.VineContext;
-import com.blankstyle.vine.eventbus.Action;
-import com.blankstyle.vine.eventbus.Argument;
-import com.blankstyle.vine.eventbus.ArgumentsDefinition;
-import com.blankstyle.vine.eventbus.AsynchronousAction;
-import com.blankstyle.vine.eventbus.CommandDispatcher;
-import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
-import com.blankstyle.vine.eventbus.JsonCommand;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 
@@ -60,11 +52,6 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   private Logger log;
 
-  private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
-    registerAction(Start.NAME, Start.class);
-    registerAction(Finish.NAME, Finish.class);
-  }};
-
   /**
    * The message process time expiration.
    */
@@ -83,25 +70,56 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
   @Override
   protected void start(ReliableEventBus eventBus) {
     log = container.logger();
-    context = new JsonVineContext(container.config());
-    dispatcher.setVertx(vertx);
-    dispatcher.setEventBus(vertx.eventBus());
-    dispatcher.setContext(context);
+    context = new JsonVineContext(config);
     messageExpiration = context.getDefinition().getMessageExpiration();
-    eventBus.registerHandler(context.getAddress(), this);
+    eventBus.registerHandler(getMandatoryStringConfig("address"), this);
   }
 
   @Override
   public void handle(final Message<JsonObject> message) {
-    dispatcher.dispatch(new JsonCommand(message.body()), new Handler<AsyncResult<Object>>() {
+    String action = getMandatoryString("address", message);
+
+    if (action == null) {
+      sendError(message, "An action must be specified.");
+    }
+
+    switch (action) {
+      case "start":
+        doStart(message);
+        break;
+      case "finish":
+        doFinish(message);
+        break;
+      default:
+        sendError(message, String.format("Invalid action %s.", action));
+    }
+  }
+
+  /**
+   * Starts processing a message.
+   */
+  private void doStart(final Message<JsonObject> message) {
+    dispatchMessage(getMandatoryObject("message", message), new Handler<AsyncResult<JsonObject>>() {
       @Override
-      public void handle(AsyncResult<Object> result) {
+      public void handle(AsyncResult<JsonObject> result) {
         if (result.succeeded()) {
           message.reply(result.result());
         }
         else {
-          message.reply(result.cause());
+          sendError(message, "Processing failed.");
         }
+      }
+    });
+  }
+
+  /**
+   * Finishes processing a message.
+   */
+  private void doFinish(final Message<JsonObject> message) {
+    receiveMessage(getMandatoryObject("message", message), new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> event) {
+        
       }
     });
   }
@@ -126,8 +144,8 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * @return
    *   The tagged message.
    */
-  private JsonObject tagMessage(JsonObject message, final Handler<AsyncResult<Object>> resultHandler) {
-    Future<Object> future = new DefaultFutureResult<Object>().setHandler(resultHandler);
+  private JsonObject tagMessage(JsonObject message, final Handler<AsyncResult<JsonObject>> resultHandler) {
+    Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
 
     final VineMessage vineMessage = new VineMessage(message);
     vineMessage.setCorrelationID(nextCorrelationID());
@@ -155,7 +173,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * @param message
    *   The message to dispatch.
    */
-  private void dispatchMessage(JsonObject message, Handler<AsyncResult<Object>> resultHandler) {
+  private void dispatchMessage(JsonObject message, Handler<AsyncResult<JsonObject>> resultHandler) {
     message = tagMessage(message, resultHandler);
   }
 
@@ -165,7 +183,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * @param message
    *   The completed message.
    */
-  private void receiveMessage(JsonObject message, Handler<AsyncResult<Object>> resultHandler) {
+  private void receiveMessage(JsonObject message, Handler<AsyncResult<Void>> resultHandler) {
     long correlationID = message.getLong("correlation_id");
     if (correlationID == 0) {
       log.warn("Invalid correlation identifier found.");
@@ -182,7 +200,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
       vineMessage.getFutureResult().setResult(message);
     }
     // Invoke the eventbus result handler to indicate we received the message.
-    new DefaultFutureResult<Object>().setHandler(resultHandler).setResult(null);
+    new DefaultFutureResult<Void>().setHandler(resultHandler).setResult(null);
   }
 
   /**
@@ -190,7 +208,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    */
   private class VineMessage {
     private long timerID;
-    private Future<Object> futureResult;
+    private Future<JsonObject> futureResult;
     private JsonObject message;
 
     /**
@@ -234,7 +252,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     /**
      * Sets the message result future.
      */
-    public VineMessage setFutureResult(Future<Object> futureResult) {
+    public VineMessage setFutureResult(Future<JsonObject> futureResult) {
       this.futureResult = futureResult;
       return this;
     }
@@ -242,7 +260,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     /**
      * Returns the message result future.
      */
-    public Future<Object> getFutureResult() {
+    public Future<JsonObject> getFutureResult() {
       return futureResult;
     }
 
@@ -252,82 +270,6 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     public JsonObject getMessage() {
       return message;
     }
-  }
-
-  /**
-   * A vine verticle process action.
-   *
-   * @author Jordan Halterman
-   */
-  public class Start extends Action<VineContext> implements AsynchronousAction<Object> {
-
-    public static final String NAME = "process";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<JsonObject>() {
-        @Override
-        public String name() {
-          return "message";
-        }
-        @Override
-        public boolean isValid(JsonObject value) {
-          return value instanceof JsonObject;
-        }
-      });
-    }};
-
-    public Start(Vertx vertx, ReliableEventBus eventBus, VineContext context) {
-      super(vertx, eventBus, context);
-    }
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
-      dispatchMessage((JsonObject) args[0], resultHandler);
-    }
-
-  }
-
-  /**
-   * A vine verticle process action.
-   *
-   * @author Jordan Halterman
-   */
-  public class Finish extends Action<VineContext> implements AsynchronousAction<Void> {
-
-    public static final String NAME = "complete";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<JsonObject>() {
-        @Override
-        public String name() {
-          return "message";
-        }
-        @Override
-        public boolean isValid(JsonObject value) {
-          return value instanceof JsonObject;
-        }
-      });
-    }};
-
-    public Finish(Vertx vertx, ReliableEventBus eventBus, VineContext context) {
-      super(vertx, eventBus, context);
-    }
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
-      receiveMessage((JsonObject) args[0], resultHandler);
-    }
-
   }
 
 }

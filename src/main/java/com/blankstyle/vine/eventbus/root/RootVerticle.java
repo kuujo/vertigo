@@ -16,28 +16,21 @@
 package com.blankstyle.vine.eventbus.root;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.vertx.java.busmods.BusModBase;
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.JsonRootContext;
+import com.blankstyle.vine.context.JsonStemContext;
 import com.blankstyle.vine.context.RootContext;
-import com.blankstyle.vine.eventbus.Action;
-import com.blankstyle.vine.eventbus.Argument;
-import com.blankstyle.vine.eventbus.ArgumentsDefinition;
-import com.blankstyle.vine.eventbus.AsynchronousAction;
-import com.blankstyle.vine.eventbus.CommandDispatcher;
-import com.blankstyle.vine.eventbus.DefaultCommandDispatcher;
-import com.blankstyle.vine.eventbus.JsonCommand;
-import com.blankstyle.vine.eventbus.SynchronousAction;
+import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
 import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
+import com.blankstyle.vine.scheduler.Scheduler;
 
 /**
  * A Vine root verticle.
@@ -48,66 +41,140 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
 
   private RootContext context;
 
-  private CommandDispatcher dispatcher = new DefaultCommandDispatcher() {{
-    registerAction(Register.NAME, Register.class);
-    registerAction(Deploy.NAME, Deploy.class);
-    registerAction(Undeploy.NAME, Undeploy.class);
-    registerAction(LoadContext.NAME, LoadContext.class);
-    registerAction(UpdateContext.NAME, UpdateContext.class);
-  }};
+  private Scheduler scheduler;
 
   private Map<String, String> heartbeatMap = new HashMap<String, String>();
 
   private int heartbeatCounter;
 
-  private HeartBeatMonitor heartbeatMonitor;
+  private HeartBeatMonitor heartbeatMonitor = new DefaultHeartBeatMonitor();
 
-  private Set<String> stems = new HashSet<String>();
+  private Map<String, StemContext> stems = new HashMap<String, StemContext>();
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    super.setVertx(vertx);
+    heartbeatMonitor.setVertx(vertx).setEventBus(vertx.eventBus());
+  }
 
   @Override
   public void start() {
-    heartbeatMonitor = new DefaultHeartBeatMonitor().setVertx(vertx).setEventBus(vertx.eventBus());
-    context = new JsonRootContext(container.config());
-    dispatcher.setVertx(vertx);
-    dispatcher.setEventBus(vertx.eventBus());
-    dispatcher.setContext(context);
-    vertx.eventBus().registerHandler(context.getAddress(), this);
+    context = new JsonRootContext(config);
+    String schedulerClass = getOptionalStringConfig("scheduler", "com.blankstyle.vine.scheduler.DefaultScheduler");
+    try {
+      scheduler = (Scheduler) Class.forName(schedulerClass).newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      container.logger().error(String.format("Invalid scheduler class %s.", schedulerClass));
+    }
+    vertx.eventBus().registerHandler(getMandatoryStringConfig("address"), this);
   }
 
   @Override
   public void handle(final Message<JsonObject> message) {
-    dispatcher.dispatch(new JsonCommand(message.body()), new Handler<AsyncResult<Object>>() {
+    String action = message.body().getString("action");
+
+    if (action == null) {
+      sendError(message, "An action must be specified.");
+    }
+
+    switch (action) {
+      case "register":
+        doRegister(message);
+        break;
+      case "deploy":
+        doDeploy(message);
+        break;
+      case "undeploy":
+        doUndeploy(message);
+        break;
+      case "load":
+        doLoadContext(message);
+        break;
+      case "update":
+        doUpdateContext(message);
+        break;
+      case "delete":
+        doDeleteContext(message);
+        break;
+      default:
+        sendError(message, String.format("Invalid action %s.", action));
+    }
+  }
+
+  /**
+   * Registers a stem with the root.
+   *
+   * Replies with a string representing the stem heartbeat address.
+   */
+  private void doRegister(final Message<JsonObject> message) {
+    final StemContext stemContext = new JsonStemContext(message.body());
+    final String address = getMandatoryString("address", message);
+    String heartbeatAddress = nextHeartBeatAddress();
+    heartbeatMap.put(address, heartbeatAddress);
+    heartbeatMonitor.monitor(heartbeatAddress, new Handler<String>() {
       @Override
-      public void handle(AsyncResult<Object> result) {
-        if (result.succeeded()) {
-          message.reply(result.result());
-        }
-        else {
-          message.reply(result.cause());
-        }
+      public void handle(String hbAddress) {
+        unregisterStem(stemContext);
       }
     });
+    registerStem(stemContext);
+    message.reply(heartbeatAddress);
   }
 
   /**
-   * Registers a stem address.
-   *
-   * @param address
-   *   The stem address.
+   * Deploys a vine definition.
    */
-  private void registerStem(String address) {
-    stems.add(address);
+  private void doDeploy(final Message<JsonObject> message) {
+    
   }
 
   /**
-   * Unregisters a stem address.
-   *
-   * @param address
-   *   The stem address.
+   * Undeploys a vine definition.
    */
-  private void unregisterStem(String address) {
-    if (stems.contains(address)) {
-      stems.remove(address);
+  private void doUndeploy(final Message<JsonObject> message) {
+    
+  }
+
+  /**
+   * Loads a vine context.
+   */
+  private void doLoadContext(final Message<JsonObject> message) {
+    
+  }
+
+  /**
+   * Updates a vine context.
+   */
+  private void doUpdateContext(final Message<JsonObject> message) {
+    
+  }
+
+  /**
+   * Deletes a vine context.
+   */
+  private void doDeleteContext(final Message<JsonObject> message) {
+    
+  }
+
+  /**
+   * Registers a stem context.
+   *
+   * @param context
+   *   The stem context.
+   */
+  private void registerStem(StemContext context) {
+    stems.put(context.getAddress(), context);
+  }
+
+  /**
+   * Unregisters a stem context.
+   *
+   * @param context
+   *   The stem context.
+   */
+  private void unregisterStem(StemContext context) {
+    if (stems.containsKey(context.getAddress())) {
+      stems.remove(context.getAddress());
     }
   }
 
@@ -117,189 +184,6 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
   private String nextHeartBeatAddress() {
     heartbeatCounter++;
     return String.format("%s.heartbeat.%s", context.getAddress(), heartbeatCounter);
-  }
-
-  /**
-   * A root verticle register action.
-   *
-   * This action is called when a new stem is started. The stem will call
-   * this action and in response get a unique address to which to send heartbeats.
-   *
-   * @author Jordan Halterman
-   */
-  public class Register extends Action<RootContext> implements SynchronousAction<String> {
-
-    public static final String NAME = "register";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<String>() {
-        @Override
-        public String name() {
-          return "address";
-        }
-        @Override
-        public boolean isValid(String value) {
-          return value instanceof String;
-        }
-      });
-    }};
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public String execute(Object[] args) {
-      final String address = (String) args[0];
-      String heartbeatAddress = nextHeartBeatAddress();
-      heartbeatMap.put(address, heartbeatAddress);
-      heartbeatMonitor.monitor(heartbeatAddress, new Handler<String>() {
-        @Override
-        public void handle(String hbAddress) {
-          unregisterStem(address);
-        }
-      });
-      registerStem(address);
-      return heartbeatAddress;
-    }
-
-  }
-
-  /**
-   * A root deploy action.
-   *
-   * @author Jordan Halterman
-   */
-  public class Deploy extends Action<RootContext> implements AsynchronousAction<Void> {
-
-    public static final String NAME = "deploy";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<JsonObject>() {
-        @Override
-        public String name() {
-          return "vine";
-        }
-        @Override
-        public boolean isValid(JsonObject value) {
-          return value instanceof JsonObject;
-        }
-      });
-    }};
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
-      
-    }
-
-  }
-
-  /**
-   * A root undeploy action.
-   *
-   * @author Jordan Halterman
-   */
-  public class Undeploy extends Action<RootContext> implements AsynchronousAction<Void> {
-
-    public static final String NAME = "undeploy";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<JsonObject>() {
-        @Override
-        public String name() {
-          return "vine";
-        }
-        @Override
-        public boolean isValid(JsonObject value) {
-          return value instanceof JsonObject;
-        }
-      });
-    }};
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
-      
-    }
-
-  }
-
-  /**
-   * A root load context action.
-   *
-   * @author Jordan Halterman
-   */
-  public class LoadContext extends Action<RootContext> implements AsynchronousAction<Void> {
-
-    public static final String NAME = "load";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<String>() {
-        @Override
-        public String name() {
-          return "context";
-        }
-        @Override
-        public boolean isValid(String value) {
-          return value instanceof String;
-        }
-      });
-    }};
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
-      
-    }
-
-  }
-
-  /**
-   * A root update context action.
-   *
-   * @author Jordan Halterman
-   */
-  public class UpdateContext extends Action<RootContext> implements AsynchronousAction<Void> {
-
-    public static final String NAME = "update";
-
-    private ArgumentsDefinition args = new ArgumentsDefinition() {{
-      addArgument(new Argument<JsonObject>() {
-        @Override
-        public String name() {
-          return "context";
-        }
-        @Override
-        public boolean isValid(JsonObject value) {
-          return value instanceof JsonObject;
-        }
-      });
-    }};
-
-    @Override
-    public ArgumentsDefinition getArgumentsDefinition() {
-      return args;
-    }
-
-    @Override
-    public void execute(Object[] args, Handler<AsyncResult<Object>> resultHandler) {
-      
-    }
-
   }
 
 }

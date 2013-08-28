@@ -193,37 +193,62 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     private Future<Object> futureResult;
     private JsonObject message;
 
+    /**
+     * @param message
+     *   The message data.
+     */
     public VineMessage(JsonObject message) {
       this.message = message;
     }
 
+    /**
+     * Sets the message corralation identifier.
+     */
     public VineMessage setCorrelationID(long correlationID) {
       message.putNumber("correlation_id", correlationID);
       return this;
     }
 
+    /**
+     * Returns the message correlation identifier.
+     */
     public long getCorrelationID() {
       return message.getLong("correlation_id");
     }
 
+    /**
+     * Sets the message expiration timer ID.
+     */
     public VineMessage setTimerID(long timerID) {
       this.timerID = timerID;
       return this;
     }
 
+    /**
+     * Returns the message expiration timer ID.
+     */
     public long getTimerID() {
       return timerID;
     }
 
+    /**
+     * Sets the message result future.
+     */
     public VineMessage setFutureResult(Future<Object> futureResult) {
       this.futureResult = futureResult;
       return this;
     }
 
+    /**
+     * Returns the message result future.
+     */
     public Future<Object> getFutureResult() {
       return futureResult;
     }
 
+    /**
+     * Returns the message data.
+     */
     public JsonObject getMessage() {
       return message;
     }

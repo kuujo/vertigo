@@ -13,14 +13,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.scheduler;
 
-import com.blankstyle.vine.definition.VineDefinition;
+import java.util.Collection;
+
+import com.blankstyle.vine.Stem;
+import com.blankstyle.vine.context.WorkerContext;
 
 /**
- * An abstract root implementation.
+ * A default scheduler implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class AbstractRoot extends AbstractDeployer<VineDefinition, Feeder> implements Root {
+public class DefaultScheduler implements Scheduler {
+
+  @Override
+  public void assign(WorkerContext context, Collection<Stem> stems) {
+    
+  }
+
+  @Override
+  public void release(WorkerContext context, Collection<Stem> stems) {
+    
+  }
+
 }

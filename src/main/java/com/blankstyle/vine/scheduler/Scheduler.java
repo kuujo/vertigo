@@ -32,9 +32,15 @@ public interface Scheduler {
    *
    * @param context
    *   The worker context.
-   * @return
-   *   The address of the machine to which the worker is assigned.
    */
-  public String assign(WorkerContext context, Collection<Stem> stems);
+  public void assign(WorkerContext context, Collection<Stem> stems);
+
+  /**
+   * Releases a worker from a machine.
+   *
+   * @param context
+   *   The worker context.
+   */
+  public void release(WorkerContext context, Collection<Stem> stems);
 
 }

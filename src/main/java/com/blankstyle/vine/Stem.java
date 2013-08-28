@@ -15,12 +15,34 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.definition.SeedDefinition;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
+import com.blankstyle.vine.context.WorkerContext;
 
 /**
  * A vine stem.
  *
  * @author Jordan Halterman
  */
-public interface Stem extends Deployer<SeedDefinition, Void> {
+public interface Stem {
+
+  /**
+   * Assigns a worker to the stem.
+   *
+   * @param context
+   *   The worker context.
+   * @param doneHandler
+   *   A handler to be invoked once the worker is assigned.
+   */
+  public void assign(WorkerContext context, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Releases a worker from the stem.
+   *
+   * @param context
+   *   The worker context.
+   */
+  public void release(WorkerContext context);
+
 }

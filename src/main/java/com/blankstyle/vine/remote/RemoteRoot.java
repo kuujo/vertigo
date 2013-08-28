@@ -18,14 +18,16 @@ package com.blankstyle.vine.remote;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.AbstractRoot;
 import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
+import com.blankstyle.vine.Root;
 import com.blankstyle.vine.context.JsonVineContext;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
@@ -36,7 +38,11 @@ import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
  *
  * @author Jordan Halterman
  */
-public class RemoteRoot extends AbstractRoot {
+public class RemoteRoot implements Root {
+
+  protected Vertx vertx;
+
+  protected Container container;
 
   protected String address;
 
@@ -45,6 +51,26 @@ public class RemoteRoot extends AbstractRoot {
   public RemoteRoot(String address, EventBus eventBus) {
     setAddress(address);
     setEventBus(eventBus);
+  }
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
+  @Override
+  public Vertx getVertx() {
+    return vertx;
+  }
+
+  @Override
+  public void setContainer(Container container) {
+    this.container = container;
+  }
+
+  @Override
+  public Container getContainer() {
+    return container;
   }
 
   /**
@@ -118,17 +144,17 @@ public class RemoteRoot extends AbstractRoot {
   }
 
   @Override
-  public void deploy(VineDefinition component) {
-    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", component.serialize()));
+  public void deploy(VineDefinition vine) {
+    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()));
   }
 
   @Override
-  public void deploy(final VineDefinition component, final Handler<AsyncResult<Feeder>> doneHandler) {
+  public void deploy(final VineDefinition vine, final Handler<AsyncResult<Feeder>> doneHandler) {
     final Future<Feeder> future = new DefaultFutureResult<Feeder>();
-    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", component.serialize()), new Handler<Message<JsonObject>>() {
+    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        Feeder feeder = new BasicFeeder(component.getAddress(), eventBus);
+        Feeder feeder = new BasicFeeder(vine.getAddress(), eventBus);
         future.setResult(feeder);
         doneHandler.handle(future);
       }

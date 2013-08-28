@@ -23,15 +23,15 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.AbstractStem;
-import com.blankstyle.vine.definition.SeedDefinition;
+import com.blankstyle.vine.Stem;
+import com.blankstyle.vine.context.WorkerContext;
 
 /**
  * A remote reference to a stem verticle.
  *
  * @author Jordan Halterman
  */
-public class RemoteStem extends AbstractStem {
+public class RemoteStem implements Stem {
 
   protected final String address;
 
@@ -43,20 +43,20 @@ public class RemoteStem extends AbstractStem {
   }
 
   @Override
-  public void deploy(SeedDefinition component) {
-    eventBus.send(address, component.serialize());
-  }
-
-  @Override
-  public void deploy(SeedDefinition component, final Handler<AsyncResult<Void>> doneHandler) {
+  public void assign(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
-    eventBus.send(address, component.serialize(), new Handler<Message<JsonObject>>() {
+    eventBus.send(address, context.serialize(), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         future.setResult(null);
         doneHandler.handle(future);
       }
     });
+  }
+
+  @Override
+  public void release(WorkerContext context) {
+    
   }
 
 }

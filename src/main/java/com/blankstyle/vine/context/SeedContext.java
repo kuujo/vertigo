@@ -17,7 +17,9 @@ package com.blankstyle.vine.context;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
@@ -56,6 +58,20 @@ public class SeedContext implements Context<SeedContext>, Serializeable<JsonObje
     this.parent = parent;
   }
 
+  /**
+   * Returns the seed address.
+   */
+  public String getAddress() {
+    return context.getString("address");
+  }
+
+  /**
+   * Returns seed worker addresses.
+   */
+  public String[] getWorkers() {
+    return (String[]) context.getArray("workers").toArray();
+  }
+
   @Override
   public void update(JsonObject json) {
     context = json;
@@ -69,6 +85,22 @@ public class SeedContext implements Context<SeedContext>, Serializeable<JsonObje
     updateHandler = handler;
   }
 
+  /**
+   * Returns a list of seed connections.
+   */
+  public Collection<ConnectionContext> getConnectionContexts() {
+    Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
+    JsonObject connections = context.getObject("connections");
+    Iterator<String> iter = connections.getFieldNames().iterator();
+    while (iter.hasNext()) {
+      contexts.add(new ConnectionContext(connections.getObject(iter.next())));
+    }
+    return contexts;
+  }
+
+  /**
+   * Returns all worker contexts.
+   */
   public Collection<WorkerContext> getWorkerContexts() {
     JsonArray workers = context.getArray("workers");
     ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
@@ -79,6 +111,9 @@ public class SeedContext implements Context<SeedContext>, Serializeable<JsonObje
     return contexts;
   }
 
+  /**
+   * Returns the seed definition.
+   */
   public SeedDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
@@ -87,13 +122,11 @@ public class SeedContext implements Context<SeedContext>, Serializeable<JsonObje
     return new SeedDefinition();
   }
 
+  /**
+   * Returns the parent vine context.
+   */
   public VineContext getContext() {
     return parent;
-  }
-
-  public SeedContext setContext(VineContext context) {
-    parent = context;
-    return this;
   }
 
   @Override

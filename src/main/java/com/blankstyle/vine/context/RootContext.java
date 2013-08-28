@@ -45,13 +45,11 @@ public class RootContext implements Context<RootContext>, Serializeable<JsonObje
     context = json;
   }
 
+  /**
+   * Returns the root address.
+   */
   public String getAddress() {
     return context.getString("address", DEFAULT_ADDRESS);
-  }
-
-  public RootContext setAddress(String address) {
-    context.putString("address", address);
-    return this;
   }
 
   @Override

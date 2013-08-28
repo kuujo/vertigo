@@ -43,13 +43,11 @@ public class StemContext implements Context<StemContext>, Serializeable<JsonObje
     context = json;
   }
 
+  /**
+   * Returns the stem address.
+   */
   public String getAddress() {
     return context.getString("address");
-  }
-
-  public StemContext setAddress(String address) {
-    context.putString("address", address);
-    return this;
   }
 
   @Override

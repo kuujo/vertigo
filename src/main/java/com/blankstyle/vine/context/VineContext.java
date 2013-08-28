@@ -17,7 +17,9 @@ package com.blankstyle.vine.context;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -46,15 +48,6 @@ public class VineContext implements Context<VineContext>, Serializeable<JsonObje
     context = json;
   }
 
-  public static VineContext createContext(VineDefinition vine) {
-    JsonObject context = new JsonObject();
-    context.putObject("definition", vine.serialize());
-    context.putString("address", vine.getAddress());
-    context.putNumber("expiration", vine.getMessageExpiration());
-    context.putNumber("timeout", vine.getMessageTimeout());
-    return new VineContext(context);
-  }
-
   @Override
   public void update(JsonObject context) {
     this.context = context;
@@ -68,15 +61,43 @@ public class VineContext implements Context<VineContext>, Serializeable<JsonObje
     updateHandler = handler;
   }
 
+  /**
+   * Returns the vine address.
+   */
   public String getAddress() {
     return context.getString("address");
   }
 
-  public VineContext setAddress(String address) {
-    context.putString("address", address);
-    return this;
+  /**
+   * Returns a list of feeder connection contexts.
+   */
+  public Collection<ConnectionContext> getConnectionContexts() {
+    Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
+    JsonObject connections = context.getObject("connections");
+    Iterator<String> iter = connections.getFieldNames().iterator();
+    while (iter.hasNext()) {
+      contexts.add(new ConnectionContext(connections.getObject(iter.next())));
+    }
+    return contexts;
   }
 
+  /**
+   * Returns a specific feeder connection context.
+   *
+   * @param name
+   *   The connection (seed) name.
+   */
+  public ConnectionContext getConnectionContext(String name) {
+    JsonObject connection = context.getObject("connections", new JsonObject()).getObject(name);
+    if (connection != null) {
+      return new ConnectionContext(connection);
+    }
+    return new ConnectionContext();
+  }
+
+  /**
+   * Returns a list of vine seed contexts.
+   */
   public Collection<SeedContext> getSeedContexts() {
     JsonObject seeds = context.getObject("seeds");
     ArrayList<SeedContext> contexts = new ArrayList<SeedContext>();
@@ -87,6 +108,12 @@ public class VineContext implements Context<VineContext>, Serializeable<JsonObje
     return contexts;
   }
 
+  /**
+   * Returns a specific seed context.
+   *
+   * @param name
+   *   The seed name.
+   */
   public SeedContext getSeedContext(String name) {
     JsonObject seeds = context.getObject("seeds");
     if (seeds == null) {
@@ -99,6 +126,12 @@ public class VineContext implements Context<VineContext>, Serializeable<JsonObje
     return new SeedContext(seedContext);
   }
 
+  /**
+   * Returns the vine definition.
+   *
+   * @return
+   *   The vine definition.
+   */
   public VineDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {

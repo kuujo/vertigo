@@ -36,42 +36,82 @@ public class SeedDefinition implements Serializeable<JsonObject> {
     definition = json;
   }
 
+  /**
+   * Gets the seed name.
+   */
   public String getName() {
     return definition.getString("name");
   }
 
+  /**
+   * Sets the seed name.
+   *
+   * @param name
+   *   The seed name.
+   */
   public SeedDefinition setName(String name) {
     definition.putString("name", name);
     return this;
   }
 
+  /**
+   * Gets the seed main.
+   */
   public String getMain() {
     return definition.getString("main");
   }
 
+  /**
+   * Sets the seed main. This is a string reference to the verticle
+   * to be run when a seed worker is started.
+   *
+   * @param main
+   *   The seed main.
+   */
   public SeedDefinition setMain(String main) {
     definition.putString("main", main);
     return this;
   }
 
-  public SeedDefinition setGrouping(String grouping) {
+  /**
+   * Sets the seed worker grouping.
+   *
+   * @param grouping
+   *   A grouping type.
+   */
+  public SeedDefinition groupBy(String grouping) {
     definition.putString("grouping", grouping);
     return this;
   }
 
+  /**
+   * Gets the seed worker grouping.
+   */
   public String getGrouping() {
     return definition.getString("grouping");
   }
 
+  /**
+   * Sets the number of seed workers.
+   *
+   * @param workers
+   *   The number of seed workers.
+   */
   public SeedDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
     return this;
   }
 
+  /**
+   * Gets the number of seed workers.
+   */
   public int getWorkers() {
     return definition.getInteger("workers");
   }
 
+  /**
+   * Adds a connection to a seed definition.
+   */
   private SeedDefinition addDefinition(SeedDefinition definition) {
     JsonObject connections = this.definition.getObject("connections");
     if (connections == null) {
@@ -84,22 +124,59 @@ public class SeedDefinition implements Serializeable<JsonObject> {
     return definition;
   }
 
+  /**
+   * Creates a connection to the given definition.
+   *
+   * @param definition
+   *   A seed definition.
+   */
   public SeedDefinition to(SeedDefinition definition) {
     return addDefinition(definition);
   }
 
+  /**
+   * Creates a connection to a seed, creating a new seed definition.
+   *
+   * @param name
+   *   The seed name.
+   * @return
+   *   A new seed definition.
+   */
   public SeedDefinition to(String name) {
     return to(name, null, 1);
   }
 
+  /**
+   * Creates a connection to a seed, creating a new seed definition.
+   *
+   * @param name
+   *   The seed name.
+   * @param main
+   *   The seed main.
+   * @return
+   *   A new seed definition.
+   */
   public SeedDefinition to(String name, String main) {
     return to(name, main, 1);
   }
 
+  /**
+   * Creates a connection to a seed, creating a new seed definition.
+   *
+   * @param name
+   *   The seed name.
+   * @param main
+   *   The seed main.
+   * @param workers
+   *   The number of seed workers.
+   * @return
+   *   A new seed definition.
+   */
   public SeedDefinition to(String name, String main, int workers) {
     return addDefinition(new SeedDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
+  @Override
   public JsonObject serialize() {
     return definition;
   }

@@ -46,33 +46,63 @@ public class VineDefinition implements Serializeable<JsonObject> {
     definition = json;
   }
 
+  /**
+   * Gets the vine address.
+   */
   public String getAddress() {
     return definition.getString("address");
   }
 
+  /**
+   * Sets the vine address.
+   *
+   * @param address
+   *   The vine address.
+   */
   public VineDefinition setAddress(String address) {
     definition.putString("address", address);
     return this;
   }
 
+  /**
+   * Gets the vine message timeout.
+   */
   public long getMessageTimeout() {
     return definition.getLong("timeout", DEFAULT_TIMEOUT);
   }
 
+  /**
+   * Sets the vine message timeout.
+   *
+   * @param timeout
+   *   The vine message timeout.
+   */
   public VineDefinition setMessageTimeout(long timeout) {
     definition.putNumber("timeout", timeout);
     return this;
   }
 
+  /**
+   * Gets the message expiration.
+   */
   public long getMessageExpiration() {
     return definition.getLong("expiration", DEFAULT_EXPIRATION);
   }
 
+  /**
+   * Sets the message expiration.
+   *
+   * @param expiration
+   *   The vine message expiration.
+   */
   public VineDefinition setMessageExpiration(long expiration) {
     definition.putNumber("expiration", expiration);
     return this;
   }
 
+  /**
+   * Adds a connection to a seed definition.
+   */
   private SeedDefinition addDefinition(SeedDefinition definition) {
     // Add the seed definition.
     JsonObject seeds = this.definition.getObject("seeds");
@@ -96,18 +126,56 @@ public class VineDefinition implements Serializeable<JsonObject> {
     return definition;
   }
 
+  /**
+   * Defines a feeder to a seed.
+   *
+   * @param definition
+   *   A seed definition.
+   * @return
+   *   The passed seed definition.
+   */
   public SeedDefinition feed(SeedDefinition definition) {
     return addDefinition(definition);
   }
 
+  /**
+   * Defines a feeder to a seed, creating a new seed definition.
+   *
+   * @param name
+   *   The seed name.
+   * @return
+   *   A new seed definition.
+   */
   public SeedDefinition feed(String name) {
     return feed(name, null, 1);
   }
 
+  /**
+   * Defines a feeder to a seed, creating a new seed definition.
+   *
+   * @param name
+   *   The seed name.
+   * @param main
+   *   The seed main.
+   * @return
+   *   A new seed definition.
+   */
   public SeedDefinition feed(String name, String main) {
     return feed(name, main, 1);
   }
 
+  /**
+   * Defines a feeder to a seed, creating a new seed definition.
+   *
+   * @param name
+   *   The seed name.
+   * @param main
+   *   The seed main.
+   * @param workers
+   *   The number of seed workers.
+   * @return
+   *   A new seed definition.
+   */
   public SeedDefinition feed(String name, String main, int workers) {
     return addDefinition(new SeedDefinition().setName(name).setMain(main).setWorkers(workers));
   }

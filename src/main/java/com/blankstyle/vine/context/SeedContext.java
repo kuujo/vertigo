@@ -15,50 +15,90 @@
 */
 package com.blankstyle.vine.context;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Context;
+import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
- * A Seed context.
+ * A JSON object-based seed context.
  *
  * @author Jordan Halterman
  */
-public interface SeedContext extends Context<SeedContext> {
+public class SeedContext implements Context<SeedContext>, Serializeable<JsonObject> {
 
-  /**
-   * Returns a collection of seed worker contexts.
-   *
-   * @return
-   *   A collection of seed worker contexts.
-   */
-  public Collection<WorkerContext> getWorkerContexts();
+  private JsonObject context = new JsonObject();
 
-  /**
-   * Returns the seed definition.
-   *
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition getDefinition();
+  private VineContext parent;
 
-  /**
-   * Returns the parent vine context.
-   *
-   * @return
-   *   The parent vine context.
-   */
-  public VineContext getContext();
+  private Handler<SeedContext> updateHandler;
 
-  /**
-   * Sets the parent vine context.
-   *
-   * @param context
-   *   The parent vine context.
-   * @return
-   *   The called context instance.
-   */
-  public SeedContext setContext(VineContext context);
+  public SeedContext() {
+  }
+
+  public SeedContext(String name) {
+    context.putString("name", name);
+  }
+
+  public SeedContext(JsonObject json) {
+    context = json;
+  }
+
+  public SeedContext(JsonObject json, VineContext parent) {
+    this(json);
+    this.parent = parent;
+  }
+
+  @Override
+  public void update(JsonObject json) {
+    context = json;
+    if (updateHandler != null) {
+      updateHandler.handle(this);
+    }
+  }
+
+  @Override
+  public void updateHandler(Handler<SeedContext> handler) {
+    updateHandler = handler;
+  }
+
+  public Collection<WorkerContext> getWorkerContexts() {
+    JsonArray workers = context.getArray("workers");
+    ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
+    Iterator<Object> iter = workers.iterator();
+    while (iter.hasNext()) {
+      contexts.add(new WorkerContext((JsonObject) iter.next(), this));
+    }
+    return contexts;
+  }
+
+  public SeedDefinition getDefinition() {
+    JsonObject definition = context.getObject("definition");
+    if (definition != null) {
+      return new SeedDefinition(definition);
+    }
+    return new SeedDefinition();
+  }
+
+  public VineContext getContext() {
+    return parent;
+  }
+
+  public SeedContext setContext(VineContext context) {
+    parent = context;
+    return this;
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
+  }
 
 }

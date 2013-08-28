@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.definition.JsonVineDefinition;
 import com.blankstyle.vine.definition.VineDefinition;
 
 /**
@@ -36,7 +35,7 @@ public abstract class Vine implements Deployer<Collection<Seed>, String> {
    *   A new vine definition.
    */
   public static VineDefinition createDefinition() {
-    return new JsonVineDefinition();
+    return new VineDefinition();
   }
 
   /**
@@ -48,7 +47,7 @@ public abstract class Vine implements Deployer<Collection<Seed>, String> {
    *   A new vine definition.
    */
   public static VineDefinition createDefinition(String address) {
-    return new JsonVineDefinition().setAddress(address);
+    return new VineDefinition().setAddress(address);
   }
 
   protected JsonObject context;

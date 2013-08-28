@@ -15,113 +15,263 @@
 */
 package com.blankstyle.vine.definition;
 
-import com.blankstyle.vine.Definition;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
+
+import com.blankstyle.vine.Serializeable;
+import com.blankstyle.vine.context.VineContext;
+
 
 /**
- * A Vine definition.
+ * A default vine context implementation.
  *
  * @author Jordan Halterman
  */
-public interface VineDefinition extends Definition<VineDefinition> {
+public class VineDefinition implements Serializeable<JsonObject> {
+
+  private JsonObject definition = new JsonObject();
+
+  private static final long DEFAULT_TIMEOUT = 5000;
+
+  private static final long DEFAULT_EXPIRATION = 15000;
+
+  public VineDefinition() {
+  }
+
+  public VineDefinition(JsonObject json) {
+    definition = json;
+  }
+
+  public String getAddress() {
+    return definition.getString("address");
+  }
+
+  public VineDefinition setAddress(String address) {
+    definition.putString("address", address);
+    return this;
+  }
+
+  public long getMessageTimeout() {
+    return definition.getLong("timeout", DEFAULT_TIMEOUT);
+  }
+
+  public VineDefinition setMessageTimeout(long timeout) {
+    definition.putNumber("timeout", timeout);
+    return this;
+  }
+
+  public long getMessageExpiration() {
+    return definition.getLong("expiration", DEFAULT_EXPIRATION);
+  }
+
+  public VineDefinition setMessageExpiration(long expiration) {
+    definition.putNumber("expiration", expiration);
+    return this;
+  }
+
+  private SeedDefinition addDefinition(SeedDefinition definition) {
+    // Add the seed definition.
+    JsonObject seeds = this.definition.getObject("seeds");
+    if (seeds == null) {
+      seeds = new JsonObject();
+      this.definition.putObject("seeds", seeds);
+    }
+    if (!seeds.getFieldNames().contains(definition.getName())) {
+      seeds.putObject(definition.getName(), definition.serialize());
+    }
+
+    // Add the seed connection.
+    JsonArray connections = this.definition.getArray("connections");
+    if (connections == null) {
+      connections = new JsonArray();
+      this.definition.putArray("connections", connections);
+    }
+    if (!connections.contains(definition.getName())) {
+      connections.add(definition.getName());
+    }
+    return definition;
+  }
+
+  public SeedDefinition feed(SeedDefinition definition) {
+    return addDefinition(definition);
+  }
+
+  public SeedDefinition feed(String name) {
+    return feed(name, null, 1);
+  }
+
+  public SeedDefinition feed(String name, String main) {
+    return feed(name, main, 1);
+  }
+
+  public SeedDefinition feed(String name, String main, int workers) {
+    return addDefinition(new SeedDefinition().setName(name).setMain(main).setWorkers(workers));
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return definition;
+  }
 
   /**
-   * Gets the vine address.
-   *
-   * @return
-   *   The vine address.
+   * Creates a seed address.
    */
-  public String getAddress();
+  protected String createSeedAddress(String vineAddress, String seedName) {
+    return String.format("%s.%s", vineAddress, seedName);
+  }
 
   /**
-   * Sets the vine address.
-   *
-   * @param address
-   *   The vine address.
-   * @return
-   *   The called vine definition.
+   * Creates an array of worker addresses.
    */
-  public VineDefinition setAddress(String address);
+  protected String[] createWorkerAddresses(String seedAddress, int numWorkers) {
+    List<String> addresses = new ArrayList<String>();
+    for (int i = 0; i < numWorkers; i++) {
+      addresses.add(String.format("%s.%d", seedAddress, i+1));
+    }
+    return (String[]) addresses.toArray();
+  }
 
   /**
-   * Gets the eventbus send timeout.
+   * Returns a vine context representation of the vine.
    *
    * @return
-   *   The eventbus sent timeout.
+   *   A prepared vine context.
+   * @throws MalformedDefinitionException 
    */
-  public long getMessageTimeout();
+  public VineContext toContext() throws MalformedDefinitionException {
+    String address = definition.getString("address");
+    if (address == null) {
+      throw new MalformedDefinitionException("No address specified.");
+    }
 
-  /**
-   * Sets the eventbus send timeout.
-   *
-   * @param timeout
-   *   The eventbus send timeout.
-   * @return
-   *   The called vine definition.
-   */
-  public VineDefinition setMessageTimeout(long timeout);
+    JsonObject context = new JsonObject();
+    context.putString("address", address);
+    context.putObject("definition", definition);
 
-  /**
-   * Gets the message process expiration time.
-   *
-   * @return
-   *   The message expiration time.
-   */
-  public long getMessageExpiration();
+    // First, create all seed contexts and then add connections.
+    JsonObject seeds = definition.getObject("seeds");
+    Iterator<String> iter = seeds.getFieldNames().iterator();
 
-  /**
-   * Sets the message process expiration time.
-   *
-   * @param expiration
-   *   The message expiration time.
-   * @return
-   *   The called vine definition.
-   */
-  public VineDefinition setMessageExpiration(long expiration);
+    // Create seed contexts:
+    // {
+    //   "name": "seed1",
+    //   "workers": [
+    //     "foo.seed1.1",
+    //     "foo.seed1.2"
+    //   ],
+    //   "definition": {
+    //     ...
+    //   }
+    // }
+    JsonObject seedContexts = new JsonObject();
+    while (iter.hasNext()) {
+      JsonObject seed = seeds.getObject(iter.next());
 
-  /**
-   * Adds a new seed to the vine.
-   *
-   * @param definition
-   *   The seed definition.
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition feed(SeedDefinition definition);
+      String seedName = seed.getString("name");
+      if (seedName == null) {
+        throw new MalformedDefinitionException("No seed name specified.");
+      }
 
-  /**
-   * Adds a new seed to the vine.
-   *
-   * @param name
-   *   The seed name.
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition feed(String name);
+      // Create the basic seed context object.
+      JsonObject seedContext = new JsonObject();
+      seedContext.putString("name", seedName);
+      seedContext.putString("address", createSeedAddress(definition.getString("address"), seed.getString("name")));
+      seedContext.putObject("definition", seed);
 
-  /**
-   * Adds a new seed to the vine.
-   *
-   * @param name
-   *   The seed name.
-   * @param main
-   *   The seed main.
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition feed(String name, String main);
+      // Create an array of worker addresses.
+      seedContext.putArray("workers", new JsonArray(createWorkerAddresses(seedContext.getString("address"), seedContext.getInteger("workers"))));
 
-  /**
-   * Adds a new seed to the vine.
-   *
-   * @param name
-   *   The seed name.
-   * @param main
-   *   The seed main.
-   * @param workers
-   *   The number of seed workers.
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition feed(String name, String main, int workers);
+      // Add the seed context to the seeds object.
+      seedContexts.putObject(seedContext.getString("name"), seedContext);
+    }
+
+    // Seed contexts are stored in context.seeds.
+    context.putObject("seeds", seedContexts);
+
+    JsonArray connections = definition.getArray("connections");
+    if (connections == null) {
+      connections = new JsonArray();
+    }
+
+    JsonObject connectionContexts = new JsonObject();
+
+    // Create an object of connection information:
+    // {
+    //   "seed1": {
+    //     "addresses": [
+    //       "foo.seed1.1",
+    //       "foo.seed1.2"
+    //     ]
+    //   }
+    // }
+    Iterator<Object> iter2 = connections.iterator();
+    while (iter2.hasNext()) {
+      String name = iter2.next().toString();
+      JsonObject seedContext = seedContexts.getObject(name);
+      if (seedContext == null) {
+        continue;
+      }
+
+      JsonObject connection = new JsonObject();
+      connection.putString("name", name);
+      connection.putString("grouping", seedContext.getObject("definition").getString("grouping", "round"));
+      connection.putArray("addresses", seedContext.getArray("workers").copy());
+
+      connectionContexts.putObject(name, connection);
+    }
+
+    // Connection information is stored in context.connections.
+    context.putObject("connections", connectionContexts);
+
+    // Now iterate through each seed context and add connection information.
+    // This needed to be done *after* those contexts are created because
+    // we need to be able to get context information from connecting seeds.
+    // {
+    //   "seed1": {
+    //     "addresses": [
+    //       "foo.seed1.1",
+    //       "foo.seed1.2"
+    //     ],
+    //     "grouping": "random"
+    //   }
+    //   ...
+    // }
+    Iterator<String> seedNames = seedContexts.getFieldNames().iterator();
+    while (seedNames.hasNext()) {
+      JsonObject seedContext = seedContexts.getObject(seedNames.next());
+      JsonObject seedDef = seedContext.getObject("definition");
+
+      // Iterate through each of the seed's connections.
+      JsonArray seedCons = seedDef.getArray("connections");
+      Iterator<Object> iterCon = seedCons.iterator();
+
+      JsonObject seedConnectionContexts = new JsonObject();
+      while (iterCon.hasNext()) {
+        // Get the seed name and with it a reference to the seed context.
+        String name = iterCon.next().toString();
+        JsonObject conContext = seedContexts.getObject(name);
+        if (conContext == null) {
+          continue;
+        }
+
+        // With the context, we can list all of the worker addresses.
+        JsonObject connection = new JsonObject();
+        connection.putString("name", name);
+        connection.putString("grouping", conContext.getString("grouping", "round"));
+        connection.putArray("addresses", conContext.getArray("workers").copy());
+
+        seedConnectionContexts.putObject(name, connection);
+      }
+
+      // Finally, add the connections to the object.
+      seedContext.putObject("connections", seedConnectionContexts);
+    }
+
+    return new VineContext(context);
+  }
 
 }

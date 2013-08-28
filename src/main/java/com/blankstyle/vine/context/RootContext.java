@@ -15,24 +15,61 @@
 */
 package com.blankstyle.vine.context;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Context;
 import com.blankstyle.vine.Serializeable;
 
 /**
- * A root context.
+ * A JSON object-based root context.
  *
  * @author Jordan Halterman
  */
-public interface RootContext extends Context<RootContext>, Serializeable<JsonObject> {
+public class RootContext implements Context<RootContext>, Serializeable<JsonObject> {
 
-  /**
-   * Returns the root address.
-   *
-   * @return
-   *   The root address.
-   */
-  public String getAddress();
+  private static final String DEFAULT_ADDRESS = "vine.root";
+
+  private JsonObject context = new JsonObject();
+
+  private Handler<RootContext> updateHandler;
+
+  public RootContext() {
+  }
+
+  public RootContext(String name) {
+    context.putString("name", name);
+  }
+
+  public RootContext(JsonObject json) {
+    context = json;
+  }
+
+  public String getAddress() {
+    return context.getString("address", DEFAULT_ADDRESS);
+  }
+
+  public RootContext setAddress(String address) {
+    context.putString("address", address);
+    return this;
+  }
+
+  @Override
+  public void update(JsonObject data) {
+    context = data;
+    if (updateHandler != null) {
+      updateHandler.handle(this);
+    }
+  }
+
+  @Override
+  public void updateHandler(Handler<RootContext> handler) {
+    this.updateHandler = handler;
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
+  }
 
 }

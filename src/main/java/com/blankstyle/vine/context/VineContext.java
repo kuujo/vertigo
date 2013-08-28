@@ -15,9 +15,13 @@
 */
 package com.blankstyle.vine.context;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Context;
@@ -25,62 +29,96 @@ import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.VineDefinition;
 
 /**
- * A Vine context.
+ * A remote vine context.
  *
  * @author Jordan Halterman
  */
-public interface VineContext extends Context<VineContext>, Serializeable<JsonObject> {
+public class VineContext implements Context<VineContext>, Serializeable<JsonObject> {
 
-  /**
-   * Gets the vine address.
-   *
-   * @return
-   *   The vine address.
-   */
-  public String getAddress();
+  private JsonObject context = new JsonObject();
 
-  /**
-   * Sets the vine address.
-   *
-   * @param address
-   *   The vine address.
-   * @return
-   *   The called vine instance.
-   */
-  public VineContext setAddress(String address);
+  private Handler<VineContext> updateHandler;
 
-  /**
-   * Returns all vine seed contexts.
-   *
-   * @return
-   *   A collection of vine seed contexts.
-   */
-  public Collection<SeedContext> getSeedContexts();
+  public VineContext() {
+  }
 
-  /**
-   * Returns a vine seed context.
-   *
-   * @param name
-   *   The seed name.
-   * @return
-   *   A vine seed context.
-   */
-  public SeedContext getSeedContext(String name);
+  public VineContext(JsonObject json) {
+    context = json;
+  }
 
-  /**
-   * Returns the vine definition.
-   *
-   * @return
-   *   The context vine definition.
-   */
-  public VineDefinition getDefinition();
+  public static VineContext createContext(VineDefinition vine) {
+    JsonObject context = new JsonObject();
+    context.putObject("definition", vine.serialize());
+    context.putString("address", vine.getAddress());
+    context.putNumber("expiration", vine.getMessageExpiration());
+    context.putNumber("timeout", vine.getMessageTimeout());
+    return new VineContext(context);
+  }
 
-  /**
-   * Registers the context on the eventbus.
-   *
-   * @param eventBus
-   *   An eventbus instance.
-   */
-  public void register(EventBus eventBus);
+  @Override
+  public void update(JsonObject context) {
+    this.context = context;
+    if (updateHandler != null) {
+      updateHandler.handle(this);
+    }
+  }
+
+  @Override
+  public void updateHandler(Handler<VineContext> handler) {
+    updateHandler = handler;
+  }
+
+  public String getAddress() {
+    return context.getString("address");
+  }
+
+  public VineContext setAddress(String address) {
+    context.putString("address", address);
+    return this;
+  }
+
+  public Collection<SeedContext> getSeedContexts() {
+    JsonObject seeds = context.getObject("seeds");
+    ArrayList<SeedContext> contexts = new ArrayList<SeedContext>();
+    Iterator<String> iter = seeds.getFieldNames().iterator();
+    while (iter.hasNext()) {
+      contexts.add(new SeedContext(seeds.getObject(iter.next()), this));
+    }
+    return contexts;
+  }
+
+  public SeedContext getSeedContext(String name) {
+    JsonObject seeds = context.getObject("seeds");
+    if (seeds == null) {
+      return null;
+    }
+    JsonObject seedContext = seeds.getObject(name);
+    if (seedContext == null) {
+      return null;
+    }
+    return new SeedContext(seedContext);
+  }
+
+  public VineDefinition getDefinition() {
+    JsonObject definition = context.getObject("definition");
+    if (definition != null) {
+      return new VineDefinition(definition);
+    }
+    return new VineDefinition();
+  }
+
+  public void register(EventBus eventBus) {
+    eventBus.registerHandler(String.format("vertx.context.%s", getAddress()), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        update(message.body());
+      }
+    });
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
+  }
 
 }

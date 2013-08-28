@@ -15,52 +15,75 @@
 */
 package com.blankstyle.vine.context;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Context;
 import com.blankstyle.vine.Serializeable;
 
 /**
- * A worker context.
+ * A JSON based worker context.
  *
  * @author Jordan Halterman
  */
-public interface WorkerContext extends Context<WorkerContext>, Serializeable<JsonObject> {
+public class WorkerContext implements Context<WorkerContext>, Serializeable<JsonObject> {
 
-  /**
-   * Gets the worker address.
-   *
-   * @return
-   *   The worker address.
-   */
-  public String getAddress();
+  private JsonObject context = new JsonObject();
 
-  /**
-   * Sets the worker address.
-   *
-   * @param address
-   *   The worker address.
-   * @return
-   *   The called worker context instance.
-   */
-  public WorkerContext setAddress(String address);
+  private SeedContext parent;
 
-  /**
-   * Gets the parent seed context.
-   *
-   * @return
-   *   The parent seed context.
-   */
-  public SeedContext getContext();
+  private Handler<WorkerContext> updateHandler;
 
-  /**
-   * Sets the parent seed context.
-   *
-   * @param context
-   *   The parent seed context.
-   * @return
-   *   The called worker context instance.
-   */
-  public WorkerContext setContext(SeedContext context);
+  public WorkerContext() {
+  }
+
+  public WorkerContext(String name) {
+    context.putString("name", name);
+  }
+
+  public WorkerContext(JsonObject json) {
+    context = json;
+  }
+
+  public WorkerContext(JsonObject json, SeedContext parent) {
+    this(json);
+    this.parent = parent;
+  }
+
+  @Override
+  public void update(JsonObject context) {
+    this.context = context;
+    if (updateHandler != null) {
+      updateHandler.handle(this);
+    }
+  }
+
+  @Override
+  public void updateHandler(Handler<WorkerContext> handler) {
+    updateHandler = handler;
+  }
+
+  public String getAddress() {
+    return context.getString("address");
+  }
+
+  public WorkerContext setAddress(String address) {
+    context.putString("address", address);
+    return this;
+  }
+
+  public SeedContext getContext() {
+    return parent;
+  }
+
+  public WorkerContext setContext(SeedContext context) {
+    parent = context;
+    return this;
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return context;
+  }
 
 }

@@ -26,7 +26,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
-import com.blankstyle.vine.context.JsonVineContext;
+import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
@@ -70,7 +70,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
   @Override
   protected void start(ReliableEventBus eventBus) {
     log = container.logger();
-    context = new JsonVineContext(config);
+    context = new VineContext(config);
     messageExpiration = context.getDefinition().getMessageExpiration();
     eventBus.registerHandler(getMandatoryStringConfig("address"), this);
   }

@@ -24,8 +24,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.context.JsonRootContext;
-import com.blankstyle.vine.context.JsonStemContext;
+import com.blankstyle.vine.context.RootContext;
+import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.RootContext;
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
@@ -59,7 +59,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void start() {
-    context = new JsonRootContext(config);
+    context = new RootContext(config);
     String schedulerClass = getOptionalStringConfig("scheduler", "com.blankstyle.vine.scheduler.DefaultScheduler");
     try {
       scheduler = (Scheduler) Class.forName(schedulerClass).newInstance();
@@ -107,7 +107,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * Replies with a string representing the stem heartbeat address.
    */
   private void doRegister(final Message<JsonObject> message) {
-    final StemContext stemContext = new JsonStemContext(message.body());
+    final StemContext stemContext = new StemContext(message.body());
     final String address = getMandatoryString("address", message);
     String heartbeatAddress = nextHeartBeatAddress();
     heartbeatMap.put(address, heartbeatAddress);

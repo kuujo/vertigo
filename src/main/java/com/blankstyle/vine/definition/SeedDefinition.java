@@ -15,111 +15,93 @@
 */
 package com.blankstyle.vine.definition;
 
-import com.blankstyle.vine.Definition;
+import org.vertx.java.core.json.JsonObject;
+
+import com.blankstyle.vine.Serializeable;
+
 
 /**
- * A seed definition.
+ * A default seed context implementation.
  *
  * @author Jordan Halterman
  */
-public interface SeedDefinition extends Definition<SeedDefinition> {
+public class SeedDefinition implements Serializeable<JsonObject> {
 
-  /**
-   * Sets the seed name.
-   *
-   * @param name
-   *   The seed name.
-   */
-  public SeedDefinition setName(String name);
+  private JsonObject definition = new JsonObject();
 
-  /**
-   * Gets the seed name.
-   *
-   * @return
-   *   The seed name.
-   */
-  public String getName();
+  public SeedDefinition() {
+  }
 
-  /**
-   * Sets the seed main.
-   *
-   * @param main
-   *   The seed main.
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition setMain(String main);
+  public SeedDefinition(JsonObject json) {
+    definition = json;
+  }
 
-  /**
-   * Gets the seed main.
-   *
-   * @return
-   *   The seed main.
-   */
-  public String getMain();
+  public String getName() {
+    return definition.getString("name");
+  }
 
-  /**
-   * Sets the number of seed workers.
-   *
-   * @param workers
-   *   The number of seed workers.
-   * @return
-   *   The seed definition.
-   */
-  public SeedDefinition setWorkers(int workers);
+  public SeedDefinition setName(String name) {
+    definition.putString("name", name);
+    return this;
+  }
 
-  /**
-   * Gets the number of seed workers.
-   *
-   * @return
-   *   The number of seed workers.
-   */
-  public int getWorkers();
+  public String getMain() {
+    return definition.getString("main");
+  }
 
-  /**
-   * Sets a new output channel on the seed.
-   *
-   * @param context
-   *   The seed to which the channel connects.
-   * @return
-   *   The new seed definition.
-   */
-  public SeedDefinition to(SeedDefinition definition);
+  public SeedDefinition setMain(String main) {
+    definition.putString("main", main);
+    return this;
+  }
 
-  /**
-   * Sets a new output channel on the seed.
-   *
-   * @param name
-   *   The new seed name.
-   * @return
-   *   The new seed definition.
-   */
-  public SeedDefinition to(String name);
+  public SeedDefinition setGrouping(String grouping) {
+    definition.putString("grouping", grouping);
+    return this;
+  }
 
-  /**
-   * Sets a new output channel on the seed.
-   *
-   * @param name
-   *   The new seed name.
-   * @param main
-   *   The new seed main.
-   * @return
-   *   The new seed definition.
-   */
-  public SeedDefinition to(String name, String main);
+  public String getGrouping() {
+    return definition.getString("grouping");
+  }
 
-  /**
-   * Sets a new output channel on the seed.
-   *
-   * @param name
-   *   The new seed name.
-   * @param main
-   *   The new seed main.
-   * @param workers
-   *   The number of new seed workers.
-   * @return
-   *   The new seed definition.
-   */
-  public SeedDefinition to(String name, String main, int workers);
+  public SeedDefinition setWorkers(int workers) {
+    definition.putNumber("workers", workers);
+    return this;
+  }
+
+  public int getWorkers() {
+    return definition.getInteger("workers");
+  }
+
+  private SeedDefinition addDefinition(SeedDefinition definition) {
+    JsonObject connections = this.definition.getObject("connections");
+    if (connections == null) {
+      connections = new JsonObject();
+      this.definition.putObject("connections", connections);
+    }
+    if (!connections.getFieldNames().contains(definition.getName())) {
+      connections.putObject(definition.getName(), definition.serialize());
+    }
+    return definition;
+  }
+
+  public SeedDefinition to(SeedDefinition definition) {
+    return addDefinition(definition);
+  }
+
+  public SeedDefinition to(String name) {
+    return to(name, null, 1);
+  }
+
+  public SeedDefinition to(String name, String main) {
+    return to(name, main, 1);
+  }
+
+  public SeedDefinition to(String name, String main, int workers) {
+    return addDefinition(new SeedDefinition().setName(name).setMain(main).setWorkers(workers));
+  }
+
+  public JsonObject serialize() {
+    return definition;
+  }
 
 }

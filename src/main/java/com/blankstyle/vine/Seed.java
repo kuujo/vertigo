@@ -15,7 +15,7 @@
 */
 package com.blankstyle.vine;
 
-import com.blankstyle.vine.definition.JsonSeedDefinition;
+import com.blankstyle.vine.definition.SeedDefinition;
 import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
@@ -32,7 +32,7 @@ public abstract class Seed implements Deployable {
    *   A new seed definition.
    */
   public static SeedDefinition createDefinition() {
-    return new JsonSeedDefinition();
+    return new SeedDefinition();
   }
 
   /**
@@ -44,7 +44,7 @@ public abstract class Seed implements Deployable {
    *   A new seed definition.
    */
   public static SeedDefinition createDefinition(String name) {
-    return new JsonSeedDefinition().setName(name);
+    return new SeedDefinition().setName(name);
   }
 
   /**
@@ -58,7 +58,7 @@ public abstract class Seed implements Deployable {
    *   A new seed definition.
    */
   public static SeedDefinition createDefinition(String name, String main) {
-    return new JsonSeedDefinition().setName(name).setMain(main);
+    return new SeedDefinition().setName(name).setMain(main);
   }
 
   /**
@@ -74,7 +74,7 @@ public abstract class Seed implements Deployable {
    *   A new seed definition.
    */
   public static SeedDefinition createDefinition(String name, String main, int workers) {
-    return new JsonSeedDefinition().setName(name).setMain(main).setWorkers(workers);
+    return new SeedDefinition().setName(name).setMain(main).setWorkers(workers);
   }
 
 }

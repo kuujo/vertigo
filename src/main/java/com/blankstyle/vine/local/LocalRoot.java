@@ -29,6 +29,8 @@ import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.RootException;
+import com.blankstyle.vine.context.VineContext;
+import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.vine.VineVerticle;
 

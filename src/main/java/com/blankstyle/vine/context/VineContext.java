@@ -21,13 +21,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Context;
-import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.VineDefinition;
 
 /**
@@ -35,30 +30,15 @@ import com.blankstyle.vine.definition.VineDefinition;
  *
  * @author Jordan Halterman
  */
-public class VineContext implements Context<VineContext>, Serializeable<JsonObject> {
+public class VineContext implements Context {
 
   private JsonObject context = new JsonObject();
-
-  private Handler<VineContext> updateHandler;
 
   public VineContext() {
   }
 
   public VineContext(JsonObject json) {
     context = json;
-  }
-
-  @Override
-  public void update(JsonObject context) {
-    this.context = context;
-    if (updateHandler != null) {
-      updateHandler.handle(this);
-    }
-  }
-
-  @Override
-  public void updateHandler(Handler<VineContext> handler) {
-    updateHandler = handler;
   }
 
   /**
@@ -138,15 +118,6 @@ public class VineContext implements Context<VineContext>, Serializeable<JsonObje
       return new VineDefinition(definition);
     }
     return new VineDefinition();
-  }
-
-  public void register(EventBus eventBus) {
-    eventBus.registerHandler(String.format("vertx.context.%s", getAddress()), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        update(message.body());
-      }
-    });
   }
 
   @Override

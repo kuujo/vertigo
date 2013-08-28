@@ -13,14 +13,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine;
+package com.blankstyle.vine.context;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.Serializeable;
+
 /**
- * An observable context.
+ * A context.
  *
  * @author Jordan Halterman
  */
-public interface Context<T> extends Observable<JsonObject, T> {
+public interface Context extends Serializeable<JsonObject> {
 }

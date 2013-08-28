@@ -15,24 +15,18 @@
 */
 package com.blankstyle.vine.context;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
-
-import com.blankstyle.vine.Context;
-import com.blankstyle.vine.Serializeable;
 
 /**
  * A JSON based worker context.
  *
  * @author Jordan Halterman
  */
-public class WorkerContext implements Context<WorkerContext>, Serializeable<JsonObject> {
+public class WorkerContext implements Context {
 
   private JsonObject context = new JsonObject();
 
   private SeedContext parent;
-
-  private Handler<WorkerContext> updateHandler;
 
   public WorkerContext() {
   }
@@ -48,19 +42,6 @@ public class WorkerContext implements Context<WorkerContext>, Serializeable<Json
   public WorkerContext(JsonObject json, SeedContext parent) {
     this(json);
     this.parent = parent;
-  }
-
-  @Override
-  public void update(JsonObject context) {
-    this.context = context;
-    if (updateHandler != null) {
-      updateHandler.handle(this);
-    }
-  }
-
-  @Override
-  public void updateHandler(Handler<WorkerContext> handler) {
-    updateHandler = handler;
   }
 
   public String getAddress() {

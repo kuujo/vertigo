@@ -21,12 +21,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Context;
-import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
@@ -34,13 +31,11 @@ import com.blankstyle.vine.definition.SeedDefinition;
  *
  * @author Jordan Halterman
  */
-public class SeedContext implements Context<SeedContext>, Serializeable<JsonObject> {
+public class SeedContext implements Context {
 
   private JsonObject context = new JsonObject();
 
   private VineContext parent;
-
-  private Handler<SeedContext> updateHandler;
 
   public SeedContext() {
   }
@@ -70,19 +65,6 @@ public class SeedContext implements Context<SeedContext>, Serializeable<JsonObje
    */
   public String[] getWorkers() {
     return (String[]) context.getArray("workers").toArray();
-  }
-
-  @Override
-  public void update(JsonObject json) {
-    context = json;
-    if (updateHandler != null) {
-      updateHandler.handle(this);
-    }
-  }
-
-  @Override
-  public void updateHandler(Handler<SeedContext> handler) {
-    updateHandler = handler;
   }
 
   /**

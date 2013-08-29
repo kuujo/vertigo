@@ -1,5 +1,6 @@
 {
   "main": "com.blankstyle.vine.eventbus.stem.StemVerticle",
+  "includes": "com.blankstyle~vine~0.1.0-SNAPSHOT",
   "author": "jordanhalterman",
   "website": "https://github.com/jordanhalterman/vine"
 }

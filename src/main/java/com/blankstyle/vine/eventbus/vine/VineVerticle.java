@@ -98,7 +98,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * Starts processing a message.
    */
   private void doStart(final Message<JsonObject> message) {
-    dispatchMessage(getMandatoryObject("message", message), new Handler<AsyncResult<JsonObject>>() {
+    dispatchMessage(getMandatoryObject("body", message), new Handler<AsyncResult<JsonObject>>() {
       @Override
       public void handle(AsyncResult<JsonObject> result) {
         if (result.succeeded()) {

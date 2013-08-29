@@ -15,10 +15,6 @@
 */
 package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * A bi-directional communication channel.
  *
@@ -64,110 +60,6 @@ public interface Channel {
    * @param message
    *   The message to publish.
    */
-  public void publish(Object message);
-
-  /**
-   * Publishes a message to the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(JsonObject message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(JsonArray message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Buffer message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(byte[] message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(String message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Integer message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Long message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Float message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Double message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Boolean message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Short message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Character message);
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(Byte message);
+  public void publish(JsonMessage message);
 
 }

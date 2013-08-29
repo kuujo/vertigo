@@ -36,6 +36,7 @@ import com.blankstyle.vine.messaging.DefaultChannel;
 import com.blankstyle.vine.messaging.DefaultConnectionPool;
 import com.blankstyle.vine.messaging.Dispatcher;
 import com.blankstyle.vine.messaging.Groupings;
+import com.blankstyle.vine.messaging.JsonMessage;
 import com.blankstyle.vine.messaging.ReliableChannel;
 import com.blankstyle.vine.messaging.ReliableEventBusConnection;
 
@@ -52,6 +53,10 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   protected Collection<ReliableChannel> channels;
 
+  private JsonMessage currentMessage;
+
+  private String seedName;
+
   @Override
   protected void start(ReliableEventBus eventBus) {
     this.eventBus = eventBus;
@@ -65,6 +70,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void setupContext() {
     this.context = new WorkerContext(config);
+    this.seedName = context.getContext().getDefinition().getName();
   }
 
   /**
@@ -114,7 +120,9 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void doReceive(Message<JsonObject> message) {
     message.reply();
-    process(message.body());
+    currentMessage = new JsonMessage(message.body());
+    JsonObject body = getMandatoryObject("body", message);
+    process(body.copy());
   }
 
   /**
@@ -149,7 +157,9 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    *   An iterator over all channels.
    */
   private void recursiveEmit(final JsonObject data, ReliableChannel currentChannel, final Iterator<ReliableChannel> channelIterator) {
-    currentChannel.publish(data, new AsyncResultHandler<Void>() {
+    JsonMessage newMessage = currentMessage.copy();
+    newMessage.setBody(data).tag(seedName);
+    currentChannel.publish(newMessage, new AsyncResultHandler<Void>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (channelIterator.hasNext()) {
@@ -188,7 +198,9 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void recursiveEmit(final JsonObject data, ReliableChannel currentChannel, final Iterator<ReliableChannel> channelIterator, final Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    currentChannel.publish(data, new AsyncResultHandler<Void>() {
+    JsonMessage newMessage = currentMessage.copy();
+    newMessage.setBody(data).tag(seedName);
+    currentChannel.publish(newMessage, new AsyncResultHandler<Void>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {

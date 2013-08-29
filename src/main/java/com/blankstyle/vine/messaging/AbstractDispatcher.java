@@ -39,27 +39,27 @@ public abstract class AbstractDispatcher implements Dispatcher {
   protected abstract Connection getConnection();
 
   @Override
-  public <T> void dispatch(Message<T> message) {
+  public void dispatch(JsonMessage message) {
     getConnection().send(message);
   }
 
   @Override
-  public <T> void dispatch(Message<T> message, Handler<AsyncResult<Void>> resultHandler) {
+  public void dispatch(JsonMessage message, Handler<AsyncResult<Void>> resultHandler) {
     dispatch(message, DEFAULT_TIMEOUT, false, 0, resultHandler);
   }
 
   @Override
-  public <T> void dispatch(Message<T> message, long timeout, Handler<AsyncResult<Void>> resultHandler) {
+  public void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Void>> resultHandler) {
     dispatch(message, timeout, false, 0, resultHandler);
   }
 
   @Override
-  public <T> void dispatch(Message<T> message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler) {
+  public void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler) {
     dispatch(message, timeout, retry, 1, resultHandler);
   }
 
   @Override
-  public <T> void dispatch(Message<T> message, long timeout, boolean retry, int attempts,
+  public void dispatch(JsonMessage message, long timeout, boolean retry, int attempts,
       Handler<AsyncResult<Void>> resultHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
 
@@ -70,7 +70,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
       throw new IllegalArgumentException("Cannot dispatch to unreliable connection.");
     }
 
-    ((ReliableConnection) connection).send(message.serialize(), timeout, retry, attempts, new AsyncResultHandler<org.vertx.java.core.eventbus.Message<Void>>() {
+    ((ReliableConnection) connection).send(message, timeout, retry, attempts, new AsyncResultHandler<org.vertx.java.core.eventbus.Message<Void>>() {
       @Override
       public void handle(AsyncResult<org.vertx.java.core.eventbus.Message<Void>> result) {
         if (result.succeeded()) {

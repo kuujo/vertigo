@@ -18,24 +18,14 @@ package com.blankstyle.vine.messaging;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.Serializeable;
+
 /**
  * A JSON message implementation.
  *
  * @author Jordan Halterman
  */
-public class JsonMessage<T> implements Message<T> {
-
-  /**
-   * Creates a JSON message from a JSON object.
-   *
-   * @param json
-   *   The JSON object from which to create the message.
-   * @return
-   *   A JSON message instance.
-   */
-  public static <T> JsonMessage<T> fromJsonObject(JsonObject json) {
-    return new JsonMessage<T>(json);
-  }
+public class JsonMessage implements Serializeable<JsonObject> {
 
   protected JsonObject json;
 
@@ -47,19 +37,38 @@ public class JsonMessage<T> implements Message<T> {
     this.json = json;
   }
 
-  @Override
-  public Message<T> setIdentifier(String id) {
+  /**
+   * Sets the unique message identifier.
+   *
+   * @param id
+   *   A unique message identifier.
+   * @return
+   *   The called message object.
+   */
+  public JsonMessage setIdentifier(String id) {
     json.putString("id", id);
     return this;
   }
 
-  @Override
+  /**
+   * Gets the unique message identifier.
+   *
+   * @return
+   *   A unique message identifier.
+   */
   public String getIdentifier() {
     return json.getString("id");
   }
 
-  @Override
-  public Message<T> addTag(String tag) {
+  /**
+   * Adds a tag to the message.
+   *
+   * @param tag
+   *   A message tag.
+   * @return
+   *   The called message object.
+   */
+  public JsonMessage tag(String tag) {
     JsonArray tags = json.getArray("tags");
     if (tags == null) {
       tags = new JsonArray();
@@ -69,7 +78,12 @@ public class JsonMessage<T> implements Message<T> {
     return this;
   }
 
-  @Override
+  /**
+   * Gets an array of message tags.
+   *
+   * @return
+   *   An array of message tags.
+   */
   public String[] getTags() {
     JsonArray tags = json.getArray("tags");
     if (tags != null) {
@@ -78,20 +92,42 @@ public class JsonMessage<T> implements Message<T> {
     return null;
   }
 
-  @Override
-  public Message<T> setBody(T body) {
+  /**
+   * Sets the message body.
+   *
+   * @param body
+   *   The message body.
+   * @return
+   *   The called message object.
+   */
+  public JsonMessage setBody(JsonObject body) {
     json.putValue("body", body);
     return this;
   }
 
-  @Override
-  public T getBody() {
-    return json.getValue("body");
+  /**
+   * Returns the JSON message body.
+   *
+   * @return
+   *   A message body.
+   */
+  public JsonObject body() {
+    return json.getObject("body");
   }
 
   @Override
   public JsonObject serialize() {
     return json;
+  }
+
+  /**
+   * Copies the JSON message.
+   *
+   * @return
+   *   A new JSON message.
+   */
+  public JsonMessage copy() {
+    return new JsonMessage(json);
   }
 
 }

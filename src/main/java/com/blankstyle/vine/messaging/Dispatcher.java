@@ -39,7 +39,7 @@ public interface Dispatcher {
    * @param message
    *   The message to dispatch.
    */
-  public <T> void dispatch(Message<T> message);
+  public void dispatch(JsonMessage message);
 
   /**
    * Dispatches a message.
@@ -49,7 +49,7 @@ public interface Dispatcher {
    * @param resultHandler
    *   A result handler that will be invoked when the message is acknowledged.
    */
-  public <T> void dispatch(Message<T> message, Handler<AsyncResult<Void>> resultHandler);
+  public void dispatch(JsonMessage message, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Dispatches a message.
@@ -61,7 +61,7 @@ public interface Dispatcher {
    * @param resultHandler
    *   A result handler that will be invoked when the message is acknowledged.
    */
-  public <T> void dispatch(Message<T> message, long timeout, Handler<AsyncResult<Void>> resultHandler);
+  public void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Dispatches a message.
@@ -75,7 +75,7 @@ public interface Dispatcher {
    * @param resultHandler
    *   A result handler that will be invoked when the message is acknowledged.
    */
-  public <T> void dispatch(Message<T> message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler);
+  public void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler);
 
   /**
    * Dispatches a message.
@@ -91,6 +91,6 @@ public interface Dispatcher {
    * @param resultHandler
    *   A result handler that will be invoked when the message is acknowledged.
    */
-  public <T> void dispatch(Message<T> message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Void>> resultHandler);
+  public void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Void>> resultHandler);
 
 }

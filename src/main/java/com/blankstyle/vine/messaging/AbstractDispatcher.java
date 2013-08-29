@@ -33,14 +33,16 @@ public abstract class AbstractDispatcher implements Dispatcher {
   /**
    * Returns the next connection to which to dispatch.
    *
+   * @param message
+   *   The message for which a connection is being retrieved.
    * @return
    *   A connection to which to dispatch a message.
    */
-  protected abstract Connection getConnection();
+  protected abstract Connection getConnection(JsonMessage message);
 
   @Override
   public void dispatch(JsonMessage message) {
-    getConnection().send(message);
+    getConnection(message).send(message);
   }
 
   @Override
@@ -65,7 +67,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
     // Make sure this is a reliable connection. Acknowledgment handlers are only
     // supported on reliable connections.
-    Connection connection = getConnection();
+    Connection connection = getConnection(message);
     if (!(connection instanceof ReliableConnection)) {
       throw new IllegalArgumentException("Cannot dispatch to unreliable connection.");
     }

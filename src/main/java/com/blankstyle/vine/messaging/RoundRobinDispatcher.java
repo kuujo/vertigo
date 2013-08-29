@@ -15,35 +15,37 @@
 */
 package com.blankstyle.vine.messaging;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 /**
- * A random dispatcher implementation.
+ * A round-robin dispatcher.
  *
  * @author Jordan Halterman
  */
-public class RandomDispatcher extends AbstractDispatcher {
+public class RoundRobinDispatcher extends AbstractDispatcher {
 
-  private Map<Double, Connection> connectionMap;
+  private List<Connection> items;
 
-  private int connectionCount;
+  private Iterator<Connection> iterator;
 
   @Override
   public void init(ConnectionPool connections) {
-    connectionMap = new HashMap<Double, Connection>();
-    Iterator<Connection> iter = connections.iterator();
-    int i = 0;
-    while (iter.hasNext()) {
-      connectionMap.put(Double.valueOf(i++), iter.next());
+    this.items = new ArrayList<Connection>();
+    Iterator<Connection> iterator = connections.iterator();
+    while (iterator.hasNext()) {
+      items.add(iterator.next());
     }
-    connectionCount = connections.size();
+    this.iterator = items.iterator();
   }
 
   @Override
   protected Connection getConnection(JsonMessage message) {
-    return connectionMap.get(Math.random() * connectionCount);
+    if (!iterator.hasNext()) {
+      iterator = items.iterator();
+    }
+    return iterator.next();
   }
 
 }

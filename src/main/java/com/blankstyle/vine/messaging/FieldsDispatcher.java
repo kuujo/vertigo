@@ -20,15 +20,17 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A round-robin dispatcher.
+ * A fields-based dispatcher implementation.
  *
  * @author Jordan Halterman
  */
-public class RoundDispatcher extends AbstractDispatcher {
+public class FieldsDispatcher extends AbstractDispatcher {
 
   private List<Connection> items;
 
-  private Iterator<Connection> iterator;
+  private int size;
+
+  private String field;
 
   @Override
   public void init(ConnectionPool connections) {
@@ -37,15 +39,14 @@ public class RoundDispatcher extends AbstractDispatcher {
     while (iterator.hasNext()) {
       items.add(iterator.next());
     }
-    this.iterator = items.iterator();
+    size = items.size();
   }
 
   @Override
-  protected Connection getConnection() {
-    if (!iterator.hasNext()) {
-      iterator = items.iterator();
-    }
-    return iterator.next();
+  protected Connection getConnection(JsonMessage message) {
+    String value = message.body().getString(field);
+    int length = value.length();
+    return items.get(length % size);
   }
 
 }

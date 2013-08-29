@@ -29,10 +29,13 @@ public final class Groupings {
 
   public static final String RANDOM = "random";
 
+  public static final String FIELDS = "fields";
+
   @SuppressWarnings("serial")
   private static Map<String, Class<? extends Dispatcher>> groupingMap = new HashMap<String, Class<? extends Dispatcher>>() {{
-    put(ROUND_ROBIN, RoundDispatcher.class);
+    put(ROUND_ROBIN, RoundRobinDispatcher.class);
     put(RANDOM, RandomDispatcher.class);
+    put(FIELDS, FieldsDispatcher.class);
   }};
 
   /**

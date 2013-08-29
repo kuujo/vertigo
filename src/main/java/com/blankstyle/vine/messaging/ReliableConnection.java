@@ -16,7 +16,6 @@
 package com.blankstyle.vine.messaging;
 
 import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.eventbus.Message;
 
 /**
  * A reliable point-to-point connection
@@ -30,11 +29,11 @@ public interface ReliableConnection extends Connection {
    *
    * @param message
    *   The message.
-   * @param replyHandler
+   * @param doneHandler
    *   An asynchronous reply handler. This will be invoked with the message reply,
    *   or with a TimeoutException if the response times out.
    */
-  public Connection send(JsonMessage message, AsyncResultHandler<Message<Void>> replyHandler);
+  public Connection send(JsonMessage message, AsyncResultHandler<Void> doneHandler);
 
   /**
    * Sends a message with a timeout.
@@ -43,11 +42,11 @@ public interface ReliableConnection extends Connection {
    *   The message.
    * @param timeout
    *   The message timeout.
-   * @param replyHandler
+   * @param doneHandler
    *   An asynchronous reply handler. This will be invoked with the message reply,
    *   or with a TimeoutException if the response times out.
    */
-  public Connection send(JsonMessage message, long timeout, AsyncResultHandler<Message<Void>> replyHandler);
+  public Connection send(JsonMessage message, long timeout, AsyncResultHandler<Void> doneHandler);
 
   /**
    * Sends a message with a timeout, attempting to re-send the message if a timeout occurs.
@@ -58,13 +57,13 @@ public interface ReliableConnection extends Connection {
    *   The message timeout.
    * @param retry
    *   A boolean indicating whether to attempt to re-send messages.
-   * @param replyHandler
+   * @param doneHandler
    *   An asynchronous reply handler. This will be invoked with the message reply,
    *   or with a TimeoutException if the response times out.
    * @return
    *   The called Connection instance.
    */
-  public Connection send(JsonMessage message, long timeout, boolean retry, AsyncResultHandler<Message<Void>> replyHandler);
+  public Connection send(JsonMessage message, long timeout, boolean retry, AsyncResultHandler<Void> doneHandler);
 
   /**
    * Sends a message with a timeout, attempting to re-send the message if a timeout occurs.
@@ -77,12 +76,12 @@ public interface ReliableConnection extends Connection {
    *   A boolean indicating whether to attempt to re-send messages.
    * @param attempts
    *   The number of re-send attempts allowed.
-   * @param replyHandler
+   * @param doneHandler
    *   An asynchronous reply handler. This will be invoked with the message reply,
    *   or with a TimeoutException if the response times out.
    * @return
    *   The called Connection instance.
    */
-  public Connection send(JsonMessage message, long timeout, boolean retry, int attempts, AsyncResultHandler<Message<Void>> replyHandler);
+  public Connection send(JsonMessage message, long timeout, boolean retry, int attempts, AsyncResultHandler<Void> doneHandler);
 
 }

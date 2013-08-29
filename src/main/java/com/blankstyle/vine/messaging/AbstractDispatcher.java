@@ -70,9 +70,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
       throw new IllegalArgumentException("Cannot dispatch to unreliable connection.");
     }
 
-    ((ReliableConnection) connection).send(message, timeout, retry, attempts, new AsyncResultHandler<org.vertx.java.core.eventbus.Message<Void>>() {
+    ((ReliableConnection) connection).send(message, timeout, retry, attempts, new AsyncResultHandler<Void>() {
       @Override
-      public void handle(AsyncResult<org.vertx.java.core.eventbus.Message<Void>> result) {
+      public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
           future.setResult(null);
         }

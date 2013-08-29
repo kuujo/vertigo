@@ -120,15 +120,6 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
       case "undeploy":
         doUndeploy(message);
         break;
-      case "load":
-        doLoadContext(message);
-        break;
-      case "update":
-        doUpdateContext(message);
-        break;
-      case "delete":
-        doDeleteContext(message);
-        break;
       default:
         sendError(message, String.format("Invalid action %s.", action));
     }
@@ -165,27 +156,6 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * Undeploys a vine definition.
    */
   private void doUndeploy(final Message<JsonObject> message) {
-    
-  }
-
-  /**
-   * Loads a vine context.
-   */
-  private void doLoadContext(final Message<JsonObject> message) {
-    
-  }
-
-  /**
-   * Updates a vine context.
-   */
-  private void doUpdateContext(final Message<JsonObject> message) {
-    
-  }
-
-  /**
-   * Deletes a vine context.
-   */
-  private void doDeleteContext(final Message<JsonObject> message) {
     
   }
 

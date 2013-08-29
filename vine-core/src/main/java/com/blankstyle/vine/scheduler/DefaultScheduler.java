@@ -15,7 +15,15 @@
 */
 package com.blankstyle.vine.scheduler;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.impl.DefaultFutureResult;
 
 import com.blankstyle.vine.Stem;
 import com.blankstyle.vine.context.WorkerContext;
@@ -28,13 +36,28 @@ import com.blankstyle.vine.context.WorkerContext;
 public class DefaultScheduler implements Scheduler {
 
   @Override
-  public void assign(WorkerContext context, Collection<Stem> stems) {
-    
-  }
+  public void assign(WorkerContext context, Collection<Stem> stems, Handler<AsyncResult<String>> resultHandler) {
+    final Future<String> future = new DefaultFutureResult<String>();
 
-  @Override
-  public void release(WorkerContext context, Collection<Stem> stems) {
-    
+    Iterator<Stem> iter = stems.iterator();
+    List<Stem> stemList = new ArrayList<Stem>();
+    while (iter.hasNext()) {
+      stemList.add(iter.next());
+    }
+
+    // Assign the worker to a random stem.
+    final Stem stem = stemList.get((int) (Math.random() * stemList.size()));
+    stem.assign(context, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.succeeded()) {
+          future.setResult(stem.getAddress());
+        }
+        else {
+          future.setFailure(result.cause());
+        }
+      }
+    });
   }
 
 }

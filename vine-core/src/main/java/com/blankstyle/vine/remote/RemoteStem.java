@@ -75,6 +75,7 @@ public class RemoteStem implements Stem {
     return this;
   }
 
+  @Override
   public String getAddress() {
     return address;
   }

@@ -30,6 +30,11 @@ import com.blankstyle.vine.context.WorkerContext;
 public interface Stem {
 
   /**
+   * Gets the stem address.
+   */
+  public String getAddress();
+
+  /**
    * Sets the root vertx instance.
    *
    * @param vertx

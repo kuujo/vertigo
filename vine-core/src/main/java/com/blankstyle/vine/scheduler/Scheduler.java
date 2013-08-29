@@ -17,6 +17,9 @@ package com.blankstyle.vine.scheduler;
 
 import java.util.Collection;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 import com.blankstyle.vine.Stem;
 import com.blankstyle.vine.context.WorkerContext;
 
@@ -32,15 +35,12 @@ public interface Scheduler {
    *
    * @param context
    *   The worker context.
+   * @param stems
+   *   A collection of stems.
+   * @param resultHandler
+   *   A handler to be invoked with the address of the stem to which the
+   *   worker was assigned.
    */
-  public void assign(WorkerContext context, Collection<Stem> stems);
-
-  /**
-   * Releases a worker from a machine.
-   *
-   * @param context
-   *   The worker context.
-   */
-  public void release(WorkerContext context, Collection<Stem> stems);
+  public void assign(WorkerContext context, Collection<Stem> stems, Handler<AsyncResult<String>> resultHandler);
 
 }

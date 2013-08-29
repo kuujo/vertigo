@@ -18,11 +18,11 @@ package com.blankstyle.vine;
 import com.blankstyle.vine.definition.SeedDefinition;
 
 /**
- * An abstract seed.
+ * Static seed methods.
  *
  * @author Jordan Halterman
  */
-public abstract class Seed implements Deployable {
+public final class Seeds {
 
   /**
    * Creates a new seed definition.

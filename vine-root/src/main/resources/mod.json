@@ -1,6 +1,6 @@
 {
-  "main": "com.blankstyle.vine.eventbus.root.RootVerticle",
   "includes": "com.blankstyle~vine~0.1.0-SNAPSHOT",
+  "main": "com.blankstyle.vine.eventbus.root.RootVerticle",
   "author": "jordanhalterman",
   "website": "https://github.com/jordanhalterman/vine"
 }

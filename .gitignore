@@ -1,1 +1,6 @@
 target/
+test-output/
+release.properties
+.project
+.classpath
+.settings/

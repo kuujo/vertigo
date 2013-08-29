@@ -210,7 +210,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    *   A prepared vine context.
    * @throws MalformedDefinitionException 
    */
-  public VineContext toContext() throws MalformedDefinitionException {
+  public VineContext createContext() throws MalformedDefinitionException {
     String address = definition.getString("address");
     if (address == null) {
       throw new MalformedDefinitionException("No address specified.");

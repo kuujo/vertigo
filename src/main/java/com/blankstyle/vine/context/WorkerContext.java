@@ -37,6 +37,10 @@ public class WorkerContext implements Context {
 
   public WorkerContext(JsonObject json) {
     context = json;
+    JsonObject seedContext = context.getObject("seed");
+    if (seedContext != null) {
+      parent = new SeedContext(seedContext);
+    }
   }
 
   public WorkerContext(JsonObject json, SeedContext parent) {
@@ -64,6 +68,10 @@ public class WorkerContext implements Context {
 
   @Override
   public JsonObject serialize() {
+    JsonObject context = this.context.copy();
+    if (parent != null) {
+      context.putObject("seed", parent.serialize().copy());
+    }
     return context;
   }
 

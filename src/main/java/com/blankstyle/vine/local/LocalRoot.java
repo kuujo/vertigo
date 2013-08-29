@@ -15,7 +15,9 @@
 */
 package com.blankstyle.vine.local;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.vertx.java.core.AsyncResult;
@@ -29,6 +31,10 @@ import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.RootException;
+import com.blankstyle.vine.context.SeedContext;
+import com.blankstyle.vine.context.VineContext;
+import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.definition.MalformedDefinitionException;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.vine.VineVerticle;
 
@@ -102,12 +108,7 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(VineDefinition definition) {
-    deploy(definition, null);
-  }
-
-  @Override
-  public void deploy(VineDefinition definition, final Handler<AsyncResult<Feeder>> feedHandler) {
+  public void deploy(VineDefinition definition, final Handler<AsyncResult<Feeder>> feedHandler) throws MalformedDefinitionException {
     final Future<Feeder> future = new DefaultFutureResult<Feeder>();
     future.setHandler(feedHandler);
 
@@ -117,23 +118,163 @@ public class LocalRoot implements Root {
       return;
     }
 
-    if (feedHandler == null) {
-      container.deployVerticle(VINE_VERTICLE_CLASS, definition.serialize());
+    // Create a vine context.
+    VineContext context = definition.createContext();
+    RecursiveDeployer deployer = new RecursiveDeployer(context);
+    deployer.deploy(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.succeeded()) {
+          deploymentMap.put(address, address);
+          future.setResult(new BasicFeeder(address, vertx.eventBus()));
+        }
+        else {
+          future.setFailure(result.cause());
+        }
+      }
+    });
+  }
+
+  /**
+   * Recursively deploys all vine elements.
+   *
+   * @author Jordan Halterman
+   */
+  private class RecursiveDeployer {
+
+    VineContext context;
+
+    public RecursiveDeployer(VineContext context) {
+      this.context = context;
     }
-    else {
-      container.deployVerticle(VINE_VERTICLE_CLASS, definition.serialize(), new Handler<AsyncResult<String>>() {
+
+    /**
+     * Deploys the vine.
+     *
+     * @param doneHandler
+     *   A handler to be invoked once the vine is deployed.
+     */
+    public void deploy(Handler<AsyncResult<Void>> doneHandler) {
+      Collection<SeedContext> seeds = context.getSeedContexts();
+      RecursiveSeedDeployer deployer = new RecursiveSeedDeployer(seeds);
+      deployer.deploy(doneHandler);
+    }
+
+    /**
+     * An abstract context deployer.
+     *
+     * @param <T> The context type.
+     */
+    private abstract class RecursiveContextDeployer<T> {
+      protected Iterator<T> iterator;
+      protected Future<Void> future;
+
+      protected Handler<AsyncResult<Boolean>> handler = new Handler<AsyncResult<Boolean>>() {
         @Override
-        public void handle(AsyncResult<String> result) {
+        public void handle(AsyncResult<Boolean> result) {
           if (result.succeeded()) {
-            deploymentMap.put(address, result.result());
-            future.setResult(new BasicFeeder(address, vertx.eventBus()));
+            if (iterator.hasNext()) {
+              doDeploy(iterator.next(), handler);
+            }
+            else {
+              future.setResult(null);
+            }
           }
           else {
             future.setFailure(result.cause());
           }
         }
-      });
+      };
+
+      public RecursiveContextDeployer(Collection<T> contexts) {
+        this.iterator = contexts.iterator();
+      }
+
+      /**
+       * Deploys the context, invoking a handler when complete.
+       *
+       * @param doneHandler
+       *   The handler to invoke once deployment is complete.
+       */
+      public void deploy(Handler<AsyncResult<Void>> doneHandler) {
+        this.future = new DefaultFutureResult<Void>();
+        future.setHandler(doneHandler);
+        if (iterator.hasNext()) {
+          doDeploy(iterator.next(), handler);
+        }
+        else {
+          future.setResult(null);
+        }
+      }
+
+      /**
+       * Performs the deployment of a single context.
+       *
+       * @param context
+       *   The context to deploy.
+       * @param doneHandler
+       *   A handler to be invoked once deployment is complete.
+       */
+      protected abstract void doDeploy(T context, Handler<AsyncResult<Boolean>> doneHandler);
+
     }
+
+    /**
+     * A vine seed deployer.
+     */
+    private class RecursiveSeedDeployer extends RecursiveContextDeployer<SeedContext> {
+
+      public RecursiveSeedDeployer(Collection<SeedContext> contexts) {
+        super(contexts);
+      }
+
+      @Override
+      protected void doDeploy(SeedContext context, Handler<AsyncResult<Boolean>> resultHandler) {
+        final Future<Boolean> future = new DefaultFutureResult<Boolean>();
+        future.setHandler(resultHandler);
+        Collection<WorkerContext> workers = context.getWorkerContexts();
+        RecursiveWorkerDeployer deployer = new RecursiveWorkerDeployer(workers);
+        deployer.deploy(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.succeeded()) {
+              future.setResult(true);
+            }
+            else {
+              future.setFailure(result.cause());
+            }
+          }
+        });
+      }
+    }
+
+    /**
+     * A vine worker deployer.
+     */
+    private class RecursiveWorkerDeployer extends RecursiveContextDeployer<WorkerContext> {
+
+      public RecursiveWorkerDeployer(Collection<WorkerContext> contexts) {
+        super(contexts);
+      }
+
+      @Override
+      protected void doDeploy(WorkerContext context, Handler<AsyncResult<Boolean>> resultHandler) {
+        final Future<Boolean> future = new DefaultFutureResult<Boolean>();
+        future.setHandler(resultHandler);
+        container.deployWorkerVerticle(context.getContext().getDefinition().getMain(), context.serialize(), 1, false, new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            if (result.succeeded()) {
+              future.setResult(true);
+            }
+            else {
+              future.setFailure(result.cause());
+            }
+          }
+        });
+      }
+    }
+
   }
 
 }

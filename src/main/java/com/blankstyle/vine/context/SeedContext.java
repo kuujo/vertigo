@@ -46,6 +46,10 @@ public class SeedContext implements Context {
 
   public SeedContext(JsonObject json) {
     context = json;
+    JsonObject vineContext = context.getObject("vine");
+    if (vineContext != null) {
+      parent = new VineContext(vineContext);
+    }
   }
 
   public SeedContext(JsonObject json, VineContext parent) {
@@ -88,7 +92,7 @@ public class SeedContext implements Context {
     ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
     Iterator<Object> iter = workers.iterator();
     while (iter.hasNext()) {
-      contexts.add(new WorkerContext((JsonObject) iter.next(), this));
+      contexts.add(new WorkerContext(context.copy().putString("address", (String) iter.next()), this));
     }
     return contexts;
   }
@@ -113,6 +117,10 @@ public class SeedContext implements Context {
 
   @Override
   public JsonObject serialize() {
+    JsonObject context = this.context.copy();
+    if (parent != null) {
+      context.putObject("vine", parent.serialize());
+    }
     return context;
   }
 

@@ -16,6 +16,7 @@
 package com.blankstyle.vine.remote;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -25,12 +26,16 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.blankstyle.vine.BasicFeeder;
+import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.Vine;
-import com.blankstyle.vine.definition.MalformedDefinitionException;
+import com.blankstyle.vine.VineException;
+import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.eventbus.vine.VineVerticle;
 
 /**
  * A remote reference to a root verticle.
@@ -38,6 +43,8 @@ import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
  * @author Jordan Halterman
  */
 public class RemoteRoot implements Root {
+
+  protected static final String VINE_VERTICLE_CLASS = VineVerticle.class.getName();
 
   protected Vertx vertx;
 
@@ -47,8 +54,30 @@ public class RemoteRoot implements Root {
 
   protected ReliableEventBus eventBus;
 
-  public RemoteRoot(String address, EventBus eventBus) {
-    setAddress(address);
+  public RemoteRoot() {
+  }
+
+  public RemoteRoot(String address) {
+    this.address = address;
+  }
+
+  public RemoteRoot(String address, Vertx vertx) {
+    this.address = address;
+    this.vertx = vertx;
+    setEventBus(vertx.eventBus());
+  }
+
+  public RemoteRoot(String address, Vertx vertx, Container container) {
+    this.address = address;
+    this.vertx = vertx;
+    this.container = container;
+    setEventBus(vertx.eventBus());
+  }
+
+  public RemoteRoot(String address, Vertx vertx, Container container, EventBus eventBus) {
+    this.address = address;
+    this.vertx = vertx;
+    this.container = container;
     setEventBus(eventBus);
   }
 
@@ -110,14 +139,116 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, Handler<AsyncResult<Vine>> handler) throws MalformedDefinitionException {
+  public void deploy(final VineDefinition vine, Handler<AsyncResult<Vine>> handler) {
     final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
     eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        // TODO
+        // Check for an error. If no error occurred then deploy the vine task.
+        final JsonObject context = message.body();
+        String error = context.getString("error");
+        if (error != null) {
+          future.setFailure(new VineException(error));
+        }
+        else {
+          deployVineVerticle(new VineContext(context), future);
+        }
       }
     });
+  }
+
+  @Override
+  public void deploy(final VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler) {
+    final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
+    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          // Check for an error. If no error occurred then deploy the vine task.
+          final JsonObject context = result.result().body();
+          String error = context.getString("error");
+          if (error != null) {
+            future.setFailure(new VineException(error));
+          }
+          else {
+            deployVineVerticle(new VineContext(context), future);
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Deploys a vine verticle.
+   *
+   * @param context
+   *   The vine context.
+   * @param future
+   *   A future result to be invoked with a vine reference.
+   */
+  private void deployVineVerticle(final VineContext context, final Future<Vine> future) {
+    container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.succeeded()) {
+          future.setResult(createVine(context, result.result()));
+        }
+        else {
+          future.setFailure(result.cause());
+        }
+      }
+    });
+  }
+
+  /**
+   * Creates a vine.
+   *
+   * @param context
+   *   The vine context.
+   * @param stemAddress
+   *   The address to the stem used to deploy the vine.
+   * @param deploymentID
+   *   The vine deployment ID.
+   * @return
+   *   The vine.
+   */
+  private Vine createVine(final VineContext context, final String deploymentID) {
+    return new Vine() {
+      @Override
+      public Feeder feeder() {
+        return new BasicFeeder(context.getAddress(), vertx.eventBus());
+      }
+
+      @Override
+      public void shutdown() {
+        shutdown(null);
+      }
+
+      @Override
+      public void shutdown(Handler<AsyncResult<Void>> doneHandler) {
+        final Future<Void> future = new DefaultFutureResult<Void>();
+        if (doneHandler != null) {
+          future.setHandler(doneHandler);
+        }
+
+        eventBus.send(address, new JsonObject().putString("action", "release").putString("vine", context.getAddress()), new Handler<Message<JsonObject>>() {
+          @Override
+          public void handle(Message<JsonObject> reply) {
+            JsonObject body = reply.body();
+            String error = body.getString("error");
+            if (error != null) {
+              future.setFailure(new VineException(error));
+            }
+            else {
+              future.setResult(null);
+            }
+          }
+        });
+      }
+    };
   }
 
 }

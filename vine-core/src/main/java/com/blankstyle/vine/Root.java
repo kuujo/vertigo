@@ -20,7 +20,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.definition.MalformedDefinitionException;
 import com.blankstyle.vine.definition.VineDefinition;
 
 /**
@@ -72,8 +71,20 @@ public interface Root {
    * @param vine
    *   The vine definition.
    * @param handler
-   *   An asyncronous result handler to be invoked with a vine reference.
+   *   An asynchronous result handler to be invoked with a vine reference.
    */
-  public void deploy(VineDefinition vine, Handler<AsyncResult<Vine>> handler) throws MalformedDefinitionException;
+  public void deploy(VineDefinition vine, Handler<AsyncResult<Vine>> handler);
+
+  /**
+   * Deploys a vine definition with a timeout.
+   *
+   * @param vine
+   *   The vine definition.
+   * @param timeout
+   *   The deploy timeout.
+   * @param handler
+   *   An asynchronous result handler to be invoked with a vine reference.
+   */
+  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler);
 
 }

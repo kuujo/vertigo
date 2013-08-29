@@ -132,17 +132,7 @@ public class LocalRoot implements Root {
                 if (deployResult.succeeded()) {
                   // Once all the seed workers have been deployed, deploy the
                   // vine verticle for feeding the seeds.
-                  container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
-                    @Override
-                    public void handle(AsyncResult<String> vineResult) {
-                      if (vineResult.succeeded()) {
-                        future.setResult(createVine(context, stemAddress, vineResult.result()));
-                      }
-                      else {
-                        future.setFailure(vineResult.cause());
-                      }
-                    }
-                  });
+                  deployVineVerticle(context, stemAddress, future);
                 }
                 else {
                   future.setFailure(deployResult.cause());
@@ -153,6 +143,35 @@ public class LocalRoot implements Root {
           catch (MalformedDefinitionException e) {
             future.setFailure(e);
           }
+        }
+      }
+    });
+  }
+
+  @Override
+  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler) {
+    deploy(vine, handler);
+  }
+
+  /**
+   * Deploys a vine verticle.
+   *
+   * @param context
+   *   The vine context.
+   * @param stemAddress
+   *   The stem address.
+   * @param future
+   *   A future result to be invoked with a vine reference.
+   */
+  private void deployVineVerticle(final VineContext context, final String stemAddress, final Future<Vine> future) {
+    container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.succeeded()) {
+          future.setResult(createVine(context, stemAddress, result.result()));
+        }
+        else {
+          future.setFailure(result.cause());
         }
       }
     });

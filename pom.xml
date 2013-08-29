@@ -244,8 +244,6 @@
           <appendAssemblyId>false</appendAssemblyId>
           <descriptors>
             <descriptor>src/main/assembly/mod.xml</descriptor>
-            <descriptor>src/main/assembly/root.xml</descriptor>
-            <descriptor>src/main/assembly/stem.xml</descriptor>
           </descriptors>
           <attach>true</attach>
         </configuration>

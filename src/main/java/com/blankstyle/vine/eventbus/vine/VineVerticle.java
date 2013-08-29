@@ -86,8 +86,8 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
       case "start":
         doStart(message);
         break;
-      case "finish":
-        doFinish(message);
+      case "receive":
+        doReceive(message);
         break;
       default:
         sendError(message, String.format("Invalid action %s.", action));
@@ -114,11 +114,11 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
   /**
    * Finishes processing a message.
    */
-  private void doFinish(final Message<JsonObject> message) {
+  private void doReceive(final Message<JsonObject> message) {
     receiveMessage(getMandatoryObject("message", message), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> event) {
-        
+        message.reply();
       }
     });
   }

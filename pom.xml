@@ -18,10 +18,10 @@
 
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-    <root.name>${project.groupId}~vine-root~${project.version}</root.name>
-    <root.folder>${project.groupId}~vine-root~0.1.0</root.folder>
-    <stem.name>${project.groupId}~vine-stem~${project.version}</stem.name>
-    <stem.folder>${project.groupId}~vine-stem~0.1.0</stem.folder>
+    <rootmod.name>${project.groupId}~vine-root~${project.version}</rootmod.name>
+    <rootmod.folder>${project.groupId}~vine-root~0.1.0</rootmod.folder>
+    <stemmod.name>${project.groupId}~vine-stem~${project.version}</stemmod.name>
+    <stemmod.folder>${project.groupId}~vine-stem~0.1.0</stemmod.folder>
 
     <vertx.version>2.0.0-final</vertx.version>
     <junit.version>4.8.2</junit.version>
@@ -149,17 +149,17 @@
             </configuration>
           </execution>
           <execution>
-            <id>copy-resources</id>
+            <id>copy-root-mod</id>
             <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
             <configuration>
               <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${root.name}</outputDirectory>
+              <outputDirectory>${basedir}/target/mods/${rootmod.name}</outputDirectory>
               <resources>
                 <resource>
-                  <directory>src/main/resources/${root.folder}</directory>
+                  <directory>src/main/resources/${rootmod.folder}</directory>
                   <filtering>true</filtering>
                   <includes>  
                     <include>mod.json</include>
@@ -169,17 +169,17 @@
             </configuration>
           </execution>
           <execution>
-            <id>copy-resources</id>
+            <id>copy-stem-mod</id>
             <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
             <configuration>
               <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${stem.name}</outputDirectory>
+              <outputDirectory>${basedir}/target/mods/${stemmod.name}</outputDirectory>
               <resources>
                 <resource>
-                  <directory>src/main/resources/${stem.folder}</directory>
+                  <directory>src/main/resources/${stemmod.folder}</directory>
                   <filtering>true</filtering>
                   <includes>  
                     <include>mod.json</include>

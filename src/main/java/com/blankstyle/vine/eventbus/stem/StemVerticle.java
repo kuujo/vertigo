@@ -60,8 +60,8 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void start() {
-    context = new StemContext(container.config());
-    vertx.eventBus().registerHandler(context.getAddress(), this);
+    context = new StemContext(config);
+    vertx.eventBus().registerHandler(getMandatoryStringConfig("address"), this);
   }
 
   @Override
@@ -92,12 +92,27 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    */
   private void doRegister(final Message<JsonObject> message) {
     final String address = getMandatoryString("address", message);
-    String heartbeatAddress = nextHeartBeatAddress();
+    final String heartbeatAddress = nextHeartBeatAddress();
     heartbeatMap.put(address, heartbeatAddress);
     heartbeatMonitor.monitor(heartbeatAddress, new Handler<String>() {
       @Override
-      public void handle(String hbAddress) {
-        // TODO: Restart the worker if it dies.
+      public void handle(final String hbAddress) {
+        // Get the worker context and re-deploy the worker.
+        WorkerContext context = contexts.get(address);
+        deployWorker(context, new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            // Unregister the heartbeat address. The new worker will be assigned
+            // a new heartbeat address.
+            if (result.succeeded()) {
+              heartbeatMap.remove(address);
+              heartbeatMonitor.unmonitor(hbAddress);
+            }
+            else {
+              // TODO: What do we do if a re-deploy fails?
+            }
+          }
+        });
       }
     });
     message.reply(heartbeatAddress);
@@ -211,7 +226,9 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
   private void deployWorker(final WorkerContext context, Handler<AsyncResult<Boolean>> resultHandler) {
     final Future<Boolean> future = new DefaultFutureResult<Boolean>().setHandler(resultHandler);
     registerWorkerContext(context.getAddress(), context);
-    container.deployWorkerVerticle(context.getContext().getDefinition().getMain(), context.serialize(), 1, false, new Handler<AsyncResult<String>>() {
+
+    // Add the stem to the worker context and deploy the worker verticle.
+    container.deployWorkerVerticle(context.getContext().getDefinition().getMain(), context.serialize().putString("stem", getMandatoryStringConfig("address")), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {

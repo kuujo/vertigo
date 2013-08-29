@@ -25,9 +25,9 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.BasicFeeder;
-import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
+import com.blankstyle.vine.Vine;
+import com.blankstyle.vine.definition.MalformedDefinitionException;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
@@ -52,13 +52,11 @@ public class RemoteRoot implements Root {
     setEventBus(eventBus);
   }
 
-  @Override
   public RemoteRoot setAddress(String address) {
     this.address = address;
     return this;
   }
 
-  @Override
   public String getAddress() {
     return address;
   }
@@ -112,19 +110,12 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void deploy(VineDefinition vine) {
-    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()));
-  }
-
-  @Override
-  public void deploy(final VineDefinition vine, final Handler<AsyncResult<Feeder>> doneHandler) {
-    final Future<Feeder> future = new DefaultFutureResult<Feeder>();
+  public void deploy(final VineDefinition vine, Handler<AsyncResult<Vine>> handler) throws MalformedDefinitionException {
+    final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
     eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        Feeder feeder = new BasicFeeder(vine.getAddress(), eventBus);
-        future.setResult(feeder);
-        doneHandler.handle(future);
+        // TODO
       }
     });
   }

@@ -31,24 +31,6 @@ import com.blankstyle.vine.definition.VineDefinition;
 public interface Root {
 
   /**
-   * Sets the root address.
-   *
-   * @param address
-   *   The root address.
-   * @return
-   *   The called root instance.
-   */
-  public Root setAddress(String address);
-
-  /**
-   * Gets the root address.
-   *
-   * @return
-   *   The root address.
-   */
-  public String getAddress();
-
-  /**
    * Sets the root vertx instance.
    *
    * @param vertx
@@ -89,10 +71,9 @@ public interface Root {
    *
    * @param vine
    *   The vine definition.
-   * @param doneHandler
-   *   An asyncronous result handler to be invoked with a feeder to
-   *   the vine.
+   * @param handler
+   *   An asyncronous result handler to be invoked with a vine reference.
    */
-  public void deploy(VineDefinition vine, Handler<AsyncResult<Feeder>> doneHandler) throws MalformedDefinitionException;
+  public void deploy(VineDefinition vine, Handler<AsyncResult<Vine>> handler) throws MalformedDefinitionException;
 
 }

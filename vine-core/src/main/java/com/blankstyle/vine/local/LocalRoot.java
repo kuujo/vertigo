@@ -33,6 +33,7 @@ import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.Vine;
+import com.blankstyle.vine.VineException;
 import com.blankstyle.vine.context.SeedContext;
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.VineContext;
@@ -149,8 +150,48 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler) {
-    deploy(vine, handler);
+  public void deploy(final VineDefinition vine, final long timeout, Handler<AsyncResult<Vine>> handler) {
+    final Future<Vine> future = new DefaultFutureResult<Vine>();
+    future.setHandler(handler);
+
+    // Deploy a local stem which will monitor the vine.
+    deployLocalStem(vine, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        // If the result succeeded, deploy all seed workers via the stem.
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          // Create a vine context and deploy each seed.
+          final String stemAddress = result.result();
+          final VineContext context;
+          try {
+            context = vine.createContext();
+
+            // The recursive executor will recursively execute the "assign"
+            // command on all vine context elements.
+            RecursiveExecutor executor = new RecursiveExecutor("assign", context, stemAddress).setTimeout(timeout);
+            executor.execute(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> deployResult) {
+                if (deployResult.succeeded()) {
+                  // Once all the seed workers have been deployed, deploy the
+                  // vine verticle for feeding the seeds.
+                  deployVineVerticle(context, stemAddress, future);
+                }
+                else {
+                  future.setFailure(deployResult.cause());
+                }
+              }
+            });
+          }
+          catch (MalformedDefinitionException e) {
+            future.setFailure(e);
+          }
+        }
+      }
+    });
   }
 
   /**
@@ -270,10 +311,20 @@ public class LocalRoot implements Root {
 
     String address;
 
+    long timeout;
+
     public RecursiveExecutor(String action, VineContext context, String address) {
       this.action = action;
       this.context = context;
       this.address = address;
+    }
+
+    /**
+     * Sets the executor timeout.
+     */
+    public RecursiveExecutor setTimeout(long timeout) {
+      this.timeout = timeout;
+      return this;
     }
 
     /**
@@ -392,18 +443,41 @@ public class LocalRoot implements Root {
         final Future<Boolean> future = new DefaultFutureResult<Boolean>();
         future.setHandler(resultHandler);
 
-        eventBus.send(address, new JsonObject().putString("action", action).putObject("context", context.serialize()), DEFAULT_TIMEOUT, new AsyncResultHandler<Message<String>>() {
-          @Override
-          public void handle(AsyncResult<Message<String>> result) {
-            if (result.succeeded()) {
-              future.setResult(true);
+        if (timeout > 0) {
+          eventBus.send(address, new JsonObject().putString("action", action).putObject("context", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+            @Override
+            public void handle(AsyncResult<Message<JsonObject>> result) {
+              if (result.succeeded()) {
+                JsonObject body = result.result().body();
+                String error = body.getString("error");
+                if (error != null) {
+                  future.setFailure(new VineException(error));
+                }
+                else {
+                  future.setResult(true);
+                }
+              }
+              else {
+                future.setFailure(result.cause());
+              }
             }
-            else {
-              future.setFailure(result.cause());
+          });
+        }
+        else {
+          eventBus.send(address, new JsonObject().putString("action", action).putObject("context", context.serialize()), new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> result) {
+              JsonObject body = result.body();
+              String error = body.getString("error");
+              if (error != null) {
+                future.setFailure(new VineException(error));
+              }
+              else {
+                future.setResult(true);
+              }
             }
-          }
-          
-        });
+          });
+        }
       }
     }
 

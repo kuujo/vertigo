@@ -130,7 +130,19 @@ public class LocalRoot implements Root {
               @Override
               public void handle(AsyncResult<Void> deployResult) {
                 if (deployResult.succeeded()) {
-                  future.setResult(createVine(context, stemAddress));
+                  // Once all the seed workers have been deployed, deploy the
+                  // vine verticle for feeding the seeds.
+                  container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
+                    @Override
+                    public void handle(AsyncResult<String> vineResult) {
+                      if (vineResult.succeeded()) {
+                        future.setResult(createVine(context, stemAddress, vineResult.result()));
+                      }
+                      else {
+                        future.setFailure(vineResult.cause());
+                      }
+                    }
+                  });
                 }
                 else {
                   future.setFailure(deployResult.cause());
@@ -153,10 +165,12 @@ public class LocalRoot implements Root {
    *   The vine context.
    * @param stemAddress
    *   The address to the stem used to deploy the vine.
+   * @param deploymentID
+   *   The vine deployment ID.
    * @return
    *   The vine.
    */
-  private Vine createVine(final VineContext context, final String stemAddress) {
+  private Vine createVine(final VineContext context, final String stemAddress, final String deploymentID) {
     return new Vine() {
 
       @Override
@@ -179,13 +193,21 @@ public class LocalRoot implements Root {
         RecursiveExecutor executor = new RecursiveExecutor("release", context, stemAddress);
         executor.execute(new Handler<AsyncResult<Void>>() {
           @Override
-          public void handle(AsyncResult<Void> result) {
-            if (result.succeeded()) {
-              future.setResult(null);
-            }
-            else {
-              future.setFailure(result.cause());
-            }
+          public void handle(final AsyncResult<Void> releaseResult) {
+            container.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> vineResult) {
+                if (releaseResult.failed()) {
+                  future.setFailure(releaseResult.cause());
+                }
+                else if (vineResult.failed()) {
+                  future.setFailure(vineResult.cause());
+                }
+                else {
+                  future.setResult(null);
+                }
+              }
+            });
           }
         });
       }

@@ -244,6 +244,30 @@ public class CountVerticle extends Verticle {
 }
 ```
 
+#### Defining a seed verticle
+Seed verticles are defined by extending the abstract `com.blankstyle.vine.SeedVerticle`
+class and overriding the protected `process()` method. All Vine data is passed as
+`JsonObject` instances for interoperability with other languages through Vert.x. Once
+data has been processed, it should be emitted by calling the `emit()` method. Note that
+*all messages must be emitted from all seed verticles at least once.* This is important
+because messages are tracked as they make their way through the vine, and failing to
+emit messages *will result in the messages being replayed through the vine.*
+
+```java
+import com.blankstyle.vine.SeedVerticle;
+
+class SeedOne extends SeedVerticle {
+
+  @Override
+  protected void process(JsonObject data) {
+    JsonObject result = new JsonObject();
+    result.putNumber("count", data.getString("body").length());
+    emit(result);
+  }
+
+}
+```
+
 ### Javascript
 ```javascript
 var vertx = require('vertx');

@@ -16,15 +16,20 @@
 package com.blankstyle.vine.remote;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
 import com.blankstyle.vine.Stem;
 import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+
+import com.blankstyle.vine.util.Messaging;
 
 /**
  * A remote reference to a stem verticle.
@@ -33,30 +38,133 @@ import com.blankstyle.vine.context.WorkerContext;
  */
 public class RemoteStem implements Stem {
 
-  protected final String address;
+  protected String address;
 
-  protected EventBus eventBus;
+  protected Vertx vertx;
 
-  public RemoteStem(String address, EventBus eventBus) {
+  protected Container container;
+
+  protected ReliableEventBus eventBus;
+
+  public RemoteStem(String address) {
     this.address = address;
-    this.eventBus = eventBus;
+  }
+
+  public RemoteStem(String address, Vertx vertx) {
+    this.address = address;
+    this.vertx = vertx;
+    setEventBus(vertx.eventBus());
+  }
+
+  public RemoteStem(String address, Vertx vertx, Container container) {
+    this.address = address;
+    this.vertx = vertx;
+    this.container = container;
+    setEventBus(vertx.eventBus());
+  }
+
+  public RemoteStem(String address, Vertx vertx, Container container, EventBus eventBus) {
+    this.address = address;
+    this.vertx = vertx;
+    this.container = container;
+    setEventBus(eventBus);
+  }
+
+  public RemoteStem setAddress(String address) {
+    this.address = address;
+    return this;
+  }
+
+  public String getAddress() {
+    return address;
+  }
+
+  @Override
+  public Stem setVertx(Vertx vertx) {
+    this.vertx = vertx;
+    return this;
+  }
+
+  @Override
+  public Vertx getVertx() {
+    return vertx;
+  }
+
+  @Override
+  public Stem setContainer(Container container) {
+    this.container = container;
+    return this;
+  }
+
+  @Override
+  public Container getContainer() {
+    return container;
+  }
+
+  /**
+   * Sets the stem eventbus.
+   *
+   * @param eventBus
+   *   The event bus.
+   * @return
+   *   The called stem instance.
+   */
+  public RemoteStem setEventBus(EventBus eventBus) {
+    if (!(eventBus instanceof ReliableEventBus)) {
+      eventBus = new WrappedReliableEventBus(eventBus);
+    }
+    this.eventBus = (ReliableEventBus) eventBus;
+    return this;
+  }
+
+  /**
+   * Gets the stem eventbus.
+   *
+   * @return
+   *   The stem eventbus.
+   */
+  public EventBus getEventBus() {
+    return eventBus;
   }
 
   @Override
   public void assign(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    eventBus.send(address, context.serialize(), new Handler<Message<JsonObject>>() {
+    eventBus.send(address, new JsonObject().putString("action", "assign").putObject("context", context.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        future.setResult(null);
-        doneHandler.handle(future);
+        Messaging.checkResponse(message, doneHandler);
       }
     });
   }
 
   @Override
-  public void release(WorkerContext context) {
-    
+  public void assign(WorkerContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.send(address, new JsonObject().putString("action", "assign").putObject("context", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        Messaging.checkResponse(result, doneHandler);
+      }
+    });
+  }
+
+  @Override
+  public void release(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.send(address, new JsonObject().putString("action", "release").putString("address", context.getAddress()), new AsyncResultHandler<Message<JsonObject>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        Messaging.checkResponse(result, doneHandler);
+      }
+    });
+  }
+
+  @Override
+  public void release(WorkerContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.send(address, new JsonObject().putString("action", "release").putString("address", context.getAddress()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        Messaging.checkResponse(result, doneHandler);
+      }
+    });
   }
 
 }

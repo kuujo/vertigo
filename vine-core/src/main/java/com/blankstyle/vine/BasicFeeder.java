@@ -16,12 +16,12 @@
 package com.blankstyle.vine;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+
+import com.blankstyle.vine.util.Messaging;
 
 /**
  * A basic vine feeder.
@@ -61,18 +61,10 @@ public class BasicFeeder implements Feeder {
 
   @Override
   public void feed(JsonObject data, final Handler<AsyncResult<JsonObject>> resultHandler) {
-    final Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
     eventBus.send(address, data, new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        JsonObject result = message.body();
-        String error = result.getString("error");
-        if (error != null) {
-          future.setFailure(new VineException(error));
-        }
-        else {
-          future.setResult(result);
-        }
+        Messaging.checkResponse(message, resultHandler, message.body());
       }
     });
   }

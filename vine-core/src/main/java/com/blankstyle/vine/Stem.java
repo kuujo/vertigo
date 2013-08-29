@@ -17,6 +17,8 @@ package com.blankstyle.vine;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 import com.blankstyle.vine.context.WorkerContext;
 
@@ -26,6 +28,42 @@ import com.blankstyle.vine.context.WorkerContext;
  * @author Jordan Halterman
  */
 public interface Stem {
+
+  /**
+   * Sets the root vertx instance.
+   *
+   * @param vertx
+   *   A vertx instance.
+   * @return
+   *   The called stem instance.
+   */
+  public Stem setVertx(Vertx vertx);
+
+  /**
+   * Gets the stem vertx instance.
+   *
+   * @return
+   *   The stem vertx instance.
+   */
+  public Vertx getVertx();
+
+  /**
+   * Sets the stem container instance.
+   *
+   * @param container
+   *   A container instance.
+   * @return
+   *   The called root instance.
+   */
+  public Stem setContainer(Container container);
+
+  /**
+   * Gets the stem container instance.
+   *
+   * @return
+   *   The stem container instance.
+   */
+  public Container getContainer();
 
   /**
    * Assigns a worker to the stem.
@@ -38,11 +76,37 @@ public interface Stem {
   public void assign(WorkerContext context, Handler<AsyncResult<Void>> doneHandler);
 
   /**
+   * Assigns a worker to the stem.
+   *
+   * @param context
+   *   The worker context.
+   * @param timeout
+   *   An assignment timeout.
+   * @param doneHandler
+   *   A handler to be invoked once the worker is assigned.
+   */
+  public void assign(WorkerContext context, long timeout, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Releases a worker from the stem.
    *
    * @param context
    *   The worker context.
+   * @param doneHandler
+   *   A handler to be invoked once the worker is released.
    */
-  public void release(WorkerContext context);
+  public void release(WorkerContext context, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Releases a worker from the stem.
+   *
+   * @param context
+   *   The worker context.
+   * @param timeout
+   *   A release timeout.
+   * @param doneHandler
+   *   A handler to be invoked once the worker is released.
+   */
+  public void release(WorkerContext context, long timeout, Handler<AsyncResult<Void>> doneHandler);
 
 }

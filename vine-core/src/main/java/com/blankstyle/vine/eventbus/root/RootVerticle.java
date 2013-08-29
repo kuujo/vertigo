@@ -15,20 +15,30 @@
 */
 package com.blankstyle.vine.eventbus.root;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
+import com.blankstyle.vine.Stem;
 import com.blankstyle.vine.context.RootContext;
 import com.blankstyle.vine.context.StemContext;
+import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
 import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
+import com.blankstyle.vine.remote.RemoteStem;
 import com.blankstyle.vine.scheduler.Scheduler;
 
 /**
@@ -80,9 +90,21 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    */
   private Map<String, StemContext> stems = new HashMap<String, StemContext>();
 
+  /**
+   * A reliable eventbus.
+   */
+  private ReliableEventBus eventBus;
+
   @Override
   public void setVertx(Vertx vertx) {
     super.setVertx(vertx);
+    EventBus eventBus = vertx.eventBus();
+    if (eventBus instanceof ReliableEventBus) {
+      this.eventBus = (ReliableEventBus) eventBus;
+    }
+    else {
+      this.eventBus = new WrappedReliableEventBus(eventBus, vertx);
+    }
     heartbeatMonitor.setVertx(vertx).setEventBus(vertx.eventBus());
   }
 
@@ -143,6 +165,19 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
     });
     registerStem(stemContext);
     message.reply(heartbeatAddress);
+  }
+
+  /**
+   * Creates a list of stems.
+   */
+  private List<Stem> createStemList() {
+    List<Stem> stems = new ArrayList<Stem>();
+    Set<String> keys = this.stems.keySet();
+    Iterator<String> addresses = keys.iterator();
+    while (addresses.hasNext()) {
+      stems.add(new RemoteStem(addresses.next(), vertx, container));
+    }
+    return stems;
   }
 
   /**

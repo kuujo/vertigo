@@ -40,7 +40,15 @@ public final class Messaging {
    *   An asynchronous result handler.
    */
   public static <T> void checkResponse(Message<JsonObject> message, Handler<AsyncResult<T>> resultHandler) {
-    checkResponse(message, resultHandler, null);
+    Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
+    JsonObject body = message.body();
+    String error = body.getString("error");
+    if (error != null) {
+      future.setFailure(new VineException(error));
+    }
+    else {
+      future.setResult(null);
+    }
   }
 
   /**
@@ -95,7 +103,20 @@ public final class Messaging {
    *   An asynchronous result handler.
    */
   public static <T> void checkResponse(AsyncResult<Message<JsonObject>> response, Handler<AsyncResult<T>> resultHandler) {
-    checkResponse(response, resultHandler, null);
+    Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
+    if (response.failed()) {
+      future.setFailure(response.cause());
+    }
+    else {
+      JsonObject body = response.result().body();
+      String error = body.getString("error");
+      if (error != null) {
+        future.setFailure(new VineException(error));
+      }
+      else {
+        future.setResult(null);
+      }
+    }
   }
 
   /**

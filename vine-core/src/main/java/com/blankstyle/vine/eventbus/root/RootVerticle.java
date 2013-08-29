@@ -23,6 +23,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.RootContext;
 import com.blankstyle.vine.context.StemContext;
@@ -37,16 +38,46 @@ import com.blankstyle.vine.scheduler.Scheduler;
  */
 public class RootVerticle extends BusModBase implements Handler<Message<JsonObject>> {
 
+  /**
+   * The root address.
+   */
+  private String address;
+
+  private static final String DEFAULT_ADDRESS = "vine.root";
+
+  /**
+   * A root context.
+   */
   private RootContext context;
 
+  /**
+   * A Vert.x logger.
+   */
+  private Logger log;
+
+  /**
+   * A worker scheduler.
+   */
   private Scheduler scheduler;
 
+  /**
+   * A map of stem addresses to heartbeat address.
+   */
   private Map<String, String> heartbeatMap = new HashMap<String, String>();
 
+  /**
+   * A private counter for creating unique heartbeat addresses.
+   */
   private int heartbeatCounter;
 
+  /**
+   * A heartbeat monitor for tracking whether stems are alive.
+   */
   private HeartBeatMonitor heartbeatMonitor = new DefaultHeartBeatMonitor();
 
+  /**
+   * A map of stem addresses to stem contexts.
+   */
   private Map<String, StemContext> stems = new HashMap<String, StemContext>();
 
   @Override
@@ -57,14 +88,18 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void start() {
+    config = container.config();
+    log = container.logger();
     context = new RootContext(config);
+    address = getOptionalStringConfig("address", DEFAULT_ADDRESS);
+    log.info(String.format("Starting stem at %s.", address));
     String schedulerClass = getOptionalStringConfig("scheduler", "com.blankstyle.vine.scheduler.DefaultScheduler");
     try {
       scheduler = (Scheduler) Class.forName(schedulerClass).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
       container.logger().error(String.format("Invalid scheduler class %s.", schedulerClass));
     }
-    vertx.eventBus().registerHandler(getMandatoryStringConfig("address"), this);
+    vertx.eventBus().registerHandler(address, this);
   }
 
   @Override

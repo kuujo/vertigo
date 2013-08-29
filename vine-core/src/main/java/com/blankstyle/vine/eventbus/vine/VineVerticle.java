@@ -47,8 +47,14 @@ import com.blankstyle.vine.eventbus.ReliableEventBus;
  */
 public class VineVerticle extends ReliableBusVerticle implements Handler<Message<JsonObject>> {
 
+  /**
+   * The vine context.
+   */
   private VineContext context;
 
+  /**
+   * A Vert.x logger.
+   */
   private Logger log;
 
   /**
@@ -68,6 +74,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   @Override
   protected void start(ReliableEventBus eventBus) {
+    config = container.config();
     log = container.logger();
     context = new VineContext(config);
     messageExpiration = context.getDefinition().getMessageExpiration();

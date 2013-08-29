@@ -26,6 +26,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.ConnectionContext;
 import com.blankstyle.vine.context.WorkerContext;
@@ -49,6 +50,8 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   protected ReliableEventBus eventBus;
 
+  protected Logger log;
+
   protected WorkerContext context;
 
   protected Collection<ReliableChannel> channels;
@@ -59,6 +62,8 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   @Override
   protected void start(ReliableEventBus eventBus) {
+    config = container.config();
+    log = container.logger();
     this.eventBus = eventBus;
     setupContext();
     setupChannels();

@@ -25,6 +25,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.WorkerContext;
@@ -37,7 +38,15 @@ import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
  */
 public class StemVerticle extends BusModBase implements Handler<Message<JsonObject>> {
 
+  /**
+   * A stem context.
+   */
   private StemContext context;
+
+  /**
+   * A Vert.x logger.
+   */
+  private Logger log;
 
   /**
    * A map of worker addresses to deployment IDs.
@@ -60,7 +69,10 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void start() {
+    config = container.config();
+    log = container.logger();
     context = new StemContext(config);
+    log.info(String.format("Starting stem at %s.", getMandatoryStringConfig("address")));
     vertx.eventBus().registerHandler(getMandatoryStringConfig("address"), this);
   }
 

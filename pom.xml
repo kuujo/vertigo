@@ -9,7 +9,7 @@
 
   <groupId>com.blankstyle</groupId>
   <artifactId>vine</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Vine</name>
   <description>A real-time analytics engine built on Vert.x.</description>
@@ -18,6 +18,10 @@
 
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
+    <root.name>${project.groupId}~vine-root~${project.version}</root.name>
+    <root.folder>${project.groupId}~vine-root~0.1.0</root.folder>
+    <stem.name>${project.groupId}~vine-stem~${project.version}</stem.name>
+    <stem.folder>${project.groupId}~vine-stem~0.1.0</stem.folder>
 
     <vertx.version>2.0.0-final</vertx.version>
     <junit.version>4.8.2</junit.version>
@@ -136,6 +140,46 @@
               <resources>
                 <resource>
                   <directory>src/main/resources</directory>
+                  <filtering>true</filtering>
+                  <includes>  
+                    <include>mod.json</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <overwrite>true</overwrite>
+              <outputDirectory>${basedir}/target/mods/${root.name}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/resources/${root.folder}</directory>
+                  <filtering>true</filtering>
+                  <includes>  
+                    <include>mod.json</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <overwrite>true</overwrite>
+              <outputDirectory>${basedir}/target/mods/${stem.name}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/resources/${stem.folder}</directory>
                   <filtering>true</filtering>
                   <includes>  
                     <include>mod.json</include>

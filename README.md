@@ -80,6 +80,93 @@ workers in a Vine. Each *worker* verticle maintains a connection to all of the
 with each channel supporting a custom dispatch method, for instance round-robin,
 random, or consistent hashing.
 
+## How it works
+
+### Vine Definitions
+Vines are defined in JSON format - a format that is native to Vert.x and
+is understood by all its language implementations. Vine provides helper
+classes for defining vines.
+
+```java
+VineDefinition vine = Vine.createDefinition("my.vine.address");
+vine.feed(Seed.createDefinition("seed1").setMain("com.mycompany.SomeVerticle").setWorkers(2).groupBy("random"));
+vine.feed("seed2", "com.mycompany.SomeOtherVerticle", 2).groupBy("round");
+new LocalRoot("vine.root").deploy(vine, new Handler<AsyncResult<Feeder>>() ...);
+```
+
+Vine definition helpers create an internal JSON representation of the
+vine definition that might look something like this:
+
+```
+{
+  "address": "my.vine.address",
+  "connections": ["seed1"],
+  "seeds": {
+    "seed1": {
+      "name": "seed1",
+      "main": "com.mycompany.SomeVerticle",
+      "workers": 2,
+      "grouping": "random",
+      "connections": ["seed2"]
+    },
+    "seed2": {
+      "name": "seed2",
+      "main": "com.mycompany.SomeOtherVerticle",
+      "workers": 2,
+      "grouping": "round",
+      "connections": []
+    }
+  }
+}
+```
+
+### Vine Contexts
+Internally, when a vine is being prepared for deployment the vine definition
+is converted to a context. The context assigns addresses to each seed
+worker, and resolves connections between seeds. Again, Vine provides helpers
+for working with contexts, and contexts are ultimately structured as JSON:
+
+```
+{
+  "my.vine.address",
+  "connections": {
+    "seed1": {
+      "grouping": "random",
+      "addresses": [
+        "my.vine.address.seed1.1",
+        "my.vine.address.seed1.2"
+      ]
+    }
+  },
+  "definition": {
+    "address": "my.vine.address",
+    "connections": ["seed1"],
+    "seeds": {
+      "seed1": {
+        "name": "seed1",
+        "main": "com.mycompany.SomeVerticle",
+        "workers": 2,
+        "grouping": "random",
+        "connections": ["seed2"]
+      },
+      "seed2": {
+        "name": "seed2",
+        "main": "com.mycompany.SomeOtherVerticle",
+        "workers": 2,
+        "grouping": "round",
+        "connections": []
+      }
+    }
+  },
+  # List of seed contexts.
+  "seeds": {
+    
+  }
+}
+```
+
+#### Example Vine Definition
+
 ## A Brief Example
 
 ### Java

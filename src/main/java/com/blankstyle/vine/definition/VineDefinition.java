@@ -24,6 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.context.VineContext;
+import com.blankstyle.vine.messaging.Groupings;
 
 
 /**
@@ -315,24 +316,37 @@ public class VineDefinition implements Serializeable<JsonObject> {
 
       // Iterate through each of the seed's connections.
       JsonArray seedCons = seedDef.getArray("connections");
-      Iterator<Object> iterCon = seedCons.iterator();
-
       JsonObject seedConnectionContexts = new JsonObject();
-      while (iterCon.hasNext()) {
-        // Get the seed name and with it a reference to the seed context.
-        String name = iterCon.next().toString();
-        JsonObject conContext = seedContexts.getObject(name);
-        if (conContext == null) {
-          continue;
+
+      if (seedCons != null) {
+        Iterator<Object> iterCon = seedCons.iterator();
+  
+        while (iterCon.hasNext()) {
+          // Get the seed name and with it a reference to the seed context.
+          String name = iterCon.next().toString();
+          JsonObject conContext = seedContexts.getObject(name);
+          if (conContext == null) {
+            continue;
+          }
+  
+          // With the context, we can list all of the worker addresses.
+          JsonObject connection = new JsonObject();
+          connection.putString("name", name);
+          connection.putString("grouping", conContext.getString("grouping", "round"));
+          connection.putArray("addresses", conContext.getArray("workers").copy());
+  
+          seedConnectionContexts.putObject(name, connection);
         }
-
-        // With the context, we can list all of the worker addresses.
+      }
+      // If the seed does not have any connections then it implicitly connects
+      // back to the vine verticle.
+      else {
         JsonObject connection = new JsonObject();
-        connection.putString("name", name);
-        connection.putString("grouping", conContext.getString("grouping", "round"));
-        connection.putArray("addresses", conContext.getArray("workers").copy());
+        connection.putString("name", address);
+        connection.putString("grouping", Groupings.ROUND_ROBIN);
+        connection.putArray("addresses", new JsonArray().add(address));
 
-        seedConnectionContexts.putObject(name, connection);
+        seedConnectionContexts.putObject(address, connection);
       }
 
       // Finally, add the connections to the object.

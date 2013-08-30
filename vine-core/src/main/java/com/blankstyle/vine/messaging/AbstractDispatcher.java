@@ -15,6 +15,9 @@
 */
 package com.blankstyle.vine.messaging;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
@@ -29,6 +32,27 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 public abstract class AbstractDispatcher implements Dispatcher {
 
   private static final long DEFAULT_TIMEOUT = 5000;
+
+  private Map<String, String> options = new HashMap<String, String>();
+
+  @Override
+  public Dispatcher setOption(String option, String value) {
+    options.put(option, value);
+    return this;
+  }
+
+  @Override
+  public String getOption(String option) {
+    return options.get(option);
+  }
+
+  @Override
+  public String getOption(String option, String defaultValue) {
+    if (options.containsKey(option)) {
+      return options.get(option);
+    }
+    return defaultValue;
+  }
 
   /**
    * Returns the next connection to which to dispatch.

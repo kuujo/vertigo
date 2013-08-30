@@ -77,18 +77,18 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * Sets the seed worker grouping.
    *
    * @param grouping
-   *   A grouping type.
+   *   A grouping definition.
    */
-  public SeedDefinition groupBy(String grouping) {
-    definition.putString("grouping", grouping);
+  public SeedDefinition groupBy(GroupingDefinition grouping) {
+    definition.putObject("grouping", grouping.serialize());
     return this;
   }
 
   /**
    * Gets the seed worker grouping.
    */
-  public String getGrouping() {
-    return definition.getString("grouping");
+  public GroupingDefinition getGrouping() {
+    return new GroupingDefinition(definition.getObject("grouping"));
   }
 
   /**

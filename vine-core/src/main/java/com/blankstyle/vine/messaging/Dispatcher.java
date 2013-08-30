@@ -34,6 +34,40 @@ public interface Dispatcher {
   public void init(ConnectionPool connections);
 
   /**
+   * Sets a dispatcher option.
+   *
+   * @param option
+   *   The option name.
+   * @param value
+   *   The option value.
+   * @return
+   *   The called dispatcher instance.
+   */
+  public Dispatcher setOption(String option, String value);
+
+  /**
+   * Gets a dispatcher option.
+   *
+   * @param option
+   *   The option name.
+   * @return
+   *   The option value.
+   */
+  public String getOption(String option);
+
+  /**
+   * Gets a dispatcher option.
+   *
+   * @param option
+   *   The option name.
+   * @param defaultValue
+   *   A default value for the option.
+   * @return
+   *   The option value.
+   */
+  public String getOption(String option, String defaultValue);
+
+  /**
    * Dispatches a message.
    *
    * @param message

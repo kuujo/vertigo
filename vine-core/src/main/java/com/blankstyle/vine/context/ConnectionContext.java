@@ -51,8 +51,8 @@ public class ConnectionContext {
   /**
    * Returns the connection grouping.
    */
-  public String getGrouping() {
-    return context.getString("grouping");
+  public JsonObject getGrouping() {
+    return context.getObject("grouping");
   }
 
   /**

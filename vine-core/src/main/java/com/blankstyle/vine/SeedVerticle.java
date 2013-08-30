@@ -39,7 +39,6 @@ import com.blankstyle.vine.messaging.ConnectionPool;
 import com.blankstyle.vine.messaging.DefaultChannel;
 import com.blankstyle.vine.messaging.DefaultConnectionPool;
 import com.blankstyle.vine.messaging.Dispatcher;
-import com.blankstyle.vine.messaging.Groupings;
 import com.blankstyle.vine.messaging.JsonMessage;
 import com.blankstyle.vine.messaging.ReliableChannel;
 import com.blankstyle.vine.messaging.ReliableEventBusConnection;
@@ -124,19 +123,34 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
     while (iter.hasNext()) {
       ConnectionContext connectionContext = iter.next();
       try {
-        Dispatcher dispatcher = Groupings.get(connectionContext.getGrouping()).newInstance();
+        JsonObject grouping = connectionContext.getGrouping();
+        Dispatcher dispatcher = (Dispatcher) Class.forName(grouping.getString("dispatcher")).newInstance();
+
+        // Set options on the dispatcher. All non-"dispatcher" values
+        // are considered to be dispatcher options.
+        Iterator<String> fieldNames = grouping.getFieldNames().iterator();
+        while (fieldNames.hasNext()) {
+          String fieldName = fieldNames.next();
+          if (fieldName != "dispatcher") {
+            String value = grouping.getString(fieldName);
+            dispatcher.setOption(fieldName, value);
+          }
+        }
+
+        // Create a connection pool from which the dispatcher will dispatch messages.
         ConnectionPool connectionPool = new DefaultConnectionPool();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
           connectionPool.add(new ReliableEventBusConnection(address, eventBus));
         }
+
+        // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
         channels.add(new DefaultChannel(dispatcher));
       }
-      catch (InstantiationException | IllegalAccessException e) {
+      catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         container.logger().error("Failed to find grouping handler.");
       }
-      
     }
   }
 
@@ -144,7 +158,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
   public void handle(Message<JsonObject> message) {
     String action = getMandatoryString("action", message);
     if (action == null) {
-      this.sendError(message, "No action specified.");
+      sendError(message, "No action specified.");
     }
 
     switch (action) {

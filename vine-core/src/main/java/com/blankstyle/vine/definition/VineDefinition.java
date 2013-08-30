@@ -24,7 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Serializeable;
 import com.blankstyle.vine.context.VineContext;
-import com.blankstyle.vine.messaging.Groupings;
+import com.blankstyle.vine.grouping.RoundGrouping;
 
 
 /**
@@ -287,7 +287,13 @@ public class VineDefinition implements Serializeable<JsonObject> {
 
       JsonObject connection = new JsonObject();
       connection.putString("name", name);
-      connection.putString("grouping", seedContext.getObject("definition").getString("grouping", "round"));
+
+      JsonObject grouping = seedContext.getObject("definition").getObject("grouping");
+      if (grouping == null) {
+        grouping = new RoundGrouping().serialize();
+      }
+
+      connection.putObject("grouping", grouping);
       connection.putArray("addresses", seedContext.getArray("workers").copy());
 
       connectionContexts.putObject(name, connection);
@@ -332,7 +338,14 @@ public class VineDefinition implements Serializeable<JsonObject> {
           // With the context, we can list all of the worker addresses.
           JsonObject connection = new JsonObject();
           connection.putString("name", name);
-          connection.putString("grouping", conContext.getString("grouping", "round"));
+
+          // If the connection doesn't define a grouping, use a round grouping.
+          JsonObject grouping = conContext.getObject("grouping");
+          if (grouping == null) {
+            grouping = new RoundGrouping().serialize();
+          }
+
+          connection.putObject("grouping", grouping);
           connection.putArray("addresses", conContext.getArray("workers").copy());
   
           seedConnectionContexts.putObject(name, connection);
@@ -343,7 +356,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
       else {
         JsonObject connection = new JsonObject();
         connection.putString("name", address);
-        connection.putString("grouping", Groupings.ROUND_ROBIN);
+        connection.putObject("grouping", new RoundGrouping().serialize());
         connection.putArray("addresses", new JsonArray().add(address));
 
         seedConnectionContexts.putObject(address, connection);

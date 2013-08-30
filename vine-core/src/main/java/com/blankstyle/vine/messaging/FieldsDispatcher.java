@@ -30,8 +30,6 @@ public class FieldsDispatcher extends AbstractDispatcher {
 
   private int size;
 
-  private String field;
-
   @Override
   public void init(ConnectionPool connections) {
     this.items = new ArrayList<Connection>();
@@ -44,7 +42,7 @@ public class FieldsDispatcher extends AbstractDispatcher {
 
   @Override
   protected Connection getConnection(JsonMessage message) {
-    String value = message.body().getString(field);
+    String value = message.body().getString(getOption("field"));
     int length = value.length();
     return items.get(length % size);
   }

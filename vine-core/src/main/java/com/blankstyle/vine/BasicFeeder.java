@@ -61,7 +61,7 @@ public class BasicFeeder implements Feeder {
 
   @Override
   public void feed(JsonObject data, final Handler<AsyncResult<JsonObject>> resultHandler) {
-    eventBus.send(address, data, new Handler<Message<JsonObject>>() {
+    eventBus.send(address, new JsonObject().putString("action", "feed").putObject("data", data), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         Messaging.checkResponse(message, resultHandler, message.body());

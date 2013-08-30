@@ -127,7 +127,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
         });
       }
     });
-    message.reply(heartbeatAddress);
+    message.reply(new JsonObject().putString("address", heartbeatAddress));
   }
 
   /**

@@ -32,6 +32,9 @@ import com.blankstyle.vine.context.ConnectionContext;
 import com.blankstyle.vine.context.WorkerContext;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.heartbeat.DefaultHeartBeatEmitter;
+import com.blankstyle.vine.heartbeat.HeartBeatEmitter;
 import com.blankstyle.vine.messaging.ConnectionPool;
 import com.blankstyle.vine.messaging.DefaultChannel;
 import com.blankstyle.vine.messaging.DefaultConnectionPool;
@@ -60,12 +63,15 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   private String seedName;
 
+  private HeartBeatEmitter heartbeat;
+
   @Override
   protected void start(ReliableEventBus eventBus) {
     config = container.config();
     log = container.logger();
     this.eventBus = eventBus;
     setupContext();
+    setupHeartbeat();
     setupChannels();
     eventBus.registerHandler(getMandatoryStringConfig("address"), this);
   }
@@ -76,6 +82,36 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
   private void setupContext() {
     this.context = new WorkerContext(config);
     this.seedName = context.getContext().getDefinition().getName();
+  }
+
+  /**
+   * Sets up the seed verticle heartbeat.
+   */
+  private void setupHeartbeat() {
+    heartbeat = new DefaultHeartBeatEmitter(vertx, vertx.eventBus());
+    final String stemAddress = getMandatoryStringConfig("stem");
+    ReliableEventBus eventBus = new WrappedReliableEventBus(vertx.eventBus(), vertx);
+    eventBus.send(stemAddress, new JsonObject().putString("action", "register").putString("address", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.succeeded()) {
+          Message<JsonObject> message = result.result();
+          JsonObject body = message.body();
+          String error = body.getString("error");
+          if (error != null) {
+            container.logger().error(error);
+          }
+          else {
+            heartbeat.setAddress(getMandatoryString("address", message));
+            heartbeat.setInterval(getOptionalIntConfig("heartbeat", 1000));
+            heartbeat.start();
+          }
+        }
+        else {
+          container.logger().error(String.format("Failed to fetch heartbeat address from stem at %s.", stemAddress));
+        }
+      }
+    });
   }
 
   /**

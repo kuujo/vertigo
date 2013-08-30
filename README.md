@@ -350,3 +350,73 @@ each of the steps in the vine. Only if the message has completed processing
 will the *vine verticle* response to the original feed message. If a message
 does not finish running through the vine in a configurable amount of time,
 the message will be considered lost and will be replayed through the vine.
+
+## Setting up a cluster
+
+### Deploying the root
+The `vine-root` module should be deployed in a single Vert.x instance
+within the cluster. The root module accepts an optional configuration:
+
+```
+{
+  "address": "vine.root"
+}
+```
+
+To deploy the root module use
+
+```
+vertx runmod com.blankstyle~vine-root~0.1.0-SNAPSHOT -cluster -cluster-port 1234
+```
+
+### Deploying the stem
+The `vine-stem` module should be deployed in any Vert.x instance in which
+you wish to run *seed workers*. The stem module *always requires a configuration*
+as each stem should have a unique *address*.
+
+```
+{
+  "address": "vine.stem.foo"
+}
+```
+
+To deploy the stem module use
+
+```
+vertx runmod com.blankstyle~vine-stem~0.1.0-SNAPSHOT -cluster -cluster-port 1234 -conf stem.json
+```
+
+### Deploying a vine across a cluster
+
+```java
+import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.definition.SeedDefinition;
+import com.blankstyle.vine.remote.RemoteRoot;
+import com.blankstyle.vine.Root;
+import com.blankstyle.vine.Vine;
+
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.AsyncResult;
+
+import org.vertx.java.platform.Verticle;
+
+class DeployVerticle extends Verticle {
+
+  @Override
+  public void start() {
+    VineDefinition vine = new VineDefinition("my.vine")
+      .feed(new SeedDefinition("seedone", "com.mycompany.myproject.SeedOne"))
+      .to(new SeedDefinition("seedtwo", "com.mycompany.myproject.SeedTwo"))
+
+    Root root = new RemoteRoot("vine.root", vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+      @Override
+      public void handle(AsyncResult<Vine> result) {
+        if (result.succeeded()) {
+          Vine vine = result.result();
+        }
+      }
+    });
+  }
+}
+```

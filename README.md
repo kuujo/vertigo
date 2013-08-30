@@ -10,35 +10,188 @@ through a *vine* are re-transmitted through the vine.
 Vine instances can be easily integrated with your Vert.x application. Users can
 deploy a *vine* across a Vert.x cluster with a single method call.
 
+### A simple example
+
+#### Deploy a vine
+```java
+VineDefinition definition = Vines.createDefinition("word.counter")
+  .feed(new SeedDefinition("count").setMain("com.mycompany.wordcounter.CountSeed").setWorkers(2).setGrouping(new FieldsGrouping("words")))
+  .to(new SeedDefinition("persist").setMain("persist_seed.js").setWorkers(2));
+
+Root root = new LocalRoot(vertx, container);
+long timeout = 10000;
+
+root.deploy(definition, timeout, new Handler<AsyncResult<Vine>>() {
+  public void handle(AsyncResult<Vine> result) {
+    if (result.succeeded()) {
+      Vine vine = result.result();
+
+      // Feed a message to the vine, awaiting a result.
+      JsonObject message = new JsonObject().putString("words", "Hello world!");
+      vine.feeder().feed(message, new Handler<AsyncResult<JsonObject>>() {
+        public void handle(AsyncResult<JsonObject> result) {
+          if (result.failed()) {
+            container.logger().warning("Failed to process message.");
+          }
+          else {
+            container.logger().info("Count result is " + result.result().encode());
+          }
+          // Shut down the vine.
+          vine.shutdown();
+        }
+      });
+    }
+    else {
+      container.logger().error(result.cause().getMessage());
+    }
+  }
+});
+```
+
+#### Process data
+```java
+class CountSeed extends SeedVerticle {
+
+  protected void process(JsonObject data) {
+    String words = data.getString("words", "");
+    emit(new JsonObject().putNumber("count", words.length()));
+  }
+
+}
+```
+
 ## Concepts
 
 ### Vine
 A *vine* is a collection of Vert.x worker verticles that are linked together
-by a reliable `EventBus` implementation. Vines are started by creating a
-`VineDefinition` and deploying the vine using a `Root`.
+by a reliable `EventBus` implementation. Each vine can contain any number of
+*seeds* - worker verticles that extend the `com.blankstyle.vine.SeedVerticle`
+abstract class to perform processing on data - and each *seed* can consist of
+any number of workers. Vines are defined by a `VineDefinition` instance which
+describes the vine configuration and layout, seed verticles and configurations,
+and connections between seed workers.
 
-Vine supports two differen modes, local and remote.
+#### Defining a vine
+Before deploying a vine, you must first define the structure of the vine.
+Vine definitions describe the message flow between different seeds (verticles)
+within the vine. Once deployed, the definition is used to create a representation
+of the vine topology and instruct verticles on which channels to connect to and
+how to dispatch messages.
 
-#### Local Vines
-Local vines are *vines* that are contained within a single Vert.x instance.
-When running a vine in local mode, all one needs to do is instantiate a
-`LocalRoot` instance and deploy the vine. Workers will be deployed using
-the local Vert.x `Container` instance.
+Vine provides a helper class, `Vines`, for creating vine definitions.
+```java
+VineDefinition vine = Vines.createDefinition("my.vine");
+```
 
-#### Remote Vines
-Remote vines are *vines* that are distributed across multiple machines. Running
-remote vines requires significantly more setup as bus modules must be running
-on each node in order to deploy modules on a given machine.
+Note that the argument to the new definition is the *vine address*. For more
+information see [how it works](#how-it-works).
+
+#### Adding seeds to the vine
+Seeds are added to the vine definition using the `SeedDefinition` class.
+As with vine definitions, a helper `Seeds` class is provided for creating new
+seed definitions.
+
+```java
+SeedDefinition seed = Seeds.createDefinition("seedone").setMain("com.mycompany.myproject.SeedOne.java").setWorkers(2);
+```
+
+Each seed within a vine must have a unique name. By default, the seed name
+will be used to build a unique seed address - in this case `my.vine.seedone`.
+Furthermore, unique addresses will be created for each worker, e.g.
+`my.vine.seedone.1` and `my.vine.seedone.2`. Also, each seed *must define
+a main* that extends the abstract `com.blankstyle.vine.SeedVerticle` class.
+See [creating seeds](#creating-seeds) for more.
+
+#### Creating connections
+Connections must be defined between the vine and its seeds. Vines can be
+connected to seeds and seeds can be connected to other seeds.
+
+To better understand connections: when a vine is run, a single *vine verticle*
+is started. The *vine verticle's* job is to receive incoming data, track
+data through the vine, and produce results once data has completed processing.
+When a vine is deployed, a feeder can be used to feed this *vine verticle*.
+For each *seed* within the vine, the appropriate number of *workers* will be
+started. Each worker communicates directly with any and all other seed
+workers to which it is connected, so no central message broker is used
+to route messages. *Any seed that does not have an outbound connection defined
+will be automatically connected back to the* vine verticle.
+
+For more information see [how it works](#how-it-works)
+
+Connections are created using the `VineDefinition` and `SeedDefinition` APIs
+respectively.
+
+```java
+VineDefinition vine = Vines.createDefinition("my.vine");
+
+// Data fed into the vine will go to seedone. Note that we can
+// feed data to any number of seeds.
+SeedDefinition seedone = vine.feed(Seeds.createDefinition("seedone").setMain("com.mycompany.myproject.SeedOne").setWorkers(2));
+
+// Feed results from seedone to seedtwo.
+seedone.to(Seeds.createDefinition("seedtwo", "com.mycompany.myproject.SeedTwo"));
+```
 
 ### Root
-The Vine *root* is the API that handles deploying of vines. In local mode, the
-*root* uses the local Vert.x `Container` to deploy vine workers. But Vine also
-provides a *vine-root* module - a bus module that monitors a cluster and handles
-assigning tasks to machines.
+Vine supports two types of roots, `LocalRoot` and `RemoteRoot`. The primary
+difference between the two is in clustering. The `LocalRoot` deploys vine
+verticles within the local Vert.x instance, and `RemoteRoot` deploys vine
+verticles across a cluster of Vert.x instances.
 
-#### Root Commands
+#### Deploying vines with *LocalRoot*
+As mentioned, the `LocalRoot` deploys vines within a single Vert.x instance.
+When a vine is deployed via a local root, the root will first deploy each of
+the seed workers, then deploy a *stem* for monitoring workers, and finally
+deploy a *vine verticle* for feeding and tracking data within the vine.
 
-`deploy`
+```java
+VineDefinition vine = Vine.createDefinition("my.vine")
+  .feed("seedone", "com.mycompany.myproject.SeedOne", 2)
+  .to("seedtwo", "com.mycompany.myproject.SeedTwo", 2);
+
+LocalRoot root = new LocalRoot(vertx, container);
+root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+  public void handle(AsyncResult<Vine> result) {
+    if (result.succeeded()) {
+      result.result().feeder().feed(new JsonObject().putString("body", "Hello world!"));
+    }
+  }
+});
+```
+
+#### Deploying vines with *RemoteRoot*
+The `RemoteRoot` is a reference to a `vine-root` module instance runing
+on a Vert.x instance within a cluster. When deploying a vine in a cluster,
+one machine must be running an instance of the *root* module and each machine
+must be running an instance of the *stem* module
+
+The *root* module uses heartbeats to maintain a registry of *stems* within
+the cluster and, when vines are deployed, assign *seed workers* to those
+stems.
+
+The *root* module address defaults to `vine.root`. You can provide an optional
+configuration to the module to override the default address.
+
+The *stem* module's purpose is to - when workers are assigned to it - start
+those workers and ensure they continue to run until the vine is shutdown.
+Heartbeats are used to ensure that workers continue to run.
+
+When deploying the *stem* module, you *must* provide a configuration defining
+the stem address.
+
+The `RemoteRoot` API is the same as the `LocalRoot` API, as both classes
+implement the `Root` interface. However, the `RemoteRoot` can accept an additional
+root address argument in its constructor.
+
+```java
+Root root = new RemoteRoot("vine.root", vertx, container);
+```
+
+#### Root eventbus commands
+
+**deploy**
+
+Deploys a vine.
 
 ```
 {
@@ -50,7 +203,9 @@ assigning tasks to machines.
 }
 ```
 
-`undeploy`
+**undeploy**
+
+Undeploys a vine.
 
 ```
 {
@@ -59,274 +214,139 @@ assigning tasks to machines.
 }
 ```
 
-### Stem
-*Stems* are only relevant in the context of *remote vines*. In the case of local
-vines, the `LocalRoot` handles deploying worker verticles. However, in remote
-vines the *root* runs on a single machine and it assigns work to *stems*. So, in
-remote Vine systems the *stems* jobs are to start, stop, and restart worker
-verticles as necessary.
+**register**
 
-### Seed
-A *seed* is a representation of a single verticle in a *vine*. Each seed has a
-unique name and can contain any number of *workers*.
+Registers a stem.
 
-### Worker
-A *worker* is an instance of a *seed*. Each worker has a unique eventbus address.
+*address* is a stem address
 
-## Communication
-Vine has a number of different methods for transmitting messages between
-workers in a Vine. Each *worker* verticle maintains a connection to all of the
-*worker* verticles to which it is connected - this collection is called a channel -
-with each channel supporting a custom dispatch method, for instance round-robin,
-random, or consistent hashing.
-
-## How it works
-
-### Vine Definitions
-Vines are defined in JSON format - a format that is native to Vert.x and
-is understood by all its language implementations. Vine provides helper
-classes for defining vines.
-
-```java
-VineDefinition vine = Vine.createDefinition("my.vine.address");
-vine.feed(Seed.createDefinition("seed1").setMain("com.mycompany.SomeVerticle").setWorkers(2).groupBy("random"));
-vine.feed("seed2", "com.mycompany.SomeOtherVerticle", 2).groupBy("round");
-new LocalRoot("vine.root").deploy(vine, new Handler<AsyncResult<Feeder>>() ...);
-```
-
-Vine definition helpers create an internal JSON representation of the
-vine definition that might look something like this:
+*returns* a JSON object with a heartbeat *address*
 
 ```
 {
-  "address": "my.vine.address",
-  "connections": ["seed1"],
-  "seeds": {
-    "seed1": {
-      "name": "seed1",
-      "main": "com.mycompany.SomeVerticle",
-      "workers": 2,
-      "grouping": "random",
-      "connections": ["seed2"]
-    },
-    "seed2": {
-      "name": "seed2",
-      "main": "com.mycompany.SomeOtherVerticle",
-      "workers": 2,
-      "grouping": "round",
-      "connections": []
-    }
-  }
+  "action": "register",
+  "address": "vine.stem.foo"
 }
 ```
 
-### Vine Contexts
-Internally, when a vine is being prepared for deployment the vine definition
-is converted to a context. The context assigns addresses to each seed
-worker, and resolves connections between seeds. Again, Vine provides helpers
-for working with contexts, and contexts are ultimately structured as JSON:
+#### Seed eventbus commands
+
+**assign**
+
+Assigns a worker to the stem.
+
+*context* is a worker context
 
 ```
 {
-  "my.vine.address",
-  "connections": {
-    "seed1": {
-      "grouping": "random",
-      "addresses": [
-        "my.vine.address.seed1.1",
-        "my.vine.address.seed1.2"
-      ]
-    }
-  },
-  "definition": {
-    "address": "my.vine.address",
-    "connections": ["seed1"],
-    "seeds": {
-      "seed1": {
-        "name": "seed1",
-        "main": "com.mycompany.SomeVerticle",
-        "workers": 2,
-        "grouping": "random",
-        "connections": ["seed2"]
-      },
-      "seed2": {
-        "name": "seed2",
-        "main": "com.mycompany.SomeOtherVerticle",
-        "workers": 2,
-        "grouping": "round",
-        "connections": []
-      }
-    }
-  },
-  # List of seed contexts.
-  "seeds": {
-    
+  "action": "assign",
+  "context": {
+    "address": "my.vine.seedone.1",
+    ...
   }
 }
 ```
 
-#### Example Vine Definition
+**release**
 
-## A Brief Example
+Releases a worker from the stem.
 
-### Java
-```java
-public class CountVerticle extends Verticle {
+*context* is a worker context
 
-  @Override
-  public void start() {
-    // Create a new vine definition.
-    VineDefinition definition = Vine.createDefinition("my.vine");
-
-    // Feed all messages into the vine to seed1 *and* seed2.
-    SeedDefinition seed1 = definition.feed(Seed.createDefinition("seed1").setMain("SeedOne.java"));
-    SeedDefinition seed2 = definition.feed(Seed.createDefinition("seed2").setMain("SeedTwo.java"));
-
-    // Feed messages from seed1 and seed2 to seed3.
-    SeedDefinition seed3 = Seed.createDefinition("seed3").setMain("SeedThree.java").setWorkers(2);
-    seed1.to(seed3);
-    seed2.to(seed3);
-
-    // Create a new local root. The local root will deploy seed workers within
-    // the local Vert.x instance, so there's no additional setup required.
-    Root root = new LocalRoot(vertx, container);
-
-    // Deploy the vine. Once the vine is deployed, the result handler will be
-    // invoked with a feeder to the vine.
-    root.deploy(definition, new Handler<AsyncResult<Feeder>>() {
-      @Override
-      public void handle(AsyncResult<Feeder> result) {
-        // If the vine failed to deploy the log the failure and return.
-        if (result.failed()) {
-          container.logger().info("Failed to deploy vine.");
-          return;
-        }
-
-        Feeder feeder = result.result();
-
-        // Create an asynchronous result handler for vine results.
-        Handler<AsyncResult<Integer>> resultHandler = new Handler<AsyncResult<Integer>>() {
-          @Override
-          public void handle(Integer count) {
-            container.logger().info("Word count is " + count);
-          }
-        };
-
-        // Create a netserver that feeds data to the vine.
-        vertx.createNetServer().connectHandler(new Handler<NetSocket>() {
-          @Override
-          public void handle(NetSocket socket) {
-            socket.dataHandler(new Handler<Buffer>() {
-              @Override
-              public void handle(Buffer buffer) {
-                if (!feeder.feedQueueFull()) {
-                  feeder.feed(buffer, resultHandler);
-                }
-                else {
-                  // If the feeder queue is full then pause the socket and
-                  // set a drain handler on the feeder.
-                  socket.pause();
-                  feeder.drainHandler(new Handler<Void>() {
-                    @Override
-                    public void handle(Void result) {
-                      socket.resume();
-                    }
-                  });
-                }
-              }
-            });
-          }
-        });
-      }
-    });
+```
+{
+  "action": "release",
+  "context": {
+    "address": "my.vine.seedone.1",
+    ...
   }
-
 }
 ```
 
-#### Defining a seed verticle
-Seed verticles are defined by extending the abstract `com.blankstyle.vine.SeedVerticle`
-class and overriding the protected `process()` method. All Vine data is passed as
-`JsonObject` instances for interoperability with other languages through Vert.x. Once
-data has been processed, it should be emitted by calling the `emit()` method. Note that
-*all messages must be emitted from all seed verticles at least once.* This is important
-because messages are tracked as they make their way through the vine, and failing to
-emit messages *will result in the messages being replayed through the vine.*
+**register**
+
+Registers a worker.
+
+*address* is a worker address
+
+*returns* a JSON object with a heartbeat *address*
+
+```
+{
+  "action": "register",
+  "address": "my.vine.seedone.1"
+}
+```
+
+## Creating seeds
+Seeds are the elements that perform data processing in Vine. Seeds are
+Vert.x verticles that maintain connections to other seeds and/or to the
+parent *vine verticle*. In Java, seeds are created by extending the abstract
+`com.blankstyle.vine.SeedVerticle` class and defining the protected
+`process()` method.
 
 ```java
-import com.blankstyle.vine.SeedVerticle;
-
-class SeedOne extends SeedVerticle {
+class FooSeed extends SeedVerticle {
 
   @Override
   protected void process(JsonObject data) {
-    JsonObject result = new JsonObject();
-    result.putNumber("count", data.getString("body").length());
-    emit(result);
+    emit(data);
   }
 
 }
 ```
 
-### Javascript
-```javascript
-var vertx = require('vertx');
-var container = require('vertx/container');
-var vine = require('vine');
-var vine_local = require('vine/local');
+Messages are sent to other seeds by calling the `emit()` method, passing
+a `JsonObject` instance. *All vine messages are passed as JSON objects*
+to ensure interoperability with Vert.x and its implemented languages.
 
-var definition = vertx.createVineDefinition('my.vine');
-...
+It is important to note that *all seeds must emit processed messages at
+least once*. Internally, the *vine verticle* maintains a history of data
+transmitted through a vine, and if data does not complete processing within
+a configurable amount of time, that data will be replayed through the vine.
+Thus, failing to emit data within a seed will result in that data being
+continuously processed.
 
-var root = new vine_local.LocalRoot(vertx, container);
-root.deploy(definition, function(error, feeder) {
-  if (!error) {
-    feeder.feed('Hello world!');
-  }
-});
-```
+## How it works
 
-### Python
-```python
-import vine;
-import vine.local;
+#### The vine root
+The Vine `root` module is tasked with maintaining a list of *stems* available
+within a cluster and assigning seed workers to those machines. The root may
+only run on a single machine at any given time and has a unique address. It uses
+heartbeats to maintain its list of *stems*, and custom *schedulers* may be
+provided to perform custom assignments of seed workers to specific machines.
 
-definition = vine.create_vine_definition('my.vine')
-seed1 = definition.feed(vine.create_seed_definition('seed1', main='SeedOne.java'))
-seed2 = definition.feed(vine.create_seed_definition('seed2', main='SeedTwo.java'))
+#### The vine stem
+The Vine `stem` module is tasked with starting, stopping, and monitoring
+*seed workers* assigned to a specific machine. One stem instance runs on
+each machine within a cluster. Heartbeats are used to ensure that workers
+continue to run.
 
-seed3 = vine.create_seed_definition('seed3', main='SeedThree.java', workers=2)
+#### Vine verticles
+Each time a vine is started, a special verticle instance is started whose
+task is to feed messages to the vine and keep track of data as it makes
+its way through the vine. See [guaranteed processing](#guaranteed-processing)
+for more information on how this works.
 
-seed1.to(seed3)
-seed2.to(seed3)
+#### Feeders
+Feeders are the interface to interact with a vine. Feeders are a direct
+connection to a *vine verticle* and can be instantiated from anywhere
+within a cluster by using the unique *vine address*.
 
-root = vine.local.LocalRoot()
+### Reliability
+Vine provides a `ReliableEventBus` implementation which adds features like
+timeouts and re-sends to the Vert.x event bus. Additionally, Vine uses
+heartbeats to ensure that seed workers stay alive.
 
-def deploy_handler(error, feeder):
-  if not error:
-    feeder.feed(u'Hello world!')
-```
-
-### PHP
-```php
-use Vine\Vine;
-use Vine\Seed;
-use Vine\Local\LocalRoot;
-
-$definition = Vine::createDefinition('my.vine');
-
-$seed1 = $definition->feed(Seed::createDefinition('seed1')->setMain('SeedOne.java'));
-$seed2 = $definition->feed(Seed::createDefinition('seed2')->setMain('SeedTwo.java'));
-
-$seed3 = Seed::createDefinition('seed3')->setMain('SeedThree.java')->setWorkers(2);
-$seed1->to($seed3);
-$seed2->to($seed3);
-
-$root = new LocalRoot();
-
-$root->deploy($definition, function($feeder, $error) {
-  if (empty($error)) {
-    $feeder->feed('Hello world!');
-  }
-});
-```
+### Guaranteed processing
+Vine provides some guarantees for data processing. When a vine is started,
+Vine starts a *vine verticle* to which messages are fed. Each time a message
+is fed to the vine, the message is tagged with a unique identifier and a
+record is kept of which messages have been received. Each time a seed receives
+a message, the message is tagged with the seed name. Once the last seed in
+a vine finishes processing a message, the message is emitted back to the
+*vine verticle* which then checks to ensure that the message completed
+each of the steps in the vine. Only if the message has completed processing
+will the *vine verticle* response to the original feed message. If a message
+does not finish running through the vine in a configurable amount of time,
+the message will be considered lost and will be replayed through the vine.

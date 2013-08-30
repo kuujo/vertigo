@@ -45,8 +45,8 @@ public class JsonMessage implements Serializeable<JsonObject> {
    * @return
    *   The called message object.
    */
-  public JsonMessage setIdentifier(String id) {
-    json.putString("id", id);
+  public JsonMessage setIdentifier(long id) {
+    json.putNumber("id", id);
     return this;
   }
 
@@ -56,8 +56,8 @@ public class JsonMessage implements Serializeable<JsonObject> {
    * @return
    *   A unique message identifier.
    */
-  public String getIdentifier() {
-    return json.getString("id");
+  public long getIdentifier() {
+    return json.getLong("id");
   }
 
   /**

@@ -60,7 +60,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   private JsonMessage currentMessage;
 
-  private String seedName;
+  private String seedAddress;
 
   private HeartBeatEmitter heartbeat;
 
@@ -80,7 +80,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void setupContext() {
     this.context = new WorkerContext(config);
-    this.seedName = context.getContext().getDefinition().getName();
+    this.seedAddress = context.getContext().getAddress();
   }
 
   /**
@@ -213,7 +213,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void recursiveEmit(final JsonObject data, ReliableChannel currentChannel, final Iterator<ReliableChannel> channelIterator) {
     JsonMessage newMessage = currentMessage.copy();
-    newMessage.setBody(data).tag(seedName);
+    newMessage.setBody(data).tag(seedAddress);
     currentChannel.publish(newMessage, new AsyncResultHandler<Void>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -254,7 +254,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
   private void recursiveEmit(final JsonObject data, ReliableChannel currentChannel, final Iterator<ReliableChannel> channelIterator, final Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     JsonMessage newMessage = currentMessage.copy();
-    newMessage.setBody(data).tag(seedName);
+    newMessage.setBody(data).tag(seedAddress);
     currentChannel.publish(newMessage, new AsyncResultHandler<Void>() {
       @Override
       public void handle(AsyncResult<Void> result) {

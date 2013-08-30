@@ -15,20 +15,38 @@
 */
 package com.blankstyle.vine.eventbus.vine;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
+import com.blankstyle.vine.context.ConnectionContext;
+import com.blankstyle.vine.context.SeedContext;
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.messaging.ConnectionPool;
+import com.blankstyle.vine.messaging.DefaultChannel;
+import com.blankstyle.vine.messaging.DefaultConnectionPool;
+import com.blankstyle.vine.messaging.Dispatcher;
+import com.blankstyle.vine.messaging.JsonMessage;
+import com.blankstyle.vine.messaging.ReliableChannel;
+import com.blankstyle.vine.messaging.ReliableEventBusConnection;
+import com.blankstyle.vine.messaging.TimeoutException;
 
 /**
  * A vine verticle.
@@ -63,22 +81,117 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
   private long messageExpiration;
 
   /**
+   * The vine verticle address.
+   */
+  private String address;
+
+  /**
    * The current message correlation ID.
    */
   private long currentID;
 
   /**
+   * A collection of channels to which to dispatch messages.
+   */
+  private Collection<ReliableChannel> channels;
+
+  /**
+   * A reliable eventbus implementation.
+   */
+  private ReliableEventBus eventBus;
+
+  /**
+   * A map of correlation IDs to feed messages.
+   */
+  private Map<Long, Message<JsonObject>> feedRequests = new HashMap<Long, Message<JsonObject>>();
+
+  /**
    * A map of correlation IDs to message objects.
    */
-  private Map<Long, VineMessage> inProcess = new HashMap<Long, VineMessage>();
+  private Map<Long, JsonMessage> inProcess = new HashMap<Long, JsonMessage>();
+
+  /**
+   * A map of correlation IDs to future results.
+   */
+  private Map<Long, Future<JsonObject>> futureResults = new HashMap<Long, Future<JsonObject>>();
+
+  private String[] tagNames;
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    EventBus eventBus = vertx.eventBus();
+    if (eventBus instanceof ReliableEventBus) {
+      this.eventBus = (ReliableEventBus) eventBus;
+    }
+    else {
+      this.eventBus = new WrappedReliableEventBus(eventBus, vertx);
+    }
+  }
 
   @Override
   protected void start(ReliableEventBus eventBus) {
     config = container.config();
     log = container.logger();
+    address = getMandatoryStringConfig("address");
     context = new VineContext(config);
     messageExpiration = context.getDefinition().getMessageExpiration();
-    eventBus.registerHandler(getMandatoryStringConfig("address"), this);
+    setupTagNames();
+    setupChannels();
+    eventBus.registerHandler(address, this);
+  }
+
+  /**
+   * Creates an array of tag names for validation of message results.
+   */
+  private void setupTagNames() {
+    Collection<SeedContext> seeds = context.getSeedContexts();
+    List<String> tags = new ArrayList<String>();
+    Iterator<SeedContext> iter = seeds.iterator();
+    while (iter.hasNext()) {
+      tags.add(iter.next().getAddress());
+    }
+    tagNames = (String[]) tags.toArray();
+  }
+
+  /**
+   * Sets up vine channels.
+   */
+  private void setupChannels() {
+    channels = new ArrayList<ReliableChannel>();
+    Collection<ConnectionContext> connections = context.getConnectionContexts();
+    Iterator<ConnectionContext> iter = connections.iterator();
+    while (iter.hasNext()) {
+      ConnectionContext connectionContext = iter.next();
+      try {
+        JsonObject grouping = connectionContext.getGrouping();
+        Dispatcher dispatcher = (Dispatcher) Class.forName(grouping.getString("dispatcher")).newInstance();
+
+        // Set options on the dispatcher. All non-"dispatcher" values
+        // are considered to be dispatcher options.
+        Iterator<String> fieldNames = grouping.getFieldNames().iterator();
+        while (fieldNames.hasNext()) {
+          String fieldName = fieldNames.next();
+          if (fieldName != "dispatcher") {
+            String value = grouping.getString(fieldName);
+            dispatcher.setOption(fieldName, value);
+          }
+        }
+
+        // Create a connection pool from which the dispatcher will dispatch messages.
+        ConnectionPool connectionPool = new DefaultConnectionPool();
+        String[] addresses = connectionContext.getAddresses();
+        for (String address : addresses) {
+          connectionPool.add(new ReliableEventBusConnection(address, eventBus));
+        }
+
+        // Initialize the dispatcher and add a channel to the channels list.
+        dispatcher.init(connectionPool);
+        channels.add(new DefaultChannel(dispatcher));
+      }
+      catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        log.error("Failed to find grouping handler.");
+      }
+    }
   }
 
   @Override
@@ -90,8 +203,8 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     }
 
     switch (action) {
-      case "start":
-        doStart(message);
+      case "feed":
+        doFeed(message);
         break;
       case "receive":
         doReceive(message);
@@ -102,32 +215,92 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
   }
 
   /**
-   * Starts processing a message.
+   * Feeds a message to the vine.
    */
-  private void doStart(final Message<JsonObject> message) {
-    dispatchMessage(getMandatoryObject("body", message), new Handler<AsyncResult<JsonObject>>() {
+  private void doFeed(final Message<JsonObject> message) {
+    final JsonMessage jsonMessage = new JsonMessage().setBody(getMandatoryObject("data", message));
+
+    final long id = nextCorrelationID();
+    jsonMessage.setIdentifier(id);
+
+    feedRequests.put(id, message);
+    inProcess.put(id, jsonMessage);
+
+    // Create a future that will be invoked with the vine result.
+    final Future<JsonObject> future = new DefaultFutureResult<JsonObject>();
+    future.setHandler(new Handler<AsyncResult<JsonObject>>() {
       @Override
       public void handle(AsyncResult<JsonObject> result) {
         if (result.succeeded()) {
           message.reply(result.result());
+          feedRequests.remove(id);
+          inProcess.remove(id);
         }
         else {
-          sendError(message, "Processing failed.");
+          dispatch(jsonMessage, future);
         }
       }
     });
+    dispatch(jsonMessage, future);
   }
 
   /**
-   * Finishes processing a message.
+   * Dispatches a message to all initial seeds.
+   *
+   * @param message
+   *   The JSON message to dispatch.
+   * @param future
+   *   A future result to be triggered once processing is complete.
    */
-  private void doReceive(final Message<JsonObject> message) {
-    receiveMessage(getMandatoryObject("message", message), new Handler<AsyncResult<Void>>() {
+  private void dispatch(JsonMessage message, final Future<JsonObject> future) {
+    vertx.setTimer(messageExpiration, new Handler<Long>() {
       @Override
-      public void handle(AsyncResult<Void> event) {
-        message.reply();
+      public void handle(Long event) {
+        future.setFailure(new TimeoutException("Message processing timed out."));
       }
     });
+    futureResults.put(message.getIdentifier(), future);
+  }
+
+  /**
+   * Receives a processed message.
+   */
+  private void doReceive(final Message<JsonObject> message) {
+    final JsonMessage jsonMessage = new JsonMessage(message.body());
+    long id = jsonMessage.getIdentifier();
+    if (id == 0) {
+      sendError(message, "Invalid message correlation identifier.");
+    }
+
+    // Get the message future. If a future does not exist then the
+    // message may have been played through the vine more than once,
+    // and an earlier version of the message eventually completed
+    // processing. In that case, the message has already completed.
+    Future<JsonObject> futureResult = futureResults.get(id);
+    if (futureResult != null) {
+      // Ensure that the message made it through all the necessary
+      // steps in the vine. If not, trigger the future with a failure.
+      if (!checkResult(jsonMessage)) {
+        futureResult.setFailure(new TimeoutException("Message failed to complete all steps."));
+      }
+      else {
+        futureResult.setResult(jsonMessage.body());
+        futureResults.remove(id);
+      }
+    }
+  }
+
+  /**
+   * Checks to ensure that a message has been tagged with all the
+   * appropriate seeds.
+   *
+   * @param message
+   *   The message to check.
+   * @return
+   *   Indicates whether the message result is valid.
+   */
+  private boolean checkResult(JsonMessage message) {
+    return Arrays.equals(message.getTags(), tagNames);
   }
 
   /**
@@ -138,144 +311,6 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    */
   private long nextCorrelationID() {
     return ++currentID;
-  }
-
-  /**
-   * Tags a message in preparation for processing.
-   *
-   * @param message
-   *   The message to tag.
-   * @param resultHandler
-   *   A handler to be invoked with the vine result.
-   * @return
-   *   The tagged message.
-   */
-  private JsonObject tagMessage(JsonObject message, final Handler<AsyncResult<JsonObject>> resultHandler) {
-    Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
-
-    final VineMessage vineMessage = new VineMessage(message);
-    vineMessage.setCorrelationID(nextCorrelationID());
-    vineMessage.setFutureResult(future);
-
-    // Add the VineMessage to the correlation identifier map.
-    inProcess.put(vineMessage.getCorrelationID(), vineMessage);
-
-    // Set a timer that will be triggered if the message isn't processed before
-    // the indicated time. If this is the case then the message will be re-sent.
-    // Once the message completes, this timer will be cancelled.
-    vineMessage.setTimerID(vertx.setTimer(messageExpiration, new Handler<Long>() {
-      @Override
-      public void handle(Long event) {
-        inProcess.remove(vineMessage.getCorrelationID());
-        dispatchMessage(vineMessage.getMessage(), resultHandler);
-      }
-    }));
-    return message;
-  }
-
-  /**
-   * Dispatches a message.
-   *
-   * @param message
-   *   The message to dispatch.
-   */
-  private void dispatchMessage(JsonObject message, Handler<AsyncResult<JsonObject>> resultHandler) {
-    message = tagMessage(message, resultHandler);
-  }
-
-  /**
-   * Receives a completed message.
-   *
-   * @param message
-   *   The completed message.
-   */
-  private void receiveMessage(JsonObject message, Handler<AsyncResult<Void>> resultHandler) {
-    long correlationID = message.getLong("correlation_id");
-    if (correlationID == 0) {
-      log.warn("Invalid correlation identifier found.");
-    }
-    else {
-      // Get the VineMessage from the correlation identifier map.
-      VineMessage vineMessage = inProcess.get(correlationID);
-      inProcess.remove(correlationID);
-
-      // Cancel the re-send timer.
-      vertx.cancelTimer(vineMessage.getTimerID());
-
-      // Invoke the VineMessage future with the message result.
-      vineMessage.getFutureResult().setResult(message);
-    }
-    // Invoke the eventbus result handler to indicate we received the message.
-    new DefaultFutureResult<Void>().setHandler(resultHandler).setResult(null);
-  }
-
-  /**
-   * A Vine message.
-   */
-  private class VineMessage {
-    private long timerID;
-    private Future<JsonObject> futureResult;
-    private JsonObject message;
-
-    /**
-     * @param message
-     *   The message data.
-     */
-    public VineMessage(JsonObject message) {
-      this.message = message;
-    }
-
-    /**
-     * Sets the message corralation identifier.
-     */
-    public VineMessage setCorrelationID(long correlationID) {
-      message.putNumber("correlation_id", correlationID);
-      return this;
-    }
-
-    /**
-     * Returns the message correlation identifier.
-     */
-    public long getCorrelationID() {
-      return message.getLong("correlation_id");
-    }
-
-    /**
-     * Sets the message expiration timer ID.
-     */
-    public VineMessage setTimerID(long timerID) {
-      this.timerID = timerID;
-      return this;
-    }
-
-    /**
-     * Returns the message expiration timer ID.
-     */
-    public long getTimerID() {
-      return timerID;
-    }
-
-    /**
-     * Sets the message result future.
-     */
-    public VineMessage setFutureResult(Future<JsonObject> futureResult) {
-      this.futureResult = futureResult;
-      return this;
-    }
-
-    /**
-     * Returns the message result future.
-     */
-    public Future<JsonObject> getFutureResult() {
-      return futureResult;
-    }
-
-    /**
-     * Returns the message data.
-     */
-    public JsonObject getMessage() {
-      return message;
-    }
   }
 
 }

@@ -23,7 +23,23 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface ChannelPublisher {
+public interface ChannelPublisher<T extends Channel> {
+
+  /**
+   * Adds a channel to the publisher.
+   *
+   * @param channel
+   *   The channel to add.
+   */
+  public ChannelPublisher<T> addChannel(T channel);
+
+  /**
+   * Removes a channel from the publisher.
+   *
+   * @param channel
+   *   The channel to remove.
+   */
+  public ChannelPublisher<T> removeChannel(T channel);
 
   /**
    * Publishes a message.

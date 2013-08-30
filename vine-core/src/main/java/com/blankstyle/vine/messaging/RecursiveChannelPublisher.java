@@ -30,34 +30,20 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  *
  * @author Jordan Halterman
  */
-public class RecursiveChannelPublisher implements ChannelPublisher {
+public class RecursiveChannelPublisher implements ChannelPublisher<ReliableChannel> {
 
   private List<ReliableChannel> channels = new ArrayList<ReliableChannel>();
 
-  /**
-   * Adds a channel to the publisher.
-   *
-   * @param channel
-   *   The channel to add.
-   * @return
-   *   The called publisher instance.
-   */
-  public RecursiveChannelPublisher addChannel(ReliableChannel channel) {
+  @Override
+  public ChannelPublisher<ReliableChannel> addChannel(ReliableChannel channel) {
     if (!channels.contains(channel)) {
       channels.add(channel);
     }
     return this;
   }
 
-  /**
-   * Removes a channel from the publisher.
-   *
-   * @param channel
-   *   The channel to remove.
-   * @return
-   *   The called publisher instance.
-   */
-  public RecursiveChannelPublisher removeChannel(ReliableChannel channel) {
+  @Override
+  public ChannelPublisher<ReliableChannel> removeChannel(ReliableChannel channel) {
     if (channels.contains(channel)) {
       channels.remove(channel);
     }

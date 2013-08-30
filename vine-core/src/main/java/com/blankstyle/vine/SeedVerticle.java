@@ -15,16 +15,13 @@
 */
 package com.blankstyle.vine;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
@@ -32,14 +29,15 @@ import com.blankstyle.vine.context.ConnectionContext;
 import com.blankstyle.vine.context.WorkerContext;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatEmitter;
 import com.blankstyle.vine.heartbeat.HeartBeatEmitter;
+import com.blankstyle.vine.messaging.ChannelPublisher;
 import com.blankstyle.vine.messaging.ConnectionPool;
 import com.blankstyle.vine.messaging.DefaultChannel;
 import com.blankstyle.vine.messaging.DefaultConnectionPool;
 import com.blankstyle.vine.messaging.Dispatcher;
 import com.blankstyle.vine.messaging.JsonMessage;
+import com.blankstyle.vine.messaging.RecursiveChannelPublisher;
 import com.blankstyle.vine.messaging.ReliableChannel;
 import com.blankstyle.vine.messaging.ReliableEventBusConnection;
 
@@ -56,7 +54,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   protected WorkerContext context;
 
-  protected Collection<ReliableChannel> channels;
+  protected ChannelPublisher<ReliableChannel> publisher;
 
   private JsonMessage currentMessage;
 
@@ -89,7 +87,6 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
   private void setupHeartbeat() {
     heartbeat = new DefaultHeartBeatEmitter(vertx, vertx.eventBus());
     final String stemAddress = getMandatoryStringConfig("stem");
-    ReliableEventBus eventBus = new WrappedReliableEventBus(vertx.eventBus(), vertx);
     eventBus.send(stemAddress, new JsonObject().putString("action", "register").putString("address", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -107,7 +104,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
           }
         }
         else {
-          container.logger().error(String.format("Failed to fetch heartbeat address from stem at %s.", stemAddress));
+          log.error(String.format("Failed to fetch heartbeat address from stem at %s.", stemAddress));
         }
       }
     });
@@ -117,7 +114,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    * Sets up seed channels.
    */
   private void setupChannels() {
-    channels = new ArrayList<ReliableChannel>();
+    publisher = new RecursiveChannelPublisher();
     Collection<ConnectionContext> connections = context.getContext().getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
     while (iter.hasNext()) {
@@ -146,7 +143,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
         // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
-        channels.add(new DefaultChannel(dispatcher));
+        publisher.addChannel(new DefaultChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         container.logger().error("Failed to find grouping handler.");
@@ -195,33 +192,9 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    *   The data to emit.
    */
   protected void emit(JsonObject data) {
-    Iterator<ReliableChannel> iter = channels.iterator();
-    if (iter.hasNext()) {
-      recursiveEmit(data, iter.next(), iter);
-    }
-  }
-
-  /**
-   * Recursively emits data to a list of channels.
-   *
-   * @param data
-   *   The data to emit.
-   * @param channel
-   *   The current channel to which to emit.
-   * @param channelIterator
-   *   An iterator over all channels.
-   */
-  private void recursiveEmit(final JsonObject data, ReliableChannel currentChannel, final Iterator<ReliableChannel> channelIterator) {
     JsonMessage newMessage = currentMessage.copy();
     newMessage.setBody(data).tag(seedAddress);
-    currentChannel.publish(newMessage, new AsyncResultHandler<Void>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (channelIterator.hasNext()) {
-          recursiveEmit(data, channelIterator.next(), channelIterator);
-        }
-      }
-    });
+    publisher.publish(newMessage);
   }
 
   /**
@@ -233,44 +206,9 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    *   A handler to be invoked once complete.
    */
   protected void emit(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
-    Iterator<ReliableChannel> iter = channels.iterator();
-    if (iter.hasNext()) {
-      recursiveEmit(data, iter.next(), iter, doneHandler);
-    }
-  }
-
-  /**
-   * Recursively emits data to a list of channels, invoking a handler when complete.
-   *
-   * @param data
-   *   The data to emit.
-   * @param currentChannel
-   *   The current channel to which to emit.
-   * @param channelIterator
-   *   An iterator over all channels.
-   * @param doneHandler
-   *   A handler to be invoked once all channels have received the message.
-   */
-  private void recursiveEmit(final JsonObject data, ReliableChannel currentChannel, final Iterator<ReliableChannel> channelIterator, final Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     JsonMessage newMessage = currentMessage.copy();
     newMessage.setBody(data).tag(seedAddress);
-    currentChannel.publish(newMessage, new AsyncResultHandler<Void>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.succeeded()) {
-          if (channelIterator.hasNext()) {
-            recursiveEmit(data, channelIterator.next(), channelIterator);
-          }
-          else {
-            future.setResult(null);
-          }
-        }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
+    publisher.publish(newMessage, doneHandler);
   }
 
 }

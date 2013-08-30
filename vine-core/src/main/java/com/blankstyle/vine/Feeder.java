@@ -35,16 +35,6 @@ public interface Feeder {
   public boolean feedQueueFull();
 
   /**
-   * Sets the feed queue max size.
-   *
-   * @param maxSize
-   *   The max feed queue size.
-   * @return
-   *   The called object.
-   */
-  public Feeder setFeedQueueMaxSize(int maxSize);
-
-  /**
    * Sets a drain handler on the feeder.
    *
    * @param drainHandler

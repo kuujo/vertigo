@@ -15,8 +15,6 @@
 */
 package com.blankstyle.vine.eventbus;
 
-import java.util.concurrent.TimeoutException;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;

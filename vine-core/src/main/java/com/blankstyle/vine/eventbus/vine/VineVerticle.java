@@ -38,6 +38,7 @@ import com.blankstyle.vine.context.SeedContext;
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.eventbus.TimeoutException;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.messaging.ConnectionPool;
 import com.blankstyle.vine.messaging.DefaultChannel;
@@ -46,7 +47,6 @@ import com.blankstyle.vine.messaging.Dispatcher;
 import com.blankstyle.vine.messaging.JsonMessage;
 import com.blankstyle.vine.messaging.ReliableChannel;
 import com.blankstyle.vine.messaging.ReliableEventBusConnection;
-import com.blankstyle.vine.messaging.TimeoutException;
 
 /**
  * A vine verticle.
@@ -79,6 +79,11 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * The message process time expiration.
    */
   private long messageExpiration;
+
+  /**
+   * The maximum process queue size.
+   */
+  private int maxQueueSize;
 
   /**
    * The vine verticle address.
@@ -135,6 +140,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     address = getMandatoryStringConfig("address");
     context = new VineContext(config);
     messageExpiration = context.getDefinition().getMessageExpiration();
+    maxQueueSize = context.getDefinition().getMaxQueueSize();
     setupTagNames();
     setupChannels();
     eventBus.registerHandler(address, this);
@@ -218,6 +224,12 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * Feeds a message to the vine.
    */
   private void doFeed(final Message<JsonObject> message) {
+    // If the feed queue is full then reply immediately with an error.
+    if (feedRequests.size() >= maxQueueSize) {
+      sendError(message, "Vine queue full.");
+      return;
+    }
+
     final JsonMessage jsonMessage = new JsonMessage().setBody(getMandatoryObject("data", message));
 
     final long id = nextCorrelationID();

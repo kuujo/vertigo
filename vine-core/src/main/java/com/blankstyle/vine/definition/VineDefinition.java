@@ -36,6 +36,8 @@ public class VineDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
+  private static final int DEFAULT_QUEUE_SIZE = 1000;
+
   private static final long DEFAULT_TIMEOUT = 5000;
 
   private static final long DEFAULT_EXPIRATION = 15000;
@@ -62,6 +64,29 @@ public class VineDefinition implements Serializeable<JsonObject> {
    */
   public VineDefinition setAddress(String address) {
     definition.putString("address", address);
+    return this;
+  }
+
+  /**
+   * Gets the maximum vine queue size.
+   *
+   * @return
+   *   The maximum vine queue size.
+   */
+  public int getMaxQueueSize() {
+    return definition.getInteger("queue_size", DEFAULT_QUEUE_SIZE);
+  }
+
+  /**
+   * Sets the maximum vine queue size.
+   *
+   * @param queueSize
+   *   The maximum vine process queue size.
+   * @return
+   *   The called vine definition.
+   */
+  public VineDefinition setMaxQueueSize(int queueSize) {
+    definition.putNumber("queue_size", queueSize);
     return this;
   }
 

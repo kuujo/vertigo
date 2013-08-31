@@ -162,7 +162,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
       }
     });
     registerStem(stemContext);
-    message.reply(heartbeatAddress);
+    message.reply(new JsonObject().putString("address", heartbeatAddress));
   }
 
   /**

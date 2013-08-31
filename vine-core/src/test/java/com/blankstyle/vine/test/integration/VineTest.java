@@ -1,3 +1,18 @@
+/*
+* Copyright 2013 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package com.blankstyle.vine.test.integration;
 
 import org.junit.Test;
@@ -20,6 +35,7 @@ import com.blankstyle.vine.remote.RemoteRoot;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
 /**
@@ -47,6 +63,8 @@ public class VineTest extends TestVerticle {
         assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
 
         Vine vine = result.result();
+        assertNotNull(vine);
+
         Feeder feeder = vine.feeder();
         feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
           @Override
@@ -82,10 +100,12 @@ public class VineTest extends TestVerticle {
       public void handle(AsyncResult<Vine> result) {
         assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
         Vine vine = result.result();
+        assertNotNull(vine);
+
         vine.shutdown(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
-            assertTrue(result.succeeded());
+            assertTrue("Failed to shutdown vine. " + result.cause(), result.succeeded());
             testComplete();
           }
         });
@@ -113,6 +133,8 @@ public class VineTest extends TestVerticle {
                 assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
 
                 Vine vine = result.result();
+                assertNotNull(vine);
+
                 Feeder feeder = vine.feeder();
                 feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
                   @Override
@@ -149,6 +171,42 @@ public class VineTest extends TestVerticle {
               public void handle(AsyncResult<Vine> result) {
                 assertTrue(result.failed());
                 testComplete();
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testRemoteShutdown() {
+    deployRoot(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        assertTrue("Failed to deploy root. " + result.cause(), result.succeeded());
+
+        deployStem(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue("Failed to deploy stem. " + result.cause(), result.succeeded());
+
+            VineDefinition vine = createTestDefinition();
+            RemoteRoot root = new RemoteRoot("vine.root.test", vertx, container);
+            root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+              @Override
+              public void handle(AsyncResult<Vine> result) {
+                assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+                Vine vine = result.result();
+                assertNotNull(vine);
+
+                vine.shutdown(new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    assertTrue("Failed to shutdown vine. " + result.cause(), result.succeeded());
+                    testComplete();
+                  }
+                });
               }
             });
           }

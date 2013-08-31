@@ -237,13 +237,18 @@ public class RemoteRoot implements Root {
           future.setHandler(doneHandler);
         }
 
-        eventBus.send(address, new JsonObject().putString("action", "release").putString("vine", context.getAddress()), new Handler<Message<JsonObject>>() {
+        eventBus.send(address, new JsonObject().putString("action", "undeploy").putString("address", context.getAddress()), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> reply) {
             JsonObject body = reply.body();
-            String error = body.getString("error");
-            if (error != null) {
-              future.setFailure(new VineException(error));
+            if (body != null) {
+              String error = body.getString("error");
+              if (error != null) {
+                future.setFailure(new VineException(error));
+              }
+              else {
+                future.setResult(null);
+              }
             }
             else {
               future.setResult(null);

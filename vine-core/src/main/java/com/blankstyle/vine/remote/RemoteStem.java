@@ -83,6 +83,9 @@ public class RemoteStem implements Stem {
   @Override
   public Stem setVertx(Vertx vertx) {
     this.vertx = vertx;
+    if (eventBus != null) {
+      eventBus.setVertx(vertx);
+    }
     return this;
   }
 
@@ -112,7 +115,7 @@ public class RemoteStem implements Stem {
    */
   public RemoteStem setEventBus(EventBus eventBus) {
     if (!(eventBus instanceof ReliableEventBus)) {
-      eventBus = new WrappedReliableEventBus(eventBus);
+      eventBus = new WrappedReliableEventBus(eventBus, vertx);
     }
     this.eventBus = (ReliableEventBus) eventBus;
     return this;
@@ -150,7 +153,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void release(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "release").putString("address", context.getAddress()), new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, new JsonObject().putString("action", "release").putObject("context", context.serialize()), new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -160,7 +163,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void release(WorkerContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "release").putString("address", context.getAddress()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, new JsonObject().putString("action", "release").putObject("context", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);

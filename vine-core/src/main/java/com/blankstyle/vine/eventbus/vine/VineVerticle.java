@@ -39,11 +39,13 @@ import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.TimeoutException;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.messaging.ChannelPublisher;
 import com.blankstyle.vine.messaging.ConnectionPool;
 import com.blankstyle.vine.messaging.DefaultChannel;
 import com.blankstyle.vine.messaging.DefaultConnectionPool;
 import com.blankstyle.vine.messaging.Dispatcher;
 import com.blankstyle.vine.messaging.JsonMessage;
+import com.blankstyle.vine.messaging.RecursiveChannelPublisher;
 import com.blankstyle.vine.messaging.ReliableChannel;
 import com.blankstyle.vine.messaging.ReliableEventBusConnection;
 
@@ -89,10 +91,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    */
   private long currentID;
 
-  /**
-   * A collection of channels to which to dispatch messages.
-   */
-  private Collection<ReliableChannel> channels;
+  private ChannelPublisher<ReliableChannel> publisher = new RecursiveChannelPublisher();
 
   /**
    * A reliable eventbus implementation.
@@ -156,7 +155,6 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * Sets up vine channels.
    */
   private void setupChannels() {
-    channels = new ArrayList<ReliableChannel>();
     Collection<ConnectionContext> connections = context.getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
     while (iter.hasNext()) {
@@ -185,7 +183,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
         // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
-        channels.add(new DefaultChannel(dispatcher));
+        publisher.addChannel(new DefaultChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         logger.error("Failed to find grouping handler.");
@@ -266,13 +264,21 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
       }
     });
     futureResults.put(message.getIdentifier(), future);
+    publisher.publish(message, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+      }
+    });
   }
 
   /**
    * Receives a processed message.
    */
   private void doReceive(final Message<JsonObject> message) {
-    final JsonMessage jsonMessage = new JsonMessage(message.body());
+    final JsonMessage jsonMessage = new JsonMessage(getMandatoryObject("message", message));
     long id = jsonMessage.getIdentifier();
     if (id == 0) {
       sendError(message, "Invalid message correlation identifier.");

@@ -18,6 +18,7 @@ package com.blankstyle.vine.messaging;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An eventbus-based connection.
@@ -52,15 +53,19 @@ public class EventBusConnection implements Connection {
     return address;
   }
 
+  protected JsonObject createJsonAction(JsonMessage message) {
+    return new JsonObject().putString("action", "receive").putObject("message", message.serialize());
+  }
+
   @Override
   public Connection send(JsonMessage message) {
-    eventBus.send(address, message);
+    eventBus.send(address, createJsonAction(message));
     return this;
   }
 
   @Override
   public Connection send(JsonMessage message, Handler<Message<Void>> replyHandler) {
-    eventBus.send(address, message.serialize(), replyHandler);
+    eventBus.send(address, createJsonAction(message), replyHandler);
     return this;
   }
 

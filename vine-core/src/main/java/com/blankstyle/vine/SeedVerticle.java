@@ -169,9 +169,8 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void doReceive(Message<JsonObject> message) {
     message.reply();
-    currentMessage = new JsonMessage(message.body());
-    JsonObject body = getMandatoryObject("body", message);
-    process(body.copy());
+    currentMessage = new JsonMessage(getMandatoryObject("message", message));
+    process(currentMessage.body().copy());
   }
 
   /**

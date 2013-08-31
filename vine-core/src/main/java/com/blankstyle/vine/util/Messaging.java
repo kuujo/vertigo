@@ -42,9 +42,14 @@ public final class Messaging {
   public static <T> void checkResponse(Message<JsonObject> message, Handler<AsyncResult<T>> resultHandler) {
     Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     JsonObject body = message.body();
-    String error = body.getString("error");
-    if (error != null) {
-      future.setFailure(new VineException(error));
+    if (body != null) {
+      String error = body.getString("error");
+      if (error != null) {
+        future.setFailure(new VineException(error));
+      }
+      else {
+        future.setResult(null);
+      }
     }
     else {
       future.setResult(null);
@@ -64,9 +69,14 @@ public final class Messaging {
   public static <T> void checkResponse(Message<JsonObject> message, Handler<AsyncResult<T>> resultHandler, T result) {
     Future<T> future = new DefaultFutureResult<T>().setHandler(resultHandler);
     JsonObject body = message.body();
-    String error = body.getString("error");
-    if (error != null) {
-      future.setFailure(new VineException(error));
+    if (body != null) {
+      String error = body.getString("error");
+      if (error != null) {
+        future.setFailure(new VineException(error));
+      }
+      else {
+        future.setResult(result);
+      }
     }
     else {
       future.setResult(result);
@@ -85,9 +95,15 @@ public final class Messaging {
    *   A handler to be invoked if no errors occurred.
    */
   public static <T> void checkResponse(Message<JsonObject> message, Handler<AsyncResult<T>> resultHandler, Handler<Void> validHandler) {
-    String error = message.body().getString("error");
-    if (error != null) {
-      new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VineException(error));
+    JsonObject body = message.body();
+    if (body != null) {
+      String error = body.getString("error");
+      if (error != null) {
+        new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VineException(error));
+      }
+      else {
+        validHandler.handle(null);
+      }
     }
     else {
       validHandler.handle(null);
@@ -109,9 +125,14 @@ public final class Messaging {
     }
     else {
       JsonObject body = response.result().body();
-      String error = body.getString("error");
-      if (error != null) {
-        future.setFailure(new VineException(error));
+      if (body != null) {
+        String error = body.getString("error");
+        if (error != null) {
+          future.setFailure(new VineException(error));
+        }
+        else {
+          future.setResult(null);
+        }
       }
       else {
         future.setResult(null);
@@ -136,9 +157,14 @@ public final class Messaging {
     }
     else {
       JsonObject body = response.result().body();
-      String error = body.getString("error");
-      if (error != null) {
-        future.setFailure(new VineException(error));
+      if (body != null) {
+        String error = body.getString("error");
+        if (error != null) {
+          future.setFailure(new VineException(error));
+        }
+        else {
+          future.setResult(result);
+        }
       }
       else {
         future.setResult(result);
@@ -162,9 +188,15 @@ public final class Messaging {
       new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(response.cause());
     }
     else {
-      String error = response.result().body().getString("error");
-      if (error != null) {
-        new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VineException(error));
+      JsonObject body = response.result().body();
+      if (body != null) {
+        String error = body.getString("error");
+        if (error != null) {
+          new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VineException(error));
+        }
+        else {
+          validHandler.handle(null);
+        }
       }
       else {
         validHandler.handle(null);

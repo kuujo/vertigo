@@ -23,6 +23,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.eventbus.ReliableEventBus;
+import com.blankstyle.vine.util.Messaging;
 
 /**
  * A reliable eventbus connection.
@@ -39,66 +40,39 @@ public class ReliableEventBusConnection extends EventBusConnection implements Re
   }
 
   @Override
-  public Connection send(JsonMessage message, AsyncResultHandler<Void> doneHandler) {
+  public Connection send(JsonMessage message, final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, message.serialize(), new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, createJsonAction(message), new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          JsonObject body = result.result().body();
-          String error = body.getString("error");
-          if (error != null) {
-            future.setFailure(new CommunicationException(error));
-          }
-        }
-        else {
-          future.setFailure(result.cause());
-        }
+        Messaging.checkResponse(result, doneHandler);
       }
     });
     return this;
   }
 
   @Override
-  public Connection send(JsonMessage message, long timeout, AsyncResultHandler<Void> doneHandler) {
+  public Connection send(JsonMessage message, long timeout, final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, message.serialize(), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, createJsonAction(message), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          JsonObject body = result.result().body();
-          String error = body.getString("error");
-          if (error != null) {
-            future.setFailure(new CommunicationException(error));
-          }
-        }
-        else {
-          future.setFailure(result.cause());
-        }
+        Messaging.checkResponse(result, doneHandler);
       }
     });
     return this;
   }
 
   @Override
-  public Connection send(JsonMessage message, long timeout, boolean retry, AsyncResultHandler<Void> doneHandler) {
+  public Connection send(JsonMessage message, long timeout, boolean retry, final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, message.serialize(), timeout, retry, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, createJsonAction(message), timeout, retry, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          JsonObject body = result.result().body();
-          String error = body.getString("error");
-          if (error != null) {
-            future.setFailure(new CommunicationException(error));
-          }
-        }
-        else {
-          future.setFailure(result.cause());
-        }
+        Messaging.checkResponse(result, doneHandler);
       }
     });
     return this;
@@ -106,22 +80,13 @@ public class ReliableEventBusConnection extends EventBusConnection implements Re
 
   @Override
   public Connection send(JsonMessage message, long timeout, boolean retry, int attempts,
-      AsyncResultHandler<Void> doneHandler) {
+      final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, message.serialize(), timeout, retry, attempts, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, createJsonAction(message), timeout, retry, attempts, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          JsonObject body = result.result().body();
-          String error = body.getString("error");
-          if (error != null) {
-            future.setFailure(new CommunicationException(error));
-          }
-        }
-        else {
-          future.setFailure(result.cause());
-        }
+        Messaging.checkResponse(result, doneHandler);
       }
     });
     return this;

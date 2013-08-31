@@ -62,6 +62,19 @@ public class VineTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Vine> result) {
         assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+        testComplete();
+      }
+    });
+  }
+
+  @Test
+  public void testLocalFeed() {
+    VineDefinition vine = createTestDefinition();
+    LocalRoot root = new LocalRoot(vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+      @Override
+      public void handle(AsyncResult<Vine> result) {
+        assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
 
         Vine vine = result.result();
         assertNotNull(vine);
@@ -116,6 +129,33 @@ public class VineTest extends TestVerticle {
 
   @Test
   public void testRemoteDeploy() {
+    deployRoot(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        assertTrue("Failed to deploy root. " + result.cause(), result.succeeded());
+
+        deployStem(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue("Failed to deploy stem. " + result.cause(), result.succeeded());
+
+            VineDefinition vine = createTestDefinition();
+            RemoteRoot root = new RemoteRoot("vine.root.test", vertx, container);
+            root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+              @Override
+              public void handle(AsyncResult<Vine> result) {
+                assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+                testComplete();
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testRemoteFeed() {
     deployRoot(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {

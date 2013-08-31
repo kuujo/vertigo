@@ -26,6 +26,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
 import com.blankstyle.vine.Stem;
+import com.blankstyle.vine.VineException;
 import com.blankstyle.vine.context.WorkerContext;
 
 /**
@@ -38,6 +39,12 @@ public class DefaultScheduler implements Scheduler {
   @Override
   public void assign(WorkerContext context, Collection<Stem> stems, Handler<AsyncResult<String>> resultHandler) {
     final Future<String> future = new DefaultFutureResult<String>();
+
+    // If no stems have been registered then this is a failure.
+    if (stems.size() == 0) {
+      future.setFailure(new VineException("No stems registered."));
+      return;
+    }
 
     Iterator<Stem> iter = stems.iterator();
     List<Stem> stemList = new ArrayList<Stem>();

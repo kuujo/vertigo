@@ -134,7 +134,9 @@ public class VineTest extends TestVerticle {
    */
   private void deployStem(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    container.deployVerticle(StemVerticle.class.getName(), new JsonObject().putString("address", "vine.stem.test"), new Handler<AsyncResult<String>>() {
+    container.deployVerticle(StemVerticle.class.getName(),
+      new JsonObject().putString("address", "vine.stem.test").putString("root", "vine.root.test"),
+      new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {

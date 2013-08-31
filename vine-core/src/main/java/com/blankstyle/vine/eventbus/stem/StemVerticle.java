@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -29,7 +30,10 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.heartbeat.DefaultHeartBeatEmitter;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
+import com.blankstyle.vine.heartbeat.HeartBeatEmitter;
 import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
 
 /**
@@ -43,6 +47,11 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * A stem context.
    */
   private StemContext context;
+
+  /**
+   * The stem address.
+   */
+  private String address;
 
   /**
    * A map of worker addresses to deployment IDs.
@@ -63,6 +72,8 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
 
   private HeartBeatMonitor heartbeatMonitor = new DefaultHeartBeatMonitor();
 
+  private HeartBeatEmitter heartbeatEmitter = new DefaultHeartBeatEmitter();
+
   @Override
   public void setVertx(Vertx vertx) {
     super.setVertx(vertx);
@@ -73,8 +84,31 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
   public void start() {
     super.start();
     context = new StemContext(config);
-    logger.info(String.format("Starting stem at %s.", getMandatoryStringConfig("address")));
-    vertx.eventBus().registerHandler(getMandatoryStringConfig("address"), this);
+    address = getMandatoryStringConfig("address");
+    logger.info(String.format("Starting stem at %s.", address));
+    setupHeartbeat();
+    vertx.eventBus().registerHandler(address, this);
+  }
+
+  /**
+   * Sets up a heartbeat to the root.
+   */
+  private void setupHeartbeat() {
+    String rootAddress = getOptionalStringConfig("root", null);
+    if (rootAddress != null) {
+      new WrappedReliableEventBus(vertx.eventBus(), vertx).send(rootAddress,
+        new JsonObject().putString("action", "register").putString("address", address),
+        1000, new AsyncResultHandler<Message<JsonObject>>() {
+        @Override
+        public void handle(AsyncResult<Message<JsonObject>> result) {
+          if (result.succeeded()) {
+            heartbeatEmitter.setAddress(result.result().body().getString("address"))
+              .setEventBus(vertx.eventBus()).setVertx(vertx);
+            heartbeatEmitter.start();
+          }
+        }
+      });
+    }
   }
 
   @Override

@@ -22,13 +22,14 @@ import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
 import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
 
 /**
@@ -42,11 +43,6 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * A stem context.
    */
   private StemContext context;
-
-  /**
-   * A Vert.x logger.
-   */
-  private Logger log;
 
   /**
    * A map of worker addresses to deployment IDs.
@@ -65,20 +61,25 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
 
   private int heartbeatCounter;
 
-  private HeartBeatMonitor heartbeatMonitor;
+  private HeartBeatMonitor heartbeatMonitor = new DefaultHeartBeatMonitor();
+
+  @Override
+  public void setVertx(Vertx vertx) {
+    super.setVertx(vertx);
+    heartbeatMonitor.setVertx(vertx).setEventBus(vertx.eventBus());
+  }
 
   @Override
   public void start() {
-    config = container.config();
-    log = container.logger();
+    super.start();
     context = new StemContext(config);
-    log.info(String.format("Starting stem at %s.", getMandatoryStringConfig("address")));
+    logger.info(String.format("Starting stem at %s.", getMandatoryStringConfig("address")));
     vertx.eventBus().registerHandler(getMandatoryStringConfig("address"), this);
   }
 
   @Override
   public void handle(final Message<JsonObject> message) {
-    String action = getMandatoryString("address", message);
+    String action = getMandatoryString("action", message);
 
     if (action == null) {
       sendError(message, "An action must be specified.");
@@ -134,12 +135,12 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Assigns a context to the stem.
    */
   private void doAssign(final Message<JsonObject> message) {
-    WorkerContext context = new WorkerContext(message.body());
+    final WorkerContext context = new WorkerContext(message.body().getObject("context"));
     deployWorker(context, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.succeeded()) {
-          message.reply(result.result());
+          message.reply(context.serialize());
         }
         else {
           sendError(message, "Failed to deploy worker(s).");
@@ -152,12 +153,13 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Releases a context from the stem.
    */
   private void doRelease(final Message<JsonObject> message) {
-    WorkerContext context = new WorkerContext(message.body());
+    final String address = getMandatoryString("address", message);
+    WorkerContext context = contexts.get(address);
     undeployWorker(context, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.succeeded()) {
-          message.reply(result.result());
+          message.reply(new JsonObject().putString("address", address));
         }
         else {
           sendError(message, "Failed to undeploy worker(s).");

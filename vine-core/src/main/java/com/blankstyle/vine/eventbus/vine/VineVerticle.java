@@ -31,7 +31,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.ConnectionContext;
 import com.blankstyle.vine.context.SeedContext;
@@ -69,11 +68,6 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * The vine context.
    */
   private VineContext context;
-
-  /**
-   * A Vert.x logger.
-   */
-  private Logger log;
 
   /**
    * The message process time expiration.
@@ -124,6 +118,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   @Override
   public void setVertx(Vertx vertx) {
+    super.setVertx(vertx);
     EventBus eventBus = vertx.eventBus();
     if (eventBus instanceof ReliableEventBus) {
       this.eventBus = (ReliableEventBus) eventBus;
@@ -135,8 +130,6 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   @Override
   protected void start(ReliableEventBus eventBus) {
-    config = container.config();
-    log = container.logger();
     address = getMandatoryStringConfig("address");
     context = new VineContext(config);
     messageExpiration = context.getDefinition().getMessageExpiration();
@@ -156,7 +149,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
     while (iter.hasNext()) {
       tags.add(iter.next().getAddress());
     }
-    tagNames = (String[]) tags.toArray();
+    tagNames = tags.toArray(new String[tags.size()]);
   }
 
   /**
@@ -195,7 +188,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
         channels.add(new DefaultChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        log.error("Failed to find grouping handler.");
+        logger.error("Failed to find grouping handler.");
       }
     }
   }

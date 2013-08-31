@@ -23,7 +23,6 @@ import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.context.ConnectionContext;
 import com.blankstyle.vine.context.WorkerContext;
@@ -50,8 +49,6 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   protected ReliableEventBus eventBus;
 
-  protected Logger log;
-
   protected WorkerContext context;
 
   protected ChannelPublisher<ReliableChannel> publisher;
@@ -64,8 +61,6 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
 
   @Override
   protected void start(ReliableEventBus eventBus) {
-    config = container.config();
-    log = container.logger();
     this.eventBus = eventBus;
     setupContext();
     setupHeartbeat();
@@ -104,7 +99,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
           }
         }
         else {
-          log.error(String.format("Failed to fetch heartbeat address from stem at %s.", stemAddress));
+          logger.error(String.format("Failed to fetch heartbeat address from stem at %s.", stemAddress));
         }
       }
     });

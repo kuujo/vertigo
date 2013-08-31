@@ -31,7 +31,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 
 import com.blankstyle.vine.Stem;
 import com.blankstyle.vine.VineException;
@@ -65,11 +64,6 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * A root context.
    */
   private RootContext context;
-
-  /**
-   * A Vert.x logger.
-   */
-  private Logger log;
 
   /**
    * A worker scheduler.
@@ -114,11 +108,10 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void start() {
-    config = container.config();
-    log = container.logger();
+    super.start();
     context = new RootContext(config);
     address = getOptionalStringConfig("address", DEFAULT_ADDRESS);
-    log.info(String.format("Starting stem at %s.", address));
+    logger.info(String.format("Starting stem at %s.", address));
     String schedulerClass = getOptionalStringConfig("scheduler", "com.blankstyle.vine.scheduler.DefaultScheduler");
     try {
       scheduler = (Scheduler) Class.forName(schedulerClass).newInstance();

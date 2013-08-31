@@ -26,6 +26,7 @@ public abstract class ReliableBusVerticle extends BusModBase {
 
   @Override
   public void start() {
+    super.start();
     start(new WrappedReliableEventBus(vertx.eventBus(), vertx));
   }
 

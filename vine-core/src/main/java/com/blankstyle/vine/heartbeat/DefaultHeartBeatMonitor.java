@@ -34,7 +34,7 @@ public class DefaultHeartBeatMonitor implements HeartBeatMonitor {
 
   private EventBus eventBus;
 
-  private long interval;
+  private long interval = 2000;
 
   private Map<String, AddressMonitor> monitors = new HashMap<String, AddressMonitor>();
 

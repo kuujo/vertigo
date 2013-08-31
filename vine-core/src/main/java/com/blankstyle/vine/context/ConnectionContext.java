@@ -15,6 +15,11 @@
 */
 package com.blankstyle.vine.context;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -59,7 +64,13 @@ public class ConnectionContext {
    * Returns an array of address to which the connection connects.
    */
   public String[] getAddresses() {
-    return (String[]) context.getArray("addresses").toArray();
+    JsonArray addresses = context.getArray("addresses");
+    List<String> addressList = new ArrayList<>();
+    Iterator<Object> iter = addresses.iterator();
+    while (iter.hasNext()) {
+      addressList.add((String) iter.next());
+    }
+    return addressList.toArray(new String[addressList.size()]);
   }
 
   /**

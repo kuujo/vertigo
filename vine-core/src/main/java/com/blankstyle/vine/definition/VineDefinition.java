@@ -18,6 +18,7 @@ package com.blankstyle.vine.definition;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -226,7 +227,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
     for (int i = 0; i < numWorkers; i++) {
       addresses.add(String.format("%s.%d", seedAddress, i+1));
     }
-    return (String[]) addresses.toArray();
+    return addresses.toArray(new String[addresses.size()]);
   }
 
   /**
@@ -277,7 +278,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
       seedContext.putObject("definition", seed);
 
       // Create an array of worker addresses.
-      seedContext.putArray("workers", new JsonArray(createWorkerAddresses(seedContext.getString("address"), seedContext.getInteger("workers"))));
+      seedContext.putArray("workers", new JsonArray(createWorkerAddresses(seedContext.getString("address"), seedContext.getObject("definition").getInteger("workers"))));
 
       // Add the seed context to the seeds object.
       seedContexts.putObject(seedContext.getString("name"), seedContext);
@@ -346,11 +347,12 @@ public class VineDefinition implements Serializeable<JsonObject> {
       JsonObject seedDef = seedContext.getObject("definition");
 
       // Iterate through each of the seed's connections.
-      JsonArray seedCons = seedDef.getArray("connections");
+      JsonObject seedCons = seedDef.getObject("connections");
       JsonObject seedConnectionContexts = new JsonObject();
 
       if (seedCons != null) {
-        Iterator<Object> iterCon = seedCons.iterator();
+        Set<String> conKeys = seedCons.getFieldNames();
+        Iterator<String> iterCon = conKeys.iterator();
   
         while (iterCon.hasNext()) {
           // Get the seed name and with it a reference to the seed context.

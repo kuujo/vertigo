@@ -32,7 +32,7 @@ public class DefaultHeartBeatEmitter implements HeartBeatEmitter {
 
   private EventBus eventBus;
 
-  private long interval;
+  private long interval = 1000;
 
   private long timerID;
 

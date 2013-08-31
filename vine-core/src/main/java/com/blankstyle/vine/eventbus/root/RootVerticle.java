@@ -123,7 +123,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
 
   @Override
   public void handle(final Message<JsonObject> message) {
-    String action = message.body().getString("action");
+    String action = getMandatoryString("action", message);
 
     if (action == null) {
       sendError(message, "An action must be specified.");
@@ -191,7 +191,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
         public void handle(AsyncResult<Void> result) {
           if (result.succeeded()) {
             contexts.put(context.getAddress(), context);
-            message.reply(context.serialize());
+            message.reply(new JsonObject().putObject("context", context.serialize()));
           }
           else {
             sendError(message, "Failed to assign workers.");

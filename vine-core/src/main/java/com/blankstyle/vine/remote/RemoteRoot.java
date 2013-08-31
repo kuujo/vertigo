@@ -145,13 +145,13 @@ public class RemoteRoot implements Root {
       @Override
       public void handle(Message<JsonObject> message) {
         // Check for an error. If no error occurred then deploy the vine task.
-        final JsonObject context = message.body();
-        String error = context.getString("error");
+        final JsonObject body = message.body();
+        String error = body.getString("error");
         if (error != null) {
           future.setFailure(new VineException(error));
         }
         else {
-          deployVineVerticle(new VineContext(context), future);
+          deployVineVerticle(new VineContext(body.getObject("context")), future);
         }
       }
     });

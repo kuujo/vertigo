@@ -38,7 +38,7 @@ public class DefaultScheduler implements Scheduler {
 
   @Override
   public void assign(WorkerContext context, Collection<Stem> stems, Handler<AsyncResult<String>> resultHandler) {
-    final Future<String> future = new DefaultFutureResult<String>();
+    final Future<String> future = new DefaultFutureResult<String>().setHandler(resultHandler);
 
     // If no stems have been registered then this is a failure.
     if (stems.size() == 0) {

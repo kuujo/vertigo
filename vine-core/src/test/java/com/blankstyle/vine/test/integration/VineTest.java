@@ -130,6 +130,33 @@ public class VineTest extends TestVerticle {
     });
   }
 
+  @Test
+  public void testRemoteDeployTimeout() {
+    deployRoot(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        assertTrue("Failed to deploy root. " + result.cause(), result.succeeded());
+
+        deployStem(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue("Failed to deploy stem. " + result.cause(), result.succeeded());
+
+            VineDefinition vine = createTestDefinition();
+            RemoteRoot root = new RemoteRoot("vine.root.test", vertx, container);
+            root.deploy(vine, 1, new Handler<AsyncResult<Vine>>() {
+              @Override
+              public void handle(AsyncResult<Vine> result) {
+                assertTrue(result.failed());
+                testComplete();
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
   /**
    * Deploys a test root.
    */

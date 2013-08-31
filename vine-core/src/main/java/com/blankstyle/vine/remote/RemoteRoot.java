@@ -93,6 +93,9 @@ public class RemoteRoot implements Root {
   @Override
   public Root setVertx(Vertx vertx) {
     this.vertx = vertx;
+    if (eventBus != null) {
+      eventBus.setVertx(vertx);
+    }
     return this;
   }
 
@@ -122,7 +125,7 @@ public class RemoteRoot implements Root {
    */
   public RemoteRoot setEventBus(EventBus eventBus) {
     if (!(eventBus instanceof ReliableEventBus)) {
-      eventBus = new WrappedReliableEventBus(eventBus);
+      eventBus = new WrappedReliableEventBus(eventBus, vertx);
     }
     this.eventBus = (ReliableEventBus) eventBus;
     return this;

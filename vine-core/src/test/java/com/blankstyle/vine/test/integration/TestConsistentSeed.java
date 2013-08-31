@@ -21,14 +21,24 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.SeedVerticle;
 
-public class TestConsistentSeedOne extends SeedVerticle {
+public class TestConsistentSeed extends SeedVerticle {
 
-  private static final String VALUE = "a";
+  private String received;
 
   @Override
   protected void process(JsonObject data) {
     String body = data.getString("body");
-    assertEquals(VALUE, body);
+
+    // The seed instance should always receive the same string. The test runs
+    // with only two strings - one of an odd length and one of an event length.
+    // Consistent hashing means when two instances of this seed are running, each
+    // instance should receive one of those two strings at all times.
+    if (received == null) {
+      received = body;
+    }
+    else {
+      assertEquals(received, body);
+    }
     emit(data);
   }
 

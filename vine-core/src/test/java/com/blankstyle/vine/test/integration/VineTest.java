@@ -220,8 +220,7 @@ public class VineTest extends TestVerticle {
   public void testFieldsDispatcher() {
     VineDefinition vine = Vines.createDefinition("test.vine");
     vine.setMessageTimeout(5000).setMessageExpiration(15000);
-    vine.feed(Seeds.createDefinition("seedone", TestConsistentSeedOne.class.getName()).setWorkers(1).groupBy(new FieldsGrouping("body")));
-    vine.feed(Seeds.createDefinition("seedtwo", TestConsistentSeedTwo.class.getName()).setWorkers(1).groupBy(new FieldsGrouping("body")));
+    vine.feed(Seeds.createDefinition("seedone", TestConsistentSeed.class.getName()).setWorkers(2).groupBy(new FieldsGrouping("body")));
 
     LocalRoot root = new LocalRoot(vertx, container);
     root.deploy(vine, new Handler<AsyncResult<Vine>>() {

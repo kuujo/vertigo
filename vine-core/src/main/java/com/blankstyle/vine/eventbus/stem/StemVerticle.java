@@ -170,12 +170,12 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Assigns a context to the stem.
    */
   private void doAssign(final Message<JsonObject> message) {
-    final WorkerContext context = new WorkerContext(message.body().getObject("context"));
+    final WorkerContext context = new WorkerContext(getMandatoryObject("context", message));
     deployWorker(context, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.succeeded()) {
-          message.reply(context.serialize());
+          message.reply(new JsonObject().putObject("context", context.serialize()));
         }
         else {
           sendError(message, "Failed to deploy worker(s).");
@@ -188,19 +188,21 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Releases a context from the stem.
    */
   private void doRelease(final Message<JsonObject> message) {
-    final String address = getMandatoryString("address", message);
-    WorkerContext context = contexts.get(address);
-    undeployWorker(context, new Handler<AsyncResult<Boolean>>() {
-      @Override
-      public void handle(AsyncResult<Boolean> result) {
-        if (result.succeeded()) {
-          message.reply(new JsonObject().putString("address", address));
+    JsonObject contextInfo = getMandatoryObject("context", message);
+    WorkerContext context = contexts.get(contextInfo.getString("address"));
+    if (context != null) {
+      undeployWorker(context, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.succeeded()) {
+            message.reply(new JsonObject().putString("address", address));
+          }
+          else {
+            sendError(message, "Failed to undeploy worker(s).");
+          }
         }
-        else {
-          sendError(message, "Failed to undeploy worker(s).");
-        }
-      }
-    });
+      });
+    }
   }
 
   /**
@@ -298,7 +300,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    *   The worker context.
    */
   private void undeployWorker(WorkerContext context, Handler<AsyncResult<Boolean>> resultHandler) {
-    final Future<Boolean> future = new DefaultFutureResult<Boolean>();
+    final Future<Boolean> future = new DefaultFutureResult<Boolean>().setHandler(resultHandler);
     unregisterWorkerContext(context.getAddress());
     String deploymentID = getDeploymentID(context.getAddress());
     if (deploymentID != null) {

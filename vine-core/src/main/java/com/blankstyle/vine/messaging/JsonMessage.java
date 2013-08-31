@@ -84,12 +84,8 @@ public class JsonMessage implements Serializeable<JsonObject> {
    * @return
    *   An array of message tags.
    */
-  public String[] getTags() {
-    JsonArray tags = json.getArray("tags");
-    if (tags != null) {
-      return (String[]) tags.toArray();
-    }
-    return null;
+  public JsonArray getTags() {
+    return json.getArray("tags");
   }
 
   /**

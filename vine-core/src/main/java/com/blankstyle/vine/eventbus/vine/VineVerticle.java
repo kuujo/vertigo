@@ -16,7 +16,6 @@
 package com.blankstyle.vine.eventbus.vine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +29,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.ConnectionContext;
@@ -312,7 +312,13 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    *   Indicates whether the message result is valid.
    */
   private boolean checkResult(JsonMessage message) {
-    return Arrays.equals(message.getTags(), tagNames);
+    JsonArray tags = message.getTags();
+    for (String tag : tagNames) {
+      if (!tags.contains(tag)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

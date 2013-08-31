@@ -265,27 +265,26 @@ public class VineDefinition implements Serializeable<JsonObject> {
     JsonObject seedContexts = new JsonObject();
     while (iter.hasNext()) {
       JsonObject seed = seeds.getObject(iter.next());
-
-      String seedName = seed.getString("name");
-      if (seedName == null) {
-        throw new MalformedDefinitionException("No seed name specified.");
+      JsonObject seedDefinitions = buildSeedsRecursive(seed);
+      Iterator<String> iterSeeds = seedDefinitions.getFieldNames().iterator();
+      while (iterSeeds.hasNext()) {
+        JsonObject seedDef = seedDefinitions.getObject(iterSeeds.next());
+        JsonObject seedContext = new JsonObject();
+        String seedName = seedDef.getString("name");
+        if (seedName == null) {
+          throw new MalformedDefinitionException("No seed name specified.");
+        }
+        seedContext.putString("name", seedName);
+        seedContext.putString("address", createSeedAddress(definition.getString("address"), seedDef.getString("name")));
+        seedContext.putObject("definition", seedDef);
+        seedContext.putArray("workers", new JsonArray(createWorkerAddresses(seedContext.getString("address"), seedContext.getObject("definition").getInteger("workers"))));
+        seedContexts.putObject(seedContext.getString("name"), seedContext);
       }
-
-      // Create the basic seed context object.
-      JsonObject seedContext = new JsonObject();
-      seedContext.putString("name", seedName);
-      seedContext.putString("address", createSeedAddress(definition.getString("address"), seed.getString("name")));
-      seedContext.putObject("definition", seed);
-
-      // Create an array of worker addresses.
-      seedContext.putArray("workers", new JsonArray(createWorkerAddresses(seedContext.getString("address"), seedContext.getObject("definition").getInteger("workers"))));
-
-      // Add the seed context to the seeds object.
-      seedContexts.putObject(seedContext.getString("name"), seedContext);
     }
 
     // Seed contexts are stored in context.seeds.
     context.putObject("seeds", seedContexts);
+    
 
     JsonArray connections = definition.getArray("connections");
     if (connections == null) {
@@ -394,6 +393,22 @@ public class VineDefinition implements Serializeable<JsonObject> {
     }
 
     return new VineContext(context);
+  }
+
+  private JsonObject buildSeedsRecursive(JsonObject seedDefinition) {
+    return buildSeedsRecursive(seedDefinition, new JsonObject());
+  }
+
+  private JsonObject buildSeedsRecursive(JsonObject seedDefinition, JsonObject seeds) {
+    seeds.putObject(seedDefinition.getString("name"), seedDefinition);
+    JsonObject connections = seedDefinition.getObject("connections");
+    if (connections != null) {
+      Iterator<String> iter = connections.getFieldNames().iterator();
+      while (iter.hasNext()) {
+        buildSeedsRecursive(connections.getObject(iter.next()), seeds);
+      }
+    }
+    return seeds;
   }
 
 }

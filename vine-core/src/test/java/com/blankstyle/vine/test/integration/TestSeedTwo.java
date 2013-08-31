@@ -10,7 +10,7 @@ public class TestSeedTwo extends SeedVerticle {
 
   @Override
   protected void process(JsonObject data) {
-    assertEquals("Hello world!", data.getString("body"));
+    assertEquals("Hello world again!", data.getString("body"));
     emit(new JsonObject().putString("body", "Hello world again again!"));
   }
 

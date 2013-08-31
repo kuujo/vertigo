@@ -127,6 +127,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
 
     if (action == null) {
       sendError(message, "An action must be specified.");
+      return;
     }
 
     switch (action) {

@@ -149,8 +149,10 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
   @Override
   public void handle(Message<JsonObject> message) {
     String action = getMandatoryString("action", message);
+
     if (action == null) {
       sendError(message, "No action specified.");
+      return;
     }
 
     switch (action) {

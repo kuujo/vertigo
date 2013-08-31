@@ -195,10 +195,11 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
 
   @Override
   public void handle(final Message<JsonObject> message) {
-    String action = getMandatoryString("address", message);
+    String action = getMandatoryString("action", message);
 
     if (action == null) {
       sendError(message, "An action must be specified.");
+      return;
     }
 
     switch (action) {

@@ -222,7 +222,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
       return;
     }
 
-    final JsonMessage jsonMessage = new JsonMessage().setBody(getMandatoryObject("data", message));
+    final JsonMessage jsonMessage = new JsonMessage().setBody(getMandatoryObject("feed", message));
 
     final long id = nextCorrelationID();
     jsonMessage.setIdentifier(id);
@@ -278,7 +278,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * Receives a processed message.
    */
   private void doReceive(final Message<JsonObject> message) {
-    final JsonMessage jsonMessage = new JsonMessage(getMandatoryObject("message", message));
+    final JsonMessage jsonMessage = new JsonMessage(getMandatoryObject("receive", message));
     long id = jsonMessage.getIdentifier();
     if (id == 0) {
       sendError(message, "Invalid message correlation identifier.");

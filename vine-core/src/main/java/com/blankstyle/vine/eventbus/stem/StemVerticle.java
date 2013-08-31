@@ -30,6 +30,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.StemContext;
 import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatEmitter;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
@@ -96,8 +97,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
   private void setupHeartbeat() {
     String rootAddress = getOptionalStringConfig("root", null);
     if (rootAddress != null) {
-      new WrappedReliableEventBus(vertx.eventBus(), vertx).send(rootAddress,
-        new JsonObject().putString("action", "register").putString("address", address),
+      new WrappedReliableEventBus(vertx.eventBus(), vertx).send(rootAddress, Actions.create("register", context.serialize()),
         1000, new AsyncResultHandler<Message<JsonObject>>() {
         @Override
         public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -139,7 +139,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Registers a context.
    */
   private void doRegister(final Message<JsonObject> message) {
-    final String address = getMandatoryString("address", message);
+    final String address = getMandatoryString("register", message);
     final String heartbeatAddress = nextHeartBeatAddress();
     heartbeatMap.put(address, heartbeatAddress);
     heartbeatMonitor.monitor(heartbeatAddress, new Handler<String>() {
@@ -170,7 +170,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Assigns a context to the stem.
    */
   private void doAssign(final Message<JsonObject> message) {
-    final WorkerContext context = new WorkerContext(getMandatoryObject("context", message));
+    final WorkerContext context = new WorkerContext(getMandatoryObject("assign", message));
     deployWorker(context, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
@@ -188,7 +188,7 @@ public class StemVerticle extends BusModBase implements Handler<Message<JsonObje
    * Releases a context from the stem.
    */
   private void doRelease(final Message<JsonObject> message) {
-    JsonObject contextInfo = getMandatoryObject("context", message);
+    JsonObject contextInfo = getMandatoryObject("release", message);
     WorkerContext context = contexts.get(contextInfo.getString("address"));
     if (context != null) {
       undeployWorker(context, new Handler<AsyncResult<Boolean>>() {

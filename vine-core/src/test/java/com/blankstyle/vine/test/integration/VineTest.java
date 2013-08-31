@@ -30,6 +30,7 @@ import com.blankstyle.vine.Vines;
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.eventbus.root.RootVerticle;
 import com.blankstyle.vine.eventbus.stem.StemVerticle;
+import com.blankstyle.vine.grouping.FieldsGrouping;
 import com.blankstyle.vine.local.LocalRoot;
 import com.blankstyle.vine.remote.RemoteRoot;
 
@@ -209,6 +210,43 @@ public class VineTest extends TestVerticle {
                 });
               }
             });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testFieldsDispatcher() {
+    VineDefinition vine = Vines.createDefinition("test.vine");
+    vine.setMessageTimeout(5000).setMessageExpiration(15000);
+    vine.feed(Seeds.createDefinition("seedone", TestConsistentSeedOne.class.getName()).setWorkers(1).groupBy(new FieldsGrouping("body")));
+    vine.feed(Seeds.createDefinition("seedtwo", TestConsistentSeedTwo.class.getName()).setWorkers(1).groupBy(new FieldsGrouping("body")));
+
+    LocalRoot root = new LocalRoot(vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+      @Override
+      public void handle(AsyncResult<Vine> result) {
+        assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+
+        Vine vine = result.result();
+        assertNotNull(vine);
+
+        Feeder feeder = vine.feeder();
+        feeder.feed(new JsonObject().putString("body", "a"));
+        feeder.feed(new JsonObject().putString("body", "ab"));
+        feeder.feed(new JsonObject().putString("body", "a"));
+        feeder.feed(new JsonObject().putString("body", "a"));
+        feeder.feed(new JsonObject().putString("body", "ab"));
+        feeder.feed(new JsonObject().putString("body", "ab"));
+        feeder.feed(new JsonObject().putString("body", "ab"));
+        feeder.feed(new JsonObject().putString("body", "a"));
+        feeder.feed(new JsonObject().putString("body", "a"));
+        feeder.feed(new JsonObject().putString("body", "ab"));
+        feeder.feed(new JsonObject().putString("body", "a"), new Handler<AsyncResult<JsonObject>>() {
+          @Override
+          public void handle(AsyncResult<JsonObject> result) {
+            testComplete();
           }
         });
       }

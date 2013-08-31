@@ -26,6 +26,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.context.ConnectionContext;
 import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.heartbeat.DefaultHeartBeatEmitter;
@@ -82,7 +83,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
   private void setupHeartbeat() {
     heartbeat = new DefaultHeartBeatEmitter(vertx, vertx.eventBus());
     final String stemAddress = getMandatoryStringConfig("stem");
-    eventBus.send(stemAddress, new JsonObject().putString("action", "register").putString("address", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(stemAddress, Actions.create("register", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.succeeded()) {
@@ -169,7 +170,7 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
    */
   private void doReceive(Message<JsonObject> message) {
     message.reply();
-    currentMessage = new JsonMessage(getMandatoryObject("message", message));
+    currentMessage = new JsonMessage(getMandatoryObject("receive", message));
     process(currentMessage.body().copy());
   }
 

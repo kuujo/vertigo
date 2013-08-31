@@ -22,6 +22,8 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.eventbus.Actions;
+
 /**
  * A basic vine feeder.
  *
@@ -55,12 +57,12 @@ public class BasicFeeder implements Feeder {
 
   @Override
   public void feed(JsonObject data) {
-    eventBus.send(address, data);
+    eventBus.send(address, Actions.create("feed", data));
   }
 
   @Override
   public void feed(JsonObject data, final Handler<AsyncResult<JsonObject>> resultHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "feed").putObject("data", data), new Handler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("feed", data), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         String error = message.body().getString("error");

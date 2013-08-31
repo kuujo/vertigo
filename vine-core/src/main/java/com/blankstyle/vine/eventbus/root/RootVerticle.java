@@ -151,8 +151,8 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * Replies with a string representing the stem heartbeat address.
    */
   private void doRegister(final Message<JsonObject> message) {
-    final StemContext stemContext = new StemContext(message.body());
-    final String address = getMandatoryString("address", message);
+    final StemContext stemContext = new StemContext(getMandatoryObject("register", message));
+    final String address = stemContext.getAddress();
     String heartbeatAddress = nextHeartBeatAddress();
     heartbeatMap.put(address, heartbeatAddress);
     heartbeatMonitor.monitor(heartbeatAddress, new Handler<String>() {
@@ -182,7 +182,14 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * Deploys a vine definition.
    */
   private void doDeploy(final Message<JsonObject> message) {
-    VineDefinition definition = new VineDefinition(getMandatoryObject("definition", message));
+    JsonObject def = getMandatoryObject("deploy", message);
+    if (def == null) {
+      sendError(message, "Invalid definition.");
+      return;
+    }
+
+    VineDefinition definition = new VineDefinition(def);
+
     try {
       final VineContext context = definition.createContext();
       RecursiveScheduler scheduler = new RecursiveScheduler(context, createStemList());
@@ -207,7 +214,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * Undeploys a vine definition.
    */
   private void doUndeploy(final Message<JsonObject> message) {
-    final String address = getMandatoryString("address", message);
+    final String address = getMandatoryString("undeploy", message);
     if (!contexts.containsKey(address)) {
       sendError(message, String.format("Invalid vine address %s.", address));
     }
@@ -255,7 +262,6 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
    * Returns the next heartbeat address.
    */
   private String nextHeartBeatAddress() {
-    
     return String.format("%s.heartbeat.%d", context.getAddress(), ++heartbeatCounter);
   }
 

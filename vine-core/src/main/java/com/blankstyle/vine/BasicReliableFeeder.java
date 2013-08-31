@@ -25,6 +25,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 
@@ -50,7 +51,7 @@ public class BasicReliableFeeder extends BasicFeeder implements ReliableFeeder {
   @Override
   public void feed(JsonObject data, long timeout, final Handler<AsyncResult<JsonObject>> resultHandler) {
     final Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
-    eventBus.send(address, new JsonObject().putString("action", "feed").putObject("data", data), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("feed", data), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.succeeded()) {

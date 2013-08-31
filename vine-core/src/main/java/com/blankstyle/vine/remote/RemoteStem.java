@@ -26,9 +26,9 @@ import org.vertx.java.platform.Container;
 
 import com.blankstyle.vine.Stem;
 import com.blankstyle.vine.context.WorkerContext;
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
-
 import com.blankstyle.vine.util.Messaging;
 
 /**
@@ -133,7 +133,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void assign(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "assign").putObject("context", context.serialize()), new Handler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("assign", context.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         Messaging.checkResponse(message, doneHandler);
@@ -143,7 +143,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void assign(WorkerContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "assign").putObject("context", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("assign", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -153,7 +153,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void release(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "release").putObject("context", context.serialize()), new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("assign", context.serialize()), new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -163,7 +163,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void release(WorkerContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, new JsonObject().putString("action", "release").putObject("context", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("assign", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);

@@ -22,6 +22,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.util.Messaging;
 
@@ -43,7 +44,7 @@ public class ReliableEventBusConnection extends EventBusConnection implements Re
   public Connection send(JsonMessage message, final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, createJsonAction(message), new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("receive", message.serialize()), new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -56,7 +57,7 @@ public class ReliableEventBusConnection extends EventBusConnection implements Re
   public Connection send(JsonMessage message, long timeout, final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, createJsonAction(message), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("receive", message.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -69,7 +70,7 @@ public class ReliableEventBusConnection extends EventBusConnection implements Re
   public Connection send(JsonMessage message, long timeout, boolean retry, final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, createJsonAction(message), timeout, retry, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("receive", message.serialize()), timeout, retry, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -83,7 +84,7 @@ public class ReliableEventBusConnection extends EventBusConnection implements Re
       final AsyncResultHandler<Void> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     future.setHandler(doneHandler);
-    eventBus.send(address, createJsonAction(message), timeout, retry, attempts, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("receive", message.serialize()), timeout, retry, attempts, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);

@@ -33,6 +33,7 @@ import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.VineException;
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.eventbus.vine.VineVerticle;
@@ -144,7 +145,7 @@ public class RemoteRoot implements Root {
   @Override
   public void deploy(final VineDefinition vine, Handler<AsyncResult<Vine>> handler) {
     final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
-    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()), new Handler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("deploy", vine.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         // Check for an error. If no error occurred then deploy the vine task.
@@ -163,7 +164,7 @@ public class RemoteRoot implements Root {
   @Override
   public void deploy(final VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler) {
     final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
-    eventBus.send(address, new JsonObject().putString("action", "deploy").putObject("definition", vine.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("deploy", vine.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -237,7 +238,7 @@ public class RemoteRoot implements Root {
           future.setHandler(doneHandler);
         }
 
-        eventBus.send(address, new JsonObject().putString("action", "undeploy").putString("address", context.getAddress()), new Handler<Message<JsonObject>>() {
+        eventBus.send(address, Actions.create("undeploy", context.getAddress()), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> reply) {
             JsonObject body = reply.body();

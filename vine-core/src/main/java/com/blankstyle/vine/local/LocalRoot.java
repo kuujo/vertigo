@@ -40,6 +40,7 @@ import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.context.WorkerContext;
 import com.blankstyle.vine.definition.MalformedDefinitionException;
 import com.blankstyle.vine.definition.VineDefinition;
+import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.eventbus.stem.StemVerticle;
@@ -444,7 +445,7 @@ public class LocalRoot implements Root {
         future.setHandler(resultHandler);
 
         if (timeout > 0) {
-          eventBus.send(address, new JsonObject().putString("action", action).putObject("context", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+          eventBus.send(address, Actions.create(action, context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result) {
               if (result.succeeded()) {
@@ -464,7 +465,7 @@ public class LocalRoot implements Root {
           });
         }
         else {
-          eventBus.send(address, new JsonObject().putString("action", action).putObject("context", context.serialize()), new Handler<Message<JsonObject>>() {
+          eventBus.send(address, Actions.create(action, context.serialize()), new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> result) {
               JsonObject body = result.body();

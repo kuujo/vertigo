@@ -30,12 +30,12 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  *
  * @author Jordan Halterman
  */
-public class RecursiveChannelPublisher implements ChannelPublisher<ReliableChannel> {
+public class RecursiveChannelPublisher implements ChannelPublisher<ReliableChannel<?>> {
 
-  private List<ReliableChannel> channels = new ArrayList<ReliableChannel>();
+  private List<ReliableChannel<?>> channels = new ArrayList<ReliableChannel<?>>();
 
   @Override
-  public ChannelPublisher<ReliableChannel> addChannel(ReliableChannel channel) {
+  public ChannelPublisher<ReliableChannel<?>> addChannel(ReliableChannel<?> channel) {
     if (!channels.contains(channel)) {
       channels.add(channel);
     }
@@ -43,7 +43,7 @@ public class RecursiveChannelPublisher implements ChannelPublisher<ReliableChann
   }
 
   @Override
-  public ChannelPublisher<ReliableChannel> removeChannel(ReliableChannel channel) {
+  public ChannelPublisher<ReliableChannel<?>> removeChannel(ReliableChannel<?> channel) {
     if (channels.contains(channel)) {
       channels.remove(channel);
     }
@@ -52,13 +52,13 @@ public class RecursiveChannelPublisher implements ChannelPublisher<ReliableChann
 
   @Override
   public void publish(JsonMessage message) {
-    Iterator<ReliableChannel> iter = channels.iterator();
+    Iterator<ReliableChannel<?>> iter = channels.iterator();
     if (iter.hasNext()) {
       recursivePublish(message, iter.next(), iter);
     }
   }
 
-  private void recursivePublish(final JsonMessage message, ReliableChannel currentChannel, final Iterator<ReliableChannel> iterator) {
+  private void recursivePublish(final JsonMessage message, ReliableChannel<?> currentChannel, final Iterator<ReliableChannel<?>> iterator) {
     currentChannel.publish(message, new AsyncResultHandler<Void>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -71,13 +71,13 @@ public class RecursiveChannelPublisher implements ChannelPublisher<ReliableChann
 
   @Override
   public void publish(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
-    Iterator<ReliableChannel> iter = channels.iterator();
+    Iterator<ReliableChannel<?>> iter = channels.iterator();
     if (iter.hasNext()) {
       recursivePublish(message, iter.next(), iter, doneHandler);
     }
   }
 
-  private void recursivePublish(final JsonMessage message, ReliableChannel currentChannel, final Iterator<ReliableChannel> iterator, final Handler<AsyncResult<Void>> doneHandler) {
+  private void recursivePublish(final JsonMessage message, ReliableChannel<?> currentChannel, final Iterator<ReliableChannel<?>> iterator, final Handler<AsyncResult<Void>> doneHandler) {
     currentChannel.publish(message, new AsyncResultHandler<Void>() {
       @Override
       public void handle(AsyncResult<Void> result) {

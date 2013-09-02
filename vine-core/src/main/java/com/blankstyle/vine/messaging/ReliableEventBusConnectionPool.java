@@ -15,12 +15,13 @@
 */
 package com.blankstyle.vine.messaging;
 
-import java.util.Collection;
+import java.util.HashSet;
 
 /**
- * A pool of point-to-point connections.
+ * A pool of reliable event bus connections.
  *
  * @author Jordan Halterman
  */
-public interface ConnectionPool<T extends Connection> extends Collection<T> {
+@SuppressWarnings("serial")
+public class ReliableEventBusConnectionPool extends HashSet<ReliableEventBusConnection> implements ConnectionPool<ReliableEventBusConnection> {
 }

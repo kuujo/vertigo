@@ -23,7 +23,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface ReliableChannel extends Channel {
+public interface ReliableChannel<T extends ReliableConnection> extends Channel<T> {
 
   /**
    * Sends a message through the channel, providing a handler for a return value.

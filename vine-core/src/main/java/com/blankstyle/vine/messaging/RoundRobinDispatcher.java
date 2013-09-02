@@ -31,9 +31,9 @@ public class RoundRobinDispatcher extends AbstractDispatcher {
   private Iterator<Connection> iterator;
 
   @Override
-  public void init(ConnectionPool connections) {
+  public void init(ConnectionPool<?> connections) {
     this.items = new ArrayList<Connection>();
-    Iterator<Connection> iterator = connections.iterator();
+    Iterator<? extends Connection> iterator = connections.iterator();
     while (iterator.hasNext()) {
       items.add(iterator.next());
     }

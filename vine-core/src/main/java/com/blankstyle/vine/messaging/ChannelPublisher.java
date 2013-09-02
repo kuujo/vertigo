@@ -23,7 +23,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface ChannelPublisher<T extends Channel> {
+public interface ChannelPublisher<T extends Channel<?>> {
 
   /**
    * Adds a channel to the publisher.

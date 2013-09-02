@@ -20,7 +20,7 @@ package com.blankstyle.vine.messaging;
  *
  * @author Jordan Halterman
  */
-public interface Channel {
+public interface Channel<T extends Connection> {
 
   /**
    * Sets the channel dispatcher.
@@ -44,7 +44,7 @@ public interface Channel {
    * @param connection
    *   The connection to add.
    */
-  public void addConnection(Connection connection);
+  public void addConnection(T connection);
 
   /**
    * Removes a connection from the channel.
@@ -52,7 +52,7 @@ public interface Channel {
    * @param connection
    *   The connection to remove.
    */
-  public void removeConnection(Connection connection);
+  public void removeConnection(T connection);
 
   /**
    * Publishes a message to the channel.

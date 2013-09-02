@@ -31,7 +31,7 @@ public interface Dispatcher {
    * @param connections
    *   A collection of connections to which the dispatcher will dispatch messages.
    */
-  public void init(ConnectionPool connections);
+  public void init(ConnectionPool<?> connections);
 
   /**
    * Sets a dispatcher option.

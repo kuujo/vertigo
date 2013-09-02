@@ -39,15 +39,15 @@ import com.blankstyle.vine.eventbus.ReliableBusVerticle;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.TimeoutException;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
+import com.blankstyle.vine.messaging.Channel;
 import com.blankstyle.vine.messaging.ChannelPublisher;
 import com.blankstyle.vine.messaging.ConnectionPool;
-import com.blankstyle.vine.messaging.DefaultChannel;
-import com.blankstyle.vine.messaging.DefaultConnectionPool;
+import com.blankstyle.vine.messaging.DefaultChannelPublisher;
 import com.blankstyle.vine.messaging.Dispatcher;
+import com.blankstyle.vine.messaging.EventBusChannel;
+import com.blankstyle.vine.messaging.EventBusConnection;
+import com.blankstyle.vine.messaging.EventBusConnectionPool;
 import com.blankstyle.vine.messaging.JsonMessage;
-import com.blankstyle.vine.messaging.RecursiveChannelPublisher;
-import com.blankstyle.vine.messaging.ReliableChannel;
-import com.blankstyle.vine.messaging.ReliableEventBusConnection;
 
 /**
  * A vine verticle.
@@ -91,7 +91,10 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    */
   private long currentID;
 
-  private ChannelPublisher<ReliableChannel> publisher = new RecursiveChannelPublisher();
+  /**
+   * An eventbus channel publisher.
+   */
+  private ChannelPublisher<Channel<?>> publisher = new DefaultChannelPublisher();
 
   /**
    * A reliable eventbus implementation.
@@ -175,15 +178,15 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
         }
 
         // Create a connection pool from which the dispatcher will dispatch messages.
-        ConnectionPool connectionPool = new DefaultConnectionPool();
+        ConnectionPool<EventBusConnection> connectionPool = new EventBusConnectionPool();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
-          connectionPool.add(new ReliableEventBusConnection(address, eventBus));
+          connectionPool.add(new EventBusConnection(address, eventBus));
         }
 
         // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
-        publisher.addChannel(new DefaultChannel(dispatcher));
+        publisher.addChannel(new EventBusChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         logger.error("Failed to find grouping handler.");

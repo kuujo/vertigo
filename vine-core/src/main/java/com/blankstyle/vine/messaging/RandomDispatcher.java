@@ -31,9 +31,9 @@ public class RandomDispatcher extends AbstractDispatcher {
   private int connectionCount;
 
   @Override
-  public void init(ConnectionPool connections) {
+  public void init(ConnectionPool<?> connections) {
     connectionMap = new HashMap<Double, Connection>();
-    Iterator<Connection> iter = connections.iterator();
+    Iterator<? extends Connection> iter = connections.iterator();
     int i = 0;
     while (iter.hasNext()) {
       connectionMap.put(Double.valueOf(i++), iter.next());

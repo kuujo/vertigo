@@ -15,21 +15,18 @@
 */
 package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
- * A default channel implementation.
+ * An eventbus based channel.
  *
  * @author Jordan Halterman
  */
-public class DefaultChannel implements ReliableChannel {
+public class EventBusChannel implements Channel<EventBusConnection> {
 
   protected Dispatcher dispatcher;
 
-  protected ConnectionPool connections = new DefaultConnectionPool();
+  protected ConnectionPool<EventBusConnection> connections = new EventBusConnectionPool();
 
-  public DefaultChannel(Dispatcher dispatcher) {
+  public EventBusChannel(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
   }
 
@@ -44,7 +41,7 @@ public class DefaultChannel implements ReliableChannel {
   }
 
   @Override
-  public void addConnection(Connection connection) {
+  public void addConnection(EventBusConnection connection) {
     if (!connections.contains(connection)) {
       connections.add(connection);
     }
@@ -52,7 +49,7 @@ public class DefaultChannel implements ReliableChannel {
   }
 
   @Override
-  public void removeConnection(Connection connection) {
+  public void removeConnection(EventBusConnection connection) {
     if (connections.contains(connection)) {
       connections.remove(connection);
     }
@@ -62,27 +59,6 @@ public class DefaultChannel implements ReliableChannel {
   @Override
   public void publish(JsonMessage message) {
     dispatcher.dispatch(message);
-  }
-
-  @Override
-  public void publish(JsonMessage message, Handler<AsyncResult<Void>> resultHandler) {
-    dispatcher.dispatch(message, resultHandler);
-  }
-
-  @Override
-  public void publish(JsonMessage message, long timeout, Handler<AsyncResult<Void>> resultHandler) {
-    dispatcher.dispatch(message, timeout, resultHandler);
-  }
-
-  @Override
-  public void publish(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler) {
-    dispatcher.dispatch(message, timeout, retry, resultHandler);
-  }
-
-  @Override
-  public void publish(JsonMessage message, long timeout, boolean retry, int attempts,
-      Handler<AsyncResult<Void>> resultHandler) {
-    dispatcher.dispatch(message, timeout, retry, attempts, resultHandler);
   }
 
 }

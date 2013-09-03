@@ -15,9 +15,7 @@
 */
 package com.blankstyle.vine.messaging;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Random;
 
 /**
  * A random dispatcher implementation.
@@ -26,24 +24,21 @@ import java.util.Map;
  */
 public class RandomDispatcher extends AbstractDispatcher {
 
-  private Map<Double, Connection> connectionMap;
+  private Connection[] connections;
 
-  private int connectionCount;
+  private int connectionSize;
+
+  private Random rand = new Random();
 
   @Override
   public void init(ConnectionPool<?> connections) {
-    connectionMap = new HashMap<Double, Connection>();
-    Iterator<? extends Connection> iter = connections.iterator();
-    int i = 0;
-    while (iter.hasNext()) {
-      connectionMap.put(Double.valueOf(i++), iter.next());
-    }
-    connectionCount = connections.size();
+    this.connections = connections.toArray(new Connection[]{});
+    connectionSize = connections.size();
   }
 
   @Override
   protected Connection getConnection(JsonMessage message) {
-    return connectionMap.get(Math.random() * connectionCount);
+    return connections[rand.nextInt(connectionSize)];
   }
 
 }

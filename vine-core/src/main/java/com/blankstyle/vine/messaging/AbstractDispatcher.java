@@ -18,20 +18,12 @@ package com.blankstyle.vine.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Future;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.impl.DefaultFutureResult;
-
 /**
  * An abstract dispatcher implementation.
  *
  * @author Jordan Halterman
  */
 public abstract class AbstractDispatcher implements Dispatcher {
-
-  private static final long DEFAULT_TIMEOUT = 5000;
 
   private Map<String, String> options = new HashMap<String, String>();
 
@@ -67,46 +59,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
   @Override
   public void dispatch(JsonMessage message) {
     getConnection(message).send(message);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, Handler<AsyncResult<Void>> resultHandler) {
-    dispatch(message, DEFAULT_TIMEOUT, false, 0, resultHandler);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Void>> resultHandler) {
-    dispatch(message, timeout, false, 0, resultHandler);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Void>> resultHandler) {
-    dispatch(message, timeout, retry, 1, resultHandler);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, long timeout, boolean retry, int attempts,
-      Handler<AsyncResult<Void>> resultHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-
-    // Make sure this is a reliable connection. Acknowledgment handlers are only
-    // supported on reliable connections.
-    Connection connection = getConnection(message);
-    if (!(connection instanceof ReliableConnection)) {
-      throw new IllegalArgumentException("Cannot dispatch to unreliable connection.");
-    }
-
-    ((ReliableConnection) connection).send(message, timeout, retry, attempts, new AsyncResultHandler<Void>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.succeeded()) {
-          future.setResult(null);
-        }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
   }
 
 }

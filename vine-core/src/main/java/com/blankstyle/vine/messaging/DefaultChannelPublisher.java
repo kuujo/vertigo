@@ -19,10 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.impl.DefaultFutureResult;
-
 /**
  * A default channel publisher.
  *
@@ -54,12 +50,6 @@ public class DefaultChannelPublisher implements ChannelPublisher<Channel<?>> {
     while (iter.hasNext()) {
       iter.next().publish(message);
     }
-  }
-
-  @Override
-  public void publish(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
-    publish(message);
-    new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
   }
 
 }

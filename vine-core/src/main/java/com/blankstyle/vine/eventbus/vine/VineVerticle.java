@@ -267,14 +267,7 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
       }
     });
     futureResults.put(message.getIdentifier(), future);
-    publisher.publish(message, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-      }
-    });
+    publisher.publish(message);
   }
 
   /**

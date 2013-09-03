@@ -194,18 +194,4 @@ public abstract class SeedVerticle extends ReliableBusVerticle implements Handle
     publisher.publish(newMessage);
   }
 
-  /**
-   * Emits a JSON message.
-   *
-   * @param data
-   *   The data to emit.
-   * @param doneHandler
-   *   A handler to be invoked once complete.
-   */
-  protected void emit(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
-    JsonMessage newMessage = currentMessage.copy();
-    newMessage.setBody(data).tag(seedAddress);
-    publisher.publish(newMessage, doneHandler);
-  }
-
 }

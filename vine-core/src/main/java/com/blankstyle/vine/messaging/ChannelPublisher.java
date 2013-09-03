@@ -15,9 +15,6 @@
 */
 package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
  * A channel publisher which publishes a single message to multiple channels.
  *
@@ -48,15 +45,5 @@ public interface ChannelPublisher<T extends Channel<?>> {
    *   The message to publish.
    */
   public void publish(JsonMessage message);
-
-  /**
-   * Publishes a message.
-   *
-   * @param message
-   *   The message to publish.
-   * @param doneHandler
-   *   A handler to be invoked once the message has been received.
-   */
-  public void publish(JsonMessage message, Handler<AsyncResult<Void>> doneHandler);
 
 }

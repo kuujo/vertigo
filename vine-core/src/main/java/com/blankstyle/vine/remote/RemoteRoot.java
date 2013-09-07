@@ -26,8 +26,8 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.blankstyle.vine.BasicReliableFeeder;
 import com.blankstyle.vine.Feeder;
+import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.VineException;
@@ -223,7 +223,7 @@ public class RemoteRoot implements Root {
     return new Vine() {
       @Override
       public Feeder feeder() {
-        return new BasicReliableFeeder(context.getAddress(), vertx.eventBus()).setVertx(vertx);
+        return new BasicFeeder(context.getAddress(), vertx.eventBus()).setVertx(vertx);
       }
 
       @Override

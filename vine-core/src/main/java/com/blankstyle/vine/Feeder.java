@@ -62,4 +62,16 @@ public interface Feeder {
    */
   public void feed(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler);
 
+  /**
+   * Feeds a JSON object to the vine, awaiting a response with a timeout.
+   *
+   * @param data
+   *   The data to feed.
+   * @param timeout
+   *   A response timeout.
+   * @param resultHandler
+   *   A result handler.
+   */
+  public void feed(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
+
 }

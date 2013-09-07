@@ -219,9 +219,11 @@ public class VineVerticle extends ReliableBusVerticle implements Handler<Message
    * Feeds a message to the vine.
    */
   private void doFeed(final Message<JsonObject> message) {
-    // If the feed queue is full then reply immediately with an error.
+    // If the feed queue is full then reply immediately with an empty reply.
+    // The empty reply indicates that nothing was done with the message since
+    // the queue is full.
     if (feedRequests.size() >= maxQueueSize) {
-      sendError(message, "Vine queue full.");
+      message.reply();
       return;
     }
 

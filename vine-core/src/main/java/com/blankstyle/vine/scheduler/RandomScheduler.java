@@ -30,11 +30,11 @@ import com.blankstyle.vine.VineException;
 import com.blankstyle.vine.context.WorkerContext;
 
 /**
- * A default scheduler implementation.
+ * A random scheduler implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultScheduler implements Scheduler {
+public class RandomScheduler implements Scheduler {
 
   @Override
   public void assign(WorkerContext context, Collection<Stem> stems, Handler<AsyncResult<String>> resultHandler) {

@@ -74,6 +74,41 @@ public class SeedDefinition implements Serializeable<JsonObject> {
   }
 
   /**
+   * Sets a seed option.
+   *
+   * @param option
+   *   The option to set.
+   * @param value
+   *   The option value.
+   * @return
+   *   The called seed definition.
+   */
+  public SeedDefinition setOption(String option, String value) {
+    switch (option) {
+      case "name":
+        return setName(value);
+      case "main":
+        return setMain(value);
+      default:
+        definition.putString(option, value);
+        break;
+    }
+    return this;
+  }
+
+  /**
+   * Gets a seed option.
+   *
+   * @param option
+   *   The option to get.
+   * @return
+   *   The option value.
+   */
+  public String getOption(String option) {
+    return definition.getString(option);
+  }
+
+  /**
    * Sets the seed worker grouping.
    *
    * @param grouping

@@ -69,6 +69,39 @@ public class VineDefinition implements Serializeable<JsonObject> {
   }
 
   /**
+   * Sets a vine option.
+   *
+   * @param option
+   *   The option to set.
+   * @param value
+   *   The option value.
+   * @return
+   *   The called vine definition.
+   */
+  public VineDefinition setOption(String option, String value) {
+    switch (option) {
+      case "address":
+        return setAddress(value);
+      default:
+        definition.putString(option, value);
+        break;
+    }
+    return this;
+  }
+
+  /**
+   * Gets a vine option.
+   *
+   * @param option
+   *   The option to get.
+   * @return
+   *   The option value.
+   */
+  public String getOption(String option) {
+    return definition.getString(option);
+  }
+
+  /**
    * Gets the maximum vine queue size.
    *
    * @return

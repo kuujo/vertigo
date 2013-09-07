@@ -18,9 +18,16 @@ deploy a *vine* across a Vert.x cluster with a single method call.
   * [The stem](#the-stem)
 1. [Creating vines](#creating-vines)
 1. [Writing Seeds](#writing-seeds)
-1. [Deploying vines](#running-vines)
+1. [Deploying vines](#deploying-vines)
   * [Deploying vines in local mode](#deploying-vines-in-local-mode)
   * [Deploying vines in remote mode](#deploying-vines-in-remote-mode)
+  * [Shutting down vines](#shutting-down-vines)
+1. [Working with feeders](#working-with-feeders)
+  * [Retrieving a feeder from a deployed vine](#retrieving-a-feeder-from-a-deployed-vine)
+  * [Instantiating feeders to existing vines](#instantiating-feeders-to-existing-vines)
+  * [Feeding data to a vine](#feeding-data-to-a-vine)
+  * [Reading responses from a vine](#reading-responses-from-a-vine)
+  * [Feeder flow control](#feeder-flow-control)
 
 ## What is a vine?
 Vines are collections of processing elements - Vert.x verticles - that communicate
@@ -94,7 +101,7 @@ SeedDefinition seedThree = new SeedDefinition("seedthree").setMain("com.mycompan
 vine.feed(seedOne).to(seedTwo).to(seedThree);
 ```
 
-This example creates a vine that feeds data to `seedone`, which feeds data to `seedtwo`,
+This example creates a vine that feeds data to `seedone` which feeds data to `seedtwo`
 which feeds data to `seedthree`.
 
 ### Seed groupings
@@ -126,7 +133,7 @@ of one or many workers, and seed workers can run within separate Vert.x instance
 Seeds, workers, and the overall vine are interconnected via the Vert.x eventbus.
 
 In Java, seeds are defined by extending the `com.blankstyle.vine.SeedVerticle`
-base verticle class and overriding the abstract `process()` method.
+base verticle class and overriding the abstract `process` method.
 
 ```java
 import com.blankstyle.vine.SeedVerticle;
@@ -141,8 +148,8 @@ public class MyVerticle extends SeedVerticle {
 }
 ```
 
-Seed verticles consist of only two public methods. The `process()` method is called
-each time the worker receives a message on the vine. The `emit()` method is called to
+Seed verticles consist of only two public methods. The `process` method is called
+each time the worker receives a message on the vine. The `emit` method is called to
 send data on to the next seed in the vine and can be called zero or many times for
 each message processed.
 
@@ -155,7 +162,7 @@ Each root contains two methods for deploying vines:
 * `deploy(VineDefinition definition, Handler<AsyncResult<Vine>> resultHandler)`
 * `deploy(VineDefinition definition, long timeout, Handler<AsyncResult<Vine>> resultHandler)`
 
-The `Vine` instance that is returned by *root* `deploy()` methods contains the
+The `Vine` instance that is returned by *root* `deploy` methods contains the
 following methods:
 * `feeder()` - returns a feeder to the vine
 * `shutdown()` - shuts down the vine
@@ -293,6 +300,11 @@ root.deploy(definition, timeout, new Handler<AsyncResult<Vine>>() {
 });
 ```
 
+### Shutting down vines
+Vines can be shutdown by calling the `Vine.shutdown` method. Note that *vines
+can only be shutdown by the process that created the vine.* This is because the
+process for shutting down local vs remote vines differs significantly.
+
 ## Working with feeders
 Feeders allow the user to control the flow of information to and from a vine.
 
@@ -336,7 +348,7 @@ JsonObject data = new JsonObject().putString("body", "Hello world!");
 feeder.feed(data);
 ```
 
-### Reading a response from a vine
+### Reading responses from a vine
 Each time a message is sent to a vine, the vine verticle records the
 original message and stores it in memory until the request is completed.
 Not only does this allow the vine verticle to ensure that data is completely

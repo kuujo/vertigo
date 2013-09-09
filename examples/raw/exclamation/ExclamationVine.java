@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package rpc;
+package exclamation;
 
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.core.logging.Logger;
@@ -23,20 +23,21 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.SeedVerticle;
+import com.blankstyle.vine.Groupings;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.local.LocalRoot;
 import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.Feeder;
 
 /**
- * A simple remote-procedure call via vine.
+ * A basic vine example.
  *
  * This example follows the general structure of the Storm Starter example
- * at https://github.com/nathanmarz/storm-starter/blob/master/src/jvm/storm/starter/ManualDRPC.java
+ * at https://github.com/nathanmarz/storm-starter/blob/master/src/jvm/storm/starter/ExclamationTopology.java
  *
  * @author Jordan Halterman
  */
-class RPCVine extends Verticle {
+public class ExclamationVine extends Verticle {
 
   /**
    * Add exclamation marks to text.
@@ -58,25 +59,17 @@ class RPCVine extends Verticle {
         logger.error("Failed to deploy vine.", result.cause());
       }
       else {
-        // If the vine was successfully deployed, create a feeder to the vine
-        // and feed three messages to the exclaim seed.
-        Feeder feeder = vine.feeder();
-        feeder.feed(new JsonObject().putString("body", "aaa"), resultHandler);
-        feeder.feed(new JsonObject().putString("body", "bbb"), resultHandler);
-        feeder.feed(new JsonObject().putString("body", "ccc"), resultHandler);
-      }
-    }
-  };
-
-  // The result handler is called once a result has been received from the vine.
-  private Handler<AsyncResult<JsonObject>> resultHandler = new Handler<AsyncResult<JsonObject>>() {
-    @Override
-    public void handle(AsyncResult<JsonObject> result) {
-      if (result.failed()) {
-        logger.error("Failed to execute vine.", result.cause());
-      }
-      else {
-        logger.info(result.result().getString("body"));
+        // If the vine was successfully deployed, shut down the vine.
+        Vine vine = result.result();
+        vine.shutdown(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            // Ensure that the vine was properly shut down.
+            if (result.failed()) {
+              logger.error("Failed to shutdown vine.", result.cause());
+            }
+          }
+        });
       }
     }
   };
@@ -85,9 +78,11 @@ class RPCVine extends Verticle {
   public void start() {
     logger = container.logger();
 
-    // Create a vine definition with a feeder to the ExclamationSeed.
-    VineDefinition vine = new VineDefinition("rpc");
-    vine.feed("exclaim", ExclamationSeed.class.getName());
+    // Create a vine definition that feeds data to the ExclamationSeed, which
+    // feeds data to itself again.
+    VineDefinition vine = new VineDefinition("exclamation");
+    vine.feed("exclaim1", ExclamationSeed.class.getName(), 3).groupBy(Groupings.random())
+      .to("exclaim2", ExclamationSeed.class.getName(), 2).groupBy(Groupings.random());
 
     // Create a local root instance and deploy the vine.
     Root root = new LocalRoot(vertx, container);

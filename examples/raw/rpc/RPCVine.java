@@ -16,7 +16,7 @@
 package rpc;
 
 import org.vertx.java.platform.Verticle;
-import org.vertx.java.core.Logger;
+import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.json.JsonObject;
@@ -36,7 +36,7 @@ import com.blankstyle.vine.Feeder;
  *
  * @author Jordan Halterman
  */
-class RPCVerticle extends Verticle {
+class RPCVine extends Verticle {
 
   /**
    * Add exclaimation marks to text.
@@ -48,7 +48,7 @@ class RPCVerticle extends Verticle {
     }
   }
 
-  private java.util.logging.Logger logger;
+  private Logger logger;
 
   // The deploy handler is called once the vine is deployed.
   private Handler<AsyncResult<Vine>> deployHandler = new Handler<AsyncResult<Vine>>() {

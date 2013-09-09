@@ -166,7 +166,7 @@ The `Vine` instance that is returned by *root* `deploy` methods contains the
 following methods:
 * `feeder()` - returns a feeder to the vine
 * `shutdown()` - shuts down the vine
-* `shutdown(Handler<AsyncResult<Void>> doneHandler) - shuts down the vine
+* `shutdown(Handler<AsyncResult<Void>> doneHandler)` - shuts down the vine
 
 ### Deploying vines in local mode
 Local vines are deployed within a single Vert.x instance. Using the

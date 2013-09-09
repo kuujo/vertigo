@@ -27,7 +27,6 @@ import com.blankstyle.vine.Groupings;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.local.LocalRoot;
 import com.blankstyle.vine.Vine;
-import com.blankstyle.vine.Feeder;
 
 /**
  * A basic vine example.

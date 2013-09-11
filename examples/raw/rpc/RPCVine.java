@@ -25,7 +25,6 @@ import com.blankstyle.vine.definition.VineDefinition;
 import com.blankstyle.vine.SeedVerticle;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.local.LocalRoot;
-import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.Feeder;
 
 /**
@@ -51,16 +50,16 @@ class RPCVine extends Verticle {
   private Logger logger;
 
   // The deploy handler is called once the vine is deployed.
-  private Handler<AsyncResult<Vine>> deployHandler = new Handler<AsyncResult<Vine>>() {
+  private Handler<AsyncResult<Feeder>> deployHandler = new Handler<AsyncResult<Vine>>() {
     @Override
-    public void handle(AsyncResult<Vine> result) {
+    public void handle(AsyncResult<Feeder> result) {
       if (result.failed()) {
         logger.error("Failed to deploy vine.", result.cause());
       }
       else {
-        // If the vine was successfully deployed, create a feeder to the vine
+        // If the vine was successfully deployed, get a feeder to the vine
         // and feed three messages to the exclaim seed.
-        Feeder feeder = vine.feeder();
+        Feeder feeder = result.result();
         feeder.feed(new JsonObject().putString("body", "aaa"), resultHandler);
         feeder.feed(new JsonObject().putString("body", "bbb"), resultHandler);
         feeder.feed(new JsonObject().putString("body", "ccc"), resultHandler);

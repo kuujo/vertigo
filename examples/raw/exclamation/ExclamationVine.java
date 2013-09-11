@@ -26,7 +26,7 @@ import com.blankstyle.vine.SeedVerticle;
 import com.blankstyle.vine.Groupings;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.local.LocalRoot;
-import com.blankstyle.vine.Vine;
+import com.blankstyle.vine.Feeder;
 
 /**
  * A basic vine example.
@@ -50,29 +50,6 @@ public class ExclamationVine extends Verticle {
 
   private Logger logger;
 
-  // The deploy handler is called once the vine is deployed.
-  private Handler<AsyncResult<Vine>> deployHandler = new Handler<AsyncResult<Vine>>() {
-    @Override
-    public void handle(AsyncResult<Vine> result) {
-      if (result.failed()) {
-        logger.error("Failed to deploy vine.", result.cause());
-      }
-      else {
-        // If the vine was successfully deployed, shut down the vine.
-        Vine vine = result.result();
-        vine.shutdown(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            // Ensure that the vine was properly shut down.
-            if (result.failed()) {
-              logger.error("Failed to shutdown vine.", result.cause());
-            }
-          }
-        });
-      }
-    }
-  };
-
   @Override
   public void start() {
     logger = container.logger();
@@ -84,8 +61,27 @@ public class ExclamationVine extends Verticle {
       .to("exclaim2", ExclamationSeed.class.getName(), 2).groupBy(Groupings.random());
 
     // Create a local root instance and deploy the vine.
-    Root root = new LocalRoot(vertx, container);
-    root.deploy(vine, deployHandler);
+    final Root root = new LocalRoot(vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<Vine>>() {
+      @Override
+      public void handle(AsyncResult<Feeder> result) {
+        if (result.failed()) {
+          logger.error("Failed to deploy vine.", result.cause());
+        }
+        else {
+          // If the vine was successfully deployed, shut down the vine.
+          root.shutdown("exclamation", new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              // Ensure that the vine was properly shut down.
+              if (result.failed()) {
+                logger.error("Failed to shutdown vine.", result.cause());
+              }
+            }
+          });
+        }
+      }
+    });
   }
 
 }

@@ -26,7 +26,6 @@ import com.blankstyle.vine.SeedVerticle;
 import com.blankstyle.vine.Groupings;
 import com.blankstyle.vine.Root;
 import com.blankstyle.vine.local.LocalRoot;
-import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.Feeder;
 
 /**
@@ -73,32 +72,6 @@ public class WordCountVine extends Verticle {
 
   private java.util.logging.Logger logger;
 
-  // The deploy handler is called once the vine is deployed.
-  private Handler<AsyncResult<Vine>> deployHandler = new Handler<AsyncResult<Vine>>() {
-    @Override
-    public void handle(AsyncResult<Vine> result) {
-      if (result.failed()) {
-        logger.error("Failed to deploy vine.", result.cause());
-      }
-      else {
-        // If the vine was successfully deployed, feed some sentences to it.
-        final Vine vine = result.result();
-
-        Feeder feeder = vine.feeder();
-        feeder.feed(new JsonObject().putString("sentence", "The frog jumped over the log."));
-        feeder.feed(new JsonObject().putString("sentence", "The cat jumped over the hat."));
-        feeder.feed(new JsonObject().putString("sentence", "The fox jumped over the rocks."));
-
-        // Set a timer that shuts down the vine after two seconds.
-        vertx.setTimer(2000, new Handler<Long>() {
-          public void handle(Long timerID) {
-            vine.shutdown();
-          }
-        });
-      }
-    }
-  };
-
   @Override
   public void start() {
     logger = container.logger();
@@ -114,8 +87,29 @@ public class WordCountVine extends Verticle {
       .to("count", WordCountSeed.class.getName(), 12).groupBy(Groupings.fields("word"));
 
     // Create a local root instance and deploy the vine.
-    Root root = new LocalRoot(vertx, container);
-    root.deploy(vine, deployHandler);
+    final Root root = new LocalRoot(vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<Feeder>>() {
+      @Override
+      public void handle(AsyncResult<Feeder> result) {
+        if (result.failed()) {
+          logger.error("Failed to deploy vine.", result.cause());
+        }
+        else {
+          // If the vine was successfully deployed, feed some sentences to it.
+          Feeder feeder = result.result();
+          feeder.feed(new JsonObject().putString("sentence", "The frog jumped over the log."));
+          feeder.feed(new JsonObject().putString("sentence", "The cat jumped over the hat."));
+          feeder.feed(new JsonObject().putString("sentence", "The fox jumped over the rocks."));
+
+          // Set a timer that shuts down the vine after two seconds.
+          vertx.setTimer(2000, new Handler<Long>() {
+            public void handle(Long timerID) {
+              root.shutdown("wordcount");
+            }
+          });
+        }
+      }
+    });
   }
 
 }

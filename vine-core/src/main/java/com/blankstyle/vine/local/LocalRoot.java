@@ -32,7 +32,6 @@ import org.vertx.java.platform.Container;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Root;
-import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.VineException;
 import com.blankstyle.vine.context.SeedContext;
 import com.blankstyle.vine.context.StemContext;
@@ -61,7 +60,7 @@ public class LocalRoot implements Root {
 
   protected static final String STEM_VERTICLE_CLASS = StemVerticle.class.getName();
 
-  protected static final long DEFAULT_TIMEOUT = 5;
+  protected static final long DEFAULT_TIMEOUT = 15000;
 
   protected String address = "vine.root";
 
@@ -70,6 +69,8 @@ public class LocalRoot implements Root {
   protected Container container;
 
   protected ReliableEventBus eventBus;
+
+  protected String stemAddress;
 
   public LocalRoot(Vertx vertx, Container container) {
     this.vertx = vertx;
@@ -106,8 +107,8 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, Handler<AsyncResult<Vine>> handler) {
-    final Future<Vine> future = new DefaultFutureResult<Vine>();
+  public void deploy(final VineDefinition vine, Handler<AsyncResult<Feeder>> handler) {
+    final Future<Feeder> future = new DefaultFutureResult<Feeder>();
     future.setHandler(handler);
 
     // Deploy a local stem which will monitor the vine.
@@ -151,8 +152,8 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, final long timeout, Handler<AsyncResult<Vine>> handler) {
-    final Future<Vine> future = new DefaultFutureResult<Vine>();
+  public void deploy(final VineDefinition vine, final long timeout, Handler<AsyncResult<Feeder>> handler) {
+    final Future<Feeder> future = new DefaultFutureResult<Feeder>();
     future.setHandler(handler);
 
     // Deploy a local stem which will monitor the vine.
@@ -205,12 +206,12 @@ public class LocalRoot implements Root {
    * @param future
    *   A future result to be invoked with a vine reference.
    */
-  private void deployVineVerticle(final VineContext context, final String stemAddress, final Future<Vine> future) {
+  private void deployVineVerticle(final VineContext context, final String stemAddress, final Future<Feeder> future) {
     container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {
-          future.setResult(createVine(context, stemAddress, result.result()));
+          future.setResult(new BasicFeeder(context.getAddress(), eventBus, vertx));
         }
         else {
           future.setFailure(result.cause());
@@ -219,84 +220,50 @@ public class LocalRoot implements Root {
     });
   }
 
-  /**
-   * Creates a vine.
-   *
-   * @param context
-   *   The vine context.
-   * @param stemAddress
-   *   The address to the stem used to deploy the vine.
-   * @param deploymentID
-   *   The vine deployment ID.
-   * @return
-   *   The vine.
-   */
-  private Vine createVine(final VineContext context, final String stemAddress, final String deploymentID) {
-    return new Vine() {
+  @Override
+  public void shutdown(String address) {
+    shutdown(address, DEFAULT_TIMEOUT, null);
+  }
 
-      @Override
-      public Feeder feeder() {
-        return new BasicFeeder(context.getAddress(), vertx.eventBus()).setVertx(vertx);
-      }
+  @Override
+  public void shutdown(String address, Handler<AsyncResult<Void>> doneHandler) {
+    shutdown(address, DEFAULT_TIMEOUT, doneHandler);
+  }
 
-      @Override
-      public void shutdown() {
-        shutdown(null);
-      }
-
-      @Override
-      public void shutdown(Handler<AsyncResult<Void>> doneHandler) {
-        final Future<Void> future = new DefaultFutureResult<Void>();
-        if (doneHandler != null) {
-          future.setHandler(doneHandler);
-        }
-
-        RecursiveExecutor executor = new RecursiveExecutor("release", context, stemAddress);
-        executor.execute(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(final AsyncResult<Void> releaseResult) {
-            container.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
-              @Override
-              public void handle(AsyncResult<Void> vineResult) {
-                if (releaseResult.failed()) {
-                  future.setFailure(releaseResult.cause());
-                }
-                else if (vineResult.failed()) {
-                  future.setFailure(vineResult.cause());
-                }
-                else {
-                  future.setResult(null);
-                }
-              }
-            });
-          }
-        });
-      }
-    };
+  @Override
+  public void shutdown(String address, long timeout, Handler<AsyncResult<Void>> doneHandler) {
+    VineContext context = new VineContext(new JsonObject().putString("address", address));
+    RecursiveExecutor executor = new RecursiveExecutor("release", context, stemAddress);
+    executor.execute(doneHandler);
   }
 
   /**
    * Deploys a local stem whose sole task is to monitor this vine.
    */
-  private String deployLocalStem(VineDefinition definition, Handler<AsyncResult<String>> handler) {
-    final Future<String> future = new DefaultFutureResult<String>().setHandler(handler);
-    final String address = String.format("%s.stem", definition.getAddress());
-
-    // Create a stem context with an address specific to the vine being deployed.
-    JsonObject context = new JsonObject();
-    context.putString("address", address);
-    container.deployVerticle(STEM_VERTICLE_CLASS, new StemContext(context).serialize(), new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.succeeded()) {
-          future.setResult(address);
+  private void deployLocalStem(VineDefinition definition, Handler<AsyncResult<String>> handler) {
+    // If a stem has already been deployed then return the stem address.
+    if (stemAddress != null) {
+      new DefaultFutureResult<String>().setHandler(handler).setResult(stemAddress);
+    }
+    else {
+      final Future<String> future = new DefaultFutureResult<String>().setHandler(handler);
+      final String address = String.format("%s.stem", definition.getAddress());
+  
+      // Create a stem context with an address specific to the vine being deployed.
+      JsonObject context = new JsonObject();
+      context.putString("address", address);
+      container.deployVerticle(STEM_VERTICLE_CLASS, new StemContext(context).serialize(), new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.succeeded()) {
+            future.setResult(address);
+          }
+          else {
+            future.setFailure(result.cause());
+          }
         }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
-    return address;
+      });
+    }
   }
 
   /**

@@ -29,7 +29,6 @@ import org.vertx.java.platform.Container;
 import com.blankstyle.vine.Feeder;
 import com.blankstyle.vine.BasicFeeder;
 import com.blankstyle.vine.Root;
-import com.blankstyle.vine.Vine;
 import com.blankstyle.vine.VineException;
 import com.blankstyle.vine.context.VineContext;
 import com.blankstyle.vine.definition.VineDefinition;
@@ -37,6 +36,7 @@ import com.blankstyle.vine.eventbus.Actions;
 import com.blankstyle.vine.eventbus.ReliableEventBus;
 import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 import com.blankstyle.vine.eventbus.vine.VineVerticle;
+import com.blankstyle.vine.util.Messaging;
 
 /**
  * A remote reference to a root verticle.
@@ -46,6 +46,8 @@ import com.blankstyle.vine.eventbus.vine.VineVerticle;
 public class RemoteRoot implements Root {
 
   protected static final String VINE_VERTICLE_CLASS = VineVerticle.class.getName();
+
+  protected static final long DEFAULT_TIMEOUT = 10000;
 
   protected Vertx vertx;
 
@@ -143,8 +145,8 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, Handler<AsyncResult<Vine>> handler) {
-    final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
+  public void deploy(final VineDefinition vine, Handler<AsyncResult<Feeder>> handler) {
+    final Future<Feeder> future = new DefaultFutureResult<Feeder>().setHandler(handler);
     eventBus.send(address, Actions.create("deploy", vine.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -162,8 +164,8 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler) {
-    final Future<Vine> future = new DefaultFutureResult<Vine>().setHandler(handler);
+  public void deploy(final VineDefinition vine, long timeout, Handler<AsyncResult<Feeder>> handler) {
+    final Future<Feeder> future = new DefaultFutureResult<Feeder>().setHandler(handler);
     eventBus.send(address, Actions.create("deploy", vine.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -193,12 +195,12 @@ public class RemoteRoot implements Root {
    * @param future
    *   A future result to be invoked with a vine reference.
    */
-  private void deployVineVerticle(final VineContext context, final Future<Vine> future) {
+  private void deployVineVerticle(final VineContext context, final Future<Feeder> future) {
     container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {
-          future.setResult(createVine(context, result.result()));
+          future.setResult(new BasicFeeder(context.getAddress(), eventBus, vertx));
         }
         else {
           future.setFailure(result.cause());
@@ -207,57 +209,28 @@ public class RemoteRoot implements Root {
     });
   }
 
-  /**
-   * Creates a vine.
-   *
-   * @param context
-   *   The vine context.
-   * @param stemAddress
-   *   The address to the stem used to deploy the vine.
-   * @param deploymentID
-   *   The vine deployment ID.
-   * @return
-   *   The vine.
-   */
-  private Vine createVine(final VineContext context, final String deploymentID) {
-    return new Vine() {
-      @Override
-      public Feeder feeder() {
-        return new BasicFeeder(context.getAddress(), vertx.eventBus()).setVertx(vertx);
-      }
+  @Override
+  public void shutdown(String address) {
+    shutdown(address, DEFAULT_TIMEOUT, null);
+  }
 
-      @Override
-      public void shutdown() {
-        shutdown(null);
-      }
+  @Override
+  public void shutdown(String address, final Handler<AsyncResult<Void>> doneHandler) {
+    shutdown(address, DEFAULT_TIMEOUT, doneHandler);
+  }
 
+  @Override
+  public void shutdown(String address, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+    // Send a message to the remote root indicating that the vine should be
+    // shut down. The remote root will notify the appropriate stem.
+    eventBus.send(this.address, Actions.create("undeploy", address), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
-      public void shutdown(Handler<AsyncResult<Void>> doneHandler) {
-        final Future<Void> future = new DefaultFutureResult<Void>();
+      public void handle(AsyncResult<Message<JsonObject>> result) {
         if (doneHandler != null) {
-          future.setHandler(doneHandler);
+          Messaging.checkResponse(result, doneHandler);
         }
-
-        eventBus.send(address, Actions.create("undeploy", context.getAddress()), new Handler<Message<JsonObject>>() {
-          @Override
-          public void handle(Message<JsonObject> reply) {
-            JsonObject body = reply.body();
-            if (body != null) {
-              String error = body.getString("error");
-              if (error != null) {
-                future.setFailure(new VineException(error));
-              }
-              else {
-                future.setResult(null);
-              }
-            }
-            else {
-              future.setResult(null);
-            }
-          }
-        });
       }
-    };
+    });
   }
 
 }

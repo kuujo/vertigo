@@ -71,9 +71,9 @@ public interface Root {
    * @param vine
    *   The vine definition.
    * @param handler
-   *   An asynchronous result handler to be invoked with a vine reference.
+   *   An asynchronous result handler to be invoked with a vine feeder.
    */
-  public void deploy(VineDefinition vine, Handler<AsyncResult<Vine>> handler);
+  public void deploy(VineDefinition vine, Handler<AsyncResult<Feeder>> handler);
 
   /**
    * Deploys a vine definition with a timeout.
@@ -83,8 +83,38 @@ public interface Root {
    * @param timeout
    *   The deploy timeout.
    * @param handler
-   *   An asynchronous result handler to be invoked with a vine reference.
+   *   An asynchronous result handler to be invoked with a vine feeder.
    */
-  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<Vine>> handler);
+  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<Feeder>> handler);
+
+  /**
+   * Shuts down the vine at the given address.
+   *
+   * @param address
+   *   The vine address.
+   */
+  public void shutdown(String address);
+
+  /**
+   * Shuts down the vine at the given address, awaiting a result.
+   *
+   * @param address
+   *   The vine address.
+   * @param doneHandler
+   *   An asynchronous result handler to be invoked once the shutdown is complete.
+   */
+  public void shutdown(String address, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Shuts down the vine at the given address, awaiting a result.
+   *
+   * @param address
+   *   The vine address.
+   * @param timeout
+   *   A shutdown timeout.
+   * @param doneHandler
+   *   An asynchronous result handler to be invoked once the shutdown is complete.
+   */
+  public void shutdown(String address, long timeout, Handler<AsyncResult<Void>> doneHandler);
 
 }

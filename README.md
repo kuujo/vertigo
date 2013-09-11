@@ -38,7 +38,7 @@ assigning work to Vert.x instances in the cluster.
   * [Shutting down vines](#shutting-down-vines)
 1. [Working with feeders](#working-with-feeders)
   * [Retrieving a feeder from a deployed vine](#retrieving-a-feeder-from-a-deployed-vine)
-  * [Instantiating feeders to existing vines](#instantiating-feeders-to-existing-vines)
+  * [Opening feeders to existing vines](#opening-feeders-to-existing-vines)
   * [Feeding data to a vine](#feeding-data-to-a-vine)
   * [Reading responses from a vine](#reading-responses-from-a-vine)
   * [Feeder flow control](#feeder-flow-control)
@@ -170,17 +170,25 @@ each message processed.
 ## Deploying vines
 Vines are deployed using the *root* API. Vine provides two different methods of
 deployment - local and remote - which allow users to deploy vines within a single
-Vert.x instance or a cluster of Vert.x instances respectively.
+Vert.x instance or a cluster of Vert.x instances respectively. Once a vine is deployed,
+a *feeder* can be used to feed messages to the vine.
 
 Each root contains two methods for deploying vines:
 * `deploy(VineDefinition definition, Handler<AsyncResult<Vine>> resultHandler)`
 * `deploy(VineDefinition definition, long timeout, Handler<AsyncResult<Vine>> resultHandler)`
+* `shutdown(String address)` - shuts down a vine
+* `shutdown(String address, Handler<AsyncResult<Void>> doneHandler)` - shuts down a vine
+* `shutdown(String address, long timeout, Handler<AsyncResult<Void>> doneHandler)` - shuts down a vine
 
-The `Vine` instance that is returned by *root* `deploy` methods contains the
-following methods:
-* `feeder()` - returns a feeder to the vine
-* `shutdown()` - shuts down the vine
-* `shutdown(Handler<AsyncResult<Void>> doneHandler)` - shuts down the vine
+The `Feeder` instance that is returned by *root* `deploy` methods provides an interface
+similar to that of the Vert.x `WriteStream`:
+* `feedQueueFull()` - indicates whether the queue is full
+* `feed(JsonObject data)` - feeds data to the vine
+* `feed(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler)` - feeds data
+  to the vine, providing an asynchronous result handler
+* `feed(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler)` - feeds
+  data to the vine, providing an asynchronous result handler and processing timeout
+* `drainHandler(Handler<Void> handler)` - sets a drain handler on the feeder
 
 ### Deploying vines in local mode
 Local vines are deployed within a single Vert.x instance. Using the
@@ -199,14 +207,14 @@ VineDefinition definition = Vines.createDefinition("word.counter")
 Root root = new LocalRoot(vertx, container);
 long timeout = 10000;
 
-root.deploy(definition, timeout, new Handler<AsyncResult<Vine>>() {
-  public void handle(AsyncResult<Vine> result) {
+root.deploy(definition, timeout, new Handler<AsyncResult<Feeder>>() {
+  public void handle(AsyncResult<Feeder> result) {
     if (result.succeeded()) {
-      Vine vine = result.result();
+      Feeder feeder = result.result();
 
       // Feed a message to the vine, awaiting a result.
       JsonObject message = new JsonObject().putString("words", "Hello world!");
-      vine.feeder().feed(message, new Handler<AsyncResult<JsonObject>>() {
+      feeder.feed(message, new Handler<AsyncResult<JsonObject>>() {
         public void handle(AsyncResult<JsonObject> result) {
           if (result.failed()) {
             logger.warning("Failed to process message.");
@@ -214,8 +222,10 @@ root.deploy(definition, timeout, new Handler<AsyncResult<Vine>>() {
           else {
             logger.info("Count result is " + result.result().encode());
           }
-          // Shut down the vine.
-          vine.shutdown();
+          // Shut down the vine. Note that it is *important* that we shut down
+          // the vine with the same *type* of root as we deployed it with. So,
+          // local vines must be shut down with a local root and remote with remote.
+          root.shutdown("word.counter");
         }
       });
     }
@@ -287,14 +297,14 @@ VineDefinition definition = Vines.createDefinition("word.counter")
 Root root = new RemoteRoot("vine.root", vertx, container);
 long timeout = 10000;
 
-root.deploy(definition, timeout, new Handler<AsyncResult<Vine>>() {
-  public void handle(AsyncResult<Vine> result) {
+root.deploy(definition, timeout, new Handler<AsyncResult<Feeder>>() {
+  public void handle(AsyncResult<Feeder> result) {
     if (result.succeeded()) {
-      Vine vine = result.result();
+      Feeder feeder = result.result();
 
       // Feed a message to the vine, awaiting a result.
       JsonObject message = new JsonObject().putString("words", "Hello world!");
-      vine.feeder().feed(message, new Handler<AsyncResult<JsonObject>>() {
+      feeder.feed(message, new Handler<AsyncResult<JsonObject>>() {
         public void handle(AsyncResult<JsonObject> result) {
           if (result.failed()) {
             logger.warning("Failed to process message.");
@@ -303,7 +313,7 @@ root.deploy(definition, timeout, new Handler<AsyncResult<Vine>>() {
             logger.info("Count result is " + result.result().encode());
           }
           // Shut down the vine.
-          vine.shutdown();
+          root.shutdown("word.counter");
         }
       });
     }
@@ -323,29 +333,33 @@ process for shutting down local vs remote vines differs significantly.
 Feeders allow the user to control the flow of information to and from a vine.
 
 ### Retrieving a feeder from a deployed vine
-Once a vine is deployed, a feeder can be retrived from the returned `Vine`
-instance.
+Once a vine is deployed, the returned feeder can be used to feed data to the vine.
 
 ```java
-root.deploy(definition, new Handler<AsyncResult<Vine>>() {
-  public void handle(AsyncResult<Vine> result) {
+root.deploy(definition, new Handler<AsyncResult<Feeder>>() {
+  public void handle(AsyncResult<Feeder> result) {
     if (result.succeeded()) {
-      Vine vine = result.result();
+      Feeder feeder = result.result();
     }
   }
 });
 ```
 
-### Instantiating feeders to existing vines
+### Opening feeders to existing vines
 Once a vine is deployed, a feeder can be retrieved or instantiated simply by
 referencing the unique vine `address` that is assigned to each vine.
 
-For instance, if we started a vine at `word.counter`, we can instantiate a
+For instance, if we started a vine at `word.counter`, we can open a
 feeder to the vine from a separate verticle.
 
 ```java
-Feeder feeder = new BasicFeeder("word.counter");
+Feeder feeder = Vines.open("word.counter", vertx);
 feeder.feed(new JsonObject().putString("body", "Hello world!"));
+```
+
+or
+
+```java
 ```
 
 ### Feeding data to a vine
@@ -380,7 +394,7 @@ feeder.feed(data, new Handler<AsyncResult<JsonObject>>() {
     }
     else {
       // Processing failed for some reason. Log the failure.
-      container.logger().error(response.cause());
+      container.logger().error(result.cause());
     }
   }
 });

@@ -46,12 +46,27 @@ public class BasicFeeder implements Feeder {
 
   public BasicFeeder(String address, EventBus eventBus) {
     this.address = address;
-    this.eventBus = new WrappedReliableEventBus(eventBus);
+    setEventBus(eventBus);
+  }
+
+  public BasicFeeder(String address, EventBus eventBus, Vertx vertx) {
+    this.address = address;
+    setEventBus(eventBus).setVertx(vertx);
   }
 
   public Feeder setVertx(Vertx vertx) {
     eventBus.setVertx(vertx);
     return this;
+  }
+
+  private ReliableEventBus setEventBus(EventBus eventBus) {
+    if (eventBus instanceof ReliableEventBus) {
+      this.eventBus = (ReliableEventBus) eventBus;
+    }
+    else {
+      this.eventBus = new WrappedReliableEventBus(eventBus);
+    }
+    return this.eventBus;
   }
 
   @Override

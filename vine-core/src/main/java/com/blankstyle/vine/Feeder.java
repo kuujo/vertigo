@@ -35,16 +35,6 @@ public interface Feeder {
   public boolean feedQueueFull();
 
   /**
-   * Sets a drain handler on the feeder.
-   *
-   * @param drainHandler
-   *   The drain handler.
-   * @return
-   *   The called object.
-   */
-  public Feeder drainHandler(Handler<Void> drainHandler);
-
-  /**
    * Feeds a JSON object to the vine.
    *
    * @param data
@@ -73,5 +63,15 @@ public interface Feeder {
    *   A result handler.
    */
   public void feed(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Sets a drain handler on the feeder.
+   *
+   * @param drainHandler
+   *   The drain handler.
+   * @return
+   *   The called object.
+   */
+  public Feeder drainHandler(Handler<Void> drainHandler);
 
 }

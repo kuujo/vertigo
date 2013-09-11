@@ -56,7 +56,7 @@ public class BasicFeeder implements Feeder {
 
   @Override
   public boolean feedQueueFull() {
-    return false;
+    return queueFull;
   }
 
   @Override

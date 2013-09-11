@@ -152,8 +152,18 @@ public class RemoteStem implements Stem {
   }
 
   @Override
+  public void release(String address, final Handler<AsyncResult<Void>> doneHandler) {
+    release(new WorkerContext(new JsonObject().putString("address", address)), doneHandler);
+  }
+
+  @Override
+  public void release(String address, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+    release(new WorkerContext(new JsonObject().putString("address", address)), timeout, doneHandler);
+  }
+
+  @Override
   public void release(WorkerContext context, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, Actions.create("assign", context.serialize()), new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(this.address, Actions.create("release", context.serialize()), new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);
@@ -163,7 +173,7 @@ public class RemoteStem implements Stem {
 
   @Override
   public void release(WorkerContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(address, Actions.create("assign", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(this.address, Actions.create("release", context.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         Messaging.checkResponse(result, doneHandler);

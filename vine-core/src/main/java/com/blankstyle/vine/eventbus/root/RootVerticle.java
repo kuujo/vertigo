@@ -488,14 +488,15 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
       protected void doRelease(WorkerContext context, Handler<AsyncResult<Void>> resultHandler) {
         final Future<Void> future = new DefaultFutureResult<Void>();
         future.setHandler(resultHandler);
-        String stemAddress = deploymentMap.get(context.getAddress());
+        String address = context.getAddress();
+        String stemAddress = deploymentMap.get(address);
         if (stemAddress != null) {
           Iterator<Stem> iterStem = stems.iterator();
           boolean released = false;
           while (iterStem.hasNext()) {
             Stem stem = iterStem.next();
             if (stem.getAddress() == stemAddress) {
-              stem.release(context, resultHandler);
+              stem.release(address, resultHandler);
               released = true;
             }
           }

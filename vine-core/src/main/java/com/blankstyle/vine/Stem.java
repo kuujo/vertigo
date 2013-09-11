@@ -95,6 +95,28 @@ public interface Stem {
   /**
    * Releases a worker from the stem.
    *
+   * @param address
+   *   The worker address.
+   * @param doneHandler
+   *   A handler to be invoked once the worker is released.
+   */
+  public void release(String address, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Releases a worker from the stem.
+   *
+   * @param address
+   *   The worker address.
+   * @param timeout
+   *   A release timeout.
+   * @param doneHandler
+   *   A handler to be invoked once the worker is released.
+   */
+  public void release(String address, long timeout, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Releases a worker from the stem.
+   *
    * @param context
    *   The worker context.
    * @param doneHandler

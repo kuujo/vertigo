@@ -27,6 +27,7 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 
 import com.blankstyle.vine.Feeder;
@@ -211,6 +212,9 @@ public class LocalRoot implements Root {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {
+          // Add the vine context to a shared map of contexts so that
+          // vine worker addresses can be referenced for shutdown.
+          storeContext(context);
           future.setResult(new BasicFeeder(context.getAddress(), eventBus, vertx));
         }
         else {
@@ -232,9 +236,35 @@ public class LocalRoot implements Root {
 
   @Override
   public void shutdown(String address, long timeout, Handler<AsyncResult<Void>> doneHandler) {
-    VineContext context = new VineContext(new JsonObject().putString("address", address));
-    RecursiveExecutor executor = new RecursiveExecutor("release", context, stemAddress);
-    executor.execute(doneHandler);
+    final Future<Void> future = new DefaultFutureResult<Void>();
+    if (doneHandler != null) {
+      future.setHandler(doneHandler);
+    }
+
+    final VineContext context = loadContext(address);
+    if (context == null) {
+      future.setFailure(new VineException("Invalid vine address."));
+    }
+    else if (stemAddress == null) {
+      future.setFailure(new VineException("No local stem deployed."));
+    }
+    else {
+      RecursiveExecutor executor = new RecursiveExecutor("release", context, stemAddress).setTimeout(timeout);
+      executor.execute(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> deployResult) {
+          if (deployResult.succeeded()) {
+            // Add the vine context to a shared map of contexts so that
+            // vine worker addresses can be referenced for shutdown.
+            removeContext(context);
+            future.setResult(null);
+          }
+          else {
+            future.setFailure(deployResult.cause());
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -250,12 +280,11 @@ public class LocalRoot implements Root {
       final String address = String.format("%s.stem", definition.getAddress());
   
       // Create a stem context with an address specific to the vine being deployed.
-      JsonObject context = new JsonObject();
-      context.putString("address", address);
-      container.deployVerticle(STEM_VERTICLE_CLASS, new StemContext(context).serialize(), new Handler<AsyncResult<String>>() {
+      container.deployVerticle(STEM_VERTICLE_CLASS, new StemContext(new JsonObject().putString("address", address)).serialize(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.succeeded()) {
+            stemAddress = address;
             future.setResult(address);
           }
           else {
@@ -264,6 +293,25 @@ public class LocalRoot implements Root {
         }
       });
     }
+  }
+
+  private void storeContext(VineContext context) {
+    ConcurrentSharedMap<String, String> contexts = vertx.sharedData().getMap("vine.contexts");
+    contexts.put(context.getAddress(), context.serialize().encode());
+  }
+
+  private VineContext loadContext(String address) {
+    ConcurrentSharedMap<String, String> contexts = vertx.sharedData().getMap("vine.contexts");
+    String encoded = contexts.get(address);
+    if (encoded != null) {
+      return new VineContext(new JsonObject(encoded));
+    }
+    return null;
+  }
+
+  private void removeContext(VineContext context) {
+    ConcurrentSharedMap<String, String> contexts = vertx.sharedData().getMap("vine.contexts");
+    contexts.remove(context.getAddress());
   }
 
   /**

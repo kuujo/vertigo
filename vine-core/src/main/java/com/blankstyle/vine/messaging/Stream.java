@@ -15,31 +15,33 @@
 */
 package com.blankstyle.vine.messaging;
 
+import org.vertx.java.core.Handler;
+
 /**
  * A bi-directional communication channel.
  *
  * @author Jordan Halterman
  */
-public interface Channel<T extends Connection> {
+public interface Stream<T extends Connection> {
 
   /**
-   * Sets the channel dispatcher.
+   * Sets the stream dispatcher.
    *
    * @param dispatcher
-   *   The channel dispatcher.
+   *   The stream dispatcher.
    */
   public void setDispatcher(Dispatcher dispatcher);
 
   /**
-   * Gets the channel dispatcher.
+   * Gets the stream dispatcher.
    *
    * @return
-   *   The channel message dispatcher.
+   *   The stream message dispatcher.
    */
   public Dispatcher getDispatcher();
 
   /**
-   * Adds a connection to the channel.
+   * Adds a connection to the stream.
    *
    * @param connection
    *   The connection to add.
@@ -47,7 +49,7 @@ public interface Channel<T extends Connection> {
   public void addConnection(T connection);
 
   /**
-   * Removes a connection from the channel.
+   * Removes a connection from the stream.
    *
    * @param connection
    *   The connection to remove.
@@ -55,11 +57,21 @@ public interface Channel<T extends Connection> {
   public void removeConnection(T connection);
 
   /**
-   * Publishes a message to the channel.
+   * Publishes a message to the stream.
    *
    * @param message
    *   The message to publish.
    */
-  public void publish(JsonMessage message);
+  public void emit(JsonMessage message);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param ackHandler
+   *   A message reply handler.
+   */
+  public void emit(JsonMessage message, Handler<Boolean> ackHandler);
 
 }

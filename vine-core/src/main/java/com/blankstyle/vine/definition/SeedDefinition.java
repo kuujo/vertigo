@@ -29,6 +29,10 @@ public class SeedDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
+  private static final int DEFAULT_NUM_WORKERS = 1;
+
+  private static final long DEFAULT_HEARTBEAT_INTERVAL = 1000;
+
   public SeedDefinition() {
   }
 
@@ -113,6 +117,8 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    *
    * @param grouping
    *   A grouping definition.
+   * @return
+   *   The called seed definition.
    */
   public SeedDefinition groupBy(GroupingDefinition grouping) {
     definition.putObject("grouping", grouping.serialize());
@@ -131,6 +137,8 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    *
    * @param workers
    *   The number of seed workers.
+   * @return
+   *   The called seed definition.
    */
   public SeedDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
@@ -141,7 +149,30 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * Gets the number of seed workers.
    */
   public int getWorkers() {
-    return definition.getInteger("workers");
+    return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
+  }
+
+  /**
+   * Sets the seed worker heartbeat interval.
+   *
+   * @param interval
+   *   A heartbeat interval.
+   * @return
+   *   The called seed definition.
+   */
+  public SeedDefinition setHeartbeatInterval(long interval) {
+    definition.putNumber("heartbeat", interval);
+    return this;
+  }
+
+  /**
+   * Gets the seed heartbeat interval.
+   *
+   * @return
+   *   A seed heartbeat interval.
+   */
+  public long getHeartbeatInterval() {
+    return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   /**

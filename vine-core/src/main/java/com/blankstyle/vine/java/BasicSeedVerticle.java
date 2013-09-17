@@ -13,16 +13,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.java;
 
-import java.util.HashSet;
+import com.blankstyle.vine.seed.BasicSeed;
 
 /**
- * A default connection pool.
+ * A basic seed verticle implementation.
  *
  * @author Jordan Halterman
  */
-@SuppressWarnings("serial")
-public class EventBusConnectionPool extends HashSet<EventBusConnection> implements ConnectionPool<EventBusConnection> {
+public abstract class BasicSeedVerticle extends SeedVerticle<BasicSeed> {
+
+  @Override
+  protected BasicSeed createSeed() {
+    return new BasicSeed();
+  }
 
 }

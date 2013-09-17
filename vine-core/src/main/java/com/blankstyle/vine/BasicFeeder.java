@@ -34,7 +34,7 @@ import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
  *
  * @author Jordan Halterman
  */
-public class BasicFeeder implements Feeder {
+public class BasicFeeder implements Feeder, Handler<Message<JsonObject>> {
 
   protected String address;
 
@@ -66,7 +66,30 @@ public class BasicFeeder implements Feeder {
     else {
       this.eventBus = new WrappedReliableEventBus(eventBus);
     }
+    eventBus.registerHandler(String.format("%s.status", address), this);
     return this.eventBus;
+  }
+
+  @Override
+  public void handle(Message<JsonObject> message) {
+    String action = message.body().getString("action");
+    if (action == null) {
+      return;
+    }
+
+    switch (action) {
+      case "full":
+        queueFull = true;
+        break;
+      case "drain":
+        queueFull = false;
+        if (drainHandler != null) {
+          drainHandler.handle(null);
+        }
+        break;
+      default:
+        return;
+    }
   }
 
   @Override
@@ -82,55 +105,62 @@ public class BasicFeeder implements Feeder {
 
   @Override
   public void feed(JsonObject data) {
-    eventBus.send(address, Actions.create("feed", data));
+    if (!queueFull) {
+      eventBus.send(address, Actions.create("feed", data));
+    }
   }
 
   @Override
-  public void feed(JsonObject data, final Handler<AsyncResult<JsonObject>> resultHandler) {
-    final Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
-    eventBus.send(address, Actions.create("feed", data), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
+  public void feed(JsonObject data, final Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    if (!queueFull) {
+      execute(data, createFeedHandler(future));
+    }
+    else {
+      future.setFailure(new VineException("Queue full."));
+    }
+  }
 
-        // If a null value was returned then the queue is full.
-        if (body == null) {
-          queueFull = true;
+  @Override
+  public void feed(JsonObject data, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    if (!queueFull) {
+      execute(data, timeout, createFeedHandler(future));
+    }
+    else {
+      future.setFailure(new VineException("Queue full."));
+    }
+  }
+
+  private Handler<AsyncResult<JsonObject>> createFeedHandler(final Future<Void> future) {
+    return new Handler<AsyncResult<JsonObject>>() {
+      @Override
+      public void handle(AsyncResult<JsonObject> result) {
+        if (result.succeeded()) {
+          future.setResult(null);
         }
         else {
-          // Otherwise, check the body for an error message.
-          String error = body.getString("error");
-          if (error != null) {
-            future.setFailure(new VineException(error));
-          }
-          else {
-            // Invoke the result handler with the JSON message body.
-            future.setResult(message.body());
-  
-            // If a message response is received, the queue should *always* be not full.
-            queueFull = false;
-            if (drainHandler != null) {
-              drainHandler.handle(null);
-            }
-          }
+          future.setFailure(result.cause());
         }
       }
-    });
+    };
   }
 
   @Override
-  public void feed(JsonObject data, long timeout, final Handler<AsyncResult<JsonObject>> resultHandler) {
+  public void execute(JsonObject data, final Handler<AsyncResult<JsonObject>> resultHandler) {
     final Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
-    eventBus.send(address, Actions.create("feed", data), timeout, new AsyncResultHandler<Message<JsonObject>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          Message<JsonObject> message = result.result();
+    if (queueFull) {
+      future.setFailure(new VineException("Queue full."));
+    }
+    else {
+      eventBus.send(address, Actions.create("exec", data), new Handler<Message<JsonObject>>() {
+        @Override
+        public void handle(Message<JsonObject> message) {
           JsonObject body = message.body();
-
+  
           // If a null value was returned then the queue is full.
           if (body == null) {
-            queueFull = true;
+            future.setFailure(new VineException("Invalid vine response data."));
           }
           else {
             // Otherwise, check the body for an error message.
@@ -141,20 +171,49 @@ public class BasicFeeder implements Feeder {
             else {
               // Invoke the result handler with the JSON message body.
               future.setResult(message.body());
-    
-              // If a message response is received, the queue should *always* be not full.
-              queueFull = false;
-              if (drainHandler != null) {
-                drainHandler.handle(null);
-              }
             }
           }
         }
-        else {
-          future.setFailure(result.cause());
+      });
+    }
+  }
+
+  @Override
+  public void execute(JsonObject data, long timeout, final Handler<AsyncResult<JsonObject>> resultHandler) {
+    final Future<JsonObject> future = new DefaultFutureResult<JsonObject>().setHandler(resultHandler);
+    if (queueFull) {
+      future.setFailure(new VineException("Queue full."));
+    }
+    else {
+      eventBus.send(address, Actions.create("exec", data), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+        @Override
+        public void handle(AsyncResult<Message<JsonObject>> result) {
+          if (result.succeeded()) {
+            Message<JsonObject> message = result.result();
+            JsonObject body = message.body();
+  
+            // If a null value was returned then the queue is full.
+            if (body == null) {
+              future.setFailure(new VineException("Invalid vine response data."));
+            }
+            else {
+              // Otherwise, check the body for an error message.
+              String error = body.getString("error");
+              if (error != null) {
+                future.setFailure(new VineException(error));
+              }
+              else {
+                // Invoke the result handler with the JSON message body.
+                future.setResult(message.body());
+              }
+            }
+          }
+          else {
+            future.setFailure(result.cause());
+          }
         }
-      }
-    });
+      });
+    }
   }
 
 }

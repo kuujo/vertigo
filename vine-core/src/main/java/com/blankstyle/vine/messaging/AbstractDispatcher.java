@@ -18,6 +18,8 @@ package com.blankstyle.vine.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.vertx.java.core.Handler;
+
 /**
  * An abstract dispatcher implementation.
  *
@@ -59,6 +61,11 @@ public abstract class AbstractDispatcher implements Dispatcher {
   @Override
   public void dispatch(JsonMessage message) {
     getConnection(message).send(message);
+  }
+
+  @Override
+  public void dispatch(JsonMessage message, Handler<Boolean> ackHandler) {
+    getConnection(message).send(message, ackHandler);
   }
 
 }

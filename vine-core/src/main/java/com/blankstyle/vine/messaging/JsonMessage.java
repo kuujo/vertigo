@@ -15,38 +15,49 @@
 */
 package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.Serializeable;
 
 /**
- * A JSON message implementation.
+ * A JSON-based eventbus message.
  *
  * @author Jordan Halterman
  */
 public class JsonMessage implements Serializeable<JsonObject> {
 
-  protected JsonObject json;
+  private Message<JsonObject> message;
 
-  public JsonMessage() {
-    this.json = new JsonObject();
+  private JsonObject data;
+
+  private boolean ready;
+
+  private boolean acked;
+
+  private boolean ack;
+
+  private boolean responded;
+
+  public JsonMessage(Message<JsonObject> message) {
+    this.message = message;
+    this.data = message.body();
   }
 
-  public JsonMessage(JsonObject json) {
-    this.json = json;
+  public JsonMessage(JsonObject body) {
+    this.data = body;
   }
 
   /**
    * Sets the unique message identifier.
    *
    * @param id
-   *   A unique message identifier.
+   *   A message identifier.
    * @return
-   *   The called message object.
+   *   The called message instance.
    */
   public JsonMessage setIdentifier(long id) {
-    json.putNumber("id", id);
+    data.putNumber("id", id);
     return this;
   }
 
@@ -57,73 +68,117 @@ public class JsonMessage implements Serializeable<JsonObject> {
    *   A unique message identifier.
    */
   public long getIdentifier() {
-    return json.getLong("id");
+    return data.getInteger("id");
   }
 
   /**
-   * Adds a tag to the message.
+   * Returns the message body.
    *
-   * @param tag
-   *   A message tag.
    * @return
-   *   The called message object.
+   *   A JSON message body.
    */
-  public JsonMessage tag(String tag) {
-    JsonArray tags = json.getArray("tags");
-    if (tags == null) {
-      tags = new JsonArray();
-      json.putArray("tags", tags);
+  public JsonObject body() {
+    JsonObject body = data.getObject("body");
+    if (body == null) {
+      body = new JsonObject();
+      data.putObject("body", body);
     }
-    tags.add(tag);
-    return this;
-  }
-
-  /**
-   * Gets an array of message tags.
-   *
-   * @return
-   *   An array of message tags.
-   */
-  public JsonArray getTags() {
-    return json.getArray("tags");
+    return body;
   }
 
   /**
    * Sets the message body.
    *
    * @param body
-   *   The message body.
+   *   A JSON message body.
    * @return
-   *   The called message object.
+   *   The called message instance.
    */
   public JsonMessage setBody(JsonObject body) {
-    json.putValue("body", body);
+    data.putObject("body", body);
     return this;
   }
 
   /**
-   * Returns the JSON message body.
+   * Sets the message to ready state.
+   */
+  public void ready() {
+    ready = true;
+    checkAck();
+  }
+
+  /**
+   * Acknowledges that the message has been processed.
+   */
+  public void ack() {
+    acked = true; ack = true;
+    checkAck();
+  }
+
+  /**
+   * Indicates failure to process the message.
+   */
+  public void fail() {
+    acked = true; ack = false;
+    checkAck();
+  }
+
+  /**
+   * Checks whether the message has completed processing and acks or fails
+   * if necessary.
+   */
+  private void checkAck() {
+    if (!isLocked()) {
+      if (ready && acked && message != null) {
+        message.reply(ack);
+        lock();
+      }
+      else if (acked && !ack) {
+        message.reply(false);
+        lock();
+      }
+    }
+  }
+
+  /**
+   * Locks the message, preventing multiple ack responses.
+   */
+  private void lock() {
+    responded = true;
+  }
+
+  /**
+   * Indicates whether the message has been responded to.
+   */
+  private boolean isLocked() {
+    return responded;
+  }
+
+  /**
+   * Forks the message, creating a child message.
+   *
+   * @param data
+   *   The data to apply to the child message.
+   * @return
+   *   A child message instance.
+   */
+  public JsonMessage fork(JsonObject data) {
+    return new JsonMessage(data).setIdentifier(getIdentifier());
+  }
+
+  /**
+   * Copies the message.
    *
    * @return
-   *   A message body.
+   *   A new message instance.
    */
-  public JsonObject body() {
-    return json.getObject("body");
+  public JsonMessage copy() {
+    return new JsonMessage(data.copy());
   }
 
   @Override
   public JsonObject serialize() {
-    return json;
-  }
-
-  /**
-   * Copies the JSON message.
-   *
-   * @return
-   *   A new JSON message.
-   */
-  public JsonMessage copy() {
-    return new JsonMessage(json);
+    return data;
   }
 
 }

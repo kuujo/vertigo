@@ -62,10 +62,24 @@ public class VineDefinition implements Serializeable<JsonObject> {
    *
    * @param address
    *   The vine address.
+   * @return
+   *   The called vine definition.
    */
   public VineDefinition setAddress(String address) {
     definition.putString("address", address);
     return this;
+  }
+
+  /**
+   * Gets a vine option.
+   *
+   * @param option
+   *   The option to get.
+   * @return
+   *   The option value.
+   */
+  public String getOption(String option) {
+    return definition.getString(option);
   }
 
   /**
@@ -87,18 +101,6 @@ public class VineDefinition implements Serializeable<JsonObject> {
         break;
     }
     return this;
-  }
-
-  /**
-   * Gets a vine option.
-   *
-   * @param option
-   *   The option to get.
-   * @return
-   *   The option value.
-   */
-  public String getOption(String option) {
-    return definition.getString(option);
   }
 
   /**

@@ -17,15 +17,16 @@ package com.blankstyle.vine.test.integration;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.SeedVerticle;
+import com.blankstyle.vine.java.ReliableSeedVerticle;
+import com.blankstyle.vine.messaging.JsonMessage;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
 
-public class TestSeedOne extends SeedVerticle {
+public class TestSeedOne extends ReliableSeedVerticle {
 
   @Override
-  protected void process(JsonObject data) {
-    assertEquals("Hello world!", data.getString("body"));
+  protected void process(JsonMessage message) {
+    assertEquals("Hello world!", message.body().getString("body"));
     emit(new JsonObject().putString("body", "Hello world again!"));
   }
 

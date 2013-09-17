@@ -78,7 +78,7 @@ public class VineTest extends TestVerticle {
         Feeder feeder = result.result();
         assertNotNull(feeder);
 
-        feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
+        feeder.execute(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
           @Override
           public void handle(AsyncResult<JsonObject> result) {
             assertTrue("Failed to process message. " + result.cause(), result.succeeded());
@@ -174,7 +174,7 @@ public class VineTest extends TestVerticle {
                 Feeder feeder = result.result();
                 assertNotNull(feeder);
 
-                feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
+                feeder.execute(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
                   @Override
                   public void handle(AsyncResult<JsonObject> result) {
                     assertTrue("Failed to process message. " + result.cause(), result.succeeded());
@@ -278,7 +278,7 @@ public class VineTest extends TestVerticle {
         feeder.feed(new JsonObject().putString("body", "a"));
         feeder.feed(new JsonObject().putString("body", "a"));
         feeder.feed(new JsonObject().putString("body", "ab"));
-        feeder.feed(new JsonObject().putString("body", "a"), new Handler<AsyncResult<JsonObject>>() {
+        feeder.execute(new JsonObject().putString("body", "a"), new Handler<AsyncResult<JsonObject>>() {
           @Override
           public void handle(AsyncResult<JsonObject> result) {
             testComplete();

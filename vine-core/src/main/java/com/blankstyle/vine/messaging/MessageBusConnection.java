@@ -16,37 +16,33 @@
 package com.blankstyle.vine.messaging;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-
-import com.blankstyle.vine.eventbus.Actions;
 
 /**
  * An eventbus-based connection.
  *
  * @author Jordan Halterman
  */
-public class EventBusConnection implements Connection {
+public class MessageBusConnection implements Connection {
 
   protected String address;
 
-  protected EventBus eventBus;
+  protected MessageBus messageBus;
 
-  public EventBusConnection(String address) {
+  public MessageBusConnection(String address) {
     this.address = address;
   }
 
-  public EventBusConnection(String address, EventBus eventBus) {
+  public MessageBusConnection(String address, MessageBus messageBus) {
     this.address = address;
-    this.eventBus = eventBus;
+    this.messageBus = messageBus;
   }
 
-  public void setEventBus(EventBus eventBus) {
-    this.eventBus = eventBus;
+  public void setMessageBus(MessageBus messageBus) {
+    this.messageBus = messageBus;
   }
 
-  public EventBus getEventBus() {
-    return eventBus;
+  public MessageBus getMessageBus() {
+    return messageBus;
   }
 
   @Override
@@ -56,13 +52,13 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection send(JsonMessage message) {
-    eventBus.send(address, Actions.create("receive", message.serialize()));
+    messageBus.send(address, message);
     return this;
   }
 
   @Override
-  public Connection send(JsonMessage message, Handler<Message<Void>> replyHandler) {
-    eventBus.send(address, Actions.create("receive", message.serialize()), replyHandler);
+  public Connection send(JsonMessage message, Handler<Boolean> ackHandler) {
+    messageBus.send(address, message, ackHandler);
     return this;
   }
 

@@ -43,26 +43,48 @@ public interface Feeder {
   public void feed(JsonObject data);
 
   /**
-   * Feeds a JSON object to the vine, providing a handler for a return value.
+   * Feeds a JSON object to the vine, providing a handler for completion.
+   *
+   * @param data
+   *   The data to feed.
+   * @param doneHandler
+   *   A handler to be invoked once processing is complete.
+   */
+  public void feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Feeds a JSON object to the vine, awaiting completion with a timeout.
+   *
+   * @param data
+   *   The data to feed.
+   * @param timeout
+   *   A response timeout.
+   * @param doneHandler
+   *   A handler to be invoked once processing is complete.
+   */
+  public void feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Executes a remote procedure call on the vine.
    *
    * @param data
    *   The data to feed.
    * @param resultHandler
-   *   A handler to invoke once the vine has completed processing data.
+   *   A handler to be invoked with the return value.
    */
-  public void feed(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler);
+  public void execute(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
-   * Feeds a JSON object to the vine, awaiting a response with a timeout.
+   * Executes a remote procedure call on the vine with a timeout.
    *
    * @param data
    *   The data to feed.
    * @param timeout
    *   A response timeout.
    * @param resultHandler
-   *   A result handler.
+   *   A handler to be invoked with the return value.
    */
-  public void feed(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
+  public void execute(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * Sets a drain handler on the feeder.

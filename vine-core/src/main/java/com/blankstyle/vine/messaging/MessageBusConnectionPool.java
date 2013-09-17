@@ -15,39 +15,13 @@
 */
 package com.blankstyle.vine.messaging;
 
-import org.vertx.java.core.Handler;
+import java.util.HashSet;
 
 /**
- * A single point-to-point connection.
+ * A default connection pool.
  *
  * @author Jordan Halterman
  */
-public interface Connection {
-
-  /**
-   * Gets the remote channel address.
-   *
-   * @return
-   *   The remote channel address.
-   */
-  public String getAddress();
-
-  /**
-   * Sends a message through the channel.
-   *
-   * @param message
-   *   The message to send.
-   */
-  public Connection send(JsonMessage message);
-
-  /**
-   * Sends a message through the channel, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param ackHandler
-   *   A message ack handler.
-   */
-  public Connection send(JsonMessage message, Handler<Boolean> ackHandler);
-
+@SuppressWarnings("serial")
+public class MessageBusConnectionPool extends HashSet<MessageBusConnection> implements ConnectionPool<MessageBusConnection> {
 }

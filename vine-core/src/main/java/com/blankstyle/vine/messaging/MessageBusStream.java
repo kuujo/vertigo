@@ -15,18 +15,20 @@
 */
 package com.blankstyle.vine.messaging;
 
+import org.vertx.java.core.Handler;
+
 /**
- * An eventbus based channel.
+ * An eventbus based stream.
  *
  * @author Jordan Halterman
  */
-public class EventBusChannel implements Channel<EventBusConnection> {
+public class MessageBusStream implements Stream<MessageBusConnection> {
 
   protected Dispatcher dispatcher;
 
-  protected ConnectionPool<EventBusConnection> connections = new EventBusConnectionPool();
+  protected ConnectionPool<MessageBusConnection> connections = new MessageBusConnectionPool();
 
-  public EventBusChannel(Dispatcher dispatcher) {
+  public MessageBusStream(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
   }
 
@@ -41,7 +43,7 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public void addConnection(EventBusConnection connection) {
+  public void addConnection(MessageBusConnection connection) {
     if (!connections.contains(connection)) {
       connections.add(connection);
     }
@@ -49,7 +51,7 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public void removeConnection(EventBusConnection connection) {
+  public void removeConnection(MessageBusConnection connection) {
     if (connections.contains(connection)) {
       connections.remove(connection);
     }
@@ -57,8 +59,13 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public void publish(JsonMessage message) {
+  public void emit(JsonMessage message) {
     dispatcher.dispatch(message);
+  }
+
+  @Override
+  public void emit(JsonMessage message, Handler<Boolean> ackHandler) {
+    dispatcher.dispatch(message, ackHandler);
   }
 
 }

@@ -44,7 +44,7 @@ public class ExclamationVine extends Verticle {
   public static class ExclamationSeed extends SeedVerticle {
     @Override
     public void process(JsonObject data) {
-      emit(new JsonObject().putString(data.getString("body") + "!!!"));
+      emit(new JsonObject().putString("body", data.getString("body") + "!!!"));
     }
   }
 

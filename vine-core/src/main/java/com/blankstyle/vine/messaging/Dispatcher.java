@@ -15,6 +15,8 @@
 */
 package com.blankstyle.vine.messaging;
 
+import org.vertx.java.core.Handler;
+
 /**
  * A message dispatcher.
  *
@@ -71,5 +73,15 @@ public interface Dispatcher {
    *   The message to dispatch.
    */
   public void dispatch(JsonMessage message);
+
+  /**
+   * Dispatches a message.
+   *
+   * @param message
+   *   The message to dispatch.
+   * @param ackHandler
+   *   A message ack handler.
+   */
+  public void dispatch(JsonMessage message, Handler<Boolean> ackHandler);
 
 }

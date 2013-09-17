@@ -13,37 +13,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package com.blankstyle.vine.messaging;
+package com.blankstyle.vine.java;
+
+import com.blankstyle.vine.seed.ReliableSeed;
 
 /**
- * A channel publisher which publishes a single message to multiple channels.
+ * A basic seed verticle implementation.
  *
  * @author Jordan Halterman
  */
-public interface ChannelPublisher<T extends Channel<?>> {
+public abstract class ReliableSeedVerticle extends SeedVerticle<ReliableSeed> {
 
-  /**
-   * Adds a channel to the publisher.
-   *
-   * @param channel
-   *   The channel to add.
-   */
-  public ChannelPublisher<T> addChannel(T channel);
-
-  /**
-   * Removes a channel from the publisher.
-   *
-   * @param channel
-   *   The channel to remove.
-   */
-  public ChannelPublisher<T> removeChannel(T channel);
-
-  /**
-   * Publishes a message.
-   *
-   * @param message
-   *   The message to publish.
-   */
-  public void publish(JsonMessage message);
+  @Override
+  protected ReliableSeed createSeed() {
+    return new ReliableSeed();
+  }
 
 }

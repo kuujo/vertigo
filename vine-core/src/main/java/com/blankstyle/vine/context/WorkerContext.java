@@ -48,19 +48,70 @@ public class WorkerContext implements Context {
     this.parent = parent;
   }
 
+  /**
+   * Gets the unique worker address.
+   *
+   * @return
+   *   An eventbus address.
+   */
   public String getAddress() {
     return context.getString("address");
   }
 
+  /**
+   * Sets the unique worker address.
+   *
+   * @param address
+   *   An eventbus address.
+   * @return
+   *   The called worker context.
+   */
   public WorkerContext setAddress(String address) {
     context.putString("address", address);
     return this;
   }
 
+  /**
+   * Gets the worker stem address.
+   *
+   * @return
+   *   A stem address.
+   */
+  public String getStem() {
+    return context.getString("stem");
+  }
+
+  /**
+   * Sets the worker stem address.
+   *
+   * @param address
+   *   A stem address.
+   * @return
+   *   The called worker context.
+   */
+  public WorkerContext setStem(String address) {
+    context.putString("stem", address);
+    return this;
+  }
+
+  /**
+   * Gets the parent seed context.
+   *
+   * @return
+   *   The worker's parent seed context.
+   */
   public SeedContext getContext() {
     return parent;
   }
 
+  /**
+   * Sets the parent seed context.
+   *
+   * @param context
+   *   A seed context.
+   * @return
+   *   The called worker context.
+   */
   public WorkerContext setContext(SeedContext context) {
     parent = context;
     return this;

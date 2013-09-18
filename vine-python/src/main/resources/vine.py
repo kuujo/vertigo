@@ -56,6 +56,24 @@ class _AbstractSeed(object):
     else:
       self._seed.emitTo(seed, *[map_to_java(data[i]) for i in range(len(data))])
 
+  def ack(self, *data):
+    """
+    Acknowledges a message.
+    """
+    if len(data) == 1:
+      self._seed.ack(data[0]._original)
+    else:
+      self._seed.ack(*[data[i]._original for i in range(len(data))])
+
+  def fail(self, *data):
+    """
+    Fails a message.
+    """
+    if len(data) == 1:
+      self._seed.fail(data[0].__message)
+    else:
+      self._seed.fail(*[data[i].__message for i in range(len(data))])
+
 class BasicSeed(_AbstractSeed):
   """
   A basic seed instance.
@@ -75,5 +93,13 @@ class DataHandler(org.vertx.java.core.Handler):
   def __init__(self, handler):
     self.handler = handler
 
-  def handle(self, data):
-    self.handler(map_from_java(data.toMap()))
+  def handle(self, message):
+    self.handler(Message(map_from_java(message.toMap()), message))
+
+class Message(dict):
+  """
+  A seed message.
+  """
+  def __init__(self, data, message):
+    self.__message = message
+    dict.__init__(self, data)

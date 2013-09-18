@@ -150,19 +150,19 @@ In Java, seeds are defined by extending the `com.blankstyle.vine.SeedVerticle`
 base verticle class and overriding the abstract `process` method.
 
 ```java
-import com.blankstyle.vine.SeedVerticle;
+import com.blankstyle.vine.BasicSeedVerticle;
 
-public class MyVerticle extends SeedVerticle {
+public class MyVerticle extends BasicSeedVerticle {
 
   @Override
-  public void process(JsonObject data) {
+  public void handle(JsonObject data) {
     emit(data);
   }
 
 }
 ```
 
-Seed verticles consist of only two public methods. The `process` method is called
+Seed verticles consist of only two public methods. The `handle` method is called
 each time the worker receives a message on the vine. The `emit` method is called to
 send data on to the next seed in the vine and can be called zero or many times for
 each message processed.
@@ -184,10 +184,14 @@ The `Feeder` instance that is returned by *root* `deploy` methods provides an in
 similar to that of the Vert.x `WriteStream`:
 * `feedQueueFull()` - indicates whether the queue is full
 * `feed(JsonObject data)` - feeds data to the vine
-* `feed(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler)` - feeds data
-  to the vine, providing an asynchronous result handler
-* `feed(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler)` - feeds
-  data to the vine, providing an asynchronous result handler and processing timeout
+* `feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler)` - feeds data
+  to the vine, providing an asynchronous completion handler
+* `feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler)` - feeds
+  data to the vine, providing an asynchronous completion handler and processing timeout
+* `execute(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler)` - executes
+  the vine as a remote procedure, awaiting a result
+* `execute(JsonObject data, long timeout, Handler<AsyncResult<JsonObject>> resultHandler)`
+  - executes the vine as a remote procedure, awaiting a result with a timeout
 * `drainHandler(Handler<Void> handler)` - sets a drain handler on the feeder
 
 ### Deploying vines in local mode
@@ -214,13 +218,13 @@ root.deploy(definition, timeout, new Handler<AsyncResult<Feeder>>() {
 
       // Feed a message to the vine, awaiting a result.
       JsonObject message = new JsonObject().putString("words", "Hello world!");
-      feeder.feed(message, new Handler<AsyncResult<JsonObject>>() {
-        public void handle(AsyncResult<JsonObject> result) {
+      feeder.feed(message, new Handler<AsyncResult<Void>>() {
+        public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             logger.warning("Failed to process message.");
           }
           else {
-            logger.info("Count result is " + result.result().encode());
+            logger.info("Processing completed!");
           }
           // Shut down the vine. Note that it is *important* that we shut down
           // the vine with the same *type* of root as we deployed it with. So,
@@ -305,12 +309,12 @@ root.deploy(definition, timeout, new Handler<AsyncResult<Feeder>>() {
       // Feed a message to the vine, awaiting a result.
       JsonObject message = new JsonObject().putString("words", "Hello world!");
       feeder.feed(message, new Handler<AsyncResult<JsonObject>>() {
-        public void handle(AsyncResult<JsonObject> result) {
+        public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             logger.warning("Failed to process message.");
           }
           else {
-            logger.info("Count result is " + result.result().encode());
+            logger.info("Processing completed!");
           }
           // Shut down the vine.
           root.shutdown("word.counter");
@@ -381,16 +385,17 @@ Each time a message is sent to a vine, the vine verticle records the
 original message and stores it in memory until the request is completed.
 Not only does this allow the vine verticle to ensure that data is completely
 processed before it is lost, but it also allows vines to be used as an RPC
-handler. If an additional response handler is provided to the `feed()` method,
+handler. If an additional response handler is provided to the `execute()` method,
 the vine will send a reply with the vine result once processing is complete.
 
 ```java
 JsonObject data = new JsonObject().putString("body", "Hello world!");
-feeder.feed(data, new Handler<AsyncResult<JsonObject>>() {
+feeder.execute(data, new Handler<AsyncResult<JsonObject>>() {
   public void handle(AsyncResult<JsonObject> result) {
     if (result.succeeded()) {
       // Processing has completed. Get the response.
       JsonObject response = result.result();
+      container.logger().info("Got a result! " + response.encode());
     }
     else {
       // Processing failed for some reason. Log the failure.

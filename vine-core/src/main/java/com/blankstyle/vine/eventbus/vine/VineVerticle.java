@@ -15,8 +15,9 @@
 */
 package com.blankstyle.vine.eventbus.vine;
 
+import org.vertx.java.core.json.JsonObject;
+
 import com.blankstyle.vine.java.ReliableSeedVerticle;
-import com.blankstyle.vine.messaging.JsonMessage;
 
 /**
  * A vine controller verticle.
@@ -26,7 +27,7 @@ import com.blankstyle.vine.messaging.JsonMessage;
 public class VineVerticle extends ReliableSeedVerticle {
 
   @Override
-  protected void process(JsonMessage message) {
+  public void handle(JsonObject data) {
     
   }
 

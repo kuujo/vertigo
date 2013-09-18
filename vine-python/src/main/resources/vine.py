@@ -13,85 +13,67 @@
 # limitations under the License.
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
+import com.blankstyle.vine.seed.BasicSeed
 import com.blankstyle.vine.seed.ReliableSeed
 import com.blankstyle.vine.messaging.JsonMessage
-from core.javautils import map_dict_to_java
+from core.javautils import map_from_java, map_to_java
 
-class Seed(object):
+class AbstractSeed(object):
   """
-  A Vine seed instance.
+  An abstract seed instance.
   """
-  seed = ReliableSeed()
-  seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
-  seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
-  seed.setContext(container.config())
+  _handlercls = None
 
-  @classmethod
-  def process(cls, handler):
-    """
-    Sets the seed processor callback.
-    """
-    def handle(message):
-      cls.current_message = message
-      handler(message.body())
-    cls.seed.messageHandler(MessageHandler(handler))
+  def __init__(self):
+    if self._handlercls is not None:
+      self._seed = self._handlercls()
+      self._seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
+      self._seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
+      self._seed.setContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
 
-  @classmethod
-  def processor(cls, handler):
+  def data_handler(self, handler):
     """
-    Decorator for setting the seed processor callback.
+    Sets the seed data handler.
     """
-    cls.process(handler)
+    self._seed.dataHandler(DataHandler(handler))
     return handler
 
-  @classmethod
-  def emit(cls, data, parent=None, ack=None):
+  def emit(self, *data):
     """
-    Emits data from the seed.
+    Emits data to all output streams.
     """
-    if parent is None:
-      if ack is None:
-        cls.seed.emit(map_dict_to_java(data))
-      else:
-        cls.seed.emit(map_dict_to_java(data), AckHandler(ack))
+    if len(data) == 1:
+      self._seed.emit(map_to_java(data[0]))
     else:
-      if ack is None:
-        cls.seed.emit(map_dict_to_java(data), parent)
-      else:
-        cls.seed.emit(map_dict_to_java(data), parent, AckHandler(ack))
+      self._seed.emit(*[map_to_java(data[i]) for i in range(len(data))])
 
-  @classmethod
-  def emitto(cls, seedname, data, parent=None, ack=None):
+  def emitto(self, seed, *data):
     """
-    Emits data to a specific seed.
+    Emits data to a specific output stream.
     """
-    if parent is None:
-      if ack is None:
-        cls.seed.emitTo(seedname, map_dict_to_java(data))
-      else:
-        cls.seed.emitTo(seedname, map_dict_to_java(data), AckHandler(ack))
+    if len(data) == 1:
+      self._seed.emitTo(seed, data[0])
     else:
-      if ack is None:
-        cls.seed.emitTo(seedname, map_dict_to_java(data), parent)
-      else:
-        cls.seed.emitTo(seedname, map_dict_to_java(data), parent, AckHandler(ack))
+      self._seed.emitTo(seed, *[map_to_java(data[i]) for i in range(len(data))])
 
-class MessageHandler(org.vertx.java.core.Handler):
+class BasicSeed(object):
   """
-  A message handler.
+  A basic seed instance.
+  """
+  _handlercls = com.blankstyle.vine.seed.BasicSeed
+
+class ReliableSeed(object):
+  """
+  A reliable seed instance.
+  """
+  _handlercls = com.blakstyle.vine.seed.ReliableSeed
+
+class DataHandler(org.vertx.java.core.Handler):
+  """
+  A data handler wrapper.
   """
   def __init__(self, handler):
     self.handler = handler
 
-  def handle(self, message):
-    self.handler(message)
-
-class AckHandler(org.vertx.java.core.Handler):
-  """
-  An ack handler.
-  """
-  def __init__(self, handler):
-    self.handler = handler
-
-  def handle(self, result):
-    self.handler(None if result.succeeded() else result.cause())
+  def handle(self, data):
+    self.handler(map_from_java(data.toMap()))

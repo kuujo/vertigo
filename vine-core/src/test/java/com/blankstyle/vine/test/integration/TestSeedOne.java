@@ -15,9 +15,9 @@
 */
 package com.blankstyle.vine.test.integration;
 
-import org.vertx.java.core.json.JsonObject;
+import net.kuujo.vine.java.ReliableSeedVerticle;
 
-import com.blankstyle.vine.java.ReliableSeedVerticle;
+import org.vertx.java.core.json.JsonObject;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
 

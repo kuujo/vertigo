@@ -16,10 +16,9 @@
 package com.blankstyle.vine.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
+import net.kuujo.vine.java.ReliableSeedVerticle;
 
 import org.vertx.java.core.json.JsonObject;
-
-import com.blankstyle.vine.java.ReliableSeedVerticle;
 
 public class TestConsistentSeed extends ReliableSeedVerticle {
 

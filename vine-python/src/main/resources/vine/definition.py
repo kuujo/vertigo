@@ -11,18 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import com.blankstyle.vine.definition.VineDefinition
-import com.blankstyle.vine.definition.SeedDefinition
-import com.blankstyle.vine.grouping.FieldsGrouping
-import com.blankstyle.vine.grouping.RandomGrouping
-import com.blankstyle.vine.grouping.RoundGrouping
+import net.kuujo.vine.definition.VineDefinition
+import net.kuujo.vine.definition.SeedDefinition
+import net.kuujo.vine.grouping.FieldsGrouping
+import net.kuujo.vine.grouping.RandomGrouping
+import net.kuujo.vine.grouping.RoundGrouping
 
 class VineDefinition(object):
   """
   A vine definition.
   """
   def __init__(self, address=None, **options):
-    self.__def = com.blankstyle.vine.definition.VineDefinition()
+    self.__def = net.kuujo.vine.definition.VineDefinition()
     if address is not None:
       self.__def.setAddress(address)
     for key, value in options.iteritems():
@@ -76,7 +76,7 @@ class SeedDefinition(object):
   A vine seed definition.
   """
   def __init__(self, name, main=None, workers=1, **options):
-    self.__def = com.blankstyle.vine.definition.SeedDefinition(name)
+    self.__def = net.kuujo.vine.definition.SeedDefinition(name)
     if main is not None:
       self.__def.setMain(main)
     self.__def.setWorkers(workers)
@@ -135,7 +135,7 @@ class FieldsGrouping(Grouping):
   A fields based grouping.
   """
   def __init__(self, field):
-    self.__def = com.blankstyle.vine.grouping.FieldsGrouping(field)
+    self.__def = net.kuujo.vine.grouping.FieldsGrouping(field)
 
   def get_field(self):
     return self.__def.getField()
@@ -150,11 +150,11 @@ class RandomGrouping(Grouping):
   A random grouping.
   """
   def __init__(self):
-    self.__def = com.blankstyle.vine.grouping.RandomGrouping()
+    self.__def = net.kuujo.vine.grouping.RandomGrouping()
 
 class RoundGrouping(Grouping):
   """
   A round-robin grouping.
   """
   def __init__(self):
-    self.__def = com.blankstyle.vine.grouping.RoundGrouping()
+    self.__def = net.kuujo.vine.grouping.RoundGrouping()

@@ -15,6 +15,9 @@
 */
 package com.blankstyle.vine.test.integration.eventbus;
 
+import net.kuujo.vine.eventbus.ReliableEventBus;
+import net.kuujo.vine.eventbus.WrappedReliableEventBus;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -23,9 +26,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
-
-import com.blankstyle.vine.eventbus.ReliableEventBus;
-import com.blankstyle.vine.eventbus.WrappedReliableEventBus;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;

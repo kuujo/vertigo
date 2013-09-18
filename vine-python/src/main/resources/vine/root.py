@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import com.blankstyle.vine.local.LocalRoot
-import com.blankstyle.vine.remote.RemoteRoot
+import net.kuujo.vine.local.LocalRoot
+import net.kuujo.vine.remote.RemoteRoot
 import org.vertx.java.platform.impl.JythonVerticleFactory
 
 class _AbstractRoot(object):
@@ -38,13 +38,13 @@ class LocalRoot(_AbstractRoot):
   """
   A local root.
   """
-  _handlercls = com.blankstyle.vine.local.LocalRoot
+  _handlercls = net.kuujo.vine.local.LocalRoot
 
 class RemoteRoot(_AbstractRoot):
   """
   A remote root.
   """
-  _handlercls = com.blankstyle.vine.remote.RemoteRoot
+  _handlercls = net.kuujo.vine.remote.RemoteRoot
 
 class DeployHandler(org.vertx.java.core.Handler):
   """

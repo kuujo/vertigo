@@ -15,6 +15,16 @@
 */
 package com.blankstyle.vine.test.integration;
 
+import net.kuujo.vine.Feeder;
+import net.kuujo.vine.Seeds;
+import net.kuujo.vine.Vines;
+import net.kuujo.vine.definition.VineDefinition;
+import net.kuujo.vine.eventbus.root.RootVerticle;
+import net.kuujo.vine.eventbus.stem.StemVerticle;
+import net.kuujo.vine.grouping.FieldsGrouping;
+import net.kuujo.vine.local.LocalRoot;
+import net.kuujo.vine.remote.RemoteRoot;
+
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -22,16 +32,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
-
-import com.blankstyle.vine.Feeder;
-import com.blankstyle.vine.Seeds;
-import com.blankstyle.vine.Vines;
-import com.blankstyle.vine.definition.VineDefinition;
-import com.blankstyle.vine.eventbus.root.RootVerticle;
-import com.blankstyle.vine.eventbus.stem.StemVerticle;
-import com.blankstyle.vine.grouping.FieldsGrouping;
-import com.blankstyle.vine.local.LocalRoot;
-import com.blankstyle.vine.remote.RemoteRoot;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;

@@ -15,15 +15,15 @@
 */
 package com.blankstyle.vine.test.integration.heartbeat;
 
+import net.kuujo.vine.heartbeat.DefaultHeartBeatEmitter;
+import net.kuujo.vine.heartbeat.DefaultHeartBeatMonitor;
+import net.kuujo.vine.heartbeat.HeartBeatEmitter;
+import net.kuujo.vine.heartbeat.HeartBeatMonitor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.vertx.java.core.Handler;
 import org.vertx.testtools.TestVerticle;
-
-import com.blankstyle.vine.heartbeat.DefaultHeartBeatEmitter;
-import com.blankstyle.vine.heartbeat.DefaultHeartBeatMonitor;
-import com.blankstyle.vine.heartbeat.HeartBeatEmitter;
-import com.blankstyle.vine.heartbeat.HeartBeatMonitor;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;

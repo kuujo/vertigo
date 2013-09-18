@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import com.blankstyle.vine.context.VineContext
-import com.blankstyle.vine.seed.BasicSeed
-import com.blankstyle.vine.seed.ReliableSeed
+import net.kuujo.vine.context.VineContext
+import net.kuujo.vine.seed.BasicSeed
+import net.kuujo.vine.seed.ReliableSeed
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
-import com.blankstyle.vine.seed.BasicSeed
-import com.blankstyle.vine.seed.ReliableSeed
-import com.blankstyle.vine.messaging.JsonMessage
+import net.kuujo.vine.seed.BasicSeed
+import net.kuujo.vine.seed.ReliableSeed
+import net.kuujo.vine.messaging.JsonMessage
 from core.javautils import map_from_java, map_to_java
 
 class _AbstractSeed(object):
@@ -32,7 +32,7 @@ class _AbstractSeed(object):
       self.__seed = self._handlercls()
       self.__seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
       self.__seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
-      self.__seed.setContext(com.blankstyle.vine.context.VineContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
+      self.__seed.setContext(net.kuujo.vine.context.VineContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
 
   def data_handler(self, handler):
     """
@@ -87,13 +87,13 @@ class BasicSeed(_AbstractSeed):
   """
   A basic seed instance.
   """
-  _handlercls = com.blankstyle.vine.seed.BasicSeed
+  _handlercls = net.kuujo.vine.seed.BasicSeed
 
 class ReliableSeed(_AbstractSeed):
   """
   A reliable seed instance.
   """
-  _handlercls = com.blakstyle.vine.seed.ReliableSeed
+  _handlercls = net.kuujo.vine.seed.ReliableSeed
 
 class DataHandler(org.vertx.java.core.Handler):
   """

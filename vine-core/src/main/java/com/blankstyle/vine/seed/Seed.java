@@ -15,8 +15,7 @@
 */
 package com.blankstyle.vine.seed;
 
-import java.util.Collection;
-
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
@@ -53,14 +52,14 @@ public interface Seed {
   public Seed setContainer(Container container);
 
   /**
-   * Initializes the seed with the given context.
+   * Sets the seed context.
    *
    * @param context
    *   A seed context.
    * @return
    *   The called seed instance.
    */
-  public Seed init(WorkerContext context);
+  public Seed setContext(WorkerContext context);
 
   /**
    * Sets the seed message handler.
@@ -73,6 +72,42 @@ public interface Seed {
   public Seed messageHandler(Handler<JsonMessage> handler);
 
   /**
+   * Gets the seed auto ack setting.
+   *
+   * @return
+   *   A boolean indicating whether auto acking is enabled.
+   */
+  public boolean autoAck();
+
+  /**
+   * Sets the seed auto ack setting.
+   *
+   * @param ack
+   *   A boolean indicating whether to automatically ack all messages.
+   * @return
+   *   The called seed instance.
+   */
+  public Seed autoAck(boolean ack);
+
+  /**
+   * Gets the seed auto fork setting.
+   *
+   * @return
+   *   A boolean indicating whether auto forking is enabled.
+   */
+  public boolean autoFork();
+
+  /**
+   * Sets the seed auto fork setting.
+   *
+   * @param cardinality
+   *   A boolean indicating whether to automatically fork all messages.
+   * @return
+   *   The called seed instance.
+   */
+  public Seed autoFork(boolean cardinality);
+
+  /**
    * Emits data from the seed, creating a new JSON message.
    *
    * @param data
@@ -81,20 +116,14 @@ public interface Seed {
   public void emit(JsonObject data);
 
   /**
-   * Emits a message from the seed.
+   * Emits data from the seed, providing an acknowledgment handler.
    *
-   * @param message
-   *   The message to emit.
+   * @param data
+   *   The data to emit.
+   * @param ackHandler
+   *   An asynchronous handler to be invoked when the message is acked.
    */
-  public void emit(JsonMessage message);
-
-  /**
-   * Emits a collection of messages from the seed.
-   *
-   * @param messages
-   *   The messages to emit.
-   */
-  public void emit(Collection<JsonMessage> messages);
+  public void emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Emits child data from the seed, creating a new message.
@@ -107,24 +136,16 @@ public interface Seed {
   public void emit(JsonObject data, JsonMessage parent);
 
   /**
-   * Emits a child message from the seed.
+   * Emits child data from the seed, providing an acknowledgment handler.
    *
-   * @param message
-   *   The message to emit.
+   * @param data
+   *   The data to emit.
    * @param parent
    *   The parent message.
+   * @param ackHandler
+   *   An asynchronous handler to be invoked when the message is acked.
    */
-  public void emit(JsonMessage message, JsonMessage parent);
-
-  /**
-   * Emits a collection of child messages from the seed.
-   *
-   * @param messages
-   *   The messages to emit.
-   * @param parent
-   *   The parent message.
-   */
-  public void emit(Collection<JsonMessage> messages, JsonMessage parent);
+  public void emit(JsonObject data, JsonMessage parent, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Emits a data to a specific seed, creating a new message.
@@ -137,24 +158,16 @@ public interface Seed {
   public void emitTo(String seedName, JsonObject data);
 
   /**
-   * Emits a message to a specific seed.
+   * Emits a data to a specific seed, creating a new message.
    *
    * @param seedName
    *   The seed name to which to emit the message.
-   * @param message
-   *   The message to emit.
+   * @param data
+   *   The data to emit.
+   * @param ackHandler
+   *   An asynchronous handler to be invoked when the message is acked.
    */
-  public void emitTo(String seedName, JsonMessage message);
-
-  /**
-   * Emits a collection of messages to a specific seed.
-   *
-   * @param seedName
-   *   The seed name to which to emit the message.
-   * @param messages
-   *   The messages to emit.
-   */
-  public void emitTo(String seedName, Collection<JsonMessage> messages);
+  public void emitTo(String seedName, JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Emits child data to a specific seed, creating a new message.
@@ -169,28 +182,18 @@ public interface Seed {
   public void emitTo(String seedName, JsonObject data, JsonMessage parent);
 
   /**
-   * Emits a child message to a specific seed.
+   * Emits child data to a specific seed, creating a new message.
    *
    * @param seedName
    *   The seed name to which to emit the message.
-   * @param message
-   *   The message to emit.
+   * @param data
+   *   The data to emit.
    * @param parent
    *   The message parent.
+   * @param ackHandler
+   *   An asynchronous handler to be invoked when the message is acked.
    */
-  public void emitTo(String seedName, JsonMessage message, JsonMessage parent);
-
-  /**
-   * Emits a collection of child messages to a specific seed.
-   *
-   * @param seedName
-   *   The seed name to which to emit the message.
-   * @param messages
-   *   The messages to emit.
-   * @param parent
-   *   The message parent.
-   */
-  public void emitTo(String seedName, Collection<JsonMessage> messages, JsonMessage parent);
+  public void emitTo(String seedName, JsonObject data, JsonMessage parent, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Acks a message.

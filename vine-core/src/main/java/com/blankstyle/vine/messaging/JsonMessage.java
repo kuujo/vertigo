@@ -155,14 +155,14 @@ public class JsonMessage implements Serializeable<JsonObject> {
   }
 
   /**
-   * Forks the message, creating a child message.
+   * Creates a child message.
    *
    * @param data
    *   The data to apply to the child message.
    * @return
    *   A child message instance.
    */
-  public JsonMessage fork(JsonObject data) {
+  public JsonMessage createChild(JsonObject data) {
     return new JsonMessage(data).setIdentifier(getIdentifier());
   }
 

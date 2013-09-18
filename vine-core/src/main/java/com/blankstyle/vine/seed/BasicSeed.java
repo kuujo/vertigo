@@ -90,7 +90,7 @@ public class BasicSeed implements Seed {
   }
 
   @Override
-  public Seed init(WorkerContext context) {
+  public Seed setContext(WorkerContext context) {
     this.context = context;
     this.address = context.getAddress();
     setupHeartbeat();
@@ -200,7 +200,7 @@ public class BasicSeed implements Seed {
 
   @Override
   public void emit(JsonObject data, JsonMessage parent) {
-    emit(parent.fork(data));
+    emit(parent.createChild(data));
     parent.ack();
   }
 
@@ -236,7 +236,7 @@ public class BasicSeed implements Seed {
 
   @Override
   public void emitTo(String seedName, JsonObject data, JsonMessage parent) {
-    emitTo(seedName, parent.fork(data));
+    emitTo(seedName, parent.createChild(data));
     parent.ack();
   }
 

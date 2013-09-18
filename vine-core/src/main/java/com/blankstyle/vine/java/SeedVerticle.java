@@ -15,12 +15,14 @@
 */
 package com.blankstyle.vine.java;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 import com.blankstyle.vine.context.WorkerContext;
 import com.blankstyle.vine.messaging.JsonMessage;
+import com.blankstyle.vine.seed.ReliableSeed;
 import com.blankstyle.vine.seed.Seed;
 
 /**
@@ -28,21 +30,16 @@ import com.blankstyle.vine.seed.Seed;
  *
  * @author Jordan Halterman
  */
-public abstract class SeedVerticle<T extends Seed> extends Verticle implements Handler<JsonMessage> {
+public abstract class SeedVerticle extends Verticle implements Handler<JsonMessage> {
 
-  private T seed;
-
-  /**
-   * Creates a new seed instance.
-   */
-  protected abstract T createSeed();
+  private Seed seed;
 
   @Override
   public void start() {
-    seed = createSeed();
+    seed = new ReliableSeed();
     seed.setVertx(vertx);
     seed.setContainer(container);
-    seed.init(new WorkerContext(container.config()));
+    seed.setContext(new WorkerContext(container.config()));
     seed.messageHandler(this);
   }
 
@@ -67,6 +64,18 @@ public abstract class SeedVerticle<T extends Seed> extends Verticle implements H
    */
   protected void emit(JsonObject data) {
     seed.emit(data);
+  }
+
+  /**
+   * Emits seed data, providing an ack handler.
+   *
+   * @param data
+   *   The data to emit.
+   * @param ackHandler
+   *   An asynchronous handler to be invoked once the message is acked.
+   */
+  protected void emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+    seed.emit(data, ackHandler);
   }
 
   /**
@@ -129,26 +138,6 @@ public abstract class SeedVerticle<T extends Seed> extends Verticle implements H
    */
   protected void emitTo(String seedName, JsonMessage message, JsonMessage parent) {
     seed.emitTo(seedName, message, parent);
-  }
-
-  /**
-   * Acks the current seed message.
-   *
-   * @param message
-   *   The message to ack.
-   */
-  protected void ack(JsonMessage message) {
-    seed.ack(message);
-  }
-
-  /**
-   * Fails the current seed message.
-   *
-   * @param message
-   *   The message to fail.
-   */
-  protected void fail(JsonMessage message) {
-    seed.fail(message);
   }
 
 }

@@ -15,7 +15,7 @@ import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 import com.blankstyle.vine.seed.ReliableSeed
 import com.blankstyle.vine.messaging.JsonMessage
-from vertx.javautils import map_dict_to_java
+from core.javautils import map_dict_to_java
 
 class Seed(object):
   """
@@ -27,39 +27,54 @@ class Seed(object):
   seed.setContext(container.config())
 
   @classmethod
-  def process(cls, processor):
+  def process(cls, handler):
     """
     Sets the seed processor callback.
     """
-    cls.seed.messageHandler(MessageHandler(processor))
+    def handle(message):
+      cls.current_message = message
+      handler(message.body())
+    cls.seed.messageHandler(MessageHandler(handler))
 
   @classmethod
-  def emit(cls, data):
+  def processor(cls, handler):
+    """
+    Decorator for setting the seed processor callback.
+    """
+    cls.process(handler)
+    return handler
+
+  @classmethod
+  def emit(cls, data, parent=None, ack=None):
     """
     Emits data from the seed.
     """
-    cls.seed.emit(map_dict_to_java(data))
+    if parent is None:
+      if ack is None:
+        cls.seed.emit(map_dict_to_java(data))
+      else:
+        cls.seed.emit(map_dict_to_java(data), AckHandler(ack))
+    else:
+      if ack is None:
+        cls.seed.emit(map_dict_to_java(data), parent)
+      else:
+        cls.seed.emit(map_dict_to_java(data), parent, AckHandler(ack))
 
   @classmethod
-  def emit(cls, data, parent):
+  def emitto(cls, seedname, data, parent=None, ack=None):
     """
-    Emits data from the seed.
+    Emits data to a specific seed.
     """
-    cls.seed.emit(map_dict_to_java(data), parent)
-
-  @classmethod
-  def ack(cls, message):
-    """
-    Acknowledges processing of a message.
-    """
-    cls.seed.ack(message)
-
-  @classmethod
-  def fail(cls, message):
-    """
-    Fails processing of a message.
-    """
-    cls.seed.fail(message)
+    if parent is None:
+      if ack is None:
+        cls.seed.emitTo(seedname, map_dict_to_java(data))
+      else:
+        cls.seed.emitTo(seedname, map_dict_to_java(data), AckHandler(ack))
+    else:
+      if ack is None:
+        cls.seed.emitTo(seedname, map_dict_to_java(data), parent)
+      else:
+        cls.seed.emitTo(seedname, map_dict_to_java(data), parent, AckHandler(ack))
 
 class MessageHandler(org.vertx.java.core.Handler):
   """
@@ -70,3 +85,13 @@ class MessageHandler(org.vertx.java.core.Handler):
 
   def handle(self, message):
     self.handler(message)
+
+class AckHandler(org.vertx.java.core.Handler):
+  """
+  An ack handler.
+  """
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, result):
+    self.handler(None if result.succeeded() else result.cause())

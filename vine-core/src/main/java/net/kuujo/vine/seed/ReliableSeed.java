@@ -154,6 +154,7 @@ public class ReliableSeed extends BasicSeed {
             if (processing.size() == 0 && !complete) {
               parent.message().ready();
               complete = true;
+              messageTrees.remove(parent);
             }
           }
           else {

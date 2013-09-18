@@ -15,14 +15,16 @@
 */
 package net.kuujo.vine.messaging;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 
 /**
  * A bi-directional communication channel.
  *
  * @author Jordan Halterman
  */
-public interface Stream<T extends Connection> {
+public interface Stream<E extends Connection> {
 
   /**
    * Sets the stream dispatcher.
@@ -46,7 +48,7 @@ public interface Stream<T extends Connection> {
    * @param connection
    *   The connection to add.
    */
-  public void addConnection(T connection);
+  public void addConnection(E connection);
 
   /**
    * Removes a connection from the stream.
@@ -54,7 +56,7 @@ public interface Stream<T extends Connection> {
    * @param connection
    *   The connection to remove.
    */
-  public void removeConnection(T connection);
+  public void removeConnection(E connection);
 
   /**
    * Publishes a message to the stream.
@@ -69,9 +71,51 @@ public interface Stream<T extends Connection> {
    *
    * @param message
    *   The message to publish.
-   * @param ackHandler
+   * @param replyHandler
    *   A message reply handler.
    */
-  public void emit(JsonMessage message, Handler<Boolean> ackHandler);
+  public <T> void emit(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param timeout
+   *   A message timeout.
+   * @param replyHandler
+   *   A message reply handler.
+   */
+  public <T> void emit(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param timeout
+   *   A message timeout.
+   * @param retry
+   *   Indicates whether to retry sending the message if sending times out.
+   * @param replyHandler
+   *   A message reply handler.
+   */
+  public <T> void emit(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param timeout
+   *   A message timeout.
+   * @param retry
+   *   Indicates whether to retry sending the message if sending times out.
+   * @param attempts
+   *   Indicates the number of times to retry if retries are enabled.
+   * @param replyHandler
+   *   A message reply handler.
+   */
+  public <T> void emit(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler);
 
 }

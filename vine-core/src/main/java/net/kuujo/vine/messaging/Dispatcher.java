@@ -15,7 +15,9 @@
 */
 package net.kuujo.vine.messaging;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 
 /**
  * A message dispatcher.
@@ -79,9 +81,51 @@ public interface Dispatcher {
    *
    * @param message
    *   The message to dispatch.
-   * @param ackHandler
-   *   A message ack handler.
+   * @param replyHandler
+   *   A message reply handler.
    */
-  public void dispatch(JsonMessage message, Handler<Boolean> ackHandler);
+  public <T> void dispatch(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param timeout
+   *   A message timeout.
+   * @param replyHandler
+   *   A message reply handler.
+   */
+  public <T> void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param timeout
+   *   A message timeout.
+   * @param retry
+   *   Indicates whether to retry sending the message if sending times out.
+   * @param replyHandler
+   *   A message reply handler.
+   */
+  public <T> void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler);
+
+  /**
+   * Publishes a message to the stream with a response handler.
+   *
+   * @param message
+   *   The message to publish.
+   * @param timeout
+   *   A message timeout.
+   * @param retry
+   *   Indicates whether to retry sending the message if sending times out.
+   * @param attempts
+   *   Indicates the number of times to retry if retries are enabled.
+   * @param replyHandler
+   *   A message reply handler.
+   */
+  public <T> void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler);
 
 }

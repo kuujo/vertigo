@@ -18,7 +18,9 @@ package net.kuujo.vine.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 
 /**
  * An abstract dispatcher implementation.
@@ -64,8 +66,23 @@ public abstract class AbstractDispatcher implements Dispatcher {
   }
 
   @Override
-  public void dispatch(JsonMessage message, Handler<Boolean> ackHandler) {
-    getConnection(message).send(message, ackHandler);
+  public <T> void dispatch(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler) {
+    getConnection(message).send(message, replyHandler);
+  }
+
+  @Override
+  public <T> void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+    getConnection(message).send(message, timeout, replyHandler);
+  }
+
+  @Override
+  public <T> void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler) {
+    getConnection(message).send(message, timeout, retry, replyHandler);
+  }
+
+  @Override
+  public <T> void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler) {
+    getConnection(message).send(message, timeout, retry, attempts, replyHandler);
   }
 
 }

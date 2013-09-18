@@ -15,20 +15,22 @@
 */
 package net.kuujo.vine.messaging;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 
 /**
  * An eventbus based stream.
  *
  * @author Jordan Halterman
  */
-public class MessageBusStream implements Stream<MessageBusConnection> {
+public class EventBusStream implements Stream<EventBusConnection> {
 
   protected Dispatcher dispatcher;
 
-  protected ConnectionPool<MessageBusConnection> connections = new MessageBusConnectionPool();
+  protected ConnectionPool<EventBusConnection> connections = new EventBusConnectionPool();
 
-  public MessageBusStream(Dispatcher dispatcher) {
+  public EventBusStream(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
   }
 
@@ -43,7 +45,7 @@ public class MessageBusStream implements Stream<MessageBusConnection> {
   }
 
   @Override
-  public void addConnection(MessageBusConnection connection) {
+  public void addConnection(EventBusConnection connection) {
     if (!connections.contains(connection)) {
       connections.add(connection);
     }
@@ -51,7 +53,7 @@ public class MessageBusStream implements Stream<MessageBusConnection> {
   }
 
   @Override
-  public void removeConnection(MessageBusConnection connection) {
+  public void removeConnection(EventBusConnection connection) {
     if (connections.contains(connection)) {
       connections.remove(connection);
     }
@@ -64,8 +66,23 @@ public class MessageBusStream implements Stream<MessageBusConnection> {
   }
 
   @Override
-  public void emit(JsonMessage message, Handler<Boolean> ackHandler) {
-    dispatcher.dispatch(message, ackHandler);
+  public <T> void emit(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler) {
+    dispatcher.dispatch(message, replyHandler);
+  }
+
+  @Override
+  public <T> void emit(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
+    dispatcher.dispatch(message, timeout, replyHandler);
+  }
+
+  @Override
+  public <T> void emit(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler) {
+    dispatcher.dispatch(message, timeout, retry, replyHandler);
+  }
+
+  @Override
+  public <T> void emit(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler) {
+    dispatcher.dispatch(message, timeout, retry, attempts, replyHandler);
   }
 
 }

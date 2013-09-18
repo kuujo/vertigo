@@ -32,12 +32,10 @@ import net.kuujo.vine.heartbeat.DefaultHeartBeatEmitter;
 import net.kuujo.vine.heartbeat.HeartBeatEmitter;
 import net.kuujo.vine.messaging.ConnectionPool;
 import net.kuujo.vine.messaging.Dispatcher;
-import net.kuujo.vine.messaging.EventBusMessageBus;
+import net.kuujo.vine.messaging.EventBusConnection;
+import net.kuujo.vine.messaging.EventBusConnectionPool;
+import net.kuujo.vine.messaging.EventBusStream;
 import net.kuujo.vine.messaging.JsonMessage;
-import net.kuujo.vine.messaging.MessageBus;
-import net.kuujo.vine.messaging.MessageBusConnection;
-import net.kuujo.vine.messaging.MessageBusConnectionPool;
-import net.kuujo.vine.messaging.MessageBusStream;
 import net.kuujo.vine.messaging.Stream;
 
 import org.vertx.java.core.AsyncResult;
@@ -64,8 +62,6 @@ public class BasicSeed implements Seed {
 
   protected ReliableEventBus eventBus;
 
-  protected MessageBus messageBus;
-
   protected String address;
 
   protected WorkerContext context;
@@ -78,11 +74,12 @@ public class BasicSeed implements Seed {
 
   protected JsonMessage currentMessage;
 
+  protected static final long DEFAULT_MESSAGE_TIMEOUT = 15000;
+
   @Override
   public Seed setVertx(Vertx vertx) {
     this.vertx = vertx;
     this.eventBus = new WrappedReliableEventBus(vertx.eventBus(), vertx);
-    this.messageBus = new EventBusMessageBus(eventBus);
     return this;
   }
 
@@ -104,7 +101,7 @@ public class BasicSeed implements Seed {
   public void start() {
     setupHeartbeat();
     setupOutputs();
-    setupHandlers();
+    setupInputs();
   }
 
   /**
@@ -168,15 +165,15 @@ public class BasicSeed implements Seed {
         }
 
         // Create a connection pool from which the dispatcher will dispatch messages.
-        ConnectionPool<MessageBusConnection> connectionPool = new MessageBusConnectionPool();
+        ConnectionPool<EventBusConnection> connectionPool = new EventBusConnectionPool();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
-          connectionPool.add(new MessageBusConnection(address, messageBus));
+          connectionPool.add(new EventBusConnection(address, eventBus));
         }
 
         // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
-        output.addStream(connectionContext.getSeedName(), new MessageBusStream(dispatcher));
+        output.addStream(connectionContext.getSeedName(), new EventBusStream(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         container.logger().error("Failed to find grouping handler.");
@@ -185,19 +182,34 @@ public class BasicSeed implements Seed {
   }
 
   /**
-   * Sets up message bus handlers.
+   * Sets up input handlers.
    */
-  private void setupHandlers() {
+  private void setupInputs() {
     if (dataHandler != null) {
-      messageBus.registerHandler(address, new Handler<JsonMessage>() {
+      eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
         @Override
-        public void handle(JsonMessage message) {
-          currentMessage = message;
-          message.message().ready();
-          dataHandler.handle(message);
+        public void handle(Message<JsonObject> message) {
+          String action = message.body().getString("action");
+          if (action != null) {
+            switch (action) {
+              case "feed":
+                doFeed(message);
+                break;
+            }
+          }
         }
       });
     }
+  }
+
+  private void doFeed(Message<JsonObject> message) {
+    handleMessage(new JsonMessage(message));
+  }
+
+  protected void handleMessage(JsonMessage message) {
+    currentMessage = message;
+    message.message().ready();
+    dataHandler.handle(message);
   }
 
   @Override
@@ -301,9 +313,19 @@ public class BasicSeed implements Seed {
     /**
      * Emits a message to all streams.
      */
-    public void emit(JsonMessage message, Handler<Boolean> ackHandler) {
+    public void emit(JsonMessage message, final Handler<Boolean> ackHandler) {
       for (Stream<?> stream : streamList) {
-        stream.emit(message, ackHandler);
+        stream.emit(message, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Message<Boolean>>>() {
+          @Override
+          public void handle(AsyncResult<Message<Boolean>> result) {
+            if (result.succeeded()) {
+              ackHandler.handle(result.result().body());
+            }
+            else {
+              ackHandler.handle(false);
+            }
+          }
+        });
       }
     }
 
@@ -319,9 +341,19 @@ public class BasicSeed implements Seed {
     /**
      * Emits a message to a specific stream.
      */
-    public void emitTo(String name, JsonMessage message, Handler<Boolean> ackHandler) {
+    public void emitTo(String name, JsonMessage message, final Handler<Boolean> ackHandler) {
       if (streams.containsKey(name)) {
-        streams.get(name).emit(message, ackHandler);
+        streams.get(name).emit(message, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Message<Boolean>>>() {
+          @Override
+          public void handle(AsyncResult<Message<Boolean>> result) {
+            if (result.succeeded()) {
+              ackHandler.handle(result.result().body());
+            }
+            else {
+              ackHandler.handle(false);
+            }
+          }
+        });
       }
     }
   }

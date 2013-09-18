@@ -18,7 +18,7 @@ import com.blankstyle.vine.seed.ReliableSeed
 import com.blankstyle.vine.messaging.JsonMessage
 from core.javautils import map_from_java, map_to_java
 
-class AbstractSeed(object):
+class _AbstractSeed(object):
   """
   An abstract seed instance.
   """
@@ -56,13 +56,13 @@ class AbstractSeed(object):
     else:
       self._seed.emitTo(seed, *[map_to_java(data[i]) for i in range(len(data))])
 
-class BasicSeed(object):
+class BasicSeed(_AbstractSeed):
   """
   A basic seed instance.
   """
   _handlercls = com.blankstyle.vine.seed.BasicSeed
 
-class ReliableSeed(object):
+class ReliableSeed(_AbstractSeed):
   """
   A reliable seed instance.
   """

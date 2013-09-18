@@ -40,7 +40,7 @@ public class EventBusMessageBus implements MessageBus {
 
   @Override
   public MessageBus send(String address, JsonMessage message) {
-    eventBus.send(address, message.body());
+    eventBus.send(address, message);
     return this;
   }
 
@@ -62,7 +62,7 @@ public class EventBusMessageBus implements MessageBus {
   @Override
   public MessageBus send(final String address, final JsonMessage message, final long timeout, final boolean retry, final int attempts,
       final Handler<Boolean> ackHandler) {
-    eventBus.send(address, message.serialize(), timeout, new AsyncResultHandler<Message<Boolean>>() {
+    eventBus.send(address, message, timeout, new AsyncResultHandler<Message<Boolean>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {

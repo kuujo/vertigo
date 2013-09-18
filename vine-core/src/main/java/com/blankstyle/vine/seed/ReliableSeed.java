@@ -15,13 +15,13 @@
 */
 package com.blankstyle.vine.seed;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 import com.blankstyle.vine.messaging.JsonMessage;
 
@@ -58,11 +58,10 @@ public class ReliableSeed extends BasicSeed {
      * @param child
      *   The child message.
      */
-    public void emit(JsonMessage child) {
+    public void emit(JsonObject child) {
       // Ensure the child's ID is the same as the parent's (if any).
-      child.setIdentifier(parent.getIdentifier());
       for (String name : output.getStreamNames()) {
-        doEmit(name, child.copy());
+        doEmit(name, parent.createChild(child));
       }
     }
 
@@ -76,11 +75,10 @@ public class ReliableSeed extends BasicSeed {
      * @param children
      *   The child messages.
      */
-    public void emit(Collection<JsonMessage> children) {
+    public void emit(JsonObject... children) {
       Set<JsonMessage> copies = new HashSet<JsonMessage>();
-      for (JsonMessage child : children) {
-        child.setIdentifier(parent.getIdentifier());
-        JsonMessage copy = child.copy();
+      for (JsonObject child : children) {
+        JsonMessage copy = parent.createChild(child);
         processing.add(copy);
         copies.add(copy);
       }
@@ -101,9 +99,8 @@ public class ReliableSeed extends BasicSeed {
      * @param child
      *   The child message.
      */
-    public void emitTo(String name, JsonMessage child) {
-      child.setIdentifier(parent.getIdentifier());
-      doEmit(name, child.copy());
+    public void emitTo(String name, JsonObject child) {
+      doEmit(name, parent.createChild(child));
     }
 
     /**
@@ -118,11 +115,10 @@ public class ReliableSeed extends BasicSeed {
      * @param children
      *   The child messages.
      */
-    public void emitTo(String name, Collection<JsonMessage> children) {
+    public void emitTo(String name, JsonObject... children) {
       Set<JsonMessage> copies = new HashSet<JsonMessage>();
-      for (JsonMessage child : children) {
-        child.setIdentifier(parent.getIdentifier());
-        JsonMessage copy = child.copy();
+      for (JsonObject child : children) {
+        JsonMessage copy = (JsonMessage) child.copy();
         processing.add(copy);
         copies.add(copy);
       }
@@ -135,27 +131,28 @@ public class ReliableSeed extends BasicSeed {
     /**
      * Emits a child message to a specific stream by name.
      */
-    private void doEmit(final String name, final JsonMessage child) {
+    private void doEmit(final String name, final JsonObject child) {
       // This method is called recursively, so check that the child has not
       // already been added to processing.
-      if (!processing.contains(child)) {
-        processing.add(child);
+      final JsonMessage message = parent.createChild(child);
+      if (!processing.contains(message)) {
+        processing.add(message);
       }
 
-      output.emitTo(name, child, new Handler<Boolean>() {
+      output.emitTo(name, message, new Handler<Boolean>() {
         @Override
         public void handle(Boolean succeeded) {
           if (succeeded) {
-            if (processing.contains(child)) {
-              processing.remove(child);
+            if (processing.contains(message)) {
+              processing.remove(message);
             }
-            if (!finished.contains(child)) {
-              finished.add(child);
+            if (!finished.contains(message)) {
+              finished.add(message);
             }
 
             // If the tree contains no more messages in processing, ack the parent.
             if (processing.size() == 0 && !complete) {
-              parent.ready();
+              parent.message().ready();
               complete = true;
             }
           }
@@ -184,23 +181,43 @@ public class ReliableSeed extends BasicSeed {
   }
 
   @Override
-  public void emit(JsonMessage message, JsonMessage parent) {
-    getTree(parent).emit(message);;
+  public void emit(JsonObject data) {
+    if (currentMessage != null) {
+      getTree(currentMessage).emit(data);
+    }
+    else {
+      super.emit(data);
+    }
   }
 
   @Override
-  public void emit(Collection<JsonMessage> messages, JsonMessage parent) {
-    getTree(parent).emit(messages);
+  public void emit(JsonObject... data) {
+    if (currentMessage != null) {
+      getTree(currentMessage).emit(data);
+    }
+    else {
+      super.emit(data);
+    }
   }
 
   @Override
-  public void emitTo(String seedName, JsonMessage message, JsonMessage parent) {
-    getTree(parent).emitTo(seedName, message);
+  public void emitTo(String seedName, JsonObject data) {
+    if (currentMessage != null) {
+      getTree(currentMessage).emitTo(seedName, data);
+    }
+    else {
+      super.emitTo(seedName, data);
+    }
   }
 
   @Override
-  public void emitTo(String seedName, Collection<JsonMessage> messages, JsonMessage parent) {
-    getTree(parent).emitTo(seedName, messages);
+  public void emitTo(String seedName, JsonObject... data) {
+    if (currentMessage != null) {
+      getTree(currentMessage).emitTo(seedName, data);
+    }
+    else {
+      super.emitTo(seedName, data);
+    }
   }
 
 }

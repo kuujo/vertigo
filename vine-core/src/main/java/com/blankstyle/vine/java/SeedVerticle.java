@@ -15,14 +15,12 @@
 */
 package com.blankstyle.vine.java;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 import com.blankstyle.vine.context.WorkerContext;
 import com.blankstyle.vine.messaging.JsonMessage;
-import com.blankstyle.vine.seed.ReliableSeed;
 import com.blankstyle.vine.seed.Seed;
 
 /**
@@ -30,114 +28,103 @@ import com.blankstyle.vine.seed.Seed;
  *
  * @author Jordan Halterman
  */
-public abstract class SeedVerticle extends Verticle implements Handler<JsonMessage> {
+abstract class SeedVerticle<T extends Seed> extends Verticle implements Handler<JsonObject> {
 
-  private Seed seed;
+  private T seed;
+
+  protected abstract T createSeed();
 
   @Override
   public void start() {
-    seed = new ReliableSeed();
+    seed = createSeed();
     seed.setVertx(vertx);
     seed.setContainer(container);
     seed.setContext(new WorkerContext(container.config()));
-    seed.messageHandler(this);
-  }
-
-  @Override
-  public void handle(JsonMessage message) {
-    process(message);
+    seed.dataHandler(this);
   }
 
   /**
-   * Processes seed data.
-   *
-   * @param data
-   *   The data to process.
-   */
-  protected abstract void process(JsonMessage message);
-
-  /**
-   * Emits seed data.
+   * Emits data to all output streams.
    *
    * @param data
    *   The data to emit.
    */
-  protected void emit(JsonObject data) {
+  public void emit(JsonObject data) {
     seed.emit(data);
   }
 
   /**
-   * Emits seed data, providing an ack handler.
+   * Emits multiple sets of data to all output streams.
    *
    * @param data
    *   The data to emit.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
    */
-  protected void emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
-    seed.emit(data, ackHandler);
+  public void emit(JsonObject... data) {
+    seed.emit(data);
   }
 
   /**
-   * Emits a message.
-   *
-   * @param message
-   *   The message to emit.
-   */
-  protected void emit(JsonMessage message) {
-    seed.emit(message);
-  }
-
-  /**
-   * Emits data to a specific stream.
+   * Emits data to a specific output stream.
    *
    * @param seedName
-   *   The name of the seed to which to emit the message.
+   *   The seed name to which to emit.
    * @param data
    *   The data to emit.
    */
-  protected void emitTo(String seedName, JsonObject data) {
+  public void emitTo(String seedName, JsonObject data) {
     seed.emitTo(seedName, data);
   }
 
   /**
-   * Emits a message to a specific stream.
+   * Emits multiple sets of data to a specific output stream.
    *
    * @param seedName
-   *   The name of the seed to which to emit the message.
-   * @param message
-   *   The message to emit.
-   */
-  protected void emitTo(String seedName, JsonMessage message) {
-    seed.emitTo(seedName, message);
-  }
-
-  /**
-   * Emits child data to a specific stream.
-   *
-   * @param seedName
-   *   The name of the seed to which to emit the message.
+   *   The seed name to which to emit.
    * @param data
    *   The data to emit.
-   * @param parent
-   *   The parent message.
    */
-  protected void emitTo(String seedName, JsonObject data, JsonMessage parent) {
-    seed.emitTo(seedName, data, parent);
+  public void emitTo(String seedName, JsonObject... data) {
+    seed.emitTo(seedName, data);
   }
 
   /**
-   * Emits a child message to a specific stream.
+   * Acknowledges processing of a message.
    *
-   * @param seedName
-   *   The name of the seed to which to emit the message.
    * @param message
-   *   The message to emit.
-   * @param parent
-   *   The parent message.
+   *   The message to ack.
    */
-  protected void emitTo(String seedName, JsonMessage message, JsonMessage parent) {
-    seed.emitTo(seedName, message, parent);
+  public void ack(JsonMessage message) {
+    seed.ack(message);
+  }
+
+  /**
+   * Acknowledges processing of multiple messages.
+   *
+   * @param messages
+   *   The messages to ack.
+   */
+  public void ack(JsonMessage... messages) {
+    seed.ack(messages);
+  }
+
+  /**
+   * Fails processing of a message.
+   *
+   * @param message
+   *   The message to fail.
+   */
+  public void fail(JsonMessage message) {
+    seed.fail(message);
+  }
+
+  /**
+   * Fails processing of multiple messages.
+   *
+   * @param messages
+   *   The messages to fail.
+   */
+  public void fail(JsonMessage... messages) {
+    seed.fail(messages);
   }
 
 }

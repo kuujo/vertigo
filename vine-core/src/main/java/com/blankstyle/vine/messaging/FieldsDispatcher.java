@@ -42,7 +42,7 @@ public class FieldsDispatcher extends AbstractDispatcher {
 
   @Override
   protected Connection getConnection(JsonMessage message) {
-    String value = message.body().getString(getOption("field"));
+    String value = message.getString(getOption("field"));
     int length = value.length();
     return items.get(length % size);
   }

@@ -74,6 +74,8 @@ public class BasicSeed implements Seed {
 
   protected OutputCollector output;
 
+  protected JsonMessage currentMessage;
+
   @Override
   public Seed setVertx(Vertx vertx) {
     this.vertx = vertx;
@@ -176,104 +178,44 @@ public class BasicSeed implements Seed {
   }
 
   @Override
-  public Seed messageHandler(Handler<JsonMessage> handler) {
-    messageBus.registerHandler(address, handler);
+  public Seed dataHandler(final Handler<JsonObject> handler) {
+    messageBus.registerHandler(address, new Handler<JsonMessage>() {
+      @Override
+      public void handle(JsonMessage message) {
+        currentMessage = message;
+        message.message().ready();
+        handler.handle(message);
+      }
+    });
     return this;
   }
 
   @Override
   public void emit(JsonObject data) {
-    emit(new JsonMessage(data));
-  }
-
-  @Override
-  public void emit(JsonMessage message) {
-    output.emit(message);
-  }
-
-  @Override
-  public void emit(Collection<JsonMessage> messages) {
-    for (JsonMessage message : messages) {
-      emit(message);
+    if (currentMessage != null) {
+      output.emit(currentMessage.createChild(data));
+    }
+    else {
+      output.emit(JsonMessage.create(data));
     }
   }
 
   @Override
-  public void emit(JsonObject data, JsonMessage parent) {
-    emit(parent.createChild(data));
-    parent.ack();
-  }
-
-  @Override
-  public void emit(JsonMessage message, JsonMessage parent) {
-    output.emit(message.setIdentifier(parent.getIdentifier()));
-    parent.ack();
-  }
-
-  @Override
-  public void emit(Collection<JsonMessage> messages, JsonMessage parent) {
-    for (JsonMessage message : messages) {
-      emit(message, parent);
+  public void emit(JsonObject... data) {
+    for (JsonObject item : data) {
+      emit(item);
     }
   }
 
   @Override
   public void emitTo(String seedName, JsonObject data) {
-    emitTo(seedName, new JsonMessage(data));
+    output.emitTo(seedName, new JsonMessage(data));
   }
 
   @Override
-  public void emitTo(String seedName, JsonMessage message) {
-    output.emitTo(seedName, message);
-  }
-
-  @Override
-  public void emitTo(String seedName, Collection<JsonMessage> messages) {
-    for (JsonMessage message : messages) {
-      emitTo(seedName, message);
-    }
-  }
-
-  @Override
-  public void emitTo(String seedName, JsonObject data, JsonMessage parent) {
-    emitTo(seedName, parent.createChild(data));
-    parent.ack();
-  }
-
-  @Override
-  public void emitTo(String seedName, JsonMessage message, JsonMessage parent) {
-    emitTo(seedName, message.setIdentifier(parent.getIdentifier()));
-    parent.ack();
-  }
-
-  @Override
-  public void emitTo(String seedName, Collection<JsonMessage> messages, JsonMessage parent) {
-    for (JsonMessage message : messages) {
-      emitTo(seedName, message, parent);
-    }
-  }
-
-  @Override
-  public void ack(JsonMessage message) {
-    message.ack();
-  }
-
-  @Override
-  public void ack(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      message.ack();
-    }
-  }
-
-  @Override
-  public void fail(JsonMessage message) {
-    message.fail();
-  }
-
-  @Override
-  public void fail(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      message.fail();
+  public void emitTo(String seedName, JsonObject... data) {
+    for (JsonObject item : data) {
+      emitTo(seedName, item);
     }
   }
 
@@ -365,6 +307,30 @@ public class BasicSeed implements Seed {
       if (streams.containsKey(name)) {
         streams.get(name).emit(message, ackHandler);
       }
+    }
+  }
+
+  @Override
+  public void ack(JsonMessage message) {
+    message.message().ack();
+  }
+
+  @Override
+  public void ack(JsonMessage... messages) {
+    for (JsonMessage message : messages) {
+      ack(message);
+    }
+  }
+
+  @Override
+  public void fail(JsonMessage message) {
+    message.message().fail();
+  }
+
+  @Override
+  public void fail(JsonMessage... messages) {
+    for (JsonMessage message : messages) {
+      fail(message);
     }
   }
 

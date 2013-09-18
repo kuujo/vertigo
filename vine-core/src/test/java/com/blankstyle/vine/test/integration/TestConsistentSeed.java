@@ -17,16 +17,17 @@ package com.blankstyle.vine.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
 
+import org.vertx.java.core.json.JsonObject;
+
 import com.blankstyle.vine.java.ReliableSeedVerticle;
-import com.blankstyle.vine.messaging.JsonMessage;
 
 public class TestConsistentSeed extends ReliableSeedVerticle {
 
   private String received;
 
   @Override
-  protected void process(JsonMessage message) {
-    String body = message.body().getString("body");
+  public void handle(JsonObject data) {
+    String body = data.getString("body");
 
     // The seed instance should always receive the same string. The test runs
     // with only two strings - one of an odd length and one of an event length.
@@ -38,7 +39,7 @@ public class TestConsistentSeed extends ReliableSeedVerticle {
     else {
       assertEquals(received, body);
     }
-    emit(new JsonMessage(message.body().copy()));
+    emit(data.copy());
   }
 
 }

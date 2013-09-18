@@ -1,184 +1,85 @@
-/*
-* Copyright 2013 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
 package com.blankstyle.vine.messaging;
 
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-import com.blankstyle.vine.Serializeable;
-
 /**
- * A JSON-based eventbus message.
+ * A JSON data message.
  *
  * @author Jordan Halterman
  */
-public class JsonMessage implements Serializeable<JsonObject> {
+public class JsonMessage extends JsonObject {
 
-  private Message<JsonObject> message;
-
-  private JsonObject data;
-
-  private boolean ready;
-
-  private boolean acked;
-
-  private boolean ack;
-
-  private boolean responded;
+  private EventBusMessage message;
 
   public JsonMessage(Message<JsonObject> message) {
-    this.message = message;
-    this.data = message.body();
+    super(message.body().getObject("body").toMap());
+    this.message = new EventBusMessage(message).setIdentifier(message.body().getString("id"));
   }
 
-  public JsonMessage(JsonObject body) {
-    this.data = body;
-  }
-
-  /**
-   * Sets the unique message identifier.
-   *
-   * @param id
-   *   A message identifier.
-   * @return
-   *   The called message instance.
-   */
-  public JsonMessage setIdentifier(long id) {
-    data.putNumber("id", id);
-    return this;
+  public JsonMessage(JsonObject data) {
+    super(data.getObject("body").toMap());
+    this.message = new EventBusMessage().setIdentifier(data.getString("id"));
   }
 
   /**
-   * Gets the unique message identifier.
-   *
-   * @return
-   *   A unique message identifier.
+   * Returns the current underlying event bus message.
    */
-  public long getIdentifier() {
-    return data.getInteger("id");
+  public EventBusMessage message() {
+    return message;
   }
 
-  /**
-   * Returns the message body.
-   *
-   * @return
-   *   A JSON message body.
-   */
-  public JsonObject body() {
-    JsonObject body = data.getObject("body");
-    if (body == null) {
-      body = new JsonObject();
-      data.putObject("body", body);
+  @Override
+  public String encode() {
+    if (message != null) {
+      return new JsonObject().putObject("body", (JsonObject) this).encode();
     }
-    return body;
-  }
-
-  /**
-   * Sets the message body.
-   *
-   * @param body
-   *   A JSON message body.
-   * @return
-   *   The called message instance.
-   */
-  public JsonMessage setBody(JsonObject body) {
-    data.putObject("body", body);
-    return this;
-  }
-
-  /**
-   * Sets the message to ready state.
-   */
-  public void ready() {
-    ready = true;
-    checkAck();
-  }
-
-  /**
-   * Acknowledges that the message has been processed.
-   */
-  public void ack() {
-    acked = true; ack = true;
-    checkAck();
-  }
-
-  /**
-   * Indicates failure to process the message.
-   */
-  public void fail() {
-    acked = true; ack = false;
-    checkAck();
-  }
-
-  /**
-   * Checks whether the message has completed processing and acks or fails
-   * if necessary.
-   */
-  private void checkAck() {
-    if (!isLocked()) {
-      if (ready && acked && message != null) {
-        message.reply(ack);
-        lock();
-      }
-      else if (acked && !ack) {
-        message.reply(false);
-        lock();
-      }
+    else {
+      return new JsonObject().putString("id", message.getIdentifier()).putObject("body", new JsonObject(toMap())).encode();
     }
   }
 
-  /**
-   * Locks the message, preventing multiple ack responses.
-   */
-  private void lock() {
-    responded = true;
-  }
-
-  /**
-   * Indicates whether the message has been responded to.
-   */
-  private boolean isLocked() {
-    return responded;
+  @Override
+  public JsonObject copy() {
+    return new JsonMessage(new JsonObject().putObject("body", super.copy()).putString("id", message.getIdentifier()));
   }
 
   /**
    * Creates a child message.
    *
-   * @param data
-   *   The data to apply to the child message.
+   * @param childData
+   *   The data to apply to the message child.
    * @return
-   *   A child message instance.
+   *   The called message instance.
    */
-  public JsonMessage createChild(JsonObject data) {
-    return new JsonMessage(data).setIdentifier(getIdentifier());
+  public JsonMessage createChild(JsonObject childData) {
+    return new JsonMessage(new JsonObject().putObject("body", childData).putString("id", message.getIdentifier()));
   }
 
   /**
-   * Copies the message.
+   * Creates a message with no identifier.
    *
+   * @param data
+   *   The data to apply to the new message.
    * @return
-   *   A new message instance.
+   *   The new message instance.
    */
-  public JsonMessage copy() {
-    return new JsonMessage(data.copy());
+  public static JsonMessage create(JsonObject data) {
+    return new JsonMessage(new JsonObject().putObject("body", data));
   }
 
-  @Override
-  public JsonObject serialize() {
-    return data;
+  /**
+   * Creates a message with an identifier.
+   *
+   * @param id
+   *   The unique message identifier.
+   * @param data
+   *   The data to apply to the new message.
+   * @return
+   *   The new message instance
+   */
+  public static JsonMessage create(String id, JsonObject data) {
+    return new JsonMessage(new JsonObject().putObject("body", data).putString("id", id));
   }
 
 }

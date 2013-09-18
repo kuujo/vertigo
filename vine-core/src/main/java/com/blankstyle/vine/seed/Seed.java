@@ -138,4 +138,9 @@ public interface Seed {
    */
   public void fail(JsonMessage... messages);
 
+  /**
+   * Starts the seed.
+   */
+  public void start();
+
 }

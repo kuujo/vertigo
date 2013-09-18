@@ -74,6 +74,8 @@ public class BasicSeed implements Seed {
 
   protected OutputCollector output;
 
+  protected Handler<JsonObject> dataHandler;
+
   protected JsonMessage currentMessage;
 
   @Override
@@ -95,9 +97,14 @@ public class BasicSeed implements Seed {
   public Seed setContext(WorkerContext context) {
     this.context = context;
     this.address = context.getAddress();
+    return this;
+  }
+
+  @Override
+  public void start() {
     setupHeartbeat();
     setupOutputs();
-    return this;
+    setupHandlers();
   }
 
   /**
@@ -177,16 +184,25 @@ public class BasicSeed implements Seed {
     }
   }
 
+  /**
+   * Sets up message bus handlers.
+   */
+  private void setupHandlers() {
+    if (dataHandler != null) {
+      messageBus.registerHandler(address, new Handler<JsonMessage>() {
+        @Override
+        public void handle(JsonMessage message) {
+          currentMessage = message;
+          message.message().ready();
+          dataHandler.handle(message);
+        }
+      });
+    }
+  }
+
   @Override
-  public Seed dataHandler(final Handler<JsonObject> handler) {
-    messageBus.registerHandler(address, new Handler<JsonMessage>() {
-      @Override
-      public void handle(JsonMessage message) {
-        currentMessage = message;
-        message.message().ready();
-        handler.handle(message);
-      }
-    });
+  public Seed dataHandler(Handler<JsonObject> handler) {
+    dataHandler = handler;
     return this;
   }
 

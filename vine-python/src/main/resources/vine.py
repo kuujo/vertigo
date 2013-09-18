@@ -26,53 +26,59 @@ class _AbstractSeed(object):
 
   def __init__(self):
     if self._handlercls is not None:
-      self._seed = self._handlercls()
-      self._seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
-      self._seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
-      self._seed.setContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
+      self.__seed = self._handlercls()
+      self.__seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
+      self.__seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
+      self.__seed.setContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
 
   def data_handler(self, handler):
     """
     Sets the seed data handler.
     """
-    self._seed.dataHandler(DataHandler(handler))
+    self.__seed.dataHandler(DataHandler(handler))
     return handler
+
+  def start(self):
+    """
+    Starts the seed.
+    """
+    self.__seed.start()
 
   def emit(self, *data):
     """
     Emits data to all output streams.
     """
     if len(data) == 1:
-      self._seed.emit(map_to_java(data[0]))
+      self.__seed.emit(map_to_java(data[0]))
     else:
-      self._seed.emit(*[map_to_java(data[i]) for i in range(len(data))])
+      self.__seed.emit(*[map_to_java(data[i]) for i in range(len(data))])
 
   def emitto(self, seed, *data):
     """
     Emits data to a specific output stream.
     """
     if len(data) == 1:
-      self._seed.emitTo(seed, data[0])
+      self.__seed.emitTo(seed, data[0])
     else:
-      self._seed.emitTo(seed, *[map_to_java(data[i]) for i in range(len(data))])
+      self.__seed.emitTo(seed, *[map_to_java(data[i]) for i in range(len(data))])
 
   def ack(self, *data):
     """
     Acknowledges a message.
     """
     if len(data) == 1:
-      self._seed.ack(data[0]._original)
+      self.__seed.ack(data[0]._original)
     else:
-      self._seed.ack(*[data[i]._original for i in range(len(data))])
+      self.__seed.ack(*[data[i]._original for i in range(len(data))])
 
   def fail(self, *data):
     """
     Fails a message.
     """
     if len(data) == 1:
-      self._seed.fail(data[0].__message)
+      self.__seed.fail(data[0].__message)
     else:
-      self._seed.fail(*[data[i].__message for i in range(len(data))])
+      self.__seed.fail(*[data[i].__message for i in range(len(data))])
 
 class BasicSeed(_AbstractSeed):
   """

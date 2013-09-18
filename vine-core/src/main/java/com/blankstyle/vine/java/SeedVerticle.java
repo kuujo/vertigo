@@ -41,6 +41,7 @@ abstract class SeedVerticle<T extends Seed> extends Verticle implements Handler<
     seed.setContainer(container);
     seed.setContext(new WorkerContext(container.config()));
     seed.dataHandler(this);
+    seed.start();
   }
 
   /**

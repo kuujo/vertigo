@@ -67,7 +67,10 @@ class Feeder(object):
   A vine feeder.
   """
   def __init__(self, feeder):
-    self.__feeder = feeder
+    if isinstance(feeder, basestring):
+      self.__feeder = net.kuujo.vine.BasicFeeder(feeder, org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
+    else:
+      self.__feeder = feeder
 
   def feed(self, data, handler=None, timeout=None):
     if handler is None:

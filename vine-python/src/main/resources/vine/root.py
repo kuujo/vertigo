@@ -13,6 +13,7 @@
 # limitations under the License.
 import net.kuujo.vine.local.LocalRoot
 import net.kuujo.vine.remote.RemoteRoot
+import org.vertx.java.core.Handler
 import org.vertx.java.core.AsyncResultHandler
 import org.vertx.java.platform.impl.JythonVerticleFactory
 from core.javautils import map_to_java, map_from_java
@@ -83,6 +84,14 @@ class Feeder(object):
     else:
       self.__feeder.execute(map_to_java(data), timeout, ExecuteHandler(handler))
 
+  def feed_queue_full(self):
+    return self.__feeder.feedQueueFull()
+
+  queue_full = property(feed_queue_full)
+
+  def drain_handler(self, handler):
+    self.__feeder.drainHandler(DrainHandler(handler))
+
 class FeedHandler(org.vertx.java.core.AsyncResultHandler):
   def __init__(self, handler):
     self.handler = handler
@@ -102,3 +111,10 @@ class ExecuteHandler(org.vertx.java.core.AsyncResultHandler):
       self.handler(None, map_from_java(result.result().toMap()))
     else:
       self.handler(result.cause(), None)
+
+class DrainHandler(org.vertx.java.core.Handler):
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, result):
+    self.handler()

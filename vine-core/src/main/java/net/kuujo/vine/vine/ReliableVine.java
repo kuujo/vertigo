@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vine.seed;
+package net.kuujo.vine.vine;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,11 +24,9 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vine.context.ConnectionContext;
-import net.kuujo.vine.context.WorkerContext;
-import net.kuujo.vine.eventbus.Actions;
+import net.kuujo.vine.context.VineContext;
 import net.kuujo.vine.eventbus.ReliableEventBus;
 import net.kuujo.vine.eventbus.WrappedReliableEventBus;
-import net.kuujo.vine.heartbeat.DefaultHeartBeatEmitter;
 import net.kuujo.vine.heartbeat.HeartBeatEmitter;
 import net.kuujo.vine.messaging.ConnectionPool;
 import net.kuujo.vine.messaging.Dispatcher;
@@ -39,7 +37,6 @@ import net.kuujo.vine.messaging.JsonMessage;
 import net.kuujo.vine.messaging.Stream;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -48,11 +45,11 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
 /**
- * A basic seed implementation.
+ * A reliable vine implementation.
  *
  * @author Jordan Halterman
  */
-public class BasicSeed implements Seed {
+public class ReliableVine implements Vine {
 
   protected Vertx vertx;
 
@@ -64,34 +61,30 @@ public class BasicSeed implements Seed {
 
   protected String address;
 
-  protected WorkerContext context;
+  protected VineContext context;
 
   protected HeartBeatEmitter heartbeat;
 
   protected OutputCollector output;
 
-  protected Handler<JsonObject> dataHandler;
-
-  protected JsonMessage currentMessage;
-
   protected static final long DEFAULT_MESSAGE_TIMEOUT = 15000;
 
   @Override
-  public Seed setVertx(Vertx vertx) {
+  public Vine setVertx(Vertx vertx) {
     this.vertx = vertx;
     this.eventBus = new WrappedReliableEventBus(vertx.eventBus(), vertx);
     return this;
   }
 
   @Override
-  public Seed setContainer(Container container) {
+  public Vine setContainer(Container container) {
     this.container = container;
     this.logger = container.logger();
     return this;
   }
 
   @Override
-  public Seed setContext(WorkerContext context) {
+  public Vine setContext(VineContext context) {
     this.context = context;
     this.address = context.getAddress();
     return this;
@@ -99,44 +92,8 @@ public class BasicSeed implements Seed {
 
   @Override
   public void start() {
-    setupHeartbeat();
     setupOutputs();
     setupInputs();
-  }
-
-  /**
-   * Sets up the seed verticle heartbeat.
-   */
-  private void setupHeartbeat() {
-    heartbeat = new DefaultHeartBeatEmitter(vertx, vertx.eventBus());
-    eventBus.send(context.getStem(), Actions.create("register", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          Message<JsonObject> message = result.result();
-          JsonObject body = message.body();
-          String error = body.getString("error");
-          if (error != null) {
-            logger.error(error);
-          }
-          else {
-            // Set the heartbeat address. This is returned by the "register" action.
-            String address = body.getString("address");
-            if (address != null) {
-              heartbeat.setAddress(address);
-            }
-
-            // Set the heartbeat interval. This setting is derived from the
-            // seed definition's heartbeat interval option.
-            heartbeat.setInterval(context.getContext().getDefinition().getHeartbeatInterval());
-            heartbeat.start();
-          }
-        }
-        else {
-          logger.error(String.format("Failed to fetch heartbeat address from stem at %s.", context.getStem()));
-        }
-      }
-    });
   }
 
   /**
@@ -145,7 +102,7 @@ public class BasicSeed implements Seed {
   private void setupOutputs() {
     output = new OutputCollector();
 
-    Collection<ConnectionContext> connections = context.getContext().getConnectionContexts();
+    Collection<ConnectionContext> connections = context.getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
     while (iter.hasNext()) {
       ConnectionContext connectionContext = iter.next();
@@ -185,66 +142,49 @@ public class BasicSeed implements Seed {
    * Sets up input handlers.
    */
   private void setupInputs() {
-    if (dataHandler != null) {
-      eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
-        @Override
-        public void handle(Message<JsonObject> message) {
-          String action = message.body().getString("action");
-          if (action != null) {
-            switch (action) {
-              case "receive":
-                doReceive(message);
-                break;
-            }
+    eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        String action = message.body().getString("action");
+        if (action != null) {
+          switch (action) {
+            case "feed":
+              doFeed(message);
+              break;
+            case "receive":
+              doReceive(message);
+              break;
           }
         }
-      });
-    }
+      }
+    });
+  }
+
+  private Map<Message<JsonObject>, JsonMessage> messageMap = new HashMap<Message<JsonObject>, JsonMessage>();
+
+  private void doFeed(Message<JsonObject> message) {
+    JsonMessage jsonMessage = new JsonMessage(message);
+    messageMap.put(message, jsonMessage);
+    
   }
 
   private void doReceive(Message<JsonObject> message) {
-    handleMessage(new JsonMessage(message));
-  }
-
-  protected void handleMessage(JsonMessage message) {
-    currentMessage = message;
-    message.message().ready();
-    dataHandler.handle(message);
+    
   }
 
   @Override
-  public Seed dataHandler(Handler<JsonObject> handler) {
-    dataHandler = handler;
-    return this;
+  public void feed(JsonObject data) {
+    
   }
 
   @Override
-  public void emit(JsonObject data) {
-    if (currentMessage != null) {
-      output.emit(currentMessage.createChild(data));
-    }
-    else {
-      output.emit(JsonMessage.create(data));
-    }
+  public void feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
+    
   }
 
   @Override
-  public void emit(JsonObject... data) {
-    for (JsonObject item : data) {
-      emit(item);
-    }
-  }
-
-  @Override
-  public void emitTo(String seedName, JsonObject data) {
-    output.emitTo(seedName, new JsonMessage(data));
-  }
-
-  @Override
-  public void emitTo(String seedName, JsonObject... data) {
-    for (JsonObject item : data) {
-      emitTo(seedName, item);
-    }
+  public void execute(JsonObject data, Handler<AsyncResult<JsonObject>> resultHandler) {
+    
   }
 
   /**
@@ -355,30 +295,6 @@ public class BasicSeed implements Seed {
           }
         });
       }
-    }
-  }
-
-  @Override
-  public void ack(JsonMessage message) {
-    message.message().ack();
-  }
-
-  @Override
-  public void ack(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      ack(message);
-    }
-  }
-
-  @Override
-  public void fail(JsonMessage message) {
-    message.message().fail();
-  }
-
-  @Override
-  public void fail(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      fail(message);
     }
   }
 

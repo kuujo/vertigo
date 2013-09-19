@@ -78,6 +78,29 @@ public class VineTest extends TestVerticle {
         Feeder feeder = result.result();
         assertNotNull(feeder);
 
+        feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue("Failed to process message. " + result.cause(), result.succeeded());
+            testComplete();
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testLocalExecute() {
+    VineDefinition vine = createTestDefinition();
+    LocalRoot root = new LocalRoot(vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<Feeder>>() {
+      @Override
+      public void handle(AsyncResult<Feeder> result) {
+        assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+
+        Feeder feeder = result.result();
+        assertNotNull(feeder);
+
         feeder.execute(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<JsonObject>>() {
           @Override
           public void handle(AsyncResult<JsonObject> result) {
@@ -154,6 +177,43 @@ public class VineTest extends TestVerticle {
 
   @Test
   public void testRemoteFeed() {
+    deployRoot(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        assertTrue("Failed to deploy root. " + result.cause(), result.succeeded());
+
+        deployStem(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue("Failed to deploy stem. " + result.cause(), result.succeeded());
+
+            VineDefinition vine = createTestDefinition();
+            RemoteRoot root = new RemoteRoot("vine.root.test", vertx, container);
+            root.deploy(vine, new Handler<AsyncResult<Feeder>>() {
+              @Override
+              public void handle(AsyncResult<Feeder> result) {
+                assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+
+                Feeder feeder = result.result();
+                assertNotNull(feeder);
+
+                feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    assertTrue("Failed to process message. " + result.cause(), result.succeeded());
+                    testComplete();
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testRemoteExecute() {
     deployRoot(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {

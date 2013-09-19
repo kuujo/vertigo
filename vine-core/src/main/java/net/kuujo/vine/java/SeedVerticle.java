@@ -91,41 +91,41 @@ abstract class SeedVerticle<T extends Seed> extends Verticle implements Handler<
   /**
    * Acknowledges processing of a message.
    *
-   * @param message
-   *   The message to ack.
+   * @param data
+   *   The data to ack.
    */
-  public void ack(JsonMessage message) {
-    seed.ack(message);
+  public void ack(JsonObject data) {
+    seed.ack((JsonMessage) data);
   }
 
   /**
    * Acknowledges processing of multiple messages.
    *
-   * @param messages
-   *   The messages to ack.
+   * @param data
+   *   The data to ack.
    */
-  public void ack(JsonMessage... messages) {
-    seed.ack(messages);
+  public void ack(JsonObject... data) {
+    seed.ack((JsonMessage[]) data);
   }
 
   /**
    * Fails processing of a message.
    *
-   * @param message
-   *   The message to fail.
+   * @param data
+   *   The data to fail.
    */
-  public void fail(JsonMessage message) {
-    seed.fail(message);
+  public void fail(JsonObject data) {
+    seed.fail((JsonMessage) data);
   }
 
   /**
    * Fails processing of multiple messages.
    *
-   * @param messages
-   *   The messages to fail.
+   * @param data
+   *   The data to fail.
    */
-  public void fail(JsonMessage... messages) {
-    seed.fail(messages);
+  public void fail(JsonObject... data) {
+    seed.fail((JsonMessage[]) data);
   }
 
 }

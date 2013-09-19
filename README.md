@@ -42,10 +42,6 @@ assigning work to Vert.x instances in the cluster.
   * [Feeding data to a vine](#feeding-data-to-a-vine)
   * [Reading responses from a vine](#reading-responses-from-a-vine)
   * [Feeder flow control](#feeder-flow-control)
-1. [The Python API](#the-python-api)
-  * [Creating vines in Python](#creating-vines-in-python)
-  * [Deploying vines in Python](#deploying-vines-in-python)
-  * [Writing seeds in Python](#writing-seeds-in-python)
 
 ## What is a vine?
 Vines are collections of processing elements - Vert.x verticles - that communicate
@@ -445,44 +441,19 @@ vertx.createNetServer().connectHandler(new Handler<NetSocket>() {
     });
   }
 });
-}
 ```
 
-## The Python API
+```java
+VineDefinition vine = new VineDefinition("some.address");
+vine.feed("someseed", "SomeSeed.java").to("someotherseed", "SomeOtherSeed.java");
 
-### Creating Vines in Python
-```python
-from vine import definition
-
-vine = definition.VineDefinition(address='my.vine')
-vine.feed('seedone', main='seedone.py', workers=2).to('seedtwo', main='seedtwo.py', workers=2)
-```
-
-### Writing Seeds in Python
-```python
-from vine.seed import ReliableSeed
-
-seed = ReliableSeed()
-
-@seed.data_handler
-def handle(data):
-  seed.emit({'foo': 'bar', 'bar': 'baz'})
-
-seed.start()
-```
-
-### Deploying Vines in Python
-```python
-from vine.definition import VineDefinition
-from vine.root import LocalRoot
-
-vine = definition.VineDefinition(address='my.vine')
-vine.feed('seedone', main='seedone.py', workers=2).to('seedtwo', main='seedtwo.py', workers=2)
-
-root = LocalRoot()
-
-def deploy_handler(feeder):
-  feeder.feed({'body': 'Hello world!'})
-
-root.deploy(vine, deploy_handler)
+Root root = new LocalRoot(vertx, container);
+root.deploy(vine, new Handler<AsyncResult<String>>() {
+  @Override
+  public void handle(AsyncResult<String> result) {
+    if (result.succeeded()) {
+      FeederExecutor feeder = new FeederExecutor(result.result(), vertx);
+    }
+  }
+});
 ```

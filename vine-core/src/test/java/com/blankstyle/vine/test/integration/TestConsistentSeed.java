@@ -39,6 +39,7 @@ public class TestConsistentSeed extends ReliableSeedVerticle {
       assertEquals(received, body);
     }
     emit(data.copy());
+    ack(data);
   }
 
 }

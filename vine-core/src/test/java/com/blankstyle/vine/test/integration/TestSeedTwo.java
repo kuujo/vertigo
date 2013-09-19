@@ -27,6 +27,7 @@ public class TestSeedTwo extends ReliableSeedVerticle {
   public void handle(JsonObject data) {
     assertEquals("Hello world again!", data.getString("body"));
     emit(new JsonObject().putString("body", "Hello world again again!"));
+    ack(data);
   }
 
 }

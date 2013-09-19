@@ -44,6 +44,10 @@ public class BasicFeeder implements Feeder, Handler<Message<JsonObject>> {
 
   protected boolean queueFull;
 
+  public BasicFeeder(String address, Vertx vertx) {
+    this(address, vertx.eventBus(), vertx);
+  }
+
   public BasicFeeder(String address, EventBus eventBus) {
     this.address = address;
     setEventBus(eventBus);
@@ -81,7 +85,7 @@ public class BasicFeeder implements Feeder, Handler<Message<JsonObject>> {
       case "full":
         queueFull = true;
         break;
-      case "drain":
+      case "empty":
         queueFull = false;
         if (drainHandler != null) {
           drainHandler.handle(null);
@@ -114,7 +118,17 @@ public class BasicFeeder implements Feeder, Handler<Message<JsonObject>> {
   public void feed(JsonObject data, final Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     if (!queueFull) {
-      execute(data, createFeedHandler(future));
+      eventBus.send(address, Actions.create("feed", data), new AsyncResultHandler<Message<Void>>() {
+        @Override
+        public void handle(AsyncResult<Message<Void>> result) {
+          if (result.succeeded()) {
+            future.setResult(null);
+          }
+          else {
+            future.setFailure(result.cause());
+          }
+        }
+      });
     }
     else {
       future.setFailure(new VineException("Queue full."));
@@ -125,25 +139,21 @@ public class BasicFeeder implements Feeder, Handler<Message<JsonObject>> {
   public void feed(JsonObject data, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     if (!queueFull) {
-      execute(data, timeout, createFeedHandler(future));
+      eventBus.send(address, Actions.create("feed", data), timeout, new AsyncResultHandler<Message<Void>>() {
+        @Override
+        public void handle(AsyncResult<Message<Void>> result) {
+          if (result.succeeded()) {
+            future.setResult(null);
+          }
+          else {
+            future.setFailure(result.cause());
+          }
+        }
+      });
     }
     else {
       future.setFailure(new VineException("Queue full."));
     }
-  }
-
-  private Handler<AsyncResult<JsonObject>> createFeedHandler(final Future<Void> future) {
-    return new Handler<AsyncResult<JsonObject>>() {
-      @Override
-      public void handle(AsyncResult<JsonObject> result) {
-        if (result.succeeded()) {
-          future.setResult(null);
-        }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    };
   }
 
   @Override

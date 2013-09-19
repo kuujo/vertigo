@@ -220,12 +220,13 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void shutdown(String address, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+  public void shutdown(final String address, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
     // Send a message to the remote root indicating that the vine should be
     // shut down. The remote root will notify the appropriate stem.
     eventBus.send(this.address, Actions.create("undeploy", address), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
+        eventBus.send(address, Actions.create("shutdown"));
         if (doneHandler != null) {
           Messaging.checkResponse(result, doneHandler);
         }

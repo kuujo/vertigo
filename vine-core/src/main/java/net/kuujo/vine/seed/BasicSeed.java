@@ -203,12 +203,22 @@ public class BasicSeed implements Seed {
   }
 
   private void doReceive(Message<JsonObject> message) {
-    handleMessage(new JsonMessage(message));
+    JsonObject body = message.body();
+    if (body != null) {
+      JsonObject receive = body.getObject("receive");
+      if (receive != null) {
+        if (receive.getFieldNames().contains("id")) {
+          handleMessage(new JsonMessage(receive.getLong("id"), receive.getObject("body"), message));
+        }
+        else {
+          handleMessage(new JsonMessage(receive.getObject("body"), message));
+        }
+      }
+    }
   }
 
   protected void handleMessage(JsonMessage message) {
     currentMessage = message;
-    message.message().ready();
     dataHandler.handle(message);
   }
 
@@ -219,12 +229,32 @@ public class BasicSeed implements Seed {
   }
 
   @Override
-  public void emit(JsonObject data) {
+  public void emit(final JsonObject data) {
     if (currentMessage != null) {
-      output.emit(currentMessage.createChild(data));
+      output.emit(currentMessage.createChild(data), new Handler<Boolean>() {
+        @Override
+        public void handle(Boolean succeeded) {
+          if (succeeded) {
+            currentMessage.message().ready();
+          }
+          else {
+            emit(data);
+          }
+        }
+      });
     }
     else {
-      output.emit(JsonMessage.create(data));
+      output.emit(JsonMessage.create(data), new Handler<Boolean>() {
+        @Override
+        public void handle(Boolean succeeded) {
+          if (succeeded) {
+            currentMessage.message().ready();
+          }
+          else {
+            emit(data);
+          }
+        }
+      });
     }
   }
 
@@ -236,8 +266,18 @@ public class BasicSeed implements Seed {
   }
 
   @Override
-  public void emitTo(String seedName, JsonObject data) {
-    output.emitTo(seedName, new JsonMessage(data));
+  public void emitTo(final String seedName, final JsonObject data) {
+    output.emitTo(seedName, new JsonMessage(data), new Handler<Boolean>() {
+      @Override
+      public void handle(Boolean succeeded) {
+        if (succeeded) {
+          currentMessage.message().ready();
+        }
+        else {
+          emitTo(seedName, data);
+        }
+      }
+    });
   }
 
   @Override

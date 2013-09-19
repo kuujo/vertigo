@@ -12,14 +12,24 @@ public class JsonMessage extends JsonObject {
 
   private EventBusMessage message;
 
-  public JsonMessage(Message<JsonObject> message) {
-    super(message.body().getObject("body").toMap());
-    this.message = new EventBusMessage(message).setIdentifier(message.body().getString("id"));
+  public JsonMessage(long id, JsonObject body, Message<JsonObject> message) {
+    super(body.toMap());
+    this.message = new EventBusMessage(message).setIdentifier(id);
   }
 
-  public JsonMessage(JsonObject data) {
-    super(data.getObject("body").toMap());
-    this.message = new EventBusMessage().setIdentifier(data.getString("id"));
+  public JsonMessage(JsonObject body, Message<JsonObject> message) {
+    super(body.toMap());
+    this.message = new EventBusMessage(message);
+  }
+
+  public JsonMessage(long id, JsonObject body) {
+    super(body.toMap());
+    this.message = new EventBusMessage().setIdentifier(id);
+  }
+
+  public JsonMessage(JsonObject body) {
+    super(body.toMap());
+    this.message = new EventBusMessage();
   }
 
   /**
@@ -27,21 +37,6 @@ public class JsonMessage extends JsonObject {
    */
   public EventBusMessage message() {
     return message;
-  }
-
-  @Override
-  public String encode() {
-    if (message != null) {
-      return new JsonObject().putObject("body", (JsonObject) this).encode();
-    }
-    else {
-      return new JsonObject().putString("id", message.getIdentifier()).putObject("body", new JsonObject(toMap())).encode();
-    }
-  }
-
-  @Override
-  public JsonObject copy() {
-    return new JsonMessage(new JsonObject().putObject("body", super.copy()).putString("id", message.getIdentifier()));
   }
 
   /**
@@ -53,7 +48,13 @@ public class JsonMessage extends JsonObject {
    *   The called message instance.
    */
   public JsonMessage createChild(JsonObject childData) {
-    return new JsonMessage(new JsonObject().putObject("body", childData).putString("id", message.getIdentifier()));
+    long id = message.getIdentifier();
+    if (id > 0) {
+      return new JsonMessage(id, childData);
+    }
+    else {
+      return new JsonMessage(childData);
+    }
   }
 
   /**
@@ -65,7 +66,7 @@ public class JsonMessage extends JsonObject {
    *   The new message instance.
    */
   public static JsonMessage create(JsonObject data) {
-    return new JsonMessage(new JsonObject().putObject("body", data));
+    return new JsonMessage(data);
   }
 
   /**
@@ -78,8 +79,24 @@ public class JsonMessage extends JsonObject {
    * @return
    *   The new message instance
    */
-  public static JsonMessage create(String id, JsonObject data) {
-    return new JsonMessage(new JsonObject().putObject("body", data).putString("id", id));
+  public static JsonMessage create(long id, JsonObject data) {
+    return new JsonMessage(id, data);
+  }
+
+  /**
+   * Creates a message with an identifier.
+   *
+   * @param id
+   *   The unique message identifier.
+   * @param data
+   *   The data to apply to the new message.
+   * @param message
+   *   The eventbus message.
+   * @return
+   *   A new message instance.
+   */
+  public static JsonMessage create(long id, JsonObject data, Message<JsonObject> message) {
+    return new JsonMessage(id, data, message);
   }
 
 }

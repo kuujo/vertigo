@@ -24,6 +24,7 @@ import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An eventbus-based connection.
@@ -60,7 +61,7 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection send(JsonMessage message) {
-    eventBus.send(address, Actions.create("feed", message));
+    eventBus.send(address, Actions.create("receive", message));
     return this;
   }
 
@@ -90,7 +91,7 @@ public class EventBusConnection implements Connection {
 
   private <T> void doSend(final JsonMessage message, final long timeout, final boolean retry, final int attempts, final Future<Message<T>> future) {
     if (timeout > 0) {
-      eventBus.send(address, Actions.create("feed", message), timeout, new AsyncResultHandler<Message<T>>() {
+      eventBus.send(address, Actions.create("receive", createJsonObject(message)), timeout, new AsyncResultHandler<Message<T>>() {
         @Override
         public void handle(AsyncResult<Message<T>> result) {
           if (result.failed()) {
@@ -111,13 +112,23 @@ public class EventBusConnection implements Connection {
       });
     }
     else {
-      eventBus.send(address, Actions.create("feed", message), new Handler<Message<T>>() {
+      eventBus.send(address, Actions.create("receive", createJsonObject(message)), new Handler<Message<T>>() {
         @Override
         public void handle(Message<T> message) {
           future.setResult(message);
         }
       });
     }
+  }
+
+  private JsonObject createJsonObject(JsonMessage message) {
+    JsonObject data = new JsonObject();
+    long id = message.message().getIdentifier();
+    if (id > 0) {
+      data.putNumber("id", id);
+    }
+    data.putObject("body", (JsonObject) message);
+    return data;
   }
 
 }

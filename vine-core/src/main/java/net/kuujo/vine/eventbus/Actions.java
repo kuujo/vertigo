@@ -30,6 +30,18 @@ public class Actions {
    *
    * @param action
    *   The action to create.
+   * @return
+   *   A JSON action.
+   */
+  public static JsonObject create(String action) {
+    return new JsonObject().putString("action", action);
+  }
+
+  /**
+   * Creates an eventbus action.
+   *
+   * @param action
+   *   The action to create.
    * @param data
    *   A JSON object containing the action configuration.
    * @return

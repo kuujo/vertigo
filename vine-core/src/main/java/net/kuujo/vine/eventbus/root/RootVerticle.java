@@ -112,7 +112,7 @@ public class RootVerticle extends BusModBase implements Handler<Message<JsonObje
     context = new RootContext(config);
     address = getOptionalStringConfig("address", DEFAULT_ADDRESS);
     logger.info(String.format("Starting stem at %s.", address));
-    String schedulerClass = getOptionalStringConfig("scheduler", "com.blankstyle.vine.scheduler.RandomScheduler");
+    String schedulerClass = getOptionalStringConfig("scheduler", "net.kuujo.vine.scheduler.RandomScheduler");
     try {
       scheduler = (Scheduler) Class.forName(schedulerClass).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {

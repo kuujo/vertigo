@@ -235,7 +235,7 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void shutdown(String address, long timeout, Handler<AsyncResult<Void>> doneHandler) {
+  public void shutdown(final String address, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     if (doneHandler != null) {
       future.setHandler(doneHandler);
@@ -253,6 +253,7 @@ public class LocalRoot implements Root {
       executor.execute(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> deployResult) {
+          eventBus.send(address, Actions.create("shutdown"));
           if (deployResult.succeeded()) {
             // Add the vine context to a shared map of contexts so that
             // vine worker addresses can be referenced for shutdown.

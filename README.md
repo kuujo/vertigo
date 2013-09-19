@@ -442,18 +442,3 @@ vertx.createNetServer().connectHandler(new Handler<NetSocket>() {
   }
 });
 ```
-
-```java
-VineDefinition vine = new VineDefinition("some.address");
-vine.feed("someseed", "SomeSeed.java").to("someotherseed", "SomeOtherSeed.java");
-
-Root root = new LocalRoot(vertx, container);
-root.deploy(vine, new Handler<AsyncResult<String>>() {
-  @Override
-  public void handle(AsyncResult<String> result) {
-    if (result.succeeded()) {
-      FeederExecutor feeder = new FeederExecutor(result.result(), vertx);
-    }
-  }
-});
-```

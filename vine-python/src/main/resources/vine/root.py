@@ -13,7 +13,9 @@
 # limitations under the License.
 import net.kuujo.vine.local.LocalRoot
 import net.kuujo.vine.remote.RemoteRoot
+import org.vertx.java.core.AsyncResultHandler
 import org.vertx.java.platform.impl.JythonVerticleFactory
+from core.javautils import map_to_java, map_from_java
 
 class _AbstractRoot(object):
   """
@@ -46,7 +48,7 @@ class RemoteRoot(_AbstractRoot):
   """
   _handlercls = net.kuujo.vine.remote.RemoteRoot
 
-class DeployHandler(org.vertx.java.core.Handler):
+class DeployHandler(org.vertx.java.core.AsyncResultHandler):
   """
   A vine deployment handler.
   """
@@ -56,5 +58,47 @@ class DeployHandler(org.vertx.java.core.Handler):
   def handle(self, result):
     if result.succeeded():
       self.handler(None, result.result())
+    else:
+      self.handler(result.cause(), None)
+
+class Feeder(object):
+  """
+  A vine feeder.
+  """
+  def __init__(self, feeder):
+    self.__feeder = feeder
+
+  def feed(self, data, handler=None, timeout=None):
+    if handler is None:
+      self.__feeder.feed(map_to_java(data))
+    else:
+      if timeout is None:
+        self.__feeder.feed(map_to_java(data), FeedHandler(handler))
+      else:
+        self.__feeder.feed(map_to_java(data), timeout, FeedHandler(handler))
+
+  def execute(self, data, handler, timeout=None):
+    if timeout is None:
+      self.__feeder.execute(map_to_java(data), ExecuteHandler(handler))
+    else:
+      self.__feeder.execute(map_to_java(data), timeout, ExecuteHandler(handler))
+
+class FeedHandler(org.vertx.java.core.AsyncResultHandler):
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, result):
+    if result.succeeded():
+      self.handler(None)
+    else:
+      self.handler(result.cause())
+
+class ExecuteHandler(org.vertx.java.core.AsyncResultHandler):
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, result):
+    if result.succeeded():
+      self.handler(None, map_from_java(result.result().toMap()))
     else:
       self.handler(result.cause(), None)

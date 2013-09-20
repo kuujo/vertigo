@@ -9,7 +9,7 @@ import org.vertx.java.core.eventbus.Message;
  */
 public class EventBusMessage {
 
-  private long id;
+  private Object id;
 
   private Message<?> message;
 
@@ -36,7 +36,7 @@ public class EventBusMessage {
    * @return
    *   The called message instance.
    */
-  public EventBusMessage setIdentifier(long id) {
+  public EventBusMessage setIdentifier(Object id) {
     this.id = id;
     return this;
   }
@@ -47,8 +47,9 @@ public class EventBusMessage {
    * @return
    *   A unique message identifier.
    */
-  public long getIdentifier() {
-    return id;
+  @SuppressWarnings("unchecked")
+  public <T> T getIdentifier() {
+    return (T) id;
   }
 
   /**

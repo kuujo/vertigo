@@ -12,7 +12,7 @@ public class JsonMessage extends JsonObject {
 
   private EventBusMessage message;
 
-  public JsonMessage(long id, JsonObject body, Message<JsonObject> message) {
+  public JsonMessage(Object id, JsonObject body, Message<JsonObject> message) {
     super(body.toMap());
     this.message = new EventBusMessage(message).setIdentifier(id);
   }
@@ -22,7 +22,7 @@ public class JsonMessage extends JsonObject {
     this.message = new EventBusMessage(message);
   }
 
-  public JsonMessage(long id, JsonObject body) {
+  public JsonMessage(Object id, JsonObject body) {
     super(body.toMap());
     this.message = new EventBusMessage().setIdentifier(id);
   }
@@ -48,8 +48,8 @@ public class JsonMessage extends JsonObject {
    *   The called message instance.
    */
   public JsonMessage createChild(JsonObject childData) {
-    long id = message.getIdentifier();
-    if (id > 0) {
+    Object id = message.getIdentifier();
+    if (id != null) {
       return new JsonMessage(id, childData);
     }
     else {
@@ -79,7 +79,7 @@ public class JsonMessage extends JsonObject {
    * @return
    *   The new message instance
    */
-  public static JsonMessage create(long id, JsonObject data) {
+  public static JsonMessage create(Object id, JsonObject data) {
     return new JsonMessage(id, data);
   }
 
@@ -95,7 +95,7 @@ public class JsonMessage extends JsonObject {
    * @return
    *   A new message instance.
    */
-  public static JsonMessage create(long id, JsonObject data, Message<JsonObject> message) {
+  public static JsonMessage create(Object id, JsonObject data, Message<JsonObject> message) {
     return new JsonMessage(id, data, message);
   }
 

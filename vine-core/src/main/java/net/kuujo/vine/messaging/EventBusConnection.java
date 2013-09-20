@@ -123,9 +123,9 @@ public class EventBusConnection implements Connection {
 
   private JsonObject createJsonObject(JsonMessage message) {
     JsonObject data = new JsonObject();
-    long id = message.message().getIdentifier();
-    if (id > 0) {
-      data.putNumber("id", id);
+    Object id = message.message().getIdentifier();
+    if (id != null) {
+      data.putValue("id", id);
     }
     data.putObject("body", (JsonObject) message);
     return data;

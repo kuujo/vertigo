@@ -30,7 +30,6 @@ import net.kuujo.vine.eventbus.Actions;
 import net.kuujo.vine.eventbus.ReliableEventBus;
 import net.kuujo.vine.eventbus.WrappedReliableEventBus;
 import net.kuujo.vine.eventbus.stem.StemVerticle;
-import net.kuujo.vine.eventbus.vine.VineVerticle;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
@@ -53,8 +52,6 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class LocalRoot implements Root {
-
-  protected static final String VINE_VERTICLE_CLASS = VineVerticle.class.getName();
 
   protected static final String STEM_VERTICLE_CLASS = StemVerticle.class.getName();
 

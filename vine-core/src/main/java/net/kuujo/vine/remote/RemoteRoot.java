@@ -22,7 +22,6 @@ import net.kuujo.vine.definition.VineDefinition;
 import net.kuujo.vine.eventbus.Actions;
 import net.kuujo.vine.eventbus.ReliableEventBus;
 import net.kuujo.vine.eventbus.WrappedReliableEventBus;
-import net.kuujo.vine.eventbus.vine.VineVerticle;
 import net.kuujo.vine.util.Messaging;
 
 import org.vertx.java.core.AsyncResult;
@@ -42,8 +41,6 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class RemoteRoot implements Root {
-
-  protected static final String VINE_VERTICLE_CLASS = VineVerticle.class.getName();
 
   protected static final long DEFAULT_TIMEOUT = 10000;
 

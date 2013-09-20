@@ -58,12 +58,14 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
   public ReliableExecutor(VineContext context, Vertx vertx) {
     super(context, vertx);
     this.vertx = vertx;
+    init();
     createUniqueId();
   }
 
   public ReliableExecutor(VineContext context, Vertx vertx, EventBus eventBus) {
     super(context, vertx, eventBus);
     this.vertx = vertx;
+    init();
     createUniqueId();
   }
 

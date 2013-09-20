@@ -34,14 +34,17 @@ public class UnreliableFeeder extends AbstractFeeder implements Feeder {
 
   public UnreliableFeeder(VineContext context, Vertx vertx) {
     super(context, vertx);
+    init();
   }
 
   public UnreliableFeeder(VineContext context, EventBus eventBus) {
     super(context, eventBus);
+    init();
   }
 
   public UnreliableFeeder(VineContext context, Vertx vertx, EventBus eventBus) {
     super(context, vertx, eventBus);
+    init();
   }
 
   @Override

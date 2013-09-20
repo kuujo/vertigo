@@ -42,14 +42,17 @@ public class ReliableFeeder extends UnreliableFeeder {
 
   public ReliableFeeder(VineContext context, Vertx vertx) {
     super(context, vertx);
+    init();
   }
 
   public ReliableFeeder(VineContext context, EventBus eventBus) {
     super(context, eventBus);
+    init();
   }
 
   public ReliableFeeder(VineContext context, Vertx vertx, EventBus eventBus) {
     super(context, vertx, eventBus);
+    init();
   }
 
   @Override

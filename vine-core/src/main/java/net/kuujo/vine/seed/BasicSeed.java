@@ -212,7 +212,7 @@ public class BasicSeed implements Seed {
       JsonObject receive = body.getObject("receive");
       if (receive != null) {
         if (receive.getFieldNames().contains("id")) {
-          handleMessage(new JsonMessage(receive.getLong("id"), receive.getObject("body"), message));
+          handleMessage(new JsonMessage(receive.getValue("id"), receive.getObject("body"), message));
         }
         else {
           handleMessage(new JsonMessage(receive.getObject("body"), message));

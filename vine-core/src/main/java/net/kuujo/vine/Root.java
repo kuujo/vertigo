@@ -15,6 +15,7 @@
 */
 package net.kuujo.vine;
 
+import net.kuujo.vine.context.VineContext;
 import net.kuujo.vine.definition.VineDefinition;
 
 import org.vertx.java.core.AsyncResult;
@@ -73,7 +74,7 @@ public interface Root {
    * @param handler
    *   An asynchronous result handler to be invoked with a vine feeder.
    */
-  public void deploy(VineDefinition vine, Handler<AsyncResult<Feeder>> handler);
+  public void deploy(VineDefinition vine, Handler<AsyncResult<VineContext>> handler);
 
   /**
    * Deploys a vine definition with a timeout.
@@ -85,36 +86,36 @@ public interface Root {
    * @param handler
    *   An asynchronous result handler to be invoked with a vine feeder.
    */
-  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<Feeder>> handler);
+  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<VineContext>> handler);
 
   /**
    * Shuts down the vine at the given address.
    *
-   * @param address
-   *   The vine address.
+   * @param context
+   *   The vine context.
    */
-  public void shutdown(String address);
+  public void shutdown(VineContext context);
 
   /**
    * Shuts down the vine at the given address, awaiting a result.
    *
-   * @param address
-   *   The vine address.
+   * @param context
+   *   The vine context.
    * @param doneHandler
    *   An asynchronous result handler to be invoked once the shutdown is complete.
    */
-  public void shutdown(String address, Handler<AsyncResult<Void>> doneHandler);
+  public void shutdown(VineContext context, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Shuts down the vine at the given address, awaiting a result.
    *
-   * @param address
-   *   The vine address.
+   * @param context
+   *   The vine context.
    * @param timeout
    *   A shutdown timeout.
    * @param doneHandler
    *   An asynchronous result handler to be invoked once the shutdown is complete.
    */
-  public void shutdown(String address, long timeout, Handler<AsyncResult<Void>> doneHandler);
+  public void shutdown(VineContext context, long timeout, Handler<AsyncResult<Void>> doneHandler);
 
 }

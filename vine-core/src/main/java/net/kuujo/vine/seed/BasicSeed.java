@@ -42,6 +42,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -63,6 +64,8 @@ public class BasicSeed implements Seed {
   protected ReliableEventBus eventBus;
 
   protected String address;
+
+  protected String vineAddress;
 
   protected WorkerContext context;
 
@@ -94,6 +97,7 @@ public class BasicSeed implements Seed {
   public Seed setContext(WorkerContext context) {
     this.context = context;
     this.address = context.getAddress();
+    this.vineAddress = context.getContext().getContext().getAddress();
     return this;
   }
 
@@ -143,7 +147,7 @@ public class BasicSeed implements Seed {
    * Sets up seed outputs.
    */
   private void setupOutputs() {
-    output = new OutputCollector();
+    output = new OutputCollector(vineAddress, eventBus);
 
     Collection<ConnectionContext> connections = context.getContext().getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
@@ -292,8 +296,15 @@ public class BasicSeed implements Seed {
    */
   protected static class OutputCollector {
 
+    private String vineAddress;
+    private EventBus eventBus;
     private List<Stream<?>> streamList = new ArrayList<>();
     private Map<String, Stream<?>> streams = new HashMap<>();
+
+    public OutputCollector(String vineAddress, EventBus eventBus) {
+      this.vineAddress = vineAddress;
+      this.eventBus = eventBus;
+    }
 
     /**
      * Adds a stream to the output.
@@ -345,8 +356,10 @@ public class BasicSeed implements Seed {
      * Emits a message to all streams.
      */
     public void emit(JsonMessage message) {
-      for (Stream<?> stream : streamList) {
-        stream.emit(message);
+      if (streamList.size() > 0) {
+        for (Stream<?> stream : streamList) {
+          stream.emit(message);
+        }
       }
     }
 
@@ -354,18 +367,23 @@ public class BasicSeed implements Seed {
      * Emits a message to all streams.
      */
     public void emit(JsonMessage message, final Handler<Boolean> ackHandler) {
-      for (Stream<?> stream : streamList) {
-        stream.emit(message, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Message<Boolean>>>() {
-          @Override
-          public void handle(AsyncResult<Message<Boolean>> result) {
-            if (result.succeeded()) {
-              ackHandler.handle(result.result().body());
+      if (streamList.size() > 0) {
+        for (Stream<?> stream : streamList) {
+          stream.emit(message, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Message<Boolean>>>() {
+            @Override
+            public void handle(AsyncResult<Message<Boolean>> result) {
+              if (result.succeeded()) {
+                ackHandler.handle(result.result().body());
+              }
+              else {
+                ackHandler.handle(false);
+              }
             }
-            else {
-              ackHandler.handle(false);
-            }
-          }
-        });
+          });
+        }
+      }
+      else {
+        eventBus.publish(vineAddress, createJsonObject(message));
       }
     }
 
@@ -373,7 +391,7 @@ public class BasicSeed implements Seed {
      * Emits a message to a specific stream.
      */
     public void emitTo(String name, JsonMessage message) {
-      if (streams.containsKey(name)) {
+      if (streamList.size() > 0 && streams.containsKey(name)) {
         streams.get(name).emit(message);
       }
     }
@@ -382,7 +400,7 @@ public class BasicSeed implements Seed {
      * Emits a message to a specific stream.
      */
     public void emitTo(String name, JsonMessage message, final Handler<Boolean> ackHandler) {
-      if (streams.containsKey(name)) {
+      if (streamList.size() > 0 && streams.containsKey(name)) {
         streams.get(name).emit(message, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Message<Boolean>>>() {
           @Override
           public void handle(AsyncResult<Message<Boolean>> result) {
@@ -395,6 +413,16 @@ public class BasicSeed implements Seed {
           }
         });
       }
+    }
+
+    private JsonObject createJsonObject(JsonMessage message) {
+      JsonObject data = new JsonObject();
+      long id = message.message().getIdentifier();
+      if (id > 0) {
+        data.putNumber("id", id);
+      }
+      data.putObject("body", (JsonObject) message);
+      return data;
     }
   }
 

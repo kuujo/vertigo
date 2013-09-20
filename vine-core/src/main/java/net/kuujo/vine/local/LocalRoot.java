@@ -18,8 +18,6 @@ package net.kuujo.vine.local;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.kuujo.vine.BasicFeeder;
-import net.kuujo.vine.Feeder;
 import net.kuujo.vine.Root;
 import net.kuujo.vine.VineException;
 import net.kuujo.vine.context.SeedContext;
@@ -43,7 +41,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 
 /**
@@ -108,8 +105,8 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, Handler<AsyncResult<Feeder>> handler) {
-    final Future<Feeder> future = new DefaultFutureResult<Feeder>();
+  public void deploy(final VineDefinition vine, Handler<AsyncResult<VineContext>> handler) {
+    final Future<VineContext> future = new DefaultFutureResult<VineContext>();
     future.setHandler(handler);
 
     // Deploy a local stem which will monitor the vine.
@@ -134,9 +131,7 @@ public class LocalRoot implements Root {
               @Override
               public void handle(AsyncResult<Void> deployResult) {
                 if (deployResult.succeeded()) {
-                  // Once all the seed workers have been deployed, deploy the
-                  // vine verticle for feeding the seeds.
-                  deployVineVerticle(context, stemAddress, future);
+                  future.setResult(context);
                 }
                 else {
                   future.setFailure(deployResult.cause());
@@ -153,8 +148,8 @@ public class LocalRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, final long timeout, Handler<AsyncResult<Feeder>> handler) {
-    final Future<Feeder> future = new DefaultFutureResult<Feeder>();
+  public void deploy(final VineDefinition vine, final long timeout, Handler<AsyncResult<VineContext>> handler) {
+    final Future<VineContext> future = new DefaultFutureResult<VineContext>();
     future.setHandler(handler);
 
     // Deploy a local stem which will monitor the vine.
@@ -179,9 +174,7 @@ public class LocalRoot implements Root {
               @Override
               public void handle(AsyncResult<Void> deployResult) {
                 if (deployResult.succeeded()) {
-                  // Once all the seed workers have been deployed, deploy the
-                  // vine verticle for feeding the seeds.
-                  deployVineVerticle(context, stemAddress, future);
+                  future.setResult(context);
                 }
                 else {
                   future.setFailure(deployResult.cause());
@@ -197,55 +190,24 @@ public class LocalRoot implements Root {
     });
   }
 
-  /**
-   * Deploys a vine verticle.
-   *
-   * @param context
-   *   The vine context.
-   * @param stemAddress
-   *   The stem address.
-   * @param future
-   *   A future result to be invoked with a vine reference.
-   */
-  private void deployVineVerticle(final VineContext context, final String stemAddress, final Future<Feeder> future) {
-    container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.succeeded()) {
-          // Add the vine context to a shared map of contexts so that
-          // vine worker addresses can be referenced for shutdown.
-          storeContext(context);
-          future.setResult(new BasicFeeder(context.getAddress(), eventBus, vertx));
-        }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
+  @Override
+  public void shutdown(VineContext context) {
+    shutdown(context, DEFAULT_TIMEOUT, null);
   }
 
   @Override
-  public void shutdown(String address) {
-    shutdown(address, DEFAULT_TIMEOUT, null);
+  public void shutdown(VineContext context, Handler<AsyncResult<Void>> doneHandler) {
+    shutdown(context, DEFAULT_TIMEOUT, doneHandler);
   }
 
   @Override
-  public void shutdown(String address, Handler<AsyncResult<Void>> doneHandler) {
-    shutdown(address, DEFAULT_TIMEOUT, doneHandler);
-  }
-
-  @Override
-  public void shutdown(final String address, long timeout, Handler<AsyncResult<Void>> doneHandler) {
+  public void shutdown(VineContext context, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     if (doneHandler != null) {
       future.setHandler(doneHandler);
     }
 
-    final VineContext context = loadContext(address);
-    if (context == null) {
-      future.setFailure(new VineException("Invalid vine address."));
-    }
-    else if (stemAddress == null) {
+    if (stemAddress == null) {
       future.setFailure(new VineException("No local stem deployed."));
     }
     else {
@@ -255,9 +217,6 @@ public class LocalRoot implements Root {
         public void handle(AsyncResult<Void> deployResult) {
           eventBus.send(address, Actions.create("shutdown"));
           if (deployResult.succeeded()) {
-            // Add the vine context to a shared map of contexts so that
-            // vine worker addresses can be referenced for shutdown.
-            removeContext(context);
             future.setResult(null);
           }
           else {
@@ -294,25 +253,6 @@ public class LocalRoot implements Root {
         }
       });
     }
-  }
-
-  private void storeContext(VineContext context) {
-    ConcurrentSharedMap<String, String> contexts = vertx.sharedData().getMap("vine.contexts");
-    contexts.put(context.getAddress(), context.serialize().encode());
-  }
-
-  private VineContext loadContext(String address) {
-    ConcurrentSharedMap<String, String> contexts = vertx.sharedData().getMap("vine.contexts");
-    String encoded = contexts.get(address);
-    if (encoded != null) {
-      return new VineContext(new JsonObject(encoded));
-    }
-    return null;
-  }
-
-  private void removeContext(VineContext context) {
-    ConcurrentSharedMap<String, String> contexts = vertx.sharedData().getMap("vine.contexts");
-    contexts.remove(context.getAddress());
   }
 
   /**

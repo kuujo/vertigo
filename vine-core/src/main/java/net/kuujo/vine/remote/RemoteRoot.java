@@ -15,8 +15,6 @@
 */
 package net.kuujo.vine.remote;
 
-import net.kuujo.vine.BasicFeeder;
-import net.kuujo.vine.Feeder;
 import net.kuujo.vine.Root;
 import net.kuujo.vine.VineException;
 import net.kuujo.vine.context.VineContext;
@@ -145,8 +143,8 @@ public class RemoteRoot implements Root {
   }
 
   @Override
-  public void deploy(final VineDefinition vine, Handler<AsyncResult<Feeder>> handler) {
-    final Future<Feeder> future = new DefaultFutureResult<Feeder>().setHandler(handler);
+  public void deploy(final VineDefinition vine, Handler<AsyncResult<VineContext>> handler) {
+    final Future<VineContext> future = new DefaultFutureResult<VineContext>().setHandler(handler);
     eventBus.send(address, Actions.create("deploy", vine.serialize()), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -157,15 +155,15 @@ public class RemoteRoot implements Root {
           future.setFailure(new VineException(error));
         }
         else {
-          deployVineVerticle(new VineContext(body.getObject("context")), future);
+          future.setResult(new VineContext(body.getObject("context")));
         }
       }
     });
   }
 
   @Override
-  public void deploy(final VineDefinition vine, long timeout, Handler<AsyncResult<Feeder>> handler) {
-    final Future<Feeder> future = new DefaultFutureResult<Feeder>().setHandler(handler);
+  public void deploy(final VineDefinition vine, long timeout, Handler<AsyncResult<VineContext>> handler) {
+    final Future<VineContext> future = new DefaultFutureResult<VineContext>().setHandler(handler);
     eventBus.send(address, Actions.create("deploy", vine.serialize()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -174,56 +172,34 @@ public class RemoteRoot implements Root {
         }
         else {
           // Check for an error. If no error occurred then deploy the vine task.
-          final JsonObject context = result.result().body();
-          String error = context.getString("error");
+          final JsonObject body = result.result().body();
+          String error = body.getString("error");
           if (error != null) {
             future.setFailure(new VineException(error));
           }
           else {
-            deployVineVerticle(new VineContext(context), future);
+            future.setResult(new VineContext(body.getObject("context")));
           }
         }
       }
     });
   }
 
-  /**
-   * Deploys a vine verticle.
-   *
-   * @param context
-   *   The vine context.
-   * @param future
-   *   A future result to be invoked with a vine reference.
-   */
-  private void deployVineVerticle(final VineContext context, final Future<Feeder> future) {
-    container.deployVerticle(VINE_VERTICLE_CLASS, context.serialize(), new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.succeeded()) {
-          future.setResult(new BasicFeeder(context.getAddress(), eventBus, vertx));
-        }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
+  @Override
+  public void shutdown(VineContext context) {
+    shutdown(context, DEFAULT_TIMEOUT, null);
   }
 
   @Override
-  public void shutdown(String address) {
-    shutdown(address, DEFAULT_TIMEOUT, null);
+  public void shutdown(VineContext context, final Handler<AsyncResult<Void>> doneHandler) {
+    shutdown(context, DEFAULT_TIMEOUT, doneHandler);
   }
 
   @Override
-  public void shutdown(String address, final Handler<AsyncResult<Void>> doneHandler) {
-    shutdown(address, DEFAULT_TIMEOUT, doneHandler);
-  }
-
-  @Override
-  public void shutdown(final String address, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
+  public void shutdown(VineContext context, long timeout, final Handler<AsyncResult<Void>> doneHandler) {
     // Send a message to the remote root indicating that the vine should be
     // shut down. The remote root will notify the appropriate stem.
-    eventBus.send(this.address, Actions.create("undeploy", address), timeout, new AsyncResultHandler<Message<JsonObject>>() {
+    eventBus.send(address, Actions.create("undeploy", context.getAddress()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         eventBus.send(address, Actions.create("shutdown"));

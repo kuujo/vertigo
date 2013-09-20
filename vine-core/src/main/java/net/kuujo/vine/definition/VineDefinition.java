@@ -412,16 +412,6 @@ public class VineDefinition implements Serializeable<JsonObject> {
           seedConnectionContexts.putObject(name, connection);
         }
       }
-      // If the seed does not have any connections then it implicitly connects
-      // back to the vine verticle.
-      else {
-        JsonObject connection = new JsonObject();
-        connection.putString("name", address);
-        connection.putObject("grouping", new RoundGrouping().serialize());
-        connection.putArray("addresses", new JsonArray().add(address));
-
-        seedConnectionContexts.putObject(address, connection);
-      }
 
       // Finally, add the connections to the object.
       seedContext.putObject("connections", seedConnectionContexts);

@@ -29,7 +29,7 @@ import org.vertx.java.platform.Verticle;
  *
  * @author Jordan Halterman
  */
-abstract class SeedVerticle extends Verticle implements Handler<JsonObject> {
+public abstract class SeedVerticle extends Verticle implements Handler<JsonObject> {
 
   private Seed seed;
 

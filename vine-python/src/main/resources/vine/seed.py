@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vine.context.VineContext
-import net.kuujo.vine.seed.BasicSeed
-import net.kuujo.vine.seed.ReliableSeed
-import org.vertx.java.platform.impl.JythonVerticleFactory
-import org.vertx.java.core.Handler
-import net.kuujo.vine.seed.BasicSeed
 import net.kuujo.vine.seed.ReliableSeed
 import net.kuujo.vine.messaging.JsonMessage
+import org.vertx.java.platform.impl.JythonVerticleFactory
+import org.vertx.java.core.Handler
 from core.javautils import map_from_java, map_to_java
 
 class _AbstractSeed(object):
@@ -28,11 +25,10 @@ class _AbstractSeed(object):
   _handlercls = None
 
   def __init__(self):
-    if self._handlercls is not None:
-      self.__seed = self._handlercls()
-      self.__seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
-      self.__seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
-      self.__seed.setContext(net.kuujo.vine.context.VineContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
+    self.__seed = net.kuujo.vine.seed.ReliableSeed()
+    self.__seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
+    self.__seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
+    self.__seed.setContext(net.kuujo.vine.context.VineContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
 
   def data_handler(self, handler):
     """
@@ -82,18 +78,6 @@ class _AbstractSeed(object):
       self.__seed.fail(data[0].__message)
     else:
       self.__seed.fail(*[data[i].__message for i in range(len(data))])
-
-class BasicSeed(_AbstractSeed):
-  """
-  A basic seed instance.
-  """
-  _handlercls = net.kuujo.vine.seed.BasicSeed
-
-class ReliableSeed(_AbstractSeed):
-  """
-  A reliable seed instance.
-  """
-  _handlercls = net.kuujo.vine.seed.ReliableSeed
 
 class DataHandler(org.vertx.java.core.Handler):
   """

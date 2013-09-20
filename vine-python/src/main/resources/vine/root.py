@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from context import VineContext
 import net.kuujo.vine.local.LocalRoot
 import net.kuujo.vine.remote.RemoteRoot
 import org.vertx.java.core.Handler
@@ -58,66 +59,6 @@ class DeployHandler(org.vertx.java.core.AsyncResultHandler):
 
   def handle(self, result):
     if result.succeeded():
-      self.handler(None, result.result())
+      self.handler(None, VineContext(result.result()))
     else:
       self.handler(result.cause(), None)
-
-class Feeder(object):
-  """
-  A vine feeder.
-  """
-  def __init__(self, feeder):
-    if isinstance(feeder, basestring):
-      self.__feeder = net.kuujo.vine.BasicFeeder(feeder, org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
-    else:
-      self.__feeder = feeder
-
-  def feed(self, data, handler=None, timeout=None):
-    if handler is None:
-      self.__feeder.feed(map_to_java(data))
-    else:
-      if timeout is None:
-        self.__feeder.feed(map_to_java(data), FeedHandler(handler))
-      else:
-        self.__feeder.feed(map_to_java(data), timeout, FeedHandler(handler))
-
-  def execute(self, data, handler, timeout=None):
-    if timeout is None:
-      self.__feeder.execute(map_to_java(data), ExecuteHandler(handler))
-    else:
-      self.__feeder.execute(map_to_java(data), timeout, ExecuteHandler(handler))
-
-  def feed_queue_full(self):
-    return self.__feeder.feedQueueFull()
-
-  queue_full = property(feed_queue_full)
-
-  def drain_handler(self, handler):
-    self.__feeder.drainHandler(DrainHandler(handler))
-
-class FeedHandler(org.vertx.java.core.AsyncResultHandler):
-  def __init__(self, handler):
-    self.handler = handler
-
-  def handle(self, result):
-    if result.succeeded():
-      self.handler(None)
-    else:
-      self.handler(result.cause())
-
-class ExecuteHandler(org.vertx.java.core.AsyncResultHandler):
-  def __init__(self, handler):
-    self.handler = handler
-
-  def handle(self, result):
-    if result.succeeded():
-      self.handler(None, map_from_java(result.result().toMap()))
-    else:
-      self.handler(result.cause(), None)
-
-class DrainHandler(org.vertx.java.core.Handler):
-  def __init__(self, handler):
-    self.handler = handler
-
-  def handle(self, result):
-    self.handler()

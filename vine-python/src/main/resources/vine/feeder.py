@@ -19,7 +19,9 @@ import net.kuujo.vine.feeder.ReliableExecutor
 import net.kuujo.vine.feeder.RemoteExecutor
 import net.kuujo.vine.feeder.RemoteExecutorServer
 import org.vertx.java.core.AsyncResultHandler
+import org.vertx.java.core.Handler
 import org.vertx.java.platform.impl.JythonVerticleFactory.vertx
+from core.javautils import map_from_java, map_to_java
 
 class _AbstractFeeder(object):
   """
@@ -38,6 +40,9 @@ class _AbstractFeeder(object):
     else:
       self._feeder.feed(map_to_java(data), FeedHandler(handler))
     return self
+
+  def drain_handler(self, handler):
+    self._executor.drainHandler(DrainHandler(handler))
 
 class UnreliableFeeder(object):
   """
@@ -105,6 +110,9 @@ class _AbstractExecutor(object):
       self._executor.execute(map_to_java(data), timeout, ExecuteHandler(handler))
     return self
 
+  def drain_handler(self, handler):
+    self._executor.drainHandler(DrainHandler(handler))
+
 class ReliableExecutor(_AbstractExecutor):
   """
   A reliable vine executor.
@@ -146,3 +154,13 @@ class ExecuteHandler(org.vertx.java.core.AsyncResultHandler):
       self.handler(None, map_from_java(result.result()))
     else:
       self.handler(result.cause(), None)
+
+class DrainHandler(org.vertx.java.core.Handler):
+  """
+  A drain handler.
+  """
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, result):
+    self.handler()

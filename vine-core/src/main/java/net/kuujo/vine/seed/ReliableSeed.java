@@ -60,8 +60,13 @@ public class ReliableSeed extends BasicSeed {
      */
     public void emit(JsonObject child) {
       // Ensure the child's ID is the same as the parent's (if any).
-      for (String name : output.getStreamNames()) {
-        doEmit(name, parent.createChild(child));
+      if (output.size() > 0) {
+        for (String name : output.getStreamNames()) {
+          doEmit(name, parent.createChild(child));
+        }
+      }
+      else {
+        eventBus.publish(vineAddress, createJsonObject(parent.createChild(child)));
       }
     }
 
@@ -83,10 +88,17 @@ public class ReliableSeed extends BasicSeed {
         copies.add(copy);
       }
 
-      Set<String> streamNames = output.getStreamNames();
-      for (JsonMessage copy : copies) {
-        for (String streamName : streamNames) {
-          doEmit(streamName, copy);
+      if (output.size() > 0) {
+        Set<String> streamNames = output.getStreamNames();
+        for (JsonMessage copy : copies) {
+          for (String streamName : streamNames) {
+            doEmit(streamName, copy);
+          }
+        }
+      }
+      else {
+        for (JsonMessage copy : copies) {
+          eventBus.publish(vineAddress, createJsonObject(copy));
         }
       }
     }
@@ -162,6 +174,16 @@ public class ReliableSeed extends BasicSeed {
           }
         }
       });
+    }
+
+    private JsonObject createJsonObject(JsonMessage message) {
+      JsonObject data = new JsonObject();
+      Object id = message.message().getIdentifier();
+      if (id != null) {
+        data.putValue("id", id);
+      }
+      data.putObject("body", (JsonObject) message);
+      return data;
     }
   }
 

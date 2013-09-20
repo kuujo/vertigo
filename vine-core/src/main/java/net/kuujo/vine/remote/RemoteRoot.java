@@ -202,7 +202,6 @@ public class RemoteRoot implements Root {
     eventBus.send(address, Actions.create("undeploy", context.getAddress()), timeout, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
-        eventBus.send(address, Actions.create("shutdown"));
         if (doneHandler != null) {
           Messaging.checkResponse(result, doneHandler);
         }

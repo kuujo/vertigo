@@ -61,7 +61,7 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection send(JsonMessage message) {
-    eventBus.send(address, Actions.create("receive", message));
+    eventBus.send(address, Actions.create("receive", createJsonObject(message)));
     return this;
   }
 

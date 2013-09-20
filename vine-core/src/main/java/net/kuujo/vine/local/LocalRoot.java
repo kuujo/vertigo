@@ -215,7 +215,6 @@ public class LocalRoot implements Root {
       executor.execute(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> deployResult) {
-          eventBus.send(address, Actions.create("shutdown"));
           if (deployResult.succeeded()) {
             future.setResult(null);
           }

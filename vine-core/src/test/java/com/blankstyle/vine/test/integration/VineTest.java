@@ -273,7 +273,6 @@ public class VineTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<VineContext> result) {
                 assertTrue(result.failed());
-                assertNotNull(result.result());
                 testComplete();
               }
             });

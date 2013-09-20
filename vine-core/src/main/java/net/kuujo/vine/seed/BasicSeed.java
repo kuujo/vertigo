@@ -361,6 +361,9 @@ public class BasicSeed implements Seed {
           stream.emit(message);
         }
       }
+      else {
+        eventBus.publish(vineAddress, createJsonObject(message));
+      }
     }
 
     /**
@@ -417,9 +420,9 @@ public class BasicSeed implements Seed {
 
     private JsonObject createJsonObject(JsonMessage message) {
       JsonObject data = new JsonObject();
-      long id = message.message().getIdentifier();
-      if (id > 0) {
-        data.putNumber("id", id);
+      Object id = message.message().getIdentifier();
+      if (id != null) {
+        data.putValue("id", id);
       }
       data.putObject("body", (JsonObject) message);
       return data;

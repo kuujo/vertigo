@@ -43,7 +43,7 @@ public abstract class AbstractExecutor extends AbstractFeeder {
   }
 
   @Override
-  public void init() {
+  protected void init() {
     super.init();
     setupInputs();
   }

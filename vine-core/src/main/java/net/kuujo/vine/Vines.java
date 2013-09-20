@@ -17,8 +17,6 @@ package net.kuujo.vine;
 
 import net.kuujo.vine.definition.VineDefinition;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -48,50 +46,6 @@ public class Vines {
    */
   public static VineDefinition createDefinition(String address) {
     return new VineDefinition(new JsonObject().putString("address", address));
-  }
-
-  /**
-   * Opens a feeder to an existing vine.
-   *
-   * @param address
-   *   The vine address.
-   * @param vertx
-   *   A vertx instance.
-   * @return
-   *   A feeder to the vine.
-   */
-  public static Feeder open(String address, Vertx vertx) {
-    return new BasicFeeder(address, vertx.eventBus(), vertx);
-  }
-
-  /**
-   * Opens a feeder to an existing vine.
-   *
-   * @param address
-   *   The vine address.
-   * @param eventBus
-   *   A Vert.x eventbus.
-   * @return
-   *   A feeder to the vine.
-   */
-  public static Feeder open(String address, EventBus eventBus) {
-    return new BasicFeeder(address, eventBus);
-  }
-
-  /**
-   * Opens a feeder to an existing vine.
-   *
-   * @param address
-   *   The vine address.
-   * @param eventBus
-   *   A Vert.x eventbus.
-   * @param vertx
-   *   A vertx instance.
-   * @return
-   *   A feeder to the vine.
-   */
-  public static Feeder open(String address, EventBus eventBus, Vertx vertx) {
-    return new BasicFeeder(address, eventBus, vertx);
   }
 
 }

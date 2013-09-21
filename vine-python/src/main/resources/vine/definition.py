@@ -52,8 +52,8 @@ class VineDefinition(object):
 
   message_timeout = property(get_message_timeout, set_message_timeout)
 
-  def feed(self, name, main=None, workers=1, **options):
-    seed = SeedDefinition(name, main, workers, **options)
+  def feed(self, name, main=None, workers=1, grouping=None, **options):
+    seed = SeedDefinition(name, main, workers, grouping, **options)
     self.__def.feed(seed.__def)
     return seed
 
@@ -75,11 +75,13 @@ class SeedDefinition(object):
   """
   A vine seed definition.
   """
-  def __init__(self, name, main=None, workers=1, **options):
+  def __init__(self, name, main=None, workers=1, grouping=None, **options):
     self.__def = net.kuujo.vine.definition.SeedDefinition(name)
     if main is not None:
       self.__def.setMain(main)
     self.__def.setWorkers(workers)
+    if grouping is not None:
+      self.__def.setGrouping(grouping.__def)
     for key, value in options.iteritems():
       self.__def.setOption(key, value)
 

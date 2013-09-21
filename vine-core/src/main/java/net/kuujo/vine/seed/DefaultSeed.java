@@ -241,16 +241,6 @@ public class DefaultSeed implements Seed {
   }
 
   @Override
-  public void emitTo(String seedName, JsonObject data) {
-    currentMessage.emitTo(seedName, data);
-  }
-
-  @Override
-  public void emitTo(String seedName, JsonObject... data) {
-    currentMessage.emitTo(seedName, data);
-  }
-
-  @Override
   public void ack(JsonMessage message) {
     message.message().ack();
   }
@@ -338,74 +328,6 @@ public class DefaultSeed implements Seed {
             // If a timeout occurred then try resending the message.
             if (result.failed()) {
               doEmit(child);
-            }
-            // If the child was failed, fail the parent.
-            else if (!result.result()) {
-              fail();
-            }
-            // Otherwise, check if all message children have completed.
-            else {
-              completeCount++;
-              if (completed && completeCount == childCount) {
-                message.message().ready();
-              }
-            }
-          }
-        }
-      });
-    }
-
-    /**
-     * Emits child data to a specific seed.
-     *
-     * @param seedName
-     *   The seed name.
-     * @param data
-     *   The data to emit.
-     */
-    public void emitTo(String seedName, JsonObject data) {
-      if (!failed) {
-        if (output.size() == 0) {
-          message.message().ready();
-          eventBus.publish(vineAddress, createJsonObject(message.createChild(data)));
-        }
-        else {
-          childCount++;
-          doEmitTo(seedName, message.createChild(data));
-        }
-      }
-    }
-
-    /**
-     * Emits child data to a specific seed.
-     *
-     * @param seedName
-     *   The seed name.
-     * @param data
-     *   The data to emit.
-     */
-    public void emitTo(String seedName, JsonObject... data) {
-      for (JsonObject item : data) {
-        emitTo(seedName, item);
-      }
-    }
-
-    /**
-     * Emits a single child message to a specific seed.
-     *
-     * @param seedName
-     *   The seed name.
-     * @param child
-     *   The child message to emit.
-     */
-    private void doEmitTo(final String seedName, final JsonMessage child) {
-      output.emitTo(seedName, child, EMIT_TIMEOUT, new Handler<AsyncResult<Boolean>>() {
-        @Override
-        public void handle(AsyncResult<Boolean> result) {
-          if (!failed) {
-            // If a timeout occurred then try resending the message.
-            if (result.failed()) {
-              doEmitTo(seedName, child);
             }
             // If the child was failed, fail the parent.
             else if (!result.result()) {

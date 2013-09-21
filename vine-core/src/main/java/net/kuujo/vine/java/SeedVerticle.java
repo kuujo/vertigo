@@ -64,30 +64,6 @@ public abstract class SeedVerticle extends Verticle implements Handler<JsonObjec
   }
 
   /**
-   * Emits data to a specific output stream.
-   *
-   * @param seedName
-   *   The seed name to which to emit.
-   * @param data
-   *   The data to emit.
-   */
-  public void emitTo(String seedName, JsonObject data) {
-    seed.emitTo(seedName, data);
-  }
-
-  /**
-   * Emits multiple sets of data to a specific output stream.
-   *
-   * @param seedName
-   *   The seed name to which to emit.
-   * @param data
-   *   The data to emit.
-   */
-  public void emitTo(String seedName, JsonObject... data) {
-    seed.emitTo(seedName, data);
-  }
-
-  /**
    * Acknowledges processing of a message.
    *
    * @param data

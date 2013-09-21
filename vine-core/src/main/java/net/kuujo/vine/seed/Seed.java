@@ -87,26 +87,6 @@ public interface Seed {
   public void emit(JsonObject... data);
 
   /**
-   * Emits data to a specific seed.
-   *
-   * @param seedName
-   *   The seed name to which to emit the message.
-   * @param data
-   *   The data to emit.
-   */
-  public void emitTo(String seedName, JsonObject data);
-
-  /**
-   * Emits multiple sets of data to a specific seed.
-   *
-   * @param seedName
-   *   The seed name to which to emit the message.
-   * @param data
-   *   The data to emit.
-   */
-  public void emitTo(String seedName, JsonObject... data);
-
-  /**
    * Acknowledges processing of a message.
    *
    * @param message

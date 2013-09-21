@@ -16,7 +16,9 @@
 package net.kuujo.vine.seed;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import net.kuujo.vine.context.ConnectionContext;
 import net.kuujo.vine.context.WorkerContext;
@@ -27,6 +29,7 @@ import net.kuujo.vine.heartbeat.DefaultHeartBeatEmitter;
 import net.kuujo.vine.heartbeat.HeartBeatEmitter;
 import net.kuujo.vine.messaging.ConnectionPool;
 import net.kuujo.vine.messaging.CoordinatingOutputCollector;
+import net.kuujo.vine.messaging.DefaultJsonMessage;
 import net.kuujo.vine.messaging.Dispatcher;
 import net.kuujo.vine.messaging.EventBusConnection;
 import net.kuujo.vine.messaging.EventBusConnectionPool;
@@ -39,6 +42,7 @@ import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
@@ -68,9 +72,9 @@ public class DefaultSeed implements Seed {
 
   protected OutputCollector output;
 
-  protected Handler<JsonObject> dataHandler;
+  protected Handler<JsonMessage> dataHandler;
 
-  protected InternalMessage currentMessage;
+  protected Map<JsonMessage, InternalMessage> messageMap = new HashMap<JsonMessage, InternalMessage>();
 
   protected static final long DEFAULT_MESSAGE_TIMEOUT = 15000;
 
@@ -205,44 +209,67 @@ public class DefaultSeed implements Seed {
     JsonObject body = message.body();
     if (body != null) {
       JsonObject receive = body.getObject("receive");
-      if (receive != null) {
-        if (receive.getFieldNames().contains("id")) {
-          handleMessage(new JsonMessage(receive.getValue("id"), receive.getObject("body"), message));
-        }
-        else {
-          handleMessage(new JsonMessage(receive.getObject("body"), message));
-        }
+      if (receive != null && dataHandler != null) {
+        JsonMessage jsonMessage = new DefaultJsonMessage(receive);
+        InternalMessage internal = new InternalMessage(message, jsonMessage);
+        messageMap.put(jsonMessage, internal);
+        dataHandler.handle(jsonMessage);
       }
     }
   }
 
-  private void handleMessage(JsonMessage message) {
-    currentMessage = new InternalMessage(message);
-    if (dataHandler != null) {
-      dataHandler.handle(message);
-    }
-    currentMessage.complete();
-  }
-
   @Override
-  public Seed dataHandler(Handler<JsonObject> handler) {
+  public Seed dataHandler(Handler<JsonMessage> handler) {
     dataHandler = handler;
     return this;
   }
 
   @Override
   public void emit(JsonObject data) {
-    currentMessage.emit(data);
+    output.emit(DefaultJsonMessage.create(data));
   }
 
   @Override
-  public void emit(JsonObject... data) {
-    currentMessage.emit(data);
+  public void emit(JsonObject data, String tag) {
+    output.emit(DefaultJsonMessage.create(data, new JsonArray().add(tag)));
+  }
+
+  @Override
+  public void emit(JsonObject data, String[] tags) {
+    JsonArray tagsArray = new JsonArray();
+    for (String tag : tags) {
+      tagsArray.add(tag);
+    }
+    output.emit(DefaultJsonMessage.create(data, tagsArray));
+  }
+
+  @Override
+  public void emit(JsonObject data, JsonMessage parent) {
+    if (messageMap.containsKey(parent)) {
+      messageMap.get(parent).emit(data);
+    }
+  }
+
+  @Override
+  public void emit(JsonObject data, String tag, JsonMessage parent) {
+    if (messageMap.containsKey(parent)) {
+      messageMap.get(parent).emit(data, new String[]{tag});
+    }
+  }
+
+  @Override
+  public void emit(JsonObject data, String[] tags, JsonMessage parent) {
+    if (messageMap.containsKey(parent)) {
+      messageMap.get(parent).emit(data, tags);
+    }
   }
 
   @Override
   public void ack(JsonMessage message) {
-    message.message().ack();
+    if (messageMap.containsKey(message)) {
+      messageMap.get(message).ack();
+      messageMap.remove(message);
+    }
   }
 
   @Override
@@ -254,7 +281,10 @@ public class DefaultSeed implements Seed {
 
   @Override
   public void fail(JsonMessage message) {
-    message.message().fail();
+    if (messageMap.containsKey(message)) {
+      messageMap.get(message).fail();
+      messageMap.remove(message);
+    }
   }
 
   @Override
@@ -265,63 +295,74 @@ public class DefaultSeed implements Seed {
   }
 
   /**
-   * An internal message.
+   * An internal wrapped message.
    */
   private class InternalMessage {
-    private JsonMessage message;
+    private Message<JsonObject> message;
+    private JsonMessage json;
     private int childCount;
     private int completeCount;
-    private boolean completed;
+    private boolean ready;
+    private boolean acked;
+    private boolean ack;
     private boolean failed;
-    private static final long EMIT_TIMEOUT = 30000;
+    private boolean locked;
 
-    public InternalMessage(JsonMessage message) {
+    public InternalMessage(Message<JsonObject> message, JsonMessage json) {
       this.message = message;
+      this.json = json;
     }
 
     /**
-     * Emits child data of the message.
+     * Emits data as a child of the message.
      *
      * @param data
-     *   The data to emit.
+     *   The child data.
      */
     public void emit(JsonObject data) {
-      if (!failed) {
-        // If the seed has no outputs, publish the data back to
-        // the vine address.
-        if (output.size() == 0) {
-          message.message().ready();
-          eventBus.publish(vineAddress, createJsonObject(message.createChild(data)));
-        }
-        // Otherwise, increment message children. The child count will
-        // be used to determine when the message children have been acked.
-        else {
-          childCount++;
-          doEmit(message.createChild(data));
-        }
-      }
+      checkEmit(json.createChild(data));
     }
 
     /**
-     * Emits child data of the message.
+     * Emits data as a child of the message.
      *
      * @param data
-     *   The data to emit.
+     *   The child data.
+     * @param tags
+     *   The child tags.
      */
-    public void emit(JsonObject... data) {
-      for (JsonObject item : data) {
-        emit(item);
+    public void emit(JsonObject data, String[] tags) {
+      JsonArray jsonTags = new JsonArray();
+      for (String tag : tags) {
+        jsonTags.add(tag);
+      }
+      checkEmit(json.createChild(data, jsonTags));
+    }
+
+    /**
+     * Emits a child message to the appropriate stream.
+     */
+    private void checkEmit(JsonMessage child) {
+      if (!failed()) {
+        if (output.size() == 0) {
+          ready();
+          eventBus.publish(vineAddress, child.serialize());
+        }
+        else {
+          childCount++;
+          doEmit(child);
+        }
       }
     }
 
     /**
-     * Emits a single child of the message.
+     * Emits a child via the output collector.
      *
      * @param child
-     *   The child message to emit.
+     *   A child message.
      */
     private void doEmit(final JsonMessage child) {
-      output.emit(child, EMIT_TIMEOUT, new Handler<AsyncResult<Boolean>>() {
+      output.emit(child, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
           if (!failed) {
@@ -336,8 +377,8 @@ public class DefaultSeed implements Seed {
             // Otherwise, check if all message children have completed.
             else {
               completeCount++;
-              if (completed && completeCount == childCount) {
-                message.message().ready();
+              if (acked && completeCount == childCount) {
+                ready();
               }
             }
           }
@@ -346,37 +387,54 @@ public class DefaultSeed implements Seed {
     }
 
     /**
-     * Fails processing of all message children and thus the parent
-     * message as well.
-     *
-     * Once a message has been failed, child messages can no longer
-     * be emitted and will be ignored.
+     * Indicates that the message is ready for sending an ack reply.
      */
-    public void fail() {
-      if (!failed) {
-        failed = true;
-        message.message().fail();
-        message.message().ready();
-      }
+    public void ready() {
+      ready = true;
+      checkAck();
     }
 
     /**
-     * Indicates that all children have been emitted from the seed.
+     * Indicates that the message has been fully processed.
      */
-    public void complete() {
-      completed = true;
-    }
-
-    private JsonObject createJsonObject(JsonMessage message) {
-      JsonObject data = new JsonObject();
-      Object id = message.message().getIdentifier();
-      if (id != null) {
-        data.putValue("id", id);
+    public void ack() {
+      if (!acked) {
+        acked = true; ack = true;
       }
-      data.putObject("body", (JsonObject) message);
-      return data;
+      checkAck();
     }
 
+    /**
+     * Indicates that message processing failed.
+     */
+    public void fail() {
+      acked = true; ack = false;
+      checkAck();
+    }
+
+    /**
+     * Returns a boolean indicating whether the message has failed.
+     */
+    public boolean failed() {
+      return acked && !ack;
+    }
+
+    /**
+     * Checks and sends an ack reply if necessary.
+     */
+    private void checkAck() {
+      if (!locked && acked) {
+        if (ready) {
+          message.reply(ack);
+          locked = true;
+        }
+        else if (!ack) {
+          message.reply(false);
+          locked = true;
+        }
+      }
+    }
+    
   }
 
 }

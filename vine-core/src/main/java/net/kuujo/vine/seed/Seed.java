@@ -68,7 +68,7 @@ public interface Seed {
    * @return 
    *   The called seed instance.
    */
-  public Seed dataHandler(Handler<JsonObject> handler);
+  public Seed dataHandler(Handler<JsonMessage> handler);
 
   /**
    * Emits data from the seed.
@@ -79,12 +79,58 @@ public interface Seed {
   public void emit(JsonObject data);
 
   /**
-   * Emits multiple sets of data from the seed.
+   * Emits data from the seed with a tag.
    *
    * @param data
    *   The data to emit.
+   * @param tag
+   *   A tag to apply to the message.
    */
-  public void emit(JsonObject... data);
+  public void emit(JsonObject data, String tag);
+
+  /**
+   * Emits data from the seed with a tag.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tags
+   *   An array of tags to apply to the message.
+   */
+  public void emit(JsonObject data, String[] tags);
+
+  /**
+   * Emits child data from the seed.
+   *
+   * @param data
+   *   The data to emit.
+   * @param parent
+   *   The parent message.
+   */
+  public void emit(JsonObject data, JsonMessage parent);
+
+  /**
+   * Emits child data from the seed with a tag.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tag
+   *   A tag to apply to the message.
+   * @param parent
+   *   The parent message.
+   */
+  public void emit(JsonObject data, String tag, JsonMessage parent);
+
+  /**
+   * Emits child data from the seed with a tag.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tags
+   *   An array of tags to apply to the message.
+   * @param parent
+   *   The parent message.
+   */
+  public void emit(JsonObject data, String[] tags, JsonMessage parent);
 
   /**
    * Acknowledges processing of a message.

@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import net.kuujo.vine.context.VineContext;
 import net.kuujo.vine.eventbus.TimeoutException;
+import net.kuujo.vine.messaging.DefaultJsonMessage;
 import net.kuujo.vine.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -130,7 +131,7 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
       }
 
       final String currentId = nextId();
-      JsonMessage message = new JsonMessage(currentId, args);
+      JsonMessage message = DefaultJsonMessage.create(currentId, args);
 
       // Add the result handler to the awaitingResponse map. Note that if the
       // execution times out, the result handler will be removed from this map
@@ -171,7 +172,9 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
             new DefaultFutureResult<JsonObject>().setHandler(resultHandler).setFailure(result.cause());
           }
           else if (!result.result()) {
-            execute();
+            if (!timedOut) {
+              execute();
+            }
           }
           // If responses have been stored for this execution, invoke the result
           // handler with each response.

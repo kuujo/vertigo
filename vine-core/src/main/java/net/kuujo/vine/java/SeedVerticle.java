@@ -29,7 +29,7 @@ import org.vertx.java.platform.Verticle;
  *
  * @author Jordan Halterman
  */
-public abstract class SeedVerticle extends Verticle implements Handler<JsonObject> {
+public abstract class SeedVerticle extends Verticle implements Handler<JsonMessage> {
 
   private Seed seed;
 
@@ -54,53 +54,107 @@ public abstract class SeedVerticle extends Verticle implements Handler<JsonObjec
   }
 
   /**
-   * Emits multiple sets of data to all output streams.
+   * Emits data from the seed with a tag.
    *
    * @param data
    *   The data to emit.
+   * @param tag
+   *   A tag to apply to the message.
    */
-  public void emit(JsonObject... data) {
-    seed.emit(data);
+  public void emit(JsonObject data, String tag) {
+    seed.emit(data, tag);
+  }
+
+  /**
+   * Emits data from the seed with a tag.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tags
+   *   An array of tags to apply to the message.
+   */
+  public void emit(JsonObject data, String[] tags) {
+    seed.emit(data, tags);
+  }
+
+  /**
+   * Emits child data from the seed.
+   *
+   * @param data
+   *   The data to emit.
+   * @param parent
+   *   The parent message.
+   */
+  public void emit(JsonObject data, JsonMessage parent) {
+    seed.emit(data, parent);
+  }
+
+  /**
+   * Emits child data from the seed with a tag.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tag
+   *   A tag to apply to the message.
+   * @param parent
+   *   The parent message.
+   */
+  public void emit(JsonObject data, String tag, JsonMessage parent) {
+    seed.emit(data, tag, parent);
+  }
+
+  /**
+   * Emits child data from the seed with a tag.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tags
+   *   An array of tags to apply to the message.
+   * @param parent
+   *   The parent message.
+   */
+  public void emit(JsonObject data, String[] tags, JsonMessage parent) {
+    seed.emit(data, tags, parent);
   }
 
   /**
    * Acknowledges processing of a message.
    *
-   * @param data
-   *   The data to ack.
+   * @param message
+   *   The message to ack.
    */
-  public void ack(JsonObject data) {
-    seed.ack((JsonMessage) data);
+  public void ack(JsonMessage message) {
+    seed.ack(message);
   }
 
   /**
    * Acknowledges processing of multiple messages.
    *
-   * @param data
-   *   The data to ack.
+   * @param message
+   *   The message to ack.
    */
-  public void ack(JsonObject... data) {
-    seed.ack((JsonMessage[]) data);
+  public void ack(JsonMessage... messages) {
+    seed.ack(messages);
   }
 
   /**
    * Fails processing of a message.
    *
-   * @param data
-   *   The data to fail.
+   * @param message
+   *   The message to fail.
    */
-  public void fail(JsonObject data) {
-    seed.fail((JsonMessage) data);
+  public void fail(JsonMessage message) {
+    seed.fail(message);
   }
 
   /**
    * Fails processing of multiple messages.
    *
-   * @param data
-   *   The data to fail.
+   * @param message
+   *   The message to fail.
    */
-  public void fail(JsonObject... data) {
-    seed.fail((JsonMessage[]) data);
+  public void fail(JsonMessage... messages) {
+    seed.fail(messages);
   }
 
 }

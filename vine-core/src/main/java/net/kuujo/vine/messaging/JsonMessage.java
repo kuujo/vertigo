@@ -1,102 +1,92 @@
+/*
+* Copyright 2013 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package net.kuujo.vine.messaging;
 
-import org.vertx.java.core.eventbus.Message;
+import net.kuujo.vine.Serializeable;
+
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A JSON data message.
+ * An eventbus message.
  *
  * @author Jordan Halterman
  */
-public class JsonMessage extends JsonObject {
-
-  private EventBusMessage message;
-
-  public JsonMessage(Object id, JsonObject body, Message<JsonObject> message) {
-    super(body.toMap());
-    this.message = new EventBusMessage(id, message);
-  }
-
-  public JsonMessage(JsonObject body, Message<JsonObject> message) {
-    super(body.toMap());
-    this.message = new EventBusMessage(message);
-  }
-
-  public JsonMessage(Object id, JsonObject body) {
-    super(body.toMap());
-    this.message = new EventBusMessage().setIdentifier(id);
-  }
-
-  public JsonMessage(JsonObject body) {
-    super(body.toMap());
-    this.message = new EventBusMessage();
-  }
+public interface JsonMessage extends Serializeable<JsonObject> {
 
   /**
-   * Returns the current underlying event bus message.
-   */
-  public EventBusMessage message() {
-    return message;
-  }
-
-  /**
-   * Creates a child message.
+   * Returns the message tree ID.
    *
-   * @param childData
-   *   The data to apply to the message child.
    * @return
-   *   The called message instance.
+   *   The message tree ID.
    */
-  public JsonMessage createChild(JsonObject childData) {
-    Object id = message.getIdentifier();
-    if (id != null) {
-      return new JsonMessage(id, childData);
-    }
-    else {
-      return new JsonMessage(childData);
-    }
-  }
+  public String tree();
 
   /**
-   * Creates a message with no identifier.
+   * Returns the message source address.
    *
-   * @param data
-   *   The data to apply to the new message.
    * @return
-   *   The new message instance.
+   *   The source address.
    */
-  public static JsonMessage create(JsonObject data) {
-    return new JsonMessage(data);
-  }
+  public String source();
 
   /**
-   * Creates a message with an identifier.
+   * Returns the message body.
    *
-   * @param id
-   *   The unique message identifier.
-   * @param data
-   *   The data to apply to the new message.
    * @return
-   *   The new message instance
+   *   The message body.
    */
-  public static JsonMessage create(Object id, JsonObject data) {
-    return new JsonMessage(id, data);
-  }
+  public JsonObject body();
 
   /**
-   * Creates a message with an identifier.
+   * Returns an array of message tags.
    *
-   * @param id
-   *   The unique message identifier.
-   * @param data
-   *   The data to apply to the new message.
-   * @param message
-   *   The eventbus message.
    * @return
-   *   A new message instance.
+   *   An array of message tags.
    */
-  public static JsonMessage create(Object id, JsonObject data, Message<JsonObject> message) {
-    return new JsonMessage(id, data, message);
-  }
+  public JsonArray tags();
+
+  /**
+   * Creates a new child of the message.
+   *
+   * @param body
+   *   The child body.
+   * @return
+   *   A new child message.
+   */
+  public JsonMessage createChild(JsonObject body);
+
+  /**
+   * Creates a new child of the message.
+   *
+   * @param body
+   *   The child body.
+   * @param tags
+   *   Tags to apply to the child.
+   * @return
+   *   A new child message.
+   */
+  public JsonMessage createChild(JsonObject body, JsonArray tags);
+
+  /**
+   * Creates a copy of the message.
+   *
+   * @return
+   *   A copy of the message.
+   */
+  public JsonMessage copy();
 
 }

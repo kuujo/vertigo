@@ -16,7 +16,7 @@
 package net.kuujo.vine.feeder;
 
 import net.kuujo.vine.context.VineContext;
-import net.kuujo.vine.messaging.JsonMessage;
+import net.kuujo.vine.messaging.DefaultJsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -59,13 +59,13 @@ public class UnreliableFeeder extends AbstractFeeder implements Feeder {
 
   @Override
   public Feeder feed(JsonObject data) {
-    output.emit(new JsonMessage(data));
+    output.emit(DefaultJsonMessage.create(data));
     return this;
   }
 
   @Override
   public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
-    output.emit(new JsonMessage(data));
+    output.emit(DefaultJsonMessage.create(data));
     new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
     return this;
   }

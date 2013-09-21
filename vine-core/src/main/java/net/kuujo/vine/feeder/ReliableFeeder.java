@@ -16,7 +16,7 @@
 package net.kuujo.vine.feeder;
 
 import net.kuujo.vine.context.VineContext;
-import net.kuujo.vine.messaging.JsonMessage;
+import net.kuujo.vine.messaging.DefaultJsonMessage;
 import net.kuujo.vine.seed.FailureException;
 
 import org.vertx.java.core.AsyncResult;
@@ -66,7 +66,7 @@ public class ReliableFeeder extends UnreliableFeeder {
   public Feeder feed(final JsonObject data) {
     inProcess++;
     checkQueue();
-    output.emit(new JsonMessage(data), new Handler<AsyncResult<Boolean>>() {
+    output.emit(DefaultJsonMessage.create(data), new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed() || !result.result()) {
@@ -91,7 +91,7 @@ public class ReliableFeeder extends UnreliableFeeder {
     inProcess++;
     checkQueue();
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    output.emit(new JsonMessage(data), timeout, new Handler<AsyncResult<Boolean>>() {
+    output.emit(DefaultJsonMessage.create(data), timeout, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {

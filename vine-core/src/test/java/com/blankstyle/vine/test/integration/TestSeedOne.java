@@ -16,6 +16,7 @@
 package com.blankstyle.vine.test.integration;
 
 import net.kuujo.vine.java.SeedVerticle;
+import net.kuujo.vine.messaging.JsonMessage;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -24,10 +25,10 @@ import static org.vertx.testtools.VertxAssert.assertEquals;
 public class TestSeedOne extends SeedVerticle {
 
   @Override
-  public void handle(JsonObject data) {
-    assertEquals("Hello world!", data.getString("body"));
+  public void handle(JsonMessage message) {
+    assertEquals("Hello world!", message.body().getString("body"));
     emit(new JsonObject().putString("body", "Hello world again!"));
-    ack(data);
+    ack(message);
   }
 
 }

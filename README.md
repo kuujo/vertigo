@@ -17,9 +17,4 @@ assigning work to Vert.x instances in the cluster.
 * Supports remote-procedure calls, allowing for real-time request-response
   spanning multiple Vert.x instances.
 
-## Road Map
-1. Add language support for all core supported Vert.x language implementations.
-2. Support transactional processing.
-3. Improve tracking of complex trees.
-
 ### [Seed the documentation for tutorials and examples](https://github.com/kuujo/vertx-vine/wiki/Vine)

@@ -93,25 +93,7 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
 
   @Override
   public Executor execute(final JsonObject args, final Handler<AsyncResult<JsonObject>> resultHandler) {
-    JsonMessage message = new JsonMessage(args);
-    final String id = nextId();
-    message.message().setIdentifier(id);
-    awaitingResponse.put(id, resultHandler);
-    checkQueue();
-
-    // Once all messages in the tree have been processed, remove the future from
-    // awaiting response.
-    output.emit(message, new Handler<Boolean>() {
-      @Override
-      public void handle(Boolean succeeded) {
-        awaitingResponse.remove(id);
-        checkQueue();
-        if (!succeeded) {
-          execute(args, resultHandler);
-        }
-      }
-    });
-    return this;
+    return execute(args, 0, resultHandler);
   }
 
   @Override
@@ -143,13 +125,12 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
       if (timedOut) {
         return;
       }
-      if (timerId == 0) {
+      if (timeout > 0 && timerId == 0) {
         createTimer();
       }
 
-      JsonMessage message = new JsonMessage(args);
       final String currentId = nextId();
-      message.message().setIdentifier(currentId);
+      JsonMessage message = new JsonMessage(currentId, args);
 
       // Add the result handler to the awaitingResponse map. Note that if the
       // execution times out, the result handler will be removed from this map
@@ -181,12 +162,15 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
 
       // Once all messages in the tree have been processed, remove the future from
       // awaiting response.
-      output.emit(message, new Handler<Boolean>() {
+      output.emit(message, new Handler<AsyncResult<Boolean>>() {
         @Override
-        public void handle(Boolean succeeded) {
+        public void handle(AsyncResult<Boolean> result) {
           awaitingResponse.remove(currentId);
           checkQueue();
-          if (!succeeded) {
+          if (result.failed()) {
+            new DefaultFutureResult<JsonObject>().setHandler(resultHandler).setFailure(result.cause());
+          }
+          else if (!result.result()) {
             execute();
           }
           // If responses have been stored for this execution, invoke the result
@@ -211,16 +195,18 @@ public class ReliableExecutor extends AbstractExecutor implements Executor {
      * Creates a new timeout timer.
      */
     private void createTimer() {
-      timerId = vertx.setTimer(timeout, new Handler<Long>() {
-        @Override
-        public void handle(Long timerId) {
-          if (!timedOut) {
-            timedOut = true;
-            awaitingResponse.remove(currentId);
-            new DefaultFutureResult<JsonObject>().setHandler(resultHandler).setFailure(new TimeoutException("Execution timed out."));
+      if (timeout > 0) {
+        timerId = vertx.setTimer(timeout, new Handler<Long>() {
+          @Override
+          public void handle(Long timerId) {
+            if (!timedOut) {
+              timedOut = true;
+              awaitingResponse.remove(currentId);
+              new DefaultFutureResult<JsonObject>().setHandler(resultHandler).setFailure(new TimeoutException("Execution timed out."));
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     /**

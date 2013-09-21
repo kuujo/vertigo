@@ -67,6 +67,20 @@ public interface Feeder {
   public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler);
 
   /**
+   * Feeds data to the vine, providing a completion handler.
+   *
+   * @param data
+   *   The data to feed.
+   * @param timeout
+   *   A data processing timeout.
+   * @param doneHandler
+   *   An asynchronous handler to be invoked once processing is complete (or fails).
+   * @return
+   *   The called feeder instance.
+   */
+  public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Sets a drain handler on the feeder.
    *
    * @param handler

@@ -17,8 +17,10 @@ package net.kuujo.vine.feeder;
 
 import net.kuujo.vine.context.VineContext;
 import net.kuujo.vine.messaging.JsonMessage;
+import net.kuujo.vine.seed.FailureException;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -64,10 +66,10 @@ public class ReliableFeeder extends UnreliableFeeder {
   public Feeder feed(final JsonObject data) {
     inProcess++;
     checkQueue();
-    output.emit(new JsonMessage(data), new Handler<Boolean>() {
+    output.emit(new JsonMessage(data), new Handler<AsyncResult<Boolean>>() {
       @Override
-      public void handle(Boolean succeeded) {
-        if (!succeeded) {
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed() || !result.result()) {
           feed(data);
         }
         else {
@@ -80,19 +82,26 @@ public class ReliableFeeder extends UnreliableFeeder {
   }
 
   @Override
-  public Feeder feed(final JsonObject data, final Handler<AsyncResult<Void>> doneHandler) {
+  public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
+    return feed(data, 0, doneHandler);
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     inProcess++;
     checkQueue();
-    output.emit(new JsonMessage(data), new Handler<Boolean>() {
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    output.emit(new JsonMessage(data), timeout, new Handler<AsyncResult<Boolean>>() {
       @Override
-      public void handle(Boolean succeeded) {
-        if (!succeeded) {
-          inProcess--;
-          checkQueue();
-          feed(data, doneHandler);
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else if (!result.result()) {
+          future.setFailure(new FailureException("A processing failure occurred."));
         }
         else {
-          new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
+          future.setResult(null);
         }
       }
     });

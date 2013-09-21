@@ -14,7 +14,7 @@ public class JsonMessage extends JsonObject {
 
   public JsonMessage(Object id, JsonObject body, Message<JsonObject> message) {
     super(body.toMap());
-    this.message = new EventBusMessage(message).setIdentifier(id);
+    this.message = new EventBusMessage(id, message);
   }
 
   public JsonMessage(JsonObject body, Message<JsonObject> message) {

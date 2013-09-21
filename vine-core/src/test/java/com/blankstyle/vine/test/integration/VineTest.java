@@ -16,6 +16,7 @@
 package com.blankstyle.vine.test.integration;
 
 import net.kuujo.vine.feeder.Feeder;
+import net.kuujo.vine.feeder.ReliableFeeder;
 import net.kuujo.vine.feeder.UnreliableFeeder;
 import net.kuujo.vine.feeder.Executor;
 import net.kuujo.vine.feeder.ReliableExecutor;
@@ -55,6 +56,52 @@ public class VineTest extends TestVerticle {
     vine.feed(Seeds.createDefinition("seedone", TestSeedOne.class.getName()).setWorkers(2))
       .to(Seeds.createDefinition("seedtwo", TestSeedTwo.class.getName()).setWorkers(2));
     return vine;
+  }
+
+  public void testPerformance() {
+    VineDefinition vine = createTestDefinition();
+    LocalRoot root = new LocalRoot(vertx, container);
+    root.deploy(vine, new Handler<AsyncResult<VineContext>>() {
+      @Override
+      public void handle(AsyncResult<VineContext> result) {
+        assertTrue("Failed to deploy vine. " + result.cause(), result.succeeded());
+
+        assertNotNull(result.result());
+        Feeder feeder = new ReliableFeeder(result.result(), vertx);
+        new FeederTester(feeder).start();
+      }
+    });
+  }
+
+  private class FeederTester {
+    private Feeder feeder;
+    private long count;
+    private long total = 10000;
+    private long startTime;
+    private long endTime;
+    public FeederTester(Feeder feeder) {
+      this.feeder = feeder;
+    }
+    public void start() {
+      for (int i = 0; i < total; i++) {
+        feeder.feed(new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.succeeded()) {
+              count++;
+              if (count == total / 2) {
+                startTime = System.currentTimeMillis();
+              }
+              else if (count >= total) {
+                endTime = System.currentTimeMillis();
+                System.out.println(String.format("Processed %d messages in %d milliseconds.", total / 2, endTime - startTime));
+                testComplete();
+              }
+            }
+          }
+        });
+      }
+    }
   }
 
   @Test

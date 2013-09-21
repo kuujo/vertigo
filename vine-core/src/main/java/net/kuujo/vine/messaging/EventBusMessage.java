@@ -19,9 +19,14 @@ public class EventBusMessage {
 
   private boolean ack;
 
-  private boolean responded;
+  private boolean locked;
 
   public EventBusMessage() {
+  }
+
+  public EventBusMessage(Object id, Message<?> message) {
+    this.id = id;
+    this.message = message;
   }
 
   public EventBusMessage(Message<?> message) {
@@ -80,14 +85,18 @@ public class EventBusMessage {
    * Replies to the message.
    */
   public void reply() {
-    message.reply();
+    if (message != null) {
+      message.reply();
+    }
   }
 
   /**
    * Replies to the message.
    */
   public <T> void reply(T reply) {
-    message.reply(reply);
+    if (message != null) {
+      message.reply(reply);
+    }
   }
 
   /**
@@ -95,30 +104,16 @@ public class EventBusMessage {
    * if necessary.
    */
   private void checkAck() {
-    if (!isLocked()) {
-      if (ready && acked && message != null) {
+    if (!locked && acked && message != null) {
+      if (ready) {
         message.reply(ack);
-        lock();
+        locked = true;
       }
-      else if (acked && !ack) {
+      else if (!ack) {
         message.reply(false);
-        lock();
+        locked = true;
       }
     }
-  }
-
-  /**
-   * Locks the message, preventing multiple ack responses.
-   */
-  private void lock() {
-    responded = true;
-  }
-
-  /**
-   * Indicates whether the message has been responded to.
-   */
-  private boolean isLocked() {
-    return responded;
   }
 
 }

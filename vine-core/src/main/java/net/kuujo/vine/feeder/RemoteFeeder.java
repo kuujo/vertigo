@@ -87,6 +87,11 @@ public class RemoteFeeder implements Feeder, Handler<Message<JsonObject>> {
   }
 
   @Override
+  public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
+
+  @Override
   public Feeder drainHandler(Handler<Void> handler) {
     return this;
   }

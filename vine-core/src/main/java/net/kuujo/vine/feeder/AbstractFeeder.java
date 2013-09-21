@@ -15,19 +15,11 @@
 */
 package net.kuujo.vine.feeder;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vine.context.ConnectionContext;
@@ -35,12 +27,12 @@ import net.kuujo.vine.context.VineContext;
 import net.kuujo.vine.eventbus.ReliableEventBus;
 import net.kuujo.vine.eventbus.WrappedReliableEventBus;
 import net.kuujo.vine.messaging.ConnectionPool;
+import net.kuujo.vine.messaging.CoordinatingOutputCollector;
 import net.kuujo.vine.messaging.Dispatcher;
 import net.kuujo.vine.messaging.EventBusConnection;
 import net.kuujo.vine.messaging.EventBusConnectionPool;
 import net.kuujo.vine.messaging.EventBusStream;
-import net.kuujo.vine.messaging.JsonMessage;
-import net.kuujo.vine.messaging.Stream;
+import net.kuujo.vine.messaging.OutputCollector;
 
 /**
  * An abstract feeder implementation. This class handles setup of vine
@@ -91,7 +83,7 @@ public abstract class AbstractFeeder {
    * Sets up seed outputs.
    */
   protected void setupOutputs() {
-    output = new OutputCollector();
+    output = new CoordinatingOutputCollector();
 
     Collection<ConnectionContext> connections = context.getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
@@ -124,108 +116,6 @@ public abstract class AbstractFeeder {
         output.addStream(connectionContext.getSeedName(), new EventBusStream(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      }
-    }
-  }
-
-  /**
-   * Publishes seed output to the appropriate streams.
-   */
-  protected static class OutputCollector {
-
-    private List<Stream<?>> streamList = new ArrayList<>();
-    private Map<String, Stream<?>> streams = new HashMap<>();
-
-    /**
-     * Adds a stream to the output.
-     */
-    public OutputCollector addStream(String name, Stream<?> stream) {
-      if (streams.containsKey(name)) {
-        Stream<?> oldStream = streams.get(name);
-        if (streamList.contains(oldStream)) {
-          streamList.remove(oldStream);
-        }
-      }
-      streams.put(name, stream);
-      streamList.add(stream);
-      return this;
-    }
-
-    /**
-     * Removes a stream from the output.
-     */
-    public OutputCollector removeStream(String name) {
-      if (streams.containsKey(name)) {
-        streams.remove(name);
-      }
-      return this;
-    }
-
-    /**
-     * Returns a set of stream names.
-     */
-    public Set<String> getStreamNames() {
-      return streams.keySet();
-    }
-
-    /**
-     * Returns a stream by name.
-     */
-    public Stream<?> getStream(String name) {
-      return streams.get(name);
-    }
-
-    /**
-     * Returns the number of streams in the output.
-     */
-    public int size() {
-      return streams.size();
-    }
-
-    /**
-     * Emits a message to all streams.
-     */
-    public void emit(JsonMessage message) {
-      for (Stream<?> stream : streamList) {
-        stream.emit(message);
-      }
-    }
-
-    /**
-     * Emits a message to all streams.
-     */
-    public void emit(JsonMessage message, final Handler<Boolean> ackHandler) {
-      for (Stream<?> stream : streamList) {
-        stream.emit(message, new Handler<AsyncResult<Message<Boolean>>>() {
-          @Override
-          public void handle(AsyncResult<Message<Boolean>> result) {
-            if (result.succeeded()) {
-              ackHandler.handle(result.result().body());
-            }
-            else {
-              ackHandler.handle(false);
-            }
-          }
-        });
-      }
-    }
-
-    /**
-     * Emits a message to all streams.
-     */
-    public void emit(JsonMessage message, long timeout, final Handler<Boolean> ackHandler) {
-      for (Stream<?> stream : streamList) {
-        stream.emit(message, timeout, new Handler<AsyncResult<Message<Boolean>>>() {
-          @Override
-          public void handle(AsyncResult<Message<Boolean>> result) {
-            if (result.succeeded()) {
-              ackHandler.handle(result.result().body());
-            }
-            else {
-              ackHandler.handle(false);
-            }
-          }
-        });
       }
     }
   }

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vine.context.VineContext
-import net.kuujo.vine.seed.ReliableSeed
+import net.kuujo.vine.seed.DefaultSeed
 import net.kuujo.vine.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
@@ -25,7 +25,7 @@ class _AbstractSeed(object):
   _handlercls = None
 
   def __init__(self):
-    self.__seed = net.kuujo.vine.seed.ReliableSeed()
+    self.__seed = net.kuujo.vine.seed.DefaultSeed()
     self.__seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
     self.__seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
     self.__seed.setContext(net.kuujo.vine.context.VineContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))

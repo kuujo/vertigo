@@ -17,7 +17,7 @@ package net.kuujo.vine.java;
 
 import net.kuujo.vine.context.WorkerContext;
 import net.kuujo.vine.messaging.JsonMessage;
-import net.kuujo.vine.seed.ReliableSeed;
+import net.kuujo.vine.seed.DefaultSeed;
 import net.kuujo.vine.seed.Seed;
 
 import org.vertx.java.core.Handler;
@@ -35,7 +35,7 @@ public abstract class SeedVerticle extends Verticle implements Handler<JsonObjec
 
   @Override
   public void start() {
-    seed = new ReliableSeed();
+    seed = new DefaultSeed();
     seed.setVertx(vertx);
     seed.setContainer(container);
     seed.setContext(new WorkerContext(container.config()));

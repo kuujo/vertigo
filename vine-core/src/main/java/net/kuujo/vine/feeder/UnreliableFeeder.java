@@ -71,6 +71,11 @@ public class UnreliableFeeder extends AbstractFeeder implements Feeder {
   }
 
   @Override
+  public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler) {
+    return feed(data, doneHandler);
+  }
+
+  @Override
   public Feeder drainHandler(Handler<Void> handler) {
     return this;
   }

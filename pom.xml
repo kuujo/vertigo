@@ -8,20 +8,16 @@
   </parent>
 
   <groupId>net.kuujo</groupId>
-  <artifactId>vine-parent</artifactId>
+  <artifactId>vevent-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>Vine</name>
-  <description>A real-time analytics engine built on Vert.x.</description>
-  <url>http://github.com/kuujo/vertx-vine</url>
+  <name>Vevent</name>
+  <description>An event processing framework for Vert.x.</description>
+  <url>http://github.com/kuujo/vevent</url>
   <inceptionYear>2013</inceptionYear>
 
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-    <rootmod.name>${project.groupId}~vine-root~${project.version}</rootmod.name>
-    <rootmod.folder>${project.groupId}~vine-root~0.1.0</rootmod.folder>
-    <stemmod.name>${project.groupId}~vine-stem~${project.version}</stemmod.name>
-    <stemmod.folder>${project.groupId}~vine-stem~0.1.0</stemmod.folder>
 
     <vertx.version>2.0.0-final</vertx.version>
     <junit.version>4.8.2</junit.version>
@@ -37,8 +33,8 @@
 
   <licenses>
     <license>
-      <name>MIT License</name>
-      <url>http://opensource.org/licenses/MIT</url>
+      <name>Apache License, Version 2.0</name>
+      <url>http://apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -51,20 +47,19 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:kuujo/vertx-vine.git</connection>
-    <developerConnection>scm:git:git@github.com:kuujo/vertx-vine.git</developerConnection>
-    <url>git@github.com:kuujo/vertx-vine.git</url>
+    <connection>scm:git:git@github.com:kuujo/vevent.git</connection>
+    <developerConnection>scm:git:git@github.com:kuujo/vevent.git</developerConnection>
+    <url>git@github.com:kuujo/vevent.git</url>
   </scm>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>http://github.com/kuujo/vertx-vine/issues</url>
+    <url>http://github.com/kuujo/vevent/issues</url>
   </issueManagement>
 
   <modules>
-    <module>vine-core</module>
-    <module>vine-root</module>
-    <module>vine-stem</module>
+    <module>vevent-core</module>
+    <module>vevent-python</module>
   </modules>
 
   <build>
@@ -80,24 +75,6 @@
             <goals>
               <goal>jar-no-fork</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>${maven.dependency.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>copy-mod-dependencies-to-target</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>target/mods/${module.name}/lib</outputDirectory>
-              <includeScope>runtime</includeScope>
-            </configuration>
           </execution>
         </executions>
       </plugin>

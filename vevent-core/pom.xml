@@ -4,16 +4,43 @@
 
   <parent>
     <groupId>net.kuujo</groupId>
-    <artifactId>vine-python</artifactId>
+    <artifactId>vevent-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>vine-root</artifactId>
-  <name>Vine Root</name>
+  <artifactId>vevent</artifactId>
+  <name>Vevent</name>
 
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-platform</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>testtools</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <resources>
@@ -37,10 +64,10 @@
             </goals>
             <configuration>
               <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${module.name}/com</outputDirectory>
+              <outputDirectory>${basedir}/target/mods/${module.name}/net</outputDirectory>
               <resources>
                 <resource>
-                  <directory>target/classes/com</directory>
+                  <directory>target/classes/net</directory>
                   <filtering>false</filtering>
                 </resource>
               </resources>

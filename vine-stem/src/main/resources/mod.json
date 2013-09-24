@@ -1,6 +1,0 @@
-{
-  "includes": "net.kuujo~vine~0.1.0-SNAPSHOT",
-  "main": "net.kuujo.vine.eventbus.stem.StemVerticle",
-  "author": "jordanhalterman",
-  "website": "https://github.com/kuujo/vertx-vine"
-}

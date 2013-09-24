@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.kuujo.vevent.definition.SeedDefinition;
+import net.kuujo.vevent.definition.NodeDefinition;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -100,12 +100,12 @@ public class NodeContext implements Context {
   /**
    * Returns the seed definition.
    */
-  public SeedDefinition getDefinition() {
+  public NodeDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
-      return new SeedDefinition(definition);
+      return new NodeDefinition(definition);
     }
-    return new SeedDefinition();
+    return new NodeDefinition();
   }
 
   /**

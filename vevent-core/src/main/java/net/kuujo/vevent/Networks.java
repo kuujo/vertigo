@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent;
 
-import net.kuujo.vevent.definition.VineDefinition;
+import net.kuujo.vevent.definition.NetworkDefinition;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -32,8 +32,8 @@ public class Networks {
    * @return
    *   A vine definition.
    */
-  public static VineDefinition createDefinition() {
-    return new VineDefinition();
+  public static NetworkDefinition createDefinition() {
+    return new NetworkDefinition();
   }
 
   /**
@@ -44,8 +44,8 @@ public class Networks {
    * @return
    *   A vine definition.
    */
-  public static VineDefinition createDefinition(String address) {
-    return new VineDefinition(new JsonObject().putString("address", address));
+  public static NetworkDefinition createDefinition(String address) {
+    return new NetworkDefinition(new JsonObject().putString("address", address));
   }
 
 }

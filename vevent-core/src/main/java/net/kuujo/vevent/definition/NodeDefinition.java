@@ -25,7 +25,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class SeedDefinition implements Serializeable<JsonObject> {
+public class NodeDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
@@ -33,10 +33,10 @@ public class SeedDefinition implements Serializeable<JsonObject> {
 
   private static final long DEFAULT_HEARTBEAT_INTERVAL = 1000;
 
-  public SeedDefinition() {
+  public NodeDefinition() {
   }
 
-  public SeedDefinition(JsonObject json) {
+  public NodeDefinition(JsonObject json) {
     definition = json;
   }
 
@@ -53,7 +53,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @param name
    *   The seed name.
    */
-  public SeedDefinition setName(String name) {
+  public NodeDefinition setName(String name) {
     definition.putString("name", name);
     return this;
   }
@@ -72,7 +72,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @param main
    *   The seed main.
    */
-  public SeedDefinition setMain(String main) {
+  public NodeDefinition setMain(String main) {
     definition.putString("main", main);
     return this;
   }
@@ -87,7 +87,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called seed definition.
    */
-  public SeedDefinition setOption(String option, String value) {
+  public NodeDefinition setOption(String option, String value) {
     switch (option) {
       case "name":
         return setName(value);
@@ -120,7 +120,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called seed definition.
    */
-  public SeedDefinition groupBy(GroupingDefinition grouping) {
+  public NodeDefinition groupBy(GroupingDefinition grouping) {
     definition.putObject("grouping", grouping.serialize());
     return this;
   }
@@ -140,7 +140,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called seed definition.
    */
-  public SeedDefinition setWorkers(int workers) {
+  public NodeDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
     return this;
   }
@@ -160,7 +160,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called seed definition.
    */
-  public SeedDefinition setHeartbeatInterval(long interval) {
+  public NodeDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
     return this;
   }
@@ -178,7 +178,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a connection to a seed definition.
    */
-  private SeedDefinition addDefinition(SeedDefinition definition) {
+  private NodeDefinition addDefinition(NodeDefinition definition) {
     JsonObject connections = this.definition.getObject("connections");
     if (connections == null) {
       connections = new JsonObject();
@@ -196,7 +196,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @param definition
    *   A seed definition.
    */
-  public SeedDefinition to(SeedDefinition definition) {
+  public NodeDefinition to(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -208,7 +208,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new seed definition.
    */
-  public SeedDefinition to(String name) {
+  public NodeDefinition to(String name) {
     return to(name, null, 1);
   }
 
@@ -222,7 +222,7 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new seed definition.
    */
-  public SeedDefinition to(String name, String main) {
+  public NodeDefinition to(String name, String main) {
     return to(name, main, 1);
   }
 
@@ -238,8 +238,8 @@ public class SeedDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new seed definition.
    */
-  public SeedDefinition to(String name, String main, int workers) {
-    return addDefinition(new SeedDefinition().setName(name).setMain(main).setWorkers(workers));
+  public NodeDefinition to(String name, String main, int workers) {
+    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override

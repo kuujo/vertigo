@@ -33,7 +33,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class VineDefinition implements Serializeable<JsonObject> {
+public class NetworkDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
@@ -43,10 +43,10 @@ public class VineDefinition implements Serializeable<JsonObject> {
 
   private static final long DEFAULT_EXPIRATION = 15000;
 
-  public VineDefinition() {
+  public NetworkDefinition() {
   }
 
-  public VineDefinition(JsonObject json) {
+  public NetworkDefinition(JsonObject json) {
     definition = json;
   }
 
@@ -65,7 +65,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called vine definition.
    */
-  public VineDefinition setAddress(String address) {
+  public NetworkDefinition setAddress(String address) {
     definition.putString("address", address);
     return this;
   }
@@ -92,7 +92,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called vine definition.
    */
-  public VineDefinition setOption(String option, String value) {
+  public NetworkDefinition setOption(String option, String value) {
     switch (option) {
       case "address":
         return setAddress(value);
@@ -121,7 +121,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called vine definition.
    */
-  public VineDefinition setMaxQueueSize(int queueSize) {
+  public NetworkDefinition setMaxQueueSize(int queueSize) {
     definition.putNumber("queue_size", queueSize);
     return this;
   }
@@ -139,7 +139,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @param timeout
    *   The vine message timeout.
    */
-  public VineDefinition setMessageTimeout(long timeout) {
+  public NetworkDefinition setMessageTimeout(long timeout) {
     definition.putNumber("timeout", timeout);
     return this;
   }
@@ -157,7 +157,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @param expiration
    *   The vine message expiration.
    */
-  public VineDefinition setMessageExpiration(long expiration) {
+  public NetworkDefinition setMessageExpiration(long expiration) {
     definition.putNumber("expiration", expiration);
     return this;
   }
@@ -165,7 +165,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a connection to a seed definition.
    */
-  private SeedDefinition addDefinition(SeedDefinition definition) {
+  private NodeDefinition addDefinition(NodeDefinition definition) {
     // Add the seed definition.
     JsonObject seeds = this.definition.getObject("seeds");
     if (seeds == null) {
@@ -196,7 +196,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   The passed seed definition.
    */
-  public SeedDefinition feed(SeedDefinition definition) {
+  public NodeDefinition feed(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -208,7 +208,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new seed definition.
    */
-  public SeedDefinition feed(String name) {
+  public NodeDefinition feed(String name) {
     return feed(name, null, 1);
   }
 
@@ -222,7 +222,7 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new seed definition.
    */
-  public SeedDefinition feed(String name, String main) {
+  public NodeDefinition feed(String name, String main) {
     return feed(name, main, 1);
   }
 
@@ -238,8 +238,8 @@ public class VineDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new seed definition.
    */
-  public SeedDefinition feed(String name, String main, int workers) {
-    return addDefinition(new SeedDefinition().setName(name).setMain(main).setWorkers(workers));
+  public NodeDefinition feed(String name, String main, int workers) {
+    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override

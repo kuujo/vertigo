@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.kuujo.vevent.definition.VineDefinition;
+import net.kuujo.vevent.definition.NetworkDefinition;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -112,12 +112,12 @@ public class NetworkContext implements Context {
    * @return
    *   The vine definition.
    */
-  public VineDefinition getDefinition() {
+  public NetworkDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
-      return new VineDefinition(definition);
+      return new NetworkDefinition(definition);
     }
-    return new VineDefinition();
+    return new NetworkDefinition();
   }
 
   @Override

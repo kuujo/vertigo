@@ -16,7 +16,7 @@
 package net.kuujo.vevent;
 
 import net.kuujo.vevent.context.NetworkContext;
-import net.kuujo.vevent.definition.VineDefinition;
+import net.kuujo.vevent.definition.NetworkDefinition;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -55,7 +55,7 @@ public interface Vevent {
    * @param handler
    *   An asynchronous result handler to be invoked with a vine feeder.
    */
-  public void deploy(VineDefinition vine, Handler<AsyncResult<NetworkContext>> handler);
+  public void deploy(NetworkDefinition vine, Handler<AsyncResult<NetworkContext>> handler);
 
   /**
    * Deploys a vine definition with a timeout.
@@ -67,7 +67,7 @@ public interface Vevent {
    * @param handler
    *   An asynchronous result handler to be invoked with a vine feeder.
    */
-  public void deploy(VineDefinition vine, long timeout, Handler<AsyncResult<NetworkContext>> handler);
+  public void deploy(NetworkDefinition vine, long timeout, Handler<AsyncResult<NetworkContext>> handler);
 
   /**
    * Shuts down the vine at the given address.

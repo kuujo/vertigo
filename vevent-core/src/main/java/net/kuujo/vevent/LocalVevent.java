@@ -16,7 +16,7 @@
 package net.kuujo.vevent;
 
 import net.kuujo.vevent.context.NetworkContext;
-import net.kuujo.vevent.definition.VineDefinition;
+import net.kuujo.vevent.definition.NetworkDefinition;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -40,13 +40,13 @@ public class LocalVevent implements Vevent {
   }
 
   @Override
-  public void deploy(VineDefinition vine,
+  public void deploy(NetworkDefinition vine,
       Handler<AsyncResult<NetworkContext>> handler) {
     
   }
 
   @Override
-  public void deploy(VineDefinition vine, long timeout,
+  public void deploy(NetworkDefinition vine, long timeout,
       Handler<AsyncResult<NetworkContext>> handler) {
     
   }

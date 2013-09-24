@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent;
 
-import net.kuujo.vevent.definition.SeedDefinition;
+import net.kuujo.vevent.definition.NodeDefinition;
 
 /**
  * Static seed methods.
@@ -30,8 +30,8 @@ public final class Nodes {
    * @return
    *   A new seed definition.
    */
-  public static SeedDefinition createDefinition() {
-    return new SeedDefinition();
+  public static NodeDefinition createDefinition() {
+    return new NodeDefinition();
   }
 
   /**
@@ -42,8 +42,8 @@ public final class Nodes {
    * @return
    *   A new seed definition.
    */
-  public static SeedDefinition createDefinition(String name) {
-    return new SeedDefinition().setName(name);
+  public static NodeDefinition createDefinition(String name) {
+    return new NodeDefinition().setName(name);
   }
 
   /**
@@ -56,8 +56,8 @@ public final class Nodes {
    * @return
    *   A new seed definition.
    */
-  public static SeedDefinition createDefinition(String name, String main) {
-    return new SeedDefinition().setName(name).setMain(main);
+  public static NodeDefinition createDefinition(String name, String main) {
+    return new NodeDefinition().setName(name).setMain(main);
   }
 
   /**
@@ -72,8 +72,8 @@ public final class Nodes {
    * @return
    *   A new seed definition.
    */
-  public static SeedDefinition createDefinition(String name, String main, int workers) {
-    return new SeedDefinition().setName(name).setMain(main).setWorkers(workers);
+  public static NodeDefinition createDefinition(String name, String main, int workers) {
+    return new NodeDefinition().setName(name).setMain(main).setWorkers(workers);
   }
 
 }

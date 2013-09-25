@@ -18,7 +18,9 @@ package net.kuujo.vevent.java;
 import net.kuujo.vevent.context.ComponentContext;
 import net.kuujo.vevent.executor.Executor;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 /**
@@ -56,5 +58,61 @@ abstract class ExecutorVerticle extends Verticle implements Handler<Executor> {
    * Primary method for executing data.
    */
   protected abstract void execute();
+
+  /**
+   * Performs an execution.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param resultHandler
+   *   An asynchronous result handler.
+   */
+  public void execute(JsonObject args, Handler<AsyncResult<JsonObject>> resultHandler) {
+    executor.execute(args, resultHandler);
+  }
+
+  /**
+   * Performs an execution.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param tag
+   *   A tag to apply to the arguments.
+   * @param resultHandler
+   *   An asynchronous result handler.
+   */
+  public void execute(JsonObject args, String tag, Handler<AsyncResult<JsonObject>> resultHandler) {
+    executor.execute(args, tag, resultHandler);
+  }
+
+  /**
+   * Performs an execution.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param timeout
+   *   An execution timeout in milliseconds.
+   * @param resultHandler
+   *   An asynchronous result handler.
+   */
+  public void execute(JsonObject args, long timeout, Handler<AsyncResult<JsonObject>> resultHandler) {
+    executor.execute(args, timeout, resultHandler);
+  }
+
+  /**
+   * Performs an execution.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param tag
+   *   A tag to apply to the arguments.
+   * @param timeout
+   *   An execution timeout in milliseconds.
+   * @param resultHandler
+   *   An asynchronous result handler.
+   */
+  public void execute(JsonObject args, String tag, long timeout, Handler<AsyncResult<JsonObject>> resultHandler) {
+    executor.execute(args, tag, timeout, resultHandler);
+  }
 
 }

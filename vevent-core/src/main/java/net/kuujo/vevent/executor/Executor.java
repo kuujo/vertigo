@@ -84,6 +84,20 @@ public interface Executor {
    *
    * @param args
    *   Arguments to network nodes.
+   * @param timeout
+   *   An execution timeout in milliseconds.
+   * @param resultHandler
+   *   An asynchronous result handler.
+   * @return
+   *   The called executor instance.
+   */
+  public Executor execute(JsonObject args, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Arguments to network nodes.
    * @param tag
    *   A tag to apply to arguments.
    * @param resultHandler
@@ -92,5 +106,21 @@ public interface Executor {
    *   The called executor instance.
    */
   public Executor execute(JsonObject args, String tag, Handler<AsyncResult<JsonObject>> resultHandler);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Arguments to network nodes.
+   * @param tag
+   *   A tag to apply to arguments.
+   * @param timeout
+   *   An execution timeout in milliseconds.
+   * @param resultHandler
+   *   An asynchronous result handler.
+   * @return
+   *   The called executor instance.
+   */
+  public Executor execute(JsonObject args, String tag, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
 
 }

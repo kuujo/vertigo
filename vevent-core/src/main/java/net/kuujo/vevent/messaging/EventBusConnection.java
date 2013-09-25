@@ -59,40 +59,40 @@ public class EventBusConnection implements Connection {
   }
 
   @Override
-  public Connection send(JsonMessage message) {
+  public Connection write(JsonMessage message) {
     eventBus.send(address, Actions.create("receive", message.serialize()));
     return this;
   }
 
   @Override
-  public <T> Connection send(JsonMessage message, final Handler<AsyncResult<Message<T>>> replyHandler) {
-    doSend(message, 0, false, 0, new DefaultFutureResult<Message<T>>().setHandler(replyHandler));
+  public Connection write(JsonMessage message, Handler<AsyncResult<Boolean>> replyHandler) {
+    doSend(message, 0, false, 0, new DefaultFutureResult<Boolean>().setHandler(replyHandler));
     return this;
   }
 
   @Override
-  public <T> Connection send(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
-    doSend(message, timeout, false, 0, new DefaultFutureResult<Message<T>>().setHandler(replyHandler));
+  public Connection write(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> replyHandler) {
+    doSend(message, timeout, false, 0, new DefaultFutureResult<Boolean>().setHandler(replyHandler));
     return this;
   }
 
   @Override
-  public <T> Connection send(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler) {
-    doSend(message, timeout, retry, 0, new DefaultFutureResult<Message<T>>().setHandler(replyHandler));
+  public Connection write(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> replyHandler) {
+    doSend(message, timeout, retry, 0, new DefaultFutureResult<Boolean>().setHandler(replyHandler));
     return this;
   }
 
   @Override
-  public <T> Connection send(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler) {
-    doSend(message, timeout, retry, attempts, new DefaultFutureResult<Message<T>>().setHandler(replyHandler));
+  public Connection write(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Boolean>> replyHandler) {
+    doSend(message, timeout, retry, attempts, new DefaultFutureResult<Boolean>().setHandler(replyHandler));
     return this;
   }
 
-  private <T> void doSend(final JsonMessage message, final long timeout, final boolean retry, final int attempts, final Future<Message<T>> future) {
+  private <T> void doSend(final JsonMessage message, final long timeout, final boolean retry, final int attempts, final Future<Boolean> future) {
     if (timeout > 0) {
-      eventBus.send(address, Actions.create("receive", message.serialize()), timeout, new AsyncResultHandler<Message<T>>() {
+      eventBus.send(address, Actions.create("receive", message.serialize()), timeout, new AsyncResultHandler<Message<Boolean>>() {
         @Override
-        public void handle(AsyncResult<Message<T>> result) {
+        public void handle(AsyncResult<Message<Boolean>> result) {
           if (result.failed()) {
             if (retry && attempts > 0) {
               doSend(message, timeout, retry, attempts-1, future);
@@ -105,16 +105,16 @@ public class EventBusConnection implements Connection {
             }
           }
           else {
-            future.setResult(result.result());
+            future.setResult(result.result().body());
           }
         }
       });
     }
     else {
-      eventBus.send(address, Actions.create("receive", message.serialize()), new Handler<Message<T>>() {
+      eventBus.send(address, Actions.create("receive", message.serialize()), new Handler<Message<Boolean>>() {
         @Override
-        public void handle(Message<T> message) {
-          future.setResult(message);
+        public void handle(Message<Boolean> message) {
+          future.setResult(message.body());
         }
       });
     }

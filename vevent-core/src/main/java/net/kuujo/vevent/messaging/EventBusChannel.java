@@ -17,7 +17,6 @@ package net.kuujo.vevent.messaging;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
 
 /**
  * An eventbus based stream.
@@ -61,28 +60,34 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public void emit(JsonMessage message) {
+  public Channel<?> write(JsonMessage message) {
     dispatcher.dispatch(message);
+    return this;
   }
 
   @Override
-  public <T> void emit(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler) {
-    dispatcher.dispatch(message, replyHandler);
+  public Channel<?> write(JsonMessage message, Handler<AsyncResult<Boolean>> doneHandler) {
+    dispatcher.dispatch(message, doneHandler);
+    return this;
   }
 
   @Override
-  public <T> void emit(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler) {
-    dispatcher.dispatch(message, timeout, replyHandler);
+  public Channel<?> write(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> doneHandler) {
+    dispatcher.dispatch(message, timeout, doneHandler);
+    return this;
   }
 
   @Override
-  public <T> void emit(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler) {
-    dispatcher.dispatch(message, timeout, retry, replyHandler);
+  public Channel<?> write(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> doneHandler) {
+    dispatcher.dispatch(message, timeout, retry, doneHandler);
+    return this;
   }
 
   @Override
-  public <T> void emit(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler) {
-    dispatcher.dispatch(message, timeout, retry, attempts, replyHandler);
+  public Channel<?> write(JsonMessage message, long timeout, boolean retry, int attempts,
+      Handler<AsyncResult<Boolean>> doneHandler) {
+    dispatcher.dispatch(message, timeout, retry, attempts, doneHandler);
+    return this;
   }
 
 }

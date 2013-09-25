@@ -23,7 +23,6 @@ import java.util.Set;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
 /**
@@ -209,9 +208,9 @@ public class CoordinatingOutputCollector implements OutputCollector {
     private void doEmitTo(final String streamName, final JsonMessage message) {
       // By emitting all messages with the same timeout, we know that if
       // an eventbus timeout occurs then the emission failed.
-      channels.get(streamName).emit(message, timeout, STREAM_RETRY, STREAM_ATTEMPTS, new Handler<AsyncResult<Message<Boolean>>>() {
+      channels.get(streamName).write(message, timeout, STREAM_RETRY, STREAM_ATTEMPTS, new Handler<AsyncResult<Boolean>>() {
         @Override
-        public void handle(AsyncResult<Message<Boolean>> result) {
+        public void handle(AsyncResult<Boolean> result) {
           if (!finished) {
             // If the send itself failed then fail the future.
             if (result.failed()) {
@@ -221,7 +220,7 @@ public class CoordinatingOutputCollector implements OutputCollector {
             else {
               // If the message was acked then add this stream to the list
               // of successfully acked channels.
-              boolean succeeded = result.result().body();
+              boolean succeeded = result.result();
               if (succeeded) {
                 Set<String> streamList;
                 if (completedStreams.containsKey(message)) {

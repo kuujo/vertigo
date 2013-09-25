@@ -17,7 +17,6 @@ package net.kuujo.vevent.messaging;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
 
 /**
  * A message dispatcher.
@@ -81,10 +80,10 @@ public interface Dispatcher {
    *
    * @param message
    *   The message to dispatch.
-   * @param replyHandler
-   *   A message reply handler.
+   * @param doneHandler
+   *   A message completion handler.
    */
-  public <T> void dispatch(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler);
+  public void dispatch(JsonMessage message, Handler<AsyncResult<Boolean>> doneHandler);
 
   /**
    * Publishes a message to the stream with a response handler.
@@ -93,10 +92,10 @@ public interface Dispatcher {
    *   The message to publish.
    * @param timeout
    *   A message timeout.
-   * @param replyHandler
-   *   A message reply handler.
+   * @param doneHandler
+   *   A message completion handler.
    */
-  public <T> void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler);
+  public void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> doneHandler);
 
   /**
    * Publishes a message to the stream with a response handler.
@@ -107,10 +106,10 @@ public interface Dispatcher {
    *   A message timeout.
    * @param retry
    *   Indicates whether to retry sending the message if sending times out.
-   * @param replyHandler
-   *   A message reply handler.
+   * @param doneHandler
+   *   A message completion handler.
    */
-  public <T> void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler);
+  public void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> doneHandler);
 
   /**
    * Publishes a message to the stream with a response handler.
@@ -123,9 +122,9 @@ public interface Dispatcher {
    *   Indicates whether to retry sending the message if sending times out.
    * @param attempts
    *   Indicates the number of times to retry if retries are enabled.
-   * @param replyHandler
-   *   A message reply handler.
+   * @param doneHandler
+   *   A message completion handler.
    */
-  public <T> void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler);
+  public void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Boolean>> doneHandler);
 
 }

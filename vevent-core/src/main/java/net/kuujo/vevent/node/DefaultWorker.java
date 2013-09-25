@@ -110,7 +110,7 @@ public class DefaultWorker implements Worker {
    * Sets up the seed verticle heartbeat.
    */
   private void setupHeartbeat() {
-    heartbeat = new DefaultHeartbeatEmitter(vertx);
+    heartbeat = new DefaultHeartbeatEmitter();
     eventBus.send(context.getStem(), Actions.create("register", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {

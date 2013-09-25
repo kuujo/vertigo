@@ -15,16 +15,12 @@
 */
 package net.kuujo.vevent.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-
 /**
  * A single point-to-point connection.
  *
  * @author Jordan Halterman
  */
-public interface Connection {
+public interface Connection extends Writable<Connection> {
 
   /**
    * Gets the remote connection address.
@@ -33,65 +29,5 @@ public interface Connection {
    *   The remote connection address.
    */
   public String getAddress();
-
-  /**
-   * Sends a message through the connection.
-   *
-   * @param message
-   *   The message to send.
-   */
-  public Connection send(JsonMessage message);
-
-  /**
-   * Sends a message through the connection, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param replyHandler
-   *   A message reply handler.
-   */
-  public <T> Connection send(JsonMessage message, Handler<AsyncResult<Message<T>>> replyHandler);
-
-  /**
-   * Sends a message through the connection, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param timeout
-   *   A message timeout.
-   * @param replyHandler
-   *   A message reply handler.
-   */
-  public <T> Connection send(JsonMessage message, long timeout, Handler<AsyncResult<Message<T>>> replyHandler);
-
-  /**
-   * Sends a message through the connection, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param timeout
-   *   A message timeout.
-   * @param retry
-   *   Indicates whether to retry sending the message if sending times out.
-   * @param replyHandler
-   *   A message reply handler.
-   */
-  public <T> Connection send(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Message<T>>> replyHandler);
-
-  /**
-   * Sends a message through the connection, providing a handler for a return value.
-   *
-   * @param message
-   *   The message to send.
-   * @param timeout
-   *   A message timeout.
-   * @param retry
-   *   Indicates whether to retry sending the message if sending times out.
-   * @param attempts
-   *   Indicates the number of times to retry if retries are enabled.
-   * @param replyHandler
-   *   A message reply handler.
-   */
-  public <T> Connection send(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Message<T>>> replyHandler);
 
 }

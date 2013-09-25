@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from definition import VineDefinition, SeedDefinition
+from definition import NetworkDefinition, NodeDefinition
 
 class _AbstractContext(object):
   """
@@ -20,9 +20,9 @@ class _AbstractContext(object):
   def __init__(self, context):
     self._context = context
 
-class VineContext(_AbstractContext):
+class NetworkContext(_AbstractContext):
   """
-  A vine context.
+  A network context.
   """
   @property
   def address(self):
@@ -30,11 +30,11 @@ class VineContext(_AbstractContext):
 
   @property
   def definition(self):
-    return VineDefinition(self._context.getDefinition())
+    return NetworkDefinition(self._context.getDefinition())
 
-class SeedContext(_AbstractContext):
+class NodeContext(_AbstractContext):
   """
-  A seed context.
+  A node context.
   """
   @property
   def address(self):
@@ -42,11 +42,11 @@ class SeedContext(_AbstractContext):
 
   @property
   def context(self):
-    return VineContext(self._context.getContext())
+    return NetworkContext(self._context.getContext())
 
   @property
   def definition(self):
-    return SeedDefinition(self._context.getDefinition())
+    return NodeDefinition(self._context.getDefinition())
 
   @property
   def workers(self):
@@ -62,7 +62,7 @@ class WorkerContext(_AbstractContext):
 
   @property
   def context(self):
-    return SeedContext(self._context.getContext())
+    return NodeContext(self._context.getContext())
 
   @property
   def stem(self):

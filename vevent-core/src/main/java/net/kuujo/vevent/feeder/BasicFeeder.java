@@ -15,32 +15,11 @@
 */
 package net.kuujo.vevent.feeder;
 
-import net.kuujo.vevent.context.NetworkContext;
-
 /**
- * A remote executor server.
+ * A basic feeder.
  *
  * @author Jordan Halterman
  */
-public class RemoteExecutorServer extends AbstractFeederServer implements FeederServer {
-
-  public RemoteExecutorServer(NetworkContext context) {
-    super(context);
-  }
-
-  @Override
-  public FeederServer listen(String address) {
-    return null;
-  }
-
-  @Override
-  public String address() {
-    return null;
-  }
-
-  @Override
-  public void close() {
-    
-  }
+public interface BasicFeeder extends Feeder {
 
 }

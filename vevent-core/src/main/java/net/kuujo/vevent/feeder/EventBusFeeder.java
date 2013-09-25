@@ -15,19 +15,11 @@
 */
 package net.kuujo.vevent.feeder;
 
-import net.kuujo.vevent.context.NetworkContext;
-
 /**
- * An abstract feeder server implementation.
+ * An eventbus feeder.
  *
  * @author Jordan Halterman
  */
-abstract class AbstractFeederServer {
-
-  private NetworkContext context;
-
-  public AbstractFeederServer(NetworkContext context) {
-    this.context = context;
-  }
+public class EventBusFeeder {
 
 }

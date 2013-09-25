@@ -13,33 +13,44 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.feeder;
+package net.kuujo.vevent.java;
 
-import org.vertx.java.core.AsyncResult;
+import net.kuujo.vevent.context.FeederContext;
+import net.kuujo.vevent.feeder.Feeder;
+
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
 /**
- * A network feeder.
+ * An abstract feeder verticle.
  *
  * @author Jordan Halterman
  */
-public interface Feeder {
+abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
+
+  protected FeederContext context;
+
+  protected Feeder feeder;
 
   /**
-   * Sets the feed handler.
+   * Creates a root feeder instance.
    *
-   * @param handler
-   *   A feed handler.
+   * @return
+   *   A new root feeder instance.
    */
-  public Feeder feedHandler(Handler<Feeder> handler);
+  abstract Feeder createFeeder(FeederContext context);
 
-  public Feeder feed(JsonObject data);
+  @Override
+  public void start() {
+    context = new FeederContext(container.config());
+    feeder = createFeeder(context);
+  }
 
-  public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler);
-
-  public Feeder feed(JsonObject data, String tag);
-
-  public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler);
+  /**
+   * Primary method for feeding data.
+   */
+  protected abstract void feed();
 
 }

@@ -11,73 +11,70 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import net.kuujo.vine.context.VineContext
-import net.kuujo.vine.seed.DefaultSeed
-import net.kuujo.vine.messaging.JsonMessage
+import net.kuujo.vevent.context.NetworkContext
+import net.kuujo.vevent.node.DefaultWorker
+import net.kuujo.vevent.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 from core.javautils import map_from_java, map_to_java
 
-class _AbstractSeed(object):
+class Worker(object):
   """
-  An abstract seed instance.
+  A worker instance.
   """
   _handlercls = None
 
   def __init__(self):
-    self.__seed = net.kuujo.vine.seed.DefaultSeed()
-    self.__seed.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
-    self.__seed.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
-    self.__seed.setContext(net.kuujo.vine.context.VineContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
+    self.__worker = net.kuujo.vevent.node.DefaultWorker()
+    self.__worker.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
+    self.__worker.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
+    self.__worker.setContext(net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
 
   def data_handler(self, handler):
     """
     Sets the seed data handler.
     """
-    self.__seed.dataHandler(DataHandler(handler))
+    self.__worker.dataHandler(DataHandler(handler))
     return handler
 
   def start(self):
     """
     Starts the seed.
     """
-    self.__seed.start()
+    self.__worker.start()
 
-  def emit(self, *data):
+  def emit(self, data, parent=None, tag=None):
     """
     Emits data to all output streams.
     """
-    if len(data) == 1:
-      self.__seed.emit(map_to_java(data[0]))
+    if parent is not None:
+      if tag is not None:
+        self.__worker.emit(data, tag, parent)
+      else:
+        self.__worker.emit(data, parent)
     else:
-      self.__seed.emit(*[map_to_java(data[i]) for i in range(len(data))])
-
-  def emitto(self, seed, *data):
-    """
-    Emits data to a specific output stream.
-    """
-    if len(data) == 1:
-      self.__seed.emitTo(seed, data[0])
-    else:
-      self.__seed.emitTo(seed, *[map_to_java(data[i]) for i in range(len(data))])
+      if tag is not None:
+        self.__worker.emit(data, tag)
+      else:
+        self.__worker.emit(data)
 
   def ack(self, *data):
     """
     Acknowledges a message.
     """
     if len(data) == 1:
-      self.__seed.ack(data[0]._original)
+      self.__worker.ack(data[0]._message)
     else:
-      self.__seed.ack(*[data[i]._original for i in range(len(data))])
+      self.__worker.ack(*[data[i]._message for i in range(len(data))])
 
   def fail(self, *data):
     """
     Fails a message.
     """
     if len(data) == 1:
-      self.__seed.fail(data[0].__message)
+      self.__worker.fail(data[0]._message)
     else:
-      self.__seed.fail(*[data[i].__message for i in range(len(data))])
+      self.__worker.fail(*[data[i]._message for i in range(len(data))])
 
 class DataHandler(org.vertx.java.core.Handler):
   """
@@ -94,5 +91,5 @@ class Message(dict):
   A seed message.
   """
   def __init__(self, data, message):
-    self.__message = message
+    self._message = message
     dict.__init__(self, data)

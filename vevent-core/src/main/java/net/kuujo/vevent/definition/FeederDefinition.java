@@ -13,33 +13,21 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.feeder;
+package net.kuujo.vevent.definition;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A network feeder.
+ * A feeder definition.
  *
  * @author Jordan Halterman
  */
-public interface Feeder {
+public class FeederDefinition {
 
-  /**
-   * Sets the feed handler.
-   *
-   * @param handler
-   *   A feed handler.
-   */
-  public Feeder feedHandler(Handler<Feeder> handler);
+  private JsonObject definition;
 
-  public Feeder feed(JsonObject data);
-
-  public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler);
-
-  public Feeder feed(JsonObject data, String tag);
-
-  public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler);
+  public FeederDefinition(JsonObject definition) {
+    this.definition = definition;
+  }
 
 }

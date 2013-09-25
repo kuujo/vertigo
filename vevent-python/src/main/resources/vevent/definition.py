@@ -11,18 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import net.kuujo.vine.definition.VineDefinition
-import net.kuujo.vine.definition.SeedDefinition
-import net.kuujo.vine.grouping.FieldsGrouping
-import net.kuujo.vine.grouping.RandomGrouping
-import net.kuujo.vine.grouping.RoundGrouping
+import net.kuujo.vevent.definition.NetworkDefinition
+import net.kuujo.vevent.definition.NodeDefinition
+import net.kuujo.vevent.grouping.FieldsGrouping
+import net.kuujo.vevent.grouping.RandomGrouping
+import net.kuujo.vevent.grouping.RoundGrouping
 
-class VineDefinition(object):
+class NetworkDefinition(object):
   """
-  A vine definition.
+  A network definition.
   """
   def __init__(self, address=None, **options):
-    self.__def = net.kuujo.vine.definition.VineDefinition()
+    self.__def = net.kuujo.vevent.definition.NetworkDefinition()
     if address is not None:
       self.__def.setAddress(address)
     for key, value in options.iteritems():
@@ -53,7 +53,7 @@ class VineDefinition(object):
   message_timeout = property(get_message_timeout, set_message_timeout)
 
   def feed(self, name, main=None, workers=1, grouping=None, **options):
-    seed = SeedDefinition(name, main, workers, grouping, **options)
+    seed = NodeDefinition(name, main, workers, grouping, **options)
     self.__def.feed(seed.__def)
     return seed
 
@@ -71,12 +71,12 @@ class VineDefinition(object):
     def __getitem__(self, key):
       self.__def.__def.getOption(key)
 
-class SeedDefinition(object):
+class NodeDefinition(object):
   """
-  A vine seed definition.
+  A network node definition.
   """
   def __init__(self, name, main=None, workers=1, grouping=None, **options):
-    self.__def = net.kuujo.vine.definition.SeedDefinition(name)
+    self.__def = net.kuujo.vevent.definition.NodeDefinition(name)
     if main is not None:
       self.__def.setMain(main)
     self.__def.setWorkers(workers)
@@ -121,13 +121,13 @@ class SeedDefinition(object):
     self.__def.groupBy(grouping.__def)
 
   def to(self, name, main=None, workers=1, **options):
-    seed = SeedDefinition(name, main, workers, **options)
+    seed = NodeDefinition(name, main, workers, **options)
     self.__def.to(seed.__def)
     return seed
 
 class Grouping(object):
   """
-  A seed grouping definition.
+  A node grouping definition.
   """
   def __init__(self):
     self.__def = None
@@ -137,7 +137,7 @@ class FieldsGrouping(Grouping):
   A fields based grouping.
   """
   def __init__(self, field):
-    self.__def = net.kuujo.vine.grouping.FieldsGrouping(field)
+    self.__def = net.kuujo.vevent.grouping.FieldsGrouping(field)
 
   def get_field(self):
     return self.__def.getField()
@@ -152,11 +152,11 @@ class RandomGrouping(Grouping):
   A random grouping.
   """
   def __init__(self):
-    self.__def = net.kuujo.vine.grouping.RandomGrouping()
+    self.__def = net.kuujo.vevent.grouping.RandomGrouping()
 
 class RoundGrouping(Grouping):
   """
   A round-robin grouping.
   """
   def __init__(self):
-    self.__def = net.kuujo.vine.grouping.RoundGrouping()
+    self.__def = net.kuujo.vevent.grouping.RoundGrouping()

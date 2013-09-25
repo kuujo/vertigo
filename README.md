@@ -1,9 +1,10 @@
-Vine
-====
+Vevent
+======
 
-Vine is a real-time computation engine built on the Vert.x application platform.
-Similar to Storm, work can be distributed across clusters with a central module
-assigning work to Vert.x instances in the cluster.
+Vevent is a distributed event processing framework built on the
+[Vert.x](http://vertx.io/) application platform. Similar to Storm, work
+can be distributed across clusters with a central module assigning work
+to Vert.x instances in the cluster.
 
 ## Features
 * Built on the [Vert.x](http://vertx.io/) application platform, so core Vert.x
@@ -17,4 +18,4 @@ assigning work to Vert.x instances in the cluster.
 * Supports remote-procedure calls, allowing for real-time request-response
   spanning multiple Vert.x instances.
 
-### [Seed the documentation for tutorials and examples](https://github.com/kuujo/vertx-vine/wiki/Vine)
+### [See the documentation for tutorials and examples](https://github.com/kuujo/vevent/wiki/Vevent)

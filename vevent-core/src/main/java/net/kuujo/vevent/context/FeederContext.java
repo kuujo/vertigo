@@ -13,36 +13,21 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.feeder;
+package net.kuujo.vevent.context;
+
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * A feeder server.
+ * A feeder context.
  *
  * @author Jordan Halterman
  */
-public interface FeederServer {
+public class FeederContext {
 
-  /**
-   * Instructs the server to start listening at an address.
-   *
-   * @param address
-   *   The eventbus address at which to listen.
-   * @return
-   *   The called server instance.
-   */
-  public FeederServer listen(String address);
+  private JsonObject context;
 
-  /**
-   * Returns the address on which the server is listening.
-   *
-   * @return
-   *   The address on which the server is currently listening.
-   */
-  public String address();
-
-  /**
-   * Closes the server.
-   */
-  public void close();
+  public FeederContext(JsonObject context) {
+    this.context = context;
+  }
 
 }

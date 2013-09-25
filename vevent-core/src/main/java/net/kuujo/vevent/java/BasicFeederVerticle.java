@@ -13,13 +13,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.feeder;
+package net.kuujo.vevent.java;
+
+import net.kuujo.vevent.context.RootContext;
+import net.kuujo.vevent.feeder.BasicFeeder;
+import net.kuujo.vevent.feeder.Feeder;
 
 /**
- * A default basic feeder implementation.
+ * A basic feeder verticle implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultBasicFeeder {
+public abstract class BasicFeederVerticle extends FeederVerticle {
+
+  @Override
+  Feeder createFeeder(RootContext context) {
+    return new BasicFeeder(vertx.eventBus(), context);
+  }
 
 }

@@ -34,12 +34,52 @@ public interface Feeder {
    */
   public Feeder feedHandler(Handler<Feeder> handler);
 
+  /**
+   * Feeds data to the network.
+   *
+   * @param data
+   *   The data to feed.
+   * @return
+   *   The called feeder instance.
+   */
   public Feeder feed(JsonObject data);
 
+  /**
+   * Feeds data to the network.
+   *
+   * @param data
+   *   The data to feed.
+   * @param doneHandler
+   *   A handler to be invoked once processing is complete.
+   * @return
+   *   The called feeder instance.
+   */
   public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler);
 
+  /**
+   * Feeds data to the network.
+   *
+   * @param data
+   *   The data to feed.
+   * @param tag
+   *   A tag to apply to fed data.
+   * @return
+   *   The called feeder instance.
+   */
   public Feeder feed(JsonObject data, String tag);
 
+  /**
+   * Feeds data to the network.
+   *
+   * @param data
+   *   The data to feed.
+   * @param tag
+   *   A tag to apply to fed data.
+   * @param doneHandler
+   *   A handler to be invoked once processing is complete.
+   * @return
+   *   The called feeder instance.
+   */
   public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler);
 
 }

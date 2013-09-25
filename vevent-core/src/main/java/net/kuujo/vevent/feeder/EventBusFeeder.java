@@ -15,11 +15,55 @@
 */
 package net.kuujo.vevent.feeder;
 
+import net.kuujo.vevent.context.RootContext;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
+
 /**
  * An eventbus feeder.
  *
  * @author Jordan Halterman
  */
-public class EventBusFeeder {
+public class EventBusFeeder implements Feeder {
+
+  private String address;
+
+  private EventBus eventBus;
+
+  private RootContext context;
+
+  public EventBusFeeder(String address, EventBus eventBus, RootContext context) {
+    this.address = address;
+    this.eventBus = eventBus;
+    this.context = context;
+  }
+
+  @Override
+  public Feeder feedHandler(Handler<Feeder> handler) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, String tag) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
 
 }

@@ -16,45 +16,45 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.RootContext;
-import net.kuujo.vevent.feeder.Feeder;
+import net.kuujo.vevent.executor.Executor;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.platform.Verticle;
 
 /**
- * An abstract feeder verticle.
+ * An abstract executor verticle.
  *
  * @author Jordan Halterman
  */
-abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
+abstract class ExecutorVerticle extends Verticle implements Handler<Executor> {
 
   protected RootContext context;
 
-  protected Feeder feeder;
+  protected Executor executor;
 
   /**
-   * Creates a root feeder instance.
+   * Creates a root executor instance.
    *
    * @return
-   *   A new root feeder instance.
+   *   A new root executor instance.
    */
-  abstract Feeder createFeeder(RootContext context);
+  abstract Executor createExecutor(RootContext context);
 
   @Override
   public void start() {
     context = new RootContext(container.config());
-    feeder = createFeeder(context);
-    feeder.feedHandler(this);
+    executor = createExecutor(context);
+    executor.executeHandler(this);
   }
 
   @Override
-  public void handle(Feeder feeder) {
-    feed();
+  public void handle(Executor executor) {
+    execute();
   }
 
   /**
-   * Primary method for feeding data.
+   * Primary method for executing data.
    */
-  protected abstract void feed();
+  protected abstract void execute();
 
 }

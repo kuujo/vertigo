@@ -19,7 +19,6 @@ import net.kuujo.vevent.Serializeable;
 
 import org.vertx.java.core.json.JsonObject;
 
-
 /**
  * A default seed context implementation.
  *

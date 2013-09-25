@@ -16,45 +16,19 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.RootContext;
+import net.kuujo.vevent.feeder.EventBusFeeder;
 import net.kuujo.vevent.feeder.Feeder;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.platform.Verticle;
-
 /**
- * An abstract feeder verticle.
+ * An eventbus-based feeder verticle implementation.
  *
  * @author Jordan Halterman
  */
-abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
-
-  protected RootContext context;
-
-  protected Feeder feeder;
-
-  /**
-   * Creates a root feeder instance.
-   *
-   * @return
-   *   A new root feeder instance.
-   */
-  abstract Feeder createFeeder(RootContext context);
+public abstract class EventBusFeederVerticle extends FeederVerticle {
 
   @Override
-  public void start() {
-    context = new RootContext(container.config());
-    feeder = createFeeder(context);
-    feeder.feedHandler(this);
+  Feeder createFeeder(RootContext context) {
+    return new EventBusFeeder(context.getAddress(), vertx.eventBus(), context);
   }
-
-  @Override
-  public void handle(Feeder feeder) {
-    feed();
-  }
-
-  /**
-   * Primary method for feeding data.
-   */
-  protected abstract void feed();
 
 }

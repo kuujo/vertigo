@@ -27,59 +27,70 @@ import org.vertx.java.core.json.JsonObject;
 public interface Executor {
 
   /**
-   * Sets the feed queue max size.
+   * Sets the execution queue size.
    *
    * @param maxSize
-   *   The feed queue max size.
+   *   The execution queue maximum size.
    * @return
    *   The called executor instance.
    */
-  public Executor setFeedQueueMaxSize(long maxSize);
+  public Executor setWriteQueueMaxSize(long maxSize);
 
   /**
-   * Indicates whether the feeder queue is full.
+   * Registers a handler to be invoked for execution.
    *
+   * @param handler
+   *   The handler to register.
    * @return
-   *   A boolean indicating whether the feeder queue is full.
+   *   The called executor instance.
    */
-  public boolean feedQueueFull();
+  public Executor executeHandler(Handler<Executor> handler);
 
   /**
-   * Executes the vine as a remote procedure.
+   * Registers a handler to be invoked when the execution queue is full.
+   *
+   * @param fullHandler
+   *   The handler to register.
+   * @return
+   *   The called executor instance.
+   */
+  public Executor fullHandler(Handler<Executor> fullHandler);
+
+  /**
+   * Registers a handler to be invoked when a full executor is prepared to accept
+   * new executions.
+   *
+   * @param drainHandler
+   *   The handler to register.
+   * @return
+   *   The called executor instance.
+   */
+  public Executor drainHandler(Handler<Executor> drainHandler);
+
+  /**
+   * Executes the network.
    *
    * @param args
-   *   Arguments to the vine.
+   *   Arguments to network nodes.
    * @param resultHandler
-   *   An asynchronous handler to be invoked with the execution result.
+   *   An asynchronous result handler.
    * @return
    *   The called executor instance.
    */
   public Executor execute(JsonObject args, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
-   * Executes the vine as a remote procedure with a timeout.
+   * Executes the network.
    *
    * @param args
-   *   Arguments to the vine.
-   * @param timeout
-   *   An execution timeout. If a timeout occurs, the result will fail.
+   *   Arguments to network nodes.
+   * @param tag
+   *   A tag to apply to arguments.
    * @param resultHandler
-   *   An asynchronous handler to be invoked with the execution result.
+   *   An asynchronous result handler.
    * @return
    *   The called executor instance.
    */
-  public Executor execute(JsonObject args, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
-
-  /**
-   * Sets a drain handler on the feeder.
-   *
-   * @param drainHandler
-   *   The drain handler.
-   * @return
-   *   The called object.
-   * @return
-   *   The called executor instance.
-   */
-  public Executor drainHandler(Handler<Void> handler);
+  public Executor execute(JsonObject args, String tag, Handler<AsyncResult<JsonObject>> resultHandler);
 
 }

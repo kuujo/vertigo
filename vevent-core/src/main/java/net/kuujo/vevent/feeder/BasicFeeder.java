@@ -15,11 +15,52 @@
 */
 package net.kuujo.vevent.feeder;
 
+import net.kuujo.vevent.context.RootContext;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
+
 /**
  * A basic feeder.
  *
  * @author Jordan Halterman
  */
-public interface BasicFeeder extends Feeder {
+public class BasicFeeder implements Feeder {
+
+  private EventBus eventBus;
+
+  private RootContext context;
+
+  public BasicFeeder(EventBus eventBus, RootContext context) {
+    this.eventBus = eventBus;
+    this.context = context;
+  }
+
+  @Override
+  public Feeder feedHandler(Handler<Feeder> handler) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, String tag) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
 
 }

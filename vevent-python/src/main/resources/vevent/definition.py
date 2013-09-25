@@ -52,9 +52,9 @@ class NetworkDefinition(object):
 
   message_timeout = property(get_message_timeout, set_message_timeout)
 
-  def from_(self, name, main=None, workers=1, grouping=None, **options):
+  def from_root(self, name, main=None, workers=1, grouping=None, **options):
     component = ComponentDefinition(name, main, workers, grouping, **options)
-    self._def.from(component._def)
+    self._def.fromRoot(component._def)
     return component
 
   @property
@@ -120,9 +120,9 @@ class ComponentDefinition(object):
   def group_by(self, grouping):
     self._def.groupBy(grouping.__def)
 
-  def to(self, name, main=None, workers=1, **options):
+  def to_node(self, name, main=None, workers=1, **options):
     seed = ComponentDefinition(name, main, workers, **options)
-    self._def.to(seed.__def)
+    self._def.toNode(seed.__def)
     return seed
 
 class Grouping(object):

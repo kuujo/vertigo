@@ -186,7 +186,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   The given root definition.
    */
-  public ComponentDefinition from(ComponentDefinition definition) {
+  public ComponentDefinition fromRoot(ComponentDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -198,8 +198,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new root definition.
    */
-  public ComponentDefinition from(String name) {
-    return from(name, null, 1);
+  public ComponentDefinition fromRoot(String name) {
+    return fromRoot(name, null, 1);
   }
 
   /**
@@ -212,8 +212,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new root definition.
    */
-  public ComponentDefinition from(String name, String main) {
-    return from(name, main, 1);
+  public ComponentDefinition fromRoot(String name, String main) {
+    return fromRoot(name, main, 1);
   }
 
   /**
@@ -228,7 +228,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new root definition.
    */
-  public ComponentDefinition from(String name, String main, int workers) {
+  public ComponentDefinition fromRoot(String name, String main, int workers) {
     return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 

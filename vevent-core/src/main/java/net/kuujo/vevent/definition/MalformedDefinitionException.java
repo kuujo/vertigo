@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.definition;
 
-import net.kuujo.vevent.VineException;
+import net.kuujo.vevent.VeventException;
 
 /**
  * A malformed definition exception.
@@ -23,7 +23,7 @@ import net.kuujo.vevent.VineException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class MalformedDefinitionException extends VineException {
+public class MalformedDefinitionException extends VeventException {
 
   public MalformedDefinitionException(String message) {
     super(message);

@@ -21,17 +21,17 @@ package net.kuujo.vevent;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class VineException extends Exception {
+public class VeventException extends Exception {
 
-  public VineException(String message) {
+  public VeventException(String message) {
     super(message);
   }
 
-  public VineException(String message, Throwable cause) {
+  public VeventException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public VineException(Throwable cause) {
+  public VeventException(Throwable cause) {
     super(cause);
   }
 

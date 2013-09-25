@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.context;
 
-import net.kuujo.vevent.VineException;
+import net.kuujo.vevent.VeventException;
 
 /**
  * A malformed context exception.
@@ -23,7 +23,7 @@ import net.kuujo.vevent.VineException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class MalformedContextException extends VineException {
+public class MalformedContextException extends VeventException {
 
   public MalformedContextException(String message) {
     super(message);

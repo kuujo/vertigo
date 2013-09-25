@@ -14,7 +14,7 @@
 * limitations under the License.
 */package net.kuujo.vevent.messaging;
 
-import net.kuujo.vevent.VineException;
+import net.kuujo.vevent.VeventException;
 
 /**
  * A communication exception.
@@ -22,7 +22,7 @@ import net.kuujo.vevent.VineException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class CommunicationException extends VineException {
+public class CommunicationException extends VeventException {
 
   public CommunicationException(String message) {
     super(message);

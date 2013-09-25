@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.eventbus;
 
-import net.kuujo.vevent.VineException;
+import net.kuujo.vevent.VeventException;
 
 /**
  * A timeout exception exception.
@@ -23,7 +23,7 @@ import net.kuujo.vevent.VineException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class TimeoutException extends VineException {
+public class TimeoutException extends VeventException {
 
   public TimeoutException(String message) {
     super(message);

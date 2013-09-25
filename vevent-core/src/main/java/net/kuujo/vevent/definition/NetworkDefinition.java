@@ -165,7 +165,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a root definition.
    */
-  private RootDefinition addDefinition(RootDefinition definition) {
+  private ComponentDefinition addDefinition(ComponentDefinition definition) {
     // Add the root definition.
     JsonObject roots = this.definition.getObject("roots");
     if (roots == null) {
@@ -186,7 +186,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   The given root definition.
    */
-  public RootDefinition from(RootDefinition definition) {
+  public ComponentDefinition from(ComponentDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -198,7 +198,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new root definition.
    */
-  public RootDefinition from(String name) {
+  public ComponentDefinition from(String name) {
     return from(name, null, 1);
   }
 
@@ -212,7 +212,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new root definition.
    */
-  public RootDefinition from(String name, String main) {
+  public ComponentDefinition from(String name, String main) {
     return from(name, main, 1);
   }
 
@@ -228,8 +228,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new root definition.
    */
-  public RootDefinition from(String name, String main, int workers) {
-    return addDefinition(new RootDefinition().setName(name).setMain(main).setWorkers(workers));
+  public ComponentDefinition from(String name, String main, int workers) {
+    return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override

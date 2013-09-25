@@ -20,11 +20,11 @@ import net.kuujo.vevent.Serializeable;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A root definition.
+ * A default seed context implementation.
  *
  * @author Jordan Halterman
  */
-public class RootDefinition implements Serializeable<JsonObject> {
+public class ComponentDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
@@ -32,11 +32,11 @@ public class RootDefinition implements Serializeable<JsonObject> {
 
   private static final long DEFAULT_HEARTBEAT_INTERVAL = 1000;
 
-  public RootDefinition() {
+  public ComponentDefinition() {
   }
 
-  public RootDefinition(JsonObject definition) {
-    this.definition = definition;
+  public ComponentDefinition(JsonObject json) {
+    definition = json;
   }
 
   /**
@@ -47,46 +47,46 @@ public class RootDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets the root name.
+   * Sets the node name.
    *
    * @param name
-   *   The root name.
+   *   The node name.
    */
-  public RootDefinition setName(String name) {
+  public ComponentDefinition setName(String name) {
     definition.putString("name", name);
     return this;
   }
 
   /**
-   * Gets the root main.
+   * Gets the node main.
    */
   public String getMain() {
     return definition.getString("main");
   }
 
   /**
-   * Sets the root main. This is a string reference to the verticle
-   * to be run when a root worker is started.
+   * Sets the node main. This is a string reference to the verticle
+   * to be run when a node worker is started.
    *
    * @param main
-   *   The root main.
+   *   The node main.
    */
-  public RootDefinition setMain(String main) {
+  public ComponentDefinition setMain(String main) {
     definition.putString("main", main);
     return this;
   }
 
   /**
-   * Sets a root option.
+   * Sets a node option.
    *
    * @param option
    *   The option to set.
    * @param value
    *   The option value.
    * @return
-   *   The called root definition.
+   *   The called node definition.
    */
-  public RootDefinition setOption(String option, String value) {
+  public ComponentDefinition setOption(String option, String value) {
     switch (option) {
       case "name":
         return setName(value);
@@ -100,7 +100,7 @@ public class RootDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets a root option.
+   * Gets a node option.
    *
    * @param option
    *   The option to get.
@@ -112,43 +112,63 @@ public class RootDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets the number of root workers.
+   * Sets the node worker grouping.
+   *
+   * @param grouping
+   *   A grouping definition.
+   * @return
+   *   The called node definition.
+   */
+  public ComponentDefinition groupBy(GroupingDefinition grouping) {
+    definition.putObject("grouping", grouping.serialize());
+    return this;
+  }
+
+  /**
+   * Gets the node worker grouping.
+   */
+  public GroupingDefinition getGrouping() {
+    return new GroupingDefinition(definition.getObject("grouping"));
+  }
+
+  /**
+   * Sets the number of node workers.
    *
    * @param workers
-   *   The number of root workers.
+   *   The number of node workers.
    * @return
-   *   The called root definition.
+   *   The called node definition.
    */
-  public RootDefinition setWorkers(int workers) {
+  public ComponentDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
     return this;
   }
 
   /**
-   * Gets the number of root workers.
+   * Gets the number of node workers.
    */
   public int getWorkers() {
     return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
   }
 
   /**
-   * Sets the root worker heartbeat interval.
+   * Sets the node worker heartbeat interval.
    *
    * @param interval
    *   A heartbeat interval.
    * @return
-   *   The called root definition.
+   *   The called node definition.
    */
-  public RootDefinition setHeartbeatInterval(long interval) {
+  public ComponentDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
     return this;
   }
 
   /**
-   * Gets the root heartbeat interval.
+   * Gets the node heartbeat interval.
    *
    * @return
-   *   A root heartbeat interval.
+   *   A node heartbeat interval.
    */
   public long getHeartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
@@ -157,7 +177,7 @@ public class RootDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a connection to a node definition.
    */
-  private NodeDefinition addDefinition(NodeDefinition definition) {
+  private ComponentDefinition addDefinition(ComponentDefinition definition) {
     JsonObject connections = this.definition.getObject("connections");
     if (connections == null) {
       connections = new JsonObject();
@@ -175,19 +195,19 @@ public class RootDefinition implements Serializeable<JsonObject> {
    * @param definition
    *   A node definition.
    */
-  public NodeDefinition to(NodeDefinition definition) {
+  public ComponentDefinition to(ComponentDefinition definition) {
     return addDefinition(definition);
   }
 
   /**
-   * Creates a connection to a node, creating a new seed definition.
+   * Creates a connection to a seed, creating a new node definition.
    *
    * @param name
    *   The node name.
    * @return
    *   A new node definition.
    */
-  public NodeDefinition to(String name) {
+  public ComponentDefinition to(String name) {
     return to(name, null, 1);
   }
 
@@ -201,12 +221,12 @@ public class RootDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public NodeDefinition to(String name, String main) {
+  public ComponentDefinition to(String name, String main) {
     return to(name, main, 1);
   }
 
   /**
-   * Creates a connection to a seed, creating a new node definition.
+   * Creates a connection to a node, creating a new node definition.
    *
    * @param name
    *   The node name.
@@ -217,8 +237,8 @@ public class RootDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public NodeDefinition to(String name, String main, int workers) {
-    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
+  public ComponentDefinition to(String name, String main, int workers) {
+    return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override

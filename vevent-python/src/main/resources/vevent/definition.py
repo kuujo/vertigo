@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vevent.definition.NetworkDefinition
-import net.kuujo.vevent.definition.NodeDefinition
+import net.kuujo.vevent.definition.ComponentDefinition
 import net.kuujo.vevent.grouping.FieldsGrouping
 import net.kuujo.vevent.grouping.RandomGrouping
 import net.kuujo.vevent.grouping.RoundGrouping
@@ -71,12 +71,12 @@ class NetworkDefinition(object):
     def __getitem__(self, key):
       self.__def.__def.getOption(key)
 
-class NodeDefinition(object):
+class ComponentDefinition(object):
   """
-  A network node definition.
+  A network component definition.
   """
   def __init__(self, name, main=None, workers=1, grouping=None, **options):
-    self.__def = net.kuujo.vevent.definition.NodeDefinition(name)
+    self.__def = net.kuujo.vevent.definition.ComponentDefinition(name)
     if main is not None:
       self.__def.setMain(main)
     self.__def.setWorkers(workers)

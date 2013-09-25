@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent;
 
-import net.kuujo.vevent.definition.NodeDefinition;
+import net.kuujo.vevent.definition.ComponentDefinition;
 
 /**
  * Static node methods.
@@ -30,8 +30,8 @@ public final class Nodes {
    * @return
    *   A new node definition.
    */
-  public static NodeDefinition createDefinition() {
-    return new NodeDefinition();
+  public static ComponentDefinition createDefinition() {
+    return new ComponentDefinition();
   }
 
   /**
@@ -42,8 +42,8 @@ public final class Nodes {
    * @return
    *   A new node definition.
    */
-  public static NodeDefinition createDefinition(String name) {
-    return new NodeDefinition().setName(name);
+  public static ComponentDefinition createDefinition(String name) {
+    return new ComponentDefinition().setName(name);
   }
 
   /**
@@ -56,8 +56,8 @@ public final class Nodes {
    * @return
    *   A new node definition.
    */
-  public static NodeDefinition createDefinition(String name, String main) {
-    return new NodeDefinition().setName(name).setMain(main);
+  public static ComponentDefinition createDefinition(String name, String main) {
+    return new ComponentDefinition().setName(name).setMain(main);
   }
 
   /**
@@ -72,8 +72,8 @@ public final class Nodes {
    * @return
    *   A new node definition.
    */
-  public static NodeDefinition createDefinition(String name, String main, int workers) {
-    return new NodeDefinition().setName(name).setMain(main).setWorkers(workers);
+  public static ComponentDefinition createDefinition(String name, String main, int workers) {
+    return new ComponentDefinition().setName(name).setMain(main).setWorkers(workers);
   }
 
 }

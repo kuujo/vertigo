@@ -32,9 +32,9 @@ class NetworkContext(_AbstractContext):
   def definition(self):
     return NetworkDefinition(self._context.getDefinition())
 
-class NodeContext(_AbstractContext):
+class ComponentContext(_AbstractContext):
   """
-  A node context.
+  A component context.
   """
   @property
   def address(self):
@@ -46,7 +46,7 @@ class NodeContext(_AbstractContext):
 
   @property
   def definition(self):
-    return NodeDefinition(self._context.getDefinition())
+    return ComponentDefinition(self._context.getDefinition())
 
   @property
   def workers(self):

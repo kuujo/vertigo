@@ -27,53 +27,45 @@ import org.vertx.java.core.Vertx;
  *
  * @author Jordan Halterman
  */
-public interface Vevent {
+public interface Cluster {
 
   /**
-   * Sets the root vertx instance.
+   * Sets the vertx instance.
    *
    * @param vertx
    *   A vertx instance.
    * @return
-   *   The called root instance.
+   *   The called cluster instance.
    */
-  public Vevent setVertx(Vertx vertx);
+  public Cluster setVertx(Vertx vertx);
 
   /**
-   * Gets the root vertx instance.
+   * Deploys a network definition.
    *
-   * @return
-   *   The root vertx instance.
+   * @param network
+   *   The network definition.
+   * @param doneHandler
+   *   An asynchronous result handler to be invoked with a network context.
    */
-  public Vertx getVertx();
+  public void deploy(NetworkDefinition network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Deploys a vine definition.
+   * Deploys a network definition with a timeout.
    *
-   * @param vine
-   *   The vine definition.
-   * @param handler
-   *   An asynchronous result handler to be invoked with a vine feeder.
-   */
-  public void deploy(NetworkDefinition vine, Handler<AsyncResult<NetworkContext>> handler);
-
-  /**
-   * Deploys a vine definition with a timeout.
-   *
-   * @param vine
-   *   The vine definition.
+   * @param network
+   *   The network definition.
    * @param timeout
    *   The deploy timeout.
-   * @param handler
-   *   An asynchronous result handler to be invoked with a vine feeder.
+   * @param doneHandler
+   *   An asynchronous result handler to be invoked with a network context.
    */
-  public void deploy(NetworkDefinition vine, long timeout, Handler<AsyncResult<NetworkContext>> handler);
+  public void deploy(NetworkDefinition network, long timeout, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Shuts down the vine at the given address.
+   * Shuts down the network at the given address.
    *
    * @param context
-   *   The vine context.
+   *   The network context.
    */
   public void shutdown(NetworkContext context);
 

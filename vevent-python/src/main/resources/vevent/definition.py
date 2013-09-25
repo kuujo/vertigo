@@ -22,40 +22,40 @@ class NetworkDefinition(object):
   A network definition.
   """
   def __init__(self, address=None, **options):
-    self.__def = net.kuujo.vevent.definition.NetworkDefinition()
+    self._def = net.kuujo.vevent.definition.NetworkDefinition()
     if address is not None:
-      self.__def.setAddress(address)
+      self._def.setAddress(address)
     for key, value in options.iteritems():
-      self.__def.setOption(key, value)
+      self._def.setOption(key, value)
 
   def get_address(self):
-    return self.__def.getAddress()
+    return self._def.getAddress()
 
   def set_address(self, address):
-    self.__def.setAddress(address)
+    self._def.setAddress(address)
 
   address = property(get_address, set_address)
 
   def get_queuesize(self):
-    return self.__def.getMaxQueueSize()
+    return self._def.getMaxQueueSize()
 
   def set_queuesize(self, queuesize):
-    self.__def.setMaxQueueSize(queuesize)
+    self._def.setMaxQueueSize(queuesize)
 
   queuesize = property(get_queuesize, set_queuesize)
 
   def get_message_timeout(self):
-    return self.__def.getMessageTimeout()
+    return self._def.getMessageTimeout()
 
   def set_message_timeout(self, timeout):
-    self.__def.setMessageTimeout(timeout)
+    self._def.setMessageTimeout(timeout)
 
   message_timeout = property(get_message_timeout, set_message_timeout)
 
-  def feed(self, name, main=None, workers=1, grouping=None, **options):
-    seed = NodeDefinition(name, main, workers, grouping, **options)
-    self.__def.feed(seed.__def)
-    return seed
+  def from_(self, name, main=None, workers=1, grouping=None, **options):
+    component = ComponentDefinition(name, main, workers, grouping, **options)
+    self._def.from(component._def)
+    return component
 
   @property
   def options(self):
@@ -63,66 +63,66 @@ class NetworkDefinition(object):
 
   class Options(object):
     def __init__(self, definition):
-      self.__def = definition
+      self._def = definition
 
     def __setitem__(self, key, value):
-      self.__def.__def.setOption(key, value)
+      self._def._def.setOption(key, value)
 
     def __getitem__(self, key):
-      self.__def.__def.getOption(key)
+      self._def._def.getOption(key)
 
 class ComponentDefinition(object):
   """
   A network component definition.
   """
   def __init__(self, name, main=None, workers=1, grouping=None, **options):
-    self.__def = net.kuujo.vevent.definition.ComponentDefinition(name)
+    self._def = net.kuujo.vevent.definition.ComponentDefinition(name)
     if main is not None:
-      self.__def.setMain(main)
-    self.__def.setWorkers(workers)
+      self._def.setMain(main)
+    self._def.setWorkers(workers)
     if grouping is not None:
-      self.__def.setGrouping(grouping.__def)
+      self._def.setGrouping(grouping.__def)
     for key, value in options.iteritems():
-      self.__def.setOption(key, value)
+      self._def.setOption(key, value)
 
   def get_name(self):
-    return self.__def.getName()
+    return self._def.getName()
 
   def set_name(self, name):
-    self.__def.setName(name)
+    self._def.setName(name)
 
   name = property(get_name, set_name)
 
   def get_main(self):
-    return self.__def.getMain()
+    return self._def.getMain()
 
   def set_main(self, main):
-    self.__def.setMain(main)
+    self._def.setMain(main)
 
   main = property(get_main, set_main)
 
   def get_workers(self):
-    return self.__def.getWorkers()
+    return self._def.getWorkers()
 
   def set_workers(self, workers):
-    self.__def.setWorkers(workers)
+    self._def.setWorkers(workers)
 
   workers = property(get_workers, set_workers)
 
   def get_heartbeat_interval(self):
-    return self.__def.getHeartbeatInterval()
+    return self._def.getHeartbeatInterval()
 
   def set_heartbeat_interval(self, interval):
-    self.__def.setHeartbeatInterval(interval)
+    self._def.setHeartbeatInterval(interval)
 
   heartbeat_interval = property(get_heartbeat_interval, set_heartbeat_interval)
 
   def group_by(self, grouping):
-    self.__def.groupBy(grouping.__def)
+    self._def.groupBy(grouping.__def)
 
   def to(self, name, main=None, workers=1, **options):
-    seed = NodeDefinition(name, main, workers, **options)
-    self.__def.to(seed.__def)
+    seed = ComponentDefinition(name, main, workers, **options)
+    self._def.to(seed.__def)
     return seed
 
 class Grouping(object):
@@ -130,20 +130,20 @@ class Grouping(object):
   A node grouping definition.
   """
   def __init__(self):
-    self.__def = None
+    self._def = None
 
 class FieldsGrouping(Grouping):
   """
   A fields based grouping.
   """
   def __init__(self, field):
-    self.__def = net.kuujo.vevent.grouping.FieldsGrouping(field)
+    self._def = net.kuujo.vevent.grouping.FieldsGrouping(field)
 
   def get_field(self):
-    return self.__def.getField()
+    return self._def.getField()
 
   def set_field(self, field):
-    self.__def.setField(field)
+    self._def.setField(field)
 
   field = property(get_field, set_field)
 
@@ -152,11 +152,11 @@ class RandomGrouping(Grouping):
   A random grouping.
   """
   def __init__(self):
-    self.__def = net.kuujo.vevent.grouping.RandomGrouping()
+    self._def = net.kuujo.vevent.grouping.RandomGrouping()
 
 class RoundGrouping(Grouping):
   """
   A round-robin grouping.
   """
   def __init__(self):
-    self.__def = net.kuujo.vevent.grouping.RoundGrouping()
+    self._def = net.kuujo.vevent.grouping.RoundGrouping()

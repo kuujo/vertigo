@@ -62,7 +62,7 @@ class WorkerContext(_AbstractContext):
 
   @property
   def context(self):
-    return NodeContext(self._context.getContext())
+    return ComponentContext(self._context.getContext())
 
   @property
   def stem(self):

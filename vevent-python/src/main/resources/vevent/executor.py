@@ -57,6 +57,12 @@ class _AbstractExecutor(object):
     else:
       self._executor.execute(map_to_java(args), timeout, ResultHandler(handler))
 
+class BasicExecutor(_AbstractExecutor):
+  """
+  A basic executor.
+  """
+  _handlercls = net.kuujo.vevent.executor.BasicExecutor
+
 class ExecutorHandler(org.vertx.java.core.Handler):
   """
   An execute handler.

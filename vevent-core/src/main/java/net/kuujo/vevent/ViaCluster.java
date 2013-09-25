@@ -21,33 +21,46 @@ import net.kuujo.vevent.definition.NetworkDefinition;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 
 /**
- * A clustered Vevent implementation.
+ * A Via-based cluster implementation.
  *
  * @author Jordan Halterman
  */
-public class ClusteredVevent implements Vevent {
+public class ViaCluster implements Cluster {
 
-  @Override
-  public Vevent setVertx(Vertx vertx) {
-    return null;
+  private String address;
+
+  private Vertx vertx;
+
+  private EventBus eventBus;
+
+  public ViaCluster(String viaAddress) {
+    this.address = viaAddress;
+  }
+
+  public ViaCluster(String viaAddress, Vertx vertx) {
+    this.address = viaAddress;
+    this.vertx = vertx;
   }
 
   @Override
-  public Vertx getVertx() {
-    return null;
+  public Cluster setVertx(Vertx vertx) {
+    this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
+    return this;
   }
 
   @Override
-  public void deploy(NetworkDefinition vine,
-      Handler<AsyncResult<NetworkContext>> handler) {
+  public void deploy(NetworkDefinition network,
+      Handler<AsyncResult<NetworkContext>> doneHandler) {
     
   }
 
   @Override
-  public void deploy(NetworkDefinition vine, long timeout,
-      Handler<AsyncResult<NetworkContext>> handler) {
+  public void deploy(NetworkDefinition network, long timeout,
+      Handler<AsyncResult<NetworkContext>> doneHandler) {
     
   }
 

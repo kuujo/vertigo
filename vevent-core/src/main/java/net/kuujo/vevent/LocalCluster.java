@@ -23,31 +23,36 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
 /**
- * A local Vevent implementation.
+ * A local cluster implementation.
  *
  * @author Jordan Halterman
  */
-public class LocalVevent implements Vevent {
+public class LocalCluster implements Cluster {
 
-  @Override
-  public Vevent setVertx(Vertx vertx) {
-    return null;
+  private Vertx vertx;
+
+  public LocalCluster() {
+  }
+
+  public LocalCluster(Vertx vertx) {
+    this.vertx = vertx;
   }
 
   @Override
-  public Vertx getVertx() {
-    return null;
+  public Cluster setVertx(Vertx vertx) {
+    this.vertx = vertx;
+    return this;
   }
 
   @Override
-  public void deploy(NetworkDefinition vine,
-      Handler<AsyncResult<NetworkContext>> handler) {
+  public void deploy(NetworkDefinition network,
+      Handler<AsyncResult<NetworkContext>> doneHandler) {
     
   }
 
   @Override
-  public void deploy(NetworkDefinition vine, long timeout,
-      Handler<AsyncResult<NetworkContext>> handler) {
+  public void deploy(NetworkDefinition network, long timeout,
+      Handler<AsyncResult<NetworkContext>> doneHandler) {
     
   }
 

@@ -13,21 +13,22 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.definition;
+package com.blankstyle.vitis.test.integration;
+
+import net.kuujo.vitis.java.NodeVerticle;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 import org.vertx.java.core.json.JsonObject;
 
-/**
- * A feeder definition.
- *
- * @author Jordan Halterman
- */
-public class FeederDefinition {
+import static org.vertx.testtools.VertxAssert.assertEquals;
 
-  private JsonObject definition;
+public class TestSeedOne extends NodeVerticle {
 
-  public FeederDefinition(JsonObject definition) {
-    this.definition = definition;
+  @Override
+  public void handle(JsonMessage message) {
+    assertEquals("Hello world!", message.body().getString("body"));
+    emit(new JsonObject().putString("body", "Hello world again!"));
+    ack(message);
   }
 
 }

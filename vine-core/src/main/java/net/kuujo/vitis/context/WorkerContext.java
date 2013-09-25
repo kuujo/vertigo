@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.context;
+package net.kuujo.vitis.context;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -35,16 +35,16 @@ public class WorkerContext implements Context {
     context.putString("name", name);
   }
 
-  public WorkerContext(JsonObject context) {
-    this.context = context;
-    JsonObject nodeContext = context.getObject("node");
-    if (nodeContext != null) {
-      parent = new NodeContext(nodeContext);
+  public WorkerContext(JsonObject json) {
+    context = json;
+    JsonObject seedContext = context.getObject("seed");
+    if (seedContext != null) {
+      parent = new NodeContext(seedContext);
     }
   }
 
-  public WorkerContext(JsonObject context, NodeContext parent) {
-    this(context);
+  public WorkerContext(JsonObject json, NodeContext parent) {
+    this(json);
     this.parent = parent;
   }
 
@@ -95,20 +95,20 @@ public class WorkerContext implements Context {
   }
 
   /**
-   * Gets the parent node context.
+   * Gets the parent seed context.
    *
    * @return
-   *   The worker's parent node context.
+   *   The worker's parent seed context.
    */
   public NodeContext getContext() {
     return parent;
   }
 
   /**
-   * Sets the parent node context.
+   * Sets the parent seed context.
    *
    * @param context
-   *   A node context.
+   *   A seed context.
    * @return
    *   The called worker context.
    */

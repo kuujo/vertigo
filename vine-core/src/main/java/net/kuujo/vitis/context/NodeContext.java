@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.context;
+package net.kuujo.vitis.context;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.kuujo.vevent.definition.NodeDefinition;
+import net.kuujo.vitis.definition.NodeDefinition;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -35,7 +35,7 @@ public class NodeContext implements Context {
 
   private JsonObject context = new JsonObject();
 
-  private NetworkContext parent;
+  private VineContext parent;
 
   public NodeContext() {
   }
@@ -46,13 +46,13 @@ public class NodeContext implements Context {
 
   public NodeContext(JsonObject json) {
     context = json;
-    JsonObject networkContext = context.getObject("network");
-    if (networkContext != null) {
-      parent = new NetworkContext(networkContext);
+    JsonObject vineContext = context.getObject("vine");
+    if (vineContext != null) {
+      parent = new VineContext(vineContext);
     }
   }
 
-  public NodeContext(JsonObject json, NetworkContext parent) {
+  public NodeContext(JsonObject json, VineContext parent) {
     this(json);
     this.parent = parent;
   }
@@ -74,12 +74,12 @@ public class NodeContext implements Context {
   /**
    * Returns a list of seed connections.
    */
-  public Collection<ConnectionContext> getConnectionContexts() {
-    Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
+  public Collection<ShootContext> getConnectionContexts() {
+    Set<ShootContext> contexts = new HashSet<ShootContext>();
     JsonObject connections = context.getObject("connections");
     Iterator<String> iter = connections.getFieldNames().iterator();
     while (iter.hasNext()) {
-      contexts.add(new ConnectionContext(connections.getObject(iter.next())));
+      contexts.add(new ShootContext(connections.getObject(iter.next())));
     }
     return contexts;
   }
@@ -111,7 +111,7 @@ public class NodeContext implements Context {
   /**
    * Returns the parent vine context.
    */
-  public NetworkContext getContext() {
+  public VineContext getContext() {
     return parent;
   }
 

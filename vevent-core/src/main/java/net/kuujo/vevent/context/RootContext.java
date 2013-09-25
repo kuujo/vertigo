@@ -27,38 +27,38 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A JSON object-based seed context.
+ * A feeder context.
  *
  * @author Jordan Halterman
  */
-public class NodeContext implements Context {
+public class RootContext implements Context {
 
   private JsonObject context = new JsonObject();
 
   private NetworkContext parent;
 
-  public NodeContext() {
+  public RootContext() {
   }
 
-  public NodeContext(String name) {
+  public RootContext(String name) {
     context.putString("name", name);
   }
 
-  public NodeContext(JsonObject json) {
-    context = json;
+  public RootContext(JsonObject context) {
+    this.context = context;
     JsonObject networkContext = context.getObject("network");
     if (networkContext != null) {
       parent = new NetworkContext(networkContext);
     }
   }
 
-  public NodeContext(JsonObject json, NetworkContext parent) {
-    this(json);
+  public RootContext(JsonObject context, NetworkContext parent) {
+    this(context);
     this.parent = parent;
   }
 
   /**
-   * Returns the seed address.
+   * Returns the root address.
    */
   public String getAddress() {
     return context.getString("address");
@@ -87,12 +87,12 @@ public class NodeContext implements Context {
   /**
    * Returns all worker contexts.
    */
-  public Collection<WorkerContext> getWorkerContexts() {
+  public Collection<RootWorkerContext> getWorkerContexts() {
     JsonArray workers = context.getArray("workers");
-    ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
+    ArrayList<RootWorkerContext> contexts = new ArrayList<RootWorkerContext>();
     Iterator<Object> iter = workers.iterator();
     while (iter.hasNext()) {
-      contexts.add(new WorkerContext(context.copy().putString("address", (String) iter.next()), this));
+      contexts.add(new RootWorkerContext(context.copy().putString("address", (String) iter.next()), this));
     }
     return contexts;
   }

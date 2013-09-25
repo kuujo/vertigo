@@ -19,13 +19,12 @@ import net.kuujo.vevent.Serializeable;
 
 import org.vertx.java.core.json.JsonObject;
 
-
 /**
- * A default seed context implementation.
+ * A root definition.
  *
  * @author Jordan Halterman
  */
-public class NodeDefinition implements Serializeable<JsonObject> {
+public class RootDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
@@ -33,11 +32,11 @@ public class NodeDefinition implements Serializeable<JsonObject> {
 
   private static final long DEFAULT_HEARTBEAT_INTERVAL = 1000;
 
-  public NodeDefinition() {
+  public RootDefinition() {
   }
 
-  public NodeDefinition(JsonObject json) {
-    definition = json;
+  public RootDefinition(JsonObject definition) {
+    this.definition = definition;
   }
 
   /**
@@ -48,46 +47,46 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets the node name.
+   * Sets the root name.
    *
    * @param name
-   *   The node name.
+   *   The root name.
    */
-  public NodeDefinition setName(String name) {
+  public RootDefinition setName(String name) {
     definition.putString("name", name);
     return this;
   }
 
   /**
-   * Gets the node main.
+   * Gets the root main.
    */
   public String getMain() {
     return definition.getString("main");
   }
 
   /**
-   * Sets the node main. This is a string reference to the verticle
-   * to be run when a node worker is started.
+   * Sets the root main. This is a string reference to the verticle
+   * to be run when a root worker is started.
    *
    * @param main
-   *   The node main.
+   *   The root main.
    */
-  public NodeDefinition setMain(String main) {
+  public RootDefinition setMain(String main) {
     definition.putString("main", main);
     return this;
   }
 
   /**
-   * Sets a node option.
+   * Sets a root option.
    *
    * @param option
    *   The option to set.
    * @param value
    *   The option value.
    * @return
-   *   The called node definition.
+   *   The called root definition.
    */
-  public NodeDefinition setOption(String option, String value) {
+  public RootDefinition setOption(String option, String value) {
     switch (option) {
       case "name":
         return setName(value);
@@ -101,7 +100,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets a node option.
+   * Gets a root option.
    *
    * @param option
    *   The option to get.
@@ -113,63 +112,43 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets the node worker grouping.
-   *
-   * @param grouping
-   *   A grouping definition.
-   * @return
-   *   The called node definition.
-   */
-  public NodeDefinition groupBy(GroupingDefinition grouping) {
-    definition.putObject("grouping", grouping.serialize());
-    return this;
-  }
-
-  /**
-   * Gets the node worker grouping.
-   */
-  public GroupingDefinition getGrouping() {
-    return new GroupingDefinition(definition.getObject("grouping"));
-  }
-
-  /**
-   * Sets the number of node workers.
+   * Sets the number of root workers.
    *
    * @param workers
-   *   The number of node workers.
+   *   The number of root workers.
    * @return
-   *   The called node definition.
+   *   The called root definition.
    */
-  public NodeDefinition setWorkers(int workers) {
+  public RootDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
     return this;
   }
 
   /**
-   * Gets the number of node workers.
+   * Gets the number of root workers.
    */
   public int getWorkers() {
     return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
   }
 
   /**
-   * Sets the node worker heartbeat interval.
+   * Sets the root worker heartbeat interval.
    *
    * @param interval
    *   A heartbeat interval.
    * @return
-   *   The called node definition.
+   *   The called root definition.
    */
-  public NodeDefinition setHeartbeatInterval(long interval) {
+  public RootDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
     return this;
   }
 
   /**
-   * Gets the node heartbeat interval.
+   * Gets the root heartbeat interval.
    *
    * @return
-   *   A node heartbeat interval.
+   *   A root heartbeat interval.
    */
   public long getHeartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
@@ -201,7 +180,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Creates a connection to a seed, creating a new node definition.
+   * Creates a connection to a node, creating a new seed definition.
    *
    * @param name
    *   The node name.
@@ -227,7 +206,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Creates a connection to a node, creating a new node definition.
+   * Creates a connection to a seed, creating a new node definition.
    *
    * @param name
    *   The node name.

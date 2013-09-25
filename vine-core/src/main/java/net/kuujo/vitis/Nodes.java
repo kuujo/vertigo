@@ -13,64 +13,64 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent;
+package net.kuujo.vitis;
 
-import net.kuujo.vevent.definition.NodeDefinition;
+import net.kuujo.vitis.definition.NodeDefinition;
 
 /**
- * Static node methods.
+ * Static seed methods.
  *
  * @author Jordan Halterman
  */
 public final class Nodes {
 
   /**
-   * Creates a new node definition.
+   * Creates a new seed definition.
    *
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public static NodeDefinition createDefinition() {
     return new NodeDefinition();
   }
 
   /**
-   * Creates a new node definition.
+   * Creates a new seed definition.
    *
    * @param name
    *   The definition name.
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public static NodeDefinition createDefinition(String name) {
     return new NodeDefinition().setName(name);
   }
 
   /**
-   * Creates a new node definition.
+   * Creates a new seed definition.
    *
    * @param name
    *   The definition name.
    * @param main
-   *   The node main.
+   *   The seed main.
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public static NodeDefinition createDefinition(String name, String main) {
     return new NodeDefinition().setName(name).setMain(main);
   }
 
   /**
-   * Creates a new node definition.
+   * Creates a new seed definition.
    *
    * @param name
    *   The definition name.
    * @param main
-   *   The node main.
+   *   The seed main.
    * @param workers
-   *   The number of node workers.
+   *   The number of seed workers.
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public static NodeDefinition createDefinition(String name, String main, int workers) {
     return new NodeDefinition().setName(name).setMain(main).setWorkers(workers);

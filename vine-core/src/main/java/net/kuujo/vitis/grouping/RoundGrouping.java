@@ -13,21 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.context;
+package net.kuujo.vitis.grouping;
 
-import org.vertx.java.core.json.JsonObject;
+import net.kuujo.vitis.definition.GroupingDefinition;
+import net.kuujo.vitis.messaging.RoundRobinDispatcher;
 
 /**
- * A feeder context.
+ * A round-robin grouping implementation.
+ *
+ * This grouping dispatches messages to workers in a round-robin fashion
+ * using the RoundRobinDispatcher dispatcher.
  *
  * @author Jordan Halterman
  */
-public class FeederContext {
+public class RoundGrouping extends GroupingDefinition {
 
-  private JsonObject context;
-
-  public FeederContext(JsonObject context) {
-    this.context = context;
+  public RoundGrouping() {
+    super();
+    definition.putString("dispatcher", RoundRobinDispatcher.class.getName());
   }
 
 }

@@ -15,65 +15,65 @@
 */
 package net.kuujo.vevent;
 
-import net.kuujo.vevent.definition.NodeDefinition;
+import net.kuujo.vevent.definition.RootDefinition;
 
 /**
- * Static node methods.
+ * Static root helper methods.
  *
  * @author Jordan Halterman
  */
-public final class Nodes {
+public final class Roots {
 
   /**
-   * Creates a new node definition.
+   * Creates a new root definition.
    *
    * @return
-   *   A new node definition.
+   *   A new root definition.
    */
-  public static NodeDefinition createDefinition() {
-    return new NodeDefinition();
+  public static RootDefinition createDefinition() {
+    return new RootDefinition();
   }
 
   /**
-   * Creates a new node definition.
+   * Creates a new root definition.
    *
    * @param name
    *   The definition name.
    * @return
-   *   A new node definition.
+   *   A new root definition.
    */
-  public static NodeDefinition createDefinition(String name) {
-    return new NodeDefinition().setName(name);
+  public static RootDefinition createDefinition(String name) {
+    return new RootDefinition().setName(name);
   }
 
   /**
-   * Creates a new node definition.
+   * Creates a new root definition.
    *
    * @param name
    *   The definition name.
    * @param main
-   *   The node main.
+   *   The root main.
    * @return
-   *   A new node definition.
+   *   A new root definition.
    */
-  public static NodeDefinition createDefinition(String name, String main) {
-    return new NodeDefinition().setName(name).setMain(main);
+  public static RootDefinition createDefinition(String name, String main) {
+    return new RootDefinition().setName(name).setMain(main);
   }
 
   /**
-   * Creates a new node definition.
+   * Creates a new root definition.
    *
    * @param name
    *   The definition name.
    * @param main
    *   The node main.
    * @param workers
-   *   The number of node workers.
+   *   The number of root workers.
    * @return
-   *   A new node definition.
+   *   A new root definition.
    */
-  public static NodeDefinition createDefinition(String name, String main, int workers) {
-    return new NodeDefinition().setName(name).setMain(main).setWorkers(workers);
+  public static RootDefinition createDefinition(String name, String main, int workers) {
+    return new RootDefinition().setName(name).setMain(main).setWorkers(workers);
   }
 
 }

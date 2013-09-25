@@ -13,9 +13,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.definition;
+package net.kuujo.vitis.definition;
 
-import net.kuujo.vevent.Serializeable;
+import net.kuujo.vitis.Serializeable;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -41,17 +41,17 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node name.
+   * Gets the seed name.
    */
   public String getName() {
     return definition.getString("name");
   }
 
   /**
-   * Sets the node name.
+   * Sets the seed name.
    *
    * @param name
-   *   The node name.
+   *   The seed name.
    */
   public NodeDefinition setName(String name) {
     definition.putString("name", name);
@@ -59,18 +59,18 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node main.
+   * Gets the seed main.
    */
   public String getMain() {
     return definition.getString("main");
   }
 
   /**
-   * Sets the node main. This is a string reference to the verticle
-   * to be run when a node worker is started.
+   * Sets the seed main. This is a string reference to the verticle
+   * to be run when a seed worker is started.
    *
    * @param main
-   *   The node main.
+   *   The seed main.
    */
   public NodeDefinition setMain(String main) {
     definition.putString("main", main);
@@ -78,14 +78,14 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets a node option.
+   * Sets a seed option.
    *
    * @param option
    *   The option to set.
    * @param value
    *   The option value.
    * @return
-   *   The called node definition.
+   *   The called seed definition.
    */
   public NodeDefinition setOption(String option, String value) {
     switch (option) {
@@ -101,7 +101,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets a node option.
+   * Gets a seed option.
    *
    * @param option
    *   The option to get.
@@ -113,12 +113,12 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets the node worker grouping.
+   * Sets the seed worker grouping.
    *
    * @param grouping
    *   A grouping definition.
    * @return
-   *   The called node definition.
+   *   The called seed definition.
    */
   public NodeDefinition groupBy(GroupingDefinition grouping) {
     definition.putObject("grouping", grouping.serialize());
@@ -126,19 +126,19 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node worker grouping.
+   * Gets the seed worker grouping.
    */
   public GroupingDefinition getGrouping() {
     return new GroupingDefinition(definition.getObject("grouping"));
   }
 
   /**
-   * Sets the number of node workers.
+   * Sets the number of seed workers.
    *
    * @param workers
-   *   The number of node workers.
+   *   The number of seed workers.
    * @return
-   *   The called node definition.
+   *   The called seed definition.
    */
   public NodeDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
@@ -146,19 +146,19 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the number of node workers.
+   * Gets the number of seed workers.
    */
   public int getWorkers() {
     return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
   }
 
   /**
-   * Sets the node worker heartbeat interval.
+   * Sets the seed worker heartbeat interval.
    *
    * @param interval
    *   A heartbeat interval.
    * @return
-   *   The called node definition.
+   *   The called seed definition.
    */
   public NodeDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
@@ -166,17 +166,17 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node heartbeat interval.
+   * Gets the seed heartbeat interval.
    *
    * @return
-   *   A node heartbeat interval.
+   *   A seed heartbeat interval.
    */
   public long getHeartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
   }
 
   /**
-   * Adds a connection to a node definition.
+   * Adds a connection to a seed definition.
    */
   private NodeDefinition addDefinition(NodeDefinition definition) {
     JsonObject connections = this.definition.getObject("connections");
@@ -194,49 +194,49 @@ public class NodeDefinition implements Serializeable<JsonObject> {
    * Creates a connection to the given definition.
    *
    * @param definition
-   *   A node definition.
+   *   A seed definition.
    */
   public NodeDefinition to(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
   /**
-   * Creates a connection to a seed, creating a new node definition.
+   * Creates a connection to a seed, creating a new seed definition.
    *
    * @param name
-   *   The node name.
+   *   The seed name.
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public NodeDefinition to(String name) {
     return to(name, null, 1);
   }
 
   /**
-   * Creates a connection to a node, creating a new node definition.
+   * Creates a connection to a seed, creating a new seed definition.
    *
    * @param name
-   *   The node name.
+   *   The seed name.
    * @param main
-   *   The node main.
+   *   The seed main.
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public NodeDefinition to(String name, String main) {
     return to(name, main, 1);
   }
 
   /**
-   * Creates a connection to a node, creating a new node definition.
+   * Creates a connection to a seed, creating a new seed definition.
    *
    * @param name
-   *   The node name.
+   *   The seed name.
    * @param main
-   *   The node main.
+   *   The seed main.
    * @param workers
-   *   The number of node workers.
+   *   The number of seed workers.
    * @return
-   *   A new node definition.
+   *   A new seed definition.
    */
   public NodeDefinition to(String name, String main, int workers) {
     return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));

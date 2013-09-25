@@ -13,44 +13,39 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.java;
+package net.kuujo.vitis;
 
-import net.kuujo.vevent.context.RootContext;
-import net.kuujo.vevent.feeder.Feeder;
+import net.kuujo.vitis.definition.VineDefinition;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Verticle;
 
 /**
- * An abstract feeder verticle.
+ * Static vine methods.
  *
  * @author Jordan Halterman
  */
-abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
-
-  protected RootContext context;
-
-  protected Feeder feeder;
+public class Vines {
 
   /**
-   * Creates a root feeder instance.
+   * Creates a new vine definition.
    *
    * @return
-   *   A new root feeder instance.
+   *   A vine definition.
    */
-  abstract Feeder createFeeder(RootContext context);
-
-  @Override
-  public void start() {
-    context = new RootContext(container.config());
-    feeder = createFeeder(context);
+  public static VineDefinition createDefinition() {
+    return new VineDefinition();
   }
 
   /**
-   * Primary method for feeding data.
+   * Creates a new vine definition.
+   *
+   * @param address
+   *   The vine address.
+   * @return
+   *   A vine definition.
    */
-  protected abstract void feed();
+  public static VineDefinition createDefinition(String address) {
+    return new VineDefinition(new JsonObject().putString("address", address));
+  }
 
 }

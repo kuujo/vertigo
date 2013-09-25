@@ -18,32 +18,32 @@ package net.kuujo.vevent.context;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A JSON based worker context.
+ * A root worker context.
  *
  * @author Jordan Halterman
  */
-public class WorkerContext implements Context {
+public class RootWorkerContext implements Context {
 
   private JsonObject context = new JsonObject();
 
-  private NodeContext parent;
+  private RootContext parent;
 
-  public WorkerContext() {
+  public RootWorkerContext() {
   }
 
-  public WorkerContext(String name) {
+  public RootWorkerContext(String name) {
     context.putString("name", name);
   }
 
-  public WorkerContext(JsonObject context) {
+  public RootWorkerContext(JsonObject context) {
     this.context = context;
-    JsonObject nodeContext = context.getObject("node");
-    if (nodeContext != null) {
-      parent = new NodeContext(nodeContext);
+    JsonObject rootContext = context.getObject("root");
+    if (rootContext != null) {
+      parent = new RootContext(rootContext);
     }
   }
 
-  public WorkerContext(JsonObject context, NodeContext parent) {
+  public RootWorkerContext(JsonObject context, RootContext parent) {
     this(context);
     this.parent = parent;
   }
@@ -66,7 +66,7 @@ public class WorkerContext implements Context {
    * @return
    *   The called worker context.
    */
-  public WorkerContext setAddress(String address) {
+  public RootWorkerContext setAddress(String address) {
     context.putString("address", address);
     return this;
   }
@@ -89,30 +89,30 @@ public class WorkerContext implements Context {
    * @return
    *   The called worker context.
    */
-  public WorkerContext setStem(String address) {
+  public RootWorkerContext setStem(String address) {
     context.putString("stem", address);
     return this;
   }
 
   /**
-   * Gets the parent node context.
+   * Gets the parent root context.
    *
    * @return
-   *   The worker's parent node context.
+   *   The worker's parent root context.
    */
-  public NodeContext getContext() {
+  public RootContext getContext() {
     return parent;
   }
 
   /**
-   * Sets the parent node context.
+   * Sets the parent root context.
    *
    * @param context
-   *   A node context.
+   *   A root context.
    * @return
    *   The called worker context.
    */
-  public WorkerContext setContext(NodeContext context) {
+  public RootWorkerContext setContext(RootContext context) {
     parent = context;
     return this;
   }

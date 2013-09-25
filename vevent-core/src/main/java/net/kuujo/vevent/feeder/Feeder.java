@@ -31,8 +31,30 @@ public interface Feeder {
    *
    * @param handler
    *   A feed handler.
+   * @return
+   *   The called feeder instance.
    */
   public Feeder feedHandler(Handler<Feeder> handler);
+
+  /**
+   * Sets an ack handler.
+   *
+   * @param ackHandler
+   *   The ack handler.
+   * @return
+   *   The called feeder instance.
+   */
+  public Feeder ackHandler(Handler<JsonObject> ackHandler);
+
+  /**
+   * Sets a fail handler.
+   *
+   * @param failHandler
+   *   The fail handler.
+   * @return
+   *   The called feeder instance.
+   */
+  public Feeder failHandler(Handler<JsonObject> failHandler);
 
   /**
    * Feeds data to the network.
@@ -61,6 +83,20 @@ public interface Feeder {
    *
    * @param data
    *   The data to feed.
+   * @param timeout
+   *   A processing timeout.
+   * @param doneHandler
+   *   A handler to be invoked once processing is complete.
+   * @return
+   *   The called feeder instance.
+   */
+  public Feeder feed(JsonObject data, long tiemout, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Feeds data to the network.
+   *
+   * @param data
+   *   The data to feed.
    * @param tag
    *   A tag to apply to fed data.
    * @return
@@ -81,5 +117,21 @@ public interface Feeder {
    *   The called feeder instance.
    */
   public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Feeds data to the network.
+   *
+   * @param data
+   *   The data to feed.
+   * @param tag
+   *   A tag to apply to fed data.
+   * @param timeout
+   *   A processing timeout.
+   * @param doneHandler
+   *   A handler to be invoked once processing is complete.
+   * @return
+   *   The called feeder instance.
+   */
+  public Feeder feed(JsonObject data, String tag, long tiemout, Handler<AsyncResult<Void>> doneHandler);
 
 }

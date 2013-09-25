@@ -44,6 +44,16 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
+  public Feeder ackHandler(Handler<JsonObject> ackHandler) {
+    return this;
+  }
+
+  @Override
+  public Feeder failHandler(Handler<JsonObject> failHandler) {
+    return this;
+  }
+
+  @Override
   public Feeder feed(JsonObject data) {
     return this;
   }
@@ -54,12 +64,22 @@ public class BasicFeeder implements Feeder {
   }
 
   @Override
+  public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
+
+  @Override
   public Feeder feed(JsonObject data, String tag) {
     return this;
   }
 
   @Override
   public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler) {
+    return this;
+  }
+
+  @Override
+  public Feeder feed(JsonObject data, String tag, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     return this;
   }
 

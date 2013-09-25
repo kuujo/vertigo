@@ -11,6 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Usage:
+
+from vevent.feeder import BasicFeeder
+feeder = BasicFeeder()
+
+@feeder.feed_handler
+def do_feed(feeder):
+  feeder.feed({'id': 1, 'body': 'Hello world!'})
+
+@feeder.ack_handler
+def do_ack(data):
+  if data['id'] == 1:
+    print "Message 1 succeeded!"
+
+@feeder.fail_handler
+def do_fail(data):
+  if data['id'] == 1:
+    print "Message 1 failed!"
+"""
 import net.kuujo.vevent.feeder.UnreliableFeeder
 import net.kuujo.vevent.feeder.ReliableFeeder
 import net.kuujo.vevent.context.FeederContext
@@ -33,7 +53,21 @@ class _AbstractFeeder(object):
     Registers a feeder feed handler.
     """
     self._feeder.feedHandler(FeedHandler(handler, self))
-    return self
+    return handler
+
+  def ack_handler(self, handler):
+    """
+    Registers an ack handler.
+    """
+    self._feeder.ackHandler(JsonHandler(handler))
+    return handler
+
+  def fail_handler(self, handler):
+    """
+    Registers a fail handler.
+    """
+    self._feeder.failHandler(JsonHandler(handler))
+    return handler
 
   def feed(self, data, handler=None, tag=None):
     if handler is None:
@@ -83,3 +117,13 @@ class AckHandler(org.vertx.java.core.AsyncResultHandler):
       self.handler(result.cause())
     else:
       self.handler(None)
+
+class JsonHandler(org.vertx.java.core.Handler):
+  """
+  A JSON ack or fail handler.
+  """
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, json):
+    self.handler(map_from_java(json))

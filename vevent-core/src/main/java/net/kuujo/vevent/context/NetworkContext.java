@@ -78,12 +78,12 @@ public class NetworkContext implements Context {
   /**
    * Returns a list of vine seed contexts.
    */
-  public Collection<NodeContext> getSeedContexts() {
+  public Collection<ComponentContext> getSeedContexts() {
     JsonObject seeds = context.getObject("seeds");
-    ArrayList<NodeContext> contexts = new ArrayList<NodeContext>();
+    ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
     Iterator<String> iter = seeds.getFieldNames().iterator();
     while (iter.hasNext()) {
-      contexts.add(new NodeContext(seeds.getObject(iter.next()), this));
+      contexts.add(new ComponentContext(seeds.getObject(iter.next()), this));
     }
     return contexts;
   }
@@ -94,7 +94,7 @@ public class NetworkContext implements Context {
    * @param name
    *   The seed name.
    */
-  public NodeContext getSeedContext(String name) {
+  public ComponentContext getSeedContext(String name) {
     JsonObject seeds = context.getObject("seeds");
     if (seeds == null) {
       return null;
@@ -103,7 +103,7 @@ public class NetworkContext implements Context {
     if (seedContext == null) {
       return null;
     }
-    return new NodeContext(seedContext);
+    return new ComponentContext(seedContext);
   }
 
   /**

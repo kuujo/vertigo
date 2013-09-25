@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.java;
 
-import net.kuujo.vevent.context.RootContext;
+import net.kuujo.vevent.context.ComponentContext;
 import net.kuujo.vevent.feeder.Feeder;
 
 import org.vertx.java.core.Handler;
@@ -28,7 +28,7 @@ import org.vertx.java.platform.Verticle;
  */
 abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
 
-  protected RootContext context;
+  protected ComponentContext context;
 
   protected Feeder feeder;
 
@@ -38,11 +38,11 @@ abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
    * @return
    *   A new root feeder instance.
    */
-  abstract Feeder createFeeder(RootContext context);
+  abstract Feeder createFeeder(ComponentContext context);
 
   @Override
   public void start() {
-    context = new RootContext(container.config());
+    context = new ComponentContext(container.config());
     feeder = createFeeder(context);
     feeder.feedHandler(this);
   }

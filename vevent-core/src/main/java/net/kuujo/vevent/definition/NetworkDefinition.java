@@ -163,83 +163,73 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Adds a connection to a seed definition.
+   * Adds a root definition.
    */
-  private NodeDefinition addDefinition(NodeDefinition definition) {
-    // Add the seed definition.
-    JsonObject seeds = this.definition.getObject("seeds");
-    if (seeds == null) {
-      seeds = new JsonObject();
-      this.definition.putObject("seeds", seeds);
+  private RootDefinition addDefinition(RootDefinition definition) {
+    // Add the root definition.
+    JsonObject roots = this.definition.getObject("roots");
+    if (roots == null) {
+      roots = new JsonObject();
+      this.definition.putObject("roots", roots);
     }
-    if (!seeds.getFieldNames().contains(definition.getName())) {
-      seeds.putObject(definition.getName(), definition.serialize());
-    }
-
-    // Add the seed connection.
-    JsonArray connections = this.definition.getArray("connections");
-    if (connections == null) {
-      connections = new JsonArray();
-      this.definition.putArray("connections", connections);
-    }
-    if (!connections.contains(definition.getName())) {
-      connections.add(definition.getName());
+    if (!roots.getFieldNames().contains(definition.getName())) {
+      roots.putObject(definition.getName(), definition.serialize());
     }
     return definition;
   }
 
   /**
-   * Defines a feeder to a seed.
+   * Adds a root to the network.
    *
    * @param definition
-   *   A seed definition.
+   *   A root definition.
    * @return
-   *   The passed seed definition.
+   *   The given root definition.
    */
-  public NodeDefinition feed(NodeDefinition definition) {
+  public RootDefinition from(RootDefinition definition) {
     return addDefinition(definition);
   }
 
   /**
-   * Defines a feeder to a seed, creating a new seed definition.
+   * Adds a root to the network.
    *
    * @param name
-   *   The seed name.
+   *   The root name.
    * @return
-   *   A new seed definition.
+   *   A new root definition.
    */
-  public NodeDefinition feed(String name) {
-    return feed(name, null, 1);
+  public RootDefinition from(String name) {
+    return from(name, null, 1);
   }
 
   /**
-   * Defines a feeder to a seed, creating a new seed definition.
+   * Adds a root to the network.
    *
    * @param name
-   *   The seed name.
+   *   The root name.
    * @param main
-   *   The seed main.
+   *   The root main.
    * @return
-   *   A new seed definition.
+   *   A new root definition.
    */
-  public NodeDefinition feed(String name, String main) {
-    return feed(name, main, 1);
+  public RootDefinition from(String name, String main) {
+    return from(name, main, 1);
   }
 
   /**
-   * Defines a feeder to a seed, creating a new seed definition.
+   * Adds a root to the network.
    *
    * @param name
-   *   The seed name.
+   *   The root name.
    * @param main
-   *   The seed main.
+   *   The root main.
    * @param workers
-   *   The number of seed workers.
+   *   The number of root workers.
    * @return
-   *   A new seed definition.
+   *   A new root definition.
    */
-  public NodeDefinition feed(String name, String main, int workers) {
-    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
+  public RootDefinition from(String name, String main, int workers) {
+    return addDefinition(new RootDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override
@@ -248,28 +238,28 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Creates a seed address.
+   * Creates a component address.
    */
-  protected String createSeedAddress(String vineAddress, String seedName) {
-    return String.format("%s.%s", vineAddress, seedName);
+  protected String createComponentAddress(String networkAddress, String componentName) {
+    return String.format("%s.%s", networkAddress, componentName);
   }
 
   /**
    * Creates an array of worker addresses.
    */
-  protected String[] createWorkerAddresses(String seedAddress, int numWorkers) {
+  protected String[] createWorkerAddresses(String componentAddress, int numWorkers) {
     List<String> addresses = new ArrayList<String>();
     for (int i = 0; i < numWorkers; i++) {
-      addresses.add(String.format("%s.%d", seedAddress, i+1));
+      addresses.add(String.format("%s.%d", componentAddress, i+1));
     }
     return addresses.toArray(new String[addresses.size()]);
   }
 
   /**
-   * Returns a vine context representation of the vine.
+   * Returns a network context representation of the network.
    *
    * @return
-   *   A prepared vine context.
+   *   A prepared network context.
    * @throws MalformedDefinitionException 
    */
   public NetworkContext createContext() throws MalformedDefinitionException {
@@ -282,43 +272,43 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
     context.putString("address", address);
     context.putObject("definition", definition);
 
-    // First, create all seed contexts and then add connections.
-    JsonObject seeds = definition.getObject("seeds");
-    Iterator<String> iter = seeds.getFieldNames().iterator();
+    // First, create all component contexts and then add connections.
+    JsonObject roots = definition.getObject("roots");
+    Iterator<String> iter = roots.getFieldNames().iterator();
 
-    // Create seed contexts:
+    // Create component contexts:
     // {
-    //   "name": "seed1",
+    //   "name": "component1",
     //   "workers": [
-    //     "foo.seed1.1",
-    //     "foo.seed1.2"
+    //     "foo.component1.1",
+    //     "foo.component1.2"
     //   ],
     //   "definition": {
     //     ...
     //   }
     // }
-    JsonObject seedContexts = new JsonObject();
+    JsonObject componentContexts = new JsonObject();
     while (iter.hasNext()) {
-      JsonObject seed = seeds.getObject(iter.next());
-      JsonObject seedDefinitions = buildSeedsRecursive(seed);
-      Iterator<String> iterSeeds = seedDefinitions.getFieldNames().iterator();
-      while (iterSeeds.hasNext()) {
-        JsonObject seedDef = seedDefinitions.getObject(iterSeeds.next());
-        JsonObject seedContext = new JsonObject();
-        String seedName = seedDef.getString("name");
-        if (seedName == null) {
-          throw new MalformedDefinitionException("No seed name specified.");
+      JsonObject root = roots.getObject(iter.next());
+      JsonObject componentDefinitions = buildComponentsRecursive(root);
+      Iterator<String> iterComponents = componentDefinitions.getFieldNames().iterator();
+      while (iterComponents.hasNext()) {
+        JsonObject componentDef = componentDefinitions.getObject(iterComponents.next());
+        JsonObject componentContext = new JsonObject();
+        String componentName = componentDef.getString("name");
+        if (componentName == null) {
+          throw new MalformedDefinitionException("No component name specified.");
         }
-        seedContext.putString("name", seedName);
-        seedContext.putString("address", createSeedAddress(definition.getString("address"), seedDef.getString("name")));
-        seedContext.putObject("definition", seedDef);
-        seedContext.putArray("workers", new JsonArray(createWorkerAddresses(seedContext.getString("address"), seedContext.getObject("definition").getInteger("workers"))));
-        seedContexts.putObject(seedContext.getString("name"), seedContext);
+        componentContext.putString("name", componentName);
+        componentContext.putString("address", createComponentAddress(definition.getString("address"), componentDef.getString("name")));
+        componentContext.putObject("definition", componentDef);
+        componentContext.putArray("workers", new JsonArray(createWorkerAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers"))));
+        componentContexts.putObject(componentContext.getString("name"), componentContext);
       }
     }
 
-    // Worker contexts are stored in context.seeds.
-    context.putObject("seeds", seedContexts);
+    // Worker contexts are stored in context.workers.
+    context.putObject("workers", componentContexts);
     
 
     JsonArray connections = definition.getArray("connections");
@@ -330,31 +320,31 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
 
     // Create an object of connection information:
     // {
-    //   "seed1": {
+    //   "component1": {
     //     "addresses": [
-    //       "foo.seed1.1",
-    //       "foo.seed1.2"
+    //       "foo.component1.1",
+    //       "foo.component1.2"
     //     ]
     //   }
     // }
     Iterator<Object> iter2 = connections.iterator();
     while (iter2.hasNext()) {
       String name = iter2.next().toString();
-      JsonObject seedContext = seedContexts.getObject(name);
-      if (seedContext == null) {
+      JsonObject componentContext = componentContexts.getObject(name);
+      if (componentContext == null) {
         continue;
       }
 
       JsonObject connection = new JsonObject();
       connection.putString("name", name);
 
-      JsonObject grouping = seedContext.getObject("definition").getObject("grouping");
+      JsonObject grouping = componentContext.getObject("definition").getObject("grouping");
       if (grouping == null) {
         grouping = new RoundGrouping().serialize();
       }
 
       connection.putObject("grouping", grouping);
-      connection.putArray("addresses", seedContext.getArray("workers").copy());
+      connection.putArray("addresses", componentContext.getArray("workers").copy());
 
       connectionContexts.putObject(name, connection);
     }
@@ -362,36 +352,36 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
     // Connection information is stored in context.connections.
     context.putObject("connections", connectionContexts);
 
-    // Now iterate through each seed context and add connection information.
+    // Now iterate through each component context and add connection information.
     // This needed to be done *after* those contexts are created because
-    // we need to be able to get context information from connecting seeds.
+    // we need to be able to get context information from connecting components.
     // {
-    //   "seed1": {
+    //   "component1": {
     //     "addresses": [
-    //       "foo.seed1.1",
-    //       "foo.seed1.2"
+    //       "foo.component1.1",
+    //       "foo.component1.2"
     //     ],
     //     "grouping": "random"
     //   }
     //   ...
     // }
-    Iterator<String> seedNames = seedContexts.getFieldNames().iterator();
-    while (seedNames.hasNext()) {
-      JsonObject seedContext = seedContexts.getObject(seedNames.next());
-      JsonObject seedDef = seedContext.getObject("definition");
+    Iterator<String> componentNames = componentContexts.getFieldNames().iterator();
+    while (componentNames.hasNext()) {
+      JsonObject componentContext = componentContexts.getObject(componentNames.next());
+      JsonObject componentDef = componentContext.getObject("definition");
 
-      // Iterate through each of the seed's connections.
-      JsonObject seedCons = seedDef.getObject("connections");
-      JsonObject seedConnectionContexts = new JsonObject();
+      // Iterate through each of the component's connections.
+      JsonObject componentCons = componentDef.getObject("connections");
+      JsonObject componentConnectionContexts = new JsonObject();
 
-      if (seedCons != null) {
-        Set<String> conKeys = seedCons.getFieldNames();
+      if (componentCons != null) {
+        Set<String> conKeys = componentCons.getFieldNames();
         Iterator<String> iterCon = conKeys.iterator();
   
         while (iterCon.hasNext()) {
-          // Get the seed name and with it a reference to the seed context.
+          // Get the component name and with it a reference to the component context.
           String name = iterCon.next().toString();
-          JsonObject conContext = seedContexts.getObject(name);
+          JsonObject conContext = componentContexts.getObject(name);
           if (conContext == null) {
             continue;
           }
@@ -409,31 +399,31 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
           connection.putObject("grouping", grouping);
           connection.putArray("addresses", conContext.getArray("workers").copy());
   
-          seedConnectionContexts.putObject(name, connection);
+          componentConnectionContexts.putObject(name, connection);
         }
       }
 
       // Finally, add the connections to the object.
-      seedContext.putObject("connections", seedConnectionContexts);
+      componentContext.putObject("connections", componentConnectionContexts);
     }
 
     return new NetworkContext(context);
   }
 
-  private JsonObject buildSeedsRecursive(JsonObject seedDefinition) {
-    return buildSeedsRecursive(seedDefinition, new JsonObject());
+  private JsonObject buildComponentsRecursive(JsonObject componentDefinition) {
+    return buildComponentsRecursive(componentDefinition, new JsonObject());
   }
 
-  private JsonObject buildSeedsRecursive(JsonObject seedDefinition, JsonObject seeds) {
-    seeds.putObject(seedDefinition.getString("name"), seedDefinition);
-    JsonObject connections = seedDefinition.getObject("connections");
+  private JsonObject buildComponentsRecursive(JsonObject componentDefinition, JsonObject components) {
+    components.putObject(componentDefinition.getString("name"), componentDefinition);
+    JsonObject connections = componentDefinition.getObject("connections");
     if (connections != null) {
       Iterator<String> iter = connections.getFieldNames().iterator();
       while (iter.hasNext()) {
-        buildSeedsRecursive(connections.getObject(iter.next()), seeds);
+        buildComponentsRecursive(connections.getObject(iter.next()), components);
       }
     }
-    return seeds;
+    return components;
   }
 
 }

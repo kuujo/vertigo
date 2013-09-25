@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.java;
 
-import net.kuujo.vevent.context.RootContext;
+import net.kuujo.vevent.context.ComponentContext;
 import net.kuujo.vevent.feeder.EventBusFeeder;
 import net.kuujo.vevent.feeder.Feeder;
 
@@ -27,7 +27,7 @@ import net.kuujo.vevent.feeder.Feeder;
 public abstract class EventBusFeederVerticle extends FeederVerticle {
 
   @Override
-  Feeder createFeeder(RootContext context) {
+  Feeder createFeeder(ComponentContext context) {
     return new EventBusFeeder(context.getAddress(), vertx.eventBus(), context);
   }
 

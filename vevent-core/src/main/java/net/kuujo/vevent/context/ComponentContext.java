@@ -27,24 +27,24 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A JSON object-based seed context.
+ * A JSON object-based component context.
  *
  * @author Jordan Halterman
  */
-public class NodeContext implements Context {
+public class ComponentContext implements Context {
 
   private JsonObject context = new JsonObject();
 
   private NetworkContext parent;
 
-  public NodeContext() {
+  public ComponentContext() {
   }
 
-  public NodeContext(String name) {
+  public ComponentContext(String name) {
     context.putString("name", name);
   }
 
-  public NodeContext(JsonObject json) {
+  public ComponentContext(JsonObject json) {
     context = json;
     JsonObject networkContext = context.getObject("network");
     if (networkContext != null) {
@@ -52,7 +52,7 @@ public class NodeContext implements Context {
     }
   }
 
-  public NodeContext(JsonObject json, NetworkContext parent) {
+  public ComponentContext(JsonObject json, NetworkContext parent) {
     this(json);
     this.parent = parent;
   }
@@ -119,7 +119,7 @@ public class NodeContext implements Context {
   public JsonObject serialize() {
     JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("vine", parent.serialize());
+      context.putObject("network", parent.serialize());
     }
     return context;
   }

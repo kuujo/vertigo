@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.feeder;
 
-import net.kuujo.vevent.context.RootContext;
+import net.kuujo.vevent.context.ComponentContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -33,9 +33,9 @@ public class EventBusFeeder implements Feeder {
 
   private EventBus eventBus;
 
-  private RootContext context;
+  private ComponentContext context;
 
-  public EventBusFeeder(String address, EventBus eventBus, RootContext context) {
+  public EventBusFeeder(String address, EventBus eventBus, ComponentContext context) {
     this.address = address;
     this.eventBus = eventBus;
     this.context = context;

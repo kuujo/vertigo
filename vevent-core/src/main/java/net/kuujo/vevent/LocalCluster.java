@@ -15,62 +15,17 @@
 */
 package net.kuujo.vevent;
 
-import net.kuujo.vevent.context.NetworkContext;
-import net.kuujo.vevent.definition.NetworkDefinition;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 /**
  * A local cluster implementation.
  *
  * @author Jordan Halterman
  */
-public class LocalCluster implements Cluster {
+public class LocalCluster extends AbstractCluster {
 
-  private Vertx vertx;
-
-  public LocalCluster() {
-  }
-
-  public LocalCluster(Vertx vertx) {
-    this.vertx = vertx;
-  }
-
-  @Override
-  public Cluster setVertx(Vertx vertx) {
-    this.vertx = vertx;
-    return this;
-  }
-
-  @Override
-  public void deploy(NetworkDefinition network,
-      Handler<AsyncResult<NetworkContext>> doneHandler) {
-    
-  }
-
-  @Override
-  public void deploy(NetworkDefinition network, long timeout,
-      Handler<AsyncResult<NetworkContext>> doneHandler) {
-    
-  }
-
-  @Override
-  public void shutdown(NetworkContext context) {
-    
-  }
-
-  @Override
-  public void shutdown(NetworkContext context,
-      Handler<AsyncResult<Void>> doneHandler) {
-    
-  }
-
-  @Override
-  public void shutdown(NetworkContext context, long timeout,
-      Handler<AsyncResult<Void>> doneHandler) {
-    
+  public LocalCluster(Container container) {
+    this.cluster = new net.kuujo.via.cluster.LocalCluster(container);
   }
 
 }

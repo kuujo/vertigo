@@ -20,7 +20,6 @@ import net.kuujo.vevent.definition.NetworkDefinition;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 
 /**
  * Primary interface for network deployment.
@@ -28,16 +27,6 @@ import org.vertx.java.core.Vertx;
  * @author Jordan Halterman
  */
 public interface Cluster {
-
-  /**
-   * Sets the vertx instance.
-   *
-   * @param vertx
-   *   A vertx instance.
-   * @return
-   *   The called cluster instance.
-   */
-  public Cluster setVertx(Vertx vertx);
 
   /**
    * Deploys a network definition.

@@ -72,29 +72,6 @@ public class WorkerContext implements Context {
   }
 
   /**
-   * Gets the worker stem address.
-   *
-   * @return
-   *   A stem address.
-   */
-  public String getStem() {
-    return context.getString("stem");
-  }
-
-  /**
-   * Sets the worker stem address.
-   *
-   * @param address
-   *   A stem address.
-   * @return
-   *   The called worker context.
-   */
-  public WorkerContext setStem(String address) {
-    context.putString("stem", address);
-    return this;
-  }
-
-  /**
    * Gets the parent node context.
    *
    * @return
@@ -121,7 +98,7 @@ public class WorkerContext implements Context {
   public JsonObject serialize() {
     JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("seed", parent.serialize().copy());
+      context.putObject("node", parent.serialize().copy());
     }
     return context;
   }

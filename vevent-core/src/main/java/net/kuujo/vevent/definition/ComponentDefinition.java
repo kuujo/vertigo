@@ -40,17 +40,17 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node name.
+   * Gets the component name.
    */
   public String getName() {
     return definition.getString("name");
   }
 
   /**
-   * Sets the node name.
+   * Sets the component name.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    */
   public ComponentDefinition setName(String name) {
     definition.putString("name", name);
@@ -58,18 +58,18 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node main.
+   * Gets the component main.
    */
   public String getMain() {
     return definition.getString("main");
   }
 
   /**
-   * Sets the node main. This is a string reference to the verticle
-   * to be run when a node worker is started.
+   * Sets the component main. This is a string reference to the verticle
+   * to be run when a component worker is started.
    *
    * @param main
-   *   The node main.
+   *   The component main.
    */
   public ComponentDefinition setMain(String main) {
     definition.putString("main", main);
@@ -77,14 +77,14 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets a node option.
+   * Sets a component option.
    *
    * @param option
    *   The option to set.
    * @param value
    *   The option value.
    * @return
-   *   The called node definition.
+   *   The called component definition.
    */
   public ComponentDefinition setOption(String option, String value) {
     switch (option) {
@@ -100,7 +100,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets a node option.
+   * Gets a component option.
    *
    * @param option
    *   The option to get.
@@ -112,12 +112,12 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets the node worker grouping.
+   * Sets the component worker grouping.
    *
    * @param grouping
    *   A grouping definition.
    * @return
-   *   The called node definition.
+   *   The called component definition.
    */
   public ComponentDefinition groupBy(GroupingDefinition grouping) {
     definition.putObject("grouping", grouping.serialize());
@@ -125,19 +125,19 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node worker grouping.
+   * Gets the component worker grouping.
    */
   public GroupingDefinition getGrouping() {
     return new GroupingDefinition(definition.getObject("grouping"));
   }
 
   /**
-   * Sets the number of node workers.
+   * Sets the number of component workers.
    *
    * @param workers
-   *   The number of node workers.
+   *   The number of component workers.
    * @return
-   *   The called node definition.
+   *   The called component definition.
    */
   public ComponentDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
@@ -145,19 +145,19 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the number of node workers.
+   * Gets the number of component workers.
    */
   public int getWorkers() {
     return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
   }
 
   /**
-   * Sets the node worker heartbeat interval.
+   * Sets the component worker heartbeat interval.
    *
    * @param interval
    *   A heartbeat interval.
    * @return
-   *   The called node definition.
+   *   The called component definition.
    */
   public ComponentDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
@@ -165,10 +165,10 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the node heartbeat interval.
+   * Gets the component heartbeat interval.
    *
    * @return
-   *   A node heartbeat interval.
+   *   A component heartbeat interval.
    */
   public long getHeartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);

@@ -65,7 +65,7 @@ public class NetworkContext implements Context {
    * Returns a specific feeder connection context.
    *
    * @param name
-   *   The connection (seed) name.
+   *   The connection name.
    */
   public ConnectionContext getConnectionContext(String name) {
     JsonObject connection = context.getObject("connections", new JsonObject()).getObject(name);
@@ -76,34 +76,34 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns a list of vine seed contexts.
+   * Returns a list of network component contexts.
    */
-  public Collection<ComponentContext> getSeedContexts() {
-    JsonObject seeds = context.getObject("seeds");
+  public Collection<ComponentContext> getComponentContexts() {
+    JsonObject components = context.getObject("components");
     ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
-    Iterator<String> iter = seeds.getFieldNames().iterator();
+    Iterator<String> iter = components.getFieldNames().iterator();
     while (iter.hasNext()) {
-      contexts.add(new ComponentContext(seeds.getObject(iter.next()), this));
+      contexts.add(new ComponentContext(components.getObject(iter.next()), this));
     }
     return contexts;
   }
 
   /**
-   * Returns a specific seed context.
+   * Returns a specific component context.
    *
    * @param name
-   *   The seed name.
+   *   The component name.
    */
-  public ComponentContext getSeedContext(String name) {
-    JsonObject seeds = context.getObject("seeds");
-    if (seeds == null) {
+  public ComponentContext getComponentContext(String name) {
+    JsonObject components = context.getObject("components");
+    if (components == null) {
       return null;
     }
-    JsonObject seedContext = seeds.getObject(name);
-    if (seedContext == null) {
+    JsonObject componentContext = components.getObject(name);
+    if (componentContext == null) {
       return null;
     }
-    return new ComponentContext(seedContext);
+    return new ComponentContext(componentContext);
   }
 
   /**

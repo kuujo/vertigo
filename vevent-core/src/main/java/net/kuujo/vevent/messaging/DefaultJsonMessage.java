@@ -68,12 +68,12 @@ public class DefaultJsonMessage implements JsonMessage {
 
   @Override
   public JsonMessage createChild(JsonObject body) {
-    return DefaultJsonMessage.create(this.body.copy());
+    return new DefaultJsonMessage(this.body.copy().putObject("body", body));
   }
 
   @Override
   public JsonMessage createChild(JsonObject body, String tag) {
-    return DefaultJsonMessage.create(this.body.copy(), tag);
+    return new DefaultJsonMessage(this.body.copy().putObject("body", body).putString("tag", tag));
   }
 
   @Override

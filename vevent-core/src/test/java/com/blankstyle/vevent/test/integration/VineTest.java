@@ -15,7 +15,25 @@
 */
 package com.blankstyle.vevent.test.integration;
 
+import net.kuujo.vevent.Cluster;
+import net.kuujo.vevent.Groupings;
+import net.kuujo.vevent.LocalCluster;
+import net.kuujo.vevent.Networks;
+import net.kuujo.vevent.context.NetworkContext;
+import net.kuujo.vevent.definition.NetworkDefinition;
+import net.kuujo.vevent.feeder.Feeder;
+import net.kuujo.vevent.java.BasicFeederVerticle;
+import net.kuujo.vevent.java.WorkerVerticle;
+import net.kuujo.vevent.messaging.JsonMessage;
+
+import org.junit.Test;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
+
+import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.testComplete;
 
 /**
  * A vine deploy test.
@@ -23,5 +41,76 @@ import org.vertx.testtools.TestVerticle;
  * @author Jordan Halterman
  */
 public class VineTest extends TestVerticle {
+
+  public static class TestFeeder extends BasicFeederVerticle {
+    private boolean fed = false;
+    @Override
+    public void handle(Feeder feeder) {
+      if (!fed) {
+        feeder.feed(new JsonObject().putString("body", "Hello world"), new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            }
+            else {
+              assertTrue(result.succeeded());
+            }
+            testComplete();
+          }
+        });
+        fed = true;
+      }
+    }
+  }
+
+  public static class TestNodeOne extends WorkerVerticle {
+    @Override
+    public void handle(JsonMessage message) {
+      JsonObject body = message.body();
+      String hello = body.getString("body");
+      emit(new JsonObject().putString("body", hello + "!"), message);
+      ack(message);
+    }
+  }
+
+  public static class TestNodeTwo extends WorkerVerticle {
+    @Override
+    public void handle(JsonMessage message) {
+      JsonObject body = message.body();
+      String hello = body.getString("body");
+      if (hello == "Hello world!") {
+        ack(message);
+      }
+      else {
+        fail(message);
+      }
+    }
+  }
+
+  private NetworkDefinition createSimpleTestDefinition() {
+    NetworkDefinition network = Networks.createDefinition("test");
+    network.fromRoot("feeder", TestFeeder.class.getName())
+      .toNode("nodeone", TestNodeOne.class.getName()).groupBy(Groupings.random())
+      .toNode("nodetwo", TestNodeTwo.class.getName()).groupBy(Groupings.round());
+    return network;
+  }
+
+  @Test
+  public void testLocalSimpleNetwork() {
+    Cluster cluster = new LocalCluster(container);
+    NetworkDefinition network = createSimpleTestDefinition();
+    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        }
+        else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
 
 }

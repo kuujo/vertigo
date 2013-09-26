@@ -307,8 +307,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
       }
     }
 
-    // Worker contexts are stored in context.workers.
-    context.putObject("workers", componentContexts);
+    // Component contexts are stored in context.workers.
+    context.putObject("components", componentContexts);
     
 
     JsonArray connections = definition.getArray("connections");

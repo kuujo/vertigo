@@ -84,7 +84,12 @@ public class BasicFeeder implements Feeder {
   @Override
   public void start() {
     setupOutputs();
-    recursiveFeed();
+    vertx.setTimer(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long event) {
+        recursiveFeed();
+      }
+    });
   }
 
   private void recursiveFeed() {

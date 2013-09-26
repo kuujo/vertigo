@@ -45,6 +45,7 @@ abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
     context = new WorkerContext(container.config());
     feeder = createFeeder(context);
     feeder.feedHandler(this);
+    feeder.start();
   }
 
 }

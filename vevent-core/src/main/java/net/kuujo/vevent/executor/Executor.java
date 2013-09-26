@@ -27,6 +27,11 @@ import org.vertx.java.core.json.JsonObject;
 public interface Executor {
 
   /**
+   * Starts the executor.
+   */
+  public void start();
+
+  /**
    * Sets the execution queue size.
    *
    * @param maxSize

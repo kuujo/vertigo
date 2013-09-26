@@ -20,11 +20,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.kuujo.via.heartbeat.DefaultHeartbeatEmitter;
-import net.kuujo.via.heartbeat.HeartbeatEmitter;
 import net.kuujo.vevent.context.ConnectionContext;
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.eventbus.Actions;
 import net.kuujo.vevent.eventbus.ReliableEventBus;
 import net.kuujo.vevent.eventbus.WrappedReliableEventBus;
 import net.kuujo.vevent.messaging.ConnectionPool;
@@ -38,7 +35,6 @@ import net.kuujo.vevent.messaging.JsonMessage;
 import net.kuujo.vevent.messaging.OutputCollector;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -66,8 +62,6 @@ public class DefaultWorker implements Worker {
   protected String vineAddress;
 
   protected WorkerContext context;
-
-  protected HeartbeatEmitter heartbeat;
 
   protected OutputCollector output;
 
@@ -101,48 +95,12 @@ public class DefaultWorker implements Worker {
 
   @Override
   public void start() {
-    setupHeartbeat();
     setupOutputs();
     setupInputs();
   }
 
   /**
-   * Sets up the seed verticle heartbeat.
-   */
-  private void setupHeartbeat() {
-    heartbeat = new DefaultHeartbeatEmitter();
-    eventBus.send(context.getStem(), Actions.create("register", context.getAddress()), 10000, new AsyncResultHandler<Message<JsonObject>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.succeeded()) {
-          Message<JsonObject> message = result.result();
-          JsonObject body = message.body();
-          String error = body.getString("error");
-          if (error != null) {
-            logger.error(error);
-          }
-          else {
-            // Set the heartbeat address. This is returned by the "register" action.
-            String address = body.getString("address");
-            if (address != null) {
-              heartbeat.setAddress(address);
-            }
-
-            // Set the heartbeat interval. This setting is derived from the
-            // seed definition's heartbeat interval option.
-            heartbeat.setInterval(context.getContext().getDefinition().getHeartbeatInterval());
-            heartbeat.start();
-          }
-        }
-        else {
-          logger.error(String.format("Failed to fetch heartbeat address from stem at %s.", context.getStem()));
-        }
-      }
-    });
-  }
-
-  /**
-   * Sets up seed outputs.
+   * Sets up worker outputs.
    */
   private void setupOutputs() {
     output = new CoordinatingOutputCollector();

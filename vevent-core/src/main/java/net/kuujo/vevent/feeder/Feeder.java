@@ -27,6 +27,21 @@ import org.vertx.java.core.json.JsonObject;
 public interface Feeder {
 
   /**
+   * Sets the maximum feed queue size.
+   *
+   * @param maxQueueSize
+   *   The maximum feed queue size.
+   * @return
+   *   The called feeder instance.
+   */
+  public Feeder setMaxQueueSize(long maxQueueSize);
+
+  /**
+   * Starts the feeder.
+   */
+  public void start();
+
+  /**
    * Sets the feed handler.
    *
    * @param handler
@@ -35,26 +50,6 @@ public interface Feeder {
    *   The called feeder instance.
    */
   public Feeder feedHandler(Handler<Feeder> handler);
-
-  /**
-   * Sets an ack handler.
-   *
-   * @param ackHandler
-   *   The ack handler.
-   * @return
-   *   The called feeder instance.
-   */
-  public Feeder ackHandler(Handler<JsonObject> ackHandler);
-
-  /**
-   * Sets a fail handler.
-   *
-   * @param failHandler
-   *   The fail handler.
-   * @return
-   *   The called feeder instance.
-   */
-  public Feeder failHandler(Handler<JsonObject> failHandler);
 
   /**
    * Feeds data to the network.

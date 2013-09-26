@@ -15,11 +15,10 @@
 */
 package net.kuujo.vevent.java;
 
-import net.kuujo.vevent.context.ComponentContext;
+import net.kuujo.vevent.context.WorkerContext;
 import net.kuujo.vevent.feeder.Feeder;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 /**
@@ -29,7 +28,7 @@ import org.vertx.java.platform.Verticle;
  */
 abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
 
-  protected ComponentContext context;
+  protected WorkerContext context;
 
   protected Feeder feeder;
 
@@ -39,37 +38,13 @@ abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
    * @return
    *   A new root feeder instance.
    */
-  abstract Feeder createFeeder(ComponentContext context);
+  abstract Feeder createFeeder(WorkerContext context);
 
   @Override
   public void start() {
-    context = new ComponentContext(container.config());
+    context = new WorkerContext(container.config());
     feeder = createFeeder(context);
     feeder.feedHandler(this);
-    feeder.ackHandler(new Handler<JsonObject>() {
-      @Override
-      public void handle(JsonObject data) {
-        ack(data);
-      }
-    });
-    feeder.failHandler(new Handler<JsonObject>() {
-      @Override
-      public void handle(JsonObject data) {
-        fail(data);
-      }
-    });
-  }
-
-  /**
-   * Called when data is successfully processed
-   */
-  protected void ack(JsonObject data) {
-  }
-
-  /**
-   * Called when data fails processing.
-   */
-  protected void fail(JsonObject data) {
   }
 
 }

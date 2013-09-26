@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.java;
 
-import net.kuujo.vevent.context.ComponentContext;
+import net.kuujo.vevent.context.WorkerContext;
 import net.kuujo.vevent.feeder.BasicFeeder;
 import net.kuujo.vevent.feeder.Feeder;
 
@@ -27,8 +27,8 @@ import net.kuujo.vevent.feeder.Feeder;
 public abstract class BasicFeederVerticle extends FeederVerticle {
 
   @Override
-  Feeder createFeeder(ComponentContext context) {
-    return new BasicFeeder(vertx.eventBus(), context);
+  Feeder createFeeder(WorkerContext context) {
+    return new BasicFeeder(vertx, container, context);
   }
 
 }

@@ -15,74 +15,73 @@
 */
 package net.kuujo.vevent.feeder;
 
-import net.kuujo.vevent.context.ComponentContext;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+import net.kuujo.vevent.context.WorkerContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
 /**
  * An eventbus feeder.
  *
  * @author Jordan Halterman
  */
-public class EventBusFeeder implements Feeder {
+public class EventBusFeeder extends BasicFeeder {
 
   private String address;
 
-  private EventBus eventBus;
+  private Deque<Message<JsonObject>> feedQueue = new ArrayDeque<Message<JsonObject>>();
 
-  private ComponentContext context;
+  protected Handler<Feeder> feedHandler = new Handler<Feeder>() {
+    @Override
+    public void handle(Feeder feeder) {
+      final Message<JsonObject> message = dequeue();
+      if (message != null) {
+        feeder.feed(message.body(), new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            message.reply(result.succeeded());
+          }
+        });
+      }
+      else {
+        scheduleFeed();
+      }
+    }
+  };
 
-  public EventBusFeeder(String address, EventBus eventBus, ComponentContext context) {
+  public EventBusFeeder(String address, Vertx vertx, Container container, WorkerContext context) {
+    super(vertx, container, context);
     this.address = address;
-    this.eventBus = eventBus;
-    this.context = context;
+  }
+
+  @Override
+  public void start() {
+    eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        enqueue(message);
+      }
+    });
+    super.start();
+  }
+
+  private void enqueue(Message<JsonObject> message) {
+    feedQueue.addLast(message);
+  }
+
+  private Message<JsonObject> dequeue() {
+    return feedQueue.pollFirst();
   }
 
   @Override
   public Feeder feedHandler(Handler<Feeder> handler) {
-    return this;
-  }
-
-  @Override
-  public Feeder ackHandler(Handler<JsonObject> ackHandler) {
-    return this;
-  }
-
-  @Override
-  public Feeder failHandler(Handler<JsonObject> failHandler) {
-    return this;
-  }
-
-  @Override
-  public Feeder feed(JsonObject data) {
-    return this;
-  }
-
-  @Override
-  public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
-    return this;
-  }
-
-  @Override
-  public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler) {
-    return this;
-  }
-
-  @Override
-  public Feeder feed(JsonObject data, String tag) {
-    return this;
-  }
-
-  @Override
-  public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler) {
-    return this;
-  }
-
-  @Override
-  public Feeder feed(JsonObject data, String tag, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     return this;
   }
 

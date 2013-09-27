@@ -15,6 +15,7 @@
 */
 package net.kuujo.vevent;
 
+import net.kuujo.vevent.grouping.AllGrouping;
 import net.kuujo.vevent.grouping.FieldsGrouping;
 import net.kuujo.vevent.grouping.RandomGrouping;
 import net.kuujo.vevent.grouping.RoundGrouping;
@@ -66,6 +67,16 @@ public final class Groupings {
    */
   public static FieldsGrouping fields(String field) {
     return new FieldsGrouping(field);
+  }
+
+  /**
+   * Creates an all grouping definition.
+   *
+   * @return
+   *   A grouping definition for dispatching messages to all connected workers.
+   */
+  public static AllGrouping all() {
+    return new AllGrouping();
   }
 
 }

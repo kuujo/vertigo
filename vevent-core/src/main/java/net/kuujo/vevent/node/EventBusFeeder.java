@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.feeder;
+package net.kuujo.vevent.node;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

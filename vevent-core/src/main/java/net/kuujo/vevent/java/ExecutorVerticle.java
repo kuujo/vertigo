@@ -16,7 +16,7 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.ComponentContext;
-import net.kuujo.vevent.executor.Executor;
+import net.kuujo.vevent.node.Executor;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

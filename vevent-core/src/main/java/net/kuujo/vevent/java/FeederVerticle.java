@@ -16,7 +16,7 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.feeder.Feeder;
+import net.kuujo.vevent.node.Feeder;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.platform.Verticle;

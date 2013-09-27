@@ -15,6 +15,8 @@
 */
 package net.kuujo.vevent.messaging;
 
+import java.util.UUID;
+
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -26,16 +28,20 @@ public class DefaultJsonMessage implements JsonMessage {
 
   private JsonObject body;
 
+  private static String createUniqueId() {
+    return UUID.randomUUID().toString();
+  }
+
   public DefaultJsonMessage(JsonObject body) {
     this.body = body;
   }
 
   public static JsonMessage create(JsonObject body) {
-    return new DefaultJsonMessage(new JsonObject().putObject("body", body));
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body));
   }
 
   public static JsonMessage create(JsonObject body, String tag) {
-    return new DefaultJsonMessage(new JsonObject().putObject("body", body).putString("tag", tag));
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag));
   }
 
   public static JsonMessage create(String id, JsonObject body) {
@@ -47,7 +53,7 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public String tree() {
+  public String id() {
     return body.getString("id");
   }
 
@@ -64,6 +70,16 @@ public class DefaultJsonMessage implements JsonMessage {
   @Override
   public String tag() {
     return body.getString("tag");
+  }
+
+  @Override
+  public JsonMessage createChild(String id, JsonObject body) {
+    return new DefaultJsonMessage(this.body.copy().putString("id", createUniqueId()).putObject("body", body));
+  }
+
+  @Override
+  public JsonMessage createChild(String id, JsonObject body, String tag) {
+    return new DefaultJsonMessage(this.body.copy().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag));
   }
 
   @Override

@@ -15,9 +15,6 @@
 */
 package net.kuujo.vevent.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
  * A message dispatcher.
  *
@@ -74,57 +71,5 @@ public interface Dispatcher {
    *   The message to dispatch.
    */
   public void dispatch(JsonMessage message);
-
-  /**
-   * Dispatches a message.
-   *
-   * @param message
-   *   The message to dispatch.
-   * @param doneHandler
-   *   A message completion handler.
-   */
-  public void dispatch(JsonMessage message, Handler<AsyncResult<Boolean>> doneHandler);
-
-  /**
-   * Publishes a message to the stream with a response handler.
-   *
-   * @param message
-   *   The message to publish.
-   * @param timeout
-   *   A message timeout.
-   * @param doneHandler
-   *   A message completion handler.
-   */
-  public void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> doneHandler);
-
-  /**
-   * Publishes a message to the stream with a response handler.
-   *
-   * @param message
-   *   The message to publish.
-   * @param timeout
-   *   A message timeout.
-   * @param retry
-   *   Indicates whether to retry sending the message if sending times out.
-   * @param doneHandler
-   *   A message completion handler.
-   */
-  public void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> doneHandler);
-
-  /**
-   * Publishes a message to the stream with a response handler.
-   *
-   * @param message
-   *   The message to publish.
-   * @param timeout
-   *   A message timeout.
-   * @param retry
-   *   Indicates whether to retry sending the message if sending times out.
-   * @param attempts
-   *   Indicates the number of times to retry if retries are enabled.
-   * @param doneHandler
-   *   A message completion handler.
-   */
-  public void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Boolean>> doneHandler);
 
 }

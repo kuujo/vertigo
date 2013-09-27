@@ -179,56 +179,56 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Adds a root to the network.
+   * Adds a root node to the network.
    *
    * @param definition
-   *   A root definition.
+   *   A component definition.
    * @return
-   *   The given root definition.
+   *   The given component definition.
    */
-  public ComponentDefinition fromRoot(ComponentDefinition definition) {
+  public ComponentDefinition from(ComponentDefinition definition) {
     return addDefinition(definition);
   }
 
   /**
-   * Adds a root to the network.
+   * Adds a root node to the network.
    *
    * @param name
-   *   The root name.
+   *   The node name.
    * @return
-   *   A new root definition.
+   *   A new component definition.
    */
-  public ComponentDefinition fromRoot(String name) {
-    return fromRoot(name, null, 1);
+  public ComponentDefinition from(String name) {
+    return from(name, null, 1);
   }
 
   /**
-   * Adds a root to the network.
+   * Adds a root node to the network.
    *
    * @param name
-   *   The root name.
+   *   The node name.
    * @param main
-   *   The root main.
+   *   The node main.
    * @return
-   *   A new root definition.
+   *   A new component definition.
    */
-  public ComponentDefinition fromRoot(String name, String main) {
-    return fromRoot(name, main, 1);
+  public ComponentDefinition from(String name, String main) {
+    return from(name, main, 1);
   }
 
   /**
-   * Adds a root to the network.
+   * Adds a root node to the network.
    *
    * @param name
-   *   The root name.
+   *   The node name.
    * @param main
-   *   The root main.
+   *   The node main.
    * @param workers
-   *   The number of root workers.
+   *   The number of workers.
    * @return
-   *   A new root definition.
+   *   A new component definition.
    */
-  public ComponentDefinition fromRoot(String name, String main, int workers) {
+  public ComponentDefinition from(String name, String main, int workers) {
     return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
@@ -270,6 +270,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
 
     JsonObject context = new JsonObject();
     context.putString("address", address);
+    context.putString("authenticator", String.format("%s.authenticator", address));
+    context.putString("broadcast", String.format("%s.broadcast", address));
     context.putObject("definition", definition);
 
     // First, create all component contexts and then add connections.

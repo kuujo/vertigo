@@ -16,8 +16,8 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.feeder.BasicFeeder;
-import net.kuujo.vevent.feeder.Feeder;
+import net.kuujo.vevent.node.BasicFeeder;
+import net.kuujo.vevent.node.Feeder;
 
 /**
  * A basic feeder verticle implementation.

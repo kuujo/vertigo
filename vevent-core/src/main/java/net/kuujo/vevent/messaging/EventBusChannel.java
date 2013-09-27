@@ -15,9 +15,6 @@
 */
 package net.kuujo.vevent.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
  * An eventbus based stream.
  *
@@ -62,31 +59,6 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   @Override
   public Channel<?> write(JsonMessage message) {
     dispatcher.dispatch(message);
-    return this;
-  }
-
-  @Override
-  public Channel<?> write(JsonMessage message, Handler<AsyncResult<Boolean>> doneHandler) {
-    dispatcher.dispatch(message, doneHandler);
-    return this;
-  }
-
-  @Override
-  public Channel<?> write(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> doneHandler) {
-    dispatcher.dispatch(message, timeout, doneHandler);
-    return this;
-  }
-
-  @Override
-  public Channel<?> write(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> doneHandler) {
-    dispatcher.dispatch(message, timeout, retry, doneHandler);
-    return this;
-  }
-
-  @Override
-  public Channel<?> write(JsonMessage message, long timeout, boolean retry, int attempts,
-      Handler<AsyncResult<Boolean>> doneHandler) {
-    dispatcher.dispatch(message, timeout, retry, attempts, doneHandler);
     return this;
   }
 

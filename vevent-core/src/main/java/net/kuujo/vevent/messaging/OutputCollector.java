@@ -15,11 +15,6 @@
 */
 package net.kuujo.vevent.messaging;
 
-import java.util.Set;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
  * An output collector.
  *
@@ -41,27 +36,17 @@ public interface OutputCollector {
    * @return
    *   The called output collector.
    */
-  public OutputCollector addChannel(String name, Channel<?> channel);
+  public OutputCollector addChannel(Channel<?> channel);
 
   /**
    * Removes an output channel from the collector.
    *
-   * @param name
-   *   The name of the channel to remove.
+   * @param channel
+   *   The channel to remove.
    * @return
    *   The called output collector.
    */
-  public OutputCollector removeChannel(String name);
-
-  /**
-   * Returns a set of channel names.
-   */
-  public Set<String> getChannelNames();
-
-  /**
-   * Returns a channel by name.
-   */
-  public Channel<?> getChannel(String name);
+  public OutputCollector removeChannel(Channel<?> channel);
 
   /**
    * Returns the number of channels in the output.
@@ -79,32 +64,6 @@ public interface OutputCollector {
   public OutputCollector emit(JsonMessage message);
 
   /**
-   * Emits a message to all output channels.
-   *
-   * @param message
-   *   The message to emit.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emit(JsonMessage message, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
-   * Emits a message to all output channels.
-   *
-   * @param message
-   *   The message to emit.
-   * @param timeout
-   *   An ack timeout.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emit(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
    * Emits a set of messages to all output channels.
    *
    * @param messages
@@ -112,32 +71,6 @@ public interface OutputCollector {
    * @return
    *   The called output collector.
    */
-  public OutputCollector emit(JsonMessage[] messages);
-
-  /**
-   * Emits a set of messages to all output channels.
-   *
-   * @param messages
-   *   The messages to emit.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emit(JsonMessage[] messages, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
-   * Emits a set of messages to all output channels.
-   *
-   * @param messages
-   *   The messages to emit.
-   * @param timeout
-   *   An ack timeout.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emit(JsonMessage[] messages, long timeout, Handler<AsyncResult<Boolean>> ackHandler);
+  public OutputCollector emit(JsonMessage... messages);
 
 }

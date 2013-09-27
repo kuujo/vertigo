@@ -15,9 +15,6 @@
 */
 package net.kuujo.vevent.messaging;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
  * A writeable interface.
  *
@@ -34,65 +31,5 @@ public interface Writable<T extends Writable<T>> {
    *   The called writable instance.
    */
   public T write(JsonMessage message);
-
-  /**
-   * Writes a message to the channel.
-   *
-   * @param message
-   *   The message to write to the channel.
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked once the message has been received.
-   * @return
-   *   The called writable instance.
-   */
-  public T write(JsonMessage message, Handler<AsyncResult<Boolean>> doneHandler);
-
-  /**
-   * Writes a message to the channel.
-   *
-   * @param message
-   *   The message to write to the channel.
-   * @param timeout
-   *   A message timeout.
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked once the message has been received.
-   * @return
-   *   The called writable instance.
-   */
-  public T write(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> doneHandler);
-
-  /**
-   * Writes a message to the channel.
-   *
-   * @param message
-   *   The message to write to the channel.
-   * @param timeout
-   *   A message timeout.
-   * @param retry
-   *   Indicates whether to retry sending the message if sending times out.
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked once the message has been received.
-   * @return
-   *   The called writable instance.
-   */
-  public T write(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> doneHandler);
-
-  /**
-   * Writes a message to the channel.
-   *
-   * @param message
-   *   The message to write to the channel.
-   * @param timeout
-   *   A message timeout.
-   * @param retry
-   *   Indicates whether to retry sending the message if sending times out.
-   * @param attempts
-   *   Indicates the number of times to retry if retries are enabled.
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked once the message has been received.
-   * @return
-   *   The called writable instance.
-   */
-  public T write(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Boolean>> doneHandler);
 
 }

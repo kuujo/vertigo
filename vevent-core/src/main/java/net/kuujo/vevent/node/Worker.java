@@ -15,13 +15,10 @@
 */
 package net.kuujo.vevent.node;
 
-import net.kuujo.vevent.context.WorkerContext;
 import net.kuujo.vevent.messaging.JsonMessage;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 /**
  * A vine seed. Nodes instances are essentially individual tasks.
@@ -29,36 +26,6 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public interface Worker {
-
-  /**
-   * Sets the seed vertx instance.
-   *
-   * @param vertx
-   *   A vertx instance.
-   * @return
-   *   The called seed instance.
-   */
-  public Worker setVertx(Vertx vertx);
-
-  /**
-   * Sets the seed container instance.
-   *
-   * @param container
-   *   A Vert.x container.
-   * @return
-   *   The called seed instance.
-   */
-  public Worker setContainer(Container container);
-
-  /**
-   * Sets the seed context.
-   *
-   * @param context
-   *   A seed context.
-   * @return
-   *   The called seed instance.
-   */
-  public Worker setContext(WorkerContext context);
 
   /**
    * Sets a seed data handler.

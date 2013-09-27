@@ -42,10 +42,24 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns the vine address.
+   * Returns the network address.
    */
   public String getAddress() {
     return context.getString("address");
+  }
+
+  /**
+   * Returns the network authenticator address.
+   */
+  public String getAuthenticatorAddress() {
+    return context.getString("authenticator");
+  }
+
+  /**
+   * Returns the network broadcast address.
+   */
+  public String getBroadcastAddress() {
+    return context.getString("broadcast");
   }
 
   /**

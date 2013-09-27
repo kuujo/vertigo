@@ -15,7 +15,10 @@
 */
 package net.kuujo.vevent;
 
+import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
+
+import net.kuujo.vevent.network.LocalCoordinator;
 
 /**
  * A local cluster implementation.
@@ -24,8 +27,10 @@ import org.vertx.java.platform.Container;
  */
 public class LocalCluster extends AbstractCluster {
 
-  public LocalCluster(Container container) {
-    this.cluster = new net.kuujo.via.cluster.LocalCluster(container);
+  protected String coordinator = LocalCoordinator.class.getName();
+
+  public LocalCluster(Vertx vertx, Container container) {
+    super(vertx, container);
   }
 
 }

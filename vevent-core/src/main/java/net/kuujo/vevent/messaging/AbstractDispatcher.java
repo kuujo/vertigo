@@ -18,9 +18,6 @@ package net.kuujo.vevent.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 /**
  * An abstract dispatcher implementation.
  *
@@ -62,26 +59,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
   @Override
   public void dispatch(JsonMessage message) {
     getConnection(message).write(message);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, Handler<AsyncResult<Boolean>> doneHandler) {
-    getConnection(message).write(message, doneHandler);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> doneHandler) {
-    getConnection(message).write(message, timeout, doneHandler);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> doneHandler) {
-    getConnection(message).write(message, timeout, retry, doneHandler);
-  }
-
-  @Override
-  public void dispatch(JsonMessage message, long timeout, boolean retry, int attempts, Handler<AsyncResult<Boolean>> doneHandler) {
-    getConnection(message).write(message, timeout, retry, attempts, doneHandler);
   }
 
 }

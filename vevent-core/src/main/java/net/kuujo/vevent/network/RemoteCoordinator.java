@@ -13,24 +13,21 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent;
+package net.kuujo.vevent.network;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.platform.Container;
-
-import net.kuujo.vevent.network.RemoteCoordinator;
+import net.kuujo.via.cluster.RemoteCluster;
 
 /**
- * A Via-based cluster implementation.
+ * A remote coordinator implementation.
  *
  * @author Jordan Halterman
  */
-public class ViaCluster extends AbstractCluster {
+public class RemoteCoordinator extends AbstractCoordinator {
 
-  protected String coordinator = RemoteCoordinator.class.getName();
-
-  public ViaCluster(Vertx vertx, Container container) {
-    super(vertx, container);
+  @Override
+  public void start() {
+    cluster = new RemoteCluster(config.getString("controller"), vertx.eventBus());
+    super.start();
   }
 
 }

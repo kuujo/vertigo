@@ -18,7 +18,7 @@ package net.kuujo.vevent.node;
 import net.kuujo.vevent.VeventException;
 
 /**
- * A timeout exception exception.
+ * A processing failure exception.
  *
  * @author Jordan Halterman
  */

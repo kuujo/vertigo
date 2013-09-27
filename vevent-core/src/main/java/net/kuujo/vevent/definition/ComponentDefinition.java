@@ -195,7 +195,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @param definition
    *   A node definition.
    */
-  public ComponentDefinition toNode(ComponentDefinition definition) {
+  public ComponentDefinition to(ComponentDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -207,8 +207,8 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public ComponentDefinition toNode(String name) {
-    return toNode(name, null, 1);
+  public ComponentDefinition to(String name) {
+    return to(name, null, 1);
   }
 
   /**
@@ -221,8 +221,8 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public ComponentDefinition toNode(String name, String main) {
-    return toNode(name, main, 1);
+  public ComponentDefinition to(String name, String main) {
+    return to(name, main, 1);
   }
 
   /**
@@ -237,7 +237,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public ComponentDefinition toNode(String name, String main, int workers) {
+  public ComponentDefinition to(String name, String main, int workers) {
     return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 

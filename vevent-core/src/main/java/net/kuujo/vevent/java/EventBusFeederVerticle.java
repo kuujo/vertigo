@@ -16,8 +16,8 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.feeder.EventBusFeeder;
-import net.kuujo.vevent.feeder.Feeder;
+import net.kuujo.vevent.node.EventBusFeeder;
+import net.kuujo.vevent.node.Feeder;
 
 /**
  * An eventbus-based feeder verticle implementation.

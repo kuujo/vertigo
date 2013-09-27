@@ -13,24 +13,27 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent;
+package net.kuujo.vevent.node;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.platform.Container;
-
-import net.kuujo.vevent.network.RemoteCoordinator;
+import net.kuujo.vevent.VeventException;
 
 /**
- * A Via-based cluster implementation.
+ * A processing timeout exception.
  *
  * @author Jordan Halterman
  */
-public class ViaCluster extends AbstractCluster {
+public class TimeoutException extends VeventException {
 
-  protected String coordinator = RemoteCoordinator.class.getName();
+  public TimeoutException(String message) {
+    super(message);
+  }
 
-  public ViaCluster(Vertx vertx, Container container) {
-    super(vertx, container);
+  public TimeoutException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public TimeoutException(Throwable cause) {
+    super(cause);
   }
 
 }

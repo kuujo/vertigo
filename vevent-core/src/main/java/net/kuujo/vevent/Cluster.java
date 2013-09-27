@@ -39,18 +39,6 @@ public interface Cluster {
   public void deploy(NetworkDefinition network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Deploys a network definition with a timeout.
-   *
-   * @param network
-   *   The network definition.
-   * @param timeout
-   *   The deploy timeout.
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked with a network context.
-   */
-  public void deploy(NetworkDefinition network, long timeout, Handler<AsyncResult<NetworkContext>> doneHandler);
-
-  /**
    * Shuts down the network at the given address.
    *
    * @param context
@@ -67,17 +55,5 @@ public interface Cluster {
    *   An asynchronous result handler to be invoked once the shutdown is complete.
    */
   public void shutdown(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Shuts down the vine at the given address, awaiting a result.
-   *
-   * @param context
-   *   The vine context.
-   * @param timeout
-   *   A shutdown timeout.
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked once the shutdown is complete.
-   */
-  public void shutdown(NetworkContext context, long timeout, Handler<AsyncResult<Void>> doneHandler);
 
 }

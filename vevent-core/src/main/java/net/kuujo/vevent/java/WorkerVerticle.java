@@ -17,7 +17,7 @@ package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.WorkerContext;
 import net.kuujo.vevent.messaging.JsonMessage;
-import net.kuujo.vevent.node.DefaultWorker;
+import net.kuujo.vevent.node.BasicWorker;
 import net.kuujo.vevent.node.Worker;
 
 import org.vertx.java.core.Handler;
@@ -35,10 +35,7 @@ public abstract class WorkerVerticle extends Verticle implements Handler<JsonMes
 
   @Override
   public void start() {
-    worker = new DefaultWorker();
-    worker.setVertx(vertx);
-    worker.setContainer(container);
-    worker.setContext(new WorkerContext(container.config()));
+    worker = new BasicWorker(vertx, container, new WorkerContext(container.config()));
     worker.dataHandler(this);
     worker.start();
   }

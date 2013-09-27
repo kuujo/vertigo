@@ -21,10 +21,10 @@ import net.kuujo.vevent.LocalCluster;
 import net.kuujo.vevent.Networks;
 import net.kuujo.vevent.context.NetworkContext;
 import net.kuujo.vevent.definition.NetworkDefinition;
-import net.kuujo.vevent.feeder.Feeder;
 import net.kuujo.vevent.java.BasicFeederVerticle;
 import net.kuujo.vevent.java.WorkerVerticle;
 import net.kuujo.vevent.messaging.JsonMessage;
+import net.kuujo.vevent.node.Feeder;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -99,7 +99,7 @@ public class VineTest extends TestVerticle {
 
   @Test
   public void testLocalSimpleNetwork() {
-    Cluster cluster = new LocalCluster(container);
+    Cluster cluster = new LocalCluster(vertx, container);
     NetworkDefinition network = createSimpleTestDefinition();
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override

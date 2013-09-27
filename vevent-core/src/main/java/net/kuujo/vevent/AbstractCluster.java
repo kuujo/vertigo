@@ -48,6 +48,17 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
+  public void deploy(NetworkDefinition network) {
+    try {
+      final NetworkContext context = network.createContext();
+      container.deployVerticle(coordinator, context.serialize());
+    }
+    catch (MalformedDefinitionException e) {
+      // Do nothing.
+    }
+  }
+
+  @Override
   public void deploy(NetworkDefinition network, Handler<AsyncResult<NetworkContext>> doneHandler) {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {

@@ -33,6 +33,14 @@ public interface Cluster {
    *
    * @param network
    *   The network definition.
+   */
+  public void deploy(NetworkDefinition network);
+
+  /**
+   * Deploys a network definition.
+   *
+   * @param network
+   *   The network definition.
    * @param doneHandler
    *   An asynchronous result handler to be invoked with a network context.
    */

@@ -20,8 +20,6 @@ import java.util.Iterator;
 
 import net.kuujo.vevent.context.ConnectionContext;
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.eventbus.ReliableEventBus;
-import net.kuujo.vevent.eventbus.WrappedReliableEventBus;
 import net.kuujo.vevent.messaging.ConnectionPool;
 import net.kuujo.vevent.messaging.CoordinatingOutputCollector;
 import net.kuujo.vevent.messaging.DefaultJsonMessage;
@@ -37,6 +35,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
@@ -52,7 +51,7 @@ public class BasicFeeder implements Feeder {
 
   protected Container container;
 
-  protected ReliableEventBus eventBus;
+  protected EventBus eventBus;
 
   protected WorkerContext context;
 
@@ -70,7 +69,7 @@ public class BasicFeeder implements Feeder {
 
   public BasicFeeder(Vertx vertx, Container container, WorkerContext context) {
     this.vertx = vertx;
-    this.eventBus = new WrappedReliableEventBus(vertx.eventBus(), vertx);
+    this.eventBus = vertx.eventBus();
     this.container = container;
     this.context = context;
   }

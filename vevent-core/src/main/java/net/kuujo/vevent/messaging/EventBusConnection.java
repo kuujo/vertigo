@@ -15,15 +15,14 @@
 */
 package net.kuujo.vevent.messaging;
 
-import net.kuujo.vevent.eventbus.Actions;
-import net.kuujo.vevent.eventbus.ReliableEventBus;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An eventbus-based connection.
@@ -34,23 +33,19 @@ public class EventBusConnection implements Connection {
 
   protected String address;
 
-  protected ReliableEventBus eventBus;
+  protected EventBus eventBus;
 
   public EventBusConnection(String address) {
     this.address = address;
   }
 
-  public EventBusConnection(String address, ReliableEventBus eventBus) {
+  public EventBusConnection(String address, EventBus eventBus) {
     this.address = address;
     this.eventBus = eventBus;
   }
 
-  public void setEventBus(ReliableEventBus eventBus) {
+  public void setEventBus(EventBus eventBus) {
     this.eventBus = eventBus;
-  }
-
-  public ReliableEventBus getEventBus() {
-    return eventBus;
   }
 
   @Override
@@ -60,7 +55,7 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection write(JsonMessage message) {
-    eventBus.send(address, Actions.create("receive", message.serialize()));
+    eventBus.send(address, new JsonObject().putString("action", "receive").putObject("message", message.serialize()));
     return this;
   }
 
@@ -90,7 +85,7 @@ public class EventBusConnection implements Connection {
 
   private <T> void doSend(final JsonMessage message, final long timeout, final boolean retry, final int attempts, final Future<Boolean> future) {
     if (timeout > 0) {
-      eventBus.send(address, Actions.create("receive", message.serialize()), timeout, new AsyncResultHandler<Message<Boolean>>() {
+      eventBus.sendWithTimeout(address, new JsonObject().putString("action", "receive").putObject("message", message.serialize()), timeout, new AsyncResultHandler<Message<Boolean>>() {
         @Override
         public void handle(AsyncResult<Message<Boolean>> result) {
           if (result.failed()) {
@@ -108,7 +103,7 @@ public class EventBusConnection implements Connection {
       });
     }
     else {
-      eventBus.send(address, Actions.create("receive", message.serialize()), new Handler<Message<Boolean>>() {
+      eventBus.send(address, new JsonObject().putString("action", "receive").putObject("message", message.serialize()), new Handler<Message<Boolean>>() {
         @Override
         public void handle(Message<Boolean> message) {
           future.setResult(message.body());

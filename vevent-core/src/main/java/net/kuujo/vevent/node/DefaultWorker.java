@@ -22,8 +22,6 @@ import java.util.Map;
 
 import net.kuujo.vevent.context.ConnectionContext;
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.eventbus.ReliableEventBus;
-import net.kuujo.vevent.eventbus.WrappedReliableEventBus;
 import net.kuujo.vevent.messaging.ConnectionPool;
 import net.kuujo.vevent.messaging.CoordinatingOutputCollector;
 import net.kuujo.vevent.messaging.DefaultJsonMessage;
@@ -37,6 +35,7 @@ import net.kuujo.vevent.messaging.OutputCollector;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -55,7 +54,7 @@ public class DefaultWorker implements Worker {
 
   protected Logger logger;
 
-  protected ReliableEventBus eventBus;
+  protected EventBus eventBus;
 
   protected String address;
 
@@ -74,7 +73,7 @@ public class DefaultWorker implements Worker {
   @Override
   public Worker setVertx(Vertx vertx) {
     this.vertx = vertx;
-    this.eventBus = new WrappedReliableEventBus(vertx.eventBus(), vertx);
+    this.eventBus = vertx.eventBus();
     return this;
   }
 
@@ -165,7 +164,7 @@ public class DefaultWorker implements Worker {
   private void doReceive(Message<JsonObject> message) {
     JsonObject body = message.body();
     if (body != null) {
-      JsonObject receive = body.getObject("receive");
+      JsonObject receive = body.getObject("message");
       if (receive != null && dataHandler != null) {
         JsonMessage jsonMessage = new DefaultJsonMessage(receive);
         messageMap.put(jsonMessage, new InternalMessage(message, jsonMessage));

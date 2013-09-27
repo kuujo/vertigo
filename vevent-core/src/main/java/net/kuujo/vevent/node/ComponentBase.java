@@ -147,84 +147,63 @@ abstract class ComponentBase {
         String action = message.body().getString("action");
         if (action != null) {
           switch (action) {
-            case "start":
-              message.reply();
-              doStart();
-              break;
             case "receive":
               JsonObject body = message.body();
               if (body != null) {
-                doReceive(new DefaultJsonMessage(body));
+                JsonObject data = body.getObject("message");
+                if (data != null) {
+                  doReceive(new DefaultJsonMessage(data));
+                }
               }
               break;
           }
         }
       }
-    }, new Handler<AsyncResult<Void>>() {
+    });
+
+    eventBus.registerHandler(broadcastAddress, new Handler<Message<JsonObject>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
-        eventBus.registerHandler(broadcastAddress, new Handler<Message<JsonObject>>() {
-          @Override
-          public void handle(Message<JsonObject> message) {
-            JsonObject body = message.body();
-            if (body != null) {
-              String action = body.getString("action");
-              if (action != null) {
-                switch (action) {
-                  case "ack":
-                    String ackId = body.getString("id");
-                    if (ackId != null) {
-                      doAck(ackId);
-                    }
-                    break;
-                  case "fail":
-                    String failId = body.getString("id");
-                    if (failId != null) {
-                      doFail(failId);
-                    }
-                    break;
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          String action = body.getString("action");
+          if (action != null) {
+            switch (action) {
+              case "ack":
+                String ackId = body.getString("id");
+                if (ackId != null) {
+                  doAck(ackId);
                 }
-              }
+                break;
+              case "fail":
+                String failId = body.getString("id");
+                if (failId != null) {
+                  doFail(failId);
+                }
+                break;
             }
           }
-        }, new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            if (result.succeeded()) {
-              eventBus.send(networkAddress, new JsonObject().putString("action", "ready").putString("address", address));
-            }
-          }
-        });
+        }
       }
     });
-  }
-
-  /**
-   * Called when the component is started.
-   */
-  protected void doStart() {
-    
   }
 
   /**
    * Called when a message is acked.
    */
   protected void doAck(String id) {
-    
   }
 
   /**
    * Called when a message is failed.
    */
   protected void doFail(String id) {
-    
   }
 
   /**
    * Called when a message is received.
    */
   protected void doReceive(JsonMessage message) {
-    
   }
 
 }

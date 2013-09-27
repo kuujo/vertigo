@@ -21,7 +21,7 @@ import net.kuujo.vevent.LocalCluster;
 import net.kuujo.vevent.Networks;
 import net.kuujo.vevent.context.NetworkContext;
 import net.kuujo.vevent.definition.NetworkDefinition;
-import net.kuujo.vevent.java.BasicFeederVerticle;
+import net.kuujo.vevent.java.PullFeederVerticle;
 import net.kuujo.vevent.java.WorkerVerticle;
 import net.kuujo.vevent.messaging.JsonMessage;
 import net.kuujo.vevent.node.Feeder;
@@ -42,7 +42,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  */
 public class VineTest extends TestVerticle {
 
-  public static class TestFeeder extends BasicFeederVerticle {
+  public static class TestFeeder extends PullFeederVerticle {
     private boolean fed = false;
     @Override
     public void handle(Feeder feeder) {
@@ -91,9 +91,9 @@ public class VineTest extends TestVerticle {
 
   private NetworkDefinition createSimpleTestDefinition() {
     NetworkDefinition network = Networks.createDefinition("test");
-    network.fromRoot("feeder", TestFeeder.class.getName())
-      .toNode("nodeone", TestNodeOne.class.getName()).groupBy(Groupings.random())
-      .toNode("nodetwo", TestNodeTwo.class.getName()).groupBy(Groupings.round());
+    network.from("feeder", TestFeeder.class.getName())
+      .to("nodeone", TestNodeOne.class.getName()).groupBy(Groupings.random())
+      .to("nodetwo", TestNodeTwo.class.getName()).groupBy(Groupings.round());
     return network;
   }
 

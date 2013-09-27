@@ -27,10 +27,9 @@ import net.kuujo.vevent.network.RemoteCoordinator;
  */
 public class ViaCluster extends AbstractCluster {
 
-  protected String coordinator = RemoteCoordinator.class.getName();
-
   public ViaCluster(Vertx vertx, Container container) {
     super(vertx, container);
+    coordinator = RemoteCoordinator.class.getName();
   }
 
 }

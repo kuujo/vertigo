@@ -15,20 +15,29 @@
 */
 package net.kuujo.vevent.java;
 
+import org.vertx.java.core.Handler;
+import org.vertx.java.platform.Verticle;
+
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.node.BasicFeeder;
+import net.kuujo.vevent.node.BasicPullFeeder;
 import net.kuujo.vevent.node.Feeder;
+import net.kuujo.vevent.node.PullFeeder;
 
 /**
  * A basic feeder verticle implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class BasicFeederVerticle extends FeederVerticle {
+public abstract class PullFeederVerticle extends Verticle implements Handler<Feeder> {
+
+  protected PullFeeder feeder;
 
   @Override
-  Feeder createFeeder(WorkerContext context) {
-    return new BasicFeeder(vertx, container, context);
+  public void start() {
+    super.start();
+    feeder = new BasicPullFeeder(vertx, container, new WorkerContext(container.config()));
+    feeder.feedHandler(this);
+    feeder.start();
   }
 
 }

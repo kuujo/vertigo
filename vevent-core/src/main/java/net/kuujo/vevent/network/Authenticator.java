@@ -36,8 +36,6 @@ public class Authenticator extends BusModBase implements Handler<Message<JsonObj
 
   private String broadcastAddress;
 
-  private Map<String, Node> trees = new HashMap<>();
-
   private Map<String, Node> nodes = new HashMap<>();
 
   @Override
@@ -65,7 +63,7 @@ public class Authenticator extends BusModBase implements Handler<Message<JsonObj
         doFail(message);
         break;
       default:
-        sendError(message, "Invalid action.");
+        sendError(message, String.format("Invalid action %s.", action));
         break;
     }
   }
@@ -97,26 +95,23 @@ public class Authenticator extends BusModBase implements Handler<Message<JsonObj
     Node node = new Node(id);
     node.ackHandler(ackHandler);
     node.failHandler(failHandler);
-    trees.put(id, node);
+    nodes.put(node.id(), node);
   }
 
   /**
    * Clears an entire message tree from storage.
    */
   private void clearRoot(Node node) {
-    clearChildren(node);
-    if (trees.containsKey(node)) {
-      trees.remove(node);
-    }
+    clearNode(node);
   }
 
   /**
    * Clears all children of a node from storage.
    */
-  private void clearChildren(Node node) {
+  private void clearNode(Node node) {
     if (node.hasChildren()) {
       for (Node child : node.children()) {
-        clearChildren(child);
+        clearNode(child);
       }
       if (nodes.containsKey(node.id())) {
         nodes.remove(node.id());
@@ -166,7 +161,7 @@ public class Authenticator extends BusModBase implements Handler<Message<JsonObj
   private static final class Node {
     private String id;
     private Set<Node> children = new HashSet<>();
-    private Set<Node> complete;
+    private Set<Node> complete = new HashSet<>();
     private Handler<Node> ackHandler;
     private Handler<Node> failHandler;
     private boolean ready = true;

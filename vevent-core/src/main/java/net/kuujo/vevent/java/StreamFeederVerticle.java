@@ -16,36 +16,27 @@
 package net.kuujo.vevent.java;
 
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.node.Feeder;
+import net.kuujo.vevent.node.BasicStreamFeeder;
+import net.kuujo.vevent.node.StreamFeeder;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.platform.Verticle;
 
 /**
- * An abstract feeder verticle.
+ * A stream feeder verticle.
  *
  * @author Jordan Halterman
  */
-abstract class FeederVerticle extends Verticle implements Handler<Feeder> {
+public abstract class StreamFeederVerticle extends Verticle implements Handler<StreamFeeder> {
 
-  protected WorkerContext context;
-
-  protected Feeder feeder;
-
-  /**
-   * Creates a root feeder instance.
-   *
-   * @return
-   *   A new root feeder instance.
-   */
-  abstract Feeder createFeeder(WorkerContext context);
+  protected StreamFeeder feeder;
 
   @Override
   public void start() {
-    context = new WorkerContext(container.config());
-    feeder = createFeeder(context);
-    feeder.feedHandler(this);
+    super.start();
+    feeder = new BasicStreamFeeder(vertx, container, new WorkerContext(container.config()));
     feeder.start();
+    handle(feeder);
   }
 
 }

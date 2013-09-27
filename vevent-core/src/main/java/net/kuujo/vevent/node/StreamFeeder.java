@@ -13,22 +13,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent.java;
+package net.kuujo.vevent.node;
 
-import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.node.EventBusFeeder;
-import net.kuujo.vevent.node.Feeder;
+import org.vertx.java.core.Handler;
 
 /**
- * An eventbus-based feeder verticle implementation.
+ * A stream feeder.
  *
  * @author Jordan Halterman
  */
-public abstract class EventBusFeederVerticle extends FeederVerticle {
+public interface StreamFeeder extends Feeder {
 
-  @Override
-  Feeder createFeeder(WorkerContext context) {
-    return new EventBusFeeder(context.getAddress(), vertx, container, context);
-  }
+  /**
+   * Returns a boolean value indicating whether the feed queue is full.
+   */
+  public boolean feedQueueFull();
+
+  /**
+   * Sets a feed queue drain handler.
+   *
+   * @param handler
+   *   The drain handler.
+   * @return
+   *   The called feeder instance.
+   */
+  public StreamFeeder drainHandler(Handler<Void> handler);
 
 }

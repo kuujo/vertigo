@@ -17,10 +17,8 @@ package net.kuujo.vevent.network;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.vevent.context.ComponentContext;
@@ -50,15 +48,13 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
   protected Cluster cluster;
 
-  protected Set<String> ready = new HashSet<>();
-
   protected Map<String, String> deploymentMap = new HashMap<>();
 
   protected Map<String, WorkerContext> contextMap = new HashMap<>();
 
   protected Map<String, HeartbeatMonitor> heartbeats = new HashMap<>();
 
-  private boolean allDeployed;
+  protected String authDeploymentId;
 
   @Override
   public void start() {
@@ -72,9 +68,6 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   public void handle(Message<JsonObject> message) {
     String action = getMandatoryString("action", message);
     switch (action) {
-      case "ready":
-        doReady(message);
-        break;
       case "register":
         doRegister(message);
         break;
@@ -88,7 +81,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         doRedeployAll(message);
         break;
       default:
-        sendError(message, "Invalid action.");
+        sendError(message, String.format("Invalid action %s.", action));
         break;
     }
   }
@@ -97,68 +90,28 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    * Deploys the network.
    */
   private void doDeploy() {
-    new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          container.logger().error("Failed to deploy network.");
-          container.exit();
-        }
-        else {
-          allDeployed = true;
-        }
-      }
-    });
-  }
-
-  /**
-   * Indicates that a worker is ready.
-   */
-  private void doReady(Message<JsonObject> message) {
-    String address = getMandatoryString("address", message);
-    ready.add(address);
-    if (allDeployed && ready.size() == contextMap.size()) {
-      container.deployVerticle(Authenticator.class.getName(), new JsonObject().putString("address", context.getAuthenticatorAddress()).putString("broadcast", context.getBroadcastAddress()), new Handler<AsyncResult<String>>() {
+    container.deployVerticle(Authenticator.class.getName(),
+      new JsonObject().putString("address", context.getAuthenticatorAddress())
+      .putString("broadcast", context.getBroadcastAddress()), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             logger.error("Failed to deploy authenticator verticle.");
+            container.exit();
           }
           else {
-            for (ComponentContext componentContext : context.getComponentContexts()) {
-              for (WorkerContext workerContext : componentContext.getWorkerContexts()) {
-                doStart(workerContext);
+            authDeploymentId = result.result();
+            new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  container.logger().error("Failed to deploy network.");
+                  container.exit();
+                }
               }
-            }
+            });
           }
         }
-      });
-    }
-  }
-
-  /**
-   * Starts a worker context.
-   */
-  private void doStart(WorkerContext workerContext) {
-    doStart(workerContext, 0);
-  }
-
-  /**
-   * Starts a worker context.
-   */
-  private void doStart(final WorkerContext workerContext, final int count) {
-    eb.sendWithTimeout(workerContext.getAddress(), new JsonObject().putString("action", "start"), 10000, new Handler<AsyncResult<Message<Void>>>() {
-      @Override
-      public void handle(AsyncResult<Message<Void>> result) {
-        if (result.failed()) {
-          if (count < 3) {
-            doStart(workerContext, count+1);
-          }
-          else {
-            logger.error("Failed to start worker at " + workerContext.getAddress() + ".");
-          }
-        }
-      }
     });
   }
 
@@ -238,6 +191,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     new RecursiveDeployer(context).undeploy(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
+        if (authDeploymentId != null) {
+          container.undeployVerticle(authDeploymentId);
+        }
         message.reply(result.succeeded());
       }
     });

@@ -34,22 +34,12 @@ public interface Feeder {
    * @return
    *   The called feeder instance.
    */
-  public Feeder setMaxQueueSize(long maxQueueSize);
+  public Feeder setFeedQueueMaxSize(long maxQueueSize);
 
   /**
    * Starts the feeder.
    */
   public void start();
-
-  /**
-   * Sets the feed handler.
-   *
-   * @param handler
-   *   A feed handler.
-   * @return
-   *   The called feeder instance.
-   */
-  public Feeder feedHandler(Handler<Feeder> handler);
 
   /**
    * Feeds data to the network.

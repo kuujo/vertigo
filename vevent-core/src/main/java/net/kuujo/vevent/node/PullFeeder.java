@@ -13,23 +13,25 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vevent;
+package net.kuujo.vevent.node;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.platform.Container;
-
-import net.kuujo.vevent.network.LocalCoordinator;
+import org.vertx.java.core.Handler;
 
 /**
- * A local cluster implementation.
+ * A pulling feeder.
  *
  * @author Jordan Halterman
  */
-public class LocalCluster extends AbstractCluster {
+public interface PullFeeder extends Feeder {
 
-  public LocalCluster(Vertx vertx, Container container) {
-    super(vertx, container);
-    coordinator = LocalCoordinator.class.getName();
-  }
+  /**
+   * Sets the feed handler.
+   *
+   * @param handler
+   *   A handler to be invoked to feed the feeder.
+   * @return
+   *   The called feeder instance.
+   */
+  public PullFeeder feedHandler(Handler<Feeder> handler);
 
 }

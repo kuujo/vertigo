@@ -37,31 +37,20 @@ import org.vertx.java.platform.Container;
  */
 public class BasicFeeder extends ComponentBase implements Feeder {
 
-  private static final long DEFAULT_TIMEOUT = 30000;
+  protected static final long DEFAULT_TIMEOUT = 30000;
 
   protected long maxQueueSize = 1000;
 
-  protected boolean paused;
-
-  private boolean rescheduled;
-
-  protected Handler<Feeder> feedHandler;
-
-  private Map<String, FutureResult> futures = new HashMap<>();
+  protected Map<String, FutureResult> futures = new HashMap<>();
 
   public BasicFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 
   @Override
-  public Feeder setMaxQueueSize(long maxQueueSize) {
+  public Feeder setFeedQueueMaxSize(long maxQueueSize) {
     this.maxQueueSize = maxQueueSize;
     return this;
-  }
-
-  @Override
-  protected void doStart() {
-    recursiveFeed();
   }
 
   @Override
@@ -79,45 +68,13 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   }
 
   /**
-   * Recursively called the feed handler.
+   * Creates and stores a message future.
    */
-  private void recursiveFeed() {
-    rescheduled = false;
-    while (!paused && !rescheduled) {
-      doFeed();
-    }
-  }
-
-  /**
-   * Executes the feed handler.
-   */
-  private void doFeed() {
-    if (feedHandler != null) {
-      feedHandler.handle(this);
-    }
-    else {
-      rescheduled = true;
-    }
-  }
-
-  /**
-   * Schedules a feed call for a future time.
-   */
-  protected void scheduleFeed() {
-    vertx.setTimer(500, new Handler<Long>() {
-      @Override
-      public void handle(Long id) {
-        recursiveFeed();
-      }
-    });
-    rescheduled = true;
-  }
-
-  @Override
-  public Feeder feedHandler(Handler<Feeder> handler) {
-    this.feedHandler = handler;
-    rescheduled = false;
-    return this;
+  protected void createFuture(JsonMessage message, long timeout, Handler<AsyncResult<Void>> handler) {
+    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    FutureResult future = new FutureResult(new DefaultFutureResult<Void>().setHandler(handler));
+    futures.put(message.id(), future);
+    future.start(timeout);
   }
 
   @Override
@@ -131,10 +88,7 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data, Handler<AsyncResult<Void>> doneHandler) {
     JsonMessage message = DefaultJsonMessage.create(data);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
-    FutureResult result = new FutureResult(new DefaultFutureResult<Void>().setHandler(doneHandler));
-    futures.put(message.id(), result);
-    result.start(DEFAULT_TIMEOUT);
+    createFuture(message, DEFAULT_TIMEOUT, doneHandler);
     output.emit(message);
     return this;
   }
@@ -142,10 +96,7 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     JsonMessage message = DefaultJsonMessage.create(data);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
-    FutureResult result = new FutureResult(new DefaultFutureResult<Void>().setHandler(doneHandler));
-    futures.put(message.id(), result);
-    result.start(timeout);
+    createFuture(message, timeout, doneHandler);
     output.emit(message);
     return this;
   }
@@ -161,10 +112,7 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> doneHandler) {
     JsonMessage message = DefaultJsonMessage.create(data, tag);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
-    FutureResult result = new FutureResult(new DefaultFutureResult<Void>().setHandler(doneHandler));
-    futures.put(message.id(), result);
-    result.start(DEFAULT_TIMEOUT);
+    createFuture(message, DEFAULT_TIMEOUT, doneHandler);
     output.emit(message);
     return this;
   }
@@ -172,10 +120,7 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data, String tag, long timeout, Handler<AsyncResult<Void>> doneHandler) {
     JsonMessage message = DefaultJsonMessage.create(data, tag);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
-    FutureResult result = new FutureResult(new DefaultFutureResult<Void>().setHandler(doneHandler));
-    futures.put(message.id(), result);
-    result.start(timeout);
+    createFuture(message, timeout, doneHandler);
     output.emit(message);
     return this;
   }

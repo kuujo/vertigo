@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vevent.context.NetworkContext
-import net.kuujo.vevent.node.DefaultWorker
+import net.kuujo.vevent.node.BasicWorker
+import net.kuujo.vevent.node.BasicFeeder
+import net.kuujo.vevent.node.BasicPullFeeder
+import net.kuujo.vevent.node.BasicStreamFeeder
 import net.kuujo.vevent.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
@@ -25,10 +28,11 @@ class Worker(object):
   _handlercls = None
 
   def __init__(self):
-    self.__worker = net.kuujo.vevent.node.DefaultWorker()
-    self.__worker.setVertx(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
-    self.__worker.setContainer(org.vertx.java.platform.impl.JythonVerticleFactory.container)
-    self.__worker.setContext(net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config()))
+    self.__worker = net.kuujo.vevent.node.BasicWorker(
+      org.vertx.java.platform.impl.JythonVerticleFactory.vertx,
+      org.vertx.java.platform.impl.JythonVerticleFactory.container,
+      net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
+    )
 
   def data_handler(self, handler):
     """
@@ -93,3 +97,96 @@ class Message(dict):
   def __init__(self, data, message):
     self._message = message
     dict.__init__(self, data)
+
+class _AbstractFeeder(object):
+  """
+  An abstract feeder.
+  """
+  _handlercls = None
+
+  def __init__(self):
+    self._feeder = self._handlercls(
+      org.vertx.java.platform.impl.JythonVerticleFactory.vertx,
+      org.vertx.java.platform.impl.JythonVerticleFactory.container,
+      net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
+    )
+
+  def feed(self, data, tag=None, handler=None, timeout=None):
+    """
+    Feeds data to the network.
+    """
+    self._feeder.feed(data, tag, timeout, FeedResultHandler(handler))
+    return self
+
+class BasicFeeder(_AbstractFeeder):
+  """
+  A basic feeder.
+  """
+  _handlercls = net.kuujo.vevent.node.BasicFeeder
+
+class PullFeeder(_AbstractFeeder):
+  """
+  A pull feeder.
+  """
+  _handlercls = net.kuujo.vevent.node.BasicPullFeeder
+
+  def feed_handler(self, handler):
+    """
+    Registers a feed handler.
+    """
+    self._feeder.feedHandler(FeedHandler(handler, self))
+    return handler
+
+class StreamFeeder(_AbstractFeeder):
+  """
+  A stream feeder.
+  """
+  _handlercls = net.kuujo.vevent.node.BasicStreamFeeder
+
+  @property
+  def queue_full(self):
+    """
+    Indicates whether the feed queue is full.
+    """
+    return self._feeder.feedQueueFull()
+
+  def drain_handler(self, handler):
+    """
+    Registers a drain handler.
+    """
+    self._feeder.drainHandler(DrainHandler(handler))
+    return handler
+
+class FeedResultHandler(org.vertx.java.core.AsyncResultHandler):
+  """
+  A feed result handler.
+  """
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, result):
+    if result.succeeded():
+      self.handler(None)
+    else:
+      self.handler(result.cause())
+
+class FeedHandler(org.vertx.java.core.Handler):
+  """
+  A feed handler.
+  """
+  def __init__(self, handler, feeder):
+    self.handler = handler
+    self.feeder = feeder
+
+  def handle(self, feeder):
+    self.handler(self.feeder)
+
+class DrainHandler(org.vertx.java.core.Handler):
+  """
+  A queue drain handler.
+  """
+  def __init__(self, handler):
+    self.handler = handler
+
+  def handle(self, void):
+    self.handler()

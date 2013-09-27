@@ -36,22 +36,6 @@ class NetworkDefinition(object):
 
   address = property(get_address, set_address)
 
-  def get_queuesize(self):
-    return self._def.getMaxQueueSize()
-
-  def set_queuesize(self, queuesize):
-    self._def.setMaxQueueSize(queuesize)
-
-  queuesize = property(get_queuesize, set_queuesize)
-
-  def get_message_timeout(self):
-    return self._def.getMessageTimeout()
-
-  def set_message_timeout(self, timeout):
-    self._def.setMessageTimeout(timeout)
-
-  message_timeout = property(get_message_timeout, set_message_timeout)
-
   def from_root(self, name, main=None, workers=1, grouping=None, **options):
     component = ComponentDefinition(name, main, workers, grouping, **options)
     self._def.fromRoot(component._def)

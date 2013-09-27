@@ -29,19 +29,13 @@ import org.vertx.java.core.json.JsonObject;
 
 
 /**
- * A default vine context implementation.
+ * A default network definition implementation.
  *
  * @author Jordan Halterman
  */
 public class NetworkDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
-
-  private static final int DEFAULT_QUEUE_SIZE = 1000;
-
-  private static final long DEFAULT_TIMEOUT = 5000;
-
-  private static final long DEFAULT_EXPIRATION = 15000;
 
   public NetworkDefinition() {
   }
@@ -51,19 +45,19 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the vine address.
+   * Gets the network address.
    */
   public String getAddress() {
     return definition.getString("address");
   }
 
   /**
-   * Sets the vine address.
+   * Sets the network address.
    *
    * @param address
-   *   The vine address.
+   *   The network address.
    * @return
-   *   The called vine definition.
+   *   The called network definition.
    */
   public NetworkDefinition setAddress(String address) {
     definition.putString("address", address);
@@ -71,7 +65,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets a vine option.
+   * Gets a network option.
    *
    * @param option
    *   The option to get.
@@ -83,14 +77,14 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets a vine option.
+   * Sets a network option.
    *
    * @param option
    *   The option to set.
    * @param value
    *   The option value.
    * @return
-   *   The called vine definition.
+   *   The called network definition.
    */
   public NetworkDefinition setOption(String option, String value) {
     switch (option) {
@@ -100,65 +94,6 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
         definition.putString(option, value);
         break;
     }
-    return this;
-  }
-
-  /**
-   * Gets the maximum vine queue size.
-   *
-   * @return
-   *   The maximum vine queue size.
-   */
-  public int getMaxQueueSize() {
-    return definition.getInteger("queue_size", DEFAULT_QUEUE_SIZE);
-  }
-
-  /**
-   * Sets the maximum vine queue size.
-   *
-   * @param queueSize
-   *   The maximum vine process queue size.
-   * @return
-   *   The called vine definition.
-   */
-  public NetworkDefinition setMaxQueueSize(int queueSize) {
-    definition.putNumber("queue_size", queueSize);
-    return this;
-  }
-
-  /**
-   * Gets the vine message timeout.
-   */
-  public long getMessageTimeout() {
-    return definition.getLong("timeout", DEFAULT_TIMEOUT);
-  }
-
-  /**
-   * Sets the vine message timeout.
-   *
-   * @param timeout
-   *   The vine message timeout.
-   */
-  public NetworkDefinition setMessageTimeout(long timeout) {
-    definition.putNumber("timeout", timeout);
-    return this;
-  }
-
-  /**
-   * Gets the message expiration.
-   */
-  public long getMessageExpiration() {
-    return definition.getLong("expiration", DEFAULT_EXPIRATION);
-  }
-
-  /**
-   * Sets the message expiration.
-   *
-   * @param expiration
-   *   The vine message expiration.
-   */
-  public NetworkDefinition setMessageExpiration(long expiration) {
-    definition.putNumber("expiration", expiration);
     return this;
   }
 

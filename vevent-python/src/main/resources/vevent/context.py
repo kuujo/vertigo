@@ -29,6 +29,14 @@ class NetworkContext(_AbstractContext):
     return self._context.getAddress()
 
   @property
+  def observer_address(self):
+    return self._context.getObserverAddress()
+
+  @property
+  def broadcast_address(self):
+    return self._context.getBroadcastAddress()
+
+  @property
   def definition(self):
     return NetworkDefinition(self._context.getDefinition())
 

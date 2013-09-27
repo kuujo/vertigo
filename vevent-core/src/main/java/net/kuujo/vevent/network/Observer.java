@@ -26,11 +26,11 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Monitors message trees and manages ack/fail.
+ * Observes node message trees and manages ack/fail.
  *
  * @author Jordan Halterman
  */
-public class Authenticator extends BusModBase implements Handler<Message<JsonObject>> {
+public class Observer extends BusModBase implements Handler<Message<JsonObject>> {
 
   private String address;
 

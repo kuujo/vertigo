@@ -49,10 +49,10 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns the network authenticator address.
+   * Returns the network observer address.
    */
-  public String getAuthenticatorAddress() {
-    return context.getString("authenticator");
+  public String getObserverAddress() {
+    return context.getString("observer");
   }
 
   /**

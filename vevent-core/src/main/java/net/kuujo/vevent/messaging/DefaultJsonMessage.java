@@ -73,23 +73,23 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonMessage createChild(String id, JsonObject body) {
+  public JsonMessage createChild(JsonObject body) {
     return new DefaultJsonMessage(this.body.copy().putString("id", createUniqueId()).putObject("body", body));
   }
 
   @Override
-  public JsonMessage createChild(String id, JsonObject body, String tag) {
+  public JsonMessage createChild(JsonObject body, String tag) {
     return new DefaultJsonMessage(this.body.copy().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag));
   }
 
   @Override
-  public JsonMessage createChild(JsonObject body) {
-    return new DefaultJsonMessage(this.body.copy().putObject("body", body));
+  public JsonMessage createChild(String id, JsonObject body) {
+    return new DefaultJsonMessage(this.body.copy().putString("id", id).putObject("body", body));
   }
 
   @Override
-  public JsonMessage createChild(JsonObject body, String tag) {
-    return new DefaultJsonMessage(this.body.copy().putObject("body", body).putString("tag", tag));
+  public JsonMessage createChild(String id, JsonObject body, String tag) {
+    return new DefaultJsonMessage(this.body.copy().putString("id", id).putObject("body", body).putString("tag", tag));
   }
 
   @Override

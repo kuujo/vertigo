@@ -30,7 +30,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
 
   private static final int DEFAULT_NUM_WORKERS = 1;
 
-  private static final long DEFAULT_HEARTBEAT_INTERVAL = 1000;
+  private static final long DEFAULT_HEARTBEAT_INTERVAL = 2500;
 
   public ComponentDefinition() {
   }

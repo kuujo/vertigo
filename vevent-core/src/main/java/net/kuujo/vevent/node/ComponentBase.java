@@ -65,7 +65,7 @@ abstract class ComponentBase {
     this.address = context.getAddress();
     NetworkContext networkContext = context.getContext().getContext();
     networkAddress = networkContext.getAddress();
-    authAddress = networkContext.getAuthenticatorAddress();
+    authAddress = networkContext.getObserverAddress();
     broadcastAddress = networkContext.getBroadcastAddress();
   }
 

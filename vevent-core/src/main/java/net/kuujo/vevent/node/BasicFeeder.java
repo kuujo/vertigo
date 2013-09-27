@@ -15,6 +15,8 @@
 */
 package net.kuujo.vevent.node;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +43,8 @@ public class BasicFeeder extends ComponentBase implements Feeder {
 
   protected long maxQueueSize = 1000;
 
+  protected Deque<JsonObject> queue = new ArrayDeque<>();
+
   protected Map<String, FutureResult> futures = new HashMap<>();
 
   public BasicFeeder(Vertx vertx, Container container, WorkerContext context) {
@@ -56,14 +60,14 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   @Override
   protected void doAck(String id) {
     if (futures.containsKey(id)) {
-      futures.remove(id).cancel().set();
+      futures.get(id).set();
     }
   }
 
   @Override
   protected void doFail(String id) {
     if (futures.containsKey(id)) {
-      futures.remove(id).cancel().fail(new FailureException("Processing failed."));
+      futures.get(id).fail(new FailureException("Processing failed."));
     }
   }
 
@@ -71,16 +75,15 @@ public class BasicFeeder extends ComponentBase implements Feeder {
    * Creates and stores a message future.
    */
   protected void createFuture(JsonMessage message, long timeout, Handler<AsyncResult<Void>> handler) {
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
-    FutureResult future = new FutureResult(new DefaultFutureResult<Void>().setHandler(handler));
-    futures.put(message.id(), future);
+    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    FutureResult future = new FutureResult(message.id(), new DefaultFutureResult<Void>().setHandler(handler));
     future.start(timeout);
   }
 
   @Override
   public Feeder feed(JsonObject data) {
     JsonMessage message = DefaultJsonMessage.create(data);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
     output.emit(message);
     return this;
   }
@@ -104,7 +107,7 @@ public class BasicFeeder extends ComponentBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data, String tag) {
     JsonMessage message = DefaultJsonMessage.create(data, tag);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
     output.emit(message);
     return this;
   }
@@ -129,10 +132,12 @@ public class BasicFeeder extends ComponentBase implements Feeder {
    * Manages timers for future ack/fail results.
    */
   private class FutureResult {
+    private String id;
     private Future<Void> future;
     private long timerId;
 
-    public FutureResult(Future<Void> future) {
+    public FutureResult(String id, Future<Void> future) {
+      this.id = id;
       this.future = future;
     }
 
@@ -140,9 +145,11 @@ public class BasicFeeder extends ComponentBase implements Feeder {
      * Starts the future timer with the given timeout.
      */
     public FutureResult start(long timeout) {
+      futures.put(id, this);
       timerId = vertx.setTimer(timeout, new Handler<Long>() {
         @Override
         public void handle(Long event) {
+          futures.remove(id);
           future.setFailure(new TimeoutException("Feed timed out."));
         }
       });
@@ -163,6 +170,8 @@ public class BasicFeeder extends ComponentBase implements Feeder {
      * Sets the future result, indicating success.
      */
     public void set() {
+      cancel();
+      futures.remove(id);
       future.setResult(null);
     }
 
@@ -170,6 +179,8 @@ public class BasicFeeder extends ComponentBase implements Feeder {
      * Sets the future failure.
      */
     public void fail(Throwable e) {
+      cancel();
+      futures.remove(id);
       future.setFailure(e);
     }
   }

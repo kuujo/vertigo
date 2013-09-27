@@ -63,18 +63,20 @@ public class BasicWorker extends ComponentBase implements Worker {
   @Override
   public void emit(JsonObject data, JsonMessage parent) {
     JsonMessage child = parent.createChild(data);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "fork").putString("parent", parent.id()).putString("id", child.id()));
+    eventBus.send(authAddress, new JsonObject().putString("action", "fork").putString("parent", parent.id()).putString("id", child.id()));
+    output.emit(child);
   }
 
   @Override
   public void emit(JsonObject data, String tag, JsonMessage parent) {
     JsonMessage child = parent.createChild(data, tag);
-    eventBus.publish(authAddress, new JsonObject().putString("action", "fork").putString("parent", parent.id()).putString("id", child.id()));
+    eventBus.send(authAddress, new JsonObject().putString("action", "fork").putString("parent", parent.id()).putString("id", child.id()));
+    output.emit(child);
   }
 
   @Override
   public void ack(JsonMessage message) {
-    eventBus.publish(authAddress, new JsonObject().putString("action", "ack").putString("id", message.id()));
+    eventBus.send(authAddress, new JsonObject().putString("action", "ack").putString("id", message.id()));
   }
 
   @Override
@@ -86,7 +88,7 @@ public class BasicWorker extends ComponentBase implements Worker {
 
   @Override
   public void fail(JsonMessage message) {
-    eventBus.publish(authAddress, new JsonObject().putString("action", "fail").putString("id", message.id()));
+    eventBus.send(authAddress, new JsonObject().putString("action", "fail").putString("id", message.id()));
   }
 
   @Override

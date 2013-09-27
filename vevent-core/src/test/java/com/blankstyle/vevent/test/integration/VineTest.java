@@ -79,7 +79,6 @@ public class VineTest extends TestVerticle {
     public void handle(JsonMessage message) {
       JsonObject body = message.body();
       String hello = body.getString("body");
-      emit(body);
       if (hello.equals("Hello world!")) {
         ack(message);
       }

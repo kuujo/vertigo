@@ -39,6 +39,18 @@ public class BasicStreamFeeder extends BasicFeeder implements StreamFeeder {
   }
 
   @Override
+  public void start() {
+    super.start();
+    paused = true;
+    vertx.setTimer(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        paused = false;
+      }
+    });
+  }
+
+  @Override
   protected void createFuture(JsonMessage message, long timeout, Handler<AsyncResult<Void>> handler) {
     super.createFuture(message, timeout, handler);
     checkPause();

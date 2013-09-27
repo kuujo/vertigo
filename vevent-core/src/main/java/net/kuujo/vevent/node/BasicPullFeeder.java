@@ -41,7 +41,12 @@ public class BasicPullFeeder extends BasicFeeder implements PullFeeder {
   @Override
   public void start() {
     super.start();
-    recursiveFeed();
+    vertx.setTimer(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        recursiveFeed();
+      }
+    });
   }
 
   /**

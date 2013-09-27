@@ -35,13 +35,13 @@ public class CoordinatingOutputCollector implements OutputCollector {
   private Map<String, Channel<?>> channels = new HashMap<>();
 
   @Override
-  public OutputCollector addStream(String name, Channel<?> stream) {
-    channels.put(name, stream);
+  public OutputCollector addChannel(String name, Channel<?> channel) {
+    channels.put(name, channel);
     return this;
   }
 
   @Override
-  public OutputCollector removeStream(String name) {
+  public OutputCollector removeChannel(String name) {
     if (channels.containsKey(name)) {
       channels.remove(name);
     }
@@ -49,12 +49,12 @@ public class CoordinatingOutputCollector implements OutputCollector {
   }
 
   @Override
-  public Set<String> getStreamNames() {
+  public Set<String> getChannelNames() {
     return channels.keySet();
   }
 
   @Override
-  public Channel<?> getStream(String name) {
+  public Channel<?> getChannel(String name) {
     return channels.get(name);
   }
 
@@ -79,7 +79,7 @@ public class CoordinatingOutputCollector implements OutputCollector {
   @Override
   public OutputCollector emit(JsonMessage message, long timeout,
       Handler<AsyncResult<Boolean>> ackHandler) {
-    new RecursiveEmission(channels.keySet(), message, timeout, createFuture(ackHandler)).execute();
+    new RecursiveEmission(channels.keySet(), toSet(message), timeout, createFuture(ackHandler)).execute();
     return this;
   }
 
@@ -99,52 +99,22 @@ public class CoordinatingOutputCollector implements OutputCollector {
   @Override
   public OutputCollector emit(JsonMessage[] messages, long timeout,
       Handler<AsyncResult<Boolean>> ackHandler) {
-    new RecursiveEmission(channels.keySet(), messages, timeout, createFuture(ackHandler)).execute();
+    new RecursiveEmission(channels.keySet(), toSet(messages), timeout, createFuture(ackHandler)).execute();
     return this;
   }
 
-  @Override
-  public OutputCollector emitTo(String streamName, JsonMessage message) {
-    emitTo(streamName, message, 0, null);
-    return this;
+  private Set<JsonMessage> toSet(JsonMessage[] messages) {
+    Set<JsonMessage> messageSet = new HashSet<JsonMessage>();
+    for (JsonMessage message : messages) {
+      messageSet.add(message);
+    }
+    return messageSet;
   }
 
-  @Override
-  public OutputCollector emitTo(String streamName, JsonMessage message,
-      Handler<AsyncResult<Boolean>> ackHandler) {
-    emitTo(streamName, message, 0, ackHandler);
-    return this;
-  }
-
-  @Override
-  public OutputCollector emitTo(String streamName, JsonMessage message, long timeout,
-      Handler<AsyncResult<Boolean>> ackHandler) {
-    Set<String> streamNames = new HashSet<String>();
-    streamNames.add(streamName);
-    new RecursiveEmission(streamNames, message, timeout, createFuture(ackHandler)).execute();
-    return this;
-  }
-
-  @Override
-  public OutputCollector emitTo(String streamName, JsonMessage[] messages) {
-    emitTo(streamName, messages, 0, null);
-    return this;
-  }
-
-  @Override
-  public OutputCollector emitTo(String streamName, JsonMessage[] messages,
-      Handler<AsyncResult<Boolean>> ackHandler) {
-    emitTo(streamName, messages, 0, ackHandler);
-    return this;
-  }
-
-  @Override
-  public OutputCollector emitTo(String streamName, JsonMessage[] messages,
-      long timeout, Handler<AsyncResult<Boolean>> ackHandler) {
-    Set<String> streamNames = new HashSet<String>();
-    streamNames.add(streamName);
-    new RecursiveEmission(streamNames, messages, timeout, createFuture(ackHandler)).execute();
-    return this;
+  private Set<JsonMessage> toSet(JsonMessage message) {
+    Set<JsonMessage> messageSet = new HashSet<JsonMessage>();
+    messageSet.add(message);
+    return messageSet;
   }
 
   /**
@@ -159,22 +129,18 @@ public class CoordinatingOutputCollector implements OutputCollector {
    * multiple messages for acking.
    */
   private class RecursiveEmission {
-    private static final boolean STREAM_RETRY = false;
-    private static final int STREAM_ATTEMPTS = 0;
-    private Set<String> streamNames;
-    private JsonMessage[] messages;
+    private static final boolean CHANNEL_RETRY = false;
+    private static final int CHANNEL_ATTEMPTS = 0;
+    private Set<String> channelNames;
+    private Set<JsonMessage> messages;
     private long timeout;
     private Future<Boolean> future;
-    private Map<JsonMessage, Set<String>> completedStreams = new HashMap<JsonMessage, Set<String>>();
+    private Map<JsonMessage, Set<String>> completedChannels = new HashMap<JsonMessage, Set<String>>();
     private Set<JsonMessage> completedMessages = new HashSet<JsonMessage>();
     private boolean finished;
 
-    public RecursiveEmission(Set<String> streamNames, JsonMessage message, long timeout, Future<Boolean> future) {
-      this(streamNames, new JsonMessage[]{message}, timeout, future);
-    }
-
-    public RecursiveEmission(Set<String> streamNames, JsonMessage[] messages, long timeout, Future<Boolean> future) {
-      this.streamNames = streamNames;
+    public RecursiveEmission(Set<String> channelNames, Set<JsonMessage> messages, long timeout, Future<Boolean> future) {
+      this.channelNames = channelNames;
       this.messages = messages;
       this.timeout = timeout;
       this.future = future;
@@ -196,19 +162,19 @@ public class CoordinatingOutputCollector implements OutputCollector {
      */
     private void doEmit(JsonMessage message) {
       if (!finished) {
-        for (String streamName : streamNames) {
-          doEmitTo(streamName, message);
+        for (String channelName : channelNames) {
+          doEmitTo(channelName, message);
         }
       }
     }
 
     /**
-     * Emits a single message to a single output stream.
+     * Emits a single message to a single output channel.
      */
-    private void doEmitTo(final String streamName, final JsonMessage message) {
+    private void doEmitTo(final String channelName, final JsonMessage message) {
       // By emitting all messages with the same timeout, we know that if
       // an eventbus timeout occurs then the emission failed.
-      channels.get(streamName).write(message, timeout, STREAM_RETRY, STREAM_ATTEMPTS, new Handler<AsyncResult<Boolean>>() {
+      channels.get(channelName).write(message, timeout, CHANNEL_RETRY, CHANNEL_ATTEMPTS, new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
           if (!finished) {
@@ -218,23 +184,23 @@ public class CoordinatingOutputCollector implements OutputCollector {
             }
             // Otherwise, check the result.
             else {
-              // If the message was acked then add this stream to the list
+              // If the message was acked then add this channel to the list
               // of successfully acked channels.
               boolean succeeded = result.result();
               if (succeeded) {
-                Set<String> streamList;
-                if (completedStreams.containsKey(message)) {
-                  streamList = completedStreams.get(message);
+                Set<String> channelList;
+                if (completedChannels.containsKey(message)) {
+                  channelList = completedChannels.get(message);
                 }
                 else {
-                  streamList = new HashSet<String>();
-                  completedStreams.put(message, streamList);
+                  channelList = new HashSet<String>();
+                  completedChannels.put(message, channelList);
                 }
 
                 // If the set of completed channels matches the set of all channels
                 // to which we are emitting messages, this message is complete.
-                streamList.add(streamName);
-                if (streamList.equals(streamNames)) {
+                channelList.add(channelName);
+                if (channelList.equals(channelNames)) {
                   completedMessages.add(message);
                   // If the set of completed messages matches all emitter messages
                   // then the entire emission is complete.

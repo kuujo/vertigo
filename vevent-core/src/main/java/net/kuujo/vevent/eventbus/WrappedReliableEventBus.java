@@ -73,7 +73,7 @@ public class WrappedReliableEventBus implements ReliableEventBus {
     private int sendAttempts;
     private long timeout;
     private boolean retry;
-    private int attempts;
+    private int attempts = -1;
 
     private ReliableCall(Caller<T> caller) {
       this.caller = caller;
@@ -136,7 +136,7 @@ public class WrappedReliableEventBus implements ReliableEventBus {
       @Override
       public void handle(Long event) {
         if (retry) {
-          if (sendAttempts < attempts) {
+          if (attempts == -1 || sendAttempts < attempts) {
             caller.call(replyHandler);
             sendAttempts++;
           }

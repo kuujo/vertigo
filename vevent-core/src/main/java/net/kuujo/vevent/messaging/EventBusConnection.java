@@ -78,7 +78,7 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection write(JsonMessage message, long timeout, boolean retry, Handler<AsyncResult<Boolean>> replyHandler) {
-    doSend(message, timeout, retry, 0, new DefaultFutureResult<Boolean>().setHandler(replyHandler));
+    doSend(message, timeout, retry, -1, new DefaultFutureResult<Boolean>().setHandler(replyHandler));
     return this;
   }
 
@@ -94,11 +94,8 @@ public class EventBusConnection implements Connection {
         @Override
         public void handle(AsyncResult<Message<Boolean>> result) {
           if (result.failed()) {
-            if (retry && attempts > 0) {
-              doSend(message, timeout, retry, attempts-1, future);
-            }
-            else if (retry && attempts == -1) {
-              doSend(message, timeout, retry, -1, future);
+            if (retry && attempts == -1 || attempts > 0) {
+              doSend(message, timeout, retry, attempts == -1 ? attempts : attempts-1, future);
             }
             else {
               future.setFailure(result.cause());

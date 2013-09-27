@@ -23,53 +23,53 @@ import org.vertx.java.core.Handler;
 /**
  * An output collector.
  *
- * Output collectors manage multiple output streams and emit messages
- * to those streams, monitoring replies for message acking. This allows
- * multiple messages to multiple output streams to be acked together.
+ * Output collectors manage multiple output channels and emit messages
+ * to those channels, monitoring replies for message acking. This allows
+ * multiple messages to multiple output channels to be acked together.
  *
  * @author Jordan Halterman
  */
 public interface OutputCollector {
 
   /**
-   * Adds an output stream to the collector.
+   * Adds an output channel to the collector.
    *
    * @param name
-   *   The stream name.
-   * @param stream
-   *   The output stream.
+   *   The channel name.
+   * @param channel
+   *   The output channel.
    * @return
    *   The called output collector.
    */
-  public OutputCollector addStream(String name, Channel<?> stream);
+  public OutputCollector addChannel(String name, Channel<?> channel);
 
   /**
-   * Removes an output stream from the collector.
+   * Removes an output channel from the collector.
    *
    * @param name
-   *   The name of the stream to remove.
+   *   The name of the channel to remove.
    * @return
    *   The called output collector.
    */
-  public OutputCollector removeStream(String name);
+  public OutputCollector removeChannel(String name);
 
   /**
-   * Returns a set of stream names.
+   * Returns a set of channel names.
    */
-  public Set<String> getStreamNames();
+  public Set<String> getChannelNames();
 
   /**
-   * Returns a stream by name.
+   * Returns a channel by name.
    */
-  public Channel<?> getStream(String name);
+  public Channel<?> getChannel(String name);
 
   /**
-   * Returns the number of streams in the output.
+   * Returns the number of channels in the output.
    */
   public int size();
 
   /**
-   * Emits a message to all output streams.
+   * Emits a message to all output channels.
    *
    * @param message
    *   The message to emit.
@@ -79,7 +79,7 @@ public interface OutputCollector {
   public OutputCollector emit(JsonMessage message);
 
   /**
-   * Emits a message to all output streams.
+   * Emits a message to all output channels.
    *
    * @param message
    *   The message to emit.
@@ -91,7 +91,7 @@ public interface OutputCollector {
   public OutputCollector emit(JsonMessage message, Handler<AsyncResult<Boolean>> ackHandler);
 
   /**
-   * Emits a message to all output streams.
+   * Emits a message to all output channels.
    *
    * @param message
    *   The message to emit.
@@ -105,7 +105,7 @@ public interface OutputCollector {
   public OutputCollector emit(JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> ackHandler);
 
   /**
-   * Emits a set of messages to all output streams.
+   * Emits a set of messages to all output channels.
    *
    * @param messages
    *   The messages to emit.
@@ -115,7 +115,7 @@ public interface OutputCollector {
   public OutputCollector emit(JsonMessage[] messages);
 
   /**
-   * Emits a set of messages to all output streams.
+   * Emits a set of messages to all output channels.
    *
    * @param messages
    *   The messages to emit.
@@ -127,7 +127,7 @@ public interface OutputCollector {
   public OutputCollector emit(JsonMessage[] messages, Handler<AsyncResult<Boolean>> ackHandler);
 
   /**
-   * Emits a set of messages to all output streams.
+   * Emits a set of messages to all output channels.
    *
    * @param messages
    *   The messages to emit.
@@ -139,89 +139,5 @@ public interface OutputCollector {
    *   The called output collector.
    */
   public OutputCollector emit(JsonMessage[] messages, long timeout, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
-   * Emits a message to a specific output stream.
-   *
-   * @param streamName
-   *   The name of stream to which to emit.
-   * @param message
-   *   The message to emit.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emitTo(String streamName, JsonMessage message);
-
-  /**
-   * Emits a message to a specific output stream.
-   *
-   * @param streamName
-   *   The name of stream to which to emit.
-   * @param message
-   *   The message to emit.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emitTo(String streamName, JsonMessage message, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
-   * Emits a message to a specific output stream.
-   *
-   * @param streamName
-   *   The name of stream to which to emit.
-   * @param message
-   *   The message to emit.
-   * @param timeout
-   *   An ack timeout.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emitTo(String streamName, JsonMessage message, long timeout, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
-   * Emits a set of messages to a specific output stream.
-   *
-   * @param streamName
-   *   The name of stream to which to emit.
-   * @param messages
-   *   The messages to emit.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emitTo(String streamName, JsonMessage[] messages);
-
-  /**
-   * Emits a set of messages to a specific output stream.
-   *
-   * @param streamName
-   *   The name of stream to which to emit.
-   * @param messages
-   *   The messages to emit.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emitTo(String streamName, JsonMessage[] messages, Handler<AsyncResult<Boolean>> ackHandler);
-
-  /**
-   * Emits a set of messages to a specific output stream.
-   *
-   * @param streamName
-   *   The name of stream to which to emit.
-   * @param messages
-   *   The messages to emit.
-   * @param timeout
-   *   An ack timeout.
-   * @param ackHandler
-   *   An asynchronous handler to be invoked once the message is acked.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector emitTo(String streamName, JsonMessage[] messages, long timeout, Handler<AsyncResult<Boolean>> ackHandler);
 
 }

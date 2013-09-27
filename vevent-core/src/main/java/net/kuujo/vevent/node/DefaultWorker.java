@@ -59,7 +59,7 @@ public class DefaultWorker implements Worker {
 
   protected String address;
 
-  protected String vineAddress;
+  protected String networkAddress;
 
   protected WorkerContext context;
 
@@ -89,7 +89,7 @@ public class DefaultWorker implements Worker {
   public Worker setContext(WorkerContext context) {
     this.context = context;
     this.address = context.getAddress();
-    this.vineAddress = context.getContext().getContext().getAddress();
+    this.networkAddress = context.getContext().getContext().getAddress();
     return this;
   }
 
@@ -133,7 +133,7 @@ public class DefaultWorker implements Worker {
 
         // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
-        output.addStream(connectionContext.getSeedName(), new EventBusChannel(dispatcher));
+        output.addChannel(connectionContext.getNodeName(), new EventBusChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         container.logger().error("Failed to find grouping handler.");
@@ -168,8 +168,7 @@ public class DefaultWorker implements Worker {
       JsonObject receive = body.getObject("receive");
       if (receive != null && dataHandler != null) {
         JsonMessage jsonMessage = new DefaultJsonMessage(receive);
-        InternalMessage internal = new InternalMessage(message, jsonMessage);
-        messageMap.put(jsonMessage, internal);
+        messageMap.put(jsonMessage, new InternalMessage(message, jsonMessage));
         dataHandler.handle(jsonMessage);
       }
     }
@@ -208,8 +207,7 @@ public class DefaultWorker implements Worker {
   @Override
   public void ack(JsonMessage message) {
     if (messageMap.containsKey(message)) {
-      messageMap.get(message).ack();
-      messageMap.remove(message);
+      messageMap.remove(message).ack();
     }
   }
 
@@ -223,8 +221,7 @@ public class DefaultWorker implements Worker {
   @Override
   public void fail(JsonMessage message) {
     if (messageMap.containsKey(message)) {
-      messageMap.get(message).fail();
-      messageMap.remove(message);
+      messageMap.remove(message).fail();
     }
   }
 
@@ -243,10 +240,9 @@ public class DefaultWorker implements Worker {
     private JsonMessage json;
     private int childCount;
     private int completeCount;
-    private boolean ready;
+    private boolean ready = true;
     private boolean acked;
     private boolean ack;
-    private boolean failed;
     private boolean locked;
 
     public InternalMessage(Message<JsonObject> message, JsonMessage json) {
@@ -283,9 +279,10 @@ public class DefaultWorker implements Worker {
       if (!failed()) {
         if (output.size() == 0) {
           ready();
-          eventBus.publish(vineAddress, child.serialize());
+          eventBus.publish(networkAddress, child.serialize());
         }
         else {
+          unready();
           childCount++;
           doEmit(child);
         }
@@ -302,7 +299,7 @@ public class DefaultWorker implements Worker {
       output.emit(child, DEFAULT_MESSAGE_TIMEOUT, new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
-          if (!failed) {
+          if (!failed()) {
             // If a timeout occurred then try resending the message.
             if (result.failed()) {
               doEmit(child);
@@ -329,6 +326,13 @@ public class DefaultWorker implements Worker {
     public void ready() {
       ready = true;
       checkAck();
+    }
+
+    /**
+     * Indicates that the message is not ready for sending an ack reply.
+     */
+    public void unready() {
+      ready = false;
     }
 
     /**
@@ -362,6 +366,7 @@ public class DefaultWorker implements Worker {
     private void checkAck() {
       if (!locked && acked) {
         if (ready) {
+          System.out.println(message.replyAddress());
           message.reply(ack);
           locked = true;
         }

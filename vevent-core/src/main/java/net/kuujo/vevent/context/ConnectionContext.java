@@ -23,7 +23,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A seed connection context.
+ * A node connection context.
  *
  * @author Jordan Halterman
  */
@@ -47,9 +47,9 @@ public class ConnectionContext {
   }
 
   /**
-   * Returns the name of the seed to which the connection is connected.
+   * Returns the name of the node to which the connection is connected.
    */
-  public String getSeedName() {
+  public String getNodeName() {
     return context.getString("name");
   }
 

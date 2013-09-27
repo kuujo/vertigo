@@ -152,7 +152,7 @@ public class BasicFeeder implements Feeder {
 
         // Initialize the dispatcher and add a channel to the channels list.
         dispatcher.init(connectionPool);
-        output.addStream(connectionContext.getSeedName(), new EventBusChannel(dispatcher));
+        output.addChannel(connectionContext.getNodeName(), new EventBusChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         container.logger().error("Failed to find grouping handler.");

@@ -21,4 +21,10 @@ package net.kuujo.vitis.node.feeder;
  * @author Jordan Halterman
  */
 public interface Feeder {
+
+  /**
+   * Starts the feeder.
+   */
+  public void start();
+
 }

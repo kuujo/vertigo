@@ -42,7 +42,7 @@ public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeede
 
   private Handler<Void> drainHandler;
 
-  protected RecurringStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public RecurringStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

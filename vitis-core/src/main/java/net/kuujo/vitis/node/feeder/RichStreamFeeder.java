@@ -40,7 +40,7 @@ public class RichStreamFeeder extends AbstractFeeder implements StreamFeeder<Ric
 
   private Handler<Void> drainHandler;
 
-  protected RichStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public RichStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

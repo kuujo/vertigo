@@ -42,7 +42,7 @@ public class RecurringPullFeeder extends AbstractFeeder implements PullFeeder<Re
 
   private long feedDelay = 100;
 
-  protected RecurringPullFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public RecurringPullFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

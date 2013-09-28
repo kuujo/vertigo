@@ -46,7 +46,7 @@ public class RecurringEmbeddedFeeder extends AbstractFeeder implements EmbeddedF
 
   private long feedDelay = 100;
 
-  protected RecurringEmbeddedFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public RecurringEmbeddedFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

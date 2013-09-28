@@ -38,7 +38,7 @@ public class RichPullFeeder extends AbstractFeeder implements PullFeeder<RichPul
 
   private long feedDelay = 100;
 
-  protected RichPullFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public RichPullFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

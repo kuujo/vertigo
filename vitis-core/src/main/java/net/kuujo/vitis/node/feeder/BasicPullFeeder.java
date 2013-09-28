@@ -37,7 +37,7 @@ public class BasicPullFeeder extends AbstractFeeder implements PullFeeder<PullFe
 
   private long feedDelay = 100;
 
-  protected BasicPullFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public BasicPullFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

@@ -39,7 +39,7 @@ public class BasicStreamFeeder extends AbstractFeeder implements StreamFeeder<St
 
   private Handler<Void> drainHandler;
 
-  protected BasicStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public BasicStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

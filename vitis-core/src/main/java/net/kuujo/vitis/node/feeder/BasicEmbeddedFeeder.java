@@ -43,7 +43,7 @@ public class BasicEmbeddedFeeder extends AbstractFeeder implements EmbeddedFeede
 
   private long feedDelay = 100;
 
-  protected BasicEmbeddedFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public BasicEmbeddedFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

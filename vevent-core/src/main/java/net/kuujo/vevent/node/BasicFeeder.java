@@ -37,7 +37,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public class BasicFeeder extends ComponentBase implements Feeder {
+public class BasicFeeder extends NodeBase implements Feeder {
 
   protected static final long DEFAULT_TIMEOUT = 30000;
 

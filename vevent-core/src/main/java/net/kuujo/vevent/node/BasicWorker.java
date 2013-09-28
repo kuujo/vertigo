@@ -29,7 +29,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public class BasicWorker extends ComponentBase implements Worker {
+public class BasicWorker extends NodeBase implements Worker {
 
   protected Handler<JsonMessage> dataHandler;
 

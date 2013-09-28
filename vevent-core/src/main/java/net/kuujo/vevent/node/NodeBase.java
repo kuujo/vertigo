@@ -32,7 +32,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-abstract class ComponentBase {
+public abstract class NodeBase {
 
   protected Vertx vertx;
 
@@ -56,7 +56,7 @@ abstract class ComponentBase {
 
   protected OutputCollector output;
 
-  ComponentBase(Vertx vertx, Container container, WorkerContext context) {
+  protected NodeBase(Vertx vertx, Container container, WorkerContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;

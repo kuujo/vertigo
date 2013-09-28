@@ -96,7 +96,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
-            logger.error("Failed to deploy authenticator verticle.");
+            logger.error("Failed to deploy authenticator verticle.", result.cause());
             container.exit();
           }
           else {
@@ -105,7 +105,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  container.logger().error("Failed to deploy network.");
+                  container.logger().error("Failed to deploy network.", result.cause());
                   container.exit();
                 }
               }

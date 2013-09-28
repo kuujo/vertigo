@@ -8,12 +8,12 @@
   </parent>
 
   <groupId>net.kuujo</groupId>
-  <artifactId>vevent-parent</artifactId>
+  <artifactId>vitis-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>Vevent</name>
+  <name>Vitis</name>
   <description>An event processing framework for Vert.x.</description>
-  <url>http://github.com/kuujo/vevent</url>
+  <url>http://github.com/kuujo/vitis</url>
   <inceptionYear>2013</inceptionYear>
 
   <properties>
@@ -47,19 +47,19 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:kuujo/vevent.git</connection>
-    <developerConnection>scm:git:git@github.com:kuujo/vevent.git</developerConnection>
-    <url>git@github.com:kuujo/vevent.git</url>
+    <connection>scm:git:git@github.com:kuujo/vitis.git</connection>
+    <developerConnection>scm:git:git@github.com:kuujo/vitis.git</developerConnection>
+    <url>git@github.com:kuujo/vitis.git</url>
   </scm>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>http://github.com/kuujo/vevent/issues</url>
+    <url>http://github.com/kuujo/vitis/issues</url>
   </issueManagement>
 
   <modules>
-    <module>vevent-core</module>
-    <module>vevent-python</module>
+    <module>vitis-core</module>
+    <module>vitis-python</module>
   </modules>
 
   <build>

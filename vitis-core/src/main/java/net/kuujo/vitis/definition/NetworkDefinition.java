@@ -205,7 +205,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
 
     JsonObject context = new JsonObject();
     context.putString("address", address);
-    context.putString("observer", String.format("%s.audit", address));
+    context.putString("audit", String.format("%s.audit", address));
     context.putString("broadcast", String.format("%s.broadcast", address));
     context.putObject("definition", definition);
 

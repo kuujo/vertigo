@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.java;
+package net.kuujo.vitis.java.worker;
 
 import net.kuujo.vitis.context.WorkerContext;
 import net.kuujo.vitis.messaging.JsonMessage;

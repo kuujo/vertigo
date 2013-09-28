@@ -63,6 +63,11 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
+  public String parent() {
+    return body.getString("parent");
+  }
+
+  @Override
   public JsonObject body() {
     return body.getObject("body");
   }
@@ -74,27 +79,49 @@ public class DefaultJsonMessage implements JsonMessage {
 
   @Override
   public JsonMessage createChild(JsonObject body) {
-    return new DefaultJsonMessage(this.body.copy().putString("id", createUniqueId()).putObject("body", body));
+    return new DefaultJsonMessage(
+        this.body.copy()
+        .putString("parent", body.getString("id"))
+        .putString("id", createUniqueId())
+        .putObject("body", body)
+    );
   }
 
   @Override
   public JsonMessage createChild(JsonObject body, String tag) {
-    return new DefaultJsonMessage(this.body.copy().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag));
+    return new DefaultJsonMessage(
+        this.body.copy()
+        .putString("parent", body.getString("id"))
+        .putString("id", createUniqueId())
+        .putObject("body", body)
+        .putString("tag", tag)
+    );
   }
 
   @Override
   public JsonMessage createChild(String id, JsonObject body) {
-    return new DefaultJsonMessage(this.body.copy().putString("id", id).putObject("body", body));
+    return new DefaultJsonMessage(
+        this.body.copy()
+        .putString("parent", body.getString("id"))
+        .putString("id", id)
+        .putObject("body", body)
+    );
   }
 
   @Override
   public JsonMessage createChild(String id, JsonObject body, String tag) {
-    return new DefaultJsonMessage(this.body.copy().putString("id", id).putObject("body", body).putString("tag", tag));
+    return new DefaultJsonMessage(
+        this.body.copy()
+        .putString("parent", body.getString("id"))
+        .putString("id", id)
+        .putObject("body", body)
+        .putString("tag", tag)
+    );
   }
 
   @Override
   public JsonMessage copy() {
-    return new DefaultJsonMessage(body.copy());
+    return new DefaultJsonMessage(body.copy().putString("id", createUniqueId()));
   }
 
   @Override

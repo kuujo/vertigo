@@ -43,6 +43,14 @@ public interface JsonMessage extends Serializeable<JsonObject> {
   public String source();
 
   /**
+   * Returns the parent ID.
+   *
+   * @return
+   *   The parent message ID.
+   */
+  public String parent();
+
+  /**
    * Returns the message body.
    *
    * @return

@@ -23,5 +23,5 @@ import java.util.HashSet;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class EventBusConnectionPool extends HashSet<EventBusConnection> implements ConnectionPool<EventBusConnection> {
+public class DefaultConnectionPool extends HashSet<Connection> implements ConnectionPool {
 }

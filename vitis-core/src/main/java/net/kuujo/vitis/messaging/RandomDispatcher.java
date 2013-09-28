@@ -31,7 +31,7 @@ public class RandomDispatcher extends AbstractDispatcher {
   private Random rand = new Random();
 
   @Override
-  public void init(ConnectionPool<?> connections) {
+  public void init(ConnectionPool connections) {
     this.connections = connections.toArray(new Connection[]{});
     connectionSize = connections.size();
   }

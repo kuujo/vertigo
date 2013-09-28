@@ -31,7 +31,7 @@ public class FieldsDispatcher extends AbstractDispatcher {
   private int size;
 
   @Override
-  public void init(ConnectionPool<?> connections) {
+  public void init(ConnectionPool connections) {
     this.items = new ArrayList<Connection>();
     Iterator<? extends Connection> iterator = connections.iterator();
     while (iterator.hasNext()) {

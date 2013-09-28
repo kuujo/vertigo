@@ -22,5 +22,5 @@ import java.util.Collection;
  *
  * @author Jordan Halterman
  */
-public interface ConnectionPool<T extends Connection> extends Collection<T> {
+public interface ConnectionPool extends Collection<Connection> {
 }

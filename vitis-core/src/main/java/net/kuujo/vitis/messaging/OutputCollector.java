@@ -29,14 +29,12 @@ public interface OutputCollector {
   /**
    * Adds an output channel to the collector.
    *
-   * @param name
-   *   The channel name.
    * @param channel
    *   The output channel.
    * @return
    *   The called output collector.
    */
-  public OutputCollector addChannel(Channel<?> channel);
+  public OutputCollector addChannel(Channel channel);
 
   /**
    * Removes an output channel from the collector.
@@ -46,7 +44,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector.
    */
-  public OutputCollector removeChannel(Channel<?> channel);
+  public OutputCollector removeChannel(Channel channel);
 
   /**
    * Returns the number of channels in the output.

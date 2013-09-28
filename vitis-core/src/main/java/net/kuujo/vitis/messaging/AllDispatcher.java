@@ -25,12 +25,12 @@ import java.util.Map;
  */
 public class AllDispatcher implements Dispatcher {
 
-  private ConnectionPool<?> connections;
+  private ConnectionPool connections;
 
   private Map<String, String> options = new HashMap<String, String>();
 
   @Override
-  public void init(ConnectionPool<?> connections) {
+  public void init(ConnectionPool connections) {
     this.connections = connections;
   }
 

@@ -20,7 +20,7 @@ package net.kuujo.vitis.messaging;
  *
  * @author Jordan Halterman
  */
-public interface Channel<T extends Connection> extends Writable<Channel<?>> {
+public interface Channel extends Writable<Channel> {
 
   /**
    * Sets the channel dispatcher.
@@ -44,7 +44,7 @@ public interface Channel<T extends Connection> extends Writable<Channel<?>> {
    * @param connection
    *   The connection to add.
    */
-  public void addConnection(T connection);
+  public void addConnection(Connection connection);
 
   /**
    * Removes a connection from the channel.
@@ -52,6 +52,6 @@ public interface Channel<T extends Connection> extends Writable<Channel<?>> {
    * @param connection
    *   The connection to remove.
    */
-  public void removeConnection(T connection);
+  public void removeConnection(Connection connection);
 
 }

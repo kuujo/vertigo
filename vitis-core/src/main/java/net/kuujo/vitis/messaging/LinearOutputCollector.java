@@ -33,7 +33,7 @@ public class LinearOutputCollector implements OutputCollector {
 
   private EventBus eventBus;
 
-  private List<Channel<?>> channels = new ArrayList<Channel<?>>();
+  private List<Channel> channels = new ArrayList<Channel>();
 
   public LinearOutputCollector(String auditAddress, EventBus eventBus) {
     this.auditAddress = auditAddress;
@@ -41,7 +41,7 @@ public class LinearOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector addChannel(Channel<?> channel) {
+  public OutputCollector addChannel(Channel channel) {
     if (!channels.contains(channel)) {
       channels.add(channel);
     }
@@ -49,7 +49,7 @@ public class LinearOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector removeChannel(Channel<?> channel) {
+  public OutputCollector removeChannel(Channel channel) {
     if (channels.contains(channel)) {
       channels.remove(channel);
     }
@@ -63,7 +63,7 @@ public class LinearOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector emit(JsonMessage message) {
-    Iterator<Channel<?>> iter = channels.iterator();
+    Iterator<Channel> iter = channels.iterator();
     String parent = message.parent();
     boolean hasParent = parent != null;
     while (iter.hasNext()) {

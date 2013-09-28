@@ -20,11 +20,11 @@ package net.kuujo.vitis.messaging;
  *
  * @author Jordan Halterman
  */
-public class EventBusChannel implements Channel<EventBusConnection> {
+public class EventBusChannel implements Channel {
 
   protected Dispatcher dispatcher;
 
-  protected ConnectionPool<EventBusConnection> connections = new EventBusConnectionPool();
+  protected ConnectionPool connections = new DefaultConnectionPool();
 
   public EventBusChannel(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
@@ -41,7 +41,7 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public void addConnection(EventBusConnection connection) {
+  public void addConnection(Connection connection) {
     if (!connections.contains(connection)) {
       connections.add(connection);
     }
@@ -49,7 +49,7 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public void removeConnection(EventBusConnection connection) {
+  public void removeConnection(Connection connection) {
     if (connections.contains(connection)) {
       connections.remove(connection);
     }
@@ -57,7 +57,7 @@ public class EventBusChannel implements Channel<EventBusConnection> {
   }
 
   @Override
-  public Channel<?> write(JsonMessage message) {
+  public Channel write(JsonMessage message) {
     dispatcher.dispatch(message);
     return this;
   }

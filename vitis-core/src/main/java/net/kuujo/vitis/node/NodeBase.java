@@ -13,7 +13,7 @@ import net.kuujo.vitis.messaging.DefaultJsonMessage;
 import net.kuujo.vitis.messaging.Dispatcher;
 import net.kuujo.vitis.messaging.EventBusChannel;
 import net.kuujo.vitis.messaging.EventBusConnection;
-import net.kuujo.vitis.messaging.EventBusConnectionPool;
+import net.kuujo.vitis.messaging.DefaultConnectionPool;
 import net.kuujo.vitis.messaging.JsonMessage;
 import net.kuujo.vitis.messaging.OutputCollector;
 import net.kuujo.vitis.messaging.LinearOutputCollector;
@@ -121,7 +121,7 @@ public abstract class NodeBase {
         }
 
         // Create a connection pool from which the dispatcher will dispatch messages.
-        ConnectionPool<EventBusConnection> connectionPool = new EventBusConnectionPool();
+        ConnectionPool<EventBusConnection> connectionPool = new DefaultConnectionPool();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
           connectionPool.add(new EventBusConnection(address, eventBus));

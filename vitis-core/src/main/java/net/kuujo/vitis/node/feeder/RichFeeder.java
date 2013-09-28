@@ -29,6 +29,16 @@ import org.vertx.java.core.json.JsonObject;
 public interface RichFeeder<T extends RichFeeder<?>> extends BasicFeeder<T> {
 
   /**
+   * Sets a default ack timeout.
+   *
+   * @param timeout
+   *   A default ack timeout.
+   * @return
+   *   The called feeder instance.
+   */
+  public T setDefaultTimeout(long timeout);
+
+  /**
    * Feeds data to the network with an ack handler.
    *
    * @param data

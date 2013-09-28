@@ -33,12 +33,25 @@ import org.vertx.java.platform.Container;
 @SuppressWarnings("rawtypes")
 public class BasicStreamFeeder extends AbstractFeeder implements StreamFeeder<StreamFeeder> {
 
+  private boolean started;
+
   private boolean paused;
 
   private Handler<Void> drainHandler;
 
   protected BasicStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
+  }
+
+  @Override
+  public void start() {
+    super.start();
+    vertx.setTimer(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        started = true;
+      }
+    });
   }
 
   @Override
@@ -54,7 +67,7 @@ public class BasicStreamFeeder extends AbstractFeeder implements StreamFeeder<St
 
   @Override
   public boolean feedQueueFull() {
-    return paused;
+    return !started || paused;
   }
 
   @Override

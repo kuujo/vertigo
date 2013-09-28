@@ -39,8 +39,69 @@ public class BasicEmbeddedFeeder extends AbstractFeeder implements EmbeddedFeede
 
   private Handler<JsonMessage> failHandler;
 
+  private boolean fed;
+
+  private long feedDelay = 100;
+
   protected BasicEmbeddedFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
+  }
+
+  @Override
+  public void start() {
+    super.start();
+    vertx.setTimer(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        recursiveFeed();
+      }
+    });
+  }
+
+  @Override
+  public EmbeddedFeeder setFeedDelay(long delay) {
+    feedDelay = delay;
+    return this;
+  }
+
+  @Override
+  public long getFeedDelay() {
+    return feedDelay;
+  }
+
+  /**
+   * Schedules a feed.
+   */
+  private void scheduleFeed() {
+    vertx.setTimer(feedDelay, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        recursiveFeed();
+      }
+    });
+  }
+
+  /**
+   * Recursively invokes the feed handler.
+   * If the feed handler is invoked and no messages are fed from the handler,
+   * a timer is set to restart the feed in the future.
+   */
+  private void recursiveFeed() {
+    fed = true;
+    while (fed && !queue.full()) {
+      fed = false;
+      doFeed();
+    }
+    scheduleFeed();
+  }
+
+  /**
+   * Invokes the feed handler.
+   */
+  private void doFeed() {
+    if (feedHandler != null) {
+      feedHandler.handle(this);
+    }
   }
 
   @Override

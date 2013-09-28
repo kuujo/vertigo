@@ -15,74 +15,138 @@
 */
 package net.kuujo.vitis.node.feeder;
 
+import net.kuujo.vitis.context.WorkerContext;
+import net.kuujo.vitis.messaging.DefaultJsonMessage;
+import net.kuujo.vitis.messaging.JsonMessage;
+
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
 /**
  * A recurring stream feeder implementation.
  *
  * @author Jordan Halterman
  */
-public class RecurringStreamFeeder implements StreamFeeder<RecurringStreamFeeder>, RecurringFeeder<RecurringStreamFeeder> {
+public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeeder<RecurringStreamFeeder>, RecurringFeeder<RecurringStreamFeeder> {
 
-  @Override
-  public RecurringStreamFeeder setFeedQueueMaxSize(long maxSize) {
-    // TODO Auto-generated method stub
-    return null;
+  private boolean started;
+
+  private boolean paused;
+
+  protected boolean autoRetry = true;
+
+  protected int retryAttempts = -1;
+
+  private Handler<Void> drainHandler;
+
+  protected RecurringStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+    super(vertx, container, context);
   }
 
   @Override
-  public long getFeedQueueMaxSize() {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
-  @Override
-  public boolean feedQueueFull() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public RecurringStreamFeeder feed(JsonObject data) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public RecurringStreamFeeder feed(JsonObject data, String tag) {
-    // TODO Auto-generated method stub
-    return null;
+  public void start() {
+    super.start();
+    vertx.setTimer(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        started = true;
+      }
+    });
   }
 
   @Override
   public RecurringStreamFeeder autoRetry(boolean retry) {
-    // TODO Auto-generated method stub
-    return null;
+    autoRetry = retry;
+    return this;
   }
 
   @Override
   public boolean autoRetry() {
-    // TODO Auto-generated method stub
-    return false;
+    return autoRetry;
   }
 
   @Override
   public RecurringStreamFeeder retryAttempts(int attempts) {
-    // TODO Auto-generated method stub
-    return null;
+    retryAttempts = attempts;
+    return this;
   }
 
   @Override
   public int retryAttempts() {
-    // TODO Auto-generated method stub
-    return 0;
+    return retryAttempts;
+  }
+
+  @Override
+  public RecurringStreamFeeder setFeedQueueMaxSize(long maxSize) {
+    queue.setMaxQueueSize(maxSize);
+    return this;
+  }
+
+  @Override
+  public long getFeedQueueMaxSize() {
+    return queue.getMaxQueueSize();
+  }
+
+  @Override
+  public boolean feedQueueFull() {
+    return !started || paused;
+  }
+
+  /**
+   * Executes a feed.
+   */
+  private void doFeed(final JsonObject data, final String tag, final int attempts) {
+    final JsonMessage message = DefaultJsonMessage.create(data, tag);
+    queue.enqueue(message.id(), new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        checkPause();
+        if (result.failed() && autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
+          doFeed(data, tag, attempts+1);
+        }
+      }
+    });
+    output.emit(message);
+  }
+
+  @Override
+  public RecurringStreamFeeder feed(JsonObject data) {
+    doFeed(data, null, 0);
+    return this;
+  }
+
+  @Override
+  public RecurringStreamFeeder feed(JsonObject data, String tag) {
+    doFeed(data, tag, 0);
+    return this;
+  }
+
+  /**
+   * Checks the current stream pause status.
+   */
+  private void checkPause() {
+    if (paused) {
+      if (queue.size() < queue.getMaxQueueSize() * .75) {
+        paused = false;
+        if (drainHandler != null) {
+          drainHandler.handle(null);
+        }
+      }
+    }
+    else {
+      if (queue.size() >= queue.getMaxQueueSize()) {
+        paused = true;
+      }
+    }
   }
 
   @Override
   public RecurringStreamFeeder drainHandler(Handler<Void> handler) {
-    // TODO Auto-generated method stub
-    return null;
+    this.drainHandler = handler;
+    return this;
   }
 
 }

@@ -29,6 +29,24 @@ import org.vertx.java.core.Handler;
 public interface EmbeddedFeeder<T extends EmbeddedFeeder<?>> extends BasicFeeder<T> {
 
   /**
+   * Sets the feed delay.
+   *
+   * @param delay
+   *   The empty feed delay.
+   * @return
+   *   The called feeder instance.
+   */
+  public T setFeedDelay(long delay);
+
+  /**
+   * Gets the feed delay.
+   *
+   * @return
+   *   The empty feed delay.
+   */
+  public long getFeedDelay();
+
+  /**
    * Sets a feed handler.
    *
    * @param handler

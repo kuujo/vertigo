@@ -16,22 +16,22 @@
 package net.kuujo.vitis;
 
 /**
- * A base vine exception.
+ * A base Vitis exception.
  *
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class VeventException extends Exception {
+public class VitisException extends Exception {
 
-  public VeventException(String message) {
+  public VitisException(String message) {
     super(message);
   }
 
-  public VeventException(String message, Throwable cause) {
+  public VitisException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public VeventException(Throwable cause) {
+  public VitisException(Throwable cause) {
     super(cause);
   }
 

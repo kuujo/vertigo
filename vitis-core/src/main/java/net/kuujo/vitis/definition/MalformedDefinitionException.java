@@ -15,7 +15,7 @@
 */
 package net.kuujo.vitis.definition;
 
-import net.kuujo.vitis.VeventException;
+import net.kuujo.vitis.VitisException;
 
 /**
  * A malformed definition exception.
@@ -23,7 +23,7 @@ import net.kuujo.vitis.VeventException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class MalformedDefinitionException extends VeventException {
+public class MalformedDefinitionException extends VitisException {
 
   public MalformedDefinitionException(String message) {
     super(message);

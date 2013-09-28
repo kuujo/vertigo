@@ -15,7 +15,7 @@
 */
 package net.kuujo.vitis.util;
 
-import net.kuujo.vitis.VeventException;
+import net.kuujo.vitis.VitisException;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -45,7 +45,7 @@ public final class Messaging {
     if (body != null) {
       String error = body.getString("error");
       if (error != null) {
-        future.setFailure(new VeventException(error));
+        future.setFailure(new VitisException(error));
       }
       else {
         future.setResult(null);
@@ -72,7 +72,7 @@ public final class Messaging {
     if (body != null) {
       String error = body.getString("error");
       if (error != null) {
-        future.setFailure(new VeventException(error));
+        future.setFailure(new VitisException(error));
       }
       else {
         future.setResult(result);
@@ -99,7 +99,7 @@ public final class Messaging {
     if (body != null) {
       String error = body.getString("error");
       if (error != null) {
-        new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VeventException(error));
+        new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VitisException(error));
       }
       else {
         validHandler.handle(null);
@@ -128,7 +128,7 @@ public final class Messaging {
       if (body != null) {
         String error = body.getString("error");
         if (error != null) {
-          future.setFailure(new VeventException(error));
+          future.setFailure(new VitisException(error));
         }
         else {
           future.setResult(null);
@@ -160,7 +160,7 @@ public final class Messaging {
       if (body != null) {
         String error = body.getString("error");
         if (error != null) {
-          future.setFailure(new VeventException(error));
+          future.setFailure(new VitisException(error));
         }
         else {
           future.setResult(result);
@@ -192,7 +192,7 @@ public final class Messaging {
       if (body != null) {
         String error = body.getString("error");
         if (error != null) {
-          new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VeventException(error));
+          new DefaultFutureResult<T>().setHandler(resultHandler).setFailure(new VitisException(error));
         }
         else {
           validHandler.handle(null);

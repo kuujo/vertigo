@@ -15,7 +15,7 @@
 */
 package net.kuujo.vitis.node;
 
-import net.kuujo.vitis.VeventException;
+import net.kuujo.vitis.VitisException;
 
 /**
  * A processing failure exception.
@@ -23,7 +23,7 @@ import net.kuujo.vitis.VeventException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class FailureException extends VeventException {
+public class FailureException extends VitisException {
 
   public FailureException(String message) {
     super(message);

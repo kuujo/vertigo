@@ -15,14 +15,15 @@
 */
 package net.kuujo.vitis.node;
 
-import net.kuujo.vitis.VeventException;
+import net.kuujo.vitis.VitisException;
 
 /**
  * A processing timeout exception.
  *
  * @author Jordan Halterman
  */
-public class TimeoutException extends VeventException {
+@SuppressWarnings("serial")
+public class TimeoutException extends VitisException {
 
   public TimeoutException(String message) {
     super(message);

@@ -15,7 +15,7 @@
 */
 package net.kuujo.vitis.context;
 
-import net.kuujo.vitis.VeventException;
+import net.kuujo.vitis.VitisException;
 
 /**
  * A malformed context exception.
@@ -23,7 +23,7 @@ import net.kuujo.vitis.VeventException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class MalformedContextException extends VeventException {
+public class MalformedContextException extends VitisException {
 
   public MalformedContextException(String message) {
     super(message);

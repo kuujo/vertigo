@@ -14,7 +14,7 @@
 * limitations under the License.
 */package net.kuujo.vitis.messaging;
 
-import net.kuujo.vitis.VeventException;
+import net.kuujo.vitis.VitisException;
 
 /**
  * A communication exception.
@@ -22,7 +22,7 @@ import net.kuujo.vitis.VeventException;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class CommunicationException extends VeventException {
+public class CommunicationException extends VitisException {
 
   public CommunicationException(String message) {
     super(message);

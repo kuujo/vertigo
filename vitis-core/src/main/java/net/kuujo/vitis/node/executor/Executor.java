@@ -20,7 +20,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A vine executor.
+ * A network executor.
  *
  * @author Jordan Halterman
  */

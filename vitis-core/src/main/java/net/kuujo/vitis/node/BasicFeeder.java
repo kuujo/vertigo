@@ -75,7 +75,7 @@ public class BasicFeeder extends NodeBase implements Feeder {
    * Creates and stores a message future.
    */
   protected void createFuture(JsonMessage message, long timeout, Handler<AsyncResult<Void>> handler) {
-    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    eventBus.send(auditAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
     FutureResult future = new FutureResult(message.id(), new DefaultFutureResult<Void>().setHandler(handler));
     future.start(timeout);
   }
@@ -83,7 +83,7 @@ public class BasicFeeder extends NodeBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data) {
     JsonMessage message = DefaultJsonMessage.create(data);
-    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    eventBus.send(auditAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
     output.emit(message);
     return this;
   }
@@ -107,7 +107,7 @@ public class BasicFeeder extends NodeBase implements Feeder {
   @Override
   public Feeder feed(JsonObject data, String tag) {
     JsonMessage message = DefaultJsonMessage.create(data, tag);
-    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    eventBus.send(auditAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
     output.emit(message);
     return this;
   }

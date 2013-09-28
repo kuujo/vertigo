@@ -49,10 +49,10 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns the network observer address.
+   * Returns the network auditor address.
    */
-  public String getObserverAddress() {
-    return context.getString("observer");
+  public String getAuditAddress() {
+    return context.getString("audit");
   }
 
   /**

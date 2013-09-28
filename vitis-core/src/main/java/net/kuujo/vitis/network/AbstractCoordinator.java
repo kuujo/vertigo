@@ -90,8 +90,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    * Deploys the network.
    */
   private void doDeploy() {
-    container.deployVerticle(Observer.class.getName(),
-      new JsonObject().putString("address", context.getObserverAddress())
+    container.deployVerticle(Auditor.class.getName(),
+      new JsonObject().putString("address", context.getAuditAddress())
       .putString("broadcast", context.getBroadcastAddress()), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {

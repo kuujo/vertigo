@@ -48,7 +48,7 @@ public abstract class NodeBase {
 
   protected String networkAddress;
 
-  protected String authAddress;
+  protected String auditAddress;
 
   protected String broadcastAddress;
 
@@ -65,7 +65,7 @@ public abstract class NodeBase {
     this.address = context.getAddress();
     NetworkContext networkContext = context.getContext().getContext();
     networkAddress = networkContext.getAddress();
-    authAddress = networkContext.getObserverAddress();
+    auditAddress = networkContext.getAuditAddress();
     broadcastAddress = networkContext.getBroadcastAddress();
   }
 

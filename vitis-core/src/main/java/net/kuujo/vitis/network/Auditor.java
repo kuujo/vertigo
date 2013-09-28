@@ -30,7 +30,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class Observer extends BusModBase implements Handler<Message<JsonObject>> {
+public class Auditor extends BusModBase implements Handler<Message<JsonObject>> {
 
   private String address;
 

@@ -65,7 +65,7 @@ abstract class AbstractFeeder extends NodeBase {
    * Creates and stores a message future.
    */
   protected void createFuture(JsonMessage message, long timeout, Handler<AsyncResult<Void>> handler) {
-    eventBus.send(authAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
+    eventBus.send(auditAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
     FutureResult future = new FutureResult(message.id(), new DefaultFutureResult<Void>().setHandler(handler));
     future.start(timeout);
   }

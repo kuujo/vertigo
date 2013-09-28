@@ -21,30 +21,30 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.kuujo.vevent.definition.ComponentDefinition;
+import net.kuujo.vevent.definition.NodeDefinition;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A JSON object-based component context.
+ * A JSON object-based node context.
  *
  * @author Jordan Halterman
  */
-public class ComponentContext implements Context {
+public class NodeContext implements Context {
 
   private JsonObject context = new JsonObject();
 
   private NetworkContext parent;
 
-  public ComponentContext() {
+  public NodeContext() {
   }
 
-  public ComponentContext(String name) {
+  public NodeContext(String name) {
     context.putString("name", name);
   }
 
-  public ComponentContext(JsonObject json) {
+  public NodeContext(JsonObject json) {
     context = json;
     JsonObject networkContext = context.getObject("network");
     if (networkContext != null) {
@@ -52,27 +52,27 @@ public class ComponentContext implements Context {
     }
   }
 
-  public ComponentContext(JsonObject json, NetworkContext parent) {
+  public NodeContext(JsonObject json, NetworkContext parent) {
     this(json);
     this.parent = parent;
   }
 
   /**
-   * Returns the seed address.
+   * Returns the node address.
    */
   public String getAddress() {
     return context.getString("address");
   }
 
   /**
-   * Returns seed worker addresses.
+   * Returns node worker addresses.
    */
   public String[] getWorkers() {
     return (String[]) context.getArray("workers").toArray();
   }
 
   /**
-   * Returns a list of seed connections.
+   * Returns a list of node connections.
    */
   public Collection<ConnectionContext> getConnectionContexts() {
     Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
@@ -98,18 +98,18 @@ public class ComponentContext implements Context {
   }
 
   /**
-   * Returns the seed definition.
+   * Returns the node definition.
    */
-  public ComponentDefinition getDefinition() {
+  public NodeDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
-      return new ComponentDefinition(definition);
+      return new NodeDefinition(definition);
     }
-    return new ComponentDefinition();
+    return new NodeDefinition();
   }
 
   /**
-   * Returns the parent vine context.
+   * Returns the parent network context.
    */
   public NetworkContext getContext() {
     return parent;

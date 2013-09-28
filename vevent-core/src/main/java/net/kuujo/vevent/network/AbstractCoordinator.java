@@ -21,10 +21,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vevent.context.ComponentContext;
+import net.kuujo.vevent.context.NodeContext;
 import net.kuujo.vevent.context.NetworkContext;
 import net.kuujo.vevent.context.WorkerContext;
-import net.kuujo.vevent.definition.ComponentDefinition;
+import net.kuujo.vevent.definition.NodeDefinition;
 import net.kuujo.via.cluster.Cluster;
 import net.kuujo.via.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.via.heartbeat.HeartbeatMonitor;
@@ -236,7 +236,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      *   A handler to be invoked once the network is deployed.
      */
     public void deploy(Handler<AsyncResult<Void>> doneHandler) {
-      Collection<ComponentContext> components = context.getComponentContexts();
+      Collection<NodeContext> components = context.getNodeContexts();
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
       deployer.deploy(doneHandler);
     }
@@ -248,7 +248,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      *   A handler to be invoked once the network is undeployed.
      */
     public void undeploy(Handler<AsyncResult<Void>> doneHandler) {
-      Collection<ComponentContext> components = context.getComponentContexts();
+      Collection<NodeContext> components = context.getNodeContexts();
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
       deployer.undeploy(doneHandler);
     }
@@ -349,14 +349,14 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     /**
      * A network component deployer.
      */
-    private class RecursiveComponentDeployer extends RecursiveContextDeployer<ComponentContext> {
+    private class RecursiveComponentDeployer extends RecursiveContextDeployer<NodeContext> {
 
-      public RecursiveComponentDeployer(Collection<ComponentContext> contexts) {
+      public RecursiveComponentDeployer(Collection<NodeContext> contexts) {
         super(contexts);
       }
 
       @Override
-      protected void doDeploy(ComponentContext context, Handler<AsyncResult<String>> resultHandler) {
+      protected void doDeploy(NodeContext context, Handler<AsyncResult<String>> resultHandler) {
         final Future<String> future = new DefaultFutureResult<String>();
         future.setHandler(resultHandler);
         Collection<WorkerContext> workers = context.getWorkerContexts();
@@ -375,7 +375,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       }
 
       @Override
-      protected void doUndeploy(ComponentContext context, Handler<AsyncResult<Void>> doneHandler) {
+      protected void doUndeploy(NodeContext context, Handler<AsyncResult<Void>> doneHandler) {
         final Future<Void> future = new DefaultFutureResult<Void>();
         future.setHandler(doneHandler);
         Collection<WorkerContext> workers = context.getWorkerContexts();
@@ -409,7 +409,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         contextMap.put(context.getAddress(), context);
         future.setHandler(resultHandler);
 
-        ComponentDefinition definition = context.getContext().getDefinition();
+        NodeDefinition definition = context.getContext().getDefinition();
         cluster.deployVerticle(definition.getMain(), context.serialize(), new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {

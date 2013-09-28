@@ -26,7 +26,7 @@ import net.kuujo.vevent.definition.NetworkDefinition;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A remote vine context.
+ * A network context.
  *
  * @author Jordan Halterman
  */
@@ -90,41 +90,41 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns a list of network component contexts.
+   * Returns a list of network node contexts.
    */
-  public Collection<ComponentContext> getComponentContexts() {
+  public Collection<NodeContext> getNodeContexts() {
     JsonObject components = context.getObject("components");
-    ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
+    ArrayList<NodeContext> contexts = new ArrayList<NodeContext>();
     Iterator<String> iter = components.getFieldNames().iterator();
     while (iter.hasNext()) {
-      contexts.add(new ComponentContext(components.getObject(iter.next()), this));
+      contexts.add(new NodeContext(components.getObject(iter.next()), this));
     }
     return contexts;
   }
 
   /**
-   * Returns a specific component context.
+   * Returns a specific node context.
    *
    * @param name
-   *   The component name.
+   *   The node name.
    */
-  public ComponentContext getComponentContext(String name) {
-    JsonObject components = context.getObject("components");
-    if (components == null) {
+  public NodeContext getNodeContext(String name) {
+    JsonObject nodes = context.getObject("components");
+    if (nodes == null) {
       return null;
     }
-    JsonObject componentContext = components.getObject(name);
-    if (componentContext == null) {
+    JsonObject nodeContext = nodes.getObject(name);
+    if (nodeContext == null) {
       return null;
     }
-    return new ComponentContext(componentContext);
+    return new NodeContext(nodeContext);
   }
 
   /**
-   * Returns the vine definition.
+   * Returns the network definition.
    *
    * @return
-   *   The vine definition.
+   *   The network definition.
    */
   public NetworkDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");

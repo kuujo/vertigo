@@ -100,7 +100,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a root definition.
    */
-  private ComponentDefinition addDefinition(ComponentDefinition definition) {
+  private NodeDefinition addDefinition(NodeDefinition definition) {
     // Add the root definition.
     JsonObject roots = this.definition.getObject("roots");
     if (roots == null) {
@@ -119,9 +119,9 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @param definition
    *   A component definition.
    * @return
-   *   The given component definition.
+   *   The given node definition.
    */
-  public ComponentDefinition from(ComponentDefinition definition) {
+  public NodeDefinition from(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -131,9 +131,9 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @param name
    *   The node name.
    * @return
-   *   A new component definition.
+   *   A new node definition.
    */
-  public ComponentDefinition from(String name) {
+  public NodeDefinition from(String name) {
     return from(name, null, 1);
   }
 
@@ -145,9 +145,9 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @param main
    *   The node main.
    * @return
-   *   A new component definition.
+   *   A new node definition.
    */
-  public ComponentDefinition from(String name, String main) {
+  public NodeDefinition from(String name, String main) {
     return from(name, main, 1);
   }
 
@@ -161,10 +161,10 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @param workers
    *   The number of workers.
    * @return
-   *   A new component definition.
+   *   A new node definition.
    */
-  public ComponentDefinition from(String name, String main, int workers) {
-    return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
+  public NodeDefinition from(String name, String main, int workers) {
+    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override

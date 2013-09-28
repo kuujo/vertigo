@@ -15,7 +15,7 @@
 */
 package net.kuujo.vevent.java;
 
-import net.kuujo.vevent.context.ComponentContext;
+import net.kuujo.vevent.context.NodeContext;
 import net.kuujo.vevent.node.Executor;
 
 import org.vertx.java.core.AsyncResult;
@@ -30,7 +30,7 @@ import org.vertx.java.platform.Verticle;
  */
 abstract class ExecutorVerticle extends Verticle implements Handler<Executor> {
 
-  protected ComponentContext context;
+  protected NodeContext context;
 
   protected Executor executor;
 
@@ -40,11 +40,11 @@ abstract class ExecutorVerticle extends Verticle implements Handler<Executor> {
    * @return
    *   A new root executor instance.
    */
-  abstract Executor createExecutor(ComponentContext context);
+  abstract Executor createExecutor(NodeContext context);
 
   @Override
   public void start() {
-    context = new ComponentContext(container.config());
+    context = new NodeContext(container.config());
     executor = createExecutor(context);
     executor.executeHandler(this);
   }

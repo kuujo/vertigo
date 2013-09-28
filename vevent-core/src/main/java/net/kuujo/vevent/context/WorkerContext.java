@@ -26,7 +26,7 @@ public class WorkerContext implements Context {
 
   private JsonObject context = new JsonObject();
 
-  private ComponentContext parent;
+  private NodeContext parent;
 
   public WorkerContext() {
   }
@@ -39,11 +39,11 @@ public class WorkerContext implements Context {
     this.context = context;
     JsonObject nodeContext = context.getObject("node");
     if (nodeContext != null) {
-      parent = new ComponentContext(nodeContext);
+      parent = new NodeContext(nodeContext);
     }
   }
 
-  public WorkerContext(JsonObject context, ComponentContext parent) {
+  public WorkerContext(JsonObject context, NodeContext parent) {
     this(context);
     this.parent = parent;
   }
@@ -77,7 +77,7 @@ public class WorkerContext implements Context {
    * @return
    *   The worker's parent node context.
    */
-  public ComponentContext getContext() {
+  public NodeContext getContext() {
     return parent;
   }
 
@@ -89,7 +89,7 @@ public class WorkerContext implements Context {
    * @return
    *   The called worker context.
    */
-  public WorkerContext setContext(ComponentContext context) {
+  public WorkerContext setContext(NodeContext context) {
     parent = context;
     return this;
   }

@@ -20,11 +20,11 @@ import net.kuujo.vevent.Serializeable;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A default seed context implementation.
+ * A node definition.
  *
  * @author Jordan Halterman
  */
-public class ComponentDefinition implements Serializeable<JsonObject> {
+public class NodeDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
@@ -32,10 +32,10 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
 
   private static final long DEFAULT_HEARTBEAT_INTERVAL = 2500;
 
-  public ComponentDefinition() {
+  public NodeDefinition() {
   }
 
-  public ComponentDefinition(JsonObject json) {
+  public NodeDefinition(JsonObject json) {
     definition = json;
   }
 
@@ -52,7 +52,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @param name
    *   The component name.
    */
-  public ComponentDefinition setName(String name) {
+  public NodeDefinition setName(String name) {
     definition.putString("name", name);
     return this;
   }
@@ -71,7 +71,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @param main
    *   The component main.
    */
-  public ComponentDefinition setMain(String main) {
+  public NodeDefinition setMain(String main) {
     definition.putString("main", main);
     return this;
   }
@@ -86,7 +86,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called component definition.
    */
-  public ComponentDefinition setOption(String option, String value) {
+  public NodeDefinition setOption(String option, String value) {
     switch (option) {
       case "name":
         return setName(value);
@@ -119,7 +119,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called component definition.
    */
-  public ComponentDefinition groupBy(GroupingDefinition grouping) {
+  public NodeDefinition groupBy(GroupingDefinition grouping) {
     definition.putObject("grouping", grouping.serialize());
     return this;
   }
@@ -139,7 +139,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called component definition.
    */
-  public ComponentDefinition setWorkers(int workers) {
+  public NodeDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
     return this;
   }
@@ -159,7 +159,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   The called component definition.
    */
-  public ComponentDefinition setHeartbeatInterval(long interval) {
+  public NodeDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
     return this;
   }
@@ -177,7 +177,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a connection to a node definition.
    */
-  private ComponentDefinition addDefinition(ComponentDefinition definition) {
+  private NodeDefinition addDefinition(NodeDefinition definition) {
     JsonObject connections = this.definition.getObject("connections");
     if (connections == null) {
       connections = new JsonObject();
@@ -195,7 +195,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @param definition
    *   A node definition.
    */
-  public ComponentDefinition to(ComponentDefinition definition) {
+  public NodeDefinition to(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
@@ -207,7 +207,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public ComponentDefinition to(String name) {
+  public NodeDefinition to(String name) {
     return to(name, null, 1);
   }
 
@@ -221,7 +221,7 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public ComponentDefinition to(String name, String main) {
+  public NodeDefinition to(String name, String main) {
     return to(name, main, 1);
   }
 
@@ -237,8 +237,8 @@ public class ComponentDefinition implements Serializeable<JsonObject> {
    * @return
    *   A new node definition.
    */
-  public ComponentDefinition to(String name, String main, int workers) {
-    return addDefinition(new ComponentDefinition().setName(name).setMain(main).setWorkers(workers));
+  public NodeDefinition to(String name, String main, int workers) {
+    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
   }
 
   @Override

@@ -16,7 +16,6 @@
 package net.kuujo.vitis.messaging;
 
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * An eventbus-based connection.
@@ -49,7 +48,7 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection write(JsonMessage message) {
-    eventBus.send(address, new JsonObject().putString("action", "receive").putObject("message", message.serialize()));
+    eventBus.send(address, message.serialize());
     return this;
   }
 

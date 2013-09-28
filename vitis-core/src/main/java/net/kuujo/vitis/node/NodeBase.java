@@ -121,7 +121,7 @@ public abstract class NodeBase {
         }
 
         // Create a connection pool from which the dispatcher will dispatch messages.
-        ConnectionPool<EventBusConnection> connectionPool = new DefaultConnectionPool();
+        ConnectionPool connectionPool = new DefaultConnectionPool();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
           connectionPool.add(new EventBusConnection(address, eventBus));
@@ -144,19 +144,9 @@ public abstract class NodeBase {
     eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
-        String action = message.body().getString("action");
-        if (action != null) {
-          switch (action) {
-            case "receive":
-              JsonObject body = message.body();
-              if (body != null) {
-                JsonObject data = body.getObject("message");
-                if (data != null) {
-                  doReceive(new DefaultJsonMessage(data));
-                }
-              }
-              break;
-          }
+        JsonObject body = message.body();
+        if (body != null) {
+          doReceive(new DefaultJsonMessage(body));
         }
       }
     });

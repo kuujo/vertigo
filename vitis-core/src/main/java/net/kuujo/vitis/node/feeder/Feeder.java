@@ -16,7 +16,7 @@
 package net.kuujo.vitis.node.feeder;
 
 /**
- * A base interface for all feeders.
+ * A base type for all feeders.
  *
  * @author Jordan Halterman
  */

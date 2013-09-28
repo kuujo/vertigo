@@ -18,38 +18,56 @@ package net.kuujo.vitis.node.feeder;
 import net.kuujo.vitis.context.WorkerContext;
 import net.kuujo.vitis.messaging.DefaultJsonMessage;
 
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * A fallible feeder implementation.
+ * A basic pull feeder implementation.
  *
  * @author Jordan Halterman
  */
-public class FallibleFeeder extends AbstractFeeder implements BasicFeeder<FallibleFeeder> {
+@SuppressWarnings("rawtypes")
+public class BasicPullFeeder extends AbstractFeeder implements PullFeeder<PullFeeder> {
 
-  protected long maxQueueSize = 1000;
+  protected Handler<PullFeeder> feedHandler;
 
-  protected FallibleFeeder(Vertx vertx, Container container, WorkerContext context) {
+  protected BasicPullFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 
   @Override
-  public FallibleFeeder setFeedQueueMaxSize(long maxSize) {
-    this.maxQueueSize = maxSize;
+  public PullFeeder setFeedQueueMaxSize(long maxSize) {
+    queue.setMaxQueueSize(maxSize);
     return this;
   }
 
   @Override
-  public FallibleFeeder feed(JsonObject data) {
+  public long getFeedQueueMaxSize() {
+    return queue.getMaxQueueSize();
+  }
+
+  @Override
+  public boolean feedQueueFull() {
+    return queue.full();
+  }
+
+  @Override
+  public PullFeeder feed(JsonObject data) {
     output.emit(DefaultJsonMessage.create(data));
     return this;
   }
 
   @Override
-  public FallibleFeeder feed(JsonObject data, String tag) {
+  public PullFeeder feed(JsonObject data, String tag) {
     output.emit(DefaultJsonMessage.create(data, tag));
+    return this;
+  }
+
+  @Override
+  public PullFeeder feedHandler(Handler<PullFeeder> handler) {
+    this.feedHandler = handler;
     return this;
   }
 

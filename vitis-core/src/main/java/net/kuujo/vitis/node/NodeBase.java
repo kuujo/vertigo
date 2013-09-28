@@ -16,7 +16,7 @@ import net.kuujo.vitis.messaging.EventBusConnection;
 import net.kuujo.vitis.messaging.EventBusConnectionPool;
 import net.kuujo.vitis.messaging.JsonMessage;
 import net.kuujo.vitis.messaging.OutputCollector;
-import net.kuujo.vitis.messaging.SequentialOutputCollector;
+import net.kuujo.vitis.messaging.LinearOutputCollector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -99,7 +99,7 @@ public abstract class NodeBase {
    * Sets up feeder outputs.
    */
   private void setupOutputs() {
-    output = new SequentialOutputCollector();
+    output = new LinearOutputCollector(auditAddress, eventBus);
 
     Collection<ConnectionContext> connections = context.getContext().getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();

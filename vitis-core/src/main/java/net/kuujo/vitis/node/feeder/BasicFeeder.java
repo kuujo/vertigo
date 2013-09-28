@@ -27,17 +27,33 @@ import org.vertx.java.core.json.JsonObject;
 public interface BasicFeeder<T extends BasicFeeder<?>> extends Feeder {
 
   /**
-   * Sets the internal feed queue maximum size.
+   * Sets the maximum feed queue size.
    *
    * @param maxSize
-   *   The maximum queue size.
+   *   The maximum queue size allowed for the feeder.
    * @return
    *   The called feeder instance.
    */
   public T setFeedQueueMaxSize(long maxSize);
 
   /**
-   * Feeds data to the network.
+   * Gets the maximum feed queue size.
+   *
+   * @return
+   *   The maximum queue size allowed for the feeder.
+   */
+  public long getFeedQueueMaxSize();
+
+  /**
+   * Indicates whether the feed queue is full.
+   *
+   * @return
+   *   A boolean indicating whether the feed queue is full.
+   */
+  public boolean feedQueueFull();
+
+  /**
+   * Feeds data through the feeder.
    *
    * @param data
    *   The data to feed.
@@ -47,7 +63,7 @@ public interface BasicFeeder<T extends BasicFeeder<?>> extends Feeder {
   public T feed(JsonObject data);
 
   /**
-   * Feeds data to the network.
+   * Feeds data through the feeder.
    *
    * @param data
    *   The data to feed.

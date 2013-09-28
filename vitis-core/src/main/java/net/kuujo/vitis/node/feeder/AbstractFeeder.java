@@ -15,116 +15,34 @@
 */
 package net.kuujo.vitis.node.feeder;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vitis.context.WorkerContext;
-import net.kuujo.vitis.messaging.JsonMessage;
-import net.kuujo.vitis.node.FailureException;
 import net.kuujo.vitis.node.NodeBase;
-import net.kuujo.vitis.node.TimeoutException;
 
 /**
- * An abstract feeder.
+ * An abstract feeder implementation.
  *
  * @author Jordan Halterman
  */
 abstract class AbstractFeeder extends NodeBase {
 
-  protected static final long DEFAULT_TIMEOUT = 30000;
-
-  protected Map<String, FutureResult> futures = new HashMap<>();
+  protected FeedQueue queue;
 
   protected AbstractFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
+    queue = new DefaultFeedQueue(vertx);
   }
 
   @Override
   protected void doAck(String id) {
-    if (futures.containsKey(id)) {
-      futures.get(id).set();
-    }
+    queue.ack(id);
   }
 
   @Override
   protected void doFail(String id) {
-    if (futures.containsKey(id)) {
-      futures.get(id).fail(new FailureException("Processing failed."));
-    }
-  }
-
-  /**
-   * Creates and stores a message future.
-   */
-  protected void createFuture(JsonMessage message, long timeout, Handler<AsyncResult<Void>> handler) {
-    eventBus.send(auditAddress, new JsonObject().putString("action", "create").putString("id", message.id()));
-    FutureResult future = new FutureResult(message.id(), new DefaultFutureResult<Void>().setHandler(handler));
-    future.start(timeout);
-  }
-
-  /**
-   * Manages timers for future ack/fail results.
-   */
-  protected class FutureResult {
-    private String id;
-    private Future<Void> future;
-    private long timerId;
-
-    public FutureResult(String id, Future<Void> future) {
-      this.id = id;
-      this.future = future;
-    }
-
-    /**
-     * Starts the future timer with the given timeout.
-     */
-    public FutureResult start(long timeout) {
-      futures.put(id, this);
-      timerId = vertx.setTimer(timeout, new Handler<Long>() {
-        @Override
-        public void handle(Long event) {
-          futures.remove(id);
-          future.setFailure(new TimeoutException("Feed timed out."));
-        }
-      });
-      return this;
-    }
-
-    /**
-     * Cancels the future timer.
-     */
-    public FutureResult cancel() {
-      if (timerId > 0) {
-        vertx.cancelTimer(timerId);
-      }
-      return this;
-    }
-
-    /**
-     * Sets the future result, indicating success.
-     */
-    public void set() {
-      cancel();
-      futures.remove(id);
-      future.setResult(null);
-    }
-
-    /**
-     * Sets the future failure.
-     */
-    public void fail(Throwable e) {
-      cancel();
-      futures.remove(id);
-      future.setFailure(e);
-    }
+    queue.fail(id);
   }
 
 }

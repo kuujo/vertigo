@@ -15,11 +15,12 @@
 */
 package net.kuujo.vitis.node.feeder;
 
+import net.kuujo.vitis.messaging.JsonMessage;
+
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 /**
- * An embedded feeder implementation.
+ * An embedded feeder.
  *
  * @author Jordan Halterman
  *
@@ -27,10 +28,34 @@ import org.vertx.java.core.json.JsonObject;
  */
 public interface EmbeddedFeeder<T extends EmbeddedFeeder<?>> extends BasicFeeder<T> {
 
+  /**
+   * Sets a feed handler.
+   *
+   * @param handler
+   *   A handler to be invoked in request to feed data.
+   * @return
+   *   The called feeder instance.
+   */
   public T feedHandler(Handler<T> handler);
 
-  public T ackHandler(Handler<JsonObject> ackHandler);
+  /**
+   * Sets an ack handler.
+   *
+   * @param ackHandler
+   *   A handler to be invoked when a message is acked.
+   * @return
+   *   The called feeder instance.
+   */
+  public T ackHandler(Handler<JsonMessage> ackHandler);
 
-  public T failHandler(Handler<JsonObject> failHandler);
+  /**
+   * Sets a fail handler.
+   *
+   * @param failHandler
+   *   A handler to be invoked when a message is failed.
+   * @return
+   *   The called feeder instance.
+   */
+  public T failHandler(Handler<JsonMessage> failHandler);
 
 }

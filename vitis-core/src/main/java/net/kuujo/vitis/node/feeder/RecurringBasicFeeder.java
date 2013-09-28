@@ -15,18 +15,18 @@
 */
 package net.kuujo.vitis.node.feeder;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A recurring stream feeder implementation.
+ * A recurring basic feeder implementation.
  *
  * @author Jordan Halterman
  */
-public class RecurringStreamFeeder implements StreamFeeder<RecurringStreamFeeder>, RecurringFeeder<RecurringStreamFeeder> {
+@SuppressWarnings("rawtypes")
+public class RecurringBasicFeeder implements RecurringFeeder<RecurringFeeder> {
 
   @Override
-  public RecurringStreamFeeder setFeedQueueMaxSize(long maxSize) {
+  public RecurringFeeder setFeedQueueMaxSize(long maxSize) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -44,19 +44,19 @@ public class RecurringStreamFeeder implements StreamFeeder<RecurringStreamFeeder
   }
 
   @Override
-  public RecurringStreamFeeder feed(JsonObject data) {
+  public RecurringFeeder feed(JsonObject data) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public RecurringStreamFeeder feed(JsonObject data, String tag) {
+  public RecurringFeeder feed(JsonObject data, String tag) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public RecurringStreamFeeder autoRetry(boolean retry) {
+  public RecurringFeeder autoRetry(boolean retry) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -68,7 +68,7 @@ public class RecurringStreamFeeder implements StreamFeeder<RecurringStreamFeeder
   }
 
   @Override
-  public RecurringStreamFeeder retryAttempts(int attempts) {
+  public RecurringFeeder retryAttempts(int attempts) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -77,12 +77,6 @@ public class RecurringStreamFeeder implements StreamFeeder<RecurringStreamFeeder
   public int retryAttempts() {
     // TODO Auto-generated method stub
     return 0;
-  }
-
-  @Override
-  public RecurringStreamFeeder drainHandler(Handler<Void> handler) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
 }

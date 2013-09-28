@@ -15,10 +15,75 @@
 */
 package net.kuujo.vitis.node.feeder;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+
 /**
- * A rich stream feeder.
+ * A rich stream feeder implementation.
  *
  * @author Jordan Halterman
  */
-public interface RichStreamFeeder extends RichBasicFeeder<RichStreamFeeder>, StreamFeeder<RichStreamFeeder> {
+public class RichStreamFeeder implements StreamFeeder<RichStreamFeeder>, RichFeeder<RichStreamFeeder> {
+
+  @Override
+  public RichStreamFeeder setFeedQueueMaxSize(long maxSize) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public long getFeedQueueMaxSize() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public boolean feedQueueFull() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public RichStreamFeeder feed(JsonObject data) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RichStreamFeeder feed(JsonObject data, String tag) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RichStreamFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RichStreamFeeder feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> ackHandler) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RichStreamFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RichStreamFeeder feed(JsonObject data, String tag, long timeout, Handler<AsyncResult<Void>> ackHandler) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RichStreamFeeder drainHandler(Handler<Void> handler) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

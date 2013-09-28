@@ -27,19 +27,10 @@ import org.vertx.java.core.Handler;
 public interface StreamFeeder<T extends StreamFeeder<?>> extends BasicFeeder<T> {
 
   /**
-   * Indicates whether the feed queue is full.
-   *
-   * @return
-   *   A boolean indicating whether the feed queue is full.
-   */
-  public boolean feedQueueFull();
-
-  /**
    * Sets a drain handler on the feeder.
    *
    * @param handler
-   *   A drain handler to be invoked once the feeder is ready
-   *   to accept additional data.
+   *   A drain handler.
    * @return
    *   The called feeder instance.
    */

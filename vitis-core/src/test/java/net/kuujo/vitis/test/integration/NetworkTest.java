@@ -15,25 +15,27 @@
 */
 package net.kuujo.vitis.test.integration;
 
+/*
 import net.kuujo.vitis.Cluster;
 import net.kuujo.vitis.Groupings;
 import net.kuujo.vitis.LocalCluster;
 import net.kuujo.vitis.Networks;
 import net.kuujo.vitis.context.NetworkContext;
 import net.kuujo.vitis.definition.NetworkDefinition;
-import net.kuujo.vitis.java.PullFeederVerticle;
 import net.kuujo.vitis.java.WorkerVerticle;
 import net.kuujo.vitis.messaging.JsonMessage;
-import net.kuujo.vitis.node.Feeder;
+import net.kuujo.vitis.node.feeder.PullFeeder;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.testtools.TestVerticle;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
+*/
+
+import org.vertx.testtools.TestVerticle;
 
 /**
  * A vine deploy test.
@@ -42,10 +44,11 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  */
 public class NetworkTest extends TestVerticle {
 
+  /*
   public static class TestFeeder extends PullFeederVerticle {
     private boolean fed = false;
     @Override
-    public void handle(Feeder feeder) {
+    public void handle(PullFeeder feeder) {
       if (!fed) {
         feeder.feed(new JsonObject().putString("body", "Hello world"), new Handler<AsyncResult<Void>>() {
           @Override
@@ -112,5 +115,6 @@ public class NetworkTest extends TestVerticle {
       }
     });
   }
+  */
 
 }

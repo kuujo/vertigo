@@ -26,72 +26,59 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The feeder type
  */
-public interface RichBasicFeeder<T extends RichBasicFeeder<?>> extends BasicFeeder<T> {
+public interface RichFeeder<T extends RichFeeder<?>> extends BasicFeeder<T> {
 
   /**
-   * Sets the default ack timeout.
-   *
-   * @param timeout
-   *   The default ack timeout. If a message is not acked or failed within
-   *   the timeout period, it will be automatically failed.
-   * @return
-   *   The called feeder instance.
-   */
-  public T setDefaultTimeout(long timeout);
-
-  /**
-   * Feeds data to the network, providing an ack handler.
+   * Feeds data to the network with an ack handler.
    *
    * @param data
    *   The data to feed.
    * @param ackHandler
-   *   An asynchronous result handler to be invoked with the ack/fail result.
+   *   An asynchronous result handler to be invoke with the ack result.
    * @return
    *   The called feeder instance.
    */
   public T feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
-   * Feeds data to the network, providing an ack handler.
+   * Feeds data to the network with an ack handler.
    *
    * @param data
    *   The data to feed.
    * @param timeout
-   *   The maximum time allowed to wait for an ack or fail. Note that this
-   *   timeout overrides the default ack timeout.
+   *   An ack timeout.
    * @param ackHandler
-   *   An asynchronous result handler to be invoked with the ack/fail result.
+   *   An asynchronous result handler to be invoke with the ack result.
    * @return
    *   The called feeder instance.
    */
   public T feed(JsonObject data, long timeout, Handler<AsyncResult<Void>> ackHandler);
 
   /**
-   * Feeds data to the network, providing an ack handler.
+   * Feeds data to the network with an ack handler.
    *
    * @param data
    *   The data to feed.
    * @param tag
    *   A tag to apply to the data.
    * @param ackHandler
-   *   An asynchronous result handler to be invoked with the ack/fail result.
+   *   An asynchronous result handler to be invoke with the ack result.
    * @return
    *   The called feeder instance.
    */
   public T feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
   /**
-   * Feeds data to the network, providing an ack handler.
+   * Feeds data to the network with an ack handler.
    *
    * @param data
    *   The data to feed.
    * @param tag
    *   A tag to apply to the data.
    * @param timeout
-   *   The maximum time allowed to wait for an ack or fail. Note that this
-   *   timeout overrides the default ack timeout.
+   *   An ack timeout.
    * @param ackHandler
-   *   An asynchronous result handler to be invoked with the ack/fail result.
+   *   An asynchronous result handler to be invoke with the ack result.
    * @return
    *   The called feeder instance.
    */

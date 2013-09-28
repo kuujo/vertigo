@@ -17,8 +17,8 @@ package net.kuujo.vitis.java;
 
 import net.kuujo.vitis.context.WorkerContext;
 import net.kuujo.vitis.messaging.JsonMessage;
-import net.kuujo.vitis.node.BasicWorker;
-import net.kuujo.vitis.node.Worker;
+import net.kuujo.vitis.node.worker.BasicWorker;
+import net.kuujo.vitis.node.worker.Worker;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;

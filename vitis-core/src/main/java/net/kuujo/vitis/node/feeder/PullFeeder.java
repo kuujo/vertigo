@@ -27,11 +27,10 @@ import org.vertx.java.core.Handler;
 public interface PullFeeder<T extends PullFeeder<?>> extends BasicFeeder<T> {
 
   /**
-   * Sets the feed handler.
+   * Sets a feed handler.
    *
    * @param handler
-   *   A feed handler. This will be called each time the feeder needs
-   *   to request more data, passing a feeder as the handler argument.
+   *   A handler to be invoked for feeding data to the network.
    * @return
    *   The called feeder instance.
    */

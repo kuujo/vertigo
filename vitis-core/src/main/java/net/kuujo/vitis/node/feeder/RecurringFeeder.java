@@ -15,28 +15,50 @@
 */
 package net.kuujo.vitis.node.feeder;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
- * A recurring feeder implementation.
+ * A recurring feeder.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The feeder type
  */
-public class RecurringFeeder implements BasicFeeder<RecurringFeeder> {
+public interface RecurringFeeder<T extends RecurringFeeder<?>> extends BasicFeeder<T> {
 
-  @Override
-  public RecurringFeeder setFeedQueueMaxSize(long maxSize) {
-    return this;
-  }
+  /**
+   * Sets the feeder auto-retry option.
+   *
+   * @param retry
+   *   Indicates whether to automatically retry emitting failed data.
+   * @return
+   *   The called feeder instance.
+   */
+  public T autoRetry(boolean retry);
 
-  @Override
-  public RecurringFeeder feed(JsonObject data) {
-    return this;
-  }
+  /**
+   * Gets the feeder auto-retry option.
+   *
+   * @return
+   *   Indicates whether the feeder with automatically retry emitting failed data.
+   */
+  public boolean autoRetry();
 
-  @Override
-  public RecurringFeeder feed(JsonObject data, String tag) {
-    return this;
-  }
+  /**
+   * Sets the number of automatic retry attempts for a single failed message.
+   *
+   * @param attempts
+   *   The number of retry attempts allowed. If attempts is -1 then an infinite
+   *   number of retry attempts will be allowed.
+   * @return
+   *   The called feeder instance.
+   */
+  public T retryAttempts(int attempts);
+
+  /**
+   * Gets the number of automatic retry attempts.
+   *
+   * @return
+   *   Indicates the number of retry attempts allowed for the feeder.
+   */
+  public int retryAttempts();
 
 }

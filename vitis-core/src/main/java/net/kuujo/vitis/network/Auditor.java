@@ -194,8 +194,8 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    * An expire timer.
    */
   private class Timer {
-    private long endTime;
-    private Set<String> ids = new HashSet<String>();
+    private final long endTime;
+    private final Set<String> ids = new HashSet<String>();
 
     private Timer(long endTime) {
       this.endTime = endTime;
@@ -238,10 +238,10 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    * Represents a single node in a message tree.
    */
   private static final class Node {
-    private String id;
-    private Timer timer;
-    private Set<Node> children = new HashSet<>();
-    private Set<Node> complete = new HashSet<>();
+    private final String id;
+    private final Timer timer;
+    private final Set<Node> children = new HashSet<>();
+    private final Set<Node> complete = new HashSet<>();
     private Handler<Node> ackHandler;
     private Handler<Node> failHandler;
     private boolean ready = true;
@@ -272,6 +272,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
 
     private Node(String id) {
       this.id = id;
+      this.timer = null;
     }
 
     private Node(String id, Timer timer) {

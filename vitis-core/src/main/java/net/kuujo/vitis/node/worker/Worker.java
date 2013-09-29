@@ -16,29 +16,30 @@
 package net.kuujo.vitis.node.worker;
 
 import net.kuujo.vitis.messaging.JsonMessage;
+import net.kuujo.vitis.node.Node;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A vine seed. Nodes instances are essentially individual tasks.
+ * A worker node.
  *
  * @author Jordan Halterman
  */
-public interface Worker {
+public interface Worker extends Node{
 
   /**
-   * Sets a seed data handler.
+   * Sets a worker data handler.
    *
    * @param handler
    *   A json data handler.
    * @return 
-   *   The called seed instance.
+   *   The called worker instance.
    */
   public Worker dataHandler(Handler<JsonMessage> handler);
 
   /**
-   * Emits data from the seed.
+   * Emits data from the worker.
    *
    * @param data
    *   The data to emit.
@@ -46,7 +47,7 @@ public interface Worker {
   public void emit(JsonObject data);
 
   /**
-   * Emits data from the seed with a tag.
+   * Emits data from the worker with a tag.
    *
    * @param data
    *   The data to emit.
@@ -56,7 +57,7 @@ public interface Worker {
   public void emit(JsonObject data, String tag);
 
   /**
-   * Emits child data from the seed.
+   * Emits child data from the worker.
    *
    * @param data
    *   The data to emit.
@@ -66,7 +67,7 @@ public interface Worker {
   public void emit(JsonObject data, JsonMessage parent);
 
   /**
-   * Emits child data from the seed with a tag.
+   * Emits child data from the worker with a tag.
    *
    * @param data
    *   The data to emit.
@@ -108,10 +109,5 @@ public interface Worker {
    *   The messages to fail.
    */
   public void fail(JsonMessage... messages);
-
-  /**
-   * Starts the seed.
-   */
-  public void start();
 
 }

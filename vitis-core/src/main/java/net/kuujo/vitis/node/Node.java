@@ -13,14 +13,16 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.node.feeder;
-
-import net.kuujo.vitis.node.Node;
+package net.kuujo.vitis.node;
 
 /**
- * A base type for all feeders.
- *
- * @author Jordan Halterman
+ * A network node.
  */
-public interface Feeder extends Node {
+public interface Node {
+
+  /**
+   * Starts the node.
+   */
+  public void start();
+
 }

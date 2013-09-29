@@ -16,13 +16,13 @@
 package net.kuujo.vitis.node.feeder;
 
 /**
- * A recurring feeder.
+ * A reliable feeder.
  *
  * @author Jordan Halterman
  *
  * @param <T> The feeder type
  */
-public interface RecurringFeeder<T extends RecurringFeeder<?>> extends BasicFeeder<T> {
+public interface ReliableFeeder<T extends ReliableFeeder<?>> extends BasicFeeder<T> {
 
   /**
    * Sets the feeder auto-retry option.

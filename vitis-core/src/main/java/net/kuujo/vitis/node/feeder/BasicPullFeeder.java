@@ -29,9 +29,9 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 @SuppressWarnings("rawtypes")
-public class BasicPullFeeder extends AbstractFeeder implements PullFeeder<PullFeeder> {
+public class BasicPullFeeder extends AbstractFeeder implements PollFeeder<PollFeeder> {
 
-  protected Handler<PullFeeder> feedHandler;
+  protected Handler<PollFeeder> feedHandler;
 
   private boolean fed;
 
@@ -53,7 +53,7 @@ public class BasicPullFeeder extends AbstractFeeder implements PullFeeder<PullFe
   }
 
   @Override
-  public PullFeeder setFeedDelay(long delay) {
+  public PollFeeder setFeedDelay(long delay) {
     feedDelay = delay;
     return this;
   }
@@ -99,7 +99,7 @@ public class BasicPullFeeder extends AbstractFeeder implements PullFeeder<PullFe
   }
 
   @Override
-  public PullFeeder setFeedQueueMaxSize(long maxSize) {
+  public PollFeeder setFeedQueueMaxSize(long maxSize) {
     queue.setMaxQueueSize(maxSize);
     return this;
   }
@@ -115,21 +115,21 @@ public class BasicPullFeeder extends AbstractFeeder implements PullFeeder<PullFe
   }
 
   @Override
-  public PullFeeder feed(JsonObject data) {
+  public PollFeeder feed(JsonObject data) {
     output.emit(DefaultJsonMessage.create(data));
     fed = true;
     return this;
   }
 
   @Override
-  public PullFeeder feed(JsonObject data, String tag) {
+  public PollFeeder feed(JsonObject data, String tag) {
     output.emit(DefaultJsonMessage.create(data, tag));
     fed = true;
     return this;
   }
 
   @Override
-  public PullFeeder feedHandler(Handler<PullFeeder> handler) {
+  public PollFeeder feedHandler(Handler<PollFeeder> handler) {
     this.feedHandler = handler;
     return this;
   }

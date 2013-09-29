@@ -15,37 +15,25 @@
 */
 package net.kuujo.vitis.node.feeder;
 
-import net.kuujo.vitis.messaging.JsonMessage;
-
 import org.vertx.java.core.Handler;
 
 /**
- * An embedded feeder.
+ * An embedded stream feeder.
  *
  * @author Jordan Halterman
  *
  * @param <T> The feeder type
  */
-public interface EmbeddedFeeder<T extends EmbeddedFeeder<?>> extends PollFeeder<T> {
+public interface EmbeddedStreamFeeder<T extends EmbeddedStreamFeeder<?>> extends EmbeddedFeeder<T>, StreamFeeder<T> {
 
   /**
-   * Sets an ack handler.
+   * Sets a full handler on the feeder.
    *
-   * @param ackHandler
-   *   A handler to be invoked when a message is acked.
+   * @param fullHandler
+   *   A handler to be invoked when the feeder is full.
    * @return
    *   The called feeder instance.
    */
-  public T ackHandler(Handler<JsonMessage> ackHandler);
-
-  /**
-   * Sets a fail handler.
-   *
-   * @param failHandler
-   *   A handler to be invoked when a message is failed.
-   * @return
-   *   The called feeder instance.
-   */
-  public T failHandler(Handler<JsonMessage> failHandler);
+  public T fullHandler(Handler<Void> fullHandler);
 
 }

@@ -26,23 +26,23 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * A recurring stream feeder implementation.
+ * A reliable poll feeder implementation.
  *
  * @author Jordan Halterman
  */
-public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeeder<RecurringStreamFeeder>, RecurringFeeder<RecurringStreamFeeder> {
+public class ReliablePollFeeder extends AbstractFeeder implements PollFeeder<ReliablePollFeeder>, ReliableFeeder<ReliablePollFeeder> {
 
-  private boolean started;
-
-  private boolean paused;
+  protected Handler<ReliablePollFeeder> feedHandler;
 
   protected boolean autoRetry = true;
 
   protected int retryAttempts = -1;
 
-  private Handler<Void> drainHandler;
+  private boolean fed;
 
-  public RecurringStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  private long feedDelay = 100;
+
+  public ReliablePollFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 
@@ -52,35 +52,59 @@ public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeede
     vertx.setTimer(1000, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
-        started = true;
+        recursiveFeed();
       }
     });
   }
 
   @Override
-  public RecurringStreamFeeder autoRetry(boolean retry) {
-    autoRetry = retry;
+  public ReliablePollFeeder setFeedDelay(long delay) {
+    feedDelay = delay;
     return this;
   }
 
   @Override
-  public boolean autoRetry() {
-    return autoRetry;
+  public long getFeedDelay() {
+    return feedDelay;
+  }
+
+  /**
+   * Schedules a feed.
+   */
+  private void scheduleFeed() {
+    vertx.setTimer(feedDelay, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        recursiveFeed();
+      }
+    });
+  }
+
+  /**
+   * Recursively invokes the feed handler.
+   * If the feed handler is invoked and no messages are fed from the handler,
+   * a timer is set to restart the feed in the future.
+   */
+  private void recursiveFeed() {
+    fed = true;
+    while (fed && !queue.full()) {
+      fed = false;
+      doFeed();
+    }
+    scheduleFeed();
+  }
+
+  /**
+   * Invokes the feed handler.
+   */
+  private void doFeed() {
+    if (feedHandler != null) {
+      feedHandler.handle(this);
+    }
   }
 
   @Override
-  public RecurringStreamFeeder retryAttempts(int attempts) {
-    retryAttempts = attempts;
-    return this;
-  }
-
-  @Override
-  public int retryAttempts() {
-    return retryAttempts;
-  }
-
-  @Override
-  public RecurringStreamFeeder setFeedQueueMaxSize(long maxSize) {
+  public ReliablePollFeeder setFeedQueueMaxSize(long maxSize) {
     queue.setMaxQueueSize(maxSize);
     return this;
   }
@@ -92,7 +116,29 @@ public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeede
 
   @Override
   public boolean feedQueueFull() {
-    return !started || paused;
+    return queue.full();
+  }
+
+  @Override
+  public ReliablePollFeeder autoRetry(boolean retry) {
+    autoRetry = retry;
+    return this;
+  }
+
+  @Override
+  public boolean autoRetry() {
+    return autoRetry;
+  }
+
+  @Override
+  public ReliablePollFeeder retryAttempts(int attempts) {
+    retryAttempts = attempts;
+    return this;
+  }
+
+  @Override
+  public int retryAttempts() {
+    return retryAttempts;
   }
 
   /**
@@ -103,7 +149,6 @@ public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeede
     queue.enqueue(message.id(), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
-        checkPause();
         if (result.failed() && autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
           doFeed(data, tag, attempts+1);
         }
@@ -113,39 +158,22 @@ public class RecurringStreamFeeder extends AbstractFeeder implements StreamFeede
   }
 
   @Override
-  public RecurringStreamFeeder feed(JsonObject data) {
+  public ReliablePollFeeder feed(JsonObject data) {
     doFeed(data, null, 0);
+    fed = true;
     return this;
   }
 
   @Override
-  public RecurringStreamFeeder feed(JsonObject data, String tag) {
+  public ReliablePollFeeder feed(JsonObject data, String tag) {
     doFeed(data, tag, 0);
+    fed = true;
     return this;
   }
 
-  /**
-   * Checks the current stream pause status.
-   */
-  private void checkPause() {
-    if (paused) {
-      if (queue.size() < queue.getMaxQueueSize() * .75) {
-        paused = false;
-        if (drainHandler != null) {
-          drainHandler.handle(null);
-        }
-      }
-    }
-    else {
-      if (queue.size() >= queue.getMaxQueueSize()) {
-        paused = true;
-      }
-    }
-  }
-
   @Override
-  public RecurringStreamFeeder drainHandler(Handler<Void> handler) {
-    this.drainHandler = handler;
+  public ReliablePollFeeder feedHandler(Handler<ReliablePollFeeder> handler) {
+    this.feedHandler = handler;
     return this;
   }
 

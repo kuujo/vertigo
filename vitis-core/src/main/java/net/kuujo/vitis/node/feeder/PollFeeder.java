@@ -18,13 +18,13 @@ package net.kuujo.vitis.node.feeder;
 import org.vertx.java.core.Handler;
 
 /**
- * A pull feeder.
+ * A poll feeder.
  *
  * @author Jordan Halterman
  *
  * @param <T> The feeder type
  */
-public interface PullFeeder<T extends PullFeeder<?>> extends BasicFeeder<T> {
+public interface PollFeeder<T extends PollFeeder<?>> extends BasicFeeder<T> {
 
   /**
    * Sets the feed delay.

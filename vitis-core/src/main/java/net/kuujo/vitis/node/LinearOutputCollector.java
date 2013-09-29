@@ -72,11 +72,11 @@ public class LinearOutputCollector implements OutputCollector {
     while (iter.hasNext()) {
       // If a parent exists then send a fork message to the acker task.
       if (hasParent) {
-        eventBus.send(auditAddress, createForkAction(message.id(), parent));
+        eventBus.publish(auditAddress, createForkAction(message.id(), parent));
       }
       // Otherwise, send a new action to the acker task.
       else {
-        eventBus.send(auditAddress, createNewAction(message.id()));
+        eventBus.publish(auditAddress, createNewAction(message.id()));
       }
 
       // Write the message to the channel.
@@ -100,7 +100,7 @@ public class LinearOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector ack(JsonMessage message) {
-    eventBus.send(auditAddress, createAckAction(message.id()));
+    eventBus.publish(auditAddress, createAckAction(message.id()));
     return this;
   }
 
@@ -114,7 +114,7 @@ public class LinearOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector fail(JsonMessage message) {
-    eventBus.send(auditAddress, createFailAction(message.id()));
+    eventBus.publish(auditAddress, createFailAction(message.id()));
     return this;
   }
 

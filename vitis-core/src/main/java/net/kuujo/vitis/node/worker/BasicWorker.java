@@ -32,7 +32,7 @@ import org.vertx.java.platform.Container;
  */
 public class BasicWorker extends NodeBase implements Worker {
 
-  protected Handler<JsonMessage> dataHandler;
+  protected Handler<JsonMessage> messageHandler;
 
   public BasicWorker(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
@@ -40,14 +40,14 @@ public class BasicWorker extends NodeBase implements Worker {
 
   @Override
   protected void doReceive(JsonMessage message) {
-    if (dataHandler != null) {
-      dataHandler.handle(message);
+    if (messageHandler != null) {
+      messageHandler.handle(message);
     }
   }
 
   @Override
   public Worker messageHandler(Handler<JsonMessage> handler) {
-    dataHandler = handler;
+    messageHandler = handler;
     return this;
   }
 

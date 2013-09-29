@@ -24,12 +24,12 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * A basic pull feeder implementation.
+ * A basic poll feeder implementation.
  *
  * @author Jordan Halterman
  */
 @SuppressWarnings("rawtypes")
-public class BasicPullFeeder extends AbstractFeeder implements PollFeeder<PollFeeder> {
+public class BasicPollFeeder extends AbstractFeeder implements PollFeeder<PollFeeder> {
 
   protected Handler<PollFeeder> feedHandler;
 
@@ -37,7 +37,7 @@ public class BasicPullFeeder extends AbstractFeeder implements PollFeeder<PollFe
 
   private long feedDelay = 100;
 
-  public BasicPullFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public BasicPollFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

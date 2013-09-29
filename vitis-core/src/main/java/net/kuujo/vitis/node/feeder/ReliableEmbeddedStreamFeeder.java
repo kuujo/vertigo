@@ -52,7 +52,7 @@ public class ReliableEmbeddedStreamFeeder extends AbstractFeeder implements Embe
 
   private boolean paused;
 
-  protected ReliableEmbeddedStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public ReliableEmbeddedStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

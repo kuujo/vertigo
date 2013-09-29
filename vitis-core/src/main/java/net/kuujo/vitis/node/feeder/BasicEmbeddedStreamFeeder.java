@@ -49,7 +49,7 @@ public class BasicEmbeddedStreamFeeder extends AbstractFeeder implements Embedde
 
   private boolean paused;
 
-  protected BasicEmbeddedStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public BasicEmbeddedStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

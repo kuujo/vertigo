@@ -9,11 +9,11 @@ import net.kuujo.vitis.context.ConnectionContext;
 import net.kuujo.vitis.context.NetworkContext;
 import net.kuujo.vitis.context.WorkerContext;
 import net.kuujo.vitis.dispatcher.Dispatcher;
-import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.ConnectionPool;
 import net.kuujo.vitis.messaging.DefaultJsonMessage;
 import net.kuujo.vitis.messaging.BasicChannel;
 import net.kuujo.vitis.messaging.EventBusConnection;
-import net.kuujo.vitis.messaging.DefaultConnectionPool;
+import net.kuujo.vitis.messaging.ConnectionSet;
 import net.kuujo.vitis.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -119,14 +119,14 @@ public abstract class NodeBase {
         }
 
         // Create a connection pool from which the dispatcher will dispatch messages.
-        ConnectionSet connectionSet = new DefaultConnectionPool();
+        ConnectionPool connectionPool = new ConnectionSet();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
-          connectionSet.add(new EventBusConnection(address, eventBus));
+          connectionPool.add(new EventBusConnection(address, eventBus));
         }
 
         // Initialize the dispatcher and add a channel to the channels list.
-        dispatcher.init(connectionSet);
+        dispatcher.init(connectionPool);
         output.addChannel(new BasicChannel(dispatcher));
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {

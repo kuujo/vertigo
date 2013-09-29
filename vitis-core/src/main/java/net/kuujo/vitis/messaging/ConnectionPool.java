@@ -15,13 +15,12 @@
 */
 package net.kuujo.vitis.messaging;
 
-import java.util.HashSet;
+import java.util.Collection;
 
 /**
- * A default connection pool.
+ * A pool of point-to-point connections.
  *
  * @author Jordan Halterman
  */
-@SuppressWarnings("serial")
-public class DefaultConnectionPool extends HashSet<Connection> implements ConnectionSet {
+public interface ConnectionPool extends Collection<Connection> {
 }

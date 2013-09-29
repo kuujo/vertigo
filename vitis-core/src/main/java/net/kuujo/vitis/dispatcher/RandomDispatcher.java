@@ -18,7 +18,7 @@ package net.kuujo.vitis.dispatcher;
 import java.util.Random;
 
 import net.kuujo.vitis.messaging.Connection;
-import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.ConnectionPool;
 import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
@@ -35,7 +35,7 @@ public class RandomDispatcher extends AbstractDispatcher {
   private Random rand = new Random();
 
   @Override
-  public void init(ConnectionSet connections) {
+  public void init(ConnectionPool connections) {
     this.connections = connections.toArray(new Connection[]{});
     connectionSize = connections.size();
   }

@@ -15,7 +15,7 @@
 */
 package net.kuujo.vitis.dispatcher;
 
-import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.ConnectionPool;
 import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
@@ -31,7 +31,7 @@ public interface Dispatcher {
    * @param connections
    *   A collection of connections to which the dispatcher will dispatch messages.
    */
-  public void init(ConnectionSet connections);
+  public void init(ConnectionPool connections);
 
   /**
    * Sets a dispatcher option.

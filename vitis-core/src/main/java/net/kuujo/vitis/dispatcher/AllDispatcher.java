@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vitis.messaging.Connection;
-import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.ConnectionPool;
 import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
@@ -29,12 +29,12 @@ import net.kuujo.vitis.messaging.JsonMessage;
  */
 public class AllDispatcher implements Dispatcher {
 
-  private ConnectionSet connections;
+  private ConnectionPool connections;
 
   private Map<String, String> options = new HashMap<String, String>();
 
   @Override
-  public void init(ConnectionSet connections) {
+  public void init(ConnectionPool connections) {
     this.connections = connections;
   }
 

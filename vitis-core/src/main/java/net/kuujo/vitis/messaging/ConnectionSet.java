@@ -15,12 +15,13 @@
 */
 package net.kuujo.vitis.messaging;
 
-import java.util.Collection;
+import java.util.HashSet;
 
 /**
- * A set of point-to-point connections.
+ * A connection set.
  *
  * @author Jordan Halterman
  */
-public interface ConnectionSet extends Collection<Connection> {
+@SuppressWarnings("serial")
+public class ConnectionSet extends HashSet<Connection> implements ConnectionPool {
 }

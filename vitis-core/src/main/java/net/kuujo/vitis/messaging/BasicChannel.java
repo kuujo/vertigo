@@ -26,7 +26,7 @@ public class BasicChannel implements Channel {
 
   protected Dispatcher dispatcher;
 
-  protected ConnectionSet connections = new DefaultConnectionPool();
+  protected ConnectionPool connections = new ConnectionSet();
 
   public BasicChannel(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;

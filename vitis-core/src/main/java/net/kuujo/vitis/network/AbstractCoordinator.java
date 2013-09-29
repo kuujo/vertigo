@@ -92,7 +92,10 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   private void doDeploy() {
     container.deployVerticle(Auditor.class.getName(),
       new JsonObject().putString("address", context.auditAddress())
-      .putString("broadcast", context.broadcastAddress()), new Handler<AsyncResult<String>>() {
+      .putString("broadcast", context.broadcastAddress())
+      .putBoolean("enabled", context.definition().ackingEnabled())
+      .putNumber("expire", context.definition().ackExpire()),
+      context.definition().numAckers(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {

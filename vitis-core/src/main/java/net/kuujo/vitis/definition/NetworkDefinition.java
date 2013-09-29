@@ -65,6 +65,88 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   }
 
   /**
+   * Indicates whether acking is enabled for the network.
+   * Acking is enabled by default.
+   *
+   * @return
+   *   A boolean value indicating whether acking is enabled.
+   */
+  public boolean ackingEnabled() {
+    return definition.getBoolean("ack", true);
+  }
+
+  /**
+   * Enables acking for the network.
+   * Acking is enabled by default.
+   *
+   * @return
+   *   The called network definition.
+   */
+  public NetworkDefinition enableAcking() {
+    definition.putBoolean("ack", true);
+    return this;
+  }
+
+  /**
+   * Disables acking for the network.
+   *
+   * @return
+   *   The called network definition.
+   */
+  public NetworkDefinition disableAcking() {
+    definition.putBoolean("ack", false);
+    return this;
+  }
+
+  /**
+   * Indicates the number of acker (auditor) verticle instances.
+   *
+   * @return
+   *   The number of acker verticle instances for the network.
+   */
+  public int numAckers() {
+    return definition.getInteger("ackers", 1);
+  }
+
+  /**
+   * Sets the number of acker (auditor) verticle instances.
+   *
+   * @param numAckers
+   *   The number of acker verticle instances for the network.
+   * @return
+   *   The called network definition.
+   */
+  public NetworkDefinition setNumAckers(int numAckers) {
+    definition.putNumber("ackers", numAckers);
+    return this;
+  }
+
+  /**
+   * Indicates the internal auditor ack expiration.
+   *
+   * @return
+   *   The internal network auditor ack expiration.
+   */
+  public long ackExpire() {
+    return definition.getLong("expire");
+  }
+
+  /**
+   * Sets the internal auditor ack expiration. This is the amount of time after
+   * which the acker verticle will consider all messages to be timed out. Therefore,
+   * this expiration should be greater than any feeder timeout in the network.
+   *
+   * @param expire
+   *   The ack expiration.
+   * @return
+   *   The called network definition.
+   */
+  public NetworkDefinition setAckExpire(long expire) {
+    definition.putNumber("expire", expire);
+    return this;
+  }
+
+  /**
    * Gets a network option.
    *
    * @param option

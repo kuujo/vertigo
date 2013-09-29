@@ -36,7 +36,7 @@ public interface Worker extends Node{
    * @return 
    *   The called worker instance.
    */
-  public Worker dataHandler(Handler<JsonMessage> handler);
+  public Worker messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Emits data from the worker.

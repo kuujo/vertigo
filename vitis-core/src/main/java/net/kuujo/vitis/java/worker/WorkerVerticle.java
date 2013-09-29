@@ -36,7 +36,7 @@ public abstract class WorkerVerticle extends Verticle implements Handler<JsonMes
   @Override
   public void start() {
     worker = new BasicWorker(vertx, container, new WorkerContext(container.config()));
-    worker.dataHandler(this);
+    worker.messageHandler(this);
     worker.start();
   }
 

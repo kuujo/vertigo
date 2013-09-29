@@ -46,7 +46,7 @@ public class BasicWorker extends NodeBase implements Worker {
   }
 
   @Override
-  public Worker dataHandler(Handler<JsonMessage> handler) {
+  public Worker messageHandler(Handler<JsonMessage> handler) {
     dataHandler = handler;
     return this;
   }

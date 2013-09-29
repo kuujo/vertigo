@@ -42,7 +42,7 @@ public class EventBusConnection implements Connection {
   }
 
   @Override
-  public String getAddress() {
+  public String address() {
     return address;
   }
 

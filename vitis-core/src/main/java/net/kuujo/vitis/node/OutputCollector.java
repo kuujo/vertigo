@@ -13,7 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.messaging;
+package net.kuujo.vitis.node;
+
+import net.kuujo.vitis.messaging.Channel;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
  * An output collector.

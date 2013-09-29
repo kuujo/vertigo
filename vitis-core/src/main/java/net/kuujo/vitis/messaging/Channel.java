@@ -15,12 +15,14 @@
 */
 package net.kuujo.vitis.messaging;
 
+import net.kuujo.vitis.dispatcher.Dispatcher;
+
 /**
  * A uni-directional communication channel.
  *
  * @author Jordan Halterman
  */
-public interface Channel extends Writable<Channel> {
+public interface Channel {
 
   /**
    * Sets the channel dispatcher.
@@ -53,5 +55,15 @@ public interface Channel extends Writable<Channel> {
    *   The connection to remove.
    */
   public void removeConnection(Connection connection);
+
+  /**
+   * Writes a message to the channel.
+   *
+   * @param message
+   *   The message to write to the channel.
+   * @return
+   *   The called writable instance.
+   */
+  public Channel write(JsonMessage message);
 
 }

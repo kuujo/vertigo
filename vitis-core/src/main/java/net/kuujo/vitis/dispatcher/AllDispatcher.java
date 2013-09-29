@@ -13,19 +13,30 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.messaging;
+package net.kuujo.vitis.dispatcher;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import net.kuujo.vitis.messaging.Connection;
+import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
  * An abstract dispatcher implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class AbstractDispatcher implements Dispatcher {
+public class AllDispatcher implements Dispatcher {
+
+  private ConnectionSet connections;
 
   private Map<String, String> options = new HashMap<String, String>();
+
+  @Override
+  public void init(ConnectionSet connections) {
+    this.connections = connections;
+  }
 
   @Override
   public Dispatcher setOption(String option, String value) {
@@ -46,19 +57,11 @@ public abstract class AbstractDispatcher implements Dispatcher {
     return defaultValue;
   }
 
-  /**
-   * Returns the next connection to which to dispatch.
-   *
-   * @param message
-   *   The message for which a connection is being retrieved.
-   * @return
-   *   A connection to which to dispatch a message.
-   */
-  protected abstract Connection getConnection(JsonMessage message);
-
   @Override
   public void dispatch(JsonMessage message) {
-    getConnection(message).write(message);
+    for (Connection connection : connections) {
+      connection.write(message);
+    }
   }
 
 }

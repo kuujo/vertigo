@@ -13,7 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.messaging;
+package net.kuujo.vitis.dispatcher;
+
+import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
  * A message dispatcher.
@@ -28,7 +31,7 @@ public interface Dispatcher {
    * @param connections
    *   A collection of connections to which the dispatcher will dispatch messages.
    */
-  public void init(ConnectionPool connections);
+  public void init(ConnectionSet connections);
 
   /**
    * Sets a dispatcher option.

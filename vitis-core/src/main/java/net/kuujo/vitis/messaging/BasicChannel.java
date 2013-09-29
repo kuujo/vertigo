@@ -15,18 +15,20 @@
 */
 package net.kuujo.vitis.messaging;
 
+import net.kuujo.vitis.dispatcher.Dispatcher;
+
 /**
- * An eventbus based stream.
+ * A basic channel.
  *
  * @author Jordan Halterman
  */
-public class EventBusChannel implements Channel {
+public class BasicChannel implements Channel {
 
   protected Dispatcher dispatcher;
 
-  protected ConnectionPool connections = new DefaultConnectionPool();
+  protected ConnectionSet connections = new DefaultConnectionPool();
 
-  public EventBusChannel(Dispatcher dispatcher) {
+  public BasicChannel(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
   }
 

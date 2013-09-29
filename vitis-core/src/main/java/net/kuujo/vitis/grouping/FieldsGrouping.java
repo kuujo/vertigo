@@ -16,7 +16,7 @@
 package net.kuujo.vitis.grouping;
 
 import net.kuujo.vitis.definition.GroupingDefinition;
-import net.kuujo.vitis.messaging.FieldsDispatcher;
+import net.kuujo.vitis.dispatcher.FieldsDispatcher;
 
 /**
  * A fields-based grouping.

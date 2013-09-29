@@ -13,39 +13,36 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.messaging;
+package net.kuujo.vitis.dispatcher;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Random;
+
+import net.kuujo.vitis.messaging.Connection;
+import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
- * A round-robin dispatcher.
+ * A random dispatcher implementation.
  *
  * @author Jordan Halterman
  */
-public class RoundRobinDispatcher extends AbstractDispatcher {
+public class RandomDispatcher extends AbstractDispatcher {
 
-  private List<Connection> items;
+  private Connection[] connections;
 
-  private Iterator<Connection> iterator;
+  private int connectionSize;
+
+  private Random rand = new Random();
 
   @Override
-  public void init(ConnectionPool connections) {
-    this.items = new ArrayList<Connection>();
-    Iterator<? extends Connection> iterator = connections.iterator();
-    while (iterator.hasNext()) {
-      items.add(iterator.next());
-    }
-    this.iterator = items.iterator();
+  public void init(ConnectionSet connections) {
+    this.connections = connections.toArray(new Connection[]{});
+    connectionSize = connections.size();
   }
 
   @Override
   protected Connection getConnection(JsonMessage message) {
-    if (!iterator.hasNext()) {
-      iterator = items.iterator();
-    }
-    return iterator.next();
+    return connections[rand.nextInt(connectionSize)];
   }
 
 }

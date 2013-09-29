@@ -13,11 +13,14 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.messaging;
+package net.kuujo.vitis.node;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import net.kuujo.vitis.messaging.Channel;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;

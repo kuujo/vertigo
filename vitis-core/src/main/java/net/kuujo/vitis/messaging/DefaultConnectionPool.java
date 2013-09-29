@@ -23,5 +23,5 @@ import java.util.HashSet;
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class DefaultConnectionPool extends HashSet<Connection> implements ConnectionPool {
+public class DefaultConnectionPool extends HashSet<Connection> implements ConnectionSet {
 }

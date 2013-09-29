@@ -16,7 +16,7 @@
 package net.kuujo.vitis.grouping;
 
 import net.kuujo.vitis.definition.GroupingDefinition;
-import net.kuujo.vitis.messaging.RandomDispatcher;
+import net.kuujo.vitis.dispatcher.RandomDispatcher;
 
 /**
  * A random grouping implementation.

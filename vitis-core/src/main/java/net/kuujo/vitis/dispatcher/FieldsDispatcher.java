@@ -13,11 +13,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vitis.messaging;
+package net.kuujo.vitis.dispatcher;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import net.kuujo.vitis.messaging.Connection;
+import net.kuujo.vitis.messaging.ConnectionSet;
+import net.kuujo.vitis.messaging.JsonMessage;
 
 /**
  * A fields-based dispatcher implementation.
@@ -31,7 +35,7 @@ public class FieldsDispatcher extends AbstractDispatcher {
   private int size;
 
   @Override
-  public void init(ConnectionPool connections) {
+  public void init(ConnectionSet connections) {
     this.items = new ArrayList<Connection>();
     Iterator<? extends Connection> iterator = connections.iterator();
     while (iterator.hasNext()) {

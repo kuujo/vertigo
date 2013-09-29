@@ -20,7 +20,7 @@ package net.kuujo.vitis.messaging;
  *
  * @author Jordan Halterman
  */
-public interface Connection extends Writable<Connection> {
+public interface Connection {
 
   /**
    * Gets the remote connection address.
@@ -28,6 +28,16 @@ public interface Connection extends Writable<Connection> {
    * @return
    *   The remote connection address.
    */
-  public String getAddress();
+  public String address();
+
+  /**
+   * Writes a message to the connection.
+   *
+   * @param message
+   *   The message to write to the connection.
+   * @return
+   *   The called writable instance.
+   */
+  public Connection write(JsonMessage message);
 
 }

@@ -16,7 +16,7 @@
 package net.kuujo.vitis.grouping;
 
 import net.kuujo.vitis.definition.GroupingDefinition;
-import net.kuujo.vitis.messaging.RoundRobinDispatcher;
+import net.kuujo.vitis.dispatcher.RoundRobinDispatcher;
 
 /**
  * A round-robin grouping implementation.

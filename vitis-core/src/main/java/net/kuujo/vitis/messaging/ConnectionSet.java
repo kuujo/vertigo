@@ -18,9 +18,9 @@ package net.kuujo.vitis.messaging;
 import java.util.Collection;
 
 /**
- * A pool of point-to-point connections.
+ * A set of point-to-point connections.
  *
  * @author Jordan Halterman
  */
-public interface ConnectionPool extends Collection<Connection> {
+public interface ConnectionSet extends Collection<Connection> {
 }

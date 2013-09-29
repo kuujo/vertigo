@@ -42,7 +42,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   /**
    * Gets the component name.
    */
-  public String getName() {
+  public String name() {
     return definition.getString("name");
   }
 
@@ -60,7 +60,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   /**
    * Gets the component main.
    */
-  public String getMain() {
+  public String main() {
     return definition.getString("main");
   }
 
@@ -107,7 +107,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
    * @return
    *   The option value.
    */
-  public String getOption(String option) {
+  public String option(String option) {
     return definition.getString(option);
   }
 
@@ -127,7 +127,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   /**
    * Gets the component worker grouping.
    */
-  public GroupingDefinition getGrouping() {
+  public GroupingDefinition grouping() {
     return new GroupingDefinition(definition.getObject("grouping"));
   }
 
@@ -147,7 +147,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   /**
    * Gets the number of component workers.
    */
-  public int getWorkers() {
+  public int workers() {
     return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
   }
 
@@ -170,7 +170,7 @@ public class NodeDefinition implements Serializeable<JsonObject> {
    * @return
    *   A component heartbeat interval.
    */
-  public long getHeartbeatInterval() {
+  public long heartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
   }
 
@@ -183,8 +183,8 @@ public class NodeDefinition implements Serializeable<JsonObject> {
       connections = new JsonObject();
       this.definition.putObject("connections", connections);
     }
-    if (!connections.getFieldNames().contains(definition.getName())) {
-      connections.putObject(definition.getName(), definition.serialize());
+    if (!connections.getFieldNames().contains(definition.name())) {
+      connections.putObject(definition.name(), definition.serialize());
     }
     return definition;
   }

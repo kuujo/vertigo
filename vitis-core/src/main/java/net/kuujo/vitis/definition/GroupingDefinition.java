@@ -59,7 +59,7 @@ public class GroupingDefinition implements Serializeable<JsonObject> {
    * @return
    *   The option value.
    */
-  public String getOption(String option) {
+  public String option(String option) {
     return definition.getString(option);
   }
 
@@ -73,7 +73,7 @@ public class GroupingDefinition implements Serializeable<JsonObject> {
    * @return
    *   The option value.
    */
-  public String getOption(String option, String defaultValue) {
+  public String option(String option, String defaultValue) {
     return definition.getString(option, defaultValue);
   }
 

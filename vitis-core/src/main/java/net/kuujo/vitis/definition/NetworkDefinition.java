@@ -47,7 +47,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   /**
    * Gets the network address.
    */
-  public String getAddress() {
+  public String address() {
     return definition.getString("address");
   }
 
@@ -72,7 +72,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @return
    *   The option value.
    */
-  public String getOption(String option) {
+  public String option(String option) {
     return definition.getString(option);
   }
 
@@ -107,8 +107,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
       roots = new JsonObject();
       this.definition.putObject("roots", roots);
     }
-    if (!roots.getFieldNames().contains(definition.getName())) {
-      roots.putObject(definition.getName(), definition.serialize());
+    if (!roots.getFieldNames().contains(definition.name())) {
+      roots.putObject(definition.name(), definition.serialize());
     }
     return definition;
   }

@@ -60,21 +60,21 @@ public class NodeContext implements Context {
   /**
    * Returns the node address.
    */
-  public String getAddress() {
+  public String address() {
     return context.getString("address");
   }
 
   /**
    * Returns node worker addresses.
    */
-  public String[] getWorkers() {
+  public String[] workers() {
     return (String[]) context.getArray("workers").toArray();
   }
 
   /**
    * Returns a list of node connections.
    */
-  public Collection<ConnectionContext> getConnectionContexts() {
+  public Collection<ConnectionContext> connectionContexts() {
     Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
     JsonObject connections = context.getObject("connections");
     Iterator<String> iter = connections.getFieldNames().iterator();
@@ -87,7 +87,7 @@ public class NodeContext implements Context {
   /**
    * Returns all worker contexts.
    */
-  public Collection<WorkerContext> getWorkerContexts() {
+  public Collection<WorkerContext> workerContexts() {
     JsonArray workers = context.getArray("workers");
     ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
     Iterator<Object> iter = workers.iterator();
@@ -100,7 +100,7 @@ public class NodeContext implements Context {
   /**
    * Returns the node definition.
    */
-  public NodeDefinition getDefinition() {
+  public NodeDefinition definition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
       return new NodeDefinition(definition);
@@ -111,7 +111,7 @@ public class NodeContext implements Context {
   /**
    * Returns the parent network context.
    */
-  public NetworkContext getContext() {
+  public NetworkContext context() {
     return parent;
   }
 

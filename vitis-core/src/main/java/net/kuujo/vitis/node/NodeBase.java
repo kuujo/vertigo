@@ -62,11 +62,11 @@ public abstract class NodeBase {
     this.container = container;
     this.logger = container.logger();
     this.context = context;
-    this.address = context.getAddress();
-    NetworkContext networkContext = context.getContext().getContext();
-    networkAddress = networkContext.getAddress();
-    auditAddress = networkContext.getAuditAddress();
-    broadcastAddress = networkContext.getBroadcastAddress();
+    this.address = context.address();
+    NetworkContext networkContext = context.context().context();
+    networkAddress = networkContext.address();
+    auditAddress = networkContext.auditAddress();
+    broadcastAddress = networkContext.broadcastAddress();
   }
 
   public void start() {
@@ -85,7 +85,7 @@ public abstract class NodeBase {
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
           heartbeat = new DefaultHeartbeatEmitter(heartbeatAddress, vertx);
-          heartbeat.setInterval(context.getContext().getDefinition().getHeartbeatInterval());
+          heartbeat.setInterval(context.context().definition().heartbeatInterval());
           heartbeat.start();
         }
         else {
@@ -101,7 +101,7 @@ public abstract class NodeBase {
   private void setupOutputs() {
     output = new LinearOutputCollector(auditAddress, eventBus);
 
-    Collection<ConnectionContext> connections = context.getContext().getConnectionContexts();
+    Collection<ConnectionContext> connections = context.context().connectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
     while (iter.hasNext()) {
       ConnectionContext connectionContext = iter.next();

@@ -54,21 +54,8 @@ public class WorkerContext implements Context {
    * @return
    *   An eventbus address.
    */
-  public String getAddress() {
+  public String address() {
     return context.getString("address");
-  }
-
-  /**
-   * Sets the unique worker address.
-   *
-   * @param address
-   *   An eventbus address.
-   * @return
-   *   The called worker context.
-   */
-  public WorkerContext setAddress(String address) {
-    context.putString("address", address);
-    return this;
   }
 
   /**
@@ -77,21 +64,8 @@ public class WorkerContext implements Context {
    * @return
    *   The worker's parent node context.
    */
-  public NodeContext getContext() {
+  public NodeContext context() {
     return parent;
-  }
-
-  /**
-   * Sets the parent node context.
-   *
-   * @param context
-   *   A node context.
-   * @return
-   *   The called worker context.
-   */
-  public WorkerContext setContext(NodeContext context) {
-    parent = context;
-    return this;
   }
 
   @Override

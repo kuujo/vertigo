@@ -15,6 +15,9 @@
 */
 package net.kuujo.vitis.node.executor;
 
+import net.kuujo.vitis.messaging.JsonMessage;
+import net.kuujo.vitis.node.Node;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
@@ -24,108 +27,113 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Executor {
+public interface Executor<T extends Executor<T>> extends Node {
 
   /**
-   * Starts the executor.
+   * Sets the execution reply timeout.
+   *
+   * @param timeout
+   *   An execution reply timeout.
+   * @return
+   *   The called executor instance.
    */
-  public void start();
+  public T replyTimeout(long timeout);
 
   /**
-   * Sets the execution queue size.
+   * Gets the execution reply timeout.
+   *
+   * @return
+   *  An execution reply timeout.
+   */
+  public long replyTimeout();
+
+  /**
+   * Sets the maximum execution queue size.
    *
    * @param maxSize
-   *   The execution queue maximum size.
+   *   The maximum queue size allowed for the executor.
    * @return
    *   The called executor instance.
    */
-  public Executor setWriteQueueMaxSize(long maxSize);
+  public T maxQueueSize(long maxSize);
 
   /**
-   * Registers a handler to be invoked for execution.
+   * Gets the maximum execution queue size.
    *
-   * @param handler
-   *   The handler to register.
    * @return
-   *   The called executor instance.
+   *   The maximum queue size allowed for the executor.
    */
-  public Executor executeHandler(Handler<Executor> handler);
+  public long maxQueueSize();
 
   /**
-   * Registers a handler to be invoked when the execution queue is full.
+   * Indicates whether the execution queue is full.
    *
-   * @param fullHandler
-   *   The handler to register.
    * @return
-   *   The called executor instance.
+   *   A boolean indicating whether the execution queue is full.
    */
-  public Executor fullHandler(Handler<Executor> fullHandler);
+  public boolean queueFull();
 
   /**
-   * Registers a handler to be invoked when a full executor is prepared to accept
-   * new executions.
+   * Sets the executor auto-retry option.
    *
-   * @param drainHandler
-   *   The handler to register.
+   * @param retry
+   *   Indicates whether to automatically retry executing failed arguments.
    * @return
    *   The called executor instance.
    */
-  public Executor drainHandler(Handler<Executor> drainHandler);
+  public T autoRetry(boolean retry);
+
+  /**
+   * Gets the executor auto-retry option.
+   *
+   * @return
+   *   Indicates whether the executor will automatically retry executing failed arguments.
+   */
+  public boolean autoRetry();
+
+  /**
+   * Sets the number of automatic retry attempts for a single failed execution.
+   *
+   * @param attempts
+   *   The number of retry attempts allowed. If attempts is -1 then an infinite
+   *   number of retry attempts will be allowed.
+   * @return
+   *   The called executor instance.
+   */
+  public T retryAttempts(int attempts);
+
+  /**
+   * Gets the number of automatic retry attempts.
+   *
+   * @return
+   *   Indicates the number of retry attempts allowed for the executor.
+   */
+  public int retryAttempts();
 
   /**
    * Executes the network.
    *
    * @param args
-   *   Arguments to network nodes.
+   *   Execution arguments.
    * @param resultHandler
-   *   An asynchronous result handler.
+   *   An asynchronous result handler to be invoke with the execution result.
    * @return
    *   The called executor instance.
    */
-  public Executor execute(JsonObject args, Handler<AsyncResult<JsonObject>> resultHandler);
+  public T execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Executes the network.
    *
    * @param args
-   *   Arguments to network nodes.
-   * @param timeout
-   *   An execution timeout in milliseconds.
-   * @param resultHandler
-   *   An asynchronous result handler.
-   * @return
-   *   The called executor instance.
-   */
-  public Executor execute(JsonObject args, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
-
-  /**
-   * Executes the network.
-   *
-   * @param args
-   *   Arguments to network nodes.
+   *   Execution arguments.
    * @param tag
-   *   A tag to apply to arguments.
+   *   A tag to apply to the arguments.
    * @param resultHandler
-   *   An asynchronous result handler.
+   *   An asynchronous result handler to be invoke with the execution result.
    * @return
    *   The called executor instance.
    */
-  public Executor execute(JsonObject args, String tag, Handler<AsyncResult<JsonObject>> resultHandler);
-
-  /**
-   * Executes the network.
-   *
-   * @param args
-   *   Arguments to network nodes.
-   * @param tag
-   *   A tag to apply to arguments.
-   * @param timeout
-   *   An execution timeout in milliseconds.
-   * @param resultHandler
-   *   An asynchronous result handler.
-   * @return
-   *   The called executor instance.
-   */
-  public Executor execute(JsonObject args, String tag, long timeout, Handler<AsyncResult<JsonObject>> resultHandler);
+  public T execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
 }

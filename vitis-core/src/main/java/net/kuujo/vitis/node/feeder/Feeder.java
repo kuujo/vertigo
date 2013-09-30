@@ -56,7 +56,7 @@ public interface Feeder<T extends Feeder<T>> extends Node {
    * @return
    *   The called feeder instance.
    */
-  public T feedQueueMaxSize(long maxSize);
+  public T maxQueueSize(long maxSize);
 
   /**
    * Gets the maximum feed queue size.
@@ -64,7 +64,7 @@ public interface Feeder<T extends Feeder<T>> extends Node {
    * @return
    *   The maximum queue size allowed for the feeder.
    */
-  public long feedQueueMaxSize();
+  public long maxQueueSize();
 
   /**
    * Indicates whether the feed queue is full.
@@ -72,7 +72,7 @@ public interface Feeder<T extends Feeder<T>> extends Node {
    * @return
    *   A boolean indicating whether the feed queue is full.
    */
-  public boolean feedQueueFull();
+  public boolean queueFull();
 
   /**
    * Sets the feeder auto-retry option.

@@ -59,18 +59,18 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase imple
 
   @Override
   @SuppressWarnings("unchecked")
-  public T feedQueueMaxSize(long maxSize) {
+  public T maxQueueSize(long maxSize) {
     queue.maxQueueSize(maxSize);
     return (T) this;
   }
 
   @Override
-  public long feedQueueMaxSize() {
+  public long maxQueueSize() {
     return queue.maxQueueSize();
   }
 
   @Override
-  public boolean feedQueueFull() {
+  public boolean queueFull() {
     return queue.full();
   }
 

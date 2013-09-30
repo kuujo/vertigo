@@ -48,7 +48,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
   }
 
   @Override
-  public boolean feedQueueFull() {
+  public boolean queueFull() {
     return !started || paused;
   }
 

@@ -53,22 +53,30 @@ public class DefaultVitis implements Vitis {
 
   @Override
   public BasicFeeder createBasicFeeder() {
-    return new DefaultBasicFeeder(vertx, container, context);
+    BasicFeeder feeder = new DefaultBasicFeeder(vertx, container, context);
+    feeder.start();
+    return feeder;
   }
 
   @Override
   public PollingFeeder createPollingFeeder() {
-    return new DefaultPollingFeeder(vertx, container, context);
+    PollingFeeder feeder = new DefaultPollingFeeder(vertx, container, context);
+    feeder.start();
+    return feeder;
   }
 
   @Override
   public StreamFeeder createStreamFeeder() {
-    return new DefaultStreamFeeder(vertx, container, context);
+    StreamFeeder feeder = new DefaultStreamFeeder(vertx, container, context);
+    feeder.start();
+    return feeder;
   }
 
   @Override
   public Worker createWorker() {
-    return new BasicWorker(vertx, container, context);
+    Worker worker = new BasicWorker(vertx, container, context);
+    worker.start();
+    return worker;
   }
 
 }

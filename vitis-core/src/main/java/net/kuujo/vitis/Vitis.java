@@ -16,15 +16,8 @@
 package net.kuujo.vitis;
 
 import net.kuujo.vitis.context.WorkerContext;
-import net.kuujo.vitis.node.feeder.EmbeddedFeeder;
-import net.kuujo.vitis.node.feeder.EmbeddedStreamFeeder;
+import net.kuujo.vitis.node.feeder.BasicFeeder;
 import net.kuujo.vitis.node.feeder.PollFeeder;
-import net.kuujo.vitis.node.feeder.ReliableEmbeddedFeeder;
-import net.kuujo.vitis.node.feeder.ReliableEmbeddedStreamFeeder;
-import net.kuujo.vitis.node.feeder.ReliablePollFeeder;
-import net.kuujo.vitis.node.feeder.ReliableStreamFeeder;
-import net.kuujo.vitis.node.feeder.RichPollFeeder;
-import net.kuujo.vitis.node.feeder.RichStreamFeeder;
 import net.kuujo.vitis.node.feeder.StreamFeeder;
 import net.kuujo.vitis.node.worker.Worker;
 
@@ -38,32 +31,44 @@ import net.kuujo.vitis.node.worker.Worker;
  */
 public interface Vitis {
 
+  /**
+   * Sets the node instance context.
+   *
+   * @param context
+   *   A worker context.
+   */
   public void setContext(WorkerContext context);
 
-  @SuppressWarnings("rawtypes")
+  /**
+   * Creates a basic feeder.
+   *
+   * @return
+   *   A new basic feeder instance.
+   */
+  public BasicFeeder createBasicFeeder();
+
+  /**
+   * Creates a polling feeder.
+   *
+   * @return
+   *   A new poll feeder instance.
+   */
   public PollFeeder createPollFeeder();
 
-  @SuppressWarnings("rawtypes")
+  /**
+   * Creates a stream feeder.
+   *
+   * @return
+   *   A new stream feeder instance.
+   */
   public StreamFeeder createStreamFeeder();
 
-  @SuppressWarnings("rawtypes")
-  public EmbeddedFeeder createEmbeddedFeeder();
-
-  @SuppressWarnings("rawtypes")
-  public EmbeddedStreamFeeder createEmbeddedStreamFeeder();
-
-  public RichPollFeeder createRichPollFeeder();
-
-  public RichStreamFeeder createRichStreamFeeder();
-
-  public ReliablePollFeeder createReliablePollFeeder();
-
-  public ReliableEmbeddedFeeder createReliableEmbeddedFeeder();
-
-  public ReliableStreamFeeder createReliableStreamFeeder();
-
-  public ReliableEmbeddedStreamFeeder createReliableEmbeddedStreamFeeder();
-
+  /**
+   * Creates a worker.
+   *
+   * @return
+   *   A new worker instance.
+   */
   public Worker createWorker();
 
 }

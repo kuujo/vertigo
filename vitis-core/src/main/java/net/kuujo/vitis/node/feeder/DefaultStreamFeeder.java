@@ -43,7 +43,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
 
   private boolean paused;
 
-  protected DefaultStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public DefaultStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

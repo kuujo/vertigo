@@ -22,7 +22,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface PollingFeeder extends Feeder<PollingFeeder> {
+public interface PollFeeder extends Feeder<PollFeeder> {
 
   /**
    * Sets the feed delay.
@@ -32,7 +32,7 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  public PollingFeeder feedDelay(long delay);
+  public PollFeeder feedDelay(long delay);
 
   /**
    * Gets the feed delay.
@@ -50,6 +50,6 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  public PollingFeeder feedHandler(Handler<PollingFeeder> handler);
+  public PollFeeder feedHandler(Handler<PollFeeder> handler);
 
 }

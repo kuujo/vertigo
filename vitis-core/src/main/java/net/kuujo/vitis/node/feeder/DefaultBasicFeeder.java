@@ -31,7 +31,7 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultBasicFeeder extends AbstractFeeder<BasicFeeder> implements BasicFeeder {
 
-  protected DefaultBasicFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public DefaultBasicFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 

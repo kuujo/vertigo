@@ -16,58 +16,68 @@
 package net.kuujo.vitis.node.feeder;
 
 import net.kuujo.vitis.context.WorkerContext;
-import net.kuujo.vitis.messaging.DefaultJsonMessage;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * A basic poll feeder implementation.
+ * A default polling feeder implementation.
  *
  * @author Jordan Halterman
  */
-@SuppressWarnings("rawtypes")
-public class BasicPollFeeder extends AbstractFeeder implements PollFeeder<PollFeeder> {
+public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
 
-  protected Handler<PollFeeder> feedHandler;
+  private static final long START_DELAY = 1000;
+
+  private Handler<PollingFeeder> feedHandler;
+
+  private long feedDelay;
 
   private boolean fed;
 
-  private long feedDelay = 100;
-
-  public BasicPollFeeder(Vertx vertx, Container container, WorkerContext context) {
+  protected DefaultPollingFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 
   @Override
-  public void start() {
-    super.start();
-    vertx.setTimer(1000, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        recursiveFeed();
-      }
-    });
-  }
-
-  @Override
-  public PollFeeder setFeedDelay(long delay) {
+  public PollingFeeder feedDelay(long delay) {
     feedDelay = delay;
     return this;
   }
 
   @Override
-  public long getFeedDelay() {
+  public long feedDelay() {
     return feedDelay;
+  }
+
+  @Override
+  public PollingFeeder feedHandler(Handler<PollingFeeder> handler) {
+    feedHandler = handler;
+    return this;
+  }
+
+  @Override
+  public void start() {
+    super.start();
+    scheduleFeed(START_DELAY);
+  }
+
+  /**
+   * Schedules a feed with the feed delay.
+   */
+  private void scheduleFeed() {
+    scheduleFeed(feedDelay);
   }
 
   /**
    * Schedules a feed.
    */
-  private void scheduleFeed() {
-    vertx.setTimer(feedDelay, new Handler<Long>() {
+  private void scheduleFeed(long delay) {
+    vertx.setTimer(delay, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
         recursiveFeed();
@@ -99,38 +109,30 @@ public class BasicPollFeeder extends AbstractFeeder implements PollFeeder<PollFe
   }
 
   @Override
-  public PollFeeder setFeedQueueMaxSize(long maxSize) {
-    queue.setMaxQueueSize(maxSize);
-    return this;
-  }
-
-  @Override
-  public long getFeedQueueMaxSize() {
-    return queue.getMaxQueueSize();
-  }
-
-  @Override
-  public boolean feedQueueFull() {
-    return queue.full();
-  }
-
-  @Override
-  public PollFeeder feed(JsonObject data) {
-    output.emit(DefaultJsonMessage.create(data));
+  public PollingFeeder feed(JsonObject data) {
     fed = true;
+    doFeed(data, null, 0, null);
     return this;
   }
 
   @Override
-  public PollFeeder feed(JsonObject data, String tag) {
-    output.emit(DefaultJsonMessage.create(data, tag));
+  public PollingFeeder feed(JsonObject data, String tag) {
     fed = true;
+    doFeed(data, tag, 0, null);
     return this;
   }
 
   @Override
-  public PollFeeder feedHandler(Handler<PollFeeder> handler) {
-    this.feedHandler = handler;
+  public PollingFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+    fed = true;
+    doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
+    return this;
+  }
+
+  @Override
+  public PollingFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+    fed = true;
+    doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
     return this;
   }
 

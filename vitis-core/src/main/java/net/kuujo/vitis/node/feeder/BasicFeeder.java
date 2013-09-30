@@ -15,63 +15,10 @@
 */
 package net.kuujo.vitis.node.feeder;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * A basic feeder.
  *
  * @author Jordan Halterman
- *
- * @param <T> The feeder type
  */
-public interface BasicFeeder<T extends BasicFeeder<?>> extends Feeder {
-
-  /**
-   * Sets the maximum feed queue size.
-   *
-   * @param maxSize
-   *   The maximum queue size allowed for the feeder.
-   * @return
-   *   The called feeder instance.
-   */
-  public T setFeedQueueMaxSize(long maxSize);
-
-  /**
-   * Gets the maximum feed queue size.
-   *
-   * @return
-   *   The maximum queue size allowed for the feeder.
-   */
-  public long getFeedQueueMaxSize();
-
-  /**
-   * Indicates whether the feed queue is full.
-   *
-   * @return
-   *   A boolean indicating whether the feed queue is full.
-   */
-  public boolean feedQueueFull();
-
-  /**
-   * Feeds data through the feeder.
-   *
-   * @param data
-   *   The data to feed.
-   * @return
-   *   The called feeder instance.
-   */
-  public T feed(JsonObject data);
-
-  /**
-   * Feeds data through the feeder.
-   *
-   * @param data
-   *   The data to feed.
-   * @param tag
-   *   A tag to apply to the data.
-   * @return
-   *   The called feeder instance.
-   */
-  public T feed(JsonObject data, String tag);
-
+public interface BasicFeeder extends Feeder<BasicFeeder> {
 }

@@ -21,19 +21,37 @@ import org.vertx.java.core.Handler;
  * A stream feeder.
  *
  * @author Jordan Halterman
- *
- * @param <T> The feeder type
  */
-public interface StreamFeeder<T extends StreamFeeder<?>> extends BasicFeeder<T> {
+public interface StreamFeeder extends Feeder<StreamFeeder> {
+
+  /**
+   * Sets a connect handler on the feeder.
+   *
+   * @param handler
+   *   A handler to be invoked when the feeder is connected.
+   * @return
+   *   The called feeder instance.
+   */
+  public StreamFeeder connectHandler(Handler<StreamFeeder> handler);
+
+  /**
+   * Sets a full handler on the feeder.
+   *
+   * @param handler
+   *   A handler to be invoked when the feed queue is full.
+   * @return
+   *   The called feeder instance.
+   */
+  public StreamFeeder fullHandler(Handler<Void> handler);
 
   /**
    * Sets a drain handler on the feeder.
    *
    * @param handler
-   *   A drain handler.
+   *   A handler to be invoked when a full feed queue is emptied.
    * @return
    *   The called feeder instance.
    */
-  public T drainHandler(Handler<Void> handler);
+  public StreamFeeder drainHandler(Handler<Void> handler);
 
 }

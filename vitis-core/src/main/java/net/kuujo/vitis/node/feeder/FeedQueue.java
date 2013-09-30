@@ -26,14 +26,22 @@ import org.vertx.java.core.Handler;
 public interface FeedQueue {
 
   /**
-   * Sets the default feed queue timeout.
+   * Sets the feed queue timeout.
    *
    * @param timeout
    *   A feed queue timeout.
    * @return
    *   The called feed queue instance.
    */
-  public FeedQueue setDefaultTimeout(long timeout);
+  public FeedQueue timeout(long timeout);
+
+  /**
+   * Gets the feed queue timeout.
+   *
+   * @return
+   *   A feed queue timeout.
+   */
+  public long timeout();
 
   /**
    * Sets the maximum feed queue size.
@@ -43,7 +51,7 @@ public interface FeedQueue {
    * @return
    *   The called feed queue instance.
    */
-  public FeedQueue setMaxQueueSize(long maxSize);
+  public FeedQueue maxQueueSize(long maxSize);
 
   /**
    * Gets the maximum feed queue size.
@@ -51,7 +59,7 @@ public interface FeedQueue {
    * @return
    *   The maximum allowed feed queue size.
    */
-  public long getMaxQueueSize();
+  public long maxQueueSize();
 
   /**
    * Indicates the current feed queue size.
@@ -81,21 +89,6 @@ public interface FeedQueue {
    *   The called feed queue instance.
    */
   public FeedQueue enqueue(String id, Handler<AsyncResult<Void>> ackHandler);
-
-  /**
-   * Adds a unique ID to the queue.
-   *
-   * @param id
-   *   A unique message ID.
-   * @param timeout
-   *   A message timeout.
-   * @param ackHandler
-   *   A handler to be invoked once the message is acked or fails or the message
-   *   times out.
-   * @return
-   *   The called feed queue instance.
-   */
-  public FeedQueue enqueue(String id, long timeout, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Acks a message in the queue.

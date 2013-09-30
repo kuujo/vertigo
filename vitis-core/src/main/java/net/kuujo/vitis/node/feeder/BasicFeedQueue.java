@@ -32,34 +32,41 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  *
  * @author Jordan Halterman
  */
-public class DefaultFeedQueue implements FeedQueue {
+public class BasicFeedQueue implements FeedQueue {
 
   private Vertx vertx;
 
   private Map<String, FutureResult> futures = new HashMap<String, FutureResult>();
 
-  private long defaultTimeout = 30000;
+  protected static final long DEFAULT_TIMEOUT = 30000;
+
+  private long timeout = DEFAULT_TIMEOUT;
 
   private long maxQueueSize = 1000;
 
-  public DefaultFeedQueue(Vertx vertx) {
+  public BasicFeedQueue(Vertx vertx) {
     this.vertx = vertx;
   }
 
   @Override
-  public FeedQueue setDefaultTimeout(long timeout) {
-    defaultTimeout = timeout;
+  public FeedQueue timeout(long timeout) {
+    this.timeout = timeout;
     return this;
   }
 
   @Override
-  public FeedQueue setMaxQueueSize(long maxSize) {
+  public long timeout() {
+    return timeout;
+  }
+
+  @Override
+  public FeedQueue maxQueueSize(long maxSize) {
     maxQueueSize = maxSize;
     return this;
   }
 
   @Override
-  public long getMaxQueueSize() {
+  public long maxQueueSize() {
     return maxQueueSize;
   }
 
@@ -74,12 +81,7 @@ public class DefaultFeedQueue implements FeedQueue {
   }
 
   @Override
-  public FeedQueue enqueue(String id, Handler<AsyncResult<Void>> ackHandler) {
-    return enqueue(id, defaultTimeout, ackHandler);
-  }
-
-  @Override
-  public FeedQueue enqueue(final String id, long timeout, Handler<AsyncResult<Void>> ackHandler) {
+  public FeedQueue enqueue(final String id, Handler<AsyncResult<Void>> ackHandler) {
     FutureResult result = new FutureResult(new DefaultFutureResult<Void>().setHandler(ackHandler), vertx);
     futures.put(id, result);
     result.start(timeout, new Handler<FutureResult>() {

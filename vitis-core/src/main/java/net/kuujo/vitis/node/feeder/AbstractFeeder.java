@@ -15,24 +15,113 @@
 */
 package net.kuujo.vitis.node.feeder;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.platform.Container;
-
 import net.kuujo.vitis.context.WorkerContext;
+import net.kuujo.vitis.messaging.DefaultJsonMessage;
+import net.kuujo.vitis.messaging.JsonMessage;
 import net.kuujo.vitis.node.NodeBase;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
 /**
  * An abstract feeder implementation.
  *
  * @author Jordan Halterman
  */
-abstract class AbstractFeeder extends NodeBase {
+public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase implements Feeder<T> {
 
   protected FeedQueue queue;
 
+  protected boolean autoRetry;
+
+  protected int retryAttempts = -1;
+
   protected AbstractFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
-    queue = new DefaultFeedQueue(vertx);
+    queue = new BasicFeedQueue(vertx);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T ackTimeout(long timeout) {
+    queue.timeout(timeout);
+    return (T) this;
+  }
+
+  @Override
+  public long ackTimeout() {
+    return queue.timeout();
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T feedQueueMaxSize(long maxSize) {
+    queue.maxQueueSize(maxSize);
+    return (T) this;
+  }
+
+  @Override
+  public long feedQueueMaxSize() {
+    return queue.maxQueueSize();
+  }
+
+  @Override
+  public boolean feedQueueFull() {
+    return queue.full();
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T autoRetry(boolean retry) {
+    autoRetry = retry;
+    return (T) this;
+  }
+
+  @Override
+  public boolean autoRetry() {
+    return autoRetry;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T retryAttempts(int attempts) {
+    retryAttempts = attempts;
+    return (T) this;
+  }
+
+  @Override
+  public int retryAttempts() {
+    return retryAttempts;
+  }
+
+  /**
+   * Executes a feed.
+   */
+  @SuppressWarnings("unchecked")
+  protected T doFeed(final JsonObject data, final String tag, final int attempts, final Future<Void> future) {
+    final JsonMessage message = DefaultJsonMessage.create(data, tag);
+    queue.enqueue(message.id(), new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
+            doFeed(data, tag, attempts+1, future);
+          }
+          else if (future != null) {
+            future.setFailure(result.cause());
+          }
+        }
+        else if (future != null) {
+          future.setResult(result.result());
+        }
+      }
+    });
+    output.emit(message);
+    return (T) this;
   }
 
   @Override

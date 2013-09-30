@@ -15,12 +15,148 @@
 */
 package net.kuujo.vitis.node.feeder;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+
 import net.kuujo.vitis.node.Node;
 
 /**
- * A base type for all feeders.
+ * A message feeder.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The feeder type
  */
-public interface Feeder extends Node {
+public interface Feeder<T extends Feeder<T>> extends Node {
+
+  /**
+   * Sets the message ack timeout.
+   *
+   * @param timeout
+   *   A message ack timeout.
+   * @return
+   *   The called feeder instance.
+   */
+  public T ackTimeout(long timeout);
+
+  /**
+   * Gets the message ack timeout.
+   *
+   * @return
+   *  A message ack timeout.
+   */
+  public long ackTimeout();
+
+  /**
+   * Sets the maximum feed queue size.
+   *
+   * @param maxSize
+   *   The maximum queue size allowed for the feeder.
+   * @return
+   *   The called feeder instance.
+   */
+  public T feedQueueMaxSize(long maxSize);
+
+  /**
+   * Gets the maximum feed queue size.
+   *
+   * @return
+   *   The maximum queue size allowed for the feeder.
+   */
+  public long feedQueueMaxSize();
+
+  /**
+   * Indicates whether the feed queue is full.
+   *
+   * @return
+   *   A boolean indicating whether the feed queue is full.
+   */
+  public boolean feedQueueFull();
+
+  /**
+   * Sets the feeder auto-retry option.
+   *
+   * @param retry
+   *   Indicates whether to automatically retry emitting failed data.
+   * @return
+   *   The called feeder instance.
+   */
+  public T autoRetry(boolean retry);
+
+  /**
+   * Gets the feeder auto-retry option.
+   *
+   * @return
+   *   Indicates whether the feeder with automatically retry emitting failed data.
+   */
+  public boolean autoRetry();
+
+  /**
+   * Sets the number of automatic retry attempts for a single failed message.
+   *
+   * @param attempts
+   *   The number of retry attempts allowed. If attempts is -1 then an infinite
+   *   number of retry attempts will be allowed.
+   * @return
+   *   The called feeder instance.
+   */
+  public T retryAttempts(int attempts);
+
+  /**
+   * Gets the number of automatic retry attempts.
+   *
+   * @return
+   *   Indicates the number of retry attempts allowed for the feeder.
+   */
+  public int retryAttempts();
+
+  /**
+   * Feeds data through the feeder.
+   *
+   * @param data
+   *   The data to feed.
+   * @return
+   *   The called feeder instance.
+   */
+  public T feed(JsonObject data);
+
+  /**
+   * Feeds data through the feeder.
+   *
+   * @param data
+   *   The data to feed.
+   * @param tag
+   *   A tag to apply to the data.
+   * @return
+   *   The called feeder instance.
+   */
+  public T feed(JsonObject data, String tag);
+
+  /**
+   * Feeds data to the network with an ack handler.
+   *
+   * @param data
+   *   The data to feed.
+   * @param ackHandler
+   *   An asynchronous result handler to be invoke with the ack result.
+   * @return
+   *   The called feeder instance.
+   */
+  public T feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
+
+  /**
+   * Feeds data to the network with an ack handler.
+   *
+   * @param data
+   *   The data to feed.
+   * @param tag
+   *   A tag to apply to the data.
+   * @param ackHandler
+   *   An asynchronous result handler to be invoke with the ack result.
+   * @return
+   *   The called feeder instance.
+   */
+  public T feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
+
 }

@@ -18,9 +18,9 @@ package net.kuujo.vitis;
 import net.kuujo.vitis.context.WorkerContext;
 import net.kuujo.vitis.node.feeder.BasicFeeder;
 import net.kuujo.vitis.node.feeder.DefaultBasicFeeder;
-import net.kuujo.vitis.node.feeder.DefaultPollFeeder;
+import net.kuujo.vitis.node.feeder.DefaultPollingFeeder;
 import net.kuujo.vitis.node.feeder.DefaultStreamFeeder;
-import net.kuujo.vitis.node.feeder.PollFeeder;
+import net.kuujo.vitis.node.feeder.PollingFeeder;
 import net.kuujo.vitis.node.feeder.StreamFeeder;
 import net.kuujo.vitis.node.worker.BasicWorker;
 import net.kuujo.vitis.node.worker.Worker;
@@ -57,8 +57,8 @@ public class DefaultVitis implements Vitis {
   }
 
   @Override
-  public PollFeeder createPollFeeder() {
-    return new DefaultPollFeeder(vertx, container, context);
+  public PollingFeeder createPollingFeeder() {
+    return new DefaultPollingFeeder(vertx, container, context);
   }
 
   @Override

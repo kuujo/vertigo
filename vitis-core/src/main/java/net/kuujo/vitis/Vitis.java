@@ -17,7 +17,7 @@ package net.kuujo.vitis;
 
 import net.kuujo.vitis.context.WorkerContext;
 import net.kuujo.vitis.node.feeder.BasicFeeder;
-import net.kuujo.vitis.node.feeder.PollFeeder;
+import net.kuujo.vitis.node.feeder.PollingFeeder;
 import net.kuujo.vitis.node.feeder.StreamFeeder;
 import net.kuujo.vitis.node.worker.Worker;
 
@@ -53,7 +53,7 @@ public interface Vitis {
    * @return
    *   A new poll feeder instance.
    */
-  public PollFeeder createPollFeeder();
+  public PollingFeeder createPollingFeeder();
 
   /**
    * Creates a stream feeder.

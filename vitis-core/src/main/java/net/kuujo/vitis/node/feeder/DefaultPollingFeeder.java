@@ -29,22 +29,22 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public class DefaultPollFeeder extends AbstractFeeder<PollFeeder> implements PollFeeder {
+public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
 
   private static final long START_DELAY = 1000;
 
-  private Handler<PollFeeder> feedHandler;
+  private Handler<PollingFeeder> feedHandler;
 
   private long feedDelay;
 
   private boolean fed;
 
-  public DefaultPollFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public DefaultPollingFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 
   @Override
-  public PollFeeder feedDelay(long delay) {
+  public PollingFeeder feedDelay(long delay) {
     feedDelay = delay;
     return this;
   }
@@ -55,7 +55,7 @@ public class DefaultPollFeeder extends AbstractFeeder<PollFeeder> implements Pol
   }
 
   @Override
-  public PollFeeder feedHandler(Handler<PollFeeder> handler) {
+  public PollingFeeder feedHandler(Handler<PollingFeeder> handler) {
     feedHandler = handler;
     return this;
   }
@@ -109,28 +109,28 @@ public class DefaultPollFeeder extends AbstractFeeder<PollFeeder> implements Pol
   }
 
   @Override
-  public PollFeeder feed(JsonObject data) {
+  public PollingFeeder feed(JsonObject data) {
     fed = true;
     doFeed(data, null, 0, null);
     return this;
   }
 
   @Override
-  public PollFeeder feed(JsonObject data, String tag) {
+  public PollingFeeder feed(JsonObject data, String tag) {
     fed = true;
     doFeed(data, tag, 0, null);
     return this;
   }
 
   @Override
-  public PollFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+  public PollingFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
     fed = true;
     doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
     return this;
   }
 
   @Override
-  public PollFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+  public PollingFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
     fed = true;
     doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
     return this;

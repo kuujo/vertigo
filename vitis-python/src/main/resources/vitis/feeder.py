@@ -18,6 +18,7 @@ import net.kuujo.vitis.node.feeder.DefaultStreamFeeder
 import net.kuujo.vitis.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
+import org.vertx.java.core.json.JsonObject
 from core.javautils import map_from_java, map_to_java
 
 class _AbstractFeeder(object):
@@ -88,8 +89,20 @@ class _AbstractFeeder(object):
     """
     Feeds data to the network.
     """
-    self._feeder.feed(data, tag, timeout, FeedResultHandler(handler))
+    if handler is not None:
+      if tag is not None:
+        self._feeder.feed(self._convert_data(data), tag, FeedResultHandler(handler))
+      else:
+        self._feeder.feed(self._convert_data(data), FeedResultHandler(handler))
+    else:
+      if tag is not None:
+        self._feeder.feed(self._convert_data(data), tag)
+      else:
+        self._feeder.feed(self._convert_data(data))
     return self
+
+  def _convert_data(self, data):
+    return org.vertx.java.core.json.JsonObject(map_to_java(data))
 
 class BasicFeeder(_AbstractFeeder):
   """

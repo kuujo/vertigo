@@ -13,13 +13,13 @@
 # limitations under the License.
 from core.javautils import map_from_java, map_to_java
 
-class Message(dict):
+class Message(object):
   """
   A seed message.
   """
   def __init__(self, message):
     self._message = message
-    dict.__init__(self, data)
+    self._body = map_from_java(message.body().toMap())
 
   @property
   def id(self):
@@ -35,7 +35,7 @@ class Message(dict):
 
   @property
   def body(self):
-    return map_from_java(self._message.body())
+    return self._body
 
   @property
   def tag(self):
@@ -47,11 +47,11 @@ class Message(dict):
     """
     if id is not None:
       if tag is not None:
-        return Message(self._message.createChild(id, map_to_java(body), tag))
+        return Message(self._message.createChild(id, org.vertx.java.core.json.JsonObject(map_to_java(body)), tag))
       else:
-        return Message(self._message.createChild(id, map_to_java(body)))
+        return Message(self._message.createChild(id, org.vertx.java.core.json.JsonObject(map_to_java(body))))
     else:
       if tag is not None:
-        return Message(self._message.createChild(map_to_java(body), tag))
+        return Message(self._message.createChild(org.vertx.java.core.json.JsonObject(map_to_java(body)), tag))
       else:
-        return Message(self._message.createChild(map_to_java(body)))
+        return Message(self._message.createChild(org.vertx.java.core.json.JsonObject(map_to_java(body))))

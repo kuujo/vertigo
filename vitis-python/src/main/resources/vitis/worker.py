@@ -16,6 +16,7 @@ import net.kuujo.vitis.node.worker.BasicWorker
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 import org.vertx.java.core.AsyncResultHandler
+import org.vertx.java.core.json.JsonObject
 from messaging import Message
 from core.javautils import map_from_java, map_to_java
 
@@ -38,7 +39,7 @@ class BasicWorker(object):
     """
     Sets the worker message handler.
     """
-    self._worker.dataHandler(DataHandler(handler))
+    self._worker.messageHandler(MessageHandler(handler))
     return handler
 
   def start(self, handler=None):
@@ -56,14 +57,14 @@ class BasicWorker(object):
     """
     if parent is not None:
       if tag is not None:
-        self._worker.emit(data, tag, parent)
+        self._worker.emit(self._convert_data(data), tag, parent._message)
       else:
-        self._worker.emit(data, parent)
+        self._worker.emit(self._convert_data(data), parent._message)
     else:
       if tag is not None:
-        self._worker.emit(data, tag)
+        self._worker.emit(self._convert_data(data), tag)
       else:
-        self._worker.emit(data)
+        self._worker.emit(self._convert_data(data))
 
   def ack(self, *messages):
     """
@@ -83,6 +84,9 @@ class BasicWorker(object):
     else:
       self._worker.fail(*[messages[i]._message for i in range(len(messages))])
 
+  def _convert_data(self, data):
+    return org.vertx.java.core.json.JsonObject(map_to_java(data))
+
 class StartHandler(org.vertx.java.core.AsyncResultHandler):
   """
   A worker start handler.
@@ -97,12 +101,12 @@ class StartHandler(org.vertx.java.core.AsyncResultHandler):
     else:
       self.handler(None, self.worker)
 
-class DataHandler(org.vertx.java.core.Handler):
+class MessageHandler(org.vertx.java.core.Handler):
   """
-  A data handler wrapper.
+  A message handler wrapper.
   """
   def __init__(self, handler):
     self.handler = handler
 
   def handle(self, message):
-    self.handler(Message(map_from_java(message.toMap()), message))
+    self.handler(Message(message))

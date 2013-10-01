@@ -36,7 +36,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
 
   private static final long START_DELAY = 1000;
 
-  private long feedDelay;
+  private long feedDelay = 500;
 
   private boolean fed;
 

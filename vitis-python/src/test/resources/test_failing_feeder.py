@@ -11,22 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from test import Assert
-from vitis import create_worker
+from test import Assert, Test
+from vitis import create_basic_feeder
 
-worker = create_worker()
+feeder = create_basic_feeder()
 
-def worker_start(error, worker):
+def start_handler(error, feeder):
   if error:
     Assert.true(False)
   else:
-    Assert.not_null(worker)
+    def ack_handler(error=None):
+      Assert.not_null(error)
+      Test.complete()
+    feeder.feed({'body': 'Hello world!'}, tag='test', handler=ack_handler)
 
-@worker.message_handler
-def handle_message(message):
-  Assert.not_null(message)
-  Assert.not_null(message.id)
-  Assert.not_null(message.body)
-  worker.emit(message.body, parent=message)
-
-worker.start(worker_start)
+feeder.start(start_handler)

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from test import Assert
+from test import Assert, Test
 from vitis import create_stream_feeder
 
 feeder = create_stream_feeder()
@@ -28,7 +28,11 @@ def start_handler(error, feeder):
   def drain_handler():
     pass
 
-  if not feeder.queue_full():
-    feeder.feed({'body': 'Hello world!'}, tag='test')
+  def ack_handler(error):
+    Assert.not_null(error)
+    Test.complete()
+
+  while not feeder.queue_full():
+    feeder.feed({'body': 'Hello world!'}, tag='test', handler=ack_handler)
 
 feeder.start(start_handler)

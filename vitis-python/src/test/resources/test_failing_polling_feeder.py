@@ -11,22 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from test import Assert
-from vitis import create_stream_feeder
+from test import Assert, Test
+from vitis import create_polling_feeder
 
-feeder = create_stream_feeder()
+feeder = create_polling_feeder()
 
 def start_handler(error, feeder):
   if error:
     Assert.true(False)
 
-fed = False
-
-@feeder.feed_handler
-def feed_handler(message):
-  global fed
-  if not fed:
-    feeder.feed({'body': 'Hello world!'}, tag='test')
-    fed = True
+  @feeder.feed_handler
+  def feed_handler(message):
+    def ack_handler(error):
+      Assert.not_null(error)
+      Test.complete()
+    feeder.feed({'body': 'Hello world!'}, tag='test', handler=ack_handler)
 
 feeder.start(start_handler)

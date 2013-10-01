@@ -36,7 +36,6 @@ class NetworkDefinition(object):
 
   address = property(get_address, set_address)
 
-  @property
   def acking_enabled(self):
     return self._def.ackingEnabled()
 
@@ -66,7 +65,7 @@ class NetworkDefinition(object):
 
   def from_root(self, name, main=None, workers=1, grouping=None, **options):
     node = NodeDefinition(name, main, workers, grouping, **options)
-    self._def.fromRoot(component._def)
+    self._def.fromRoot(node._def)
     return node
 
   @property
@@ -78,7 +77,8 @@ class NodeDefinition(object):
   A node definition.
   """
   def __init__(self, name, main=None, workers=1, grouping=None, **options):
-    self._def = net.kuujo.vitis.definition.NodeDefinition(name)
+    self._def = net.kuujo.vitis.definition.NodeDefinition()
+    self._def.setName(name)
     if main is not None:
       self._def.setMain(main)
     self._def.setWorkers(workers)
@@ -124,7 +124,7 @@ class NodeDefinition(object):
 
   def to_node(self, name, main=None, workers=1, **options):
     node = NodeDefinition(name, main, workers, **options)
-    self._def.toNode(node.__def)
+    self._def.toNode(node._def)
     return node
 
 

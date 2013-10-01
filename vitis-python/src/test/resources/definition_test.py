@@ -26,6 +26,22 @@ class DefinitionTestCase(TestCase):
     self.assert_equals("test", network.address)
     network.address = "foo"
     self.assert_equals("foo", network.address)
+    network.enable_acking()
+    self.assert_true(network.acking_enabled())
+    network.disable_acking()
+    self.assert_false(network.acking_enabled())
+    network.num_ackers = 10
+    self.assert_equals(10, network.num_ackers)
+    network.ack_expire = 50000
+    self.assert_equals(50000, network.ack_expire)
+    node = network.from_root('test_feeder_verticle', main='test_feeder_verticle.py')
+    self.assert_equals('test_feeder_verticle', node.name)
+    self.assert_equals('test_feeder_verticle.py', node.main)
+    node.workers = 4
+    self.assert_equals(4, node.workers)
+    node2 = node.to_node('test_worker_verticle')
+    node2.main = 'test_worker_verticle.py'
+    self.assert_equals('test_worker_verticle.py', node2.main)
     self.complete()
 
 run_test(DefinitionTestCase())

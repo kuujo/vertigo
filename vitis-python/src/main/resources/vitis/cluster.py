@@ -15,7 +15,7 @@ from context import NetworkContext
 import net.kuujo.vitis.LocalCluster
 import net.kuujo.vitis.ViaCluster
 import org.vertx.java.core.AsyncResultHandler
-import org.vertx.java.platform.impl.JythonVerticleFactory.vertx
+import org.vertx.java.platform.impl.JythonVerticleFactory
 from core.javautils import map_from_java, map_to_java
 
 class _AbstractCluster(object):

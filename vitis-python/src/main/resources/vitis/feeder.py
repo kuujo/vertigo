@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vevent.context.NetworkContext
-import net.kuujo.vevent.node.BasicWorker
 import net.kuujo.vevent.node.BasicFeeder
 import net.kuujo.vevent.node.BasicPullFeeder
 import net.kuujo.vevent.node.BasicStreamFeeder
@@ -20,83 +19,6 @@ import net.kuujo.vevent.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 from core.javautils import map_from_java, map_to_java
-
-class Worker(object):
-  """
-  A worker instance.
-  """
-  _handlercls = None
-
-  def __init__(self):
-    self.__worker = net.kuujo.vevent.node.BasicWorker(
-      org.vertx.java.platform.impl.JythonVerticleFactory.vertx,
-      org.vertx.java.platform.impl.JythonVerticleFactory.container,
-      net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
-    )
-
-  def data_handler(self, handler):
-    """
-    Sets the seed data handler.
-    """
-    self.__worker.dataHandler(DataHandler(handler))
-    return handler
-
-  def start(self):
-    """
-    Starts the seed.
-    """
-    self.__worker.start()
-
-  def emit(self, data, parent=None, tag=None):
-    """
-    Emits data to all output streams.
-    """
-    if parent is not None:
-      if tag is not None:
-        self.__worker.emit(data, tag, parent)
-      else:
-        self.__worker.emit(data, parent)
-    else:
-      if tag is not None:
-        self.__worker.emit(data, tag)
-      else:
-        self.__worker.emit(data)
-
-  def ack(self, *data):
-    """
-    Acknowledges a message.
-    """
-    if len(data) == 1:
-      self.__worker.ack(data[0]._message)
-    else:
-      self.__worker.ack(*[data[i]._message for i in range(len(data))])
-
-  def fail(self, *data):
-    """
-    Fails a message.
-    """
-    if len(data) == 1:
-      self.__worker.fail(data[0]._message)
-    else:
-      self.__worker.fail(*[data[i]._message for i in range(len(data))])
-
-class DataHandler(org.vertx.java.core.Handler):
-  """
-  A data handler wrapper.
-  """
-  def __init__(self, handler):
-    self.handler = handler
-
-  def handle(self, message):
-    self.handler(Message(map_from_java(message.toMap()), message))
-
-class Message(dict):
-  """
-  A seed message.
-  """
-  def __init__(self, data, message):
-    self._message = message
-    dict.__init__(self, data)
 
 class _AbstractFeeder(object):
   """
@@ -111,7 +33,54 @@ class _AbstractFeeder(object):
       net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
     )
 
-  def feed(self, data, tag=None, handler=None, timeout=None):
+  def set_ack_timeout(self, timeout):
+    self._feeder.ackTimeout(timeout)
+
+  def get_ack_timeout(self):
+    return self._feeder.ackTimeout()
+
+  ack_timeout = property(get_ack_timeout, set_ack_timeout)
+
+  def set_max_queue_size(self, queue_size):
+    self._feeder.maxQueueSize(queue_size)
+
+  def get_max_queue_size(self):
+    return self._feeder.maxQueueSize()
+
+  max_queue_size = property(get_max_queue_size, set_max_queue_size)
+
+  def set_auto_retry(self, retry):
+    self._feeder.autoRetry(retry)
+
+  def get_auto_retry(self):
+    return self._feeder.autoRetry()
+
+  auto_retry = property(get_auto_retry, set_auto_retry)
+
+  def set_retry_attempts(self, attempts):
+    self._feeder.retryAttempts(attempts)
+
+  def get_retry_attempts(self):
+    return self._feeder.retryAttempts()
+
+  retry_attempts = property(get_retry_attempts, set_retry_attempts)
+
+  def queue_full(self):
+    """
+    Indicates whether the feeder queue is full.
+    """
+    return self._feeder.queueFull()
+
+  def start(self, handler=None):
+    """
+    Starts the feeder.
+    """
+    if handler is not None:
+      self._feeder.start(StartHandler(handler, self))
+    else:
+      self._feeder.start()
+
+  def feed(self, data, tag=None, handler=None):
     """
     Feeds data to the network.
     """
@@ -122,13 +91,13 @@ class BasicFeeder(_AbstractFeeder):
   """
   A basic feeder.
   """
-  _handlercls = net.kuujo.vevent.node.BasicFeeder
+  _handlercls = net.kuujo.vevent.node.feeder.DefaultBasicFeeder
 
-class PullFeeder(_AbstractFeeder):
+class PollingFeeder(_AbstractFeeder):
   """
-  A pull feeder.
+  A polling feeder.
   """
-  _handlercls = net.kuujo.vevent.node.BasicPullFeeder
+  _handlercls = net.kuujo.vevent.node.feeder.DefaultPollingFeeder
 
   def feed_handler(self, handler):
     """
@@ -141,21 +110,35 @@ class StreamFeeder(_AbstractFeeder):
   """
   A stream feeder.
   """
-  _handlercls = net.kuujo.vevent.node.BasicStreamFeeder
+  _handlercls = net.kuujo.vevent.node.feeder.DefaultStreamFeeder
 
-  @property
-  def queue_full(self):
+  def full_handler(self, handler):
     """
-    Indicates whether the feed queue is full.
+    Registers a full handler.
     """
-    return self._feeder.feedQueueFull()
+    self._feeder.fullHandler(VoidHandler(handler))
+    return handler
 
   def drain_handler(self, handler):
     """
     Registers a drain handler.
     """
-    self._feeder.drainHandler(DrainHandler(handler))
+    self._feeder.drainHandler(VoidHandler(handler))
     return handler
+
+class StartHandler(org.vertx.java.core.AsyncResultHandler):
+  """
+  A start handler.
+  """
+  def __init__(self, handler, feeder):
+    self.handler = handler
+    self.feeder = feeder
+
+  def handle(self, result):
+    if result.succeeded():
+      self.handler(None, self.feeder)
+    else:
+      self.handler(result.cause(), self.feeder)
 
 class FeedResultHandler(org.vertx.java.core.AsyncResultHandler):
   """
@@ -181,9 +164,9 @@ class FeedHandler(org.vertx.java.core.Handler):
   def handle(self, feeder):
     self.handler(self.feeder)
 
-class DrainHandler(org.vertx.java.core.Handler):
+class VoidHandler(org.vertx.java.core.Handler):
   """
-  A queue drain handler.
+  A void handler.
   """
   def __init__(self, handler):
     self.handler = handler

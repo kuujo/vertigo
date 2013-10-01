@@ -15,7 +15,9 @@
 */
 package net.kuujo.vitis.network;
 
-import net.kuujo.via.cluster.LocalCluster;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * A local coordinator implementation.
@@ -25,9 +27,24 @@ import net.kuujo.via.cluster.LocalCluster;
 public class LocalCoordinator extends AbstractCoordinator {
 
   @Override
-  public void start() {
-    cluster = new LocalCluster(container);
-    super.start();
+  protected void deployVerticle(String main, JsonObject config) {
+    container.deployVerticle(main, config);
+  }
+
+  @Override
+  protected void deployVerticle(String main, JsonObject config,
+      Handler<AsyncResult<String>> doneHandler) {
+    container.deployVerticle(main, config, doneHandler);
+  }
+
+  @Override
+  protected void undeployVerticle(String deploymentId) {
+    container.undeployVerticle(deploymentId);
+  }
+
+  @Override
+  protected void undeployVerticle(String deploymentId, Handler<AsyncResult<Void>> doneHandler) {
+    container.undeployVerticle(deploymentId, doneHandler);
   }
 
 }

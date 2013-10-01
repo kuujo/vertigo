@@ -27,9 +27,10 @@ import net.kuujo.vitis.network.RemoteCoordinator;
  */
 public class ViaCluster extends AbstractCluster {
 
-  public ViaCluster(Vertx vertx, Container container) {
+  public ViaCluster(Vertx vertx, Container container, String address) {
     super(vertx, container);
     coordinator = RemoteCoordinator.class.getName();
+    this.master = address;
   }
 
 }

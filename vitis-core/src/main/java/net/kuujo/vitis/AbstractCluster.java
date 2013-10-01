@@ -42,6 +42,8 @@ abstract class AbstractCluster implements Cluster {
 
   protected String coordinator;
 
+  protected String master;
+
   public AbstractCluster(Vertx vertx, Container container) {
     this.eventBus = vertx.eventBus();
     this.container = container;
@@ -51,7 +53,7 @@ abstract class AbstractCluster implements Cluster {
   public void deploy(NetworkDefinition network) {
     try {
       final NetworkContext context = network.createContext();
-      container.deployVerticle(coordinator, context.serialize());
+      container.deployVerticle(coordinator, context.serialize().putString("master", master));
     }
     catch (MalformedDefinitionException e) {
       // Do nothing.
@@ -63,7 +65,7 @@ abstract class AbstractCluster implements Cluster {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {
       final NetworkContext context = network.createContext();
-      container.deployVerticle(coordinator, context.serialize(), new Handler<AsyncResult<String>>() {
+      container.deployVerticle(coordinator, context.serialize().putString("master", master), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {

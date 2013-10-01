@@ -15,7 +15,13 @@
 */
 package net.kuujo.vitis.network;
 
-import net.kuujo.via.cluster.RemoteCluster;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * A remote coordinator implementation.
@@ -24,10 +30,86 @@ import net.kuujo.via.cluster.RemoteCluster;
  */
 public class RemoteCoordinator extends AbstractCoordinator {
 
+  private String address;
+
+  private EventBus eventBus;
+
   @Override
   public void start() {
-    cluster = new RemoteCluster(config.getString("controller"), vertx.eventBus());
     super.start();
+    address = config.getString("master");
+    eventBus = vertx.eventBus();
+  }
+
+  @Override
+  protected void deployVerticle(String main, JsonObject config) {
+    eventBus.send(address, createAction("deploy").putString("type", "verticle")
+        .putString("main", main).putObject("config", config));
+  }
+
+  @Override
+  protected void deployVerticle(String main, JsonObject config,
+      Handler<AsyncResult<String>> doneHandler) {
+    eventBus.send(address, createAction("deploy").putString("type", "verticle")
+        .putString("main", main).putObject("config", config),
+        createDeployHandler(new DefaultFutureResult<String>().setHandler(doneHandler)));
+  }
+
+  /**
+   * Creates a new deployment handler.
+   */
+  private Handler<Message<String>> createDeployHandler(final Future<String> future) {
+    return new Handler<Message<String>>() {
+      @Override
+      public void handle(Message<String> message) {
+        String deploymentID = message.body();
+        if (deploymentID != null) {
+          future.setResult(deploymentID);
+        }
+        else {
+          future.setFailure(null);
+        }
+      }
+    };
+  }
+
+  @Override
+  protected void undeployVerticle(String deploymentId) {
+    eventBus.send(address, createAction("undeploy").putString("type", "verticle")
+        .putString("id", deploymentId));
+  }
+
+  @Override
+  protected void undeployVerticle(String deploymentId,
+      Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.send(address, createAction("undeploy").putString("type", "verticle")
+        .putString("id", deploymentId),
+        createUndeployHandler(new DefaultFutureResult<Void>().setHandler(doneHandler)));
+  }
+
+  /**
+   * Creates an undeploy handler.
+   */
+  private Handler<Message<Boolean>> createUndeployHandler(final Future<Void> future) {
+    return new Handler<Message<Boolean>>() {
+      @Override
+      public void handle(Message<Boolean> message) {
+        Boolean succeeded = message.body();
+        if (succeeded) {
+          future.setResult(null);
+        }
+        else {
+          future.setFailure(null);
+        }
+      }
+    };
+  }
+
+  /**
+   * Creates a new JSON action.
+   */
+  private JsonObject createAction(String actionName) {
+    return new JsonObject().putString("action", actionName);
   }
 
 }

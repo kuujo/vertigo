@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.via.cluster.Cluster;
 import net.kuujo.via.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.via.heartbeat.HeartbeatMonitor;
 import net.kuujo.vitis.context.NetworkContext;
@@ -46,8 +45,6 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
   protected NetworkContext context;
 
-  protected Cluster cluster;
-
   protected Map<String, String> deploymentMap = new HashMap<>();
 
   protected Map<String, WorkerContext> contextMap = new HashMap<>();
@@ -63,6 +60,46 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     eb.registerHandler(context.address(), this);
     doDeploy();
   }
+
+  /**
+   * Deploys a verticle.
+   *
+   * @param main
+   *   The verticle main.
+   * @param config
+   *   The verticle configuration.
+   */
+  protected abstract void deployVerticle(String main, JsonObject config);
+
+  /**
+   * Deploys a verticle.
+   *
+   * @param main
+   *   The verticle main.
+   * @param config
+   *   The verticle configuration.
+   * @param doneHandler
+   *   An async handler to be invoked once complete.
+   */
+  protected abstract void deployVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Undeploys a verticle.
+   *
+   * @param deploymentId
+   *   The deployment ID.
+   */
+  protected abstract void undeployVerticle(String deploymentId);
+
+  /**
+   * Undeploys a verticle.
+   *
+   * @param deploymentId
+   *   The deployment ID.
+   * @param doneHandler
+   *   An async handler to be invoked once complete.
+   */
+  protected abstract void undeployVerticle(String deploymentId, Handler<AsyncResult<Void>> doneHandler);
 
   @Override
   public void handle(Message<JsonObject> message) {
@@ -90,12 +127,15 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    * Deploys the network.
    */
   private void doDeploy() {
-    container.deployVerticle(Auditor.class.getName(),
-      new JsonObject().putString("address", context.auditAddress())
+    // TODO: The number of ackers is configurable, but the auditor
+    // verticle needs to be refactored to better support this.
+    // So, for now we just deploy a single auditor verticle.
+    JsonObject ackConfig = new JsonObject().putString("address", context.auditAddress())
       .putString("broadcast", context.broadcastAddress())
       .putBoolean("enabled", context.definition().ackingEnabled())
-      .putNumber("expire", context.definition().ackExpire()),
-      context.definition().numAckers(), new Handler<AsyncResult<String>>() {
+      .putNumber("expire", context.definition().ackExpire());
+
+    deployVerticle(Auditor.class.getName(), ackConfig, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
@@ -164,13 +204,13 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   private void doRedeploy(final String address) {
     if (deploymentMap.containsKey(address)) {
       String deploymentID = deploymentMap.get(address);
-      cluster.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+      undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           deploymentMap.remove(address);
           if (contextMap.containsKey(address)) {
             final WorkerContext context = contextMap.get(address);
-            cluster.deployVerticle(context.context().definition().main(), context.serialize(), new Handler<AsyncResult<String>>() {
+            deployVerticle(context.context().definition().main(), context.serialize(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.succeeded()) {
@@ -195,7 +235,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       @Override
       public void handle(AsyncResult<Void> result) {
         if (authDeploymentId != null) {
-          container.undeployVerticle(authDeploymentId);
+          undeployVerticle(authDeploymentId);
         }
         message.reply(result.succeeded());
       }
@@ -413,7 +453,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         future.setHandler(resultHandler);
 
         NodeDefinition definition = context.context().definition();
-        cluster.deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
+        deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             if (result.succeeded()) {
@@ -434,7 +474,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         String address = context.address();
         if (deploymentMap.containsKey(address)) {
           String deploymentID = deploymentMap.get(address);
-          cluster.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+          undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {

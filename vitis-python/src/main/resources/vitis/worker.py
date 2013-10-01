@@ -15,6 +15,7 @@ import net.kuujo.vitis.context.WorkerContext
 import net.kuujo.vitis.node.worker.BasicWorker
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
+import org.vertx.java.core.AsyncResultHandler
 from messaging import Message
 from core.javautils import map_from_java, map_to_java
 
@@ -33,18 +34,21 @@ class BasicWorker(object):
       context
     )
 
-  def data_handler(self, handler):
+  def message_handler(self, handler):
     """
-    Sets the seed data handler.
+    Sets the worker message handler.
     """
     self._worker.dataHandler(DataHandler(handler))
     return handler
 
-  def start(self):
+  def start(self, handler=None):
     """
-    Starts the seed.
+    Starts the worker.
     """
-    self._worker.start()
+    if handler is not None:
+      self._worker.start(StartHandler(handler, self))
+    else:
+      self._worker.start()
 
   def emit(self, data, parent=None, tag=None):
     """
@@ -61,23 +65,37 @@ class BasicWorker(object):
       else:
         self._worker.emit(data)
 
-  def ack(self, *data):
+  def ack(self, *messages):
     """
     Acknowledges a message.
     """
-    if len(data) == 1:
-      self._worker.ack(data[0]._message)
+    if len(messages) == 1:
+      self._worker.ack(messages[0]._message)
     else:
-      self._worker.ack(*[data[i]._message for i in range(len(data))])
+      self._worker.ack(*[messages[i]._message for i in range(len(messages))])
 
-  def fail(self, *data):
+  def fail(self, *messages):
     """
     Fails a message.
     """
-    if len(data) == 1:
-      self._worker.fail(data[0]._message)
+    if len(messages) == 1:
+      self._worker.fail(messages[0]._message)
     else:
-      self._worker.fail(*[data[i]._message for i in range(len(data))])
+      self._worker.fail(*[messages[i]._message for i in range(len(messages))])
+
+class StartHandler(org.vertx.java.core.AsyncResultHandler):
+  """
+  A worker start handler.
+  """
+  def __init__(self, handler, worker):
+    self.handler = handler
+    self.worker = worker
+
+  def handle(self, result):
+    if result.failed():
+      self.handler(result.cause(), self.worker)
+    else:
+      self.handler(None, self.worker)
 
 class DataHandler(org.vertx.java.core.Handler):
   """

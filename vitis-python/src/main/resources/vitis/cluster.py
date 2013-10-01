@@ -26,13 +26,16 @@ class _AbstractCluster(object):
 
   def __init__(self):
     if self._handlercls is not None:
-      self._cluster = self._handlercls(org.vertx.java.platform.impl.JythonVerticleFactory.vertx)
+      self._cluster = self._handlercls(org.vertx.java.platform.impl.JythonVerticleFactory.vertx, org.vertx.java.platform.impl.JythonVerticleFactory.container)
 
-  def deploy(self, definition, handler):
+  def deploy(self, definition, handler=None):
     """
     Deploys a network.
     """
-    self._cluster.deploy(definition._def, DeployHandler(handler))
+    if handler is not None:
+      self._cluster.deploy(definition._def, DeployHandler(handler))
+    else:
+      self._cluster.deploy(definition._def)
 
   def shutdown(self, context, handler=None):
     """

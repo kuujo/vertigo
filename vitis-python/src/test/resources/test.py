@@ -24,11 +24,23 @@ def run_test(test):
   method = org.vertx.java.platform.impl.JythonVerticleFactory.container.config().getString('methodName')
   getattr(test, method)()
 
-class TestCase(object):
+class Test(object):
   """
-  A Vitis integration test.
+  Static test methods.
   """
-  def assert_true(self, value, message=None):
+  @staticmethod
+  def complete():
+    """
+    Completes the test.
+    """
+    org.vertx.testtools.VertxAssert.testComplete()
+
+class Assert(object):
+  """
+  Static assertion methods.
+  """
+  @staticmethod
+  def true(value, message=None):
     """
     Asserts that an expression is true.
     """
@@ -37,7 +49,8 @@ class TestCase(object):
     else:
       org.vertx.testtools.VertxAssert.assertTrue(value)
 
-  def assert_false(self, value, message=None):
+  @staticmethod
+  def false(value, message=None):
     """
     Asserts that an expression is false.
     """
@@ -46,7 +59,8 @@ class TestCase(object):
     else:
       org.vertx.testtools.VertxAssert.assertFalse(value)
 
-  def assert_equals(self, val1, val2, message=None):
+  @staticmethod
+  def equals(val1, val2, message=None):
     """
     Asserts that two values are equal.
     """
@@ -55,7 +69,8 @@ class TestCase(object):
     else:
       org.vertx.testtools.VertxAssert.assertEquals(map_to_java(val1), map_to_java(val2))
 
-  def assert_null(self, value, message=None):
+  @staticmethod
+  def null(value, message=None):
     """
     Asserts that a value is null.
     """
@@ -64,7 +79,8 @@ class TestCase(object):
     else:
       org.vertx.testtools.VertxAssert.assertNull(value)
 
-  def assert_not_null(self, value, message=None):
+  @staticmethod
+  def not_null(value, message=None):
     """
     Asserts that a value is not null.
     """
@@ -73,8 +89,42 @@ class TestCase(object):
     else:
       org.vertx.testtools.VertxAssert.assertNotNull(value)
 
+class TestCase(object):
+  """
+  A Vitis integration test.
+  """
+  def assert_true(self, value, message=None):
+    """
+    Asserts that an expression is true.
+    """
+    Assert.true(value, message)
+
+  def assert_false(self, value, message=None):
+    """
+    Asserts that an expression is false.
+    """
+    Assert.false(value, message)
+
+  def assert_equals(self, val1, val2, message=None):
+    """
+    Asserts that two values are equal.
+    """
+    Assert.equals(val1, val2, message)
+
+  def assert_null(self, value, message=None):
+    """
+    Asserts that a value is null.
+    """
+    Assert.null(value, message)
+
+  def assert_not_null(self, value, message=None):
+    """
+    Asserts that a value is not null.
+    """
+    Assert.not_null(value, message)
+
   def complete(self):
     """
     Completes the test.
     """
-    org.vertx.testtools.VertxAssert.testComplete()
+    Test.complete()

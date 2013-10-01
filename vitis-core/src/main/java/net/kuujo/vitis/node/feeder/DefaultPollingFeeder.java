@@ -18,6 +18,7 @@ package net.kuujo.vitis.node.feeder;
 import net.kuujo.vitis.context.WorkerContext;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
@@ -32,6 +33,8 @@ import org.vertx.java.platform.Container;
 public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
 
   private Handler<PollingFeeder> feedHandler;
+
+  private static final long START_DELAY = 1000;
 
   private long feedDelay;
 
@@ -58,11 +61,47 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
     return this;
   }
 
+  @Override
+  public PollingFeeder start() {
+    return super.start(new Handler<AsyncResult<PollingFeeder>>() {
+      @Override
+      public void handle(AsyncResult<PollingFeeder> result) {
+        if (result.succeeded()) {
+          scheduleFeed(START_DELAY);
+        }
+      }
+    });
+  }
+
+  @Override
+  public PollingFeeder start(Handler<AsyncResult<PollingFeeder>> doneHandler) {
+    final Future<PollingFeeder> future = new DefaultFutureResult<PollingFeeder>().setHandler(doneHandler);
+    return super.start(new Handler<AsyncResult<PollingFeeder>>() {
+      @Override
+      public void handle(AsyncResult<PollingFeeder> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          scheduleFeed(START_DELAY);
+          future.setResult(result.result());
+        }
+      }
+    });
+  }
+
   /**
    * Schedules a feed.
    */
   private void scheduleFeed() {
-    vertx.setTimer(feedDelay, new Handler<Long>() {
+    scheduleFeed(feedDelay);
+  }
+
+  /**
+   * Schedules a feed.
+   */
+  private void scheduleFeed(long delay) {
+    vertx.setTimer(delay, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
         recursiveFeed();

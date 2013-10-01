@@ -20,8 +20,11 @@ import net.kuujo.vitis.messaging.DefaultJsonMessage;
 import net.kuujo.vitis.messaging.JsonMessage;
 import net.kuujo.vitis.node.NodeBase;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -39,6 +42,51 @@ public class BasicWorker extends NodeBase implements Worker {
   }
 
   @Override
+  public Worker start() {
+    setupHeartbeat();
+    setupOutputs();
+    setupInputs();
+    return this;
+  }
+
+  @Override
+  public Worker start(Handler<AsyncResult<Worker>> doneHandler) {
+    final Future<Worker> future = new DefaultFutureResult<Worker>().setHandler(doneHandler);
+    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          setupOutputs(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                future.setFailure(result.cause());
+              }
+              else {
+                setupInputs(new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      future.setFailure(result.cause());
+                    }
+                    else {
+                      future.setResult(BasicWorker.this);
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
   protected void doReceive(JsonMessage message) {
     if (messageHandler != null) {
       messageHandler.handle(message);
@@ -52,25 +100,29 @@ public class BasicWorker extends NodeBase implements Worker {
   }
 
   @Override
-  public void emit(JsonObject data) {
+  public Worker emit(JsonObject data) {
     output.emit(DefaultJsonMessage.create(data));
+    return this;
   }
 
   @Override
-  public void emit(JsonObject data, String tag) {
+  public Worker emit(JsonObject data, String tag) {
     output.emit(DefaultJsonMessage.create(data, tag));
+    return this;
   }
 
   @Override
-  public void emit(JsonObject data, JsonMessage parent) {
+  public Worker emit(JsonObject data, JsonMessage parent) {
     JsonMessage child = parent.createChild(data);
     output.emit(child);
+    return this;
   }
 
   @Override
-  public void emit(JsonObject data, String tag, JsonMessage parent) {
+  public Worker emit(JsonObject data, String tag, JsonMessage parent) {
     JsonMessage child = parent.createChild(data, tag);
     output.emit(child);
+    return this;
   }
 
   @Override

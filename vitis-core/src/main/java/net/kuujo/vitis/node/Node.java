@@ -19,10 +19,4 @@ package net.kuujo.vitis.node;
  * A network node.
  */
 public interface Node {
-
-  /**
-   * Starts the node.
-   */
-  public void start();
-
 }

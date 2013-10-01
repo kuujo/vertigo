@@ -19,6 +19,7 @@ import net.kuujo.vitis.Vitis;
 import net.kuujo.vitis.DefaultVitis;
 import net.kuujo.vitis.context.WorkerContext;
 
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
@@ -38,20 +39,18 @@ public class VitisVerticle extends Verticle {
   @Override
   public void setContainer(Container container) {
     super.setContainer(container);
-    setupVitis();
   }
 
   @Override
   public void setVertx(Vertx vertx) {
     super.setVertx(vertx);
-    setupVitis();
   }
 
-  private void setupVitis() {
-    if (container != null && vertx != null) {
-      vitis = new DefaultVitis(vertx, container);
-      vitis.setContext(new WorkerContext(container.config()));
-    }
+  @Override
+  public void start(Future<Void> startedResult) {
+    vitis = new DefaultVitis(vertx, container);
+    vitis.setContext(new WorkerContext(container.config()));
+    super.start(startedResult);
   }
 
 }

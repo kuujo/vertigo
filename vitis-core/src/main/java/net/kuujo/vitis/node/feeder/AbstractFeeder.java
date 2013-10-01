@@ -24,6 +24,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -43,6 +44,62 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase imple
   protected AbstractFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
     queue = new BasicFeedQueue(vertx);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T start() {
+    setupHeartbeat();
+    setupOutputs();
+    setupInputs();
+    return (T) this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T start(Handler<AsyncResult<T>> doneHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
+    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          setupOutputs(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                future.setFailure(result.cause());
+              }
+              else {
+                setupInputs(new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      future.setFailure(result.cause());
+                    }
+                    else {
+                      // Set a timer before beginning feeding to ensure that
+                      // other nodes have a chance to get set up. This hack
+                      // may later be replaced by the coordinator indicating
+                      // when all nodes have been started.
+                      vertx.setTimer(1000, new Handler<Long>() {
+                        @Override
+                        public void handle(Long arg0) {
+                          future.setResult((T) AbstractFeeder.this);
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    });
+    return (T) this;
   }
 
   @Override

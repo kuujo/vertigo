@@ -30,6 +30,24 @@ import org.vertx.java.core.json.JsonObject;
 public interface Executor<T extends Executor<T>> extends Node {
 
   /**
+   * Starts the executor.
+   *
+   * @return
+   *   The called executor instance.
+   */
+  public T start();
+
+  /**
+   * Starts the executor.
+   *
+   * @param doneHandler
+   *   An asyncronous result handler to be invoked once the executor is started.
+   * @return
+   *   The called executor instance.
+   */
+  public T start(Handler<AsyncResult<T>> doneHandler);
+
+  /**
    * Sets the execution reply timeout.
    *
    * @param timeout

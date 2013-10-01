@@ -37,6 +37,8 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
+  private static final long DEFAULT_ACK_EXPIRE = 30000;
+
   public NetworkDefinition() {
   }
 
@@ -128,7 +130,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    *   The internal network auditor ack expiration.
    */
   public long ackExpire() {
-    return definition.getLong("expire");
+    return definition.getLong("expire", DEFAULT_ACK_EXPIRE);
   }
 
   /**

@@ -31,6 +31,24 @@ import net.kuujo.vitis.node.Node;
 public interface Feeder<T extends Feeder<T>> extends Node {
 
   /**
+   * Starts the feeder.
+   *
+   * @return
+   *   The called feeder instance.
+   */
+  public T start();
+
+  /**
+   * Starts the feeder.
+   *
+   * @param doneHandler
+   *   An asyncronous result handler to be invoked once the feeder is started.
+   * @return
+   *   The called feeder instance.
+   */
+  public T start(Handler<AsyncResult<T>> doneHandler);
+
+  /**
    * Sets the message ack timeout.
    *
    * @param timeout

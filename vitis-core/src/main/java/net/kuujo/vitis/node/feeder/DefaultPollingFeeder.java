@@ -31,8 +31,6 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
 
-  private static final long START_DELAY = 1000;
-
   private Handler<PollingFeeder> feedHandler;
 
   private long feedDelay;
@@ -60,24 +58,11 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
     return this;
   }
 
-  @Override
-  public void start() {
-    super.start();
-    scheduleFeed(START_DELAY);
-  }
-
-  /**
-   * Schedules a feed with the feed delay.
-   */
-  private void scheduleFeed() {
-    scheduleFeed(feedDelay);
-  }
-
   /**
    * Schedules a feed.
    */
-  private void scheduleFeed(long delay) {
-    vertx.setTimer(delay, new Handler<Long>() {
+  private void scheduleFeed() {
+    vertx.setTimer(feedDelay, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
         recursiveFeed();

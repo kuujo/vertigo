@@ -18,6 +18,7 @@ package net.kuujo.vitis.node.worker;
 import net.kuujo.vitis.messaging.JsonMessage;
 import net.kuujo.vitis.node.Node;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
@@ -26,7 +27,25 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Worker extends Node{
+public interface Worker extends Node {
+
+  /**
+   * Starts the worker.
+   *
+   * @return
+   *   The called worker instance.
+   */
+  public Worker start();
+
+  /**
+   * Starts the worker.
+   *
+   * @param doneHandler
+   *   An asyncronous result handler to be invoked once the worker is started.
+   * @return
+   *   The called worker instance.
+   */
+  public Worker start(Handler<AsyncResult<Worker>> doneHandler);
 
   /**
    * Sets a worker data handler.
@@ -43,8 +62,10 @@ public interface Worker extends Node{
    *
    * @param data
    *   The data to emit.
+   * @return 
+   *   The called worker instance.
    */
-  public void emit(JsonObject data);
+  public Worker emit(JsonObject data);
 
   /**
    * Emits data from the worker with a tag.
@@ -53,8 +74,10 @@ public interface Worker extends Node{
    *   The data to emit.
    * @param tag
    *   A tag to apply to the message.
+   * @return 
+   *   The called worker instance.
    */
-  public void emit(JsonObject data, String tag);
+  public Worker emit(JsonObject data, String tag);
 
   /**
    * Emits child data from the worker.
@@ -63,8 +86,10 @@ public interface Worker extends Node{
    *   The data to emit.
    * @param parent
    *   The parent message.
+   * @return 
+   *   The called worker instance.
    */
-  public void emit(JsonObject data, JsonMessage parent);
+  public Worker emit(JsonObject data, JsonMessage parent);
 
   /**
    * Emits child data from the worker with a tag.
@@ -75,8 +100,10 @@ public interface Worker extends Node{
    *   A tag to apply to the message.
    * @param parent
    *   The parent message.
+   * @return 
+   *   The called worker instance.
    */
-  public void emit(JsonObject data, String tag, JsonMessage parent);
+  public Worker emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Acknowledges processing of a message.

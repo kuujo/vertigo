@@ -25,16 +25,6 @@ import org.vertx.java.core.Handler;
 public interface StreamFeeder extends Feeder<StreamFeeder> {
 
   /**
-   * Sets a connect handler on the feeder.
-   *
-   * @param handler
-   *   A handler to be invoked when the feeder is connected.
-   * @return
-   *   The called feeder instance.
-   */
-  public StreamFeeder connectHandler(Handler<StreamFeeder> handler);
-
-  /**
    * Sets a full handler on the feeder.
    *
    * @param handler

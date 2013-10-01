@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import net.kuujo.via.heartbeat.DefaultHeartbeatEmitter;
 import net.kuujo.via.heartbeat.HeartbeatEmitter;
+import net.kuujo.vitis.VitisException;
 import net.kuujo.vitis.context.ConnectionContext;
 import net.kuujo.vitis.context.NetworkContext;
 import net.kuujo.vitis.context.WorkerContext;
@@ -17,10 +18,12 @@ import net.kuujo.vitis.messaging.ConnectionSet;
 import net.kuujo.vitis.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
@@ -67,16 +70,22 @@ public abstract class NodeBase {
     broadcastAddress = networkContext.broadcastAddress();
   }
 
-  public void start() {
-    setupHeartbeat();
-    setupOutputs();
-    setupInputs();
+  /**
+   * Sets up the heartbeat.
+   */
+  protected void setupHeartbeat() {
+    setupHeartbeat(null);
   }
 
   /**
    * Sets up the heartbeat.
    */
-  private void setupHeartbeat() {
+  protected void setupHeartbeat(Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>();
+    if (doneHandler != null) {
+      future.setHandler(doneHandler);
+    }
+
     eventBus.sendWithTimeout(networkAddress, new JsonObject().putString("action", "register").putString("address", address), 10000, new Handler<AsyncResult<Message<String>>>() {
       @Override
       public void handle(AsyncResult<Message<String>> result) {
@@ -85,18 +94,31 @@ public abstract class NodeBase {
           heartbeat = new DefaultHeartbeatEmitter(heartbeatAddress, vertx);
           heartbeat.setInterval(context.context().definition().heartbeatInterval());
           heartbeat.start();
+          future.setResult(null);
         }
         else {
-          container.logger().error(String.format("Failed to fetch heartbeat address from network."));
+          future.setFailure(new VitisException(String.format("Failed to fetch heartbeat address from network.")));
         }
       }
     });
   }
 
   /**
-   * Sets up feeder outputs.
+   * Sets up outputs.
    */
-  private void setupOutputs() {
+  protected void setupOutputs() {
+    setupOutputs(null);
+  }
+
+  /**
+   * Sets up outputs.
+   */
+  protected void setupOutputs(Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>();
+    if (doneHandler != null) {
+      future.setHandler(doneHandler);
+    }
+
     output = new LinearOutputCollector(auditAddress, eventBus);
 
     Collection<ConnectionContext> connections = context.context().connectionContexts();
@@ -133,12 +155,25 @@ public abstract class NodeBase {
         container.logger().error("Failed to find grouping handler.");
       }
     }
+    future.setResult(null);
+  }
+
+  /**
+   * Sets up inputs.
+   */
+  protected void setupInputs() {
+    setupInputs(null);
   }
 
   /**
    * Sets up input handlers.
    */
-  private void setupInputs() {
+  protected void setupInputs(Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>();
+    if (doneHandler != null) {
+      future.setHandler(doneHandler);
+    }
+
     eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -147,30 +182,48 @@ public abstract class NodeBase {
           doReceive(new DefaultJsonMessage(body));
         }
       }
-    });
-
-    eventBus.registerHandler(broadcastAddress, new Handler<Message<JsonObject>>() {
+    }, new Handler<AsyncResult<Void>>() {
       @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          String action = body.getString("action");
-          if (action != null) {
-            switch (action) {
-              case "ack":
-                String ackId = body.getString("id");
-                if (ackId != null) {
-                  doAck(ackId);
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          eventBus.registerHandler(broadcastAddress, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> message) {
+              JsonObject body = message.body();
+              if (body != null) {
+                String action = body.getString("action");
+                if (action != null) {
+                  switch (action) {
+                    case "ack":
+                      String ackId = body.getString("id");
+                      if (ackId != null) {
+                        doAck(ackId);
+                      }
+                      break;
+                    case "fail":
+                      String failId = body.getString("id");
+                      if (failId != null) {
+                        doFail(failId);
+                      }
+                      break;
+                  }
                 }
-                break;
-              case "fail":
-                String failId = body.getString("id");
-                if (failId != null) {
-                  doFail(failId);
-                }
-                break;
+              }
             }
-          }
+          }, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                future.setFailure(result.cause());
+              }
+              else {
+                future.setResult(null);
+              }
+            }
+          });
         }
       }
     });

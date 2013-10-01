@@ -31,15 +31,9 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements StreamFeeder {
 
-  private static final long START_DELAY = 1000;
-
-  private Handler<StreamFeeder> connectHandler;
-
   private Handler<Void> fullHandler;
 
   private Handler<Void> drainHandler;
-
-  private boolean started;
 
   private boolean paused;
 
@@ -49,26 +43,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
 
   @Override
   public boolean queueFull() {
-    return !started || paused;
-  }
-
-  @Override
-  public void start() {
-    vertx.setTimer(START_DELAY, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        started = true;
-        if (connectHandler != null) {
-          connectHandler.handle(DefaultStreamFeeder.this);
-        }
-      }
-    });
-  }
-
-  @Override
-  public StreamFeeder connectHandler(Handler<StreamFeeder> handler) {
-    connectHandler = handler;
-    return this;
+    return paused;
   }
 
   @Override

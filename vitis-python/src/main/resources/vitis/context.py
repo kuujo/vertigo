@@ -26,39 +26,55 @@ class NetworkContext(_AbstractContext):
   """
   @property
   def address(self):
-    return self._context.getAddress()
+    return self._context.address()
 
   @property
-  def observer_address(self):
-    return self._context.getObserverAddress()
+  def audit_address(self):
+    return self._context.auditAddress()
 
   @property
   def broadcast_address(self):
-    return self._context.getBroadcastAddress()
+    return self._context.broadcastAddress()
 
   @property
   def definition(self):
-    return NetworkDefinition(self._context.getDefinition())
+    return NetworkDefinition(self._context.definition())
 
-class ComponentContext(_AbstractContext):
+  @property
+  def contexts(self):
+    collection = self._context.contexts()
+    iterator = collection.iterator()
+    contexts = {}
+    while iterator.hasNext():
+      context = iterator.next()
+      contexts[context.name()] = NodeContext(context)
+    return contexts
+
+class NodeContext(_AbstractContext):
   """
-  A component context.
+  A node context.
   """
   @property
   def address(self):
-    return self._context.getAddress()
+    return self._context.address()
 
   @property
   def context(self):
-    return NetworkContext(self._context.getContext())
+    return NetworkContext(self._context.context())
 
   @property
   def definition(self):
-    return ComponentDefinition(self._context.getDefinition())
+    return NodeDefinition(self._context.definition())
 
   @property
   def workers(self):
-    return self._context.getWorkers()
+    collection = self._context.workerContexts()
+    iterator = collection.iterator()
+    contexts = {}
+    while iterator.hasNext():
+      context = iterator.next()
+      contexts[context.address()] = WorkerContext(context)
+    return contexts
 
 class WorkerContext(_AbstractContext):
   """
@@ -66,12 +82,8 @@ class WorkerContext(_AbstractContext):
   """
   @property
   def address(self):
-    return self._context.getAddress()
+    return self._context.address()
 
   @property
   def context(self):
-    return ComponentContext(self._context.getContext())
-
-  @property
-  def stem(self):
-    return self._context.getStem()
+    return NodeContext(self._context.context())

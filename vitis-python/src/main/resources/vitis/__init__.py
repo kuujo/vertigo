@@ -11,10 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from definition import NetworkDefinition
 from worker import BasicWorker
 from feeder import BasicFeeder, PollingFeeder, StreamFeeder
 from context import WorkerContext
 import org.vertx.java.platform.impl.JythonVerticleFactory.container
+
+def create_network(address=None, **options):
+  """
+  Creates a new network definition.
+  """
+  return NetworkDefinition(address, **options)
 
 def create_basic_feeder(context=None):
   """

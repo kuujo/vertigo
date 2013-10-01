@@ -36,6 +36,34 @@ class NetworkDefinition(object):
 
   address = property(get_address, set_address)
 
+  @property
+  def acking_enabled(self):
+    return self._def.ackingEnabled()
+
+  def enable_acking(self):
+    self._def.enableAcking()
+    return self
+
+  def disable_acking(self):
+    self._def.disableAcking()
+    return self
+
+  def set_num_ackers(self, num):
+    self._def.setNumAckers(num)
+
+  def get_num_ackers(self):
+    return self._def.numAckers()
+
+  num_ackers = property(get_num_ackers, set_num_ackers)
+
+  def set_ack_expire(self, expire):
+    self._def.setAckExpire(expire)
+
+  def get_ack_expire(self):
+    return self._def.ackExpire()
+
+  ack_expire = property(get_ack_expire, set_ack_expire)
+
   def from_root(self, name, main=None, workers=1, grouping=None, **options):
     node = NodeDefinition(name, main, workers, grouping, **options)
     self._def.fromRoot(component._def)
@@ -44,19 +72,6 @@ class NetworkDefinition(object):
   @property
   def options(self):
     return Options(self)
-
-  class Options(object):
-    def __init__(self, definition):
-      self._def = definition
-
-    def __setitem__(self, key, value):
-      self._def._def.setOption(key, value)
-
-    def __getitem__(self, key, default=None):
-      if default is not None:
-        return self._def._def.option(key, default)
-      else:
-        return self._def._def.option(key)
 
 class NodeDefinition(object):
   """
@@ -111,6 +126,20 @@ class NodeDefinition(object):
     node = NodeDefinition(name, main, workers, **options)
     self._def.toNode(node.__def)
     return node
+
+
+class Options(object):
+  """
+  Definition options dictionary.
+  """
+  def __init__(self, definition):
+    self._def = definition
+
+  def __setitem__(self, key, value):
+    self._def._def.setOption(key, value)
+
+  def __getitem__(self, key):
+    return self._def._def.option(key)
 
 class Grouping(object):
   """

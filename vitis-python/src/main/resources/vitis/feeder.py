@@ -103,6 +103,14 @@ class PollingFeeder(_AbstractFeeder):
   """
   _handlercls = net.kuujo.vitis.node.feeder.DefaultPollingFeeder
 
+  def set_feed_delay(self, delay):
+    self._feeder.feedDelay(delay)
+
+  def get_feed_delay(self):
+    return self._feeder.feedDelay()
+
+  feed_delay = property(get_feed_delay, set_feed_delay)
+
   def feed_handler(self, handler):
     """
     Registers a feed handler.

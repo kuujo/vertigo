@@ -47,11 +47,11 @@ class Message(dict):
     """
     if id is not None:
       if tag is not None:
-        return Message(self._message.createChild(id, map_to_java(body), tag)
+        return Message(self._message.createChild(id, map_to_java(body), tag))
       else:
-        return Message(self._message.createChild(id, map_to_java(body))
+        return Message(self._message.createChild(id, map_to_java(body)))
     else:
       if tag is not None:
-        return Message(self._message.createChild(map_to_java(body), tag)
+        return Message(self._message.createChild(map_to_java(body), tag))
       else:
-        return Message(self._message.createChild(map_to_java(body))
+        return Message(self._message.createChild(map_to_java(body)))

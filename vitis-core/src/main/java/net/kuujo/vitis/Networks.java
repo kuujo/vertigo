@@ -20,29 +20,29 @@ import net.kuujo.vitis.definition.NetworkDefinition;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Static vine methods.
+ * Static network methods.
  *
  * @author Jordan Halterman
  */
 public class Networks {
 
   /**
-   * Creates a new vine definition.
+   * Creates a new network definition.
    *
    * @return
-   *   A vine definition.
+   *   A network definition.
    */
   public static NetworkDefinition createDefinition() {
     return new NetworkDefinition();
   }
 
   /**
-   * Creates a new vine definition.
+   * Creates a new network definition.
    *
    * @param address
-   *   The vine address.
+   *   The network address.
    * @return
-   *   A vine definition.
+   *   A network definition.
    */
   public static NetworkDefinition createDefinition(String address) {
     return new NetworkDefinition(new JsonObject().putString("address", address));

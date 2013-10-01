@@ -55,10 +55,10 @@ public interface Cluster {
   public void shutdown(NetworkContext context);
 
   /**
-   * Shuts down the vine at the given address, awaiting a result.
+   * Shuts down the network at the given address, awaiting a result.
    *
    * @param context
-   *   The vine context.
+   *   The network context.
    * @param doneHandler
    *   An asynchronous result handler to be invoked once the shutdown is complete.
    */

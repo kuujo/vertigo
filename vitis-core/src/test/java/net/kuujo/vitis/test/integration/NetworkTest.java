@@ -37,7 +37,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
 import org.vertx.testtools.TestVerticle;
 
 /**
- * A vine deploy test.
+ * A network deploy test.
  *
  * @author Jordan Halterman
  */

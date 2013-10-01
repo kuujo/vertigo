@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import net.kuujo.vevent.context.NetworkContext
-import net.kuujo.vevent.node.BasicFeeder
-import net.kuujo.vevent.node.BasicPullFeeder
-import net.kuujo.vevent.node.BasicStreamFeeder
-import net.kuujo.vevent.messaging.JsonMessage
+import net.kuujo.vitis.context.WorkerContext
+import net.kuujo.vitis.node.feeder.DefaultBasicFeeder
+import net.kuujo.vitis.node.feeder.DefaultPollingFeeder
+import net.kuujo.vitis.node.feeder.DefaultStreamFeeder
+import net.kuujo.vitis.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 from core.javautils import map_from_java, map_to_java
@@ -26,11 +26,15 @@ class _AbstractFeeder(object):
   """
   _handlercls = None
 
-  def __init__(self):
+  def __init__(self, context=None):
+    if context is not None:
+      context = context._context
+    else:
+      context = net.kuujo.vitis.context.WorkerContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
     self._feeder = self._handlercls(
       org.vertx.java.platform.impl.JythonVerticleFactory.vertx,
       org.vertx.java.platform.impl.JythonVerticleFactory.container,
-      net.kuujo.vevent.context.NetworkContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
+      context
     )
 
   def set_ack_timeout(self, timeout):
@@ -91,13 +95,13 @@ class BasicFeeder(_AbstractFeeder):
   """
   A basic feeder.
   """
-  _handlercls = net.kuujo.vevent.node.feeder.DefaultBasicFeeder
+  _handlercls = net.kuujo.vitis.node.feeder.DefaultBasicFeeder
 
 class PollingFeeder(_AbstractFeeder):
   """
   A polling feeder.
   """
-  _handlercls = net.kuujo.vevent.node.feeder.DefaultPollingFeeder
+  _handlercls = net.kuujo.vitis.node.feeder.DefaultPollingFeeder
 
   def feed_handler(self, handler):
     """
@@ -110,7 +114,7 @@ class StreamFeeder(_AbstractFeeder):
   """
   A stream feeder.
   """
-  _handlercls = net.kuujo.vevent.node.feeder.DefaultStreamFeeder
+  _handlercls = net.kuujo.vitis.node.feeder.DefaultStreamFeeder
 
   def full_handler(self, handler):
     """

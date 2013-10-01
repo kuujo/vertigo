@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import net.kuujo.vevent.context.WorkerContext
-import net.kuujo.vevent.node.worker.BasicWorker
+import net.kuujo.vitis.context.WorkerContext
+import net.kuujo.vitis.node.worker.BasicWorker
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 from messaging import Message
@@ -22,11 +22,15 @@ class BasicWorker(object):
   """
   A basic worker instance.
   """
-  def __init__(self):
-    self._worker = net.kuujo.vevent.node.worker.BasicWorker(
+  def __init__(self, context=None):
+    if context is not None:
+      context = context._context
+    else:
+      context = net.kuujo.vitis.context.WorkerContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
+    self._worker = net.kuujo.vitis.node.worker.BasicWorker(
       org.vertx.java.platform.impl.JythonVerticleFactory.vertx,
       org.vertx.java.platform.impl.JythonVerticleFactory.container,
-      net.kuujo.vevent.context.WorkerContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
+      context
     )
 
   def data_handler(self, handler):

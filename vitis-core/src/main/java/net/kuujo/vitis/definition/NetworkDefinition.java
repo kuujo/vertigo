@@ -209,6 +209,10 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
     return addDefinition(definition);
   }
 
+  public NodeDefinition fromRoot(NodeDefinition definition) {
+    return from(definition);
+  }
+
   /**
    * Adds a root node to the network.
    *
@@ -219,6 +223,10 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    */
   public NodeDefinition from(String name) {
     return from(name, null, 1);
+  }
+
+  public NodeDefinition fromRoot(String name) {
+    return from(name);
   }
 
   /**
@@ -235,6 +243,10 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
     return from(name, main, 1);
   }
 
+  public NodeDefinition fromRoot(String name, String main) {
+    return from(name, main);
+  }
+
   /**
    * Adds a root node to the network.
    *
@@ -249,6 +261,10 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    */
   public NodeDefinition from(String name, String main, int workers) {
     return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
+  }
+
+  public NodeDefinition fromRoot(String name, String main, int workers) {
+    return from(name, main, workers);
   }
 
   @Override

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from context import NetworkContext
-import net.kuujo.vevent.LocalCluster
-import net.kuujo.vevent.ViaCluster
+import net.kuujo.vitis.LocalCluster
+import net.kuujo.vitis.ViaCluster
 import org.vertx.java.core.AsyncResultHandler
 import org.vertx.java.platform.impl.JythonVerticleFactory.vertx
 from core.javautils import map_from_java, map_to_java
@@ -42,6 +42,18 @@ class _AbstractCluster(object):
       self._cluster.shutdown(context._context, ShutdownHandler(handler))
     else:
       self._cluster.shutdown(context._context)
+
+class LocalCluster(_AbstractCluster):
+  """
+  A local cluster.
+  """
+  _handlercls = net.kuujo.vitis.LocalCluster
+
+class ViaCluster(_AbstractCluster):
+  """
+  A via cluster.
+  """
+  _handlercls = net.kuujo.vitis.ViaCluster
 
 class DeployHandler(org.vertx.java.core.AsyncResultHandler):
   """

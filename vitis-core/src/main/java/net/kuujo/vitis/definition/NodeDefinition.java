@@ -199,6 +199,10 @@ public class NodeDefinition implements Serializeable<JsonObject> {
     return addDefinition(definition);
   }
 
+  public NodeDefinition toNode(NodeDefinition definition) {
+    return to(definition);
+  }
+
   /**
    * Creates a connection to a node, creating a new node definition.
    *
@@ -209,6 +213,10 @@ public class NodeDefinition implements Serializeable<JsonObject> {
    */
   public NodeDefinition to(String name) {
     return to(name, null, 1);
+  }
+
+  public NodeDefinition toNode(String name) {
+    return to(name);
   }
 
   /**
@@ -225,6 +233,10 @@ public class NodeDefinition implements Serializeable<JsonObject> {
     return to(name, main, 1);
   }
 
+  public NodeDefinition toNode(String name, String main) {
+    return to(name, main);
+  }
+
   /**
    * Creates a connection to a node, creating a new node definition.
    *
@@ -239,6 +251,10 @@ public class NodeDefinition implements Serializeable<JsonObject> {
    */
   public NodeDefinition to(String name, String main, int workers) {
     return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
+  }
+
+  public NodeDefinition toNode(String name, String main, int workers) {
+    return to(name, main, workers);
   }
 
   @Override

@@ -13,7 +13,7 @@ to Vert.x instances in the cluster.
   Vert.x handler system and Vert.x' native support for JSON.
 * Provides limited reliability features such as timeouts, heartbeats, and
   message acking.
-* Allows vines to be deployed locally within a single Vert.x instance or across
+* Allows networks to be deployed locally within a single Vert.x instance or across
   a cluster of Vert.x instances.
 * Supports remote-procedure calls, allowing for real-time request-response
   spanning multiple Vert.x instances.

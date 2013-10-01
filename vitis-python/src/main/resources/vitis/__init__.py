@@ -13,27 +13,31 @@
 # limitations under the License.
 from worker import BasicWorker
 from feeder import BasicFeeder, PollingFeeder, StreamFeeder
+from context import WorkerContext
+import org.vertx.java.platform.impl.JythonVerticleFactory.container
 
-def create_basic_feeder():
+def create_basic_feeder(context=None):
   """
   Creates a basic feeder.
   """
-  return BasicFeeder()
+  return BasicFeeder(context)
 
-def create_polling_feeder():
+def create_polling_feeder(context=None):
   """
   Creates a polling feeder.
   """
-  return PollingFeeder()
+  return PollingFeeder(context)
 
-def create_stream_feeder():
+def create_stream_feeder(context=None):
   """
   Creates a stream feeder.
   """
-  return StreamFeeder()
+  return StreamFeeder(context)
 
-def create_worker():
+def create_worker(context=None):
   """
   Creates a basic worker.
   """
-  return BasicWorker()
+  return BasicWorker(context)
+
+context = WorkerContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())

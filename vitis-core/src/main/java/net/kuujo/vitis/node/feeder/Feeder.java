@@ -49,24 +49,6 @@ public interface Feeder<T extends Feeder<T>> extends Node {
   public T start(Handler<AsyncResult<T>> doneHandler);
 
   /**
-   * Sets the message ack timeout.
-   *
-   * @param timeout
-   *   A message ack timeout.
-   * @return
-   *   The called feeder instance.
-   */
-  public T ackTimeout(long timeout);
-
-  /**
-   * Gets the message ack timeout.
-   *
-   * @return
-   *  A message ack timeout.
-   */
-  public long ackTimeout();
-
-  /**
    * Sets the maximum feed queue size.
    *
    * @param maxSize

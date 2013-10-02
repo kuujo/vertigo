@@ -26,24 +26,6 @@ import org.vertx.java.core.Handler;
 public interface FeedQueue {
 
   /**
-   * Sets the feed queue timeout.
-   *
-   * @param timeout
-   *   A feed queue timeout.
-   * @return
-   *   The called feed queue instance.
-   */
-  public FeedQueue timeout(long timeout);
-
-  /**
-   * Gets the feed queue timeout.
-   *
-   * @return
-   *   A feed queue timeout.
-   */
-  public long timeout();
-
-  /**
    * Sets the maximum feed queue size.
    *
    * @param maxSize

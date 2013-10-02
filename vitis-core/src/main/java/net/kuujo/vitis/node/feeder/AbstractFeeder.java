@@ -43,7 +43,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase imple
 
   protected AbstractFeeder(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
-    queue = new BasicFeedQueue(vertx);
+    queue = new BasicFeedQueue();
   }
 
   @Override
@@ -100,18 +100,6 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase imple
       }
     });
     return (T) this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T ackTimeout(long timeout) {
-    queue.timeout(timeout);
-    return (T) this;
-  }
-
-  @Override
-  public long ackTimeout() {
-    return queue.timeout();
   }
 
   @Override

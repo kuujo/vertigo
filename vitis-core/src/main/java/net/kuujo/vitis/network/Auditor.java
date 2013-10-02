@@ -129,7 +129,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     // Simply clear the expired node. It should be up to the feeder to timeout
     // the node if it failed. This is simply an added mechanism to prevent memory leaks.
     if (nodes.containsKey(id)) {
-      clearRoot(nodes.remove(id));
+      nodes.get(id).fail();
     }
   }
 

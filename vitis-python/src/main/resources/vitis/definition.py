@@ -16,6 +16,9 @@ import net.kuujo.vitis.definition.NodeDefinition
 import net.kuujo.vitis.grouping.FieldsGrouping
 import net.kuujo.vitis.grouping.RandomGrouping
 import net.kuujo.vitis.grouping.RoundGrouping
+import net.kuujo.vitis.grouping.AllGrouping
+import org.vertx.java.core.json.JsonObject
+from core.javautils import map_from_java, map_to_java
 
 class NetworkDefinition(object):
   """
@@ -63,10 +66,21 @@ class NetworkDefinition(object):
 
   ack_expire = property(get_ack_expire, set_ack_expire)
 
-  def from_root(self, name, main=None, workers=1, grouping=None, **options):
-    node = NodeDefinition(name, main, workers, grouping, **options)
-    self._def.fromRoot(node._def)
-    return node
+  def from_verticle(self, name, main=None, workers=1, config=None, grouping=None):
+    if config is None:
+      config = {}
+    definition = self._def.fromVerticle(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
+    if grouping is not None:
+      definition.groupBy(grouping._def)
+    return NodeDefinition(definition)
+
+  def from_module(self, name, module=None, workers=1, config=None, grouping=None):
+    if config is None:
+      config = {}
+    definition = self._def.fromModule(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
+    if grouping is not None:
+      definition.groupBy(grouping._def)
+    return NodeDefinition(definition)
 
   @property
   def options(self):
@@ -76,16 +90,19 @@ class NodeDefinition(object):
   """
   A node definition.
   """
-  def __init__(self, name, main=None, workers=1, grouping=None, **options):
-    self._def = net.kuujo.vitis.definition.NodeDefinition()
-    self._def.setName(name)
-    if main is not None:
-      self._def.setMain(main)
-    self._def.setWorkers(workers)
-    if grouping is not None:
-      self._def.groupBy(grouping.__def)
-    for key, value in options.iteritems():
-      self._def.setOption(key, value)
+  VERTICLE = "verticle"
+  MODULE = "module"
+
+  def __init__(self, definition):
+    self._def = definition
+
+  def get_type(self):
+    return self._def.type()
+
+  def set_type(self, type):
+    self._def.setType(type)
+
+  type = property(get_type, set_type)
 
   def get_name(self):
     return self._def.name()
@@ -102,6 +119,22 @@ class NodeDefinition(object):
     self._def.setMain(main)
 
   main = property(get_main, set_main)
+
+  def get_module(self):
+    return self._def.module()
+
+  def set_module(self, module):
+    self._def.setModule(module)
+
+  module = property(get_module, set_module)
+
+  def get_config(self):
+    return map_from_java(self._def.config().toMap())
+
+  def set_config(self, config):
+    self._def.setConfig(org.vertx.java.core.json.JsonObject(map_to_java(config)))
+
+  config = property(get_config, set_config)
 
   def get_workers(self):
     return self._def.workers()
@@ -122,10 +155,21 @@ class NodeDefinition(object):
   def group_by(self, grouping):
     self._def.groupBy(grouping.__def)
 
-  def to_node(self, name, main=None, workers=1, **options):
-    node = NodeDefinition(name, main, workers, **options)
-    self._def.toNode(node._def)
-    return node
+  def to_verticle(self, name, main=None, workers=1, config=None, grouping=None):
+    if config is None:
+      config = {}
+    definition = self._def.toVerticle(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
+    if grouping is not None:
+      definition.groupBy(grouping._def)
+    return NodeDefinition(definition)
+
+  def to_module(self, name, module=None, workers=1, config=None, grouping=None):
+    if config is None:
+      config = {}
+    definition = self._def.toModule(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
+    if grouping is not None:
+      definition.groupBy(grouping._def)
+    return NodeDefinition(definition)
 
 
 class Options(object):
@@ -176,3 +220,10 @@ class RoundGrouping(Grouping):
   """
   def __init__(self):
     self._def = net.kuujo.vitis.grouping.RoundGrouping()
+
+class AllGrouping(Grouping):
+  """
+  An all grouping.
+  """
+  def __init__(self):
+    self._def = net.kuujo.vitis.grouping.AllGrouping()

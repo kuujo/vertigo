@@ -32,6 +32,9 @@ public class NodeDefinition implements Serializeable<JsonObject> {
 
   private static final long DEFAULT_HEARTBEAT_INTERVAL = 2500;
 
+  public static final String VERTICLE = "verticle";
+  public static final String MODULE = "module";
+
   public NodeDefinition() {
   }
 
@@ -40,17 +43,37 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the component name.
+   * Gets the node type.
+   */
+  public String type() {
+    return definition.getString("type", VERTICLE);
+  }
+
+  /**
+   * Sets the node type.
+   *
+   * @param type
+   *   The node type.
+   * @return
+   *   The called node definition.
+   */
+  public NodeDefinition setType(String type) {
+    definition.putString("type", type);
+    return this;
+  }
+
+  /**
+   * Gets the node name.
    */
   public String name() {
     return definition.getString("name");
   }
 
   /**
-   * Sets the component name.
+   * Sets the node name.
    *
    * @param name
-   *   The component name.
+   *   The node name.
    */
   public NodeDefinition setName(String name) {
     definition.putString("name", name);
@@ -58,18 +81,20 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the component main.
+   * Gets the node main.
    */
   public String main() {
     return definition.getString("main");
   }
 
   /**
-   * Sets the component main. This is a string reference to the verticle
-   * to be run when a component worker is started.
+   * Sets the node main. This is a string reference to the verticle
+   * to be run when a node worker is started.
    *
    * @param main
-   *   The component main.
+   *   The node main.
+   * @return
+   *   The called node definition.
    */
   public NodeDefinition setMain(String main) {
     definition.putString("main", main);
@@ -77,47 +102,59 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Sets a component option.
-   *
-   * @param option
-   *   The option to set.
-   * @param value
-   *   The option value.
-   * @return
-   *   The called component definition.
+   * Gets the module name.
    */
-  public NodeDefinition setOption(String option, String value) {
-    switch (option) {
-      case "name":
-        return setName(value);
-      case "main":
-        return setMain(value);
-      default:
-        definition.putString(option, value);
-        break;
-    }
+  public String module() {
+    return definition.getString("module");
+  }
+
+  /**
+   * Sets the module name.
+   *
+   * @param moduleName
+   *   A module name.
+   * @return
+   *   The called node definition.
+   */
+  public NodeDefinition setModule(String moduleName) {
+    definition.putString("module", moduleName);
     return this;
   }
 
   /**
-   * Gets a component option.
+   * Gets the node configuration.
    *
-   * @param option
-   *   The option to get.
    * @return
-   *   The option value.
+   *   The node configuration.
    */
-  public String option(String option) {
-    return definition.getString(option);
+  public JsonObject config() {
+    JsonObject config = definition.getObject("config");
+    if (config == null) {
+      config = new JsonObject();
+    }
+    return config;
   }
 
   /**
-   * Sets the component worker grouping.
+   * Sets the node configuration.
+   *
+   * @param config
+   *   The node configuration.
+   * @return
+   *   The called node definition.
+   */
+  public NodeDefinition setConfig(JsonObject config) {
+    definition.putObject("config", config);
+    return this;
+  }
+
+  /**
+   * Sets the node worker grouping.
    *
    * @param grouping
    *   A grouping definition.
    * @return
-   *   The called component definition.
+   *   The called node definition.
    */
   public NodeDefinition groupBy(GroupingDefinition grouping) {
     definition.putObject("grouping", grouping.serialize());
@@ -125,19 +162,19 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the component worker grouping.
+   * Gets the node worker grouping.
    */
   public GroupingDefinition grouping() {
     return new GroupingDefinition(definition.getObject("grouping"));
   }
 
   /**
-   * Sets the number of component workers.
+   * Sets the number of node workers.
    *
    * @param workers
-   *   The number of component workers.
+   *   The number of node workers.
    * @return
-   *   The called component definition.
+   *   The called node definition.
    */
   public NodeDefinition setWorkers(int workers) {
     definition.putNumber("workers", workers);
@@ -145,19 +182,19 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the number of component workers.
+   * Gets the number of node workers.
    */
   public int workers() {
     return definition.getInteger("workers", DEFAULT_NUM_WORKERS);
   }
 
   /**
-   * Sets the component worker heartbeat interval.
+   * Sets the node worker heartbeat interval.
    *
    * @param interval
    *   A heartbeat interval.
    * @return
-   *   The called component definition.
+   *   The called node definition.
    */
   public NodeDefinition setHeartbeatInterval(long interval) {
     definition.putNumber("heartbeat", interval);
@@ -165,10 +202,10 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Gets the component heartbeat interval.
+   * Gets the node heartbeat interval.
    *
    * @return
-   *   A component heartbeat interval.
+   *   A node heartbeat interval.
    */
   public long heartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
@@ -190,71 +227,191 @@ public class NodeDefinition implements Serializeable<JsonObject> {
   }
 
   /**
-   * Creates a connection to the given definition.
+   * Adds a channel to a node.
    *
    * @param definition
-   *   A node definition.
+   *   The node definition.
+   * @return
+   *   The node definition.
    */
   public NodeDefinition to(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
-  public NodeDefinition toNode(NodeDefinition definition) {
-    return to(definition);
+  /**
+   * Adds a channel to a verticle node.
+   *
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toVerticle() {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE));
   }
 
   /**
-   * Creates a connection to a node, creating a new node definition.
+   * Adds a channel to a verticle node.
    *
    * @param name
    *   The node name.
    * @return
-   *   A new node definition.
+   *   A new node definition instance.
    */
-  public NodeDefinition to(String name) {
-    return to(name, null, 1);
-  }
-
-  public NodeDefinition toNode(String name) {
-    return to(name);
+  public NodeDefinition toVerticle(String name) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE).setName(name));
   }
 
   /**
-   * Creates a connection to a node, creating a new node definition.
+   * Adds a channel to a verticle node.
    *
    * @param name
    *   The node name.
    * @param main
-   *   The node main.
+   *   The verticle main.
    * @return
-   *   A new node definition.
+   *   A new node definition instance.
    */
-  public NodeDefinition to(String name, String main) {
-    return to(name, main, 1);
-  }
-
-  public NodeDefinition toNode(String name, String main) {
-    return to(name, main);
+  public NodeDefinition toVerticle(String name, String main) {
+    return toVerticle(name, main, new JsonObject(), 1);
   }
 
   /**
-   * Creates a connection to a node, creating a new node definition.
+   * Adds a channel to a verticle node.
    *
    * @param name
    *   The node name.
    * @param main
-   *   The node main.
+   *   The verticle main.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toVerticle(String name, String main, JsonObject config) {
+    return toVerticle(name, main, config, 1);
+  }
+
+  /**
+   * Adds a channel to a verticle node.
+   *
+   * @param name
+   *   The node name.
+   * @param main
+   *   The verticle main.
    * @param workers
-   *   The number of node workers.
+   *   The number of worker verticles to deploy.
    * @return
-   *   A new node definition.
+   *   A new node definition instance.
    */
-  public NodeDefinition to(String name, String main, int workers) {
-    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
+  public NodeDefinition toVerticle(String name, String main, int workers) {
+    return toVerticle(name, main, new JsonObject(), workers);
   }
 
-  public NodeDefinition toNode(String name, String main, int workers) {
-    return to(name, main, workers);
+  /**
+   * Adds a channel to a verticle node.
+   *
+   * @param name
+   *   The node name.
+   * @param main
+   *   The verticle main.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @param workers
+   *   The number of worker verticles to deploy.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toVerticle(String name, String main, JsonObject config, int workers) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
+  }
+
+  /**
+   * Adds a channel to a module node.
+   *
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toModule() {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE));
+  }
+
+  /**
+   * Adds a channel to a module node.
+   *
+   * @param name
+   *   The node name.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toModule(String name) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE).setName(name));
+  }
+
+  /**
+   * Adds a channel to a module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toModule(String name, String moduleName) {
+    return toModule(name, moduleName, new JsonObject(), 1);
+  }
+
+  /**
+   * Adds a channel to a module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toModule(String name, String moduleName, JsonObject config) {
+    return toModule(name, moduleName, config, 1);
+  }
+
+  /**
+   * Adds a channel to a module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @param workers
+   *   The number of worker verticles to deploy.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toModule(String name, String moduleName, int workers) {
+    return toModule(name, moduleName, new JsonObject(), workers);
+  }
+
+  /**
+   * Adds a channel to a module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @param workers
+   *   The number of worker verticles to deploy.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition toModule(String name, String moduleName, JsonObject config, int workers) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override

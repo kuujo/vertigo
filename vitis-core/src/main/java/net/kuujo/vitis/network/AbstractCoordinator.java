@@ -84,6 +84,28 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   protected abstract void deployVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
 
   /**
+   * Deploys a module.
+   *
+   * @param moduleName
+   *   The module name.
+   * @param config
+   *   The module configuration.
+   */
+  protected abstract void deployModule(String moduleName, JsonObject config);
+
+  /**
+   * Deploys a module.
+   *
+   * @param moduleName
+   *   The module name.
+   * @param config
+   *   The module configuration.
+   * @param doneHandler
+   *   An async handler to be invoked once complete.
+   */
+  protected abstract void deployModule(String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
    * Undeploys a verticle.
    *
    * @param deploymentId
@@ -100,6 +122,24 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    *   An async handler to be invoked once complete.
    */
   protected abstract void undeployVerticle(String deploymentId, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Undeploys a module.
+   *
+   * @param deploymentId
+   *   The deployment ID.
+   */
+  protected abstract void undeployModule(String deploymentId);
+
+  /**
+   * Undeploys a module.
+   *
+   * @param deploymentId
+   *   The deployment ID.
+   * @param doneHandler
+   *   An async handler to be invoked once complete.
+   */
+  protected abstract void undeployModule(String deploymentId, Handler<AsyncResult<Void>> doneHandler);
 
   @Override
   public void handle(Message<JsonObject> message) {
@@ -453,18 +493,34 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         future.setHandler(resultHandler);
 
         NodeDefinition definition = context.context().definition();
-        deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
-          @Override
-          public void handle(AsyncResult<String> result) {
-            if (result.succeeded()) {
-              deploymentMap.put(context.address(), result.result());
-              future.setResult(result.result());
+        if (definition.type().equals(NodeDefinition.VERTICLE)) {
+          deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.succeeded()) {
+                deploymentMap.put(context.address(), result.result());
+                future.setResult(result.result());
+              }
+              else {
+                future.setFailure(result.cause());
+              }
             }
-            else {
-              future.setFailure(result.cause());
+          });
+        }
+        else if (definition.type().equals(NodeDefinition.MODULE)) {
+          deployModule(definition.module(), context.serialize(), new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.succeeded()) {
+                deploymentMap.put(context.address(), result.result());
+                future.setResult(result.result());
+              }
+              else {
+                future.setFailure(result.cause());
+              }
             }
-          }
-        });
+          });
+        }
       }
 
       @Override
@@ -474,17 +530,33 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         String address = context.address();
         if (deploymentMap.containsKey(address)) {
           String deploymentID = deploymentMap.get(address);
-          undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
+          NodeDefinition definition = context.context().definition();
+          if (definition.type().equals(NodeDefinition.VERTICLE)) {
+            undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  future.setFailure(result.cause());
+                }
+                else {
+                  future.setResult(result.result());
+                }
               }
-              else {
-                future.setResult(result.result());
+            });
+          }
+          else if (definition.type().equals(NodeDefinition.MODULE)) {
+            undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  future.setFailure(result.cause());
+                }
+                else {
+                  future.setResult(result.result());
+                }
               }
-            }
-          });
+            });
+          }
         }
       }
     }

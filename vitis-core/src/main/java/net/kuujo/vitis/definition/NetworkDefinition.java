@@ -197,74 +197,184 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
     return definition;
   }
 
-  /**
-   * Adds a root node to the network.
-   *
-   * @param definition
-   *   A component definition.
-   * @return
-   *   The given node definition.
-   */
   public NodeDefinition from(NodeDefinition definition) {
     return addDefinition(definition);
   }
 
-  public NodeDefinition fromRoot(NodeDefinition definition) {
-    return from(definition);
+  /**
+   * Adds an initial verticle node.
+   *
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromVerticle() {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE));
   }
 
   /**
-   * Adds a root node to the network.
+   * Adds an initial verticle node.
    *
    * @param name
    *   The node name.
    * @return
-   *   A new node definition.
+   *   A new node definition instance.
    */
-  public NodeDefinition from(String name) {
-    return from(name, null, 1);
-  }
-
-  public NodeDefinition fromRoot(String name) {
-    return from(name);
+  public NodeDefinition fromVerticle(String name) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE).setName(name));
   }
 
   /**
-   * Adds a root node to the network.
+   * Adds an initial verticle node.
    *
    * @param name
    *   The node name.
    * @param main
-   *   The node main.
+   *   The verticle main.
    * @return
-   *   A new node definition.
+   *   A new node definition instance.
    */
-  public NodeDefinition from(String name, String main) {
-    return from(name, main, 1);
-  }
-
-  public NodeDefinition fromRoot(String name, String main) {
-    return from(name, main);
+  public NodeDefinition fromVerticle(String name, String main) {
+    return fromVerticle(name, main, new JsonObject(), 1);
   }
 
   /**
-   * Adds a root node to the network.
+   * Adds an initial verticle node.
    *
    * @param name
    *   The node name.
    * @param main
-   *   The node main.
+   *   The verticle main.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromVerticle(String name, String main, JsonObject config) {
+    return fromVerticle(name, main, config, 1);
+  }
+
+  /**
+   * Adds an initial verticle node.
+   *
+   * @param name
+   *   The node name.
+   * @param main
+   *   The verticle main.
    * @param workers
-   *   The number of workers.
+   *   The number of worker verticles to deploy.
    * @return
-   *   A new node definition.
+   *   A new node definition instance.
    */
-  public NodeDefinition from(String name, String main, int workers) {
-    return addDefinition(new NodeDefinition().setName(name).setMain(main).setWorkers(workers));
+  public NodeDefinition fromVerticle(String name, String main, int workers) {
+    return fromVerticle(name, main, new JsonObject(), workers);
   }
 
-  public NodeDefinition fromRoot(String name, String main, int workers) {
-    return from(name, main, workers);
+  /**
+   * Adds an initial verticle node.
+   *
+   * @param name
+   *   The node name.
+   * @param main
+   *   The verticle main.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @param workers
+   *   The number of worker verticles to deploy.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromVerticle(String name, String main, JsonObject config, int workers) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
+  }
+
+  /**
+   * Adds an initial module node.
+   *
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromModule() {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE));
+  }
+
+  /**
+   * Adds an initial module node.
+   *
+   * @param name
+   *   The node name.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromModule(String name) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE).setName(name));
+  }
+
+  /**
+   * Adds an initial module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromModule(String name, String moduleName) {
+    return fromModule(name, moduleName, new JsonObject(), 1);
+  }
+
+  /**
+   * Adds an initial module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromModule(String name, String moduleName, JsonObject config) {
+    return fromModule(name, moduleName, config, 1);
+  }
+
+  /**
+   * Adds an initial module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @param workers
+   *   The number of worker verticles to deploy.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromModule(String name, String moduleName, int workers) {
+    return fromModule(name, moduleName, new JsonObject(), workers);
+  }
+
+  /**
+   * Adds an initial module node.
+   *
+   * @param name
+   *   The node name.
+   * @param moduleName
+   *   The module name.
+   * @param config
+   *   A verticle configuration. This will be accessable via the worker's
+   *   WorkerContext instance.
+   * @param workers
+   *   The number of worker verticles to deploy.
+   * @return
+   *   A new node definition instance.
+   */
+  public NodeDefinition fromModule(String name, String moduleName, JsonObject config, int workers) {
+    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override

@@ -39,7 +39,7 @@ class BasicWorker(object):
     """
     Sets the worker message handler.
     """
-    self._worker.messageHandler(MessageHandler(handler))
+    self._worker.messageHandler(MessageHandler(handler, self))
     return handler
 
   def start(self, handler=None):
@@ -105,8 +105,9 @@ class MessageHandler(org.vertx.java.core.Handler):
   """
   A message handler wrapper.
   """
-  def __init__(self, handler):
+  def __init__(self, handler, worker):
     self.handler = handler
+    self.worker = worker
 
   def handle(self, message):
-    self.handler(Message(message))
+    self.handler(Message(message), self.worker)

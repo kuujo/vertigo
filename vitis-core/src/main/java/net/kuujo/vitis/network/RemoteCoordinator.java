@@ -55,6 +55,20 @@ public class RemoteCoordinator extends AbstractCoordinator {
         createDeployHandler(new DefaultFutureResult<String>().setHandler(doneHandler)));
   }
 
+  @Override
+  protected void deployModule(String moduleName, JsonObject config) {
+    eventBus.send(address, createAction("deploy").putString("type", "module")
+        .putString("module", moduleName).putObject("config", config));
+  }
+
+  @Override
+  protected void deployModule(String moduleName, JsonObject config,
+      Handler<AsyncResult<String>> doneHandler) {
+    eventBus.send(address, createAction("deploy").putString("type", "module")
+        .putString("module", moduleName).putObject("config", config),
+        createDeployHandler(new DefaultFutureResult<String>().setHandler(doneHandler)));
+  }
+
   /**
    * Creates a new deployment handler.
    */
@@ -83,6 +97,20 @@ public class RemoteCoordinator extends AbstractCoordinator {
   protected void undeployVerticle(String deploymentId,
       Handler<AsyncResult<Void>> doneHandler) {
     eventBus.send(address, createAction("undeploy").putString("type", "verticle")
+        .putString("id", deploymentId),
+        createUndeployHandler(new DefaultFutureResult<Void>().setHandler(doneHandler)));
+  }
+
+  @Override
+  protected void undeployModule(String deploymentId) {
+    eventBus.send(address, createAction("undeploy").putString("type", "module")
+        .putString("id", deploymentId));
+  }
+
+  @Override
+  protected void undeployModule(String deploymentId,
+      Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.send(address, createAction("undeploy").putString("type", "module")
         .putString("id", deploymentId),
         createUndeployHandler(new DefaultFutureResult<Void>().setHandler(doneHandler)));
   }

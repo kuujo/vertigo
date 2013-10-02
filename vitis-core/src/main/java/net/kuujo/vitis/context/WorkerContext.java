@@ -59,6 +59,16 @@ public class WorkerContext implements Context {
   }
 
   /**
+   * Gets the worker configuration.
+   *
+   * @return
+   *   A JSON configuration.
+   */
+  public JsonObject config() {
+    return context().definition().config();
+  }
+
+  /**
    * Gets the parent node context.
    *
    * @return

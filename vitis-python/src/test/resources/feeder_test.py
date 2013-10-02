@@ -23,14 +23,14 @@ class FeederTestCase(TestCase):
     network = create_network()
     network.address = "test"
     network.enable_acking()
-    network.from_root('test_feeder', feeder).to_node('test_worker', 'test_acking_worker.py')
+    network.from_verticle('test_feeder', feeder).to_verticle('test_worker', 'test_acking_worker.py')
     return network
 
   def _create_fail_network(self, feeder):
     network = create_network()
     network.address = "test"
     network.enable_acking()
-    network.from_root('test_feeder', feeder).to_node('test_worker', 'test_failing_worker.py')
+    network.from_verticle('test_feeder', feeder).to_verticle('test_worker', 'test_failing_worker.py')
     return network
 
   def test_basic_feeder_ack(self):

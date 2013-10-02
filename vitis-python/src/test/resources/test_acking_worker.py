@@ -23,7 +23,7 @@ def worker_start(error, worker):
     Assert.not_null(worker)
 
 @worker.message_handler
-def handle_message(message):
+def handle_message(message, worker):
   Assert.not_null(message)
   Assert.not_null(message.id)
   Assert.not_null(message.body)

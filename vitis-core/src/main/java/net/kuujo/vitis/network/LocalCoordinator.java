@@ -38,6 +38,17 @@ public class LocalCoordinator extends AbstractCoordinator {
   }
 
   @Override
+  protected void deployModule(String moduleName, JsonObject config) {
+    container.deployModule(moduleName, config);
+  }
+
+  @Override
+  protected void deployModule(String moduleName, JsonObject config,
+      Handler<AsyncResult<String>> doneHandler) {
+    container.deployModule(moduleName, config, doneHandler);
+  }
+
+  @Override
   protected void undeployVerticle(String deploymentId) {
     container.undeployVerticle(deploymentId);
   }
@@ -45,6 +56,16 @@ public class LocalCoordinator extends AbstractCoordinator {
   @Override
   protected void undeployVerticle(String deploymentId, Handler<AsyncResult<Void>> doneHandler) {
     container.undeployVerticle(deploymentId, doneHandler);
+  }
+
+  @Override
+  protected void undeployModule(String deploymentId) {
+    container.undeployModule(deploymentId);
+  }
+
+  @Override
+  protected void undeployModule(String deploymentId, Handler<AsyncResult<Void>> doneHandler) {
+    container.undeployModule(deploymentId, doneHandler);
   }
 
 }

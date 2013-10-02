@@ -17,6 +17,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>net.kuujo</groupId>
+      <artifactId>via</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version>${vertx.version}</version>

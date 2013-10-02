@@ -154,6 +154,7 @@ class NodeDefinition(object):
 
   def group_by(self, grouping):
     self._def.groupBy(grouping._def)
+    return self
 
   def to_verticle(self, name, main=None, workers=1, config=None, grouping=None):
     if config is None:

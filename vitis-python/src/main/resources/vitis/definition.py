@@ -153,7 +153,7 @@ class NodeDefinition(object):
   heartbeat_interval = property(get_heartbeat_interval, set_heartbeat_interval)
 
   def group_by(self, grouping):
-    self._def.groupBy(grouping.__def)
+    self._def.groupBy(grouping._def)
 
   def to_verticle(self, name, main=None, workers=1, config=None, grouping=None):
     if config is None:

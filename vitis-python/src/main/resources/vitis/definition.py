@@ -77,7 +77,7 @@ class NetworkDefinition(object):
   def from_module(self, name, module=None, workers=1, config=None, grouping=None):
     if config is None:
       config = {}
-    definition = self._def.fromModule(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
+    definition = self._def.fromModule(name, module, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
     if grouping is not None:
       definition.groupBy(grouping._def)
     return NodeDefinition(definition)
@@ -166,7 +166,7 @@ class NodeDefinition(object):
   def to_module(self, name, module=None, workers=1, config=None, grouping=None):
     if config is None:
       config = {}
-    definition = self._def.toModule(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
+    definition = self._def.toModule(name, module, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
     if grouping is not None:
       definition.groupBy(grouping._def)
     return NodeDefinition(definition)

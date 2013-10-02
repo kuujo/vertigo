@@ -34,8 +34,6 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
 
   private Handler<PollingFeeder> feedHandler;
 
-  private static final long START_DELAY = 1000;
-
   private long feedDelay = 500;
 
   private boolean fed;
@@ -67,7 +65,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
       @Override
       public void handle(AsyncResult<PollingFeeder> result) {
         if (result.succeeded()) {
-          scheduleFeed(START_DELAY);
+          recursiveFeed();
         }
       }
     });
@@ -83,7 +81,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
           future.setFailure(result.cause());
         }
         else {
-          scheduleFeed(START_DELAY);
+          recursiveFeed();
           future.setResult(result.result());
         }
       }
@@ -94,14 +92,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
    * Schedules a feed.
    */
   private void scheduleFeed() {
-    scheduleFeed(feedDelay);
-  }
-
-  /**
-   * Schedules a feed.
-   */
-  private void scheduleFeed(long delay) {
-    vertx.setTimer(delay, new Handler<Long>() {
+    vertx.setTimer(feedDelay, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
         recursiveFeed();

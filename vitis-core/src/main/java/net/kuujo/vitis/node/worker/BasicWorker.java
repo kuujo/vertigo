@@ -46,6 +46,7 @@ public class BasicWorker extends NodeBase implements Worker {
     setupHeartbeat();
     setupOutputs();
     setupInputs();
+    ready();
     return this;
   }
 
@@ -69,12 +70,17 @@ public class BasicWorker extends NodeBase implements Worker {
                 setupInputs(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
-                    if (result.failed()) {
-                      future.setFailure(result.cause());
-                    }
-                    else {
-                      future.setResult(BasicWorker.this);
-                    }
+                    ready(new Handler<AsyncResult<Void>>() {
+                      @Override
+                      public void handle(AsyncResult<Void> result) {
+                        if (result.failed()) {
+                          future.setFailure(result.cause());
+                        }
+                        else {
+                          future.setResult(BasicWorker.this);
+                        }
+                      }
+                    });
                   }
                 });
               }

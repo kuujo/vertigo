@@ -230,6 +230,30 @@ public abstract class NodeBase {
   }
 
   /**
+   * Indicates to the network that the node is ready.
+   */
+  protected void ready() {
+    ready(null);
+  }
+
+  /**
+   * Indicates to the network that the node is ready.
+   */
+  protected void ready(Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>();
+    if (doneHandler != null) {
+      future.setHandler(doneHandler);
+    }
+
+    eventBus.send(networkAddress, new JsonObject().putString("action", "ready").putString("address", address), new Handler<Message<Void>>() {
+      @Override
+      public void handle(Message<Void> message) {
+        future.setResult(null);
+      }
+    });
+  }
+
+  /**
    * Called when a message is acked.
    */
   protected void doAck(String id) {

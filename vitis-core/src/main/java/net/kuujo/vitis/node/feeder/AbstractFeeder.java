@@ -52,6 +52,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase imple
     setupHeartbeat();
     setupOutputs();
     setupInputs();
+    ready();
     return (T) this;
   }
 
@@ -80,14 +81,15 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends NodeBase imple
                       future.setFailure(result.cause());
                     }
                     else {
-                      // Set a timer before beginning feeding to ensure that
-                      // other nodes have a chance to get set up. This hack
-                      // may later be replaced by the coordinator indicating
-                      // when all nodes have been started.
-                      vertx.setTimer(1000, new Handler<Long>() {
+                      ready(new Handler<AsyncResult<Void>>() {
                         @Override
-                        public void handle(Long arg0) {
-                          future.setResult((T) AbstractFeeder.this);
+                        public void handle(AsyncResult<Void> result) {
+                          if (result.failed()) {
+                            future.setFailure(result.cause());
+                          }
+                          else {
+                            future.setResult((T) AbstractFeeder.this);
+                          }
                         }
                       });
                     }

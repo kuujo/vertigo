@@ -18,7 +18,7 @@ package net.kuujo.vitis.node.feeder;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vitis.VitisException;
+import net.kuujo.vitis.node.FailureException;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -74,7 +74,7 @@ public class BasicFeedQueue implements FeedQueue {
   @Override
   public void fail(String id) {
     if (futures.containsKey(id)) {
-      futures.remove(id).setFailure(new VitisException(""));
+      futures.remove(id).setFailure(new FailureException(""));
     }
   }
 

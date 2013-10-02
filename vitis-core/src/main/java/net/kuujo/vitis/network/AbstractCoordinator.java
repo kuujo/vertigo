@@ -17,8 +17,10 @@ package net.kuujo.vitis.network;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.via.heartbeat.DefaultHeartbeatMonitor;
@@ -50,6 +52,10 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   protected Map<String, WorkerContext> contextMap = new HashMap<>();
 
   protected Map<String, HeartbeatMonitor> heartbeats = new HashMap<>();
+
+  protected Set<String> workers = new HashSet<>();
+
+  protected Map<String, Message<JsonObject>> ready = new HashMap<>();
 
   protected String authDeploymentId;
 
@@ -156,6 +162,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         break;
       case "redeploy":
         doRedeployAll(message);
+        break;
+      case "ready":
+        doReady(message);
         break;
       default:
         sendError(message, String.format("Invalid action %s.", action));
@@ -297,6 +306,18 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         });
       }
     });
+  }
+
+  /**
+   * Indicates that a node instance is ready.
+   */
+  private void doReady(Message<JsonObject> message) {
+    ready.put(getMandatoryString("address", message), message);
+    if (ready.size() == workers.size()) {
+      for (Message<JsonObject> replyMessage : ready.values()) {
+        replyMessage.reply();
+      }
+    }
   }
 
   /**
@@ -488,6 +509,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
       @Override
       protected void doDeploy(final WorkerContext context, Handler<AsyncResult<String>> resultHandler) {
+        workers.add(context.address());
+
         final Future<String> future = new DefaultFutureResult<String>();
         contextMap.put(context.address(), context);
         future.setHandler(resultHandler);

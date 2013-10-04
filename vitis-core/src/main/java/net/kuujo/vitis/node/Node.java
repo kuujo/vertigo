@@ -15,8 +15,29 @@
 */
 package net.kuujo.vitis.node;
 
+import net.kuujo.vitis.context.WorkerContext;
+
+import org.vertx.java.core.json.JsonObject;
+
 /**
  * A network node.
  */
 public interface Node {
+
+  /**
+   * Returns the node configuration.
+   *
+   * @return
+   *   The node configuration.
+   */
+  public JsonObject config();
+
+  /**
+   * Returns the node context.
+   *
+   * @return
+   *   The node context.
+   */
+  public WorkerContext context();
+
 }

@@ -33,7 +33,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public abstract class NodeBase {
+public abstract class NodeBase implements Node {
 
   protected Vertx vertx;
 
@@ -68,6 +68,16 @@ public abstract class NodeBase {
     networkAddress = networkContext.address();
     auditAddress = networkContext.auditAddress();
     broadcastAddress = networkContext.broadcastAddress();
+  }
+
+  @Override
+  public JsonObject config() {
+    return context.config();
+  }
+
+  @Override
+  public WorkerContext context() {
+    return context;
   }
 
   /**

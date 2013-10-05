@@ -1,0 +1,5 @@
+{
+  "author": "Jordan Halterman",
+  "website": "https://github.com/kuujo/vertigo",
+  "includes": "net.kuujo~vertigo~0.1.0-SNAPSHOT"
+}

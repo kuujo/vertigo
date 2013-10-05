@@ -8,12 +8,12 @@
   </parent>
 
   <groupId>net.kuujo</groupId>
-  <artifactId>vitis-parent</artifactId>
+  <artifactId>vertigo-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>Vitis</name>
+  <name>Vertigo Parent</name>
   <description>An event processing framework for Vert.x.</description>
-  <url>http://github.com/kuujo/vitis</url>
+  <url>http://github.com/kuujo/vertigo</url>
   <inceptionYear>2013</inceptionYear>
 
   <properties>
@@ -47,19 +47,19 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:kuujo/vitis.git</connection>
-    <developerConnection>scm:git:git@github.com:kuujo/vitis.git</developerConnection>
-    <url>git@github.com:kuujo/vitis.git</url>
+    <connection>scm:git:git@github.com:kuujo/vertigo.git</connection>
+    <developerConnection>scm:git:git@github.com:kuujo/vertigo.git</developerConnection>
+    <url>git@github.com:kuujo/vertigo.git</url>
   </scm>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>http://github.com/kuujo/vitis/issues</url>
+    <url>http://github.com/kuujo/vertigo/issues</url>
   </issueManagement>
 
   <modules>
-    <module>vitis-core</module>
-    <module>vitis-python</module>
+    <module>vertigo-core</module>
+    <module>vertigo-python</module>
   </modules>
 
   <build>

@@ -150,7 +150,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
    */
   @SuppressWarnings("unchecked")
   protected T doFeed(final JsonObject data, final String tag, final int attempts, final Future<Void> future) {
-    final JsonMessage message = DefaultJsonMessage.create(data, tag);
+    final JsonMessage message = DefaultJsonMessage.create(address, data, tag);
     queue.enqueue(message.id(), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {

@@ -36,20 +36,60 @@ public class DefaultJsonMessage implements JsonMessage {
     this.body = body;
   }
 
+  /**
+   * Creates a new JSON message.
+   *
+   * @param body
+   *   The message body.
+   * @return
+   *   A new JSON message instance.
+   */
   public static JsonMessage create(JsonObject body) {
     return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body));
   }
 
+  /**
+   * Creates a new JSON message.
+   *
+   * @param body
+   *   The message body.
+   * @param tag
+   *   A tag to apply to the message.
+   * @return
+   *   A new JSON message instance.
+   */
   public static JsonMessage create(JsonObject body, String tag) {
     return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag));
   }
 
-  public static JsonMessage create(String id, JsonObject body) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", id).putObject("body", body));
+  /**
+   * Creates a new JSON message.
+   *
+   * @param source
+   *   The message source.
+   * @param body
+   *   The message body.
+   * @return
+   *   A new JSON message instance.
+   */
+  public static JsonMessage create(String source, JsonObject body) {
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body));
   }
 
-  public static JsonMessage create(String id, JsonObject body, String tag) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", id).putObject("body", body).putString("tag", tag));
+  /**
+   * Creates a new JSON message.
+   *
+   * @param source
+   *   The message source.
+   * @param body
+   *   The message body.
+   * @param tag
+   *   A tag to apply to the message.
+   * @return
+   *   A new JSON message instance.
+   */
+  public static JsonMessage create(String source, JsonObject body, String tag) {
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body).putString("tag", tag));
   }
 
   @Override
@@ -93,27 +133,6 @@ public class DefaultJsonMessage implements JsonMessage {
         this.body.copy()
         .putString("parent", body.getString("id"))
         .putString("id", createUniqueId())
-        .putObject("body", body)
-        .putString("tag", tag)
-    );
-  }
-
-  @Override
-  public JsonMessage createChild(String id, JsonObject body) {
-    return new DefaultJsonMessage(
-        this.body.copy()
-        .putString("parent", body.getString("id"))
-        .putString("id", id)
-        .putObject("body", body)
-    );
-  }
-
-  @Override
-  public JsonMessage createChild(String id, JsonObject body, String tag) {
-    return new DefaultJsonMessage(
-        this.body.copy()
-        .putString("parent", body.getString("id"))
-        .putString("id", id)
         .putObject("body", body)
         .putString("tag", tag)
     );

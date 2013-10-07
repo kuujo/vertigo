@@ -79,18 +79,6 @@ public interface JsonMessage extends Serializeable<JsonObject> {
   /**
    * Creates a new child of the message.
    *
-   * @param id
-   *   The child ID.
-   * @param body
-   *   The child body.
-   * @return
-   *   A new child message.
-   */
-  public JsonMessage createChild(String id, JsonObject body);
-
-  /**
-   * Creates a new child of the message.
-   *
    * @param body
    *   The child body.
    * @param tag
@@ -100,21 +88,6 @@ public interface JsonMessage extends Serializeable<JsonObject> {
    *   A new child message.
    */
   public JsonMessage createChild(JsonObject body, String tag);
-
-  /**
-   * Creates a new child of the message.
-   *
-   * @param id
-   *   The child ID.
-   * @param body
-   *   The child body.
-   * @param tag
-   *   A tag to apply to the child. If no tag is specified then the
-   *   parent tag will be inherited.
-   * @return
-   *   A new child message.
-   */
-  public JsonMessage createChild(String id, JsonObject body, String tag);
 
   /**
    * Creates a copy of the message.

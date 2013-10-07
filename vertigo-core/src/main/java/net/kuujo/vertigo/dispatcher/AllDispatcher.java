@@ -15,9 +15,6 @@
 */
 package net.kuujo.vertigo.dispatcher;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.kuujo.vertigo.messaging.Connection;
 import net.kuujo.vertigo.messaging.ConnectionPool;
 import net.kuujo.vertigo.messaging.JsonMessage;
@@ -31,30 +28,9 @@ public class AllDispatcher implements Dispatcher {
 
   private ConnectionPool connections;
 
-  private Map<String, String> options = new HashMap<String, String>();
-
   @Override
   public void init(ConnectionPool connections) {
     this.connections = connections;
-  }
-
-  @Override
-  public Dispatcher setOption(String option, String value) {
-    options.put(option, value);
-    return this;
-  }
-
-  @Override
-  public String getOption(String option) {
-    return options.get(option);
-  }
-
-  @Override
-  public String getOption(String option, String defaultValue) {
-    if (options.containsKey(option)) {
-      return options.get(option);
-    }
-    return defaultValue;
   }
 
   @Override

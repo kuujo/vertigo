@@ -28,7 +28,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class RoundRobinDispatcher extends AbstractDispatcher {
+public class RoundRobinDispatcher implements Dispatcher {
 
   private List<Connection> items;
 
@@ -45,11 +45,11 @@ public class RoundRobinDispatcher extends AbstractDispatcher {
   }
 
   @Override
-  protected Connection getConnection(JsonMessage message) {
+  public void dispatch(JsonMessage message) {
     if (!iterator.hasNext()) {
       iterator = items.iterator();
     }
-    return iterator.next();
+    iterator.next().write(message);
   }
 
 }

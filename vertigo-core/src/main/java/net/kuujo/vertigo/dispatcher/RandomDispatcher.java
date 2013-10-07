@@ -26,7 +26,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class RandomDispatcher extends AbstractDispatcher {
+public class RandomDispatcher implements Dispatcher {
 
   private Connection[] connections;
 
@@ -41,8 +41,8 @@ public class RandomDispatcher extends AbstractDispatcher {
   }
 
   @Override
-  protected Connection getConnection(JsonMessage message) {
-    return connections[rand.nextInt(connectionSize)];
+  public void dispatch(JsonMessage message) {
+    connections[rand.nextInt(connectionSize)].write(message);
   }
 
 }

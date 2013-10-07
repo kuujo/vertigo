@@ -28,7 +28,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class FieldsDispatcher extends AbstractDispatcher {
+public class FieldsDispatcher implements Dispatcher {
 
   private String fieldName;
 
@@ -51,13 +51,12 @@ public class FieldsDispatcher extends AbstractDispatcher {
   }
 
   @Override
-  protected Connection getConnection(JsonMessage message) {
+  public void dispatch(JsonMessage message) {
     String value = message.body().getString(fieldName);
     if (value != null) {
       int length = value.length();
-      return items.get(length % size);
+      items.get(length % size).write(message);
     }
-    return null;
   }
 
 }

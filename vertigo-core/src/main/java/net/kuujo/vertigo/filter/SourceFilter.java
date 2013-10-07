@@ -26,18 +26,18 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class SourceFilter implements Filter {
 
-  private JsonObject definition;
+  private JsonObject definition = new JsonObject();
 
   public SourceFilter() {
   }
 
   public SourceFilter(String source) {
-    definition = new JsonObject().putString("source", source);
+    definition.putString("source", source);
   }
 
   @Override
   public JsonObject serialize() {
-    return definition.copy().putString("filter", SourceFilter.class.getName());
+    return definition.copy();
   }
 
   @Override

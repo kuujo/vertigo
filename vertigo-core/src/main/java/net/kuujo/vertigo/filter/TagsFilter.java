@@ -66,7 +66,7 @@ public class TagsFilter implements Filter {
 
   @Override
   public JsonObject serialize() {
-    return definition.copy().putString("filter", TagsFilter.class.getName());
+    return definition.copy();
   }
 
   @Override

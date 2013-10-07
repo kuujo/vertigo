@@ -1,5 +1,6 @@
 package net.kuujo.vertigo;
 
+import net.kuujo.vertigo.filter.FieldFilter;
 import net.kuujo.vertigo.filter.SourceFilter;
 import net.kuujo.vertigo.filter.TagsFilter;
 
@@ -32,6 +33,20 @@ public final class Filters {
    */
   public static SourceFilter source(String source) {
     return new SourceFilter(source);
+  }
+
+  /**
+   * Creates a new field filter.
+   *
+   * @param fieldName
+   *   The name of the field by which to filter.
+   * @param value
+   *   The value by which to filter.
+   * @return
+   *   A new field filter instance.
+   */
+  public static FieldFilter field(String fieldName, Object value) {
+    return new FieldFilter(fieldName, value);
   }
 
 }

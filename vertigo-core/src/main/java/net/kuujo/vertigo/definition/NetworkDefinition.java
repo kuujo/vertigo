@@ -484,12 +484,20 @@ public class NetworkDefinition implements Definition {
       JsonObject connection = new JsonObject();
       connection.putString("name", name);
 
+      // Add a grouping definition to the connection context.
       JsonObject grouping = componentContext.getObject("definition").getObject("grouping");
       if (grouping == null) {
         grouping = new RoundGrouping().serialize();
       }
-
       connection.putObject("grouping", grouping);
+
+      // Add filter definitions to the connection context.
+      JsonArray filters = componentContext.getObject("definition").getArray("filters");
+      if (filters == null) {
+        filters = new JsonArray();
+      }
+      connection.putArray("filters", filters);
+
       connection.putArray("addresses", componentContext.getArray("workers").copy());
 
       connectionContexts.putObject(name, connection);
@@ -541,8 +549,15 @@ public class NetworkDefinition implements Definition {
           if (grouping == null) {
             grouping = new RoundGrouping().serialize();
           }
-
           connection.putObject("grouping", grouping);
+
+          // Add filter definitions to the connection.
+          JsonArray filters = conContext.getArray("filters");
+          if (filters == null) {
+            filters = new JsonArray();
+          }
+          connection.putArray("filters", filters);
+
           connection.putArray("addresses", conContext.getArray("workers").copy());
   
           componentConnectionContexts.putObject(name, connection);

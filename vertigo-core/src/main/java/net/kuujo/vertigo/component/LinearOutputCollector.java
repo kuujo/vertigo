@@ -70,21 +70,24 @@ public class LinearOutputCollector implements OutputCollector {
     String parent = message.parent();
     boolean hasParent = parent != null;
     while (iter.hasNext()) {
-      // If a parent exists then send a fork message to the acker task.
-      if (hasParent) {
-        eventBus.publish(auditAddress, createForkAction(message.id(), parent));
-      }
-      // Otherwise, send a new action to the acker task.
-      else {
-        eventBus.publish(auditAddress, createNewAction(message.id()));
-      }
-
-      // Write the message to the channel.
-      iter.next().write(message);
-
-      // Create a new copy of the message if another iteration remains.
-      if (iter.hasNext()) {
-        message = message.copy();
+      Channel channel = iter.next();
+      if (channel.isValid(message)) {
+        // If a parent exists then send a fork message to the acker task.
+        if (hasParent) {
+          eventBus.publish(auditAddress, createForkAction(message.id(), parent));
+        }
+        // Otherwise, send a new action to the acker task.
+        else {
+          eventBus.publish(auditAddress, createNewAction(message.id()));
+        }
+  
+        // Write the message to the channel.
+        channel.write(message);
+  
+        // Create a new copy of the message if another iteration remains.
+        if (iter.hasNext()) {
+          message = message.copy();
+        }
       }
     }
     return this;

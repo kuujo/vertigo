@@ -5,12 +5,12 @@ import java.util.Iterator;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.context.ConnectionContext;
+import net.kuujo.vertigo.context.GroupingContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.WorkerContext;
 import net.kuujo.vertigo.dispatcher.Dispatcher;
 import net.kuujo.vertigo.messaging.BasicChannel;
-import net.kuujo.vertigo.messaging.ConnectionPool;
-import net.kuujo.vertigo.messaging.ConnectionSet;
+import net.kuujo.vertigo.messaging.Channel;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.EventBusConnection;
 import net.kuujo.vertigo.messaging.JsonMessage;
@@ -136,30 +136,15 @@ public abstract class ComponentBase implements Component {
     while (iter.hasNext()) {
       ConnectionContext connectionContext = iter.next();
       try {
-        JsonObject grouping = connectionContext.getGrouping();
-        Dispatcher dispatcher = (Dispatcher) Class.forName(grouping.getString("dispatcher")).newInstance();
+        GroupingContext groupingContext = connectionContext.getGrouping();
+        Dispatcher dispatcher = groupingContext.createDispatcher();
+        Channel channel = new BasicChannel(dispatcher);
 
-        // Set options on the dispatcher. All non-"dispatcher" values
-        // are considered to be dispatcher options.
-        Iterator<String> fieldNames = grouping.getFieldNames().iterator();
-        while (fieldNames.hasNext()) {
-          String fieldName = fieldNames.next();
-          if (fieldName != "dispatcher") {
-            String value = grouping.getString(fieldName);
-            dispatcher.setOption(fieldName, value);
-          }
-        }
-
-        // Create a connection pool from which the dispatcher will dispatch messages.
-        ConnectionPool connectionPool = new ConnectionSet();
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {
-          connectionPool.add(new EventBusConnection(address, eventBus));
+          channel.addConnection(new EventBusConnection(address, eventBus));
         }
-
-        // Initialize the dispatcher and add a channel to the channels list.
-        dispatcher.init(connectionPool);
-        output.addChannel(new BasicChannel(dispatcher));
+        output.addChannel(channel);
       }
       catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         container.logger().error("Failed to find grouping handler.");

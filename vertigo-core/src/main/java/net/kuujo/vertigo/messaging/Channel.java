@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.messaging;
 
 import net.kuujo.vertigo.dispatcher.Dispatcher;
+import net.kuujo.vertigo.filter.Filter;
 
 /**
  * A uni-directional communication channel.
@@ -41,12 +42,28 @@ public interface Channel {
   public Dispatcher getDispatcher();
 
   /**
+   * Adds a filter to the channel.
+   *
+   * @param filter
+   *   A message filter.
+   */
+  public Channel addFilter(Filter filter);
+
+  /**
+   * Removes a filter from the channel.
+   *
+   * @param filter
+   *   A message filter.
+   */
+  public Channel removeFilter(Filter filter);
+
+  /**
    * Adds a connection to the channel.
    *
    * @param connection
    *   The connection to add.
    */
-  public void addConnection(Connection connection);
+  public Channel addConnection(Connection connection);
 
   /**
    * Removes a connection from the channel.
@@ -54,7 +71,17 @@ public interface Channel {
    * @param connection
    *   The connection to remove.
    */
-  public void removeConnection(Connection connection);
+  public Channel removeConnection(Connection connection);
+
+  /**
+   * Indicates whether a message is valid for the channel.
+   *
+   * @param message
+   *   The message to validate.
+   * @return
+   *   A boolean indicating whether the given message is valid for the channel.
+   */
+  public boolean isValid(JsonMessage message);
 
   /**
    * Writes a message to the channel.

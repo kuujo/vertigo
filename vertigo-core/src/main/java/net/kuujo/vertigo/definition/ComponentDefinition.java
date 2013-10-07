@@ -15,6 +15,9 @@
 */
 package net.kuujo.vertigo.definition;
 
+import net.kuujo.vertigo.filter.Filter;
+
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -160,10 +163,20 @@ public class ComponentDefinition implements Definition {
   }
 
   /**
-   * Gets the component worker grouping.
+   * Adds a filter to the component.
+   *
+   * @param filter
+   *   The filter to add.
+   * @return
+   *   The called component definition.
    */
-  public GroupingDefinition grouping() {
-    return new GroupingDefinition(definition.getObject("grouping"));
+  public ComponentDefinition filterBy(Filter filter) {
+    JsonArray filters = definition.getArray("filters");
+    if (filters == null) {
+      filters = new JsonArray();
+    }
+    filters.add(new JsonObject().putString("filter", filter.getClass().getName()).putObject("definition", filter.serialize()));
+    return this;
   }
 
   /**

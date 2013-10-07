@@ -16,8 +16,11 @@
 package net.kuujo.vertigo.context;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -56,8 +59,20 @@ public class ConnectionContext {
   /**
    * Returns the connection grouping.
    */
-  public JsonObject getGrouping() {
-    return context.getObject("grouping");
+  public GroupingContext getGrouping() {
+    return new GroupingContext(context.getObject("grouping"));
+  }
+
+  /**
+   * Returns connection filters.
+   */
+  public Collection<FilterContext> getFilters() {
+    Set<FilterContext> contexts = new HashSet<FilterContext>();
+    JsonArray filters = context.getArray("filters");
+    for (Object context : filters) {
+      contexts.add(new FilterContext((JsonObject) context));
+    }
+    return contexts;
   }
 
   /**

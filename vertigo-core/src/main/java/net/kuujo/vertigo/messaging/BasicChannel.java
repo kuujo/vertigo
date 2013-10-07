@@ -15,7 +15,11 @@
 */
 package net.kuujo.vertigo.messaging;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.kuujo.vertigo.dispatcher.Dispatcher;
+import net.kuujo.vertigo.filter.Filter;
 
 /**
  * A basic channel.
@@ -25,6 +29,8 @@ import net.kuujo.vertigo.dispatcher.Dispatcher;
 public class BasicChannel implements Channel {
 
   protected Dispatcher dispatcher;
+
+  protected Set<Filter> filters = new HashSet<>();
 
   protected ConnectionPool connections = new ConnectionSet();
 
@@ -43,19 +49,45 @@ public class BasicChannel implements Channel {
   }
 
   @Override
-  public void addConnection(Connection connection) {
+  public Channel addFilter(Filter filter) {
+    filters.add(filter);
+    return this;
+  }
+
+  @Override
+  public Channel removeFilter(Filter filter) {
+    if (filters.contains(filter)) {
+      filters.remove(filter);
+    }
+    return this;
+  }
+
+  @Override
+  public boolean isValid(JsonMessage message) {
+    for (Filter filter : filters) {
+      if (!filter.valid(message)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public Channel addConnection(Connection connection) {
     if (!connections.contains(connection)) {
       connections.add(connection);
     }
     dispatcher.init(connections);
+    return this;
   }
 
   @Override
-  public void removeConnection(Connection connection) {
+  public Channel removeConnection(Connection connection) {
     if (connections.contains(connection)) {
       connections.remove(connection);
     }
     dispatcher.init(connections);
+    return this;
   }
 
   @Override

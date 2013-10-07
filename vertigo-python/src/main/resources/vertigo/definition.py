@@ -17,6 +17,8 @@ import net.kuujo.vertigo.grouping.FieldsGrouping
 import net.kuujo.vertigo.grouping.RandomGrouping
 import net.kuujo.vertigo.grouping.RoundGrouping
 import net.kuujo.vertigo.grouping.AllGrouping
+import net.kuujo.vertigo.filter.TagFilter
+import net.kuujo.vertigo.filter.SourceFilter
 import org.vertx.java.core.json.JsonObject
 from core.javautils import map_from_java, map_to_java
 
@@ -156,6 +158,10 @@ class ComponentDefinition(object):
     self._def.groupBy(grouping._def)
     return self
 
+  def filter_by(self, filter):
+    self._def.filterBy(filter._def)
+    return self
+
   def to_verticle(self, name, main=None, workers=1, config=None, grouping=None):
     if config is None:
       config = {}
@@ -228,3 +234,24 @@ class AllGrouping(Grouping):
   """
   def __init__(self):
     self._def = net.kuujo.vertigo.grouping.AllGrouping()
+
+class Filter(object):
+  """
+  A component filter definition.
+  """
+  def __init__(self):
+    self._def = None
+
+class TagFilter(Filter):
+  """
+  A tag filter.
+  """
+  def __init__(self, *tags):
+    self._def = net.kuujo.vertigo.filter.TagFilter(*tags)
+
+class SourceFilter(Filter):
+  """
+  A source filter.
+  """
+  def __init__(self, source):
+    self._def = net.kuujo.vertigo.filter.SourceFilter(source)

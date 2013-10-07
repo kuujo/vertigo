@@ -184,7 +184,7 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
   /**
    * Adds a root definition.
    */
-  private NodeDefinition addDefinition(NodeDefinition definition) {
+  private ComponentDefinition addDefinition(ComponentDefinition definition) {
     // Add the root definition.
     JsonObject roots = this.definition.getObject("roots");
     if (roots == null) {
@@ -197,84 +197,84 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
     return definition;
   }
 
-  public NodeDefinition from(NodeDefinition definition) {
+  public ComponentDefinition from(ComponentDefinition definition) {
     return addDefinition(definition);
   }
 
   /**
-   * Adds an initial verticle node.
+   * Adds an initial verticle component.
    *
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromVerticle() {
-    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE));
+  public ComponentDefinition fromVerticle() {
+    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE));
   }
 
   /**
-   * Adds an initial verticle node.
+   * Adds an initial verticle component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromVerticle(String name) {
-    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE).setName(name));
+  public ComponentDefinition fromVerticle(String name) {
+    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name));
   }
 
   /**
-   * Adds an initial verticle node.
+   * Adds an initial verticle component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param main
    *   The verticle main.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromVerticle(String name, String main) {
+  public ComponentDefinition fromVerticle(String name, String main) {
     return fromVerticle(name, main, new JsonObject(), 1);
   }
 
   /**
-   * Adds an initial verticle node.
+   * Adds an initial verticle component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param main
    *   The verticle main.
    * @param config
    *   A verticle configuration. This will be accessable via the worker's
    *   WorkerContext instance.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromVerticle(String name, String main, JsonObject config) {
+  public ComponentDefinition fromVerticle(String name, String main, JsonObject config) {
     return fromVerticle(name, main, config, 1);
   }
 
   /**
-   * Adds an initial verticle node.
+   * Adds an initial verticle component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param main
    *   The verticle main.
    * @param workers
    *   The number of worker verticles to deploy.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromVerticle(String name, String main, int workers) {
+  public ComponentDefinition fromVerticle(String name, String main, int workers) {
     return fromVerticle(name, main, new JsonObject(), workers);
   }
 
   /**
-   * Adds an initial verticle node.
+   * Adds an initial verticle component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param main
    *   The verticle main.
    * @param config
@@ -283,86 +283,86 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @param workers
    *   The number of worker verticles to deploy.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromVerticle(String name, String main, JsonObject config, int workers) {
-    return addDefinition(new NodeDefinition().setType(NodeDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
+  public ComponentDefinition fromVerticle(String name, String main, JsonObject config, int workers) {
+    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
   }
 
   /**
-   * Adds an initial module node.
+   * Adds an initial module component.
    *
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromModule() {
-    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE));
+  public ComponentDefinition fromModule() {
+    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE));
   }
 
   /**
-   * Adds an initial module node.
+   * Adds an initial module component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromModule(String name) {
-    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE).setName(name));
+  public ComponentDefinition fromModule(String name) {
+    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name));
   }
 
   /**
-   * Adds an initial module node.
+   * Adds an initial module component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param moduleName
    *   The module name.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromModule(String name, String moduleName) {
+  public ComponentDefinition fromModule(String name, String moduleName) {
     return fromModule(name, moduleName, new JsonObject(), 1);
   }
 
   /**
-   * Adds an initial module node.
+   * Adds an initial module component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param moduleName
    *   The module name.
    * @param config
    *   A verticle configuration. This will be accessable via the worker's
    *   WorkerContext instance.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromModule(String name, String moduleName, JsonObject config) {
+  public ComponentDefinition fromModule(String name, String moduleName, JsonObject config) {
     return fromModule(name, moduleName, config, 1);
   }
 
   /**
-   * Adds an initial module node.
+   * Adds an initial module component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param moduleName
    *   The module name.
    * @param workers
    *   The number of worker verticles to deploy.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromModule(String name, String moduleName, int workers) {
+  public ComponentDefinition fromModule(String name, String moduleName, int workers) {
     return fromModule(name, moduleName, new JsonObject(), workers);
   }
 
   /**
-   * Adds an initial module node.
+   * Adds an initial module component.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    * @param moduleName
    *   The module name.
    * @param config
@@ -371,10 +371,10 @@ public class NetworkDefinition implements Serializeable<JsonObject> {
    * @param workers
    *   The number of worker verticles to deploy.
    * @return
-   *   A new node definition instance.
+   *   A new component definition instance.
    */
-  public NodeDefinition fromModule(String name, String moduleName, JsonObject config, int workers) {
-    return addDefinition(new NodeDefinition().setType(NodeDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
+  public ComponentDefinition fromModule(String name, String moduleName, JsonObject config, int workers) {
+    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from definition import NetworkDefinition, NodeDefinition
+from definition import NetworkDefinition, ComponentDefinition
 
 class _AbstractContext(object):
   """
@@ -47,12 +47,12 @@ class NetworkContext(_AbstractContext):
     contexts = {}
     while iterator.hasNext():
       context = iterator.next()
-      contexts[context.name()] = NodeContext(context)
+      contexts[context.name()] = ComponentContext(context)
     return contexts
 
-class NodeContext(_AbstractContext):
+class ComponentContext(_AbstractContext):
   """
-  A node context.
+  A component context.
   """
   @property
   def address(self):
@@ -64,7 +64,7 @@ class NodeContext(_AbstractContext):
 
   @property
   def definition(self):
-    return NodeDefinition(self._context.definition())
+    return ComponentDefinition(self._context.definition())
 
   @property
   def workers(self):
@@ -86,4 +86,4 @@ class WorkerContext(_AbstractContext):
 
   @property
   def context(self):
-    return NodeContext(self._context.context())
+    return ComponentContext(self._context.context())

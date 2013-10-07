@@ -19,12 +19,12 @@ import net.kuujo.vertigo.Cluster;
 import net.kuujo.vertigo.Groupings;
 import net.kuujo.vertigo.LocalCluster;
 import net.kuujo.vertigo.Networks;
+import net.kuujo.vertigo.component.feeder.BasicFeeder;
+import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.definition.NetworkDefinition;
 import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.vertigo.node.feeder.BasicFeeder;
-import net.kuujo.vertigo.node.worker.Worker;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -67,7 +67,7 @@ public class NetworkTest extends TestVerticle {
     }
   }
 
-  public static class TestNodeOne extends VertigoVerticle {
+  public static class TestComponentOne extends VertigoVerticle {
     @Override
     public void start() {
       final Worker worker = vertigo.createWorker();
@@ -83,7 +83,7 @@ public class NetworkTest extends TestVerticle {
     }
   }
 
-  public static class TestNodeTwo extends VertigoVerticle {
+  public static class TestComponentTwo extends VertigoVerticle {
     @Override
     public void start() {
       final Worker worker = vertigo.createWorker();
@@ -106,8 +106,8 @@ public class NetworkTest extends TestVerticle {
   private NetworkDefinition createSimpleTestDefinition() {
     NetworkDefinition network = Networks.createDefinition("test");
     network.fromVerticle("feeder", TestBasicFeeder.class.getName())
-      .toVerticle("nodeone", TestNodeOne.class.getName()).groupBy(Groupings.random())
-      .toVerticle("nodetwo", TestNodeTwo.class.getName()).groupBy(Groupings.round());
+      .toVerticle("componentone", TestComponentOne.class.getName()).groupBy(Groupings.random())
+      .toVerticle("componenttwo", TestComponentTwo.class.getName()).groupBy(Groupings.round());
     return network;
   }
 

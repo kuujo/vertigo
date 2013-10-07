@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vertigo.context.WorkerContext
-import net.kuujo.vertigo.node.worker.BasicWorker
+import net.kuujo.vertigo.component.worker.BasicWorker
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
 import org.vertx.java.core.AsyncResultHandler
@@ -29,7 +29,7 @@ class BasicWorker(object):
       context = context._context
     else:
       context = net.kuujo.vertigo.context.WorkerContext(org.vertx.java.platform.impl.JythonVerticleFactory.container.config())
-    self._worker = net.kuujo.vertigo.node.worker.BasicWorker(
+    self._worker = net.kuujo.vertigo.component.worker.BasicWorker(
       org.vertx.java.platform.impl.JythonVerticleFactory.vertx,
       org.vertx.java.platform.impl.JythonVerticleFactory.container,
       context

@@ -23,7 +23,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A node connection context.
+ * A component connection context.
  *
  * @author Jordan Halterman
  */
@@ -47,9 +47,9 @@ public class ConnectionContext {
   }
 
   /**
-   * Returns the name of the node to which the connection is connected.
+   * Returns the name of the component to which the connection is connected.
    */
-  public String getNodeName() {
+  public String getComponentName() {
     return context.getString("name");
   }
 

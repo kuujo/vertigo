@@ -24,9 +24,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.NodeContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.definition.NodeDefinition;
+import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.via.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.via.heartbeat.HeartbeatMonitor;
 
@@ -309,7 +309,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   }
 
   /**
-   * Indicates that a node instance is ready.
+   * Indicates that a component instance is ready.
    */
   private void doReady(Message<JsonObject> message) {
     ready.put(getMandatoryString("address", message), message);
@@ -340,7 +340,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      *   A handler to be invoked once the network is deployed.
      */
     public void deploy(Handler<AsyncResult<Void>> doneHandler) {
-      Collection<NodeContext> components = context.contexts();
+      Collection<ComponentContext> components = context.contexts();
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
       deployer.deploy(doneHandler);
     }
@@ -352,7 +352,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      *   A handler to be invoked once the network is undeployed.
      */
     public void undeploy(Handler<AsyncResult<Void>> doneHandler) {
-      Collection<NodeContext> components = context.contexts();
+      Collection<ComponentContext> components = context.contexts();
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
       deployer.undeploy(doneHandler);
     }
@@ -453,14 +453,14 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     /**
      * A network component deployer.
      */
-    private class RecursiveComponentDeployer extends RecursiveContextDeployer<NodeContext> {
+    private class RecursiveComponentDeployer extends RecursiveContextDeployer<ComponentContext> {
 
-      public RecursiveComponentDeployer(Collection<NodeContext> contexts) {
+      public RecursiveComponentDeployer(Collection<ComponentContext> contexts) {
         super(contexts);
       }
 
       @Override
-      protected void doDeploy(NodeContext context, Handler<AsyncResult<String>> resultHandler) {
+      protected void doDeploy(ComponentContext context, Handler<AsyncResult<String>> resultHandler) {
         final Future<String> future = new DefaultFutureResult<String>();
         future.setHandler(resultHandler);
         Collection<WorkerContext> workers = context.workerContexts();
@@ -479,7 +479,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       }
 
       @Override
-      protected void doUndeploy(NodeContext context, Handler<AsyncResult<Void>> doneHandler) {
+      protected void doUndeploy(ComponentContext context, Handler<AsyncResult<Void>> doneHandler) {
         final Future<Void> future = new DefaultFutureResult<Void>();
         future.setHandler(doneHandler);
         Collection<WorkerContext> workers = context.workerContexts();
@@ -515,8 +515,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         contextMap.put(context.address(), context);
         future.setHandler(resultHandler);
 
-        NodeDefinition definition = context.context().definition();
-        if (definition.type().equals(NodeDefinition.VERTICLE)) {
+        ComponentDefinition definition = context.context().definition();
+        if (definition.type().equals(ComponentDefinition.VERTICLE)) {
           deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
@@ -530,7 +530,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             }
           });
         }
-        else if (definition.type().equals(NodeDefinition.MODULE)) {
+        else if (definition.type().equals(ComponentDefinition.MODULE)) {
           deployModule(definition.module(), context.serialize(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
@@ -553,8 +553,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         String address = context.address();
         if (deploymentMap.containsKey(address)) {
           String deploymentID = deploymentMap.get(address);
-          NodeDefinition definition = context.context().definition();
-          if (definition.type().equals(NodeDefinition.VERTICLE)) {
+          ComponentDefinition definition = context.context().definition();
+          if (definition.type().equals(ComponentDefinition.VERTICLE)) {
             undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -567,7 +567,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
               }
             });
           }
-          else if (definition.type().equals(NodeDefinition.MODULE)) {
+          else if (definition.type().equals(ComponentDefinition.MODULE)) {
             undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {

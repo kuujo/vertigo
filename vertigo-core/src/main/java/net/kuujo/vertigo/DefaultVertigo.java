@@ -15,15 +15,15 @@
 */
 package net.kuujo.vertigo;
 
+import net.kuujo.vertigo.component.feeder.BasicFeeder;
+import net.kuujo.vertigo.component.feeder.DefaultBasicFeeder;
+import net.kuujo.vertigo.component.feeder.DefaultPollingFeeder;
+import net.kuujo.vertigo.component.feeder.DefaultStreamFeeder;
+import net.kuujo.vertigo.component.feeder.PollingFeeder;
+import net.kuujo.vertigo.component.feeder.StreamFeeder;
+import net.kuujo.vertigo.component.worker.BasicWorker;
+import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.node.feeder.BasicFeeder;
-import net.kuujo.vertigo.node.feeder.DefaultBasicFeeder;
-import net.kuujo.vertigo.node.feeder.DefaultPollingFeeder;
-import net.kuujo.vertigo.node.feeder.DefaultStreamFeeder;
-import net.kuujo.vertigo.node.feeder.PollingFeeder;
-import net.kuujo.vertigo.node.feeder.StreamFeeder;
-import net.kuujo.vertigo.node.worker.BasicWorker;
-import net.kuujo.vertigo.node.worker.Worker;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;

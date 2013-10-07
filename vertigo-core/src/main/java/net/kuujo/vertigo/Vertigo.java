@@ -15,11 +15,11 @@
 */
 package net.kuujo.vertigo;
 
+import net.kuujo.vertigo.component.feeder.BasicFeeder;
+import net.kuujo.vertigo.component.feeder.PollingFeeder;
+import net.kuujo.vertigo.component.feeder.StreamFeeder;
+import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.node.feeder.BasicFeeder;
-import net.kuujo.vertigo.node.feeder.PollingFeeder;
-import net.kuujo.vertigo.node.feeder.StreamFeeder;
-import net.kuujo.vertigo.node.worker.Worker;
 
 /**
  * Primary Vert.igo API.
@@ -32,7 +32,7 @@ import net.kuujo.vertigo.node.worker.Worker;
 public interface Vertigo {
 
   /**
-   * Sets the node instance context.
+   * Sets the component instance context.
    *
    * @param context
    *   A worker context.

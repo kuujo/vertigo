@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vertigo.context.WorkerContext
-import net.kuujo.vertigo.node.feeder.DefaultBasicFeeder
-import net.kuujo.vertigo.node.feeder.DefaultPollingFeeder
-import net.kuujo.vertigo.node.feeder.DefaultStreamFeeder
+import net.kuujo.vertigo.component.feeder.DefaultBasicFeeder
+import net.kuujo.vertigo.component.feeder.DefaultPollingFeeder
+import net.kuujo.vertigo.component.feeder.DefaultStreamFeeder
 import net.kuujo.vertigo.messaging.JsonMessage
 import org.vertx.java.platform.impl.JythonVerticleFactory
 import org.vertx.java.core.Handler
@@ -108,13 +108,13 @@ class BasicFeeder(_AbstractFeeder):
   """
   A basic feeder.
   """
-  _handlercls = net.kuujo.vertigo.node.feeder.DefaultBasicFeeder
+  _handlercls = net.kuujo.vertigo.component.feeder.DefaultBasicFeeder
 
 class PollingFeeder(_AbstractFeeder):
   """
   A polling feeder.
   """
-  _handlercls = net.kuujo.vertigo.node.feeder.DefaultPollingFeeder
+  _handlercls = net.kuujo.vertigo.component.feeder.DefaultPollingFeeder
 
   def set_feed_delay(self, delay):
     self._feeder.feedDelay(delay)
@@ -135,7 +135,7 @@ class StreamFeeder(_AbstractFeeder):
   """
   A stream feeder.
   """
-  _handlercls = net.kuujo.vertigo.node.feeder.DefaultStreamFeeder
+  _handlercls = net.kuujo.vertigo.component.feeder.DefaultStreamFeeder
 
   def full_handler(self, handler):
     """

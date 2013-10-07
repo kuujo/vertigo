@@ -26,7 +26,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Observes node message trees and manages ack/fail.
+ * Observes component message trees and manages ack/fail.
  *
  * @author Jordan Halterman
  */
@@ -40,7 +40,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
 
   private long expire = 30000;
 
-  private Map<String, Node> nodes = new HashMap<>();
+  private Map<String, Component> components = new HashMap<>();
 
   private Map<Long, Timer> timers = new HashMap<>();
 
@@ -76,27 +76,27 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     }
   }
 
-  private Handler<Node> ackHandler = new Handler<Node>() {
+  private Handler<Component> ackHandler = new Handler<Component>() {
     @Override
-    public void handle(Node node) {
-      Timer timer = node.timer;
+    public void handle(Component component) {
+      Timer timer = component.timer;
       if (timer != null) {
-        timer.ids.remove(node.id);
+        timer.ids.remove(component.id);
       }
-      clearRoot(node);
-      eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", node.id));
+      clearRoot(component);
+      eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", component.id));
     }
   };
 
-  private Handler<Node> failHandler = new Handler<Node>() {
+  private Handler<Component> failHandler = new Handler<Component>() {
     @Override
-    public void handle(Node node) {
-      Timer timer = node.timer;
+    public void handle(Component component) {
+      Timer timer = component.timer;
       if (timer != null) {
-        timer.ids.add(node.id);
+        timer.ids.add(component.id);
       }
-      clearRoot(node);
-      eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id));
+      clearRoot(component);
+      eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", component.id));
     }
   };
 
@@ -106,15 +106,15 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private void doCreate(Message<JsonObject> message) {
     String id = getMandatoryString("id", message);
     if (enabled) {
-       // We simply add ack and fail handlers to the root node. If a descendant
-      // node is failed then it will bubble up to the root. Once all child nodes
+       // We simply add ack and fail handlers to the root component. If a descendant
+      // component is failed then it will bubble up to the root. Once all child components
       // are acked the parent will be acked which will also bubble up to the root.
       Timer timer = getCurrentTimer();
       timer.ids.add(id);
-      Node node = new Node(id, timer);
-      node.ackHandler(ackHandler);
-      node.failHandler(failHandler);
-      nodes.put(node.id, node);
+      Component component = new Component(id, timer);
+      component.ackHandler(ackHandler);
+      component.failHandler(failHandler);
+      components.put(component.id, component);
     }
     // If acking is disabled then immediately ack the message back to its source.
     else {
@@ -123,37 +123,37 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   }
 
   /**
-   * Expires a node by ID.
+   * Expires a component by ID.
    */
   private void expire(String id) {
-    // Simply clear the expired node. It should be up to the feeder to timeout
-    // the node if it failed. This is simply an added mechanism to prevent memory leaks.
-    if (nodes.containsKey(id)) {
-      nodes.get(id).fail();
+    // Simply clear the expired component. It should be up to the feeder to timeout
+    // the component if it failed. This is simply an added mechanism to prevent memory leaks.
+    if (components.containsKey(id)) {
+      components.get(id).fail();
     }
   }
 
   /**
    * Clears an entire message tree from storage.
    */
-  private void clearRoot(Node node) {
-    clearNode(node);
+  private void clearRoot(Component component) {
+    clearComponent(component);
   }
 
   /**
-   * Clears all children of a node from storage.
+   * Clears all children of a component from storage.
    */
-  private void clearNode(Node node) {
-    if (node.children.size() > 0) {
-      for (Node child : node.children) {
-        clearNode(child);
+  private void clearComponent(Component component) {
+    if (component.children.size() > 0) {
+      for (Component child : component.children) {
+        clearComponent(child);
       }
-      if (nodes.containsKey(node.id)) {
-        nodes.remove(node.id);
+      if (components.containsKey(component.id)) {
+        components.remove(component.id);
       }
     }
-    else if (nodes.containsKey(node.id)) {
-      nodes.remove(node.id);
+    else if (components.containsKey(component.id)) {
+      components.remove(component.id);
     }
   }
 
@@ -162,11 +162,11 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    */
   private void doFork(Message<JsonObject> message) {
     String parentId = getMandatoryString("parent", message);
-    if (nodes.containsKey(parentId)) {
+    if (components.containsKey(parentId)) {
       String id = getMandatoryString("id", message);
-      Node node = new Node(id);
-      nodes.get(parentId).addChild(node);
-      nodes.put(id, node);
+      Component component = new Component(id);
+      components.get(parentId).addChild(component);
+      components.put(id, component);
     }
   }
 
@@ -175,8 +175,8 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    */
   private void doAck(Message<JsonObject> message) {
     String id = getMandatoryString("id", message);
-    if (nodes.containsKey(id)) {
-      nodes.get(id).ack();
+    if (components.containsKey(id)) {
+      components.get(id).ack();
     }
   }
 
@@ -185,8 +185,8 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    */
   private void doFail(Message<JsonObject> message) {
     String id = getMandatoryString("id", message);
-    if (nodes.containsKey(id)) {
-      nodes.get(id).fail();
+    if (components.containsKey(id)) {
+      components.get(id).fail();
     }
   }
 
@@ -235,25 +235,25 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   }
 
   /**
-   * Represents a single node in a message tree.
+   * Represents a single component in a message tree.
    */
-  private static final class Node {
+  private static final class Component {
     private final String id;
     private final Timer timer;
-    private final Set<Node> children = new HashSet<>();
-    private final Set<Node> complete = new HashSet<>();
-    private Handler<Node> ackHandler;
-    private Handler<Node> failHandler;
+    private final Set<Component> children = new HashSet<>();
+    private final Set<Component> complete = new HashSet<>();
+    private Handler<Component> ackHandler;
+    private Handler<Component> failHandler;
     private boolean ready = true;
     private boolean acked;
     private boolean ack;
     private boolean locked;
 
-    private Handler<Node> childAckHandler = new Handler<Node>() {
+    private Handler<Component> childAckHandler = new Handler<Component>() {
       @Override
-      public void handle(Node node) {
+      public void handle(Component component) {
         if (!failed()) {
-          complete.add(node);
+          complete.add(component);
           if (complete.size() == children.size()) {
             ready();
           }
@@ -261,21 +261,21 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       }
     };
 
-    private Handler<Node> childFailHandler = new Handler<Node>() {
+    private Handler<Component> childFailHandler = new Handler<Component>() {
       @Override
-      public void handle(Node node) {
+      public void handle(Component component) {
         if (!failed()) {
           fail();
         }
       }
     };
 
-    private Node(String id) {
+    private Component(String id) {
       this.id = id;
       this.timer = null;
     }
 
-    private Node(String id, Timer timer) {
+    private Component(String id, Timer timer) {
       this.id = id;
       this.timer = timer;
     }
@@ -332,14 +332,14 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     /**
      * Sets an ack handler on the message.
      */
-    private void ackHandler(Handler<Node> handler) {
+    private void ackHandler(Handler<Component> handler) {
       this.ackHandler = handler;
     }
 
     /**
      * Sets a fail handler on the message.
      */
-    private void failHandler(Handler<Node> handler) {
+    private void failHandler(Handler<Component> handler) {
       this.failHandler = handler;
     }
 
@@ -349,7 +349,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
      * @param child
      *   The child message.
      */
-    private final void addChild(Node child) {
+    private final void addChild(Component child) {
       children.add(child);
       ready = false;
       child.ackHandler(childAckHandler);

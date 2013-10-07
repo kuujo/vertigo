@@ -34,14 +34,14 @@ class DefinitionTestCase(TestCase):
     self.assert_equals(10, network.num_ackers)
     network.ack_expire = 50000
     self.assert_equals(50000, network.ack_expire)
-    node = network.from_verticle('test_feeder_verticle', main='test_feeder_verticle.py')
-    self.assert_equals('test_feeder_verticle', node.name)
-    self.assert_equals('test_feeder_verticle.py', node.main)
-    node.workers = 4
-    self.assert_equals(4, node.workers)
-    node2 = node.to_verticle('test_worker_verticle')
-    node2.main = 'test_worker_verticle.py'
-    self.assert_equals('test_worker_verticle.py', node2.main)
+    component = network.from_verticle('test_feeder_verticle', main='test_feeder_verticle.py')
+    self.assert_equals('test_feeder_verticle', component.name)
+    self.assert_equals('test_feeder_verticle.py', component.main)
+    component.workers = 4
+    self.assert_equals(4, component.workers)
+    component2 = component.to_verticle('test_worker_verticle')
+    component2.main = 'test_worker_verticle.py'
+    self.assert_equals('test_worker_verticle.py', component2.main)
     self.complete()
 
 run_test(DefinitionTestCase())

@@ -61,34 +61,34 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns a list of network node contexts.
+   * Returns a list of network component contexts.
    */
-  public Collection<NodeContext> contexts() {
+  public Collection<ComponentContext> contexts() {
     JsonObject components = context.getObject("components");
-    ArrayList<NodeContext> contexts = new ArrayList<NodeContext>();
+    ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
     Iterator<String> iter = components.getFieldNames().iterator();
     while (iter.hasNext()) {
-      contexts.add(new NodeContext(components.getObject(iter.next()), this));
+      contexts.add(new ComponentContext(components.getObject(iter.next()), this));
     }
     return contexts;
   }
 
   /**
-   * Returns a specific node context.
+   * Returns a specific component context.
    *
    * @param name
-   *   The node name.
+   *   The component name.
    */
-  public NodeContext context(String name) {
-    JsonObject nodes = context.getObject("components");
-    if (nodes == null) {
+  public ComponentContext context(String name) {
+    JsonObject components = context.getObject("components");
+    if (components == null) {
       return null;
     }
-    JsonObject nodeContext = nodes.getObject(name);
-    if (nodeContext == null) {
+    JsonObject componentContext = components.getObject(name);
+    if (componentContext == null) {
       return null;
     }
-    return new NodeContext(nodeContext);
+    return new ComponentContext(componentContext);
   }
 
   /**

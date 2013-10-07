@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import net.kuujo.vertigo.definition.NetworkDefinition
-import net.kuujo.vertigo.definition.NodeDefinition
+import net.kuujo.vertigo.definition.ComponentDefinition
 import net.kuujo.vertigo.grouping.FieldsGrouping
 import net.kuujo.vertigo.grouping.RandomGrouping
 import net.kuujo.vertigo.grouping.RoundGrouping
@@ -72,7 +72,7 @@ class NetworkDefinition(object):
     definition = self._def.fromVerticle(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
     if grouping is not None:
       definition.groupBy(grouping._def)
-    return NodeDefinition(definition)
+    return ComponentDefinition(definition)
 
   def from_module(self, name, module=None, workers=1, config=None, grouping=None):
     if config is None:
@@ -80,15 +80,15 @@ class NetworkDefinition(object):
     definition = self._def.fromModule(name, module, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
     if grouping is not None:
       definition.groupBy(grouping._def)
-    return NodeDefinition(definition)
+    return ComponentDefinition(definition)
 
   @property
   def options(self):
     return Options(self)
 
-class NodeDefinition(object):
+class ComponentDefinition(object):
   """
-  A node definition.
+  A component definition.
   """
   VERTICLE = "verticle"
   MODULE = "module"
@@ -162,7 +162,7 @@ class NodeDefinition(object):
     definition = self._def.toVerticle(name, main, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
     if grouping is not None:
       definition.groupBy(grouping._def)
-    return NodeDefinition(definition)
+    return ComponentDefinition(definition)
 
   def to_module(self, name, module=None, workers=1, config=None, grouping=None):
     if config is None:
@@ -170,7 +170,7 @@ class NodeDefinition(object):
     definition = self._def.toModule(name, module, org.vertx.java.core.json.JsonObject(map_to_java(config)), workers)
     if grouping is not None:
       definition.groupBy(grouping._def)
-    return NodeDefinition(definition)
+    return ComponentDefinition(definition)
 
 
 class Options(object):
@@ -188,7 +188,7 @@ class Options(object):
 
 class Grouping(object):
   """
-  A node grouping definition.
+  A component grouping definition.
   """
   def __init__(self):
     self._def = None

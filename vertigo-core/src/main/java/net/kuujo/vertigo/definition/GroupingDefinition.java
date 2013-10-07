@@ -15,8 +15,6 @@
 */
 package net.kuujo.vertigo.definition;
 
-import net.kuujo.vertigo.Serializeable;
-
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -24,7 +22,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class GroupingDefinition implements Serializeable<JsonObject> {
+public class GroupingDefinition implements Definition {
 
   protected JsonObject definition;
 

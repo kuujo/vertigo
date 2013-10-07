@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.kuujo.vertigo.Serializeable;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.grouping.RoundGrouping;
 
@@ -33,7 +32,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class NetworkDefinition implements Serializeable<JsonObject> {
+public class NetworkDefinition implements Definition {
 
   private JsonObject definition = new JsonObject();
 

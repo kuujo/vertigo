@@ -15,6 +15,9 @@
 */
 package net.kuujo.vertigo.filter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -25,14 +28,14 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class TagFilter implements Filter {
+public class TagsFilter implements Filter {
 
   private JsonObject definition;
 
-  public TagFilter() {
+  public TagsFilter() {
   }
 
-  public TagFilter(String... tags) {
+  public TagsFilter(String... tags) {
     definition = new JsonObject();
     JsonArray tagList = new JsonArray();
     for (String tag : tags) {
@@ -49,11 +52,11 @@ public class TagFilter implements Filter {
    * @return
    *   The called filter instance.
    */
-  public TagFilter addTag(String tag) {
+  public TagsFilter addTag(String tag) {
     JsonArray tagList = definition.getArray("tags");
     if (tagList == null) {
       tagList = new JsonArray();
-      definition.putArray("tag", tagList);
+      definition.putArray("tags", tagList);
     }
     if (!tagList.contains(tag)) {
       tagList.add(tag);
@@ -62,20 +65,37 @@ public class TagFilter implements Filter {
   }
 
   @Override
-  public boolean valid(JsonMessage message) {
-    JsonArray tags = definition.getArray("tags");
-    return tags.contains(message.tag());
-  }
-
-  @Override
   public JsonObject serialize() {
-    return definition.copy().putString("filter", TagFilter.class.getName());
+    return definition.copy().putString("filter", TagsFilter.class.getName());
   }
 
   @Override
-  public Filter initialize(JsonObject data) {
-    definition = data;
-    return this;
+  public Condition initialize(JsonObject data) {
+    Set<String> tags = new HashSet<String>();
+    JsonArray tagList = data.getArray("tags");
+    if (tagList == null) {
+      tagList = new JsonArray();
+    }
+    for (Object tag : tagList) {
+      tags.add((String) tag);
+    }
+    return new TagsCondition(tags);
+  }
+
+  /**
+   * A tags condition implementation.
+   */
+  private static class TagsCondition implements Condition {
+    private Set<String> tags;
+
+    public TagsCondition(Set<String> tags) {
+      this.tags = tags;
+    }
+
+    @Override
+    public boolean isValid(JsonMessage message) {
+      return tags.contains(message.tag());
+    }
   }
 
 }

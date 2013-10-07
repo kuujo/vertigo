@@ -15,39 +15,41 @@
 */
 package net.kuujo.vertigo.grouping;
 
-import net.kuujo.vertigo.definition.GroupingDefinition;
+import net.kuujo.vertigo.dispatcher.Dispatcher;
 import net.kuujo.vertigo.dispatcher.FieldsDispatcher;
 
+import org.vertx.java.core.json.JsonObject;
+
 /**
- * A fields-based grouping.
+ * A fields grouping.
  *
- * This grouping dispatches messages to workers in a consistent fashion
- * using the FieldsDispatcher dispatcher.
+ * The *fields* grouping is a consistent-hashing based grouping. Given
+ * a field on which to hash, this grouping guarantees that workers will
+ * always receive messages with the same field values.
  *
  * @author Jordan Halterman
  */
-public class FieldsGrouping extends GroupingDefinition {
+public class FieldsGrouping implements Grouping {
+
+  private JsonObject definition = new JsonObject();
 
   public FieldsGrouping() {
-    super();
-    definition.putString("dispatcher", FieldsDispatcher.class.getName());
   }
 
-  public FieldsGrouping(String field) {
-    this();
-    definition.putString("field", field);
+  public FieldsGrouping(String fieldName) {
+    definition.putString("field", fieldName);
   }
 
   /**
    * Sets the grouping field.
    *
-   * @param field
-   *   A field on which to group.
+   * @param fieldName
+   *   The grouping field name.
    * @return
-   *   The called grouping definition.
+   *   The called grouping instance.
    */
-  public FieldsGrouping setField(String field) {
-    definition.putString("field", field);
+  public FieldsGrouping field(String fieldName) {
+    definition.putString("field", fieldName);
     return this;
   }
 
@@ -55,10 +57,20 @@ public class FieldsGrouping extends GroupingDefinition {
    * Gets the grouping field.
    *
    * @return
-   *   The field on which the grouping groups.
+   *   The grouping field.
    */
-  public String getField() {
+  public String field() {
     return definition.getString("field");
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return definition;
+  }
+
+  @Override
+  public Dispatcher initialize(JsonObject data) {
+    return new FieldsDispatcher(data.getString("field"));
   }
 
 }

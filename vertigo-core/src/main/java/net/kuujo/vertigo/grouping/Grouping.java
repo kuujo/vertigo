@@ -15,31 +15,16 @@
 */
 package net.kuujo.vertigo.grouping;
 
-import net.kuujo.vertigo.dispatcher.RoundRobinDispatcher;
-import net.kuujo.vertigo.dispatcher.Dispatcher;
-
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.Initializable;
+import net.kuujo.vertigo.Serializeable;
+import net.kuujo.vertigo.dispatcher.Dispatcher;
+
 /**
- * A *round* grouping.
- *
- * The *round* grouping dispatches messages to workers in a round-robin
- * fashion.
+ * A component grouping.
  *
  * @author Jordan Halterman
  */
-public class RoundGrouping implements Grouping {
-
-  private JsonObject definition = new JsonObject();
-
-  @Override
-  public JsonObject serialize() {
-    return definition;
-  }
-
-  @Override
-  public Dispatcher initialize(JsonObject data) {
-    return new RoundRobinDispatcher();
-  }
-
+public interface Grouping extends Serializeable<JsonObject>, Initializable<JsonObject, Dispatcher> {
 }

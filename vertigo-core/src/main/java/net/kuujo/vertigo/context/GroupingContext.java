@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.context;
 
 import net.kuujo.vertigo.dispatcher.Dispatcher;
+import net.kuujo.vertigo.grouping.Grouping;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -42,7 +43,8 @@ public class GroupingContext {
    * @throws ClassNotFoundException
    */
   public Dispatcher createDispatcher() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-    return (Dispatcher) Class.forName(context.getString("dispatcher")).newInstance();
+    Grouping grouping = (Grouping) Class.forName(context.getString("grouping")).newInstance();
+    return grouping.initialize(context.getObject("definition"));
   }
 
 }

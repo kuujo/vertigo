@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.definition;
 
 import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.grouping.Grouping;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -157,8 +158,9 @@ public class ComponentDefinition implements Definition {
    * @return
    *   The called component definition.
    */
-  public ComponentDefinition groupBy(GroupingDefinition grouping) {
-    definition.putObject("grouping", grouping.serialize());
+  public ComponentDefinition groupBy(Grouping grouping) {
+    definition.putObject("grouping", new JsonObject().putString("grouping", grouping.getClass().getName())
+        .putObject("definition", grouping.serialize()));
     return this;
   }
 
@@ -175,7 +177,8 @@ public class ComponentDefinition implements Definition {
     if (filters == null) {
       filters = new JsonArray();
     }
-    filters.add(new JsonObject().putString("filter", filter.getClass().getName()).putObject("definition", filter.serialize()));
+    filters.add(new JsonObject().putString("filter", filter.getClass().getName())
+        .putObject("definition", filter.serialize()));
     return this;
   }
 

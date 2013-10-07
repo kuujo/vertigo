@@ -30,9 +30,15 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  */
 public class FieldsDispatcher extends AbstractDispatcher {
 
+  private String fieldName;
+
   private List<Connection> items;
 
   private int size;
+
+  public FieldsDispatcher(String fieldName) {
+    this.fieldName = fieldName;
+  }
 
   @Override
   public void init(ConnectionPool connections) {
@@ -46,7 +52,7 @@ public class FieldsDispatcher extends AbstractDispatcher {
 
   @Override
   protected Connection getConnection(JsonMessage message) {
-    String value = message.body().getString(getOption("field"));
+    String value = message.body().getString(fieldName);
     if (value != null) {
       int length = value.length();
       return items.get(length % size);

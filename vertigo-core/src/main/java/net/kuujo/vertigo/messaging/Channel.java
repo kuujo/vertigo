@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.messaging;
 
 import net.kuujo.vertigo.dispatcher.Dispatcher;
-import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.filter.Condition;
 
 /**
  * A uni-directional communication channel.
@@ -42,20 +42,20 @@ public interface Channel {
   public Dispatcher getDispatcher();
 
   /**
-   * Adds a filter to the channel.
+   * Adds a condition to the channel.
    *
-   * @param filter
-   *   A message filter.
+   * @param condition
+   *   A message condition.
    */
-  public Channel addFilter(Filter filter);
+  public Channel addCondition(Condition condition);
 
   /**
-   * Removes a filter from the channel.
+   * Removes a condition from the channel.
    *
-   * @param filter
-   *   A message filter.
+   * @param condition
+   *   A message condition.
    */
-  public Channel removeFilter(Filter filter);
+  public Channel removeCondition(Condition condition);
 
   /**
    * Adds a connection to the channel.

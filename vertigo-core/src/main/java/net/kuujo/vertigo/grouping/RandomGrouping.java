@@ -15,22 +15,30 @@
 */
 package net.kuujo.vertigo.grouping;
 
-import net.kuujo.vertigo.definition.GroupingDefinition;
 import net.kuujo.vertigo.dispatcher.RandomDispatcher;
+import net.kuujo.vertigo.dispatcher.Dispatcher;
+
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * A random grouping implementation.
+ * A *random* grouping.
  *
- * This grouping dispatches messages to workers in a random fashion
- * using the RandomDispatcher dispatcher.
+ * The *random* grouping dispatches messages to component workers randomly.
  *
  * @author Jordan Halterman
  */
-public class RandomGrouping extends GroupingDefinition {
+public class RandomGrouping implements Grouping {
 
-  public RandomGrouping() {
-    super();
-    definition.putString("dispatcher", RandomDispatcher.class.getName());
+  private JsonObject definition = new JsonObject();
+
+  @Override
+  public JsonObject serialize() {
+    return definition;
+  }
+
+  @Override
+  public Dispatcher initialize(JsonObject data) {
+    return new RandomDispatcher();
   }
 
 }

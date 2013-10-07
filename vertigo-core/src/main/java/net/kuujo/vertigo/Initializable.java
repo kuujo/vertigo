@@ -22,7 +22,7 @@ import org.vertx.java.core.json.JsonElement;
  *
  * @author Jordan Halterman
  */
-public interface Initializable<T extends JsonElement, E extends Initializable<T, E>> {
+public interface Initializable<T extends JsonElement, E> {
 
   /**
    * Initializes the object.

@@ -19,23 +19,11 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.Initializable;
 import net.kuujo.vertigo.definition.Definition;
-import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
  * A message filter.
  *
  * @author Jordan Halterman
  */
-public interface Filter extends Definition, Initializable<JsonObject, Filter> {
-
-  /**
-   * Indicates whether the given message is valid.
-   *
-   * @param message
-   *   The message to validate.
-   * @return
-   *   A boolean indicating whether the given message is valid.
-   */
-  public boolean valid(JsonMessage message);
-
+public interface Filter extends Definition, Initializable<JsonObject, Condition> {
 }

@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.context.ConnectionContext;
+import net.kuujo.vertigo.context.FilterContext;
 import net.kuujo.vertigo.context.GroupingContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.WorkerContext;
@@ -139,6 +140,10 @@ public abstract class ComponentBase implements Component {
         GroupingContext groupingContext = connectionContext.getGrouping();
         Dispatcher dispatcher = groupingContext.createDispatcher();
         Channel channel = new BasicChannel(dispatcher);
+
+        for (FilterContext filterContext : connectionContext.getFilters()) {
+          channel.addCondition(filterContext.createCondition());
+        }
 
         String[] addresses = connectionContext.getAddresses();
         for (String address : addresses) {

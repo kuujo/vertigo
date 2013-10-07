@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.kuujo.vertigo.dispatcher.Dispatcher;
-import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.filter.Condition;
 
 /**
  * A basic channel.
@@ -30,7 +30,7 @@ public class BasicChannel implements Channel {
 
   protected Dispatcher dispatcher;
 
-  protected Set<Filter> filters = new HashSet<>();
+  protected Set<Condition> conditions = new HashSet<>();
 
   protected ConnectionPool connections = new ConnectionSet();
 
@@ -49,23 +49,23 @@ public class BasicChannel implements Channel {
   }
 
   @Override
-  public Channel addFilter(Filter filter) {
-    filters.add(filter);
+  public Channel addCondition(Condition condition) {
+    conditions.add(condition);
     return this;
   }
 
   @Override
-  public Channel removeFilter(Filter filter) {
-    if (filters.contains(filter)) {
-      filters.remove(filter);
+  public Channel removeCondition(Condition condition) {
+    if (conditions.contains(condition)) {
+      conditions.remove(condition);
     }
     return this;
   }
 
   @Override
   public boolean isValid(JsonMessage message) {
-    for (Filter filter : filters) {
-      if (!filter.valid(message)) {
+    for (Condition condition : conditions) {
+      if (!condition.isValid(message)) {
         return false;
       }
     }

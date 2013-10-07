@@ -36,19 +36,29 @@ public class SourceFilter implements Filter {
   }
 
   @Override
-  public boolean valid(JsonMessage message) {
-    return message.source().equals(definition.getString("source"));
-  }
-
-  @Override
   public JsonObject serialize() {
     return definition.copy().putString("filter", SourceFilter.class.getName());
   }
 
   @Override
-  public Filter initialize(JsonObject data) {
-    definition = data;
-    return this;
+  public Condition initialize(JsonObject data) {
+    return new SourceCondition(data.getString("source"));
+  }
+
+  /**
+   * A source condition implementation.
+   */
+  private static class SourceCondition implements Condition {
+    private String source;
+
+    public SourceCondition(String source) {
+      this.source = source;
+    }
+
+    @Override
+    public boolean isValid(JsonMessage message) {
+      return message.source().equals(source);
+    }
   }
 
 }

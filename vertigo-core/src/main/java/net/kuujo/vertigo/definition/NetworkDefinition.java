@@ -422,17 +422,7 @@ public class NetworkDefinition implements Definition {
     JsonObject roots = definition.getObject("roots");
     Iterator<String> iter = roots.getFieldNames().iterator();
 
-    // Create component contexts:
-    // {
-    //   "name": "component1",
-    //   "workers": [
-    //     "foo.component1.1",
-    //     "foo.component1.2"
-    //   ],
-    //   "definition": {
-    //     ...
-    //   }
-    // }
+    // Create component contexts.
     JsonObject componentContexts = new JsonObject();
     while (iter.hasNext()) {
       JsonObject root = roots.getObject(iter.next());
@@ -464,15 +454,7 @@ public class NetworkDefinition implements Definition {
 
     JsonObject connectionContexts = new JsonObject();
 
-    // Create an object of connection information:
-    // {
-    //   "component1": {
-    //     "addresses": [
-    //       "foo.component1.1",
-    //       "foo.component1.2"
-    //     ]
-    //   }
-    // }
+    // Create an object of connection information.
     Iterator<Object> iter2 = connections.iterator();
     while (iter2.hasNext()) {
       String name = iter2.next().toString();
@@ -487,7 +469,7 @@ public class NetworkDefinition implements Definition {
       // Add a grouping definition to the connection context.
       JsonObject grouping = componentContext.getObject("definition").getObject("grouping");
       if (grouping == null) {
-        grouping = new RoundGrouping().serialize();
+        grouping = new JsonObject().putString("grouping", RoundGrouping.class.getName()).putObject("definition", new JsonObject());
       }
       connection.putObject("grouping", grouping);
 
@@ -509,16 +491,6 @@ public class NetworkDefinition implements Definition {
     // Now iterate through each component context and add connection information.
     // This needed to be done *after* those contexts are created because
     // we need to be able to get context information from connecting components.
-    // {
-    //   "component1": {
-    //     "addresses": [
-    //       "foo.component1.1",
-    //       "foo.component1.2"
-    //     ],
-    //     "grouping": "random"
-    //   }
-    //   ...
-    // }
     Iterator<String> componentNames = componentContexts.getFieldNames().iterator();
     while (componentNames.hasNext()) {
       JsonObject componentContext = componentContexts.getObject(componentNames.next());
@@ -547,7 +519,7 @@ public class NetworkDefinition implements Definition {
           // If the connection doesn't define a grouping, use a round grouping.
           JsonObject grouping = conContext.getObject("grouping");
           if (grouping == null) {
-            grouping = new RoundGrouping().serialize();
+            grouping = new JsonObject().putString("grouping", RoundGrouping.class.getName()).putObject("definition", new JsonObject());
           }
           connection.putObject("grouping", grouping);
 

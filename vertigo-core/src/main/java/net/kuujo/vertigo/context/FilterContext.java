@@ -15,6 +15,7 @@
 */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.filter.Condition;
 import net.kuujo.vertigo.filter.Filter;
 
 import org.vertx.java.core.json.JsonObject;
@@ -33,18 +34,17 @@ public class FilterContext {
   }
 
   /**
-   * Creates a filter.
+   * Creates a filter condition.
    *
    * @return
-   *   A filter instance.
+   *   A filter condition instance.
    * @throws InstantiationException
    * @throws IllegalAccessException
    * @throws ClassNotFoundException
    */
-  public Filter createFilter() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+  public Condition createCondition() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     Filter filter = (Filter) Class.forName(context.getString("filter")).newInstance();
-    filter.initialize(context.getObject("definition"));
-    return filter;
+    return filter.initialize(context.getObject("definition"));
   }
 
 }

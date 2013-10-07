@@ -15,22 +15,32 @@
 */
 package net.kuujo.vertigo.grouping;
 
-import net.kuujo.vertigo.definition.GroupingDefinition;
 import net.kuujo.vertigo.dispatcher.AllDispatcher;
+import net.kuujo.vertigo.dispatcher.Dispatcher;
+
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * A random grouping implementation.
+ * An *all* grouping.
  *
- * This grouping dispatches messages to workers in a random fashion
- * using the RandomDispatcher dispatcher.
+ * The *all* grouping dispatches messages to all instances of a component.
+ * Thus, if a component has four instances, all four component workers will
+ * receive every message emitted to that component.
  *
  * @author Jordan Halterman
  */
-public class AllGrouping extends GroupingDefinition {
+public class AllGrouping implements Grouping {
 
-  public AllGrouping() {
-    super();
-    definition.putString("dispatcher", AllDispatcher.class.getName());
+  private JsonObject definition = new JsonObject();
+
+  @Override
+  public JsonObject serialize() {
+    return definition;
+  }
+
+  @Override
+  public Dispatcher initialize(JsonObject data) {
+    return new AllDispatcher();
   }
 
 }

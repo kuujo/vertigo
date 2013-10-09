@@ -5,11 +5,24 @@ Vertigo is a distributed event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Following a concept and
 structure similar to [Storm](https://github.com/nathanmarz/storm), Vertigo
 allows real-time problems to be broken down into smaller tasks (as Vert.x
-verticles) and distributed across *one or many Vert.x instances*, managing
-communication between components in a *predictable and reliable* manner.
-Components can be written in any Vert.x supported language (with current
-integration for Java and Python) and Vertigo *networks* can integrate
-seemlessly with your existing Vert.x applications.
+verticles) and distributed across **one or many Vert.x instances**, managing
+communication between components in a **predictable and reliable** manner.
+
+* Supports simple pipelines or complex networks of Vert.x modules/verticles,
+  including remote procedure calls spanning multiple Vert.x verticle instances
+* Supports message ack/fail/timeout mechanisms, providing data sources
+  with feedback on the state of processing simple or complex message trees
+* Monitors networks for failures and automatically reassigns/redeploys failed
+  verticles and modules
+* Can distribute verticle/module instances among a single Vert.x instance or
+  across a cluster of Vert.x instances
+* Network components can be written in any Vert.x supported language, with
+  current integration for Java and Python
+* Integrates seemlessly with existing Vert.x applications
+
+Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
+Rather, Vertigo is a lightweight - albeit less reliable - alternative that
+is intended to be embedded in larger Vert.x applications.
 
 ##### [See additional documentation for language-specific API examples](https://github.com/kuujo/vertigo/wiki/Vertigo)
 

@@ -17,6 +17,9 @@ package complex;
 
 import org.vertx.java.platform.Verticle;
 import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.json.JsonObject;
 
 import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.Cluster;
@@ -38,7 +41,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-class ComplexNetworkVerticle extends Verticle {
+public class ComplexNetworkVerticle extends Verticle {
 
   /**
    * An example feeder verticle.

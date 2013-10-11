@@ -104,7 +104,7 @@ public class NetworkTest extends TestVerticle {
   }
 
   private NetworkDefinition createSimpleTestDefinition() {
-    NetworkDefinition network = Networks.createDefinition("test");
+    NetworkDefinition network = Networks.createNetwork("test");
     network.fromVerticle("feeder", TestBasicFeeder.class.getName())
       .toVerticle("componentone", TestComponentOne.class.getName()).groupBy(Groupings.random())
       .toVerticle("componenttwo", TestComponentTwo.class.getName()).groupBy(Groupings.round());

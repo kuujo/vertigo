@@ -32,7 +32,7 @@ public class Networks {
    * @return
    *   A network definition.
    */
-  public static NetworkDefinition createDefinition() {
+  public static NetworkDefinition createNetwork() {
     return new NetworkDefinition();
   }
 
@@ -44,7 +44,7 @@ public class Networks {
    * @return
    *   A network definition.
    */
-  public static NetworkDefinition createDefinition(String address) {
+  public static NetworkDefinition createNetwork(String address) {
     return new NetworkDefinition(new JsonObject().putString("address", address));
   }
 

@@ -553,7 +553,10 @@ public class NetworkDefinition implements Definition {
     if (connections != null) {
       Iterator<String> iter = connections.getFieldNames().iterator();
       while (iter.hasNext()) {
-        buildComponentsRecursive(connections.getObject(iter.next()), components);
+        JsonObject nextComponentDefinition = connections.getObject(iter.next());
+        if (!components.getFieldNames().contains(nextComponentDefinition.getString("name"))) {
+          buildComponentsRecursive(nextComponentDefinition, components);
+        }
       }
     }
     return components;

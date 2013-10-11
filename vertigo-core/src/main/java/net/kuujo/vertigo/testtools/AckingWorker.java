@@ -64,7 +64,7 @@ public class AckingWorker extends VertigoVerticle {
         worker.emit(message.body(), message);
         worker.ack(message);
       }
-    });
+    }).start();
   }
 
 }

@@ -438,7 +438,7 @@ public class NetworkDefinition implements Definition {
         componentContext.putString("name", componentName);
         componentContext.putString("address", createComponentAddress(definition.getString("address"), componentDef.getString("name")));
         componentContext.putObject("definition", componentDef);
-        componentContext.putArray("workers", new JsonArray(createWorkerAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers"))));
+        componentContext.putArray("workers", new JsonArray(createWorkerAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers", 1))));
         componentContexts.putObject(componentContext.getString("name"), componentContext);
       }
     }

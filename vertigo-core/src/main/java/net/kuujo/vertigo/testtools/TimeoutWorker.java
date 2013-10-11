@@ -25,14 +25,14 @@ import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
- * A test worker that fails all messages.
+ * A test worker that times out messages.
  *
  * @author Jordan Halterman
  */
-public class FailingWorker extends VertigoVerticle {
+public class TimeoutWorker extends VertigoVerticle {
 
   /**
-   * Creates a failing worker definition.
+   * Creates an timeout worker definition.
    *
    * @return
    *   A component definition.
@@ -42,7 +42,7 @@ public class FailingWorker extends VertigoVerticle {
   }
 
   /**
-   * Creates a failing worker definition.
+   * Creates an timeout worker definition.
    *
    * @param workers
    *   The number of workers.
@@ -51,7 +51,7 @@ public class FailingWorker extends VertigoVerticle {
    */
   public static ComponentDefinition createDefinition(int workers) {
     return new ComponentDefinition().setName(UUID.randomUUID().toString())
-        .setType(ComponentDefinition.VERTICLE).setMain(FailingWorker.class.getName())
+        .setType(ComponentDefinition.VERTICLE).setMain(TimeoutWorker.class.getName())
         .setWorkers(workers);
   }
 
@@ -61,7 +61,7 @@ public class FailingWorker extends VertigoVerticle {
     worker.messageHandler(new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {
-        worker.fail(message);
+        // Do nothing useful.
       }
     }).start();
   }

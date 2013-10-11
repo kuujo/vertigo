@@ -43,10 +43,12 @@ public class BasicWorker extends ComponentBase implements Worker {
 
   @Override
   public Worker start() {
-    setupHeartbeat();
-    setupOutputs();
-    setupInputs();
-    ready();
+    start(new Handler<AsyncResult<Worker>>() {
+      @Override
+      public void handle(AsyncResult<Worker> result) {
+        ready();
+      }
+    });
     return this;
   }
 

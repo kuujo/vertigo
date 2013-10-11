@@ -36,6 +36,8 @@ public class VertigoVerticle extends Verticle {
 
   protected Vertigo vertigo;
 
+  protected WorkerContext context;
+
   @Override
   public void setContainer(Container container) {
     super.setContainer(container);
@@ -49,7 +51,8 @@ public class VertigoVerticle extends Verticle {
   @Override
   public void start(Future<Void> startedResult) {
     vertigo = new DefaultVertigo(vertx, container);
-    vertigo.setContext(new WorkerContext(container.config()));
+    context = new WorkerContext(container.config());
+    vertigo.setContext(context);
     super.start(startedResult);
   }
 

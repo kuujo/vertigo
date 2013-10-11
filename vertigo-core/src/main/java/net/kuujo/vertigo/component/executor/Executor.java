@@ -92,43 +92,6 @@ public interface Executor<T extends Executor<T>> extends Component {
   public boolean queueFull();
 
   /**
-   * Sets the executor auto-retry option.
-   *
-   * @param retry
-   *   Indicates whether to automatically retry executing failed arguments.
-   * @return
-   *   The called executor instance.
-   */
-  public T autoRetry(boolean retry);
-
-  /**
-   * Gets the executor auto-retry option.
-   *
-   * @return
-   *   Indicates whether the executor will automatically retry executing failed arguments.
-   */
-  public boolean autoRetry();
-
-  /**
-   * Sets the number of automatic retry attempts for a single failed execution.
-   *
-   * @param attempts
-   *   The number of retry attempts allowed. If attempts is -1 then an infinite
-   *   number of retry attempts will be allowed.
-   * @return
-   *   The called executor instance.
-   */
-  public T retryAttempts(int attempts);
-
-  /**
-   * Gets the number of automatic retry attempts.
-   *
-   * @return
-   *   Indicates the number of retry attempts allowed for the executor.
-   */
-  public int retryAttempts();
-
-  /**
    * Executes the network.
    *
    * @param args

@@ -108,6 +108,11 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
+  public String ancestor() {
+    return body.getString("ancestor");
+  }
+
+  @Override
   public JsonObject body() {
     return body.getObject("body");
   }
@@ -119,23 +124,27 @@ public class DefaultJsonMessage implements JsonMessage {
 
   @Override
   public JsonMessage createChild(JsonObject body) {
-    return new DefaultJsonMessage(
-        this.body.copy()
-        .putString("parent", body.getString("id"))
-        .putString("id", createUniqueId())
-        .putObject("body", body)
-    );
+    JsonObject newMessage = this.body.copy();
+    if (!newMessage.getFieldNames().contains("ancestor")) {
+      newMessage.putString("ancestor", this.body.getString("id"));
+    }
+    newMessage.putString("parent", this.body.getString("id"));
+    newMessage.putString("id", createUniqueId())
+      .putObject("body", body);
+    return new DefaultJsonMessage(newMessage);
   }
 
   @Override
   public JsonMessage createChild(JsonObject body, String tag) {
-    return new DefaultJsonMessage(
-        this.body.copy()
-        .putString("parent", body.getString("id"))
-        .putString("id", createUniqueId())
-        .putObject("body", body)
-        .putString("tag", tag)
-    );
+    JsonObject newMessage = this.body.copy();
+    if (!newMessage.getFieldNames().contains("ancestor")) {
+      newMessage.putString("ancestor", this.body.getString("id"));
+    }
+    newMessage.putString("parent", this.body.getString("id"));
+    newMessage.putString("id", createUniqueId())
+      .putObject("body", body)
+      .putString("tag", tag);
+    return new DefaultJsonMessage(newMessage);
   }
 
   @Override

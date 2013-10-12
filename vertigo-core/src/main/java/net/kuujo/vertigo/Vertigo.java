@@ -15,6 +15,7 @@
 */
 package net.kuujo.vertigo;
 
+import net.kuujo.vertigo.component.executor.BasicExecutor;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.feeder.PollingFeeder;
 import net.kuujo.vertigo.component.feeder.StreamFeeder;
@@ -40,6 +41,14 @@ public interface Vertigo {
   public void setContext(WorkerContext context);
 
   /**
+   * Creates a feeder.
+   *
+   * @return
+   *   A new feeder instance.
+   */
+  public BasicFeeder createFeeder();
+
+  /**
    * Creates a basic feeder.
    *
    * @return
@@ -62,6 +71,22 @@ public interface Vertigo {
    *   A new stream feeder instance.
    */
   public StreamFeeder createStreamFeeder();
+
+  /**
+   * Creates a basic executor.
+   *
+   * @return
+   *   A new basic executor instance.
+   */
+  public BasicExecutor createExecutor();
+
+  /**
+   * Creates a basic executor.
+   *
+   * @return
+   *   A new basic executor instance.
+   */
+  public BasicExecutor createBasicExecutor();
 
   /**
    * Creates a worker.

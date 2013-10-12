@@ -15,6 +15,8 @@
 */
 package net.kuujo.vertigo;
 
+import net.kuujo.vertigo.component.executor.BasicExecutor;
+import net.kuujo.vertigo.component.executor.DefaultBasicExecutor;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.feeder.DefaultBasicFeeder;
 import net.kuujo.vertigo.component.feeder.DefaultPollingFeeder;
@@ -52,6 +54,11 @@ public class DefaultVertigo implements Vertigo {
   }
 
   @Override
+  public BasicFeeder createFeeder() {
+    return new DefaultBasicFeeder(vertx, container, context);
+  }
+
+  @Override
   public BasicFeeder createBasicFeeder() {
     return new DefaultBasicFeeder(vertx, container, context);
   }
@@ -64,6 +71,16 @@ public class DefaultVertigo implements Vertigo {
   @Override
   public StreamFeeder createStreamFeeder() {
     return new DefaultStreamFeeder(vertx, container, context);
+  }
+
+  @Override
+  public BasicExecutor createExecutor() {
+    return new DefaultBasicExecutor(vertx, container, context);
+  }
+
+  @Override
+  public BasicExecutor createBasicExecutor() {
+    return new DefaultBasicExecutor(vertx, container, context);
   }
 
   @Override

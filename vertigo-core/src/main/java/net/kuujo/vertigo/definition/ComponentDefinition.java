@@ -30,6 +30,8 @@ public class ComponentDefinition implements Definition {
 
   private JsonObject definition = new JsonObject();
 
+  private NetworkDefinition network;
+
   private static final int DEFAULT_NUM_WORKERS = 1;
 
   private static final long DEFAULT_HEARTBEAT_INTERVAL = 2500;
@@ -42,6 +44,11 @@ public class ComponentDefinition implements Definition {
 
   public ComponentDefinition(JsonObject json) {
     definition = json;
+  }
+
+  public ComponentDefinition setNetwork(NetworkDefinition network) {
+    this.network = network;
+    return this;
   }
 
   /**
@@ -228,14 +235,17 @@ public class ComponentDefinition implements Definition {
   /**
    * Adds a connection to a component definition.
    */
-  private ComponentDefinition addDefinition(ComponentDefinition definition) {
-    JsonObject connections = this.definition.getObject("connections");
+  ComponentDefinition addConnection(ComponentDefinition definition) {
+    JsonArray connections = this.definition.getArray("connections");
     if (connections == null) {
-      connections = new JsonObject();
-      this.definition.putObject("connections", connections);
+      connections = new JsonArray();
+      this.definition.putArray("connections", connections);
     }
-    if (!connections.getFieldNames().contains(definition.name())) {
-      connections.putObject(definition.name(), definition.serialize());
+    if (!connections.contains(definition.name())) {
+      connections.add(definition.name());
+    }
+    if (network != null) {
+      network.addDefinition(definition);
     }
     return definition;
   }
@@ -249,7 +259,7 @@ public class ComponentDefinition implements Definition {
    *   The component definition.
    */
   public ComponentDefinition to(ComponentDefinition definition) {
-    return addDefinition(definition);
+    return addConnection(definition);
   }
 
   /**
@@ -259,7 +269,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toVerticle() {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE));
+    return addConnection(new ComponentDefinition().setType(ComponentDefinition.VERTICLE));
   }
 
   /**
@@ -271,7 +281,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toVerticle(String name) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name));
+    return addConnection(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name));
   }
 
   /**
@@ -337,7 +347,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toVerticle(String name, String main, JsonObject config, int workers) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
+    return addConnection(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
   }
 
   /**
@@ -347,7 +357,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toModule() {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE));
+    return addConnection(new ComponentDefinition().setType(ComponentDefinition.MODULE));
   }
 
   /**
@@ -359,7 +369,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toModule(String name) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name));
+    return addConnection(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name));
   }
 
   /**
@@ -425,7 +435,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toModule(String name, String moduleName, JsonObject config, int workers) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
+    return addConnection(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override

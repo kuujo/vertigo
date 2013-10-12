@@ -19,11 +19,13 @@ import net.kuujo.vertigo.Cluster;
 import net.kuujo.vertigo.LocalCluster;
 import net.kuujo.vertigo.Networks;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.definition.NetworkDefinition;
 import net.kuujo.vertigo.testtools.AckCheckingFeeder;
 import net.kuujo.vertigo.testtools.AckingWorker;
 import net.kuujo.vertigo.testtools.FailCheckingFeeder;
 import net.kuujo.vertigo.testtools.FailingWorker;
+import net.kuujo.vertigo.testtools.ResultCheckingExecutor;
 import net.kuujo.vertigo.testtools.TimeoutWorker;
 
 import org.junit.Test;
@@ -32,7 +34,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
-import static org.vertx.testtools.VertxAssert.testComplete;
 
 import org.vertx.testtools.TestVerticle;
 
@@ -87,6 +88,28 @@ public class NetworkTests extends TestVerticle {
     network.from(FailCheckingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!")))
       .to(TimeoutWorker.createDefinition(2));
     network.setAckExpire(1000);
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        }
+        else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testBasicExecutor() {
+    NetworkDefinition network = Networks.createNetwork("test");
+    JsonObject data = new JsonObject().putString("body", "Hello world!");
+    ComponentDefinition executor = ResultCheckingExecutor.createDefinition(data, data);
+    network.from(executor)
+      .to(AckingWorker.createDefinition())
+      .to(executor);
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override

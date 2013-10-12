@@ -154,6 +154,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
 
   @Override
   protected void doReceive(JsonMessage message) {
+    output.ack(message);
     queue.receive(message);
   }
 

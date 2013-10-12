@@ -18,7 +18,6 @@ package net.kuujo.vertigo.definition;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.grouping.RoundGrouping;
@@ -183,15 +182,16 @@ public class NetworkDefinition implements Definition {
   /**
    * Adds a root definition.
    */
-  private ComponentDefinition addDefinition(ComponentDefinition definition) {
+  ComponentDefinition addDefinition(ComponentDefinition definition) {
     // Add the root definition.
-    JsonObject roots = this.definition.getObject("roots");
-    if (roots == null) {
-      roots = new JsonObject();
-      this.definition.putObject("roots", roots);
+    definition.setNetwork(this);
+    JsonObject components = this.definition.getObject("components");
+    if (components == null) {
+      components = new JsonObject();
+      this.definition.putObject("components", components);
     }
-    if (!roots.getFieldNames().contains(definition.name())) {
-      roots.putObject(definition.name(), definition.serialize());
+    if (!components.getFieldNames().contains(definition.name())) {
+      components.putObject(definition.name(), definition.serialize());
     }
     return definition;
   }
@@ -419,90 +419,38 @@ public class NetworkDefinition implements Definition {
     context.putObject("definition", definition);
 
     // First, create all component contexts and then add connections.
-    JsonObject roots = definition.getObject("roots");
-    Iterator<String> iter = roots.getFieldNames().iterator();
+    JsonObject components = definition.getObject("components");
+    Iterator<String> iter = components.getFieldNames().iterator();
 
     // Create component contexts.
     JsonObject componentContexts = new JsonObject();
     while (iter.hasNext()) {
-      JsonObject root = roots.getObject(iter.next());
-      JsonObject componentDefinitions = buildComponentsRecursive(root);
-      Iterator<String> iterComponents = componentDefinitions.getFieldNames().iterator();
-      while (iterComponents.hasNext()) {
-        JsonObject componentDef = componentDefinitions.getObject(iterComponents.next());
-        JsonObject componentContext = new JsonObject();
-        String componentName = componentDef.getString("name");
-        if (componentName == null) {
-          throw new MalformedDefinitionException("No component name specified.");
-        }
-        componentContext.putString("name", componentName);
-        componentContext.putString("address", createComponentAddress(definition.getString("address"), componentDef.getString("name")));
-        componentContext.putObject("definition", componentDef);
-        componentContext.putArray("workers", new JsonArray(createWorkerAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers", 1))));
-        componentContexts.putObject(componentContext.getString("name"), componentContext);
+      JsonObject component = components.getObject(iter.next());
+      JsonObject componentContext = new JsonObject();
+      String componentName = component.getString("name");
+      if (componentName == null) {
+        throw new MalformedDefinitionException("No component name specified.");
       }
+      componentContext.putString("name", componentName);
+      componentContext.putString("address", createComponentAddress(definition.getString("address"), component.getString("name")));
+      componentContext.putObject("definition", component);
+      componentContext.putArray("workers", new JsonArray(createWorkerAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers", 1))));
+      componentContexts.putObject(componentContext.getString("name"), componentContext);
     }
 
-    // Component contexts are stored in context.workers.
-    context.putObject("components", componentContexts);
-    
-
-    JsonArray connections = definition.getArray("connections");
-    if (connections == null) {
-      connections = new JsonArray();
-    }
-
-    JsonObject connectionContexts = new JsonObject();
-
-    // Create an object of connection information.
-    Iterator<Object> iter2 = connections.iterator();
+    Iterator<String> iter2 = components.getFieldNames().iterator();
     while (iter2.hasNext()) {
-      String name = iter2.next().toString();
-      JsonObject componentContext = componentContexts.getObject(name);
-      if (componentContext == null) {
-        continue;
-      }
+      JsonObject component = components.getObject(iter2.next());
+      JsonObject componentContext = componentContexts.getObject(component.getString("name"));
 
-      JsonObject connection = new JsonObject();
-      connection.putString("name", name);
-
-      // Add a grouping definition to the connection context.
-      JsonObject grouping = componentContext.getObject("definition").getObject("grouping");
-      if (grouping == null) {
-        grouping = new JsonObject().putString("grouping", RoundGrouping.class.getName()).putObject("definition", new JsonObject());
-      }
-      connection.putObject("grouping", grouping);
-
-      // Add filter definitions to the connection context.
-      JsonArray filters = componentContext.getObject("definition").getArray("filters");
-      if (filters == null) {
-        filters = new JsonArray();
-      }
-      connection.putArray("filters", filters);
-
-      connection.putArray("addresses", componentContext.getArray("workers").copy());
-
-      connectionContexts.putObject(name, connection);
-    }
-
-    // Connection information is stored in context.connections.
-    context.putObject("connections", connectionContexts);
-
-    // Now iterate through each component context and add connection information.
-    // This needed to be done *after* those contexts are created because
-    // we need to be able to get context information from connecting components.
-    Iterator<String> componentNames = componentContexts.getFieldNames().iterator();
-    while (componentNames.hasNext()) {
-      JsonObject componentContext = componentContexts.getObject(componentNames.next());
       JsonObject componentDef = componentContext.getObject("definition");
 
       // Iterate through each of the component's connections.
-      JsonObject componentCons = componentDef.getObject("connections");
+      JsonArray componentCons = componentDef.getArray("connections");
       JsonObject componentConnectionContexts = new JsonObject();
 
       if (componentCons != null) {
-        Set<String> conKeys = componentCons.getFieldNames();
-        Iterator<String> iterCon = conKeys.iterator();
+        Iterator<Object> iterCon = componentCons.iterator();
   
         while (iterCon.hasNext()) {
           // Get the component name and with it a reference to the component context.
@@ -511,20 +459,21 @@ public class NetworkDefinition implements Definition {
           if (conContext == null) {
             continue;
           }
+          JsonObject conDef = conContext.getObject("definition");
   
           // With the context, we can list all of the worker addresses.
           JsonObject connection = new JsonObject();
           connection.putString("name", name);
 
           // If the connection doesn't define a grouping, use a round grouping.
-          JsonObject grouping = conContext.getObject("grouping");
+          JsonObject grouping = conDef.getObject("grouping");
           if (grouping == null) {
             grouping = new JsonObject().putString("grouping", RoundGrouping.class.getName()).putObject("definition", new JsonObject());
           }
           connection.putObject("grouping", grouping);
 
           // Add filter definitions to the connection.
-          JsonArray filters = conContext.getArray("filters");
+          JsonArray filters = conDef.getArray("filters");
           if (filters == null) {
             filters = new JsonArray();
           }
@@ -540,26 +489,10 @@ public class NetworkDefinition implements Definition {
       componentContext.putObject("connections", componentConnectionContexts);
     }
 
+    // Component contexts are stored in context.workers.
+    context.putObject("components", componentContexts);
+
     return new NetworkContext(context);
-  }
-
-  private JsonObject buildComponentsRecursive(JsonObject componentDefinition) {
-    return buildComponentsRecursive(componentDefinition, new JsonObject());
-  }
-
-  private JsonObject buildComponentsRecursive(JsonObject componentDefinition, JsonObject components) {
-    components.putObject(componentDefinition.getString("name"), componentDefinition);
-    JsonObject connections = componentDefinition.getObject("connections");
-    if (connections != null) {
-      Iterator<String> iter = connections.getFieldNames().iterator();
-      while (iter.hasNext()) {
-        JsonObject nextComponentDefinition = connections.getObject(iter.next());
-        if (!components.getFieldNames().contains(nextComponentDefinition.getString("name"))) {
-          buildComponentsRecursive(nextComponentDefinition, components);
-        }
-      }
-    }
-    return components;
   }
 
 }

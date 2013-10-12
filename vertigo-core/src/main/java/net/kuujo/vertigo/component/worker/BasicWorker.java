@@ -46,7 +46,7 @@ public class BasicWorker extends ComponentBase implements Worker {
     start(new Handler<AsyncResult<Worker>>() {
       @Override
       public void handle(AsyncResult<Worker> result) {
-        ready();
+        // Do nothing.
       }
     });
     return this;

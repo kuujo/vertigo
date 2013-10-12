@@ -47,10 +47,12 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   @Override
   @SuppressWarnings("unchecked")
   public T start() {
-    setupHeartbeat();
-    setupOutputs();
-    setupInputs();
-    ready();
+    start(new Handler<AsyncResult<T>>() {
+      @Override
+      public void handle(AsyncResult<T> result) {
+        // Do nothing.
+      }
+    });
     return (T) this;
   }
 

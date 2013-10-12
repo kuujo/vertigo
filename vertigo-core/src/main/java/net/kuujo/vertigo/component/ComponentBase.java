@@ -80,7 +80,7 @@ public abstract class ComponentBase implements Component {
     this.logger = container.logger();
     this.context = context;
     this.address = context.address();
-    NetworkContext networkContext = context.context().context();
+    NetworkContext networkContext = context.getComponentContext().getContext();
     networkAddress = networkContext.address();
     auditAddress = networkContext.auditAddress();
     broadcastAddress = networkContext.broadcastAddress();
@@ -118,7 +118,7 @@ public abstract class ComponentBase implements Component {
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
           heartbeat = new DefaultHeartbeatEmitter(heartbeatAddress, vertx);
-          heartbeat.setInterval(context.context().definition().heartbeatInterval());
+          heartbeat.setInterval(context.getComponentContext().getDefinition().heartbeatInterval());
           heartbeat.start();
           future.setResult(null);
         }
@@ -147,7 +147,7 @@ public abstract class ComponentBase implements Component {
 
     output = new LinearOutputCollector(auditAddress, eventBus);
 
-    Collection<ConnectionContext> connections = context.context().connectionContexts();
+    Collection<ConnectionContext> connections = context.getComponentContext().getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
     while (iter.hasNext()) {
       ConnectionContext connectionContext = iter.next();

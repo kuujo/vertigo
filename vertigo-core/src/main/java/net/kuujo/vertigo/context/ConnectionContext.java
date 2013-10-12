@@ -34,7 +34,7 @@ public class ConnectionContext {
 
   private JsonObject context;
 
-  private Context parent;
+  private ComponentContext parent;
 
   public ConnectionContext() {
     this.context = new JsonObject();
@@ -44,16 +44,9 @@ public class ConnectionContext {
     this.context = context;
   }
 
-  public ConnectionContext(JsonObject context, Context parent) {
+  public ConnectionContext(JsonObject context, ComponentContext parent) {
     this.context = context;
     this.parent = parent;
-  }
-
-  /**
-   * Returns the name of the component to which the connection is connected.
-   */
-  public String getComponentName() {
-    return context.getString("name");
   }
 
   /**
@@ -89,9 +82,9 @@ public class ConnectionContext {
   }
 
   /**
-   * Returns the connection parent.
+   * Returns the parent component.
    */
-  public Context getParent() {
+  public Context getComponentContext() {
     return parent;
   }
 

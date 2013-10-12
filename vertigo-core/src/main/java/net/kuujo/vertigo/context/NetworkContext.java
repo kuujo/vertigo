@@ -63,7 +63,7 @@ public class NetworkContext implements Context {
   /**
    * Returns a list of network component contexts.
    */
-  public Collection<ComponentContext> contexts() {
+  public Collection<ComponentContext> getComponentContexts() {
     JsonObject components = context.getObject("components");
     ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
     Iterator<String> iter = components.getFieldNames().iterator();
@@ -79,7 +79,7 @@ public class NetworkContext implements Context {
    * @param name
    *   The component name.
    */
-  public ComponentContext context(String name) {
+  public ComponentContext getComponentContext(String name) {
     JsonObject components = context.getObject("components");
     if (components == null) {
       return null;
@@ -97,7 +97,7 @@ public class NetworkContext implements Context {
    * @return
    *   The network definition.
    */
-  public NetworkDefinition definition() {
+  public NetworkDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
       return new NetworkDefinition(definition);

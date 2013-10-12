@@ -65,7 +65,7 @@ public class WorkerContext implements Context {
    *   A JSON configuration.
    */
   public JsonObject config() {
-    return context().definition().config();
+    return getComponentContext().getDefinition().config();
   }
 
   /**
@@ -74,7 +74,7 @@ public class WorkerContext implements Context {
    * @return
    *   The worker's parent component context.
    */
-  public ComponentContext context() {
+  public ComponentContext getComponentContext() {
     return parent;
   }
 

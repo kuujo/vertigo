@@ -65,16 +65,9 @@ public class ComponentContext implements Context {
   }
 
   /**
-   * Returns component worker addresses.
-   */
-  public String[] workers() {
-    return (String[]) context.getArray("workers").toArray();
-  }
-
-  /**
    * Returns a list of component connections.
    */
-  public Collection<ConnectionContext> connectionContexts() {
+  public Collection<ConnectionContext> getConnectionContexts() {
     Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
     JsonObject connections = context.getObject("connections");
     Iterator<String> iter = connections.getFieldNames().iterator();
@@ -85,9 +78,21 @@ public class ComponentContext implements Context {
   }
 
   /**
+   * Returns a component connection context.
+   */
+  public ConnectionContext getConnectionContext(String name) {
+    JsonObject connections = context.getObject("connections");
+    if (connections == null) {
+      connections = new JsonObject();
+    }
+    JsonObject connectionContext = connections.getObject(name);
+    return connectionContext != null ? new ConnectionContext(connectionContext, this) : null;
+  }
+
+  /**
    * Returns all worker contexts.
    */
-  public Collection<WorkerContext> workerContexts() {
+  public Collection<WorkerContext> getWorkerContexts() {
     JsonArray workers = context.getArray("workers");
     ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
     Iterator<Object> iter = workers.iterator();
@@ -100,7 +105,7 @@ public class ComponentContext implements Context {
   /**
    * Returns the component definition.
    */
-  public ComponentDefinition definition() {
+  public ComponentDefinition getDefinition() {
     JsonObject definition = context.getObject("definition");
     if (definition != null) {
       return new ComponentDefinition(definition);
@@ -111,7 +116,7 @@ public class ComponentContext implements Context {
   /**
    * Returns the parent network context.
    */
-  public NetworkContext context() {
+  public NetworkContext getContext() {
     return parent;
   }
 

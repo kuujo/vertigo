@@ -181,8 +181,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     // So, for now we just deploy a single auditor verticle.
     JsonObject ackConfig = new JsonObject().putString("address", context.auditAddress())
       .putString("broadcast", context.broadcastAddress())
-      .putBoolean("enabled", context.definition().ackingEnabled())
-      .putNumber("expire", context.definition().ackExpire());
+      .putBoolean("enabled", context.getDefinition().ackingEnabled())
+      .putNumber("expire", context.getDefinition().ackExpire());
 
     deployVerticle(Auditor.class.getName(), ackConfig, new Handler<AsyncResult<String>>() {
         @Override
@@ -259,7 +259,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
           deploymentMap.remove(address);
           if (contextMap.containsKey(address)) {
             final WorkerContext context = contextMap.get(address);
-            deployVerticle(context.context().definition().main(), context.serialize(), new Handler<AsyncResult<String>>() {
+            deployVerticle(context.getComponentContext().getDefinition().main(), context.serialize(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.succeeded()) {
@@ -340,7 +340,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      *   A handler to be invoked once the network is deployed.
      */
     public void deploy(Handler<AsyncResult<Void>> doneHandler) {
-      Collection<ComponentContext> components = context.contexts();
+      Collection<ComponentContext> components = context.getComponentContexts();
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
       deployer.deploy(doneHandler);
     }
@@ -352,7 +352,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      *   A handler to be invoked once the network is undeployed.
      */
     public void undeploy(Handler<AsyncResult<Void>> doneHandler) {
-      Collection<ComponentContext> components = context.contexts();
+      Collection<ComponentContext> components = context.getComponentContexts();
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
       deployer.undeploy(doneHandler);
     }
@@ -463,7 +463,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       protected void doDeploy(ComponentContext context, Handler<AsyncResult<String>> resultHandler) {
         final Future<String> future = new DefaultFutureResult<String>();
         future.setHandler(resultHandler);
-        Collection<WorkerContext> workers = context.workerContexts();
+        Collection<WorkerContext> workers = context.getWorkerContexts();
         RecursiveWorkerDeployer deployer = new RecursiveWorkerDeployer(workers);
         deployer.deploy(new Handler<AsyncResult<Void>>() {
           @Override
@@ -482,7 +482,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       protected void doUndeploy(ComponentContext context, Handler<AsyncResult<Void>> doneHandler) {
         final Future<Void> future = new DefaultFutureResult<Void>();
         future.setHandler(doneHandler);
-        Collection<WorkerContext> workers = context.workerContexts();
+        Collection<WorkerContext> workers = context.getWorkerContexts();
         RecursiveWorkerDeployer executor = new RecursiveWorkerDeployer(workers);
         executor.undeploy(new Handler<AsyncResult<Void>>() {
           @Override
@@ -515,7 +515,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         contextMap.put(context.address(), context);
         future.setHandler(resultHandler);
 
-        ComponentDefinition definition = context.context().definition();
+        ComponentDefinition definition = context.getComponentContext().getDefinition();
         if (definition.type().equals(ComponentDefinition.VERTICLE)) {
           deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
             @Override
@@ -553,7 +553,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         String address = context.address();
         if (deploymentMap.containsKey(address)) {
           String deploymentID = deploymentMap.get(address);
-          ComponentDefinition definition = context.context().definition();
+          ComponentDefinition definition = context.getComponentContext().getDefinition();
           if (definition.type().equals(ComponentDefinition.VERTICLE)) {
             undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
               @Override

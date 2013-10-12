@@ -29,16 +29,6 @@ public class Networks {
   /**
    * Creates a new network definition.
    *
-   * @return
-   *   A network definition.
-   */
-  public static NetworkDefinition createNetwork() {
-    return new NetworkDefinition();
-  }
-
-  /**
-   * Creates a new network definition.
-   *
    * @param address
    *   The network address.
    * @return

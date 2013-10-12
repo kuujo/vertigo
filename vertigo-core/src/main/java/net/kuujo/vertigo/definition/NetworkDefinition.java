@@ -37,7 +37,8 @@ public class NetworkDefinition implements Definition {
 
   private static final long DEFAULT_ACK_EXPIRE = 30000;
 
-  public NetworkDefinition() {
+  public NetworkDefinition(String address) {
+    definition.putString("address", address);
   }
 
   public NetworkDefinition(JsonObject json) {
@@ -203,23 +204,13 @@ public class NetworkDefinition implements Definition {
   /**
    * Adds an initial verticle component.
    *
-   * @return
-   *   A new component definition instance.
-   */
-  public ComponentDefinition fromVerticle() {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE));
-  }
-
-  /**
-   * Adds an initial verticle component.
-   *
    * @param name
    *   The component name.
    * @return
    *   A new component definition instance.
    */
   public ComponentDefinition fromVerticle(String name) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name));
+    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.VERTICLE));
   }
 
   /**
@@ -285,17 +276,7 @@ public class NetworkDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition fromVerticle(String name, String main, JsonObject config, int workers) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
-  }
-
-  /**
-   * Adds an initial module component.
-   *
-   * @return
-   *   A new component definition instance.
-   */
-  public ComponentDefinition fromModule() {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE));
+    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.VERTICLE).setMain(main).setConfig(config).setWorkers(workers));
   }
 
   /**
@@ -307,7 +288,7 @@ public class NetworkDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition fromModule(String name) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name));
+    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.MODULE));
   }
 
   /**
@@ -373,7 +354,7 @@ public class NetworkDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition fromModule(String name, String moduleName, JsonObject config, int workers) {
-    return addDefinition(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
+    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.MODULE).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override

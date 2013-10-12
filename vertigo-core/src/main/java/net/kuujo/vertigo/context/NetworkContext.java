@@ -102,7 +102,7 @@ public class NetworkContext implements Context {
     if (definition != null) {
       return new NetworkDefinition(definition);
     }
-    return new NetworkDefinition();
+    return null;
   }
 
   @Override

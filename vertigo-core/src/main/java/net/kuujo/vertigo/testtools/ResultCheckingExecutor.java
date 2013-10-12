@@ -49,7 +49,7 @@ public class ResultCheckingExecutor extends VertigoVerticle {
    *   A component definition.
    */
   public static ComponentDefinition createDefinition(JsonObject input, JsonObject output) {
-    return new ComponentDefinition().setName(UUID.randomUUID().toString())
+    return new ComponentDefinition(UUID.randomUUID().toString())
         .setType(ComponentDefinition.VERTICLE).setMain(ResultCheckingExecutor.class.getName())
         .setConfig(new JsonObject().putObject("input", input).putObject("output", output));
   }

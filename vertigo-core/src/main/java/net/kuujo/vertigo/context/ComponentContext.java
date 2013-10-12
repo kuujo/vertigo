@@ -105,7 +105,7 @@ public class ComponentContext implements Context {
     if (definition != null) {
       return new ComponentDefinition(definition);
     }
-    return new ComponentDefinition();
+    return null;
   }
 
   /**

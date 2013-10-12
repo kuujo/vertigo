@@ -58,7 +58,7 @@ public class PeriodicFeeder extends VertigoVerticle {
    *   A component definition.
    */
   public static ComponentDefinition createDefinition(String[] fields, long interval) {
-    return new ComponentDefinition().setName(UUID.randomUUID().toString()).setType(ComponentDefinition.VERTICLE)
+    return new ComponentDefinition(UUID.randomUUID().toString()).setType(ComponentDefinition.VERTICLE)
         .setMain(PeriodicFeeder.class.getName())
         .setConfig(new JsonObject().putArray("fields", new JsonArray(fields)).putNumber("interval", interval));
   }

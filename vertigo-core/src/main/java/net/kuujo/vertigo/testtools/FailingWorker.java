@@ -50,7 +50,7 @@ public class FailingWorker extends VertigoVerticle {
    *   A component definition.
    */
   public static ComponentDefinition createDefinition(int workers) {
-    return new ComponentDefinition().setName(UUID.randomUUID().toString())
+    return new ComponentDefinition(UUID.randomUUID().toString())
         .setType(ComponentDefinition.VERTICLE).setMain(FailingWorker.class.getName())
         .setWorkers(workers);
   }

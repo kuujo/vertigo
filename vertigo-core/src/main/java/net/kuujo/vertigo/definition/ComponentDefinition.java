@@ -39,7 +39,8 @@ public class ComponentDefinition implements Definition {
   public static final String VERTICLE = "verticle";
   public static final String MODULE = "module";
 
-  public ComponentDefinition() {
+  public ComponentDefinition(String name) {
+    definition.putString("name", name);
   }
 
   public ComponentDefinition(JsonObject json) {
@@ -49,6 +50,13 @@ public class ComponentDefinition implements Definition {
   public ComponentDefinition setNetwork(NetworkDefinition network) {
     this.network = network;
     return this;
+  }
+
+  /**
+   * Gets the component name.
+   */
+  public String name() {
+    return definition.getString("name");
   }
 
   /**
@@ -68,24 +76,6 @@ public class ComponentDefinition implements Definition {
    */
   public ComponentDefinition setType(String type) {
     definition.putString("type", type);
-    return this;
-  }
-
-  /**
-   * Gets the component name.
-   */
-  public String name() {
-    return definition.getString("name");
-  }
-
-  /**
-   * Sets the component name.
-   *
-   * @param name
-   *   The component name.
-   */
-  public ComponentDefinition setName(String name) {
-    definition.putString("name", name);
     return this;
   }
 
@@ -265,23 +255,13 @@ public class ComponentDefinition implements Definition {
   /**
    * Adds a channel to a verticle component.
    *
-   * @return
-   *   A new component definition instance.
-   */
-  public ComponentDefinition toVerticle() {
-    return addConnection(new ComponentDefinition().setType(ComponentDefinition.VERTICLE));
-  }
-
-  /**
-   * Adds a channel to a verticle component.
-   *
    * @param name
    *   The component name.
    * @return
    *   A new component definition instance.
    */
   public ComponentDefinition toVerticle(String name) {
-    return addConnection(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name));
+    return addConnection(new ComponentDefinition(name).setType(ComponentDefinition.VERTICLE));
   }
 
   /**
@@ -347,17 +327,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toVerticle(String name, String main, JsonObject config, int workers) {
-    return addConnection(new ComponentDefinition().setType(ComponentDefinition.VERTICLE).setName(name).setMain(main).setConfig(config).setWorkers(workers));
-  }
-
-  /**
-   * Adds a channel to a module component.
-   *
-   * @return
-   *   A new component definition instance.
-   */
-  public ComponentDefinition toModule() {
-    return addConnection(new ComponentDefinition().setType(ComponentDefinition.MODULE));
+    return addConnection(new ComponentDefinition(name).setType(ComponentDefinition.VERTICLE).setMain(main).setConfig(config).setWorkers(workers));
   }
 
   /**
@@ -369,7 +339,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toModule(String name) {
-    return addConnection(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name));
+    return addConnection(new ComponentDefinition(name).setType(ComponentDefinition.MODULE));
   }
 
   /**
@@ -435,7 +405,7 @@ public class ComponentDefinition implements Definition {
    *   A new component definition instance.
    */
   public ComponentDefinition toModule(String name, String moduleName, JsonObject config, int workers) {
-    return addConnection(new ComponentDefinition().setType(ComponentDefinition.MODULE).setName(name).setModule(moduleName).setConfig(config).setWorkers(workers));
+    return addConnection(new ComponentDefinition(name).setType(ComponentDefinition.MODULE).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override

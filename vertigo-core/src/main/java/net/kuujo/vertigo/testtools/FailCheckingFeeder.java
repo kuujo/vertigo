@@ -44,7 +44,7 @@ public class FailCheckingFeeder extends VertigoVerticle {
    *   A component definition.
    */
   public static ComponentDefinition createDefinition(JsonObject data) {
-    return new ComponentDefinition().setName(UUID.randomUUID().toString())
+    return new ComponentDefinition(UUID.randomUUID().toString())
         .setType(ComponentDefinition.VERTICLE).setMain(FailCheckingFeeder.class.getName())
         .setConfig(data);
   }

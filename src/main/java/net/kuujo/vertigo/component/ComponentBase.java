@@ -30,8 +30,8 @@ import net.kuujo.vertigo.messaging.Channel;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.EventBusConnection;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.via.heartbeat.DefaultHeartbeatEmitter;
-import net.kuujo.via.heartbeat.HeartbeatEmitter;
+import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
+import net.kuujo.vertigo.heartbeat.HeartbeatEmitter;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

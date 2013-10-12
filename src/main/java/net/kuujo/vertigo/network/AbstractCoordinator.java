@@ -27,8 +27,8 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.WorkerContext;
 import net.kuujo.vertigo.definition.ComponentDefinition;
-import net.kuujo.via.heartbeat.DefaultHeartbeatMonitor;
-import net.kuujo.via.heartbeat.HeartbeatMonitor;
+import net.kuujo.vertigo.heartbeat.DefaultHeartbeatMonitor;
+import net.kuujo.vertigo.heartbeat.HeartbeatMonitor;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;

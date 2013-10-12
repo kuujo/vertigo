@@ -8,11 +8,11 @@
   </parent>
 
   <groupId>net.kuujo</groupId>
-  <artifactId>vertigo-parent</artifactId>
+  <artifactId>vertigo</artifactId>
   <version>0.1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>Vertigo Parent</name>
-  <description>An event processing framework for Vert.x.</description>
+  <packaging>jar</packaging>
+  <name>Vertigo</name>
+  <description>A distributed event processing framework for Vert.x.</description>
   <url>http://github.com/kuujo/vertigo</url>
   <inceptionYear>2013</inceptionYear>
 
@@ -57,13 +57,121 @@
     <url>http://github.com/kuujo/vertigo/issues</url>
   </issueManagement>
 
-  <modules>
-    <module>vertigo-core</module>
-    <module>vertigo-python</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-platform</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>testtools</artifactId>
+      <version>${vertx.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${maven.resources.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>copy-classes</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <overwrite>true</overwrite>
+              <outputDirectory>${basedir}/target/mods/${module.name}/net</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>target/classes/net</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <overwrite>true</overwrite>
+              <outputDirectory>${basedir}/target/mods/${module.name}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/resources</directory>
+                  <filtering>true</filtering>
+                  <includes>  
+                    <include>mod.json</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven.assembly.plugin.version}</version>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <descriptors>
+            <descriptor>src/main/assembly/mod.xml</descriptor>
+          </descriptors>
+          <attach>true</attach>
+        </configuration>
+        <executions>
+          <execution>
+            <id>create-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>${maven.clean.plugin.version}</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${basedir}/build/mods</directory>
+            </fileset>
+            <fileset>
+              <directory>${basedir}/target/mods</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>

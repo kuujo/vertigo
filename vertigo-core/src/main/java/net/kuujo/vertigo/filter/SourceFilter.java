@@ -48,7 +48,7 @@ public class SourceFilter implements Filter {
   /**
    * A source condition implementation.
    */
-  private static class SourceCondition implements Condition {
+  public static class SourceCondition implements Condition {
     private String source;
 
     public SourceCondition(String source) {

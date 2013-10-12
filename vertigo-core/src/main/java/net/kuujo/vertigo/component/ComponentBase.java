@@ -80,7 +80,7 @@ public abstract class ComponentBase implements Component {
     this.logger = container.logger();
     this.context = context;
     this.address = context.address();
-    NetworkContext networkContext = context.getComponentContext().getContext();
+    NetworkContext networkContext = context.getComponentContext().getNetworkContext();
     networkAddress = networkContext.address();
     auditAddress = networkContext.auditAddress();
     broadcastAddress = networkContext.broadcastAddress();

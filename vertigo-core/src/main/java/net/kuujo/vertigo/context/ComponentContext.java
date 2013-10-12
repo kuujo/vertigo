@@ -116,7 +116,7 @@ public class ComponentContext implements Context {
   /**
    * Returns the parent network context.
    */
-  public NetworkContext getContext() {
+  public NetworkContext getNetworkContext() {
     return parent;
   }
 

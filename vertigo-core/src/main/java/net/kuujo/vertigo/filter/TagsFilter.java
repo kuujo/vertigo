@@ -85,7 +85,7 @@ public class TagsFilter implements Filter {
   /**
    * A tags condition implementation.
    */
-  private static class TagsCondition implements Condition {
+  public static class TagsCondition implements Condition {
     private Set<String> tags;
 
     public TagsCondition(Set<String> tags) {

@@ -75,7 +75,7 @@ public class FieldFilter implements Filter {
   /**
    * A field condition implementation.
    */
-  private static class FieldCondition implements Condition {
+  public static class FieldCondition implements Condition {
     private String fieldName;
     private Object value;
 

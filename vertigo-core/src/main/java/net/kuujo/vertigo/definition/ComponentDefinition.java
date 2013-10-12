@@ -173,6 +173,7 @@ public class ComponentDefinition implements Definition {
     JsonArray filters = definition.getArray("filters");
     if (filters == null) {
       filters = new JsonArray();
+      definition.putArray("filters", filters);
     }
     filters.add(new JsonObject().putString("filter", filter.getClass().getName())
         .putObject("definition", filter.serialize()));

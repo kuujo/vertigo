@@ -26,6 +26,8 @@ Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
 
+## Java User Manual
+
 1. [Networks](#networks)
 1. [Components](#components)
    * [Feeders](#feeders)
@@ -52,7 +54,7 @@ a network processes streams of data in real-time. Vertigo puts no limitations
 on network structures. Each component may be connected to zero or many other components,
 and circular relationships may be created as well. Networks are defined using
 the [definition](#defining-networks) API and [deployed](#network-deployment) using
-local [Via](https://github.com/kuujo/via) clusters.
+local or [Via](https://github.com/kuujo/via) clusters.
 
 ![Vert.igo Network](http://s9.postimg.org/xuv3addj3/vertigo_complex_network.png)
 
@@ -142,16 +144,17 @@ vertigo.createBasicExecutor().start(new Handler<AsyncResult<BasicExecutor>>() {
   public void handle(AsyncResult<BasicExecutor> result) {
     if (result.succeeded()) {
       BasicExecutor executor = result.result();
-      executor.execute(new JsonObject().putNumber("x", 10).putNumber("y", 45), new Handler<AsyncResult<JsonMessage>>() {
-        public void handle(AsyncResult<JsonMessage> result) {
-          if (result.failed()) {
-            // Message was failed or timed out.
+      executor.execute(new JsonObject().putNumber("x", 10).putNumber("y", 45),
+        new Handler<AsyncResult<JsonMessage>>() {
+          public void handle(AsyncResult<JsonMessage> result) {
+            if (result.failed()) {
+              // Message was failed or timed out.
+            }
+            else {
+              Number sum = result.result().body().getNumber("sum");
+            }
           }
-          else {
-            Number sum = result.result().body().getNumber("sum");
-          }
-        }
-      });
+        });
     }
   }
 });

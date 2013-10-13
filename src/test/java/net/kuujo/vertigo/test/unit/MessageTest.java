@@ -136,4 +136,19 @@ public class MessageTest {
     assertEquals("bar", child.tag());
   }
 
+  @Test
+  public void testLoadMessage() {
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage child = message.createChild(new JsonObject().putString("body2", "Hello world again!"), "bar");
+    JsonMessage loaded = new DefaultJsonMessage(child.serialize());
+    assertNull(loaded.body().getString("body"));
+    assertEquals("Hello world again!", loaded.body().getString("body2"));
+    assertNotNull(loaded.id());
+    assertFalse(loaded.id().equals(message.id()));
+    assertEquals(message.id(), loaded.parent());
+    assertEquals(message.id(), loaded.ancestor());
+    assertEquals("test", loaded.source());
+    assertEquals("bar", loaded.tag());
+  }
+
 }

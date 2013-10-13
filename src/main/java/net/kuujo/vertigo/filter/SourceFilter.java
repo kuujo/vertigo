@@ -57,7 +57,8 @@ public class SourceFilter implements Filter {
 
     @Override
     public boolean isValid(JsonMessage message) {
-      return message.source().equals(source);
+      String messageSource = message.source();
+      return messageSource != null && messageSource.equals(source);
     }
   }
 

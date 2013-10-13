@@ -219,7 +219,7 @@ public class ComponentDefinition implements Definition {
    * @return
    *   A component heartbeat interval.
    */
-  public long heartbeatInterval() {
+  public long getHeartbeatInterval() {
     return definition.getLong("heartbeat", DEFAULT_HEARTBEAT_INTERVAL);
   }
 

@@ -111,7 +111,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   }
 
   @Override
-  public long replyTimeout() {
+  public long getReplyTimeout() {
     return queue.replyTimeout();
   }
 
@@ -123,7 +123,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   }
 
   @Override
-  public long maxQueueSize() {
+  public long getMaxQueueSize() {
     return queue.maxQueueSize();
   }
 

@@ -96,7 +96,7 @@ public abstract class ComponentBase implements Component {
     for (String auditorAddress : auditorAddresses) {
       auditors.add(auditorAddress);
     }
-    broadcastAddress = networkContext.broadcastAddress();
+    broadcastAddress = networkContext.getBroadcastAddress();
   }
 
   @Override
@@ -131,7 +131,7 @@ public abstract class ComponentBase implements Component {
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
           heartbeat = new DefaultHeartbeatEmitter(heartbeatAddress, vertx);
-          heartbeat.setInterval(context.getComponentContext().getDefinition().heartbeatInterval());
+          heartbeat.setInterval(context.getComponentContext().getDefinition().getHeartbeatInterval());
           heartbeat.start();
           future.setResult(null);
         }

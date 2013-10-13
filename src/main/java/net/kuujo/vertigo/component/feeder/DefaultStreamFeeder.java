@@ -111,7 +111,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
    */
   private void checkPause() {
     if (paused) {
-      if (queue.size() < queue.maxQueueSize() * .75) {
+      if (queue.size() < queue.getMaxQueueSize() * .75) {
         paused = false;
         if (drainHandler != null) {
           drainHandler.handle(null);
@@ -119,7 +119,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
       }
     }
     else {
-      if (queue.size() >= queue.maxQueueSize()) {
+      if (queue.size() >= queue.getMaxQueueSize()) {
         paused = true;
         if (fullHandler != null) {
           fullHandler.handle(null);

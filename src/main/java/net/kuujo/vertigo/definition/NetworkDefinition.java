@@ -72,7 +72,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A boolean value indicating whether acking is enabled.
    */
-  public boolean ackingEnabled() {
+  public boolean isAckingEnabled() {
     return definition.getBoolean("ack", true);
   }
 
@@ -105,7 +105,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The number of acker verticle instances for the network.
    */
-  public int numAuditors() {
+  public int getNumAuditors() {
     return definition.getInteger("auditors", 1);
   }
 
@@ -128,7 +128,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The internal network auditor ack expiration.
    */
-  public long ackExpire() {
+  public long getAckExpire() {
     return definition.getLong("expire", DEFAULT_ACK_EXPIRE);
   }
 
@@ -362,7 +362,7 @@ public class NetworkDefinition implements Definition {
 
     JsonObject context = new JsonObject();
     context.putString("address", address);
-    context.putArray("auditors", new JsonArray(createAddresses(String.format("%s.audit", address), numAuditors())));
+    context.putArray("auditors", new JsonArray(createAddresses(String.format("%s.audit", address), getNumAuditors())));
     context.putString("broadcast", String.format("%s.broadcast", address));
     context.putObject("definition", definition);
 

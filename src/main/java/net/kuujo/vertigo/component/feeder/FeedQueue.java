@@ -33,7 +33,7 @@ public interface FeedQueue {
    * @return
    *   The called feed queue instance.
    */
-  public FeedQueue maxQueueSize(long maxSize);
+  public FeedQueue setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum feed queue size.
@@ -41,7 +41,7 @@ public interface FeedQueue {
    * @return
    *   The maximum allowed feed queue size.
    */
-  public long maxQueueSize();
+  public long getMaxQueueSize();
 
   /**
    * Indicates the current feed queue size.

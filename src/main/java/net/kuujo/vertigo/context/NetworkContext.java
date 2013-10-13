@@ -52,7 +52,7 @@ public class NetworkContext implements Context {
   /**
    * Returns the network broadcast address.
    */
-  public String broadcastAddress() {
+  public String getBroadcastAddress() {
     return context.getString("broadcast");
   }
 
@@ -63,7 +63,7 @@ public class NetworkContext implements Context {
    *   The number of network auditors.
    */
   public int getNumAuditors() {
-    return getDefinition().numAuditors();
+    return getDefinition().getNumAuditors();
   }
 
   /**

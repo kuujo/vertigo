@@ -40,7 +40,7 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The empty feed delay.
    */
-  public long feedDelay();
+  public long getFeedDelay();
 
   /**
    * Sets a feed handler.

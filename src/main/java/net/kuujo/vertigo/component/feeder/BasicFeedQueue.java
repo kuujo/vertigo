@@ -37,13 +37,13 @@ public class BasicFeedQueue implements FeedQueue {
   private long maxQueueSize = 1000;
 
   @Override
-  public FeedQueue maxQueueSize(long maxSize) {
+  public FeedQueue setMaxQueueSize(long maxSize) {
     maxQueueSize = maxSize;
     return this;
   }
 
   @Override
-  public long maxQueueSize() {
+  public long getMaxQueueSize() {
     return maxQueueSize;
   }
 

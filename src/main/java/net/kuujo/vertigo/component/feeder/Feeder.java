@@ -64,7 +64,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The maximum queue size allowed for the feeder.
    */
-  public long maxQueueSize();
+  public long getMaxQueueSize();
 
   /**
    * Indicates whether the feed queue is full.
@@ -90,7 +90,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   Indicates whether the feeder with automatically retry emitting failed data.
    */
-  public boolean autoRetry();
+  public boolean isAutoRetry();
 
   /**
    * Sets the number of automatic retry attempts for a single failed message.
@@ -109,7 +109,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   Indicates the number of retry attempts allowed for the feeder.
    */
-  public int retryAttempts();
+  public int getRetryAttempts();
 
   /**
    * Feeds data through the feeder.

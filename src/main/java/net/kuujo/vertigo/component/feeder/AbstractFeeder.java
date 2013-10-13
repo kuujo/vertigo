@@ -108,13 +108,13 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   @Override
   @SuppressWarnings("unchecked")
   public T setMaxQueueSize(long maxSize) {
-    queue.maxQueueSize(maxSize);
+    queue.setMaxQueueSize(maxSize);
     return (T) this;
   }
 
   @Override
-  public long maxQueueSize() {
-    return queue.maxQueueSize();
+  public long getMaxQueueSize() {
+    return queue.getMaxQueueSize();
   }
 
   @Override
@@ -130,7 +130,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   }
 
   @Override
-  public boolean autoRetry() {
+  public boolean isAutoRetry() {
     return autoRetry;
   }
 
@@ -142,7 +142,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   }
 
   @Override
-  public int retryAttempts() {
+  public int getRetryAttempts() {
     return retryAttempts;
   }
 

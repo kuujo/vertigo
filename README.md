@@ -229,7 +229,7 @@ The `ComponentContext` exposes the following interface:
 #### NetworkContext
 The `NetworkContext` exposes the following interface:
 * `address()` - the network address - this is the basis for all component addresses
-* `broadcastAddress()` - the network broadcast address - this is the event bus
+* `getBroadcastAddress()` - the network broadcast address - this is the event bus
   address used by network [auditors](#message-acking) to broadcast message statuses (acks/nacks)
 * `getNumAuditors()` - returns the number of network [auditors](#message-acking)
 * `getAuditors()` - returns a set of network auditor addresses, each auditor is
@@ -245,15 +245,15 @@ other APIs.
 
 Each feeder exposes the following configuration methods:
 * `setMaxQueueSize(long queueSize)` - sets the maximum feed queue size
-* `maxQueueSize()` - gets the maximum feed queue size
+* `getMaxQueueSize()` - gets the maximum feed queue size
 * `queueFull()` - indicates whether the feed queue is full
 * `setAutoRetry(boolean retry)` - sets whether to automatically retry sending
   [failed](#message-acking) messages
-* `autoRetry()` - indicates whether auto retry is enabled
+* `isAutoRetry()` - indicates whether auto retry is enabled
 * `setRetryAttempts(int attempts)` - sets the number of retries to attempt
   before explicitly failing the feed. To set an infinite number of retry
   attempts pass `-1` as the `attempts` argument
-* `retryAttempts()` - indicate the number of automatic retry attempts
+* `getRetryAttempts()` - indicate the number of automatic retry attempts
 
 To start a feeder, call the `start()` method:
 * `start(Handler<AsyncResult<BasicFeeder>> startHandler)`
@@ -311,7 +311,7 @@ queue is not empty. To do so, a `feedHandler` is registered on the feeder.
 The `PollingFeeder` provides the following additional configuration methods:
 * `setFeedDelay(long delay)` - sets the interval between feed attempts when
   no messages were fed by the `feedHandler`
-* `feedDelay()` - indicates the feed delay
+* `getFeedDelay()` - indicates the feed delay
 
 To register a feed handler, call the `feedHandler()` method, passing a
 handler instance.
@@ -551,11 +551,11 @@ The `NetworkDefinition` exposes the following configuration methods:
   for all generated network addresses and is synonymous with the network `name`
 * `enableAcking()` - enables acking for the network
 * `disableAcking()` - disabled acking for the network
-* `ackingEnabled()` - indicates whether acking is enabled for the network
+* `isAckingEnabled()` - indicates whether acking is enabled for the network
 * `setNumAuditors(int numAuditors)` - sets the number of network auditors (ackers)
-* `numAuditors()` - indicates the number of network auditors
+* `getNumAuditors()` - indicates the number of network auditors
 * `setAckExpire(long expire)` - sets the message ack expiration for the network
-* `ackExpire()` - indicates the ack expiration for the network
+* `getAckExpire()` - indicates the ack expiration for the network
 
 ### Defining network components
 The `NetworkDefinition` class provides several methods for adding components
@@ -577,14 +577,16 @@ Note that Vertigo supports both verticles and modules as network components.
 The return value of each of these methods is a new `ComponentDefinition` instance
 on which you can set the following properties:
 
-* `setType` - sets the component type, *verticle* or *module*
-* `setMain` - sets a verticle main
-* `setModule` - sets a module name
-* `setConfig` - sets the component configuration. This is made available within
+* `setType(String type)` - sets the component type, *verticle* or *module*
+  Two constants are also available, `ComponentDefinition.VERTICLE` or
+  `ComponentDefinition.MODULE`
+* `setMain(String main)` - sets a verticle main
+* `setModule(String moduleName)` - sets a module name
+* `setConfig(JsonObject config)` - sets the component configuration. This is made available within
   component verticles via the instance's `WorkerContext`
-* `setWorkers` - sets the number of component workers
-* `groupBy` - sets the component grouping, see [groupings](#component-groupings)
-* `filterBy` - adds a component filter, see [filters](#component-filters)
+* `setWorkers(int numWorkers)` - sets the number of component workers
+* `groupBy(Grouping grouping)` - sets the component grouping, see [groupings](#component-groupings)
+* `filterBy(Filter filter)` - adds a component filter, see [filters](#component-filters)
 
 ### Defining connections
 Connections between components are created by `toVerticle` and `toModule`

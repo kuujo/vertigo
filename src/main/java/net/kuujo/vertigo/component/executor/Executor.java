@@ -63,7 +63,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *  An execution reply timeout.
    */
-  public long replyTimeout();
+  public long getReplyTimeout();
 
   /**
    * Sets the maximum execution queue size.
@@ -81,7 +81,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The maximum queue size allowed for the executor.
    */
-  public long maxQueueSize();
+  public long getMaxQueueSize();
 
   /**
    * Indicates whether the execution queue is full.

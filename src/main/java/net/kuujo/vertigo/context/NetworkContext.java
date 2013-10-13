@@ -56,6 +56,9 @@ public class NetworkContext implements Context {
 
   /**
    * Returns the network address.
+   *
+   * @return
+   *   The network address.
    */
   public String address() {
     return context.getString("address");
@@ -63,6 +66,10 @@ public class NetworkContext implements Context {
 
   /**
    * Returns the network broadcast address.
+   *
+   * @return
+   *   The network broadcast address. This is the address at which component
+   *   instances listen for ack/nack messages.
    */
   public String getBroadcastAddress() {
     return context.getString("broadcast");
@@ -80,6 +87,9 @@ public class NetworkContext implements Context {
 
   /**
    * Returns an array of network auditor addresses.
+   *
+   * @return
+   *   A set of auditor addresses.
    */
   public Set<String> getAuditors() {
     JsonArray auditors = context.getArray("auditors");
@@ -91,6 +101,9 @@ public class NetworkContext implements Context {
 
   /**
    * Returns a list of network component contexts.
+   *
+   * @return
+   *   A collection of component contexts within the network.
    */
   public Collection<ComponentContext> getComponentContexts() {
     JsonObject components = context.getObject("components");
@@ -107,6 +120,8 @@ public class NetworkContext implements Context {
    *
    * @param name
    *   The component name.
+   * @return
+   *   A component context.
    */
   public ComponentContext getComponentContext(String name) {
     JsonObject components = context.getObject("components");

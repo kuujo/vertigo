@@ -52,7 +52,7 @@ public class WorkerContext implements Context {
    * Gets the unique worker address.
    *
    * @return
-   *   An eventbus address.
+   *   An event bus address.
    */
   public String address() {
     return context.getString("address");

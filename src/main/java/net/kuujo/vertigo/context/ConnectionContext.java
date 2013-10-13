@@ -50,6 +50,9 @@ public class ConnectionContext {
 
   /**
    * Returns the connection grouping.
+   *
+   * @return
+   *   A component grouping context.
    */
   public GroupingContext getGrouping() {
     return new GroupingContext(context.getObject("grouping"));
@@ -57,6 +60,9 @@ public class ConnectionContext {
 
   /**
    * Returns connection filters.
+   *
+   * @return
+   *   A collection of component filter contexts.
    */
   public Collection<FilterContext> getFilters() {
     Set<FilterContext> contexts = new HashSet<FilterContext>();
@@ -69,6 +75,9 @@ public class ConnectionContext {
 
   /**
    * Returns an array of address to which the connection connects.
+   *
+   * @return
+   *   A set of target addresses.
    */
   public Set<String> getAddresses() {
     JsonArray addresses = context.getArray("addresses");
@@ -80,6 +89,9 @@ public class ConnectionContext {
 
   /**
    * Returns the parent component.
+   *
+   * @return
+   *   The component context of the component to which this connection belongs.
    */
   public Context getComponentContext() {
     return parent;

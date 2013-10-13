@@ -84,7 +84,20 @@ public class ComponentContext implements Context {
   }
 
   /**
+   * Returns the component name.
+   *
+   * @return
+   *   The component name.
+   */
+  public String name() {
+    return getDefinition().name();
+  }
+
+  /**
    * Returns the component address.
+   *
+   * @return
+   *   The component address.
    */
   public String address() {
     return context.getString("address");
@@ -92,6 +105,9 @@ public class ComponentContext implements Context {
 
   /**
    * Returns a list of component connections.
+   *
+   * @return
+   *   A collection of component connections.
    */
   public Collection<ConnectionContext> getConnectionContexts() {
     Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
@@ -105,6 +121,11 @@ public class ComponentContext implements Context {
 
   /**
    * Returns a component connection context.
+   *
+   * @param name
+   *   The name of the component whose connection to return.
+   * @return
+   *   A component connection context.
    */
   public ConnectionContext getConnectionContext(String name) {
     JsonObject connections = context.getObject("connections");
@@ -117,6 +138,9 @@ public class ComponentContext implements Context {
 
   /**
    * Returns all worker contexts.
+   *
+   * @return
+   *   A collection of worker contexts.
    */
   public Collection<WorkerContext> getWorkerContexts() {
     JsonArray workers = context.getArray("workers");
@@ -130,6 +154,9 @@ public class ComponentContext implements Context {
 
   /**
    * Returns the component definition.
+   *
+   * @return
+   *   The component definition.
    */
   public Component getDefinition() {
     JsonObject definition = context.getObject("definition");
@@ -138,6 +165,9 @@ public class ComponentContext implements Context {
 
   /**
    * Returns the parent network context.
+   *
+   * @return
+   *   The component's parent network context.
    */
   public NetworkContext getNetworkContext() {
     return parent;

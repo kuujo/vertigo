@@ -10,15 +10,21 @@ allows real-time problems to be broken down into smaller tasks (as Vert.x
 verticles) and distributed across **one or many Vert.x instances**, managing
 communication between components in a **predictable and reliable** manner.
 
-* Supports simple pipelines or complex networks of Vert.x modules/verticles,
-  including remote procedure calls spanning multiple Vert.x verticle instances
-* Supports message ack/fail/timeout mechanisms, providing data sources
-  with feedback on the state of processing simple or complex message trees
-* Monitors networks for failures and automatically reassigns/redeploys failed
+* Manages multi-step event processing systems, from simple pipelines to
+  **complex networks of Vert.x modules/verticles**, including **remote procedure
+  calls spanning multiple Vert.x verticle instances**
+* **Abstracts communication details** from verticle implementations by providing
+  an API for defining verticle relationships at the point of deployment
+* **Guarantees message processing** through ack/fail/timeout mechanisms, providing
+  data sources with feedback on the status of processing simple or complex
+  message trees
+* Supports distribution of messages between multiple verticle instances using
+  **random, round-robin, consistent hashing, or fanout** approaches
+* Supports **distribution of verticle/modules instances across a cluster** of Vert.x
+  instances
+* **Monitors networks for failures** and automatically reassigns/redeploys failed
   verticles and modules
-* Can distribute verticle/module instances among a single Vert.x instance or
-  across a cluster of Vert.x instances
-* Network components can be written in any Vert.x supported language, with
+* Network components can be written in **any Vert.x supported language**, with
   current integration for Java and [Python](https://github.com/kuujo/vertigo-python)
 * Integrates seemlessly with existing Vert.x applications
 
@@ -38,6 +44,7 @@ within larger Vert.x applications.
    * [Component supervision](#component-supervision)
    * [Message acking](#message-acking)
    * [How acking works](#how-acking-works)
+1. [A Simple Network](#a-simple-network)
 1. [Creating Components](#creating-components)
    * [Contexts](#contexts)
       * [WorkerContext](#workercontext)

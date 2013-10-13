@@ -10,6 +10,8 @@ allows real-time problems to be broken down into smaller tasks (as Vert.x
 verticles) and distributed across **one or many Vert.x instances**, managing
 communication between components in a **predictable and reliable** manner.
 
+**See [how it works](#networks)**
+
 * Manages multi-step event processing systems, from simple pipelines to
   **complex networks of Vert.x modules/verticles**, including **remote procedure
   calls spanning multiple Vert.x verticle instances**
@@ -31,6 +33,8 @@ communication between components in a **predictable and reliable** manner.
 Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
+
+**For a quick introduction, see the [simple network example](#a-simple-network)**
 
 ## Java User Manual
 
@@ -202,7 +206,8 @@ API.
 ```java
 NetworkDefinition network = Networks.createNetwork("word_count");
 network.fromVerticle("word_feeder", WordFeeder.class.getName())
-  .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+  .toVerticle("word_counter", WordCountWorker.class.getName(), 4)
+  .groupBy(new FieldsGrouping("word"));
 ```
 
 This network definition defines a simple network that consists of only two
@@ -373,7 +378,8 @@ instance's `deploy()` method.
 ```java
 NetworkDefinition network = Networks.createNetwork("word_count");
 network.fromVerticle("word_feeder", WordFeeder.class.getName())
-  .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+  .toVerticle("word_counter", WordCountWorker.class.getName(), 4)
+  .groupBy(new FieldsGrouping("word"));
 
 final Cluster cluster = new LocalCluster(vertx, container);
 cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -409,7 +415,8 @@ the data source and the worker.
 ```java
 NetworkDefinition network = Networks.createNetwork("word_count");
 ComponentDefinition executor = network.fromVerticle("word_executor", WordExecutor.class.getName());
-executor.toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"))
+executor.toVerticle("word_counter", WordCountWorker.class.getName(), 4)
+  .groupBy(new FieldsGrouping("word"))
   .to(executor);
 ```
 

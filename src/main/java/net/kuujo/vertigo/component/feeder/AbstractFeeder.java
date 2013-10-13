@@ -182,4 +182,9 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
     queue.fail(id);
   }
 
+  @Override
+  protected void doFail(String id, String message) {
+    queue.fail(id, message);
+  }
+
 }

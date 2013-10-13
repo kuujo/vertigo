@@ -51,24 +51,24 @@ public class BasicExecuteQueue implements ExecuteQueue {
   }
 
   @Override
-  public ExecuteQueue replyTimeout(long timeout) {
+  public ExecuteQueue setReplyTimeout(long timeout) {
     replyTimeout = timeout;
     return this;
   }
 
   @Override
-  public long replyTimeout() {
+  public long getReplyTimeout() {
     return replyTimeout;
   }
 
   @Override
-  public ExecuteQueue maxQueueSize(long maxSize) {
+  public ExecuteQueue setMaxQueueSize(long maxSize) {
     maxQueueSize = maxSize;
     return this;
   }
 
   @Override
-  public long maxQueueSize() {
+  public long getMaxQueueSize() {
     return maxQueueSize;
   }
 
@@ -100,6 +100,13 @@ public class BasicExecuteQueue implements ExecuteQueue {
   public void fail(String id) {
     if (queueItems.containsKey(id)) {
       queueItems.get(id).fail();
+    }
+  }
+
+  @Override
+  public void fail(String id, String message) {
+    if (queueItems.containsKey(id)) {
+      queueItems.get(id).fail(message);
     }
   }
 
@@ -165,6 +172,7 @@ public class BasicExecuteQueue implements ExecuteQueue {
     private final Future<JsonMessage> future;
     private boolean acked;
     private boolean ack;
+    private String failureMessage;
     private JsonMessage result;
     private Timer timer;
     private boolean complete;
@@ -189,6 +197,15 @@ public class BasicExecuteQueue implements ExecuteQueue {
      */
     private void fail() {
       acked = true; ack = false;
+      checkResult();
+    }
+
+    /**
+     * Fails the queue item with a message.
+     */
+    private void fail(String message) {
+      acked = true; ack = false;
+      failureMessage = message;
       checkResult();
     }
 
@@ -218,7 +235,12 @@ public class BasicExecuteQueue implements ExecuteQueue {
     private void checkResult() {
       if (!complete && acked) {
         if (!ack) {
-          future.setFailure(new FailureException("A failure occurred."));
+          if (failureMessage != null) {
+            future.setFailure(new FailureException(failureMessage));
+          }
+          else {
+            future.setFailure(new FailureException("A failure occurred."));
+          }
           complete = true;
           queueItems.remove(id);
           timer.ids.remove(id);

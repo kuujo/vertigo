@@ -88,4 +88,14 @@ public interface FeedQueue {
    */
   public void fail(String id);
 
+  /**
+   * Fails a message in the queue with a fail message.
+   *
+   * @param id
+   *   The unique message ID.
+   * @param message
+   *   A failure message.
+   */
+  public void fail(String id, String message);
+
 }

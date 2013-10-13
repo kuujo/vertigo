@@ -85,16 +85,6 @@ public interface OutputCollector {
   public OutputCollector ack(JsonMessage message);
 
   /**
-   * Acks a set of messages.
-   *
-   * @param messages
-   *   The messages to ack.
-   * @return
-   *   The called output collector.
-   */
-  public OutputCollector ack(JsonMessage... messages);
-
-  /**
    * Fails a message.
    *
    * @param message
@@ -105,13 +95,15 @@ public interface OutputCollector {
   public OutputCollector fail(JsonMessage message);
 
   /**
-   * Fails a set of messages.
+   * Fails a message.
    *
-   * @param messages
-   *   The messages to fail.
+   * @param message
+   *   The message to fail.
+   * @param failMessage
+   *   A message to send to the data source.
    * @return
    *   The called output collector.
    */
-  public OutputCollector fail(JsonMessage... messages);
+  public OutputCollector fail(JsonMessage message, String failMessage);
 
 }

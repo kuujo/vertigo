@@ -894,6 +894,9 @@ The `Worker` provides the following methods for acks/fails:
   processed
 * `fail(JsonMessage message)` - indicates that a message has failed processing.
   This can be used as a vehicle for notifying data sources of invalid data
+* `fail(JsonMessage message, String failureMessage)` - indicates that a message
+  has failed processing, passing a failure message that will be passed on to
+  the data source
 
 ```java
 worker.messageHandler(new Handler<JsonMessage>() {
@@ -906,7 +909,7 @@ worker.messageHandler(new Handler<JsonMessage>() {
     }
     else {
       // This is an invalid message.
-      worker.fail(message);
+      worker.fail(message, "Invalid data.");
     }
   }
 });

@@ -234,7 +234,13 @@ public abstract class ComponentBase implements Component {
                     case "fail":
                       String failId = body.getString("id");
                       if (failId != null) {
-                        doFail(failId);
+                        String failMessage = body.getString("message");
+                        if (failMessage != null) {
+                          doFail(failId, failMessage);
+                        }
+                        else {
+                          doFail(failId);
+                        }
                       }
                       break;
                   }
@@ -354,6 +360,12 @@ public abstract class ComponentBase implements Component {
    * Called when a message is failed.
    */
   protected void doFail(String id) {
+  }
+
+  /**
+   * Called when a message is failed with a failure message.
+   */
+  protected void doFail(String id, String message) {
   }
 
   /**

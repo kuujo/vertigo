@@ -35,7 +35,7 @@ public interface ExecuteQueue {
    * @return
    *   The called executor queue instance.
    */
-  public ExecuteQueue replyTimeout(long timeout);
+  public ExecuteQueue setReplyTimeout(long timeout);
 
   /**
    * Gets the queue reply timeout.
@@ -43,7 +43,7 @@ public interface ExecuteQueue {
    * @return
    *   The queue reply timeout.
    */
-  public long replyTimeout();
+  public long getReplyTimeout();
 
   /**
    * Sets the maximum executor queue size.
@@ -53,7 +53,7 @@ public interface ExecuteQueue {
    * @return
    *   The called executor queue instance.
    */
-  public ExecuteQueue maxQueueSize(long maxSize);
+  public ExecuteQueue setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum executor queue size.
@@ -61,7 +61,7 @@ public interface ExecuteQueue {
    * @return
    *   The maximum allowed executor queue size.
    */
-  public long maxQueueSize();
+  public long getMaxQueueSize();
 
   /**
    * Indicates the current executor queue size.
@@ -106,6 +106,16 @@ public interface ExecuteQueue {
    *   The unique message ID.
    */
   public void fail(String id);
+
+  /**
+   * Fails a message in the queue with a failure message.
+   *
+   * @param id
+   *   The unique message ID.
+   * @param message
+   *   A failure message.
+   */
+  public void fail(String id, String message);
 
   /**
    * Receives a response.

@@ -136,22 +136,13 @@ public class BasicWorker extends ComponentBase implements Worker {
   }
 
   @Override
-  public void ack(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      ack(message);
-    }
-  }
-
-  @Override
   public void fail(JsonMessage message) {
     output.fail(message);
   }
 
   @Override
-  public void fail(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      fail(message);
-    }
+  public void fail(JsonMessage message, String failureMessage) {
+    output.fail(message, failureMessage);
   }
 
 }

@@ -106,25 +106,25 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   @Override
   @SuppressWarnings("unchecked")
   public T setReplyTimeout(long timeout) {
-    queue.replyTimeout(timeout);
+    queue.setReplyTimeout(timeout);
     return (T) this;
   }
 
   @Override
   public long getReplyTimeout() {
-    return queue.replyTimeout();
+    return queue.getReplyTimeout();
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public T setMaxQueueSize(long maxSize) {
-    queue.maxQueueSize(maxSize);
+    queue.setMaxQueueSize(maxSize);
     return (T) this;
   }
 
   @Override
   public long getMaxQueueSize() {
-    return queue.maxQueueSize();
+    return queue.getMaxQueueSize();
   }
 
   @Override
@@ -151,6 +151,11 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   @Override
   protected void doFail(String id) {
     queue.fail(id);
+  }
+
+  @Override
+  protected void doFail(String id, String message) {
+    queue.fail(id, message);
   }
 
   @Override

@@ -114,14 +114,6 @@ public interface Worker extends Component {
   public void ack(JsonMessage message);
 
   /**
-   * Acknowledges processing of multiple messages.
-   *
-   * @param messages
-   *   The messages to ack.
-   */
-  public void ack(JsonMessage... messages);
-
-  /**
    * Fails processing of a message.
    *
    * @param message
@@ -130,11 +122,13 @@ public interface Worker extends Component {
   public void fail(JsonMessage message);
 
   /**
-   * Fails processing of multiple messages.
+   * Fails processing of a message with a fail message.
    *
-   * @param messages
-   *   The messages to fail.
+   * @param message
+   *   The message to fail.
+   * @param failureMessage
+   *   A fail message to sent to the data source.
    */
-  public void fail(JsonMessage... messages);
+  public void fail(JsonMessage message, String failureMessage);
 
 }

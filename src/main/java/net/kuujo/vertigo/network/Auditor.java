@@ -96,7 +96,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
         timer.ids.add(node.id);
       }
       clearRoot(node);
-      eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id));
+      eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id).putString("message", node.failureMessage));
     }
   };
 
@@ -185,8 +185,9 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    */
   private void doFail(Message<JsonObject> message) {
     String id = getMandatoryString("id", message);
+    String failMessage = message.body().getString("message");
     if (nodes.containsKey(id)) {
-      nodes.get(id).fail();
+      nodes.get(id).fail(failMessage);
     }
   }
 
@@ -247,6 +248,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     private boolean ready = true;
     private boolean acked;
     private boolean ack;
+    private String failureMessage;
     private boolean locked;
 
     private Handler<Node> childAckHandler = new Handler<Node>() {
@@ -265,6 +267,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       @Override
       public void handle(Node node) {
         if (!failed()) {
+          Node.this.failureMessage = node.failureMessage;
           fail();
         }
       }
@@ -301,6 +304,15 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
      */
     private void fail() {
       acked = true; ack = false;
+      checkAck();
+    }
+
+    /**
+     * Fails the message.
+     */
+    private void fail(String message) {
+      acked = true; ack = false;
+      this.failureMessage = message;
       checkAck();
     }
 

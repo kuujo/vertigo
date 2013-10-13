@@ -105,24 +105,14 @@ public class LinearOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector ack(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      ack(message);
-    }
-    return this;
-  }
-
-  @Override
   public OutputCollector fail(JsonMessage message) {
     eventBus.publish(message.auditor(), createFailAction(message.id()));
     return this;
   }
 
   @Override
-  public OutputCollector fail(JsonMessage... messages) {
-    for (JsonMessage message : messages) {
-      fail(message);
-    }
+  public OutputCollector fail(JsonMessage message, String failMessage) {
+    eventBus.publish(message.auditor(), createFailAction(message.id(), failMessage));
     return this;
   }
 
@@ -152,6 +142,13 @@ public class LinearOutputCollector implements OutputCollector {
    */
   private static final JsonObject createFailAction(String id) {
     return new JsonObject().putString("action", "fail").putString("id", id);
+  }
+
+  /**
+   * Creates a fail message action with a fail message.
+   */
+  private static final JsonObject createFailAction(String id, String message) {
+    return new JsonObject().putString("action", "fail").putString("id", id).putString("message", message);
   }
 
 }

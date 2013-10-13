@@ -45,6 +45,12 @@ within larger Vert.x applications.
    * [Message acking](#message-acking)
    * [How acking works](#how-acking-works)
 1. [A Simple Network](#a-simple-network)
+   * [Defining the network](#defining-the-network)
+   * [Creating the feeder](#creating-the-feeder)
+   * [Creating the worker](#creating-the-worker)
+   * [Deploying the network](#deploying-the-network)
+   * [Executing the network as a remote procedure](#executing-the-network-as-a-remote-procedure)
+   * [The complete network](#the-complete-network)
 1. [Creating Components](#creating-components)
    * [Contexts](#contexts)
       * [WorkerContext](#workercontext)
@@ -184,6 +190,410 @@ been acked will it send a message back to the original data source (the
 component that created the first message). In this way, Vertigo
 tracks a single message's transformation - no matter how complex -
 to completion before notifying the data source.
+
+## A simple network
+In order to get a better understanding of the concepts introduced in
+Vertigo, let's take a look at a simple network example.
+
+### Defining the network
+Vertigo networks are defined using the [definitions](#defining-networks)
+API.
+
+```java
+NetworkDefinition network = Networks.createNetwork("word_count");
+network.fromVerticle("word_feeder", WordFeeder.class.getName())
+  .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+```
+
+This network definition defines a simple network that consists of only two
+verticles, a feeder and a worker. First, we define a new network named *word_count*.
+Each vertigo network should have a unique name which is used to derive each
+of the network's *component* instances unique addresses (Vertigo addresses are
+generated in a predictable manner). With the new network defined, we add a
+*source* verticle to the network - this is usually a feeder or executor, though
+workers can be used in more complex cases - which connects to a *worker* verticle.
+In Vertigo, each of the elements is known as a *component* - either a verticle
+or module - each of which can have any number of instances. In this case, the
+*word_counter* component has four instances. This means that Vertigo will deploy
+four instances of the `WordCountWorker` verticle when deploying the network.
+
+Finally, we group the `word_counter` component using a `FieldsGrouping`. Because
+this particular component counts the number of words arriving to it, the same
+word *must always go to the same component instance*, and the `FieldsGrouping`
+is the element of the definition that guarantees this will happen. Groupings are
+used to essentially define how messages are distributed among multiple instances
+of a component.
+
+### Creating the feeder
+Now let's look at how the feeder emits messages. First, to create a [feeder](#feeders)
+component we need to extend the `VertigoVerticle`.
+
+```java
+public class WordFeeder extends VertigoVerticle {
+  public void start() {
+    vertigo.createPollingFeeder().start(new Handler<AsyncResult<PollingFeeder>>() {
+      public void handle(AsyncResult<PollingFeeder> result) {
+        if (result.failed()) {
+          container.logger().error(result.cause());
+        }
+        else {
+          PollingFeeder feeder = result.result();
+        }
+      }
+    });
+  }
+}
+```
+
+Here we extend the special `VertigoVerticle` class which makes the `vertigo`
+member available to us. From this we create and start a new `PollingFeeder` instance.
+The polling feeder allows us to feed data to the network whenever the feeder's
+internal feed queue is not full. Vertigo provides several [feeders](#feeders) for
+different use cases.
+
+Once the feeder has started, we can begin feeding data.
+
+```java
+feeder.feedHandler(new Handler<PollingFeeder>() {
+  public void handle(PollingFeeder feeder) {
+    String[] words = new String[]{"apple", "banana", "peach", "pear", "orange"};
+    Random random = new Random();
+    String word = words[random.nextInt(words.length)];
+    JsonObject data = new JsonObject().putString("word", word);
+    feeder.feed(data);
+  }
+});
+```
+
+Here we feed a random word from a list of words to the network. But what if
+the data fails to be processed? How can we be notified? The Vertigo feeder
+API provides for additional arguments that allow the feeder to be notified
+once a message is successfully processed.
+[See what successfully processing means](#how-acking-words)
+
+```java
+feeder.feedHandler(new Handler<PollingFeeder>() {
+  public void handle(PollingFeeder feeder) {
+    String[] words = new String[]{"apple", "banana", "peach", "pear", "orange"};
+    Random random = new Random();
+    String word = words[random.nextInt(words.length)];
+    JsonObject data = new JsonObject().putString("word", word);
+    feeder.feed(data, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          container.logger().warn("Failed to process message.");
+        }
+        else {
+          container.logger().info("Successfully processed message.");
+        }
+      }
+    });
+  }
+});
+```
+
+By providing an additional handler to the `feed()` method, the feeder will
+now be notified once the message is acked or failed.
+
+### Creating the worker
+Now that we have a feeder to feed messages to the network, we need
+to implement a [worker](#workers). Workers are the primary units of processing in
+Vertigo. In this case, we're creating a worker that counts the occurences
+of words in the `word` field of the message body.
+
+Creating and starting workers is done in the same was as with the feeder.
+
+```java
+public class WordCountWorker extends VertigoVerticle {
+
+  private Map<String, Integer> counts = new HashMap<String, Integer>();
+
+  @Override
+  public void start() {
+    vertigo.createWorker().start(new Handler<AsyncResult<Worker>>() {
+      @Override
+      public void handle(AsyncResult<Worker> result) {
+        if (result.failed()) {
+          container.logger().error(result.cause());
+        }
+        else {
+          final Worker worker = result.result();
+        }
+      }
+    });
+  }
+}
+```
+
+Once we have created a worker, we need to add a handler for incoming
+messages. To do this we call the `messageHandler` method.
+
+```java
+worker.messageHandler(new Handler<JsonMessage>() {
+  @Override
+  public void handle(JsonMessage message) {
+    String word = message.body().getString("word");
+    Integer count = counts.get(word);
+    if (count == null) {
+      count = 0;
+    }
+    count++;
+  }
+});
+```
+
+Once we're done processing the message, we may want to emit the new
+count to any other components that may be listening. To do so, we call
+the `emit()` method on the `Worker` instance.
+
+```java
+worker.emit(new JsonObject().putString("word", word).putNumber("count", count), message);
+```
+
+Once a message has been fully processed, it is essential that the
+message be acked. This notifies the network that the message has been
+fully processed, and once all messages in a message tree have been
+processed the original data source (the feeder above) will be notified.
+
+```java
+worker.ack(message);
+```
+
+### Deploying the network
+Now that we've created the network and implemented each of its components,
+we need to deploy the network. Vertigo supports both local and clustered
+network deployments using the `LocalCluster` and `ViaCluster` (see
+[Via](https://github.com/kuujo/via)) interfaces. In this case, we'll just
+use the `LocalCluster`.
+
+To deploy the network, we just pass our network definition to a cluster
+instance's `deploy()` method.
+
+```java
+NetworkDefinition network = Networks.createNetwork("word_count");
+network.fromVerticle("word_feeder", WordFeeder.class.getName())
+  .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+
+final Cluster cluster = new LocalCluster(vertx, container);
+cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+  @Override
+  public void handle(AsyncResult<NetworkContext> result) {
+    if (result.failed()) {
+      container.logger().error(result.cause());
+    }
+    else {
+      final NetworkContext context = result.result();
+      vertx.setTimer(5000, new Handler<Long>() {
+        @Override
+        public void handle(Long timerID) {
+          cluster.shutdown(context);
+        }
+      });
+    }
+  }
+});
+```
+
+The `NetworkContext` that is returned by the deployment contains
+valuable information about the network. See [contexts](#contexts)
+for more info.
+
+### Executing the network as a remote procedure
+But what if the feeder needs to receive feedback on the word count? In this
+case, we can replace the feeder with an [executor](#executors). Executors
+work by capitalizing on circular connections within networks. Thus, first
+we need to re-define the network to create a circular connection between
+the data source and the worker.
+
+```java
+NetworkDefinition network = Networks.createNetwork("word_count");
+ComponentDefinition executor = network.fromVerticle("word_executor", WordExecutor.class.getName());
+executor.toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"))
+  .to(executor);
+```
+
+First, we store the `word_executor` component definition in a variable, connect
+it to the `word_counter`, and then connect the `word_counter` back to the
+`word_executor`. This creates the circular connections that are required for
+remote procedure calls.
+
+Now that we have our circular connections, we can re-define the original feeder
+to expect a result using an executor.
+
+```java
+vertigo.createBasicExecutor().start(new Handler<AsyncResult<BasicExecutor>>() {
+  @Override
+  public void handle(AsyncResult<BasicExecutor> result) {
+    if (result.failed()) {
+      container.logger().error(result.cause());
+    }
+    else {
+      BasicExecutor executor = result.result();
+      String[] words = new String[]{"apple", "banana", "peach", "pear", "orange"};
+      Random random = new Random();
+      while (!executor.queueFull()) {
+        String word = words[random.nextInt(words.length)];
+        JsonObject data = new JsonObject().putString("word", word);
+        executor.execute(data, new Handler<AsyncResult<JsonMessage>>() {
+          @Override
+          public void handle(AsyncResult<JsonMessage> result) {
+            if (result.failed()) {
+              container.logger().warn("Failed to process message.");
+            }
+            else {
+              container.logger().info("Current word count is " + result.result().body().getInteger("count"));
+            }
+          }
+        }
+      });
+    }
+  }
+});
+```
+
+Note that because the `word_counter` component always emits data, it does
+not have to be refactored to support remote procedure calls. For this reason,
+all component implementations *should always emit data* whether they may or
+may not be connected to any other component. If the component is not, in fact,
+connected to any other component, `emit`ing data will have no effect.
+
+### The complete network
+Finally, we have our complete Java network example.
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+import net.kuujo.vertigo.Cluster;
+import net.kuujo.vertigo.LocalCluster;
+import net.kuujo.vertigo.Networks;
+import net.kuujo.vertigo.component.feeder.BasicFeeder;
+import net.kuujo.vertigo.component.worker.Worker;
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.definition.ComponentDefinition;
+import net.kuujo.vertigo.definition.NetworkDefinition;
+import net.kuujo.vertigo.grouping.FieldsGrouping;
+import net.kuujo.vertigo.java.VertigoVerticle;
+import net.kuujo.vertigo.messaging.JsonMessage;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
+
+/**
+ * A word counting network.
+ */
+public class WordCountNetwork extends Verticle {
+
+  /**
+   * Feeds a random word to the network.
+   */
+  public static class WordFeeder extends VertigoVerticle {
+
+    private String[] words = new String[]{"apple", "banana", "peach", "pear", "orange"};
+
+    @Override
+    public void start() {
+      vertigo.createPollingFeeder().start(new Handler<AsyncResult<PollingFeeder>>() {
+        @Override
+        public void handle(AsyncResult<PollingFeeder> result) {
+          if (result.failed()) {
+            container.logger().error(result.cause());
+          }
+          else {
+            PollingFeeder feeder = result.result();
+            feeder.feedHandler(new Handler<PollingFeeder>() {
+              @Override
+              public void handle(PollingFeeder feeder) {
+                Random random = new Random();
+                String word = words[random.nextInt(words.length)];
+                JsonObject data = new JsonObject().putString("word", word);
+                feeder.feed(data, new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      container.logger().warn("Failed to process message.");
+                    }
+                    else {
+                      container.logger().info("Successfully processed message.");
+                    }
+                  }
+                });
+              }
+            });
+          }
+        }
+      });
+    }
+
+  }
+
+  /**
+   * Counts words incoming to the worker.
+   */
+  public static class WordCountWorker extends VertigoVerticle {
+
+    private Map<String, Integer> counts = new HashMap<String, Integer>();
+
+    @Override
+    public void start() {
+      vertigo.createWorker().start(new Handler<AsyncResult<Worker>>() {
+        @Override
+        public void handle(AsyncResult<Worker> result) {
+          if (result.failed()) {
+            container.logger().error(result.cause());
+          }
+          else {
+            final Worker worker = result.result();
+            worker.messageHandler(new Handler<JsonMessage>() {
+              @Override
+              public void handle(JsonMessage message) {
+                String word = message.body().getString("word");
+                Integer count = counts.get(word);
+                if (count == null) {
+                  count = 0;
+                }
+                count++;
+                worker.emit(new JsonObject().putString("word", word).putNumber("count", count));
+                worker.ack(message);
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  @Override
+  public void start() {
+    NetworkDefinition network = Networks.createNetwork("word_count");
+    network.fromVerticle("word_feeder", WordFeeder.class.getName())
+      .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+
+    final Cluster cluster = new LocalCluster(vertx, container);
+    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.failed()) {
+          container.logger().error(result.cause());
+        }
+        else {
+          final NetworkContext context = result.result();
+          vertx.setTimer(5000, new Handler<Long>() {
+            @Override
+            public void handle(Long timerID) {
+              cluster.shutdown(context);
+            }
+          });
+        }
+      }
+    });
+  }
+
+}
+```
 
 ## Creating components
 Components are simply special Vert.x verticle instances. As such, Vertigo provides
@@ -637,11 +1047,35 @@ When messages are emitted to instances of the component, the related grouping
 message is sent.
 
 Vertigo provides several grouping types:
+
 * `RandomGrouping` - component instances receive messages in random order
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).groupBy(new RandomGrouping());
+```
+
 * `RoundGrouping` - component instances receive messages in round-robin fashion
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).groupBy(new RoundGrouping());
+```
+
 * `FieldsGrouping` - component instances receive messages according to basic
   consistent hashing based on a given field
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).groupBy(new FieldsGrouping("type"));
+```
+
 * `AllGrouping` - all component instances receive a copy of each message
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).groupBy(new AllGrouping());
+```
 
 ### Component Filters
 Vertigo messages contain metadata in addition to the message body. And just
@@ -665,9 +1099,27 @@ network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
 ```
 
 Vertigo provides several types of filters:
+
 * `TagsFilter` - filters messages by tags
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).filterBy(new TagsFilter("product"));
+```
+
 * `FieldFilter` - filters messages according to a field/value
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).filterBy(new FieldFilter("type", "product"));
+```
+
 * `SourceFilter` - filters messages according to the source component name
+```java
+NetworkDefinition network = Networks.createNetwork("foo");
+network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
+  .toVerticle("baz", "some_worker.py", 2).filterBy(new SourceFilter("rabbit"));
+```
 
 ### Network structures
 Vertigo places *no limits* on network structures. The definitions API is

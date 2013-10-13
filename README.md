@@ -32,7 +32,10 @@ within larger Vert.x applications.
 1. [Components](#components)
 1. [Messaging](#messaging)
    * [How components communicate](#how-components-communicate)
-1. [Reliability](#message-acking)
+   * [Message distribution](#message-distribution)
+   * [Messages](#messages)
+1. [Reliability](#reliability)
+   * [Component supervision](#component-supervision)
    * [Message acking](#message-acking)
    * [How acking works](#how-acking-works)
 1. [Creating Components](#creating-components)
@@ -104,29 +107,76 @@ to its neighbors, ensuring fast messaging between them.
 
 ![Communication Channels](http://s7.postimg.org/unzwkrvgb/vertigo_channel.png)
 
+### Message distribution
+When messages are sent between components which have multiple instances running
+within a network, Vertigo can manage distribution of messages between component
+instances. To do this, Vertigo provides a *grouping* abstraction that allows
+users to define how messages are dispatched to a set of component instances.
+For instance, one component may require messages to be distributed among its
+instances in a round-robin fashion, while another may require a consisten
+hashing based approach. [Vertigo provides numerous component groupings for
+different scenarios](#component-groupings).
+
+### Messages
+Messages are sent over the event bus in the form of `JsonObject` instances.
+Just as Vertigo networks have a structure, Vertigo messages can have structure
+as well: trees. Messages can be emitted from components either as individuals
+or as children of other messages. This hierarchical system integrates with the
+[message acking](#message-acking) system to provide increased reliability -
+acking for entire message trees, not just individual messages.
+
+Vertigo messages also contain a number of metadata fields in addition to
+the message body. These fields describe things like where the message came
+from, who the message's parents and ancestors are, and other interesting
+information. [Read more about message fields here](#jsonmessage)
+
+## Reliability
+Vertigo provides a number of reliability features that help ensure networks
+continue to run and messages are never lost.
+
+### Component supervision
+When a Vertigo network is deployed, a special *coordinator* verticle is
+deployed as well. It is *coordinator's* task to ensure that all component
+instances continue to run smoothly. To do so, component instances connect
+to the *coordinator* verticle, receive a unique heartbeat address, and begin
+sending heartbeat messages to the coordinator. If a component fails to send
+a heartbeat within a certain amount of time, the component is assumed to be
+dead and will be automatically re-deployed.
+
+This concept holds true for both local and clustered Vertigo networks. In
+the case of using [Via](https://github.com/kuujo/via) for clustering, the
+*coordinator* verticle will simply re-deploy failed component verticles
+or modules using the Via API, resulting in the component being assigned
+to a new machine.
+
 ### Message acking
-Vertigo's implicit control over the messaging infrastructure of component
-verticles allows it to provide some unique reliability features. When a
-Vertigo network is deployed, a special verticle called the *auditor* verticle
-is deployed along with it. The Vertigo *auditor* is tasked with monitoring
-messages within the network, tracking acks and nacks throughout the network,
-and notifying *feeders* when a message tree fails.
+In addition to the *coordinator* verticle being deployed for each Vertigo
+network, another special verticle called the *auditor* verticle is deployed,
+as well. The Vertigo *auditor* is tasked with monitoring messages within the
+network, tracking acks and nacks throughout the network, and notifying
+*feeders* when a message tree fails.
 
 ![Network Auditor](http://s14.postimg.org/kkl297qo1/vertigo_acker.png)
 
+Each network may have any number of auditor verticles (this is configurable
+via the network definition).
+
 #### How acking works
-When a *feeder* component creates and emits a new message, the feeder's
-`OutputCollector` will notify the network's *auditor* of the newly created
-message. *It is the responsibility of each worker component to ack or fail
-the message*. If a worker creates a child of the message, the auditor is
-told about the new relationship. If a descendant of a message is failed,
-the original feeder will be notified of the failure. The feeder may
-optionally replay failed messages through the network. Once *all*
-descendants of a message have been successfully *acked*, the original
-feeder will be notified. The *auditor* maintains a timer for each message
-tree (the timers are actually shared among several message trees). If the
-timer is triggered prior to the entire message tree being *acked*, the
-tree will be failed and the original feeder will be notified.
+When a component creates and emits a new message, the message will be
+assigned an *auditor* verticle (each auditor for any given network has
+a unique event bus address). Any time the message or a descendent message
+is emitted, acked, or failed from a component, the assigned *auditor*
+will be sent a message notifying it of the change. A source message
+can potentially have thousands of messages created based on its data,
+and Vertigo tracks all of the messages that originate from a source
+message. If a message or one of its descendents is failed or times
+out at any point within the network, the original source will be
+notified immediately. Internally, the auditor maintains a record of the
+entire message tree structure, and only once all of the messages have
+been acked will it send a message back to the original data source (the
+component that created the first message). In this way, Vertigo
+tracks a single message's transformation - no matter how complex -
+to completion before notifying the data source.
 
 ## Creating components
 Components are simply special Vert.x verticle instances. As such, Vertigo provides

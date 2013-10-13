@@ -54,6 +54,11 @@ public class DefaultVertigo implements Vertigo {
   }
 
   @Override
+  public Network createNetwork(String address) {
+    return new Network(address);
+  }
+
+  @Override
   public BasicFeeder createFeeder() {
     return new DefaultBasicFeeder(vertx, container, context);
   }

@@ -41,6 +41,16 @@ public interface Vertigo {
   public void setContext(WorkerContext context);
 
   /**
+   * Creates a network.
+   *
+   * @param address
+   *   The network address.
+   * @return
+   *   A new network instance.
+   */
+  public Network createNetwork(String address);
+
+  /**
    * Creates a feeder.
    *
    * @return

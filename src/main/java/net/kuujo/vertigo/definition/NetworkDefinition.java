@@ -148,39 +148,6 @@ public class NetworkDefinition implements Definition {
   }
 
   /**
-   * Gets a network option.
-   *
-   * @param option
-   *   The option to get.
-   * @return
-   *   The option value.
-   */
-  public String option(String option) {
-    return definition.getString(option);
-  }
-
-  /**
-   * Sets a network option.
-   *
-   * @param option
-   *   The option to set.
-   * @param value
-   *   The option value.
-   * @return
-   *   The called network definition.
-   */
-  public NetworkDefinition setOption(String option, String value) {
-    switch (option) {
-      case "address":
-        return setAddress(value);
-      default:
-        definition.putString(option, value);
-        break;
-    }
-    return this;
-  }
-
-  /**
    * Adds a root definition.
    */
   ComponentDefinition addDefinition(ComponentDefinition definition) {

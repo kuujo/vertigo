@@ -43,7 +43,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder feedDelay(long delay) {
+  public PollingFeeder setFeedDelay(long delay) {
     feedDelay = delay;
     return this;
   }

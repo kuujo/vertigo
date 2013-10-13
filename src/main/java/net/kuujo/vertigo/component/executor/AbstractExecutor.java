@@ -105,7 +105,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
 
   @Override
   @SuppressWarnings("unchecked")
-  public T replyTimeout(long timeout) {
+  public T setReplyTimeout(long timeout) {
     queue.replyTimeout(timeout);
     return (T) this;
   }
@@ -117,7 +117,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
 
   @Override
   @SuppressWarnings("unchecked")
-  public T maxQueueSize(long maxSize) {
+  public T setMaxQueueSize(long maxSize) {
     queue.maxQueueSize(maxSize);
     return (T) this;
   }

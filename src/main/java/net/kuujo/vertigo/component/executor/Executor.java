@@ -55,7 +55,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T replyTimeout(long timeout);
+  public T setReplyTimeout(long timeout);
 
   /**
    * Gets the execution reply timeout.
@@ -73,7 +73,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T maxQueueSize(long maxSize);
+  public T setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum execution queue size.

@@ -56,7 +56,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T maxQueueSize(long maxSize);
+  public T setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum feed queue size.
@@ -82,7 +82,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T autoRetry(boolean retry);
+  public T setAutoRetry(boolean retry);
 
   /**
    * Gets the feeder auto-retry option.
@@ -101,7 +101,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T retryAttempts(int attempts);
+  public T setRetryAttempts(int attempts);
 
   /**
    * Gets the number of automatic retry attempts.

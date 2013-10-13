@@ -99,7 +99,7 @@ public class ChannelTest extends TestVerticle {
         }
       }
     });
-    channel.write(DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "foo"));
+    channel.write(DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "foo", "auditor"));
   }
 
 }

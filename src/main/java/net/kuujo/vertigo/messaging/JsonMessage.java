@@ -54,9 +54,17 @@ public interface JsonMessage extends Serializeable<JsonObject> {
    * Returns the ancestor ID.
    *
    * @return
-   *   The ancestor messag ID.
+   *   The ancestor message ID.
    */
   public String ancestor();
+
+  /**
+   * Returns the auditor address.
+   *
+   * @return
+   *   The message's auditor address.
+   */
+  public String auditor();
 
   /**
    * Returns the message body.

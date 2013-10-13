@@ -52,6 +52,24 @@ import static org.junit.Assert.fail;
 public class ContextTest {
 
   @Test
+  public void testNetworkContext() {
+    NetworkDefinition network = Networks.createNetwork("test");
+    network.setNumAuditors(2);
+    network.enableAcking();
+    network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
+      .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RoundGrouping());
+
+    try {
+      NetworkContext context = network.createContext();
+      assertEquals(2, context.getAuditors().size());
+      assertEquals(2, context.getNumAuditors());
+    }
+    catch (MalformedDefinitionException e) {
+      fail(e.getMessage());
+    }
+  }
+
+  @Test
   public void testComponentContext() {
     NetworkDefinition network = Networks.createNetwork("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")

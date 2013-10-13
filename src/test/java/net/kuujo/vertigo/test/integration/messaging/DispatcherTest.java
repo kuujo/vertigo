@@ -110,7 +110,7 @@ public class DispatcherTest extends TestVerticle {
 
     dispatcher.init(connections);
 
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!")));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor"));
   }
 
   @Test
@@ -182,12 +182,12 @@ public class DispatcherTest extends TestVerticle {
     dispatcher.init(connections);
 
     JsonObject message = new JsonObject().putString("body", "Hello world!");
-    dispatcher.dispatch(DefaultJsonMessage.create(message));
-    dispatcher.dispatch(DefaultJsonMessage.create(message));
-    dispatcher.dispatch(DefaultJsonMessage.create(message));
-    dispatcher.dispatch(DefaultJsonMessage.create(message));
-    dispatcher.dispatch(DefaultJsonMessage.create(message));
-    dispatcher.dispatch(DefaultJsonMessage.create(message));
+    dispatcher.dispatch(DefaultJsonMessage.create(message, "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(message, "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(message, "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(message, "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(message, "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(message, "auditor"));
   }
 
   @Test
@@ -258,12 +258,12 @@ public class DispatcherTest extends TestVerticle {
 
     dispatcher.init(connections);
 
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "a")));
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "ab")));
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "abc")));
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "b")));
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "bc")));
-    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "bcd")));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "a"), "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "ab"), "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "abc"), "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "b"), "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "bc"), "auditor"));
+    dispatcher.dispatch(DefaultJsonMessage.create(new JsonObject().putString("test", "bcd"), "auditor"));
   }
 
 }

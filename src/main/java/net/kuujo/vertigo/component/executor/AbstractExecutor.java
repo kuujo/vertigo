@@ -25,7 +25,6 @@ import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.component.ComponentBase;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -138,7 +137,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
    */
   @SuppressWarnings("unchecked")
   protected T doExecute(final JsonObject data, final String tag, Handler<AsyncResult<JsonMessage>> handler) {
-    final JsonMessage message = DefaultJsonMessage.create(address, data, tag);
+    JsonMessage message = createMessage(data, tag);
     queue.enqueue(message.id(), handler);
     output.emit(message);
     return (T) this;

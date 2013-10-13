@@ -45,16 +45,16 @@ public class ConditionTest {
     tags.add("bar");
     Condition condition = new TagsFilter.TagsCondition(tags);
 
-    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"));
+    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor");
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "baz");
+    JsonMessage message2 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "baz", "auditor");
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage message3 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "foo", "auditor");
     assertTrue(condition.isValid(message3));
 
-    JsonMessage message4 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "bar");
+    JsonMessage message4 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "bar", "auditor");
     assertTrue(condition.isValid(message4));
   }
 
@@ -62,13 +62,13 @@ public class ConditionTest {
   public void testFieldCondition() {
     Condition condition = new FieldFilter.FieldCondition("foo", "bar");
 
-    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("bar", "foo"));
+    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("bar", "foo"), "auditor");
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = DefaultJsonMessage.create(new JsonObject().putString("foo", "baz"));
+    JsonMessage message2 = DefaultJsonMessage.create(new JsonObject().putString("foo", "baz"), "auditor");
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = DefaultJsonMessage.create(new JsonObject().putString("foo", "bar"));
+    JsonMessage message3 = DefaultJsonMessage.create(new JsonObject().putString("foo", "bar"), "auditor");
     assertTrue(condition.isValid(message3));
   }
 
@@ -76,13 +76,13 @@ public class ConditionTest {
   public void testSourceCondition() {
     Condition condition = new SourceFilter.SourceCondition("foo");
 
-    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"));
+    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor");
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = DefaultJsonMessage.create("bar", new JsonObject().putString("body", "Hello world!"));
+    JsonMessage message2 = DefaultJsonMessage.create("bar", new JsonObject().putString("body", "Hello world!"), "auditor");
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = DefaultJsonMessage.create("foo", new JsonObject().putString("body", "Hello world!"));
+    JsonMessage message3 = DefaultJsonMessage.create("foo", new JsonObject().putString("body", "Hello world!"), "auditor");
     assertTrue(condition.isValid(message3));
   }
 

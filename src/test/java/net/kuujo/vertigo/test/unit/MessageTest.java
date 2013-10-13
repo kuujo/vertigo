@@ -35,57 +35,62 @@ public class MessageTest {
 
   @Test
   public void testCreateMessage() {
-    JsonMessage message = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"));
+    JsonMessage message = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertNull(message.source());
     assertNull(message.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testCreateMessageWithTag() {
-    JsonMessage message = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "test");
+    JsonMessage message = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "test", "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertNull(message.source());
     assertEquals("test", message.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testCreateMessageWithSource() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"));
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertEquals("test", message.source());
     assertNull(message.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testCreateMessageWithSourceAndTag() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testCopyMessage() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
+    assertEquals("audit", message.auditor());
     JsonMessage newMessage = message.copy();
     assertEquals("Hello world!", newMessage.body().getString("body"));
     assertNotNull(newMessage.id());
@@ -94,17 +99,19 @@ public class MessageTest {
     assertNull(newMessage.ancestor());
     assertEquals("test", newMessage.source());
     assertEquals("foo", newMessage.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testCreateChild() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
+    assertEquals("audit", message.auditor());
     JsonMessage child = message.createChild(new JsonObject().putString("body2", "Hello world again!"));
     assertNull(child.body().getString("body"));
     assertEquals("Hello world again!", child.body().getString("body2"));
@@ -114,17 +121,19 @@ public class MessageTest {
     assertEquals(message.id(), child.ancestor());
     assertEquals("test", child.source());
     assertEquals("foo", child.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testCreateChildWithTag() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
     assertNull(message.ancestor());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
+    assertEquals("audit", message.auditor());
     JsonMessage child = message.createChild(new JsonObject().putString("body2", "Hello world again!"), "bar");
     assertNull(child.body().getString("body"));
     assertEquals("Hello world again!", child.body().getString("body2"));
@@ -134,11 +143,12 @@ public class MessageTest {
     assertEquals(message.id(), child.ancestor());
     assertEquals("test", child.source());
     assertEquals("bar", child.tag());
+    assertEquals("audit", message.auditor());
   }
 
   @Test
   public void testLoadMessage() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo");
+    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
     JsonMessage child = message.createChild(new JsonObject().putString("body2", "Hello world again!"), "bar");
     JsonMessage loaded = new DefaultJsonMessage(child.serialize());
     assertNull(loaded.body().getString("body"));
@@ -149,6 +159,7 @@ public class MessageTest {
     assertEquals(message.id(), loaded.ancestor());
     assertEquals("test", loaded.source());
     assertEquals("bar", loaded.tag());
+    assertEquals("audit", message.auditor());
   }
 
 }

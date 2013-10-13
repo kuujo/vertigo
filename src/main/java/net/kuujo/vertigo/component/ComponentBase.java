@@ -15,8 +15,12 @@
 */
 package net.kuujo.vertigo.component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.context.ConnectionContext;
@@ -51,6 +55,8 @@ import org.vertx.java.platform.Container;
  */
 public abstract class ComponentBase implements Component {
 
+  private String name;
+
   protected Vertx vertx;
 
   protected EventBus eventBus;
@@ -65,7 +71,7 @@ public abstract class ComponentBase implements Component {
 
   protected String networkAddress;
 
-  protected String auditAddress;
+  protected List<String> auditors;
 
   protected String broadcastAddress;
 
@@ -73,7 +79,10 @@ public abstract class ComponentBase implements Component {
 
   protected OutputCollector output;
 
+  private Random random = new Random();
+
   protected ComponentBase(Vertx vertx, Container container, WorkerContext context) {
+    this.name = context.getComponentContext().getDefinition().name();
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
@@ -82,7 +91,11 @@ public abstract class ComponentBase implements Component {
     this.address = context.address();
     NetworkContext networkContext = context.getComponentContext().getNetworkContext();
     networkAddress = networkContext.address();
-    auditAddress = networkContext.auditAddress();
+    Set<String> auditorAddresses = networkContext.getAuditors();
+    auditors = new ArrayList<String>();
+    for (String auditorAddress : auditorAddresses) {
+      auditors.add(auditorAddress);
+    }
     broadcastAddress = networkContext.broadcastAddress();
   }
 
@@ -145,7 +158,7 @@ public abstract class ComponentBase implements Component {
       future.setHandler(doneHandler);
     }
 
-    output = new LinearOutputCollector(auditAddress, eventBus);
+    output = new LinearOutputCollector(eventBus);
 
     Collection<ConnectionContext> connections = context.getComponentContext().getConnectionContexts();
     Iterator<ConnectionContext> iter = connections.iterator();
@@ -266,6 +279,69 @@ public abstract class ComponentBase implements Component {
         future.setResult(null);
       }
     });
+  }
+
+  /**
+   * Returns a random auditor address.
+   */
+  private String selectRandomAuditor() {
+    return auditors.get(random.nextInt(auditors.size()));
+  }
+
+  /**
+   * Creates a new JSON message.
+   *
+   * @param body
+   *   The message body.
+   * @return
+   *   A new JSON message.
+   */
+  protected JsonMessage createMessage(JsonObject body) {
+    return DefaultJsonMessage.create(name, body, selectRandomAuditor());
+  }
+
+  /**
+   * Creates a new JSON message.
+   *
+   * @param body
+   *   The message body.
+   * @param parent
+   *   The message parent.
+   * @return
+   *   A new JSON message.
+   */
+  protected JsonMessage createMessage(JsonObject body, JsonMessage parent) {
+    return parent.createChild(body);
+  }
+
+  /**
+   * Creates a new JSON message.
+   *
+   * @param body
+   *   The message body.
+   * @param tag
+   *   A tag to apply to the message.
+   * @return
+   *   A new JSON message.
+   */
+  protected JsonMessage createMessage(JsonObject body, String tag) {
+    return DefaultJsonMessage.create(name, body, tag, selectRandomAuditor());
+  }
+
+  /**
+   * Creates a new JSON message.
+   *
+   * @param body
+   *   The message body.
+   * @param tag
+   *   A tag to apply to the message.
+   * @param parent
+   *   The message parent.
+   * @return
+   *   A new JSON message.
+   */
+  protected JsonMessage createMessage(JsonObject body, String tag, JsonMessage parent) {
+    return parent.createChild(body, tag);
   }
 
   /**

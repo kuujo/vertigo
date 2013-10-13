@@ -44,8 +44,8 @@ public class DefaultJsonMessage implements JsonMessage {
    * @return
    *   A new JSON message instance.
    */
-  public static JsonMessage create(JsonObject body) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body));
+  public static JsonMessage create(JsonObject body, String auditor) {
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("auditor", auditor));
   }
 
   /**
@@ -58,8 +58,8 @@ public class DefaultJsonMessage implements JsonMessage {
    * @return
    *   A new JSON message instance.
    */
-  public static JsonMessage create(JsonObject body, String tag) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag));
+  public static JsonMessage create(JsonObject body, String tag, String auditor) {
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag).putString("auditor", auditor));
   }
 
   /**
@@ -72,8 +72,8 @@ public class DefaultJsonMessage implements JsonMessage {
    * @return
    *   A new JSON message instance.
    */
-  public static JsonMessage create(String source, JsonObject body) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body));
+  public static JsonMessage create(String source, JsonObject body, String auditor) {
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body).putString("auditor", auditor));
   }
 
   /**
@@ -88,8 +88,8 @@ public class DefaultJsonMessage implements JsonMessage {
    * @return
    *   A new JSON message instance.
    */
-  public static JsonMessage create(String source, JsonObject body, String tag) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body).putString("tag", tag));
+  public static JsonMessage create(String source, JsonObject body, String tag, String auditor) {
+    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body).putString("tag", tag).putString("auditor", auditor));
   }
 
   @Override
@@ -110,6 +110,11 @@ public class DefaultJsonMessage implements JsonMessage {
   @Override
   public String ancestor() {
     return body.getString("ancestor");
+  }
+
+  @Override
+  public String auditor() {
+    return body.getString("auditor");
   }
 
   @Override

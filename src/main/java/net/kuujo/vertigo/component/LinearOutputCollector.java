@@ -32,14 +32,11 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class LinearOutputCollector implements OutputCollector {
 
-  private String auditAddress;
-
   private EventBus eventBus;
 
   private List<Channel> channels = new ArrayList<Channel>();
 
-  public LinearOutputCollector(String auditAddress, EventBus eventBus) {
-    this.auditAddress = auditAddress;
+  public LinearOutputCollector(EventBus eventBus) {
     this.eventBus = eventBus;
   }
 
@@ -74,11 +71,11 @@ public class LinearOutputCollector implements OutputCollector {
       if (channel.isValid(message)) {
         // If a parent exists then send a fork message to the acker task.
         if (hasParent) {
-          eventBus.publish(auditAddress, createForkAction(message.id(), parent));
+          eventBus.publish(message.auditor(), createForkAction(message.id(), parent));
         }
         // Otherwise, send a new action to the acker task.
         else {
-          eventBus.publish(auditAddress, createNewAction(message.id()));
+          eventBus.publish(message.auditor(), createNewAction(message.id()));
         }
   
         // Write the message to the channel.
@@ -103,7 +100,7 @@ public class LinearOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector ack(JsonMessage message) {
-    eventBus.publish(auditAddress, createAckAction(message.id()));
+    eventBus.publish(message.auditor(), createAckAction(message.id()));
     return this;
   }
 
@@ -117,7 +114,7 @@ public class LinearOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector fail(JsonMessage message) {
-    eventBus.publish(auditAddress, createFailAction(message.id()));
+    eventBus.publish(message.auditor(), createFailAction(message.id()));
     return this;
   }
 

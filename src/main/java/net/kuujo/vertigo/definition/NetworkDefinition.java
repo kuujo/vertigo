@@ -100,25 +100,25 @@ public class NetworkDefinition implements Definition {
   }
 
   /**
-   * Indicates the number of acker (auditor) verticle instances.
+   * Indicates the number of auditor (acker) verticle instances.
    *
    * @return
    *   The number of acker verticle instances for the network.
    */
-  public int numAckers() {
-    return definition.getInteger("ackers", 1);
+  public int numAuditors() {
+    return definition.getInteger("auditors", 1);
   }
 
   /**
-   * Sets the number of acker (auditor) verticle instances.
+   * Sets the number of auditor (acker) verticle instances.
    *
-   * @param numAckers
+   * @param numAuditors
    *   The number of acker verticle instances for the network.
    * @return
    *   The called network definition.
    */
-  public NetworkDefinition setNumAckers(int numAckers) {
-    definition.putNumber("ackers", numAckers);
+  public NetworkDefinition setNumAuditors(int numAuditors) {
+    definition.putNumber("auditors", numAuditors);
     return this;
   }
 
@@ -372,7 +372,7 @@ public class NetworkDefinition implements Definition {
   /**
    * Creates an array of worker addresses.
    */
-  protected String[] createWorkerAddresses(String componentAddress, int numWorkers) {
+  protected String[] createAddresses(String componentAddress, int numWorkers) {
     List<String> addresses = new ArrayList<String>();
     for (int i = 0; i < numWorkers; i++) {
       addresses.add(String.format("%s.%d", componentAddress, i+1));
@@ -395,7 +395,7 @@ public class NetworkDefinition implements Definition {
 
     JsonObject context = new JsonObject();
     context.putString("address", address);
-    context.putString("audit", String.format("%s.audit", address));
+    context.putArray("auditors", new JsonArray(createAddresses(String.format("%s.audit", address), numAuditors())));
     context.putString("broadcast", String.format("%s.broadcast", address));
     context.putObject("definition", definition);
 
@@ -415,7 +415,7 @@ public class NetworkDefinition implements Definition {
       componentContext.putString("name", componentName);
       componentContext.putString("address", createComponentAddress(definition.getString("address"), component.getString("name")));
       componentContext.putObject("definition", component);
-      componentContext.putArray("workers", new JsonArray(createWorkerAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers", 1))));
+      componentContext.putArray("workers", new JsonArray(createAddresses(componentContext.getString("address"), componentContext.getObject("definition").getInteger("workers", 1))));
       componentContexts.putObject(componentContext.getString("name"), componentContext);
     }
 

@@ -18,9 +18,12 @@ package net.kuujo.vertigo.context;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
 import net.kuujo.vertigo.definition.NetworkDefinition;
+import net.kuujo.vertigo.util.Json;
 
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -47,17 +50,31 @@ public class NetworkContext implements Context {
   }
 
   /**
-   * Returns the network auditor address.
-   */
-  public String auditAddress() {
-    return context.getString("audit");
-  }
-
-  /**
    * Returns the network broadcast address.
    */
   public String broadcastAddress() {
     return context.getString("broadcast");
+  }
+
+  /**
+   * Get the number of auditors for the network.
+   *
+   * @return
+   *   The number of network auditors.
+   */
+  public int getNumAuditors() {
+    return getDefinition().numAuditors();
+  }
+
+  /**
+   * Returns an array of network auditor addresses.
+   */
+  public Set<String> getAuditors() {
+    JsonArray auditors = context.getArray("auditors");
+    if (auditors == null) {
+      auditors = new JsonArray();
+    }
+    return Json.<String>arrayToSet(auditors);
   }
 
   /**

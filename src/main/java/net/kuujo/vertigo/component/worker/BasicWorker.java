@@ -17,7 +17,6 @@ package net.kuujo.vertigo.component.worker;
 
 import net.kuujo.vertigo.component.ComponentBase;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -109,27 +108,25 @@ public class BasicWorker extends ComponentBase implements Worker {
 
   @Override
   public Worker emit(JsonObject data) {
-    output.emit(DefaultJsonMessage.create(data));
+    output.emit(createMessage(data));
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data, String tag) {
-    output.emit(DefaultJsonMessage.create(data, tag));
+    output.emit(createMessage(data, tag));
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data, JsonMessage parent) {
-    JsonMessage child = parent.createChild(data);
-    output.emit(child);
+    output.emit(createMessage(data, parent));
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data, String tag, JsonMessage parent) {
-    JsonMessage child = parent.createChild(data, tag);
-    output.emit(child);
+    output.emit(createMessage(data, tag, parent));
     return this;
   }
 

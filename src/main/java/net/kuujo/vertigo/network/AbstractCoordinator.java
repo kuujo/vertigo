@@ -57,7 +57,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
   protected Map<String, Message<JsonObject>> ready = new HashMap<>();
 
-  protected String authDeploymentId;
+  protected Set<String> auditorDeploymentIds = new HashSet<>();
 
   @Override
   public void start() {
@@ -176,35 +176,57 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    * Deploys the network.
    */
   private void doDeploy() {
-    // TODO: The number of ackers is configurable, but the auditor
-    // verticle needs to be refactored to better support this.
-    // So, for now we just deploy a single auditor verticle.
-    JsonObject ackConfig = new JsonObject().putString("address", context.auditAddress())
-      .putString("broadcast", context.broadcastAddress())
-      .putBoolean("enabled", context.getDefinition().ackingEnabled())
-      .putNumber("expire", context.getDefinition().ackExpire());
+    recursiveDeployAuditors(context.getAuditors(), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          logger.error("Failed to deploy auditor verticle.", result.cause());
+          container.exit();
+        }
+        else {
+          new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                container.logger().error("Failed to deploy network.", result.cause());
+                container.exit();
+              }
+            }
+          });
+        }
+      }
+    }));
+  }
 
-    deployVerticle(Auditor.class.getName(), ackConfig, new Handler<AsyncResult<String>>() {
+  /**
+   * Recursively deploys network auditors.
+   */
+  private void recursiveDeployAuditors(final Set<String> auditors, final Future<Void> future) {
+    if (auditors.size() > 0) {
+      final String address = auditors.iterator().next();
+      JsonObject auditorConfig = new JsonObject().putString("address", address)
+        .putString("broadcast", context.broadcastAddress())
+        .putBoolean("enabled", context.getDefinition().ackingEnabled())
+        .putNumber("expire", context.getDefinition().ackExpire());
+      deployVerticle(Auditor.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
-            logger.error("Failed to deploy authenticator verticle.", result.cause());
-            container.exit();
+            future.setFailure(result.cause());
           }
           else {
-            authDeploymentId = result.result();
-            new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
-              @Override
-              public void handle(AsyncResult<Void> result) {
-                if (result.failed()) {
-                  container.logger().error("Failed to deploy network.", result.cause());
-                  container.exit();
-                }
-              }
-            });
+            auditorDeploymentIds.add(result.result());
+            auditors.remove(address);
+            if (auditors.size() > 0) {
+              recursiveDeployAuditors(auditors, future);
+            }
+            else {
+              future.setResult(null);
+            }
           }
         }
-    });
+      });
+    }
   }
 
   /**
@@ -283,8 +305,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     new RecursiveDeployer(context).undeploy(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
-        if (authDeploymentId != null) {
-          undeployVerticle(authDeploymentId);
+        for (String address : auditorDeploymentIds) {
+          undeployVerticle(address);
         }
         message.reply(result.succeeded());
       }

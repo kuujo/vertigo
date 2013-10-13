@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.Serializeable;
+import net.kuujo.vertigo.Serializable;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -24,5 +24,5 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Context extends Serializeable<JsonObject> {
+public interface Context extends Serializable<JsonObject> {
 }

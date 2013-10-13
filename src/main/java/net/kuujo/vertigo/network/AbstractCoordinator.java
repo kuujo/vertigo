@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.vertigo.heartbeat.HeartbeatMonitor;
 
@@ -62,7 +62,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   @Override
   public void start() {
     super.start();
-    context = new NetworkContext(config);
+    context = NetworkContext.fromJson(config);
     eb.registerHandler(context.address(), this);
     doDeploy();
   }
@@ -537,8 +537,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         contextMap.put(context.address(), context);
         future.setHandler(resultHandler);
 
-        ComponentDefinition definition = context.getComponentContext().getDefinition();
-        if (definition.type().equals(ComponentDefinition.VERTICLE)) {
+        Component definition = context.getComponentContext().getDefinition();
+        if (definition.type().equals(Component.VERTICLE)) {
           deployVerticle(definition.main(), context.serialize(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
@@ -552,7 +552,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             }
           });
         }
-        else if (definition.type().equals(ComponentDefinition.MODULE)) {
+        else if (definition.type().equals(Component.MODULE)) {
           deployModule(definition.module(), context.serialize(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
@@ -575,8 +575,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         String address = context.address();
         if (deploymentMap.containsKey(address)) {
           String deploymentID = deploymentMap.get(address);
-          ComponentDefinition definition = context.getComponentContext().getDefinition();
-          if (definition.type().equals(ComponentDefinition.VERTICLE)) {
+          Component definition = context.getComponentContext().getDefinition();
+          if (definition.type().equals(Component.VERTICLE)) {
             undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -589,7 +589,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
               }
             });
           }
-          else if (definition.type().equals(ComponentDefinition.MODULE)) {
+          else if (definition.type().equals(Component.MODULE)) {
             undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {

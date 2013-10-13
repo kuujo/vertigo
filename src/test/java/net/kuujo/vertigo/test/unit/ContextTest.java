@@ -15,14 +15,13 @@
 */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.Networks;
+import net.kuujo.vertigo.MalformedNetworkException;
+import net.kuujo.vertigo.Network;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.FilterContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.definition.MalformedDefinitionException;
-import net.kuujo.vertigo.definition.NetworkDefinition;
 import net.kuujo.vertigo.dispatcher.AllDispatcher;
 import net.kuujo.vertigo.dispatcher.Dispatcher;
 import net.kuujo.vertigo.dispatcher.FieldsDispatcher;
@@ -53,7 +52,7 @@ public class ContextTest {
 
   @Test
   public void testNetworkContext() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.setNumAuditors(2);
     network.enableAcking();
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
@@ -64,14 +63,14 @@ public class ContextTest {
       assertEquals(2, context.getAuditors().size());
       assertEquals(2, context.getNumAuditors());
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testComponentContext() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RoundGrouping());
 
@@ -80,14 +79,14 @@ public class ContextTest {
       ComponentContext component = context.getComponentContext("test2");
       assertEquals("test.test2", component.address());
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testWorkerContext() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 1).setConfig(new JsonObject().putString("foo", "bar")).groupBy(new RoundGrouping());
 
@@ -99,14 +98,14 @@ public class ContextTest {
       assertEquals("bar", worker.config().getString("foo"));
       assertEquals("test2", worker.getComponentContext().getDefinition().name());
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testRandomGrouping() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RandomGrouping());
 
@@ -114,7 +113,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         Dispatcher dispatcher = connectionContext.getGrouping().createDispatcher();
         assertTrue(dispatcher instanceof RandomDispatcher);
@@ -123,14 +122,14 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testRoundGrouping() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RoundGrouping());
 
@@ -138,7 +137,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         Dispatcher dispatcher = connectionContext.getGrouping().createDispatcher();
         assertTrue(dispatcher instanceof RoundRobinDispatcher);
@@ -147,14 +146,14 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testFieldsGrouping() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new FieldsGrouping("test"));
 
@@ -162,7 +161,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         Dispatcher dispatcher = connectionContext.getGrouping().createDispatcher();
         assertTrue(dispatcher instanceof FieldsDispatcher);
@@ -171,14 +170,14 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testAllGrouping() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new AllGrouping());
 
@@ -186,7 +185,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         Dispatcher dispatcher = connectionContext.getGrouping().createDispatcher();
         assertTrue(dispatcher instanceof AllDispatcher);
@@ -195,14 +194,14 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testTagsFilter() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RoundGrouping()).filterBy(new TagsFilter("foo"));
 
@@ -210,7 +209,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         FilterContext filterContext = connectionContext.getFilters().iterator().next();
         Condition filter = filterContext.createCondition();
@@ -220,14 +219,14 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testFieldFilter() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RoundGrouping()).filterBy(new FieldFilter("foo", "bar"));
 
@@ -235,7 +234,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         FilterContext filterContext = connectionContext.getFilters().iterator().next();
         Condition filter = filterContext.createCondition();
@@ -245,14 +244,14 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testSourceFilter() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.fromVerticle("test1", "net.kuujo.vertigo.java.VertigoVerticle")
       .toVerticle("test2", "net.kuujo.vertigo.java.VertigoVerticle", 2).groupBy(new RoundGrouping()).filterBy(new SourceFilter("foo"));
 
@@ -260,7 +259,7 @@ public class ContextTest {
       NetworkContext context = network.createContext();
       ComponentContext component = context.getComponentContext("test1");
       ConnectionContext connectionContext = component.getConnectionContext("test2");
-      assertEquals(2, connectionContext.getAddresses().length);
+      assertEquals(2, connectionContext.getAddresses().size());
       try {
         FilterContext filterContext = connectionContext.getFilters().iterator().next();
         Condition filter = filterContext.createCondition();
@@ -270,7 +269,7 @@ public class ContextTest {
         fail(e.getMessage());
       }
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }

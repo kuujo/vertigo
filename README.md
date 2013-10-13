@@ -204,7 +204,7 @@ Vertigo networks are defined using the [definitions](#defining-networks)
 API.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("word_count");
+Network network = new Network("word_count");
 network.fromVerticle("word_feeder", WordFeeder.class.getName())
   .toVerticle("word_counter", WordCountWorker.class.getName(), 4)
   .groupBy(new FieldsGrouping("word"));
@@ -376,7 +376,7 @@ To deploy the network, we just pass our network definition to a cluster
 instance's `deploy()` method.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("word_count");
+Network network = new Network("word_count");
 network.fromVerticle("word_feeder", WordFeeder.class.getName())
   .toVerticle("word_counter", WordCountWorker.class.getName(), 4)
   .groupBy(new FieldsGrouping("word"));
@@ -413,8 +413,8 @@ we need to re-define the network to create a circular connection between
 the data source and the worker.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("word_count");
-ComponentDefinition executor = network.fromVerticle("word_executor", WordExecutor.class.getName());
+Network network = new Network("word_count");
+Component executor = network.fromVerticle("word_executor", WordExecutor.class.getName());
 executor.toVerticle("word_counter", WordCountWorker.class.getName(), 4)
   .groupBy(new FieldsGrouping("word"))
   .to(executor);
@@ -474,12 +474,11 @@ import java.util.Map;
 
 import net.kuujo.vertigo.Cluster;
 import net.kuujo.vertigo.LocalCluster;
-import net.kuujo.vertigo.Networks;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.definition.ComponentDefinition;
-import net.kuujo.vertigo.definition.NetworkDefinition;
+import net.kuujo.vertigo.Network;
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.grouping.FieldsGrouping;
 import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
@@ -575,7 +574,7 @@ public class WordCountNetwork extends Verticle {
 
   @Override
   public void start() {
-    NetworkDefinition network = Networks.createNetwork("word_count");
+    Network network = new Network("word_count");
     network.fromVerticle("word_feeder", WordFeeder.class.getName())
       .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
 
@@ -947,23 +946,23 @@ connections between network components. See
 on how this works.
 
 ## Defining networks
-Networks are defined in code using a `NetworkDefinition` instance. 
+Networks are defined in code using a `Network` instance. 
 
 Some [examples](https://github.com/kuujo/vertigo/tree/master/examples/complex)
 demonstrate how the network definition API works.
 
-To define a network, create a new `NetworkDefinition` instance either using
-the `Networks` API or instantiating a definition instance directly.
+To define a network, create a new `Network` instance either using
+a `Networks` factory method or instantiating a definition instance directly.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("test");
+Network network = new Network("test");
 ```
 
 Each network must be given a *unique* name. Vertigo component addresses are
 generated in a predictable manner, and this name is used to prefix all
 component addresses and instance addresses.
 
-The `NetworkDefinition` exposes the following configuration methods:
+The `Network` exposes the following configuration methods:
 * `setAddress(String address)` - sets the network address, this is the basis
   for all generated network addresses and is synonymous with the network `name`
 * `enableAcking()` - enables acking for the network
@@ -975,7 +974,7 @@ The `NetworkDefinition` exposes the following configuration methods:
 * `getAckExpire()` - indicates the ack expiration for the network
 
 ### Defining network components
-The `NetworkDefinition` class provides several methods for adding components
+The `Network` class provides several methods for adding components
 to the network.
 
 * `from(ComponentDefinition component)`
@@ -1010,7 +1009,7 @@ Connections between components are created by `toVerticle` and `toModule`
 instances on `ComponentDefinition` objects. By calling one of the `to*` methods,
 a connection from one component to the new component is implicitly created,
 and a new component definition is returned. These methods follow the same
-interface as the `fromVerticle` and `fromModule` methods on the `NetworkDefinition`
+interface as the `fromVerticle` and `fromModule` methods on the `Network`
 class.
 
 * `to(ComponentDefinition component)`
@@ -1044,7 +1043,7 @@ To set a component grouping, call the `groupBy()` method on a component
 definition, passing a grouping instance.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).groupBy(new FieldsGrouping("type"));
 ```
@@ -1057,14 +1056,14 @@ Vertigo provides several grouping types:
 
 * `RandomGrouping` - component instances receive messages in random order
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).groupBy(new RandomGrouping());
 ```
 
 * `RoundGrouping` - component instances receive messages in round-robin fashion
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).groupBy(new RoundGrouping());
 ```
@@ -1072,14 +1071,14 @@ network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
 * `FieldsGrouping` - component instances receive messages according to basic
   consistent hashing based on a given field
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).groupBy(new FieldsGrouping("type"));
 ```
 
 * `AllGrouping` - all component instances receive a copy of each message
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).groupBy(new AllGrouping());
 ```
@@ -1100,7 +1099,7 @@ given component, in which case a message must pass *all* filters before being
 sent to the component.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).filterBy(new TagsFilter("product"));
 ```
@@ -1109,21 +1108,21 @@ Vertigo provides several types of filters:
 
 * `TagsFilter` - filters messages by tags
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).filterBy(new TagsFilter("product"));
 ```
 
 * `FieldFilter` - filters messages according to a field/value
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).filterBy(new FieldFilter("type", "product"));
 ```
 
 * `SourceFilter` - filters messages according to the source component name
 ```java
-NetworkDefinition network = Networks.createNetwork("foo");
+Network network = new Network("foo");
 network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
   .toVerticle("baz", "some_worker.py", 2).filterBy(new SourceFilter("rabbit"));
 ```
@@ -1144,7 +1143,7 @@ executor definition in a variable and then pass the definition to the `to()`
 method of a component instance.
 
 ```java
-NetworkDefinition network = Networks.createNetwork("rpc");
+Network network = new Network("rpc");
 ComponentDefinition executor = network.fromVerticle("executor", "executor.py");
 executor.toVerticle("sum", "com.mycompany.myproject.SumVerticle").to(executor);
 ```
@@ -1155,8 +1154,8 @@ be deployed via the `Cluster` API. Vertigo provides two types of deployment
 methods via `LocalCluster` and `ViaCluster`. Each implement the `Cluster`
 interface:
 
-* `deploy(NetworkDefinition network)`
-* `deploy(NetworkDefinition network, Handler<AsyncResult<NetworkContext>> doneHandler)`
+* `deploy(Network network)`
+* `deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler)`
 * `shutdown(NetworkContext context)`
 * `shutdown(NetworkContext context, Handler<AsyncResult<Void>> doneHandler)`
 

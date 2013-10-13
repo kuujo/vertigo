@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.definition;
+package net.kuujo.vertigo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,22 +27,34 @@ import org.vertx.java.core.json.JsonObject;
 
 
 /**
- * A default network definition implementation.
+ * A network definition.
  *
  * @author Jordan Halterman
  */
-public class NetworkDefinition implements Definition {
+public class Network implements Serializable<JsonObject> {
 
   private JsonObject definition = new JsonObject();
 
   private static final long DEFAULT_ACK_EXPIRE = 30000;
 
-  public NetworkDefinition(String address) {
+  public Network(String address) {
     definition.putString("address", address);
   }
 
-  public NetworkDefinition(JsonObject json) {
+  private Network(JsonObject json) {
     definition = json;
+  }
+
+  /**
+   * Creates a network from JSON object.
+   *
+   * @param json
+   *   A JSON representation of the network.
+   * @return
+   *   A new network instance.
+   */
+  public static Network fromJson(JsonObject json) {
+    return new Network(json);
   }
 
   /**
@@ -60,7 +72,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The called network definition.
    */
-  public NetworkDefinition setAddress(String address) {
+  public Network setAddress(String address) {
     definition.putString("address", address);
     return this;
   }
@@ -83,7 +95,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The called network definition.
    */
-  public NetworkDefinition enableAcking() {
+  public Network enableAcking() {
     definition.putBoolean("ack", true);
     return this;
   }
@@ -94,7 +106,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The called network definition.
    */
-  public NetworkDefinition disableAcking() {
+  public Network disableAcking() {
     definition.putBoolean("ack", false);
     return this;
   }
@@ -117,7 +129,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The called network definition.
    */
-  public NetworkDefinition setNumAuditors(int numAuditors) {
+  public Network setNumAuditors(int numAuditors) {
     definition.putNumber("auditors", numAuditors);
     return this;
   }
@@ -142,7 +154,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   The called network definition.
    */
-  public NetworkDefinition setAckExpire(long expire) {
+  public Network setAckExpire(long expire) {
     definition.putNumber("expire", expire);
     return this;
   }
@@ -150,7 +162,7 @@ public class NetworkDefinition implements Definition {
   /**
    * Adds a root definition.
    */
-  ComponentDefinition addDefinition(ComponentDefinition definition) {
+  Component addDefinition(Component definition) {
     // Add the root definition.
     definition.setNetwork(this);
     JsonObject components = this.definition.getObject("components");
@@ -164,7 +176,7 @@ public class NetworkDefinition implements Definition {
     return definition;
   }
 
-  public ComponentDefinition from(ComponentDefinition definition) {
+  public Component from(Component definition) {
     return addDefinition(definition);
   }
 
@@ -176,8 +188,8 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromVerticle(String name) {
-    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.VERTICLE));
+  public Component fromVerticle(String name) {
+    return addDefinition(new Component(name).setType(Component.VERTICLE));
   }
 
   /**
@@ -190,7 +202,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromVerticle(String name, String main) {
+  public Component fromVerticle(String name, String main) {
     return fromVerticle(name, main, new JsonObject(), 1);
   }
 
@@ -207,7 +219,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromVerticle(String name, String main, JsonObject config) {
+  public Component fromVerticle(String name, String main, JsonObject config) {
     return fromVerticle(name, main, config, 1);
   }
 
@@ -223,7 +235,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromVerticle(String name, String main, int workers) {
+  public Component fromVerticle(String name, String main, int workers) {
     return fromVerticle(name, main, new JsonObject(), workers);
   }
 
@@ -242,8 +254,8 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromVerticle(String name, String main, JsonObject config, int workers) {
-    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.VERTICLE).setMain(main).setConfig(config).setWorkers(workers));
+  public Component fromVerticle(String name, String main, JsonObject config, int workers) {
+    return addDefinition(new Component(name).setType(Component.VERTICLE).setMain(main).setConfig(config).setWorkers(workers));
   }
 
   /**
@@ -254,8 +266,8 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromModule(String name) {
-    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.MODULE));
+  public Component fromModule(String name) {
+    return addDefinition(new Component(name).setType(Component.MODULE));
   }
 
   /**
@@ -268,7 +280,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromModule(String name, String moduleName) {
+  public Component fromModule(String name, String moduleName) {
     return fromModule(name, moduleName, new JsonObject(), 1);
   }
 
@@ -285,7 +297,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromModule(String name, String moduleName, JsonObject config) {
+  public Component fromModule(String name, String moduleName, JsonObject config) {
     return fromModule(name, moduleName, config, 1);
   }
 
@@ -301,7 +313,7 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromModule(String name, String moduleName, int workers) {
+  public Component fromModule(String name, String moduleName, int workers) {
     return fromModule(name, moduleName, new JsonObject(), workers);
   }
 
@@ -320,8 +332,8 @@ public class NetworkDefinition implements Definition {
    * @return
    *   A new component definition instance.
    */
-  public ComponentDefinition fromModule(String name, String moduleName, JsonObject config, int workers) {
-    return addDefinition(new ComponentDefinition(name).setType(ComponentDefinition.MODULE).setModule(moduleName).setConfig(config).setWorkers(workers));
+  public Component fromModule(String name, String moduleName, JsonObject config, int workers) {
+    return addDefinition(new Component(name).setType(Component.MODULE).setModule(moduleName).setConfig(config).setWorkers(workers));
   }
 
   @Override
@@ -352,12 +364,12 @@ public class NetworkDefinition implements Definition {
    *
    * @return
    *   A prepared network context.
-   * @throws MalformedDefinitionException 
+   * @throws MalformedNetworkException 
    */
-  public NetworkContext createContext() throws MalformedDefinitionException {
+  public NetworkContext createContext() throws MalformedNetworkException {
     String address = definition.getString("address");
     if (address == null) {
-      throw new MalformedDefinitionException("No address specified.");
+      throw new MalformedNetworkException("No address specified.");
     }
 
     JsonObject context = new JsonObject();
@@ -377,7 +389,7 @@ public class NetworkDefinition implements Definition {
       JsonObject componentContext = new JsonObject();
       String componentName = component.getString("name");
       if (componentName == null) {
-        throw new MalformedDefinitionException("No component name specified.");
+        throw new MalformedNetworkException("No component name specified.");
       }
       componentContext.putString("name", componentName);
       componentContext.putString("address", createComponentAddress(definition.getString("address"), component.getString("name")));
@@ -440,7 +452,7 @@ public class NetworkDefinition implements Definition {
     // Component contexts are stored in context.workers.
     context.putObject("components", componentContexts);
 
-    return new NetworkContext(context);
+    return NetworkContext.fromJson(context);
   }
 
 }

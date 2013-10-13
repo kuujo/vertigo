@@ -39,7 +39,7 @@ public class WorkerContext implements Context {
     this.context = context;
     JsonObject componentContext = context.getObject("component");
     if (componentContext != null) {
-      parent = new ComponentContext(componentContext);
+      parent = ComponentContext.fromJson(componentContext);
     }
   }
 

@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.messaging;
 
-import net.kuujo.vertigo.Serializeable;
+import net.kuujo.vertigo.Serializable;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -24,7 +24,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface JsonMessage extends Serializeable<JsonObject> {
+public interface JsonMessage extends Serializable<JsonObject> {
 
   /**
    * Returns the message ID.

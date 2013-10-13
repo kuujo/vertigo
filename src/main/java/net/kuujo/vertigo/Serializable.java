@@ -13,28 +13,23 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.definition;
+package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.VertigoException;
+import org.vertx.java.core.json.JsonElement;
 
 /**
- * A malformed definition exception.
+ * A JSON serializeable object.
  *
  * @author Jordan Halterman
  */
-@SuppressWarnings("serial")
-public class MalformedDefinitionException extends VertigoException {
+public interface Serializable<T extends JsonElement> {
 
-  public MalformedDefinitionException(String message) {
-    super(message);
-  }
-
-  public MalformedDefinitionException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public MalformedDefinitionException(Throwable cause) {
-    super(cause);
-  }
+  /**
+   * Returns a T representation of the object.
+   *
+   * @return
+   *   A T representation of the object.
+   */
+  public T serialize();
 
 }

@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.kuujo.vertigo.definition.NetworkDefinition;
+import net.kuujo.vertigo.Network;
 import net.kuujo.vertigo.util.Json;
 
 import org.vertx.java.core.json.JsonArray;
@@ -38,8 +38,20 @@ public class NetworkContext implements Context {
   public NetworkContext() {
   }
 
-  public NetworkContext(JsonObject json) {
+  private NetworkContext(JsonObject json) {
     context = json;
+  }
+
+  /**
+   * Creates a network context from JSON.
+   *
+   * @param json
+   *   A JSON representation of the network context.
+   * @return
+   *   A new network context instance.
+   */
+  public static NetworkContext fromJson(JsonObject json) {
+    return new NetworkContext(json);
   }
 
   /**
@@ -85,7 +97,7 @@ public class NetworkContext implements Context {
     ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
     Iterator<String> iter = components.getFieldNames().iterator();
     while (iter.hasNext()) {
-      contexts.add(new ComponentContext(components.getObject(iter.next()), this));
+      contexts.add(ComponentContext.fromJson(components.getObject(iter.next()), this));
     }
     return contexts;
   }
@@ -102,10 +114,7 @@ public class NetworkContext implements Context {
       return null;
     }
     JsonObject componentContext = components.getObject(name);
-    if (componentContext == null) {
-      return null;
-    }
-    return new ComponentContext(componentContext);
+    return componentContext != null ? ComponentContext.fromJson(componentContext) : null;
   }
 
   /**
@@ -114,12 +123,9 @@ public class NetworkContext implements Context {
    * @return
    *   The network definition.
    */
-  public NetworkDefinition getDefinition() {
+  public Network getDefinition() {
     JsonObject definition = context.getObject("definition");
-    if (definition != null) {
-      return new NetworkDefinition(definition);
-    }
-    return null;
+    return definition != null ? Network.fromJson(definition) : null;
   }
 
   @Override

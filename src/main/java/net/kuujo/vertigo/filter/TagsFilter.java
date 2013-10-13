@@ -65,11 +65,6 @@ public class TagsFilter implements Filter {
   }
 
   @Override
-  public JsonObject serialize() {
-    return definition.copy();
-  }
-
-  @Override
   public Condition initialize(JsonObject data) {
     Set<String> tags = new HashSet<String>();
     JsonArray tagList = data.getArray("tags");
@@ -80,6 +75,11 @@ public class TagsFilter implements Filter {
       tags.add((String) tag);
     }
     return new TagsCondition(tags);
+  }
+
+  @Override
+  public JsonObject serialize() {
+    return definition.copy();
   }
 
   /**

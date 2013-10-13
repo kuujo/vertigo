@@ -22,8 +22,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.java.VertigoVerticle;
 
 /**
@@ -43,7 +43,7 @@ public class PeriodicFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(String[] fields) {
+  public static Component createDefinition(String[] fields) {
     return createDefinition(fields, DEFAULT_INTERVAL);
   }
 
@@ -57,8 +57,8 @@ public class PeriodicFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(String[] fields, long interval) {
-    return new ComponentDefinition(UUID.randomUUID().toString()).setType(ComponentDefinition.VERTICLE)
+  public static Component createDefinition(String[] fields, long interval) {
+    return new Component(UUID.randomUUID().toString()).setType(Component.VERTICLE)
         .setMain(PeriodicFeeder.class.getName())
         .setConfig(new JsonObject().putArray("fields", new JsonArray(fields)).putNumber("interval", interval));
   }

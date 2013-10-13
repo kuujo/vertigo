@@ -16,7 +16,6 @@
 package net.kuujo.vertigo;
 
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.definition.NetworkDefinition;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -34,7 +33,7 @@ public interface Cluster {
    * @param network
    *   The network definition.
    */
-  public void deploy(NetworkDefinition network);
+  public void deploy(Network network);
 
   /**
    * Deploys a network definition.
@@ -44,7 +43,7 @@ public interface Cluster {
    * @param doneHandler
    *   An asynchronous result handler to be invoked with a network context.
    */
-  public void deploy(NetworkDefinition network, Handler<AsyncResult<NetworkContext>> doneHandler);
+  public void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Shuts down the network at the given address.

@@ -15,12 +15,11 @@
 */
 package net.kuujo.vertigo.context;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
+
+import net.kuujo.vertigo.util.Json;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -71,14 +70,12 @@ public class ConnectionContext {
   /**
    * Returns an array of address to which the connection connects.
    */
-  public String[] getAddresses() {
+  public Set<String> getAddresses() {
     JsonArray addresses = context.getArray("addresses");
-    List<String> addressList = new ArrayList<>();
-    Iterator<Object> iter = addresses.iterator();
-    while (iter.hasNext()) {
-      addressList.add((String) iter.next());
+    if (addresses == null) {
+      addresses = new JsonArray();
     }
-    return addressList.toArray(new String[addressList.size()]);
+    return Json.<String>arrayToSet(addresses);
   }
 
   /**

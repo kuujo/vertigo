@@ -36,13 +36,13 @@ public class SourceFilter implements Filter {
   }
 
   @Override
-  public JsonObject serialize() {
-    return definition.copy();
+  public Condition initialize(JsonObject data) {
+    return new SourceCondition(data.getString("source"));
   }
 
   @Override
-  public Condition initialize(JsonObject data) {
-    return new SourceCondition(data.getString("source"));
+  public JsonObject serialize() {
+    return definition.copy();
   }
 
   /**

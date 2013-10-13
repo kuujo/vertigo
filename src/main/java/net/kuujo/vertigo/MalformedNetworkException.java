@@ -15,27 +15,25 @@
 */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.definition.NetworkDefinition;
-
-import org.vertx.java.core.json.JsonObject;
 
 /**
- * Static network methods.
+ * A malformed definition exception.
  *
  * @author Jordan Halterman
  */
-public class Networks {
+@SuppressWarnings("serial")
+public class MalformedNetworkException extends VertigoException {
 
-  /**
-   * Creates a new network definition.
-   *
-   * @param address
-   *   The network address.
-   * @return
-   *   A network definition.
-   */
-  public static NetworkDefinition createNetwork(String address) {
-    return new NetworkDefinition(new JsonObject().putString("address", address));
+  public MalformedNetworkException(String message) {
+    super(message);
+  }
+
+  public MalformedNetworkException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public MalformedNetworkException(Throwable cause) {
+    super(cause);
   }
 
 }

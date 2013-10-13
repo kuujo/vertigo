@@ -18,12 +18,12 @@ package net.kuujo.vertigo.filter;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.Initializable;
-import net.kuujo.vertigo.definition.Definition;
+import net.kuujo.vertigo.Serializable;
 
 /**
  * A message filter.
  *
  * @author Jordan Halterman
  */
-public interface Filter extends Definition, Initializable<JsonObject, Condition> {
+public interface Filter extends Serializable<JsonObject>, Initializable<JsonObject, Condition> {
 }

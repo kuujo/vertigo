@@ -18,7 +18,7 @@ package net.kuujo.vertigo.grouping;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.Initializable;
-import net.kuujo.vertigo.Serializeable;
+import net.kuujo.vertigo.Serializable;
 import net.kuujo.vertigo.dispatcher.Dispatcher;
 
 /**
@@ -26,5 +26,5 @@ import net.kuujo.vertigo.dispatcher.Dispatcher;
  *
  * @author Jordan Halterman
  */
-public interface Grouping extends Serializeable<JsonObject>, Initializable<JsonObject, Dispatcher> {
+public interface Grouping extends Serializable<JsonObject>, Initializable<JsonObject, Dispatcher> {
 }

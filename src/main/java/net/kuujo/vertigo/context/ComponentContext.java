@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.kuujo.vertigo.definition.ComponentDefinition;
+import net.kuujo.vertigo.Component;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -44,17 +44,43 @@ public class ComponentContext implements Context {
     context.putString("name", name);
   }
 
-  public ComponentContext(JsonObject json) {
+  private ComponentContext(JsonObject json) {
     context = json;
     JsonObject networkContext = context.getObject("network");
     if (networkContext != null) {
-      parent = new NetworkContext(networkContext);
+      parent = NetworkContext.fromJson(networkContext);
     }
   }
 
-  public ComponentContext(JsonObject json, NetworkContext parent) {
+  private ComponentContext(JsonObject json, NetworkContext parent) {
     this(json);
     this.parent = parent;
+  }
+
+  /**
+   * Creates a component context from JSON.
+   *
+   * @param json
+   *   A JSON representation of the component context.
+   * @return
+   *   A new component context instance.
+   */
+  public static ComponentContext fromJson(JsonObject json) {
+    return new ComponentContext(json);
+  }
+
+  /**
+   * Creates a component context from JSON.
+   *
+   * @param json
+   *   A JSON representation of the component context.
+   * @param parent
+   *   The parent network context.
+   * @return
+   *   A new component context instance.
+   */
+  public static ComponentContext fromJson(JsonObject json, NetworkContext parent) {
+    return new ComponentContext(json, parent);
   }
 
   /**
@@ -105,12 +131,9 @@ public class ComponentContext implements Context {
   /**
    * Returns the component definition.
    */
-  public ComponentDefinition getDefinition() {
+  public Component getDefinition() {
     JsonObject definition = context.getObject("definition");
-    if (definition != null) {
-      return new ComponentDefinition(definition);
-    }
-    return null;
+    return definition != null ? Component.fromJson(definition) : null;
   }
 
   /**

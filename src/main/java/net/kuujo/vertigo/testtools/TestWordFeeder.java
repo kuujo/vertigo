@@ -23,8 +23,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.component.feeder.PollingFeeder;
-import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.java.VertigoVerticle;
 
 /**
@@ -42,7 +42,7 @@ public class TestWordFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(String field) {
+  public static Component createDefinition(String field) {
     String[] words = new String[]{"apples", "bananas", "oranges", "peaches", "pears", "strawberries"};
     return createDefinition(field, words);
   }
@@ -57,8 +57,8 @@ public class TestWordFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(String field, String[] words) {
-    return new ComponentDefinition(UUID.randomUUID().toString())
+  public static Component createDefinition(String field, String[] words) {
+    return new Component(UUID.randomUUID().toString())
       .setConfig(new JsonObject().putString("field", field)
       .putArray("words", new JsonArray(words)));
   }

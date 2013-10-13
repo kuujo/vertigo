@@ -21,10 +21,9 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.java.VertigoVerticle;
-
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -43,9 +42,9 @@ public class AckCheckingFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(JsonObject data) {
-    return new ComponentDefinition(UUID.randomUUID().toString())
-        .setType(ComponentDefinition.VERTICLE).setMain(AckCheckingFeeder.class.getName())
+  public static Component createDefinition(JsonObject data) {
+    return new Component(UUID.randomUUID().toString())
+        .setType(Component.VERTICLE).setMain(AckCheckingFeeder.class.getName())
         .setConfig(data);
   }
 

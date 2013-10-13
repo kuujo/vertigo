@@ -16,8 +16,6 @@
 package net.kuujo.vertigo;
 
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.definition.MalformedDefinitionException;
-import net.kuujo.vertigo.definition.NetworkDefinition;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -50,18 +48,18 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public void deploy(NetworkDefinition network) {
+  public void deploy(Network network) {
     try {
       final NetworkContext context = network.createContext();
       container.deployVerticle(coordinator, context.serialize().putString("master", master));
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       // Do nothing.
     }
   }
 
   @Override
-  public void deploy(NetworkDefinition network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+  public void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {
       final NetworkContext context = network.createContext();
@@ -77,7 +75,7 @@ abstract class AbstractCluster implements Cluster {
         }
       });
     }
-    catch (MalformedDefinitionException e) {
+    catch (MalformedNetworkException e) {
       future.setFailure(e);
     }
   }

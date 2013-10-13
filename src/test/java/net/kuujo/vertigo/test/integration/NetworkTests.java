@@ -16,11 +16,10 @@
 package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.Cluster;
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.LocalCluster;
-import net.kuujo.vertigo.Networks;
+import net.kuujo.vertigo.Network;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.definition.ComponentDefinition;
-import net.kuujo.vertigo.definition.NetworkDefinition;
 import net.kuujo.vertigo.testtools.AckCheckingFeeder;
 import net.kuujo.vertigo.testtools.AckingWorker;
 import net.kuujo.vertigo.testtools.FailCheckingFeeder;
@@ -46,7 +45,7 @@ public class NetworkTests extends TestVerticle {
 
   @Test
   public void testBasicAckFeeder() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.from(AckCheckingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!")))
       .to(AckingWorker.createDefinition(2));
     Cluster cluster = new LocalCluster(vertx, container);
@@ -65,7 +64,7 @@ public class NetworkTests extends TestVerticle {
 
   @Test
   public void testBasicFailFeeder() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.from(FailCheckingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!")))
       .to(FailingWorker.createDefinition(2));
     Cluster cluster = new LocalCluster(vertx, container);
@@ -84,7 +83,7 @@ public class NetworkTests extends TestVerticle {
 
   @Test
   public void testTimingOutFeeder() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     network.from(FailCheckingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!")))
       .to(TimeoutWorker.createDefinition(2));
     network.setAckExpire(1000);
@@ -104,9 +103,9 @@ public class NetworkTests extends TestVerticle {
 
   @Test
   public void testBasicExecutor() {
-    NetworkDefinition network = Networks.createNetwork("test");
+    Network network = new Network("test");
     JsonObject data = new JsonObject().putString("body", "Hello world!");
-    ComponentDefinition executor = ResultCheckingExecutor.createDefinition(data, data);
+    Component executor = ResultCheckingExecutor.createDefinition(data, data);
     network.from(executor)
       .to(AckingWorker.createDefinition())
       .to(executor);

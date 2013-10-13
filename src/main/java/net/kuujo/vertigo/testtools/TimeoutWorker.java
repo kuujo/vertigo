@@ -19,8 +19,8 @@ import java.util.UUID;
 
 import org.vertx.java.core.Handler;
 
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
@@ -37,7 +37,7 @@ public class TimeoutWorker extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition() {
+  public static Component createDefinition() {
     return createDefinition(1);
   }
 
@@ -49,9 +49,9 @@ public class TimeoutWorker extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(int workers) {
-    return new ComponentDefinition(UUID.randomUUID().toString())
-        .setType(ComponentDefinition.VERTICLE).setMain(TimeoutWorker.class.getName())
+  public static Component createDefinition(int workers) {
+    return new Component(UUID.randomUUID().toString())
+        .setType(Component.VERTICLE).setMain(TimeoutWorker.class.getName())
         .setWorkers(workers);
   }
 

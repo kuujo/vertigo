@@ -21,12 +21,11 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.Component;
 import net.kuujo.vertigo.component.executor.BasicExecutor;
 import net.kuujo.vertigo.component.executor.DefaultBasicExecutor;
-import net.kuujo.vertigo.definition.ComponentDefinition;
 import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
-
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.testComplete;
@@ -48,9 +47,9 @@ public class ResultCheckingExecutor extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static ComponentDefinition createDefinition(JsonObject input, JsonObject output) {
-    return new ComponentDefinition(UUID.randomUUID().toString())
-        .setType(ComponentDefinition.VERTICLE).setMain(ResultCheckingExecutor.class.getName())
+  public static Component createDefinition(JsonObject input, JsonObject output) {
+    return new Component(UUID.randomUUID().toString())
+        .setType(Component.VERTICLE).setMain(ResultCheckingExecutor.class.getName())
         .setConfig(new JsonObject().putObject("input", input).putObject("output", output));
   }
 

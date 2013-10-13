@@ -63,13 +63,13 @@ public class FieldFilter implements Filter {
   }
 
   @Override
-  public JsonObject serialize() {
-    return definition.copy();
+  public Condition initialize(JsonObject data) {
+    return new FieldCondition(data.getString("field"), data.getValue("value"));
   }
 
   @Override
-  public Condition initialize(JsonObject data) {
-    return new FieldCondition(data.getString("field"), data.getValue("value"));
+  public JsonObject serialize() {
+    return definition.copy();
   }
 
   /**

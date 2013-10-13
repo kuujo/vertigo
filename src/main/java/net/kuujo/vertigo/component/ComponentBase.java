@@ -173,7 +173,7 @@ public abstract class ComponentBase implements Component {
           channel.addCondition(filterContext.createCondition());
         }
 
-        String[] addresses = connectionContext.getAddresses();
+        Set<String> addresses = connectionContext.getAddresses();
         for (String address : addresses) {
           channel.addConnection(new EventBusConnection(address, eventBus));
         }

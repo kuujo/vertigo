@@ -69,6 +69,9 @@ within larger Vert.x applications.
       * [Emitting messages](#emitting-messages)
       * [Acking messages](#acking-messages)
    * [Executors](#executors)
+      * [BasicExecutor](#basic-executor)
+      * [PollingExecutor](#polling-executor)
+      * [StreamExecutor](#stream-executor)
 1. [Defining networks](#defining-networks)
    * [Defining network components](#defining-network-components)
    * [Defining connections](#defining-connections)
@@ -921,6 +924,21 @@ as a remote procedure invocation. Data emitted from executors is tagged
 with a unique ID, and new messages received by the executor are correlated
 with past emissions.
 
+Each executor exposes the following `execute()` methods:
+* `execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler)`
+* `execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler)`
+
+#### Basic Executor
+The `BasicExecutor` is a bare bones implementation of the executor API that
+is synonymous with the `BasicFeeder` for feeders. The `BasicExecutor` exposes
+the following configuration methods:
+
+* `setReplyTimeout(long timeout)` - sets the message reply timeout
+* `getReplyTimeout()` - gets the message reply timeout
+* `setMaxQueueSize(long queueSize)` - sets the maximum execute queue size
+* `getMaxQueueSize()` - gets the maximum execute queue size
+* `queueFull()` - indicates whether the execute queue is full
+
 ```java
 vertigo.createBasicExecutor().start(new Handler<AsyncResult<BasicExecutor>>() {
   public void handle(AsyncResult<BasicExecutor> result) {
@@ -937,6 +955,96 @@ vertigo.createBasicExecutor().start(new Handler<AsyncResult<BasicExecutor>>() {
             }
           }
         });
+    }
+  }
+});
+```
+
+#### Polling Executor
+The `PollingExecutor` allows a handler to be registered with the executor.
+Whenever the executor queue is prepared to accept new messages (i.e. the execute
+queue is not full) the handler will be called. This allows flow to be controlled
+by the executor.
+
+The `PollingExecutor` exposes the following configuration methods:
+* `setExecuteDelay(long delay)` - sets the amount of time to delay between polls
+  when no executions occur during polling
+* `getExecuteDelay()` - gets the execute delay period
+
+Execute handlers are registered via the `executeHandler()` method:
+* `executeHandler(Handler<PollingExecutor> handler)`
+
+```java
+vertigo.createPollingExecutor().start(new Handler<AsyncResult<PollingExecutor>>() {
+  public void handle(AsyncResult<PollingExecutor> result) {
+    if (result.succeeded()) {
+      PollingExecutor executor = result.result();
+      executor.executeHandler(new Handler<PollingExecutor>() {
+        public void handle(PollingExecutor executor) {
+          executor.execute(new JsonObject().putNumber("x", 10).putNumber("y", 45),
+            new Handler<AsyncResult<JsonMessage>>() {
+              public void handle(AsyncResult<JsonMessage> result) {
+                if (result.succeeded()) {
+                  container.logger().info("Result is " + result.result().body().getInteger("sum"));
+                }
+              }
+            });
+        }
+      });
+    }
+  }
+});
+```
+
+#### Stream Executor
+The `StreamExecutor` is specifically designed to integrate with Vert.x `ReadStream`
+APIs. To do so, the `StreamExecutor` exposes an interface similar to that of the
+`WriteStream`. The `StreamExecutor` exposes the following methods:
+* `fullHandler(Handler<Void> handler)` - sets a handler to be invoked when the
+  execute queue is full
+* `drainHandler(Handler<Void> handler)` - sets a handler to be invoked when a
+  full execute queue has been drained
+
+```java
+vertigo.createStreamExecutor().start(new Handler<AsyncResult<StreamExecutor>>() {
+  public void handle(AsyncResult<StreamExecutor> result) {
+    if (result.succeeded()) {
+      final StreamExecutor executor = result.result();
+
+      NetServer server = vertx.createNetServer();
+
+      server.connectHandler(new Handler<NetSocket>() {
+        public void handle(final NetSocket sock) {
+
+          // Set full and drain handlers on the executor.
+          executor.fullHandler(new VoidHandler() {
+            public void handle() {
+              sock.pause();
+            }
+          });
+          executor.drainHandler(new VoidHandler() {
+            public void handle() {
+              sock.resume();
+            }
+          });
+
+          sock.dataHandler(new Handler<Buffer>() {
+            public void handle(Buffer buffer) {
+              executor.execute(new JsonObject().putString("body", buffer.toString()),
+                new Handler<AsyncResult<JsonMessage>>() {
+                  public void handle(AsyncResult<JsonMessage> result) {
+                    if (result.failed()) {
+                      container.logger().error("Failed to process message.");
+                    }
+                    else {
+                      container.logger().error("Message result is " + result.result().body().encode());
+                    }
+                  }
+                });
+            }
+          });
+        }
+      }).listen(1234, "localhost");
     }
   }
 });

@@ -16,6 +16,8 @@
 package net.kuujo.vertigo;
 
 import net.kuujo.vertigo.component.executor.BasicExecutor;
+import net.kuujo.vertigo.component.executor.PollingExecutor;
+import net.kuujo.vertigo.component.executor.StreamExecutor;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.feeder.PollingFeeder;
 import net.kuujo.vertigo.component.feeder.StreamFeeder;
@@ -97,6 +99,22 @@ public interface Vertigo {
    *   A new basic executor instance.
    */
   public BasicExecutor createBasicExecutor();
+
+  /**
+   * Creates a polling executor.
+   *
+   * @return
+   *   A new polling executor instance.
+   */
+  public PollingExecutor createPollingExecutor();
+
+  /**
+   * Creates a stream executor.
+   *
+   * @return
+   *   A new stream executor instance.
+   */
+  public StreamExecutor createStreamExecutor();
 
   /**
    * Creates a worker.

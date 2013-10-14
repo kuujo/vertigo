@@ -13,9 +13,10 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.component.feeder;
+package net.kuujo.vertigo.component.executor;
 
 import net.kuujo.vertigo.context.WorkerContext;
+import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -26,44 +27,27 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * A default polling feeder implementation.
+ * A default polling executor implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
+public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> implements PollingExecutor {
 
-  private Handler<PollingFeeder> feedHandler;
-
-  private long feedDelay = 100;
-
-  private boolean fed;
-
-  public DefaultPollingFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public DefaultPollingExecutor(Vertx vertx, Container container, WorkerContext context) {
     super(vertx, container, context);
   }
 
-  @Override
-  public PollingFeeder setFeedDelay(long delay) {
-    feedDelay = delay;
-    return this;
-  }
+  private Handler<PollingExecutor> executeHandler;
+
+  private long executeDelay = 100;
+
+  private boolean executed;
 
   @Override
-  public long getFeedDelay() {
-    return feedDelay;
-  }
-
-  @Override
-  public PollingFeeder feedHandler(Handler<PollingFeeder> handler) {
-    feedHandler = handler;
-    return this;
-  }
-
-  @Override
-  public PollingFeeder start() {
-    return super.start(new Handler<AsyncResult<PollingFeeder>>() {
+  public PollingExecutor start() {
+    return super.start(new Handler<AsyncResult<PollingExecutor>>() {
       @Override
-      public void handle(AsyncResult<PollingFeeder> result) {
+      public void handle(AsyncResult<PollingExecutor> result) {
         if (result.succeeded()) {
           recursiveFeed();
         }
@@ -72,11 +56,11 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder start(Handler<AsyncResult<PollingFeeder>> doneHandler) {
-    final Future<PollingFeeder> future = new DefaultFutureResult<PollingFeeder>().setHandler(doneHandler);
-    return super.start(new Handler<AsyncResult<PollingFeeder>>() {
+  public PollingExecutor start(Handler<AsyncResult<PollingExecutor>> doneHandler) {
+    final Future<PollingExecutor> future = new DefaultFutureResult<PollingExecutor>().setHandler(doneHandler);
+    return super.start(new Handler<AsyncResult<PollingExecutor>>() {
       @Override
-      public void handle(AsyncResult<PollingFeeder> result) {
+      public void handle(AsyncResult<PollingExecutor> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
@@ -92,7 +76,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
    * Schedules a feed.
    */
   private void scheduleFeed() {
-    vertx.setTimer(feedDelay, new Handler<Long>() {
+    vertx.setTimer(executeDelay, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
         recursiveFeed();
@@ -106,9 +90,9 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
    * a timer is set to restart the feed in the future.
    */
   private void recursiveFeed() {
-    fed = true;
-    while (fed && !queue.full()) {
-      fed = false;
+    executed = true;
+    while (executed && !queue.full()) {
+      executed = false;
       doFeed();
     }
     scheduleFeed();
@@ -118,36 +102,39 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
    * Invokes the feed handler.
    */
   private void doFeed() {
-    if (feedHandler != null) {
-      feedHandler.handle(this);
+    if (executeHandler != null) {
+      executeHandler.handle(this);
     }
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data) {
-    fed = true;
-    doFeed(data, null, 0, null);
+  public PollingExecutor setExecuteDelay(long delay) {
+    executeDelay = delay;
     return this;
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data, String tag) {
-    fed = true;
-    doFeed(data, tag, 0, null);
+  public long getExecuteDelay() {
+    return executeDelay;
+  }
+
+  @Override
+  public PollingExecutor executeHandler(Handler<PollingExecutor> handler) {
+    executeHandler = handler;
     return this;
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
-    fed = true;
-    doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
+  public PollingExecutor execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    executed = true;
+    doExecute(args, null, resultHandler);
     return this;
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
-    fed = true;
-    doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
+  public PollingExecutor execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    executed = true;
+    doExecute(args, tag, resultHandler);
     return this;
   }
 

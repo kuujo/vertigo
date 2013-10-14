@@ -29,7 +29,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class AckingWorker extends VertigoVerticle {
+public class TestAckingWorker extends VertigoVerticle {
 
   /**
    * Creates an acking worker definition.
@@ -51,7 +51,7 @@ public class AckingWorker extends VertigoVerticle {
    */
   public static Component createDefinition(int workers) {
     return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(AckingWorker.class.getName())
+        .setType(Component.VERTICLE).setMain(TestAckingWorker.class.getName())
         .setWorkers(workers);
   }
 

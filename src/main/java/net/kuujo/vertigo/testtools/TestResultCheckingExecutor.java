@@ -35,7 +35,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  *
  * @author Jordan Halterman
  */
-public class ResultCheckingExecutor extends VertigoVerticle {
+public class TestResultCheckingExecutor extends VertigoVerticle {
 
   /**
    * Creates an ack checking feeder definition.
@@ -49,7 +49,7 @@ public class ResultCheckingExecutor extends VertigoVerticle {
    */
   public static Component createDefinition(JsonObject input, JsonObject output) {
     return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(ResultCheckingExecutor.class.getName())
+        .setType(Component.VERTICLE).setMain(TestResultCheckingExecutor.class.getName())
         .setConfig(new JsonObject().putObject("input", input).putObject("output", output));
   }
 

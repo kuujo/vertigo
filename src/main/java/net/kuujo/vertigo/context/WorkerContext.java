@@ -35,7 +35,7 @@ public class WorkerContext implements Context {
     context.putString("name", name);
   }
 
-  public WorkerContext(JsonObject context) {
+  private WorkerContext(JsonObject context) {
     this.context = context;
     JsonObject componentContext = context.getObject("component");
     if (componentContext != null) {
@@ -43,9 +43,35 @@ public class WorkerContext implements Context {
     }
   }
 
-  public WorkerContext(JsonObject context, ComponentContext parent) {
+  private WorkerContext(JsonObject context, ComponentContext parent) {
     this(context);
     this.parent = parent;
+  }
+
+  /**
+   * Creates a worker context from JSON object.
+   *
+   * @param context
+   *   A JSON object representation of the worker context.
+   * @return
+   *   A new worker context instance.
+   */
+  public static WorkerContext fromJson(JsonObject context) {
+    return new WorkerContext(context);
+  }
+
+  /**
+   * Creates a worker context from JSON object.
+   *
+   * @param context
+   *   A JSON object representation of the worker context.
+   * @param parent
+   *   The context's parent component context.
+   * @return
+   *   A new worker context instance.
+   */
+  public static WorkerContext fromJson(JsonObject context, ComponentContext parent) {
+    return new WorkerContext(context, parent);
   }
 
   /**

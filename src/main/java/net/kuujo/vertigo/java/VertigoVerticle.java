@@ -51,7 +51,7 @@ public class VertigoVerticle extends Verticle {
   @Override
   public void start(Future<Void> startedResult) {
     vertigo = new DefaultVertigo(vertx, container);
-    context = new WorkerContext(container.config());
+    context = WorkerContext.fromJson(container.config());
     vertigo.setContext(context);
     super.start(startedResult);
   }

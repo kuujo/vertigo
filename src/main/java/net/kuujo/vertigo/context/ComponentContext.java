@@ -147,7 +147,7 @@ public class ComponentContext implements Context {
     ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
     Iterator<Object> iter = workers.iterator();
     while (iter.hasNext()) {
-      contexts.add(new WorkerContext(context.copy().putString("address", (String) iter.next()), this));
+      contexts.add(WorkerContext.fromJson(context.copy().putString("address", (String) iter.next()), this));
     }
     return contexts;
   }

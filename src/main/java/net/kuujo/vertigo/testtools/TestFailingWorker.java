@@ -29,7 +29,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class FailingWorker extends VertigoVerticle {
+public class TestFailingWorker extends VertigoVerticle {
 
   /**
    * Creates a failing worker definition.
@@ -51,7 +51,7 @@ public class FailingWorker extends VertigoVerticle {
    */
   public static Component createDefinition(int workers) {
     return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(FailingWorker.class.getName())
+        .setType(Component.VERTICLE).setMain(TestFailingWorker.class.getName())
         .setWorkers(workers);
   }
 

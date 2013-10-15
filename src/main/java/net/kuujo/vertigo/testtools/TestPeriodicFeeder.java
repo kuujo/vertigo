@@ -31,7 +31,7 @@ import net.kuujo.vertigo.java.VertigoVerticle;
  *
  * @author Jordan Halterman
  */
-public class PeriodicFeeder extends VertigoVerticle {
+public class TestPeriodicFeeder extends VertigoVerticle {
 
   private static final long DEFAULT_INTERVAL = 100;
 
@@ -59,7 +59,7 @@ public class PeriodicFeeder extends VertigoVerticle {
    */
   public static Component createDefinition(String[] fields, long interval) {
     return new Component(UUID.randomUUID().toString()).setType(Component.VERTICLE)
-        .setMain(PeriodicFeeder.class.getName())
+        .setMain(TestPeriodicFeeder.class.getName())
         .setConfig(new JsonObject().putArray("fields", new JsonArray(fields)).putNumber("interval", interval));
   }
 

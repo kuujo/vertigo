@@ -28,14 +28,14 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
 /**
- * A test feeder that tests that a message was successfully acked.
+ * A test feeder that checks that a message was failed.
  *
  * @author Jordan Halterman
  */
-public class AckCheckingFeeder extends VertigoVerticle {
+public class TestFailingFeeder extends VertigoVerticle {
 
   /**
-   * Creates an ack checking feeder definition.
+   * Creates a fail checking feeder definition.
    *
    * @param data
    *   The data to evaluate.
@@ -44,7 +44,7 @@ public class AckCheckingFeeder extends VertigoVerticle {
    */
   public static Component createDefinition(JsonObject data) {
     return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(AckCheckingFeeder.class.getName())
+        .setType(Component.VERTICLE).setMain(TestFailingFeeder.class.getName())
         .setConfig(data);
   }
 
@@ -61,7 +61,7 @@ public class AckCheckingFeeder extends VertigoVerticle {
           feeder.feed(feeder.config(), new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
-              assertTrue(result.succeeded());
+              assertTrue(result.failed());
               testComplete();
             }
           });

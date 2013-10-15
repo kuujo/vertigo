@@ -29,7 +29,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class TimeoutWorker extends VertigoVerticle {
+public class TestTimingOutWorker extends VertigoVerticle {
 
   /**
    * Creates an timeout worker definition.
@@ -51,7 +51,7 @@ public class TimeoutWorker extends VertigoVerticle {
    */
   public static Component createDefinition(int workers) {
     return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(TimeoutWorker.class.getName())
+        .setType(Component.VERTICLE).setMain(TestTimingOutWorker.class.getName())
         .setWorkers(workers);
   }
 

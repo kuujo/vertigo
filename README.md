@@ -1088,7 +1088,7 @@ The `Network` exposes the following configuration methods:
 The `Network` class provides several methods for adding components
 to the network.
 
-* `from(ComponentDefinition component)`
+* `from(Component component)`
 * `fromVerticle(String name)`
 * `fromVerticle(String name, String main)`
 * `fromVerticle(String name, String main, JsonObject config)`
@@ -1101,12 +1101,12 @@ to the network.
 * `fromModule(String name, String moduleName, JsonObject config, int instances)`
 
 Note that Vertigo supports both verticles and modules as network components.
-The return value of each of these methods is a new `ComponentDefinition` instance
+The return value of each of these methods is a new `Component` instance
 on which you can set the following properties:
 
 * `setType(String type)` - sets the component type, *verticle* or *module*
-  Two constants are also available, `ComponentDefinition.VERTICLE` or
-  `ComponentDefinition.MODULE`
+  Two constants are also available, `Component.VERTICLE` or
+  `Component.MODULE`
 * `setMain(String main)` - sets a verticle main
 * `setModule(String moduleName)` - sets a module name
 * `setConfig(JsonObject config)` - sets the component configuration. This is made available within
@@ -1117,13 +1117,13 @@ on which you can set the following properties:
 
 ### Defining connections
 Connections between components are created by `toVerticle` and `toModule`
-instances on `ComponentDefinition` objects. By calling one of the `to*` methods,
+instances on `Component` objects. By calling one of the `to*` methods,
 a connection from one component to the new component is implicitly created,
 and a new component definition is returned. These methods follow the same
 interface as the `fromVerticle` and `fromModule` methods on the `Network`
 class.
 
-* `to(ComponentDefinition component)`
+* `to(Component component)`
 * `toVerticle(String name)`
 * `toVerticle(String name, String main)`
 * `toVerticle(String name, String main, JsonObject config)`
@@ -1255,7 +1255,7 @@ method of a component instance.
 
 ```java
 Network network = new Network("rpc");
-ComponentDefinition executor = network.fromVerticle("executor", "executor.py");
+Component executor = network.fromVerticle("executor", "executor.py");
 executor.toVerticle("sum", "com.mycompany.myproject.SumVerticle").to(executor);
 ```
 

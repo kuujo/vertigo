@@ -1,7 +1,8 @@
 Vert.igo
 ========
 
-**[The Vertigo Python API has moved](https://github.com/kuujo/vertigo-python)**
+**The Vertigo [Javascript API](https://github.com/kuujo/vertigo-js) is under development**
+**The Vertigo [Python API](https://github.com/kuujo/vertigo-python) is under development**
 
 Vertigo is a distributed event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Following a concept and

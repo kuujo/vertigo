@@ -91,7 +91,11 @@ public class WorkerContext implements Context {
    *   A JSON configuration.
    */
   public JsonObject config() {
-    return getComponentContext().getDefinition().config();
+    JsonObject config = getComponentContext().getDefinition().config();
+    if (config == null) {
+      config = new JsonObject();
+    }
+    return config;
   }
 
   /**

@@ -15,10 +15,10 @@
 */
 package net.kuujo.vertigo.dispatcher;
 
+import java.util.List;
 import java.util.Random;
 
 import net.kuujo.vertigo.messaging.Connection;
-import net.kuujo.vertigo.messaging.ConnectionPool;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -28,21 +28,11 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  */
 public class RandomDispatcher implements Dispatcher {
 
-  private Connection[] connections;
-
-  private int connectionSize;
-
   private Random rand = new Random();
 
   @Override
-  public void init(ConnectionPool connections) {
-    this.connections = connections.toArray(new Connection[]{});
-    connectionSize = connections.size();
-  }
-
-  @Override
-  public void dispatch(JsonMessage message) {
-    connections[rand.nextInt(connectionSize)].write(message);
+  public void dispatch(JsonMessage message, List<Connection> connections) {
+    connections.get(rand.nextInt(connections.size())).write(message);
   }
 
 }

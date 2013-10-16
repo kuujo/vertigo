@@ -15,12 +15,9 @@
 */
 package net.kuujo.vertigo.dispatcher;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import net.kuujo.vertigo.messaging.Connection;
-import net.kuujo.vertigo.messaging.ConnectionPool;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -30,26 +27,18 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  */
 public class RoundRobinDispatcher implements Dispatcher {
 
-  private List<Connection> items;
-
-  private Iterator<Connection> iterator;
+  private int current;
 
   @Override
-  public void init(ConnectionPool connections) {
-    this.items = new ArrayList<Connection>();
-    Iterator<? extends Connection> iterator = connections.iterator();
-    while (iterator.hasNext()) {
-      items.add(iterator.next());
+  public void dispatch(JsonMessage message, List<Connection> connections) {
+    int size = connections.size();
+    if (size > 0) {
+      current++;
+      if (size <= current) {
+        current = 0;
+      }
+      connections.get(current).write(message);
     }
-    this.iterator = items.iterator();
-  }
-
-  @Override
-  public void dispatch(JsonMessage message) {
-    if (!iterator.hasNext()) {
-      iterator = items.iterator();
-    }
-    iterator.next().write(message);
   }
 
 }

@@ -15,8 +15,9 @@
 */
 package net.kuujo.vertigo.dispatcher;
 
+import java.util.List;
+
 import net.kuujo.vertigo.messaging.Connection;
-import net.kuujo.vertigo.messaging.ConnectionPool;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -26,15 +27,8 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  */
 public class AllDispatcher implements Dispatcher {
 
-  private ConnectionPool connections;
-
   @Override
-  public void init(ConnectionPool connections) {
-    this.connections = connections;
-  }
-
-  @Override
-  public void dispatch(JsonMessage message) {
+  public void dispatch(JsonMessage message, List<Connection> connections) {
     for (Connection connection : connections) {
       connection.write(message);
     }

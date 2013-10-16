@@ -15,7 +15,9 @@
 */
 package net.kuujo.vertigo.dispatcher;
 
-import net.kuujo.vertigo.messaging.ConnectionPool;
+import java.util.List;
+
+import net.kuujo.vertigo.messaging.Connection;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -26,19 +28,11 @@ import net.kuujo.vertigo.messaging.JsonMessage;
 public interface Dispatcher {
 
   /**
-   * Initializes the dispatcher.
-   *
-   * @param connections
-   *   A collection of connections to which the dispatcher will dispatch messages.
-   */
-  public void init(ConnectionPool connections);
-
-  /**
    * Dispatches a message.
    *
    * @param message
    *   The message to dispatch.
    */
-  public void dispatch(JsonMessage message);
+  public void dispatch(JsonMessage message, List<Connection> connections);
 
 }

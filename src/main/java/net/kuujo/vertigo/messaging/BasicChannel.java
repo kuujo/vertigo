@@ -15,7 +15,9 @@
 */
 package net.kuujo.vertigo.messaging;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.kuujo.vertigo.dispatcher.Dispatcher;
@@ -32,7 +34,7 @@ public class BasicChannel implements Channel {
 
   protected Set<Condition> conditions = new HashSet<>();
 
-  protected ConnectionPool connections = new ConnectionSet();
+  private List<Connection> connections = new ArrayList<>();
 
   public BasicChannel(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
@@ -77,7 +79,6 @@ public class BasicChannel implements Channel {
     if (!connections.contains(connection)) {
       connections.add(connection);
     }
-    dispatcher.init(connections);
     return this;
   }
 
@@ -86,13 +87,12 @@ public class BasicChannel implements Channel {
     if (connections.contains(connection)) {
       connections.remove(connection);
     }
-    dispatcher.init(connections);
     return this;
   }
 
   @Override
   public Channel write(JsonMessage message) {
-    dispatcher.dispatch(message);
+    dispatcher.dispatch(message, connections);
     return this;
   }
 

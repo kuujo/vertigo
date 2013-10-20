@@ -16,170 +16,191 @@
 package net.kuujo.vertigo.context;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import net.kuujo.vertigo.Component;
+import java.util.List;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
+
 /**
- * A JSON object-based component context.
+ * A component context.
  *
  * @author Jordan Halterman
  */
-public class ComponentContext implements Context {
+public abstract class ComponentContext implements Serializable {
 
-  private JsonObject context = new JsonObject();
+  public static final String VERTICLE = "verticle";
+  public static final String MODULE = "module";
 
-  private NetworkContext parent;
+  protected JsonObject context;
+  protected JsonObject parent;
 
   public ComponentContext() {
+    context = new JsonObject();
   }
 
-  public ComponentContext(String name) {
-    context.putString("name", name);
-  }
-
-  private ComponentContext(JsonObject json) {
-    context = json;
-    JsonObject networkContext = context.getObject("network");
-    if (networkContext != null) {
-      parent = NetworkContext.fromJson(networkContext);
+  ComponentContext(JsonObject context) {
+    this.context = context;
+    if (context.getFieldNames().contains("parent")) {
+      parent = context.getObject("parent");
     }
   }
 
-  private ComponentContext(JsonObject json, NetworkContext parent) {
-    this(json);
+  ComponentContext(JsonObject context, JsonObject parent) {
+    this.context = context;
     this.parent = parent;
   }
 
   /**
    * Creates a component context from JSON.
    *
-   * @param json
+   * @param context
    *   A JSON representation of the component context.
    * @return
    *   A new component context instance.
    */
-  public static ComponentContext fromJson(JsonObject json) {
-    return new ComponentContext(json);
-  }
-
-  /**
-   * Creates a component context from JSON.
-   *
-   * @param json
-   *   A JSON representation of the component context.
-   * @param parent
-   *   The parent network context.
-   * @return
-   *   A new component context instance.
-   */
-  public static ComponentContext fromJson(JsonObject json, NetworkContext parent) {
-    return new ComponentContext(json, parent);
-  }
-
-  /**
-   * Returns the component name.
-   *
-   * @return
-   *   The component name.
-   */
-  public String name() {
-    return getDefinition().name();
-  }
-
-  /**
-   * Returns the component address.
-   *
-   * @return
-   *   The component address.
-   */
-  public String address() {
-    return context.getString("address");
-  }
-
-  /**
-   * Returns a list of component connections.
-   *
-   * @return
-   *   A collection of component connections.
-   */
-  public Collection<ConnectionContext> getConnectionContexts() {
-    Set<ConnectionContext> contexts = new HashSet<ConnectionContext>();
-    JsonObject connections = context.getObject("connections");
-    Iterator<String> iter = connections.getFieldNames().iterator();
-    while (iter.hasNext()) {
-      contexts.add(new ConnectionContext(connections.getObject(iter.next())));
+  public static ComponentContext fromJson(JsonObject context) {
+    String type = context.getString(Component.TYPE);
+    switch (type) {
+      case Component.MODULE:
+        return new ModuleContext(context);
+      case Component.VERTICLE:
+        return new VerticleContext(context);
+      default:
+        return null;
     }
-    return contexts;
   }
 
   /**
-   * Returns a component connection context.
+   * Gets the component type.
    *
-   * @param name
-   *   The name of the component whose connection to return.
    * @return
-   *   A component connection context.
+   *   The component type.
    */
-  public ConnectionContext getConnectionContext(String name) {
-    JsonObject connections = context.getObject("connections");
-    if (connections == null) {
-      connections = new JsonObject();
+  public String getType() {
+    return context.getString(Component.TYPE);
+  }
+
+  /**
+   * Returns a boolean indicating whether the component is a module.
+   *
+   * @return
+   *   Indicates whether the component is a module.
+   */
+  public boolean isModule() {
+    return getType().equals(Component.MODULE);
+  }
+
+  /**
+   * Returns a boolean indicating whether the component is a verticle.
+   *
+   * @return
+   *   Indicates whether the component is a verticle.
+   */
+  public boolean isVerticle() {
+    return getType().equals(Component.VERTICLE);
+  }
+
+  /**
+   * Gets the component configuration.
+   *
+   * @return
+   *   The component configuration.
+   */
+  public JsonObject getConfig() {
+    JsonObject config = context.getObject(Component.CONFIG);
+    if (config == null) {
+      config = new JsonObject();
     }
-    JsonObject connectionContext = connections.getObject(name);
-    return connectionContext != null ? new ConnectionContext(connectionContext, this) : null;
+    return config;
   }
 
   /**
-   * Returns all worker contexts.
+   * Returns a list of component instance contexts.
    *
    * @return
-   *   A collection of worker contexts.
+   *   A list of component instance contexts.
    */
-  public Collection<WorkerContext> getWorkerContexts() {
-    JsonArray workers = context.getArray("workers");
-    ArrayList<WorkerContext> contexts = new ArrayList<WorkerContext>();
-    Iterator<Object> iter = workers.iterator();
-    while (iter.hasNext()) {
-      contexts.add(WorkerContext.fromJson(context.copy().putString("address", (String) iter.next()), this));
+  public List<InstanceContext> getInstances() {
+    JsonArray instanceContexts = context.getArray(Component.INSTANCES);
+    if (instanceContexts == null) {
+      instanceContexts = new JsonArray();
     }
-    return contexts;
+
+    List<InstanceContext> instances = new ArrayList<>();
+    for (Object instanceContext : instanceContexts) {
+      try {
+        InstanceContext instance = Serializer.unserialize((JsonObject) instanceContext);
+        if (instance != null) {
+          instances.add(instance);
+        }
+      }
+      catch (SerializationException e) {
+        continue;
+      }
+    }
+    return instances;
   }
 
   /**
-   * Returns the component definition.
+   * Returns a list of component inputs.
    *
    * @return
-   *   The component definition.
+   *   A list of component inputs.
    */
-  public Component getDefinition() {
-    JsonObject definition = context.getObject("definition");
-    return definition != null ? Component.fromJson(definition) : null;
+  public List<Input> getInputs() {
+    JsonArray inputsInfo = context.getArray(Component.INPUTS);
+    if (inputsInfo == null) {
+      inputsInfo = new JsonArray();
+    }
+
+    List<Input> inputs = new ArrayList<>();
+    for (Object inputInfo : inputsInfo) {
+      try {
+        Input input = Serializer.unserialize((JsonObject) inputInfo);
+        if (input != null) {
+          inputs.add(input);
+        }
+      }
+      catch (SerializationException e) {
+        continue;
+      }
+    }
+    return inputs;
   }
 
   /**
    * Returns the parent network context.
    *
    * @return
-   *   The component's parent network context.
+   *   The parent network context.
    */
-  public NetworkContext getNetworkContext() {
-    return parent;
+  public NetworkContext getNetwork() {
+    JsonObject parent = context.getObject("parent");
+    if (parent == null) {
+      parent = new JsonObject();
+    }
+    return NetworkContext.fromJson(parent);
   }
 
   @Override
-  public JsonObject serialize() {
+  public JsonObject getState() {
+    // Always copy the context state so it can't be modified externally.
     JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("network", parent.serialize());
+      context.putObject("parent", parent.copy());
     }
     return context;
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    context = state.copy();
   }
 
 }

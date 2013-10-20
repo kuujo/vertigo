@@ -16,42 +16,45 @@
 package net.kuujo.vertigo.context;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-
-import net.kuujo.vertigo.Network;
-import net.kuujo.vertigo.util.Json;
+import java.util.List;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A network context.
  *
  * @author Jordan Halterman
  */
-public class NetworkContext implements Context {
+public class NetworkContext implements Serializable {
 
-  private JsonObject context = new JsonObject();
+  private JsonObject context;
+
+  private static final long DEFAULT_ACK_EXPIRE = 30000;
 
   public NetworkContext() {
+    context = new JsonObject();
   }
 
-  private NetworkContext(JsonObject json) {
-    context = json;
+  private NetworkContext(JsonObject context) {
+    this.context = context;
   }
 
   /**
    * Creates a network context from JSON.
    *
-   * @param json
+   * @param context
    *   A JSON representation of the network context.
    * @return
    *   A new network context instance.
    */
-  public static NetworkContext fromJson(JsonObject json) {
-    return new NetworkContext(json);
+  public static NetworkContext fromJson(JsonObject context) {
+    return new NetworkContext(context);
   }
 
   /**
@@ -60,92 +63,111 @@ public class NetworkContext implements Context {
    * @return
    *   The network address.
    */
-  public String address() {
-    return context.getString("address");
+  public String getAddress() {
+    return context.getString(Network.ADDRESS);
   }
 
   /**
-   * Returns the network broadcast address.
+   * Returns the broadcast address.
    *
    * @return
-   *   The network broadcast address. This is the address at which component
-   *   instances listen for ack/nack messages.
+   *   The network broadcast address.
    */
   public String getBroadcastAddress() {
-    return context.getString("broadcast");
+    return context.getString(Network.BROADCAST);
   }
 
   /**
-   * Get the number of auditors for the network.
+   * Returns a list of network auditors.
    *
    * @return
-   *   The number of network auditors.
+   *   A list of network auditors.
    */
-  public int getNumAuditors() {
-    return getDefinition().getNumAuditors();
-  }
-
-  /**
-   * Returns an array of network auditor addresses.
-   *
-   * @return
-   *   A set of auditor addresses.
-   */
-  public Set<String> getAuditors() {
-    JsonArray auditors = context.getArray("auditors");
-    if (auditors == null) {
-      auditors = new JsonArray();
+  public List<String> getAuditors() {
+    List<String> auditors = new ArrayList<>();
+    JsonArray auditorInfo = context.getArray(Network.AUDITORS);
+    for (Object address : auditorInfo) {
+      auditors.add((String) address);
     }
-    return Json.<String>arrayToSet(auditors);
+    return auditors;
+  }
+
+  /**
+   * Returns a boolean indicating whether acking is enabled.
+   *
+   * @return
+   *   Indicates whether acking is enabled for the network.
+   */
+  public boolean isAckingEnabled() {
+    return context.getBoolean(Network.ACKING, true);
+  }
+
+  /**
+   * Returns network ack expiration.
+   *
+   * @return
+   *   Ack expirations for the network.
+   */
+  public long getAckExpire() {
+    return context.getLong(Network.ACK_EXPIRE, DEFAULT_ACK_EXPIRE);
   }
 
   /**
    * Returns a list of network component contexts.
    *
    * @return
-   *   A collection of component contexts within the network.
+   *   A list of network component contexts.
    */
-  public Collection<ComponentContext> getComponentContexts() {
-    JsonObject components = context.getObject("components");
-    ArrayList<ComponentContext> contexts = new ArrayList<ComponentContext>();
-    Iterator<String> iter = components.getFieldNames().iterator();
-    while (iter.hasNext()) {
-      contexts.add(ComponentContext.fromJson(components.getObject(iter.next()), this));
+  public List<ComponentContext> getComponents() {
+    List<ComponentContext> components = new ArrayList<>();
+    JsonObject componentContexts = context.getObject(Network.COMPONENTS);
+    for (String address : componentContexts.getFieldNames()) {
+      try {
+        ComponentContext component = Serializer.unserialize(componentContexts.getObject(address));
+        if (component != null) {
+          components.add(component);
+        }
+      }
+      catch (SerializationException e) {
+        continue;
+      }
     }
-    return contexts;
+    return components;
   }
 
   /**
-   * Returns a specific component context.
+   * Returns a component context by address.
    *
-   * @param name
-   *   The component name.
+   * @param address
+   *   The component address.
    * @return
-   *   A component context.
+   *   A component context, or null if the component does not exist.
    */
-  public ComponentContext getComponentContext(String name) {
+  public ComponentContext getComponent(String address) {
     JsonObject components = context.getObject("components");
     if (components == null) {
-      return null;
+      components = new JsonObject();
     }
-    JsonObject componentContext = components.getObject(name);
-    return componentContext != null ? ComponentContext.fromJson(componentContext) : null;
-  }
-
-  /**
-   * Returns the network definition.
-   *
-   * @return
-   *   The network definition.
-   */
-  public Network getDefinition() {
-    JsonObject definition = context.getObject("definition");
-    return definition != null ? Network.fromJson(definition) : null;
+    if (components.getFieldNames().contains(address)) {
+      try {
+        return Serializer.unserialize(components.getObject(address));
+      }
+      catch (SerializationException e) {
+        return null;
+      }
+    }
+    return null;
   }
 
   @Override
-  public JsonObject serialize() {
-    return context;
+  public JsonObject getState() {
+    // Always copy the context state so it can't be modified externally.
+    return context.copy();
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    context = state.copy();
   }
 
 }

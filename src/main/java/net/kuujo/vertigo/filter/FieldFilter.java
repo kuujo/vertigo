@@ -15,7 +15,9 @@
 */
 package net.kuujo.vertigo.filter;
 
+import net.kuujo.vertigo.input.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Condition;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -63,13 +65,18 @@ public class FieldFilter implements Filter {
   }
 
   @Override
-  public Condition initialize(JsonObject data) {
-    return new FieldCondition(data.getString("field"), data.getValue("value"));
+  public JsonObject getState() {
+    return definition;
   }
 
   @Override
-  public JsonObject serialize() {
-    return definition.copy();
+  public void setState(JsonObject state) {
+    definition = state;
+  }
+
+  @Override
+  public Condition createCondition() {
+    return new FieldCondition(definition.getString("field"), definition.getValue("value"));
   }
 
   /**

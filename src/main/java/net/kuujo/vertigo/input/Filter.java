@@ -13,17 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.filter;
+package net.kuujo.vertigo.input;
 
-import org.vertx.java.core.json.JsonObject;
-
-import net.kuujo.vertigo.Initializable;
-import net.kuujo.vertigo.Serializable;
+import net.kuujo.vertigo.output.Condition;
+import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * A message filter.
  *
  * @author Jordan Halterman
  */
-public interface Filter extends Serializable<JsonObject>, Initializable<JsonObject, Condition> {
+public interface Filter extends Serializable {
+
+  /**
+   * Creates an output condition from the filter.
+   *
+   * @return
+   *   An output condition.
+   */
+  public Condition createCondition();
+
 }

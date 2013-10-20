@@ -21,7 +21,9 @@ import java.util.Set;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.input.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Condition;
 
 /**
  * A tag filter.
@@ -65,9 +67,19 @@ public class TagsFilter implements Filter {
   }
 
   @Override
-  public Condition initialize(JsonObject data) {
+  public JsonObject getState() {
+    return definition;
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    definition = state;
+  }
+
+  @Override
+  public Condition createCondition() {
     Set<String> tags = new HashSet<String>();
-    JsonArray tagList = data.getArray("tags");
+    JsonArray tagList = definition.getArray("tags");
     if (tagList == null) {
       tagList = new JsonArray();
     }
@@ -75,11 +87,6 @@ public class TagsFilter implements Filter {
       tags.add((String) tag);
     }
     return new TagsCondition(tags);
-  }
-
-  @Override
-  public JsonObject serialize() {
-    return definition.copy();
   }
 
   /**

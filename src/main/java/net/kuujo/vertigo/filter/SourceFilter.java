@@ -15,7 +15,9 @@
 */
 package net.kuujo.vertigo.filter;
 
+import net.kuujo.vertigo.input.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Condition;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -36,13 +38,18 @@ public class SourceFilter implements Filter {
   }
 
   @Override
-  public Condition initialize(JsonObject data) {
-    return new SourceCondition(data.getString("source"));
+  public JsonObject getState() {
+    return definition;
   }
 
   @Override
-  public JsonObject serialize() {
-    return definition.copy();
+  public void setState(JsonObject state) {
+    definition = state;
+  }
+
+  @Override
+  public Condition createCondition() {
+    return new SourceCondition(definition.getString("source"));
   }
 
   /**

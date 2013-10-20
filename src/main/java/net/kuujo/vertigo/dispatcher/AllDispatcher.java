@@ -19,6 +19,7 @@ import java.util.List;
 
 import net.kuujo.vertigo.messaging.Connection;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Dispatcher;
 
 /**
  * An abstract dispatcher implementation.

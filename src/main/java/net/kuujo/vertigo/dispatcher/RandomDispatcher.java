@@ -20,6 +20,7 @@ import java.util.Random;
 
 import net.kuujo.vertigo.messaging.Connection;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Dispatcher;
 
 /**
  * A random dispatcher implementation.

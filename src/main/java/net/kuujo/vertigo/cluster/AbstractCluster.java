@@ -15,9 +15,10 @@
 */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.context_old.NetworkContext;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -53,7 +54,7 @@ abstract class AbstractCluster implements Cluster {
   public void deploy(Network network) {
     try {
       final NetworkContext context = network.createContext();
-      container.deployVerticle(coordinator, context.serialize().putString("master", master));
+      container.deployVerticle(coordinator, Serializer.serialize(context));
     }
     catch (MalformedNetworkException e) {
       // Do nothing.
@@ -65,7 +66,7 @@ abstract class AbstractCluster implements Cluster {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {
       final NetworkContext context = network.createContext();
-      container.deployVerticle(coordinator, context.serialize().putString("master", master), new Handler<AsyncResult<String>>() {
+      container.deployVerticle(coordinator, Serializer.serialize(context), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {

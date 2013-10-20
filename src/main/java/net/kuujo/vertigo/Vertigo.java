@@ -22,7 +22,8 @@ import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.feeder.PollingFeeder;
 import net.kuujo.vertigo.component.feeder.StreamFeeder;
 import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.context.WorkerContext;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.network.Network;
 
 /**
  * Primary Vert.igo API.
@@ -38,9 +39,9 @@ public interface Vertigo {
    * Sets the component instance context.
    *
    * @param context
-   *   A worker context.
+   *   An instance context.
    */
-  public void setContext(WorkerContext context);
+  public void setContext(InstanceContext context);
 
   /**
    * Creates a network.

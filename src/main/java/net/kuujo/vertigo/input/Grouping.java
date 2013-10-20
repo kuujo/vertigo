@@ -13,18 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.grouping;
+package net.kuujo.vertigo.input;
 
-import org.vertx.java.core.json.JsonObject;
-
-import net.kuujo.vertigo.Initializable;
-import net.kuujo.vertigo.Serializable;
-import net.kuujo.vertigo.dispatcher.Dispatcher;
+import net.kuujo.vertigo.output.Dispatcher;
+import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * A component grouping.
  *
  * @author Jordan Halterman
  */
-public interface Grouping extends Serializable<JsonObject>, Initializable<JsonObject, Dispatcher> {
+public interface Grouping extends Serializable {
+
+  /**
+   * Creates an output dispatcher from the grouping.
+   *
+   * @return
+   *   An output dispatcher.
+   */
+  public Dispatcher createDispatcher();
+
 }

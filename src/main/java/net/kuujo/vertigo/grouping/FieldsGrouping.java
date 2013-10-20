@@ -15,8 +15,9 @@
 */
 package net.kuujo.vertigo.grouping;
 
-import net.kuujo.vertigo.dispatcher.Dispatcher;
 import net.kuujo.vertigo.dispatcher.FieldsDispatcher;
+import net.kuujo.vertigo.input.Grouping;
+import net.kuujo.vertigo.output.Dispatcher;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -64,13 +65,18 @@ public class FieldsGrouping implements Grouping {
   }
 
   @Override
-  public JsonObject serialize() {
+  public JsonObject getState() {
     return definition;
   }
 
   @Override
-  public Dispatcher initialize(JsonObject data) {
-    return new FieldsDispatcher(data.getString("field"));
+  public void setState(JsonObject state) {
+    definition = state;
+  }
+
+  @Override
+  public Dispatcher createDispatcher() {
+    return new FieldsDispatcher(definition.getString("field"));
   }
 
 }

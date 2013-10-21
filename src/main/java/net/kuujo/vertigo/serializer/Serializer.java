@@ -22,7 +22,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class Serializer {
+public final class Serializer {
 
   private Serializer() {
   }
@@ -43,17 +43,17 @@ public class Serializer {
   }
 
   /**
-   * Unserializes a serialized object.
+   * Deserializes a serialized object.
    *
    * @param serialized
    *   The serialized object information.
    * @return
-   *   An unserialized object.
+   *   An deserialized object.
    * @throws SerializationException
    *   If the object class cannot be found.
    */
   @SuppressWarnings("unchecked")
-  public static <T extends Serializable> T unserialize(JsonObject serialized) throws SerializationException {
+  public static <T extends Serializable> T deserialize(JsonObject serialized) throws SerializationException {
     String className = serialized.getString("class");
     if (className == null) {
       throw new SerializationException("Invalid serialization info. No class name found.");

@@ -22,7 +22,7 @@ import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.feeder.PollingFeeder;
 import net.kuujo.vertigo.component.feeder.StreamFeeder;
 import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.network.Network;
 
 /**
@@ -41,7 +41,7 @@ public interface Vertigo {
    * @param context
    *   An instance context.
    */
-  public void setContext(InstanceContext context);
+  public void setContext(ComponentContext context);
 
   /**
    * Creates a network.

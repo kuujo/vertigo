@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Vertx;
@@ -34,7 +34,7 @@ public class VertigoVerticle extends Verticle {
 
   protected Vertigo vertigo;
 
-  protected InstanceContext context;
+  protected ComponentContext context;
 
   @Override
   public void setContainer(Container container) {
@@ -49,7 +49,7 @@ public class VertigoVerticle extends Verticle {
   @Override
   public void start(Future<Void> startedResult) {
     vertigo = new DefaultVertigo(vertx, container);
-    context = InstanceContext.fromJson(container.config());
+    context = ComponentContext.fromJson(container.config());
     vertigo.setContext(context);
     super.start(startedResult);
   }

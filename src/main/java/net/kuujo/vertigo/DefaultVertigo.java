@@ -29,7 +29,7 @@ import net.kuujo.vertigo.component.feeder.PollingFeeder;
 import net.kuujo.vertigo.component.feeder.StreamFeeder;
 import net.kuujo.vertigo.component.worker.BasicWorker;
 import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.network.Network;
 
 import org.vertx.java.core.Vertx;
@@ -46,7 +46,7 @@ public class DefaultVertigo implements Vertigo {
 
   private Container container;
 
-  private InstanceContext context;
+  private ComponentContext context;
 
   public DefaultVertigo(Vertx vertx, Container container) {
     this.vertx = vertx;
@@ -54,7 +54,7 @@ public class DefaultVertigo implements Vertigo {
   }
 
   @Override
-  public void setContext(InstanceContext context) {
+  public void setContext(ComponentContext context) {
     this.context = context;
   }
 

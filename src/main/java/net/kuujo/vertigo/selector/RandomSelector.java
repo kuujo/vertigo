@@ -13,26 +13,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.grouping;
+package net.kuujo.vertigo.selector;
 
-import net.kuujo.vertigo.dispatcher.AllDispatcher;
-import net.kuujo.vertigo.input.Grouping;
-import net.kuujo.vertigo.output.Dispatcher;
+import java.util.List;
+import java.util.Random;
+
+import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Connection;
 
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * An *all* grouping.
+ * A *random* selector.
  *
- * The *all* grouping dispatches messages to all instances of a component.
- * Thus, if a component has four instances, all four component workers will
- * receive every message emitted to that component.
+ * The *random* selector dispatches messages to component workers randomly.
  *
  * @author Jordan Halterman
  */
-public class AllGrouping implements Grouping {
+public class RandomSelector implements Selector {
 
   private JsonObject definition = new JsonObject();
+
+  private Random rand = new Random();
 
   @Override
   public JsonObject getState() {
@@ -45,8 +47,9 @@ public class AllGrouping implements Grouping {
   }
 
   @Override
-  public Dispatcher createDispatcher() {
-    return new AllDispatcher();
+  public List<Connection> select(JsonMessage message, List<Connection> connections) {
+    int index = rand.nextInt(connections.size());
+    return connections.subList(index, index+1);
   }
 
 }

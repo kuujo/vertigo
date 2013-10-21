@@ -13,31 +13,32 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.grouping;
+package net.kuujo.vertigo.selector;
 
-import net.kuujo.vertigo.dispatcher.FieldsDispatcher;
-import net.kuujo.vertigo.input.Grouping;
-import net.kuujo.vertigo.output.Dispatcher;
+import java.util.List;
+
+import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Connection;
 
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A fields grouping.
+ * A fields selector.
  *
- * The *fields* grouping is a consistent-hashing based grouping. Given
+ * The *fields* selector is a consistent-hashing based grouping. Given
  * a field on which to hash, this grouping guarantees that workers will
  * always receive messages with the same field values.
  *
  * @author Jordan Halterman
  */
-public class FieldsGrouping implements Grouping {
+public class FieldsSelector implements Selector {
 
   private JsonObject definition = new JsonObject();
 
-  public FieldsGrouping() {
+  public FieldsSelector() {
   }
 
-  public FieldsGrouping(String fieldName) {
+  public FieldsSelector(String fieldName) {
     definition.putString("field", fieldName);
   }
 
@@ -49,7 +50,7 @@ public class FieldsGrouping implements Grouping {
    * @return
    *   The called grouping instance.
    */
-  public FieldsGrouping field(String fieldName) {
+  public FieldsSelector field(String fieldName) {
     definition.putString("field", fieldName);
     return this;
   }
@@ -75,8 +76,13 @@ public class FieldsGrouping implements Grouping {
   }
 
   @Override
-  public Dispatcher createDispatcher() {
-    return new FieldsDispatcher(definition.getString("field"));
+  public List<Connection> select(JsonMessage message, List<Connection> connections) {
+    String value = message.body().getString(definition.getString("field"));
+    if (value != null) {
+      int index = value.length() % connections.size();
+      connections.subList(index, index+1);
+    }
+    return null;
   }
 
 }

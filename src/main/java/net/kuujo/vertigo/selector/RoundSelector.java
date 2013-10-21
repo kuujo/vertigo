@@ -13,25 +13,28 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package net.kuujo.vertigo.grouping;
+package net.kuujo.vertigo.selector;
 
-import net.kuujo.vertigo.dispatcher.RoundRobinDispatcher;
-import net.kuujo.vertigo.input.Grouping;
-import net.kuujo.vertigo.output.Dispatcher;
+import java.util.List;
+
+import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.Connection;
 
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A *round* grouping.
+ * A *round* selector.
  *
- * The *round* grouping dispatches messages to workers in a round-robin
+ * The *round* selector dispatches messages to workers in a round-robin
  * fashion.
  *
  * @author Jordan Halterman
  */
-public class RoundGrouping implements Grouping {
+public class RoundSelector implements Selector {
 
   private JsonObject definition = new JsonObject();
+
+  private int current;
 
   @Override
   public JsonObject getState() {
@@ -44,8 +47,12 @@ public class RoundGrouping implements Grouping {
   }
 
   @Override
-  public Dispatcher createDispatcher() {
-    return new RoundRobinDispatcher();
+  public List<Connection> select(JsonMessage message, List<Connection> connections) {
+    current++;
+    if (current > connections.size()) {
+      current = 0;
+    }
+    return connections.subList(current, current+1);
   }
 
 }

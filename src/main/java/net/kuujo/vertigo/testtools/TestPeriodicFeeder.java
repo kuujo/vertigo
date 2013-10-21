@@ -22,9 +22,9 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.Component;
+import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.java.VertigoVerticle;
+import net.kuujo.vertigo.network.Component;
 
 /**
  * A feeder that periodically feeds a network with randomly generated field values.

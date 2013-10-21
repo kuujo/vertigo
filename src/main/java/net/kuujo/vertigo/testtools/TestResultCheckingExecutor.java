@@ -21,11 +21,11 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.Component;
+import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.component.executor.BasicExecutor;
 import net.kuujo.vertigo.component.executor.DefaultBasicExecutor;
-import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.network.Component;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.testComplete;

@@ -19,10 +19,10 @@ import java.util.UUID;
 
 import org.vertx.java.core.Handler;
 
-import net.kuujo.vertigo.Component;
+import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.network.Component;
 
 /**
  * A test worker that fails all messages.

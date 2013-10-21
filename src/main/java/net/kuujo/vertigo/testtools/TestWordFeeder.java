@@ -23,9 +23,9 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.Component;
+import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.component.feeder.PollingFeeder;
-import net.kuujo.vertigo.java.VertigoVerticle;
+import net.kuujo.vertigo.network.Component;
 
 /**
  * A feeder that feeder "random" test words to a network.
@@ -71,8 +71,8 @@ public class TestWordFeeder extends VertigoVerticle {
 
   @Override
   public void start() {
-    field = context.config().getString("field");
-    words = (String[]) context.config().getArray("words").toArray();
+    field = context.getConfig().getString("field");
+    words = (String[]) context.getConfig().getArray("words").toArray();
 
     vertigo.createPollingFeeder().start(new Handler<AsyncResult<PollingFeeder>>() {
       @Override

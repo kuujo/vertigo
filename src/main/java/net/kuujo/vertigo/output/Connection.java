@@ -15,24 +15,29 @@
 */
 package net.kuujo.vertigo.output;
 
-import java.util.List;
-
-import net.kuujo.vertigo.messaging.Connection;
-import net.kuujo.vertigo.messaging.JsonMessage;
-
 /**
- * A message dispatcher.
+ * A single point-to-point connection.
  *
  * @author Jordan Halterman
  */
-public interface Dispatcher {
+public interface Connection {
 
   /**
-   * Dispatches a message.
+   * Gets the remote connection address.
+   *
+   * @return
+   *   The remote connection address.
+   */
+  public String address();
+
+  /**
+   * Writes a message to the connection.
    *
    * @param message
-   *   The message to dispatch.
+   *   The message to write to the connection.
+   * @return
+   *   The called writable instance.
    */
-  public void dispatch(JsonMessage message, List<Connection> connections);
+  public Connection write(JsonMessage message);
 
 }

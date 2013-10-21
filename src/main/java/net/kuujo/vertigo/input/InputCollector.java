@@ -2,7 +2,6 @@ package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.messaging.JsonMessage;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
@@ -23,26 +22,36 @@ public interface InputCollector {
   public InputCollector messageHandler(Handler<JsonMessage> handler);
 
   /**
-   * Starts listening on the given input.
+   * Acknowledges a message.
    *
-   * @param input
-   *   An input on which to listen.
+   * @param message
+   *   The message to ack.
    * @return
-   *   The called collector instance.
+   *   The called input collector instance.
    */
-  public InputCollector listen(Input input);
+  public InputCollector ack(JsonMessage message);
 
   /**
-   * Starts listening on the given input.
+   * Fails a message.
    *
-   * @param input
-   *   An input on which to listen.
-   * @param doneHandler
-   *   An asynchronous handler to be invoked once listening has been started.
+   * @param message
+   *   The message to fail.
    * @return
-   *   The called collector instance.
+   *   The called input collector instance.
    */
-  public InputCollector listen(Input input, Handler<AsyncResult<Void>> doneHandler);
+  public InputCollector fail(JsonMessage message);
+
+  /**
+   * Fails a message with a failure message.
+   *
+   * @param message
+   *   The message to fail.
+   * @param failMessage
+   *   A failure message.
+   * @return
+   *   The called input collector instance.
+   */
+  public InputCollector fail(JsonMessage message, String failMessage);
 
   /**
    * Closes the input collector.

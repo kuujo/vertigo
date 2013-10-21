@@ -18,6 +18,8 @@ package net.kuujo.vertigo.input;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.selector.Selector;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -28,15 +30,28 @@ import net.kuujo.vertigo.serializer.Serializer;
  */
 public class Input implements Serializable {
 
+  public static final String ID = "id";
   public static final String ADDRESS = "address";
-  public static final String GROUP = "group";
-  public static final String GROUPING = "grouping";
+  public static final String SELECTOR = "selector";
   public static final String FILTERS = "filters";
 
   private JsonObject definition;
 
   public Input(String address) {
     definition = new JsonObject().putString(ADDRESS, address);
+  }
+
+  /**
+   * Returns the input ID.
+   *
+   * Input IDs may be shared across multiple instances of an input
+   * and are the mechanism by which inputs are grouped together.
+   *
+   * @return
+   *   The input identifier.
+   */
+  public String id() {
+    return definition.getString(ID);
   }
 
   /**
@@ -50,25 +65,15 @@ public class Input implements Serializable {
   }
 
   /**
-   * Returns the input group.
+   * Sets the input selector.
    *
-   * @return
-   *   An input group.
-   */
-  public String getGroup() {
-    return definition.getString(GROUP);
-  }
-
-  /**
-   * Sets the input grouping.
-   *
-   * @param grouping
-   *   An input grouping.
+   * @param selector
+   *   An input selector.
    * @return
    *   The called input instance.
    */
-  public Input deliverBy(Grouping grouping) {
-    definition.putObject(GROUPING, Serializer.serialize(grouping));
+  public Input deliverBy(Selector selector) {
+    definition.putObject(SELECTOR, Serializer.serialize(selector));
     return this;
   }
 

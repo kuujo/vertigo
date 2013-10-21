@@ -23,17 +23,13 @@ import java.util.Random;
 import java.util.Set;
 
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.context.ConnectionContext;
-import net.kuujo.vertigo.context.FilterContext;
-import net.kuujo.vertigo.context.GroupingContext;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.WorkerContext;
-import net.kuujo.vertigo.dispatcher.Dispatcher;
 import net.kuujo.vertigo.messaging.BasicChannel;
 import net.kuujo.vertigo.messaging.Channel;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.EventBusConnection;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
 import net.kuujo.vertigo.heartbeat.HeartbeatEmitter;
 
@@ -55,8 +51,6 @@ import org.vertx.java.platform.Container;
  */
 public abstract class ComponentBase implements Component {
 
-  private String name;
-
   protected Vertx vertx;
 
   protected EventBus eventBus;
@@ -65,7 +59,7 @@ public abstract class ComponentBase implements Component {
 
   protected Logger logger;
 
-  protected WorkerContext context;
+  protected InstanceContext context;
 
   protected String address;
 
@@ -81,17 +75,16 @@ public abstract class ComponentBase implements Component {
 
   private Random random = new Random();
 
-  protected ComponentBase(Vertx vertx, Container container, WorkerContext context) {
-    this.name = context.getComponentContext().getDefinition().name();
+  protected ComponentBase(Vertx vertx, Container container, InstanceContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
     this.logger = container.logger();
     this.context = context;
-    this.address = context.address();
-    NetworkContext networkContext = context.getComponentContext().getNetworkContext();
-    networkAddress = networkContext.address();
-    Set<String> auditorAddresses = networkContext.getAuditors();
+    this.address = context.getAddress();
+    NetworkContext networkContext = context.getComponent().getNetwork();
+    networkAddress = networkContext.getAddress();
+    List<String> auditorAddresses = networkContext.getAuditors();
     auditors = new ArrayList<String>();
     for (String auditorAddress : auditorAddresses) {
       auditors.add(auditorAddress);
@@ -101,11 +94,11 @@ public abstract class ComponentBase implements Component {
 
   @Override
   public JsonObject config() {
-    return context.config();
+    return context.getComponent().getConfig();
   }
 
   @Override
-  public WorkerContext context() {
+  public InstanceContext context() {
     return context;
   }
 
@@ -131,7 +124,7 @@ public abstract class ComponentBase implements Component {
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
           heartbeat = new DefaultHeartbeatEmitter(heartbeatAddress, vertx);
-          heartbeat.setInterval(context.getComponentContext().getDefinition().getHeartbeatInterval());
+          heartbeat.setInterval(context.getComponent().getDefinition().getHeartbeatInterval());
           heartbeat.start();
           future.setResult(null);
         }
@@ -303,7 +296,7 @@ public abstract class ComponentBase implements Component {
    *   A new JSON message.
    */
   protected JsonMessage createMessage(JsonObject body) {
-    return DefaultJsonMessage.create(name, body, selectRandomAuditor());
+    return DefaultJsonMessage.create(address, body, selectRandomAuditor());
   }
 
   /**
@@ -331,7 +324,7 @@ public abstract class ComponentBase implements Component {
    *   A new JSON message.
    */
   protected JsonMessage createMessage(JsonObject body, String tag) {
-    return DefaultJsonMessage.create(name, body, tag, selectRandomAuditor());
+    return DefaultJsonMessage.create(address, body, tag, selectRandomAuditor());
   }
 
   /**

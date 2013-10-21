@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component.feeder;
 
-import net.kuujo.vertigo.context.WorkerContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -37,7 +37,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
 
   private boolean paused;
 
-  public DefaultStreamFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public DefaultStreamFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

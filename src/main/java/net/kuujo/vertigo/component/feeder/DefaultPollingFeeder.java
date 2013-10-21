@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component.feeder;
 
-import net.kuujo.vertigo.context.WorkerContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -38,7 +38,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
 
   private boolean fed;
 
-  public DefaultPollingFeeder(Vertx vertx, Container container, WorkerContext context) {
+  public DefaultPollingFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

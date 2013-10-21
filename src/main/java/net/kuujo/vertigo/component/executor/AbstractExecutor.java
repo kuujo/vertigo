@@ -24,7 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.WorkerContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -38,7 +38,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
 
   protected ExecuteQueue queue;
 
-  protected AbstractExecutor(Vertx vertx, Container container, WorkerContext context) {
+  protected AbstractExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
     queue = new BasicExecuteQueue(vertx);
   }

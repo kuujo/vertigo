@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.worker;
 
 import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.WorkerContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -36,7 +36,7 @@ public class BasicWorker extends ComponentBase implements Worker {
 
   protected Handler<JsonMessage> messageHandler;
 
-  public BasicWorker(Vertx vertx, Container container, WorkerContext context) {
+  public BasicWorker(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

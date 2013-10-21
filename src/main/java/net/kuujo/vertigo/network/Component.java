@@ -180,7 +180,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The new input instance.
    */
   public Input addInput(String address, Grouping grouping) {
-    return addInput(new Input(address).groupBy(grouping));
+    return addInput(new Input(address).deliverBy(grouping));
   }
 
   /**
@@ -214,7 +214,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The new input instance.
    */
   public Input addInput(String address, Grouping grouping, Filter... filters) {
-    Input input = addInput(new Input(address).groupBy(grouping));
+    Input input = addInput(new Input(address).deliverBy(grouping));
     for (Filter filter : filters) {
       input.filterBy(filter);
     }

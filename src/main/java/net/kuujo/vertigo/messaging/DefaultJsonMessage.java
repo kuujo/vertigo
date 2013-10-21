@@ -32,7 +32,10 @@ public class DefaultJsonMessage implements JsonMessage {
     return UUID.randomUUID().toString();
   }
 
-  public DefaultJsonMessage(JsonObject body) {
+  public DefaultJsonMessage() {
+  }
+
+  private DefaultJsonMessage(JsonObject body) {
     this.body = body;
   }
 
@@ -158,7 +161,12 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonObject serialize() {
+  public void setState(JsonObject state) {
+    body = state;
+  }
+
+  @Override
+  public JsonObject getState() {
     return body;
   }
 

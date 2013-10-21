@@ -24,7 +24,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface JsonMessage extends Serializable<JsonObject> {
+public interface JsonMessage extends Serializable {
 
   /**
    * Returns the message ID.

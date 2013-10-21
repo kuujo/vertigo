@@ -1,6 +1,12 @@
 package net.kuujo.vertigo.output;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -19,6 +25,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private String address;
   private Vertx vertx;
   private EventBus eventBus;
+  private Map<String, Channel> channels = new HashMap<>();
 
   public DefaultOutputCollector(String address, Vertx vertx) {
     this.address = address;
@@ -35,9 +42,43 @@ public class DefaultOutputCollector implements OutputCollector {
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
-      
+      JsonObject body = message.body();
+      if (body != null) {
+        String action = body.getString("action");
+        switch (action) {
+          case "listen":
+            doListen(body);
+            break;
+        }
+      }
     }
   };
+
+  /**
+   * Starts listening to messages from this output collector.
+   */
+  private void doListen(JsonObject info) {
+    String address = info.getString("address");
+    try {
+      Output output = Output.fromInput((Input) Serializer.deserialize(info));
+      String group = output.getGroup();
+      Channel channel;
+      if (!channels.containsKey(group)) {
+        channel = new DefaultChannel(output);
+        channels.put(group, channel);
+      }
+      else {
+        channel = channels.get(group);
+      }
+
+      if (!channel.containsConnection(address)) {
+        channel.addConnection(new EventBusConnection(address, eventBus));
+      }
+    }
+    catch (SerializationException e) {
+      // Failed to unserialize the input info.
+    }
+  }
 
   @Override
   public String getAddress() {
@@ -46,37 +87,42 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector emit(JsonObject data) {
-    // TODO Auto-generated method stub
-    return null;
+    return this;
   }
 
   @Override
   public OutputCollector emit(JsonObject data, String tag) {
-    // TODO Auto-generated method stub
-    return null;
+    return this;
   }
 
   @Override
   public OutputCollector emit(JsonObject data, JsonMessage parent) {
-    // TODO Auto-generated method stub
-    return null;
+    return this;
   }
 
   @Override
   public OutputCollector emit(JsonObject data, String tag, JsonMessage parent) {
-    // TODO Auto-generated method stub
-    return null;
+    return this;
   }
 
   @Override
   public void start() {
-    // TODO Auto-generated method stub
     
   }
 
   @Override
   public void start(Handler<AsyncResult<Void>> doneHandler) {
     eventBus.registerHandler(address, handler, doneHandler);
+  }
+
+  @Override
+  public void stop() {
+    eventBus.unregisterHandler(address, handler);
+  }
+
+  @Override
+  public void stop(Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.unregisterHandler(address, handler, doneHandler);
   }
 
 }

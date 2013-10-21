@@ -31,16 +31,8 @@ public class EventBusConnection implements Connection {
 
   protected EventBus eventBus;
 
-  public EventBusConnection(String address) {
-    this.address = address;
-  }
-
   public EventBusConnection(String address, EventBus eventBus) {
     this.address = address;
-    this.eventBus = eventBus;
-  }
-
-  public void setEventBus(EventBus eventBus) {
     this.eventBus = eventBus;
   }
 

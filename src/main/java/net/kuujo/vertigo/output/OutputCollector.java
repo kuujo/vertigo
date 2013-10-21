@@ -82,4 +82,17 @@ public interface OutputCollector {
    */
   public void start(Handler<AsyncResult<Void>> doneHandler);
 
+  /**
+   * Stops the output collector.
+   */
+  public void stop();
+
+  /**
+   * Stops the output collector.
+   *
+   * @param doneHandler
+   *   An asynchronous handler to be invoked once the collector is stopped.
+   */
+  public void stop(Handler<AsyncResult<Void>> doneHandler);
+
 }

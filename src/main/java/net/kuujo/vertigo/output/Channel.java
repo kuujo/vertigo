@@ -15,9 +15,7 @@
 */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.filter.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.vertigo.selector.Selector;
 
 /**
  * A uni-directional communication channel.
@@ -27,34 +25,12 @@ import net.kuujo.vertigo.selector.Selector;
 public interface Channel {
 
   /**
-   * Sets the channel selector.
-   *
-   * @param selector
-   *   The channel connection selector.
-   */
-  public void setSelector(Selector selector);
-
-  /**
-   * Adds a filter to the channel.
-   *
-   * @param filter
-   *   A message filter.
-   */
-  public Channel addFilter(Filter filter);
-
-  /**
-   * Removes a filter from the channel.
-   *
-   * @param filter
-   *   A message filter.
-   */
-  public Channel removeFilter(Filter filter);
-
-  /**
    * Adds a connection to the channel.
    *
    * @param connection
    *   The connection to add.
+   * @return
+   *   The called channel instance.
    */
   public Channel addConnection(Connection connection);
 
@@ -63,27 +39,39 @@ public interface Channel {
    *
    * @param connection
    *   The connection to remove.
+   * @return
+   *   The called channel instance.
    */
   public Channel removeConnection(Connection connection);
 
   /**
-   * Indicates whether a message is valid for the channel.
+   * Returns a boolean indicating whether the channel contains a connection.
    *
-   * @param message
-   *   The message to validate.
+   * @param connection
+   *   The connection to check.
    * @return
-   *   A boolean indicating whether the given message is valid for the channel.
+   *   A boolean indicating whether the channel contains the connection.
    */
-  public boolean isValid(JsonMessage message);
+  public boolean containsConnection(Connection connection);
 
   /**
-   * Writes a message to the channel.
+   * Returns a boolean indicating whether the channel contains a connection by address.
+   *
+   * @param address
+   *   The connection address.
+   * @return
+   *   A boolean indicating whether the channel contains a connection at that address.
+   */
+  public boolean containsConnection(String address);
+
+  /**
+   * Publishes a message to the channel.
    *
    * @param message
-   *   The message to write to the channel.
+   *   The message to publish to the channel.
    * @return
-   *   The called writable instance.
+   *   The called channel instance.
    */
-  public Channel write(JsonMessage message);
+  public Channel publish(JsonMessage message);
 
 }

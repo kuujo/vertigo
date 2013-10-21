@@ -12,6 +12,16 @@ import org.vertx.java.core.Handler;
 public interface InputCollector {
 
   /**
+   * Adds an input to the input collector.
+   *
+   * @param input
+   *   The input to add.
+   * @return
+   *   The called input collector instance.
+   */
+  public InputCollector addInput(Input input);
+
+  /**
    * Sets a message handler on the collector.
    *
    * @param handler

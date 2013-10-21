@@ -64,8 +64,9 @@ public class DefaultListener implements Listener {
       if (body != null) {
         if (messageHandler != null) {
           try {
-            messageHandler.handle((JsonMessage) Serializer.unserialize(body));
-          } catch (SerializationException e) {
+            messageHandler.handle((JsonMessage) Serializer.deserialize(body));
+          }
+          catch (SerializationException e) {
             // Do nothing.
           }
         }

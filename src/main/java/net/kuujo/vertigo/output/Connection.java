@@ -15,6 +15,8 @@
 */
 package net.kuujo.vertigo.output;
 
+import net.kuujo.vertigo.messaging.JsonMessage;
+
 /**
  * A single point-to-point connection.
  *

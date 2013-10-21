@@ -16,39 +16,23 @@
 package net.kuujo.vertigo.filter;
 
 import net.kuujo.vertigo.messaging.JsonMessage;
-
-import org.vertx.java.core.json.JsonObject;
+import net.kuujo.vertigo.serializer.Serializable;
 
 /**
- * A source filter.
+ * A message filter.
  *
  * @author Jordan Halterman
  */
-public class SourceFilter implements Filter {
+public interface Filter extends Serializable {
 
-  private JsonObject definition = new JsonObject();
-
-  public SourceFilter() {
-  }
-
-  public SourceFilter(String source) {
-    definition.putString("source", source);
-  }
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
-  }
-
-  @Override
-  public boolean isValid(JsonMessage message) {
-    String source = message.source();
-    return source != null && source.equals(definition.getString("source"));
-  }
+  /**
+   * Indicates whether the given message is valid.
+   *
+   * @param message
+   *   The message to validate.
+   * @return
+   *   A boolean indicating whether the given message is valid.
+   */
+  public boolean isValid(JsonMessage message);
 
 }

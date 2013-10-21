@@ -15,15 +15,10 @@
 */
 package net.kuujo.vertigo.filter;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.input.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.vertigo.output.Condition;
 
 /**
  * A tag filter.
@@ -77,32 +72,9 @@ public class TagsFilter implements Filter {
   }
 
   @Override
-  public Condition createCondition() {
-    Set<String> tags = new HashSet<String>();
-    JsonArray tagList = definition.getArray("tags");
-    if (tagList == null) {
-      tagList = new JsonArray();
-    }
-    for (Object tag : tagList) {
-      tags.add((String) tag);
-    }
-    return new TagsCondition(tags);
-  }
-
-  /**
-   * A tags condition implementation.
-   */
-  public static class TagsCondition implements Condition {
-    private Set<String> tags;
-
-    public TagsCondition(Set<String> tags) {
-      this.tags = tags;
-    }
-
-    @Override
-    public boolean isValid(JsonMessage message) {
-      return tags.contains(message.tag());
-    }
+  public boolean isValid(JsonMessage message) {
+    JsonArray tags = definition.getArray("tags");
+    return tags != null && tags.contains(message.tag());
   }
 
 }

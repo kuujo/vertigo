@@ -15,9 +15,7 @@
 */
 package net.kuujo.vertigo.filter;
 
-import net.kuujo.vertigo.input.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.vertigo.output.Condition;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -75,33 +73,15 @@ public class FieldFilter implements Filter {
   }
 
   @Override
-  public Condition createCondition() {
-    return new FieldCondition(definition.getString("field"), definition.getValue("value"));
-  }
-
-  /**
-   * A field condition implementation.
-   */
-  public static class FieldCondition implements Condition {
-    private String fieldName;
-    private Object value;
-
-    public FieldCondition(String fieldName, Object value) {
-      this.fieldName = fieldName;
-      this.value = value;
-    }
-
-    @Override
-    public boolean isValid(JsonMessage message) {
-      JsonObject body = message.body();
-      if (body != null) {
-        Object fieldValue = body.getValue(fieldName);
-        if (fieldValue != null) {
-          return fieldValue.equals(value);
-        }
+  public boolean isValid(JsonMessage message) {
+    JsonObject body = message.body();
+    if (body != null) {
+      Object fieldValue = body.getValue(definition.getString("field"));
+      if (fieldValue != null) {
+        return fieldValue.equals(definition.getValue("value"));
       }
-      return false;
     }
+    return false;
   }
 
 }

@@ -13,16 +13,6 @@ import org.vertx.java.core.Handler;
 public interface InputCollector {
 
   /**
-   * Adds an input to the collector.
-   *
-   * @param input
-   *   The input to add.
-   * @return
-   *   The called collector instance.
-   */
-  public InputCollector addInput(Input input);
-
-  /**
    * Sets a message handler on the collector.
    *
    * @param handler
@@ -33,34 +23,30 @@ public interface InputCollector {
   public InputCollector messageHandler(Handler<JsonMessage> handler);
 
   /**
-   * Starts the input collector.
+   * Starts listening on the given input.
    *
+   * @param input
+   *   An input on which to listen.
    * @return
    *   The called collector instance.
    */
-  public InputCollector start();
+  public InputCollector listen(Input input);
 
   /**
-   * Starts the input collector.
+   * Starts listening on the given input.
    *
+   * @param input
+   *   An input on which to listen.
    * @param doneHandler
-   *   An asynchronous handler to be invoked once the start is complete.
+   *   An asynchronous handler to be invoked once listening has been started.
    * @return
    *   The called collector instance.
    */
-  public InputCollector start(Handler<AsyncResult<Void>> doneHandler);
+  public InputCollector listen(Input input, Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Stops the input collector.
+   * Closes the input collector.
    */
-  public void stop();
-
-  /**
-   * Stops the input collector.
-   *
-   * @param doneHandler
-   *   An asynchronous handler to be invoked once the stop is complete.
-   */
-  public void stop(Handler<AsyncResult<Void>> doneHandler);
+  public void close();
 
 }

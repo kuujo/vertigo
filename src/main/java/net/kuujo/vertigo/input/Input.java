@@ -19,6 +19,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A component input.
@@ -28,6 +29,7 @@ import net.kuujo.vertigo.serializer.Serializable;
 public class Input implements Serializable {
 
   public static final String ADDRESS = "address";
+  public static final String GROUP = "group";
   public static final String GROUPING = "grouping";
   public static final String FILTERS = "filters";
 
@@ -48,6 +50,16 @@ public class Input implements Serializable {
   }
 
   /**
+   * Returns the input group.
+   *
+   * @return
+   *   An input group.
+   */
+  public String getGroup() {
+    return definition.getString(GROUP);
+  }
+
+  /**
    * Sets the input grouping.
    *
    * @param grouping
@@ -55,8 +67,8 @@ public class Input implements Serializable {
    * @return
    *   The called input instance.
    */
-  public Input groupBy(Grouping grouping) {
-    definition.putObject(GROUPING, grouping.getState());
+  public Input deliverBy(Grouping grouping) {
+    definition.putObject(GROUPING, Serializer.serialize(grouping));
     return this;
   }
 
@@ -74,7 +86,7 @@ public class Input implements Serializable {
       filters = new JsonArray();
       definition.putArray(FILTERS, filters);
     }
-    filters.add(filter.getState());
+    filters.add(Serializer.serialize(filter));
     return this;
   }
 

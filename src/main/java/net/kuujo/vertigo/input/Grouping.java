@@ -19,7 +19,7 @@ import net.kuujo.vertigo.output.Dispatcher;
 import net.kuujo.vertigo.serializer.Serializable;
 
 /**
- * A component grouping.
+ * A component input distribution.
  *
  * @author Jordan Halterman
  */

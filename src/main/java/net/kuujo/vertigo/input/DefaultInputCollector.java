@@ -38,110 +38,26 @@ public class DefaultInputCollector implements InputCollector {
   }
 
   @Override
-  public InputCollector addInput(Input input) {
-    if (!inputs.contains(input)) {
-      inputs.add(input);
-      observers.put(input, new InputObserver(input, vertx, eventBus));
-    }
-    return this;
-  }
-
-  @Override
   public InputCollector messageHandler(Handler<JsonMessage> handler) {
     messageHandler = handler;
-    for (Observer observer : observers.values()) {
-      observer.messageHandler(handler);
-    }
     return this;
   }
 
   @Override
-  public InputCollector start() {
-    for (Observer observer : observers.values()) {
-      observer.messageHandler(messageHandler);
-      observer.start();
-    }
-    return this;
+  public InputCollector listen(Input input) {
+    return null;
   }
 
   @Override
-  public InputCollector start(Handler<AsyncResult<Void>> doneHandler) {
-    Iterator<Observer> iterator = observers.values().iterator();
-    if (iterator.hasNext()) {
-      recursiveStart(iterator, new DefaultFutureResult<Void>().setHandler(doneHandler));
-    }
-    else {
-      new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
-    }
-    return this;
-  }
-
-  /**
-   * Recursively starts all inputs.
-   *
-   * @param iterator
-   *   An input observer iterator.
-   * @param future
-   *   A future to be invoked once starts are all complete.
-   */
-  private void recursiveStart(final Iterator<Observer> iterator, final Future<Void> future) {
-    iterator.next().messageHandler(messageHandler).start(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else if (iterator.hasNext()) {
-          recursiveStart(iterator, future);
-        }
-        else {
-          future.setResult(null);
-        }
-      }
-    });
+  public InputCollector listen(Input input, Handler<AsyncResult<Void>> doneHandler) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
-  public void stop() {
-    for (Observer observer : observers.values()) {
-      observer.stop();
-    }
-  }
-
-  @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    Iterator<Observer> iterator = observers.values().iterator();
-    if (iterator.hasNext()) {
-      recursiveStop(iterator, new DefaultFutureResult<Void>().setHandler(doneHandler));
-    }
-    else {
-      new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
-    }
-  }
-
-  /**
-   * Recursively stops all inputs.
-   *
-   * @param iterator
-   *   An input observer iterator.
-   * @param future
-   *   A future to be invoked once stops are all complete.
-   */
-  private void recursiveStop(final Iterator<Observer> iterator, final Future<Void> future) {
-    iterator.next().stop(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else if (iterator.hasNext()) {
-          recursiveStop(iterator, future);
-        }
-        else {
-          future.setResult(null);
-        }
-      }
-    });
+  public void close() {
+    // TODO Auto-generated method stub
+    
   }
 
 }

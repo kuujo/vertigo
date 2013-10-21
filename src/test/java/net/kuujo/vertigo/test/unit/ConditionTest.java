@@ -19,9 +19,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.kuujo.vertigo.filter.Condition;
-import net.kuujo.vertigo.filter.FieldFilter;
-import net.kuujo.vertigo.filter.SourceFilter;
-import net.kuujo.vertigo.filter.TagsFilter;
+import net.kuujo.vertigo.input.filter.FieldFilter;
+import net.kuujo.vertigo.input.filter.SourceFilter;
+import net.kuujo.vertigo.input.filter.TagsFilter;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
 

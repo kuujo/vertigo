@@ -23,12 +23,9 @@ import java.util.Random;
 import java.util.Set;
 
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.messaging.BasicChannel;
-import net.kuujo.vertigo.messaging.Channel;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
-import net.kuujo.vertigo.messaging.EventBusConnection;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
 import net.kuujo.vertigo.heartbeat.HeartbeatEmitter;
@@ -59,7 +56,7 @@ public abstract class ComponentBase implements Component {
 
   protected Logger logger;
 
-  protected InstanceContext context;
+  protected ComponentContext context;
 
   protected String address;
 
@@ -75,14 +72,14 @@ public abstract class ComponentBase implements Component {
 
   private Random random = new Random();
 
-  protected ComponentBase(Vertx vertx, Container container, InstanceContext context) {
+  protected ComponentBase(Vertx vertx, Container container, ComponentContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
     this.logger = container.logger();
     this.context = context;
     this.address = context.getAddress();
-    NetworkContext networkContext = context.getComponent().getNetwork();
+    NetworkContext networkContext = context.getNetwork();
     networkAddress = networkContext.getAddress();
     List<String> auditorAddresses = networkContext.getAuditors();
     auditors = new ArrayList<String>();

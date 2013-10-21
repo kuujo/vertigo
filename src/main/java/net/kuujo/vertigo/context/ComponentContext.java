@@ -77,6 +77,16 @@ public abstract class ComponentContext implements Serializable {
   }
 
   /**
+   * Gets the component address.
+   *
+   * @return
+   *   The component address.
+   */
+  public String getAddress() {
+    return context.getString(Component.ADDRESS);
+  }
+
+  /**
    * Gets the component type.
    *
    * @return

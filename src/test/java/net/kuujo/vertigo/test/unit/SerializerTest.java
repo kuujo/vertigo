@@ -47,7 +47,7 @@ public class SerializerTest {
     assertNotNull(serialized.getString("class"));
     assertNotNull(serialized.getObject("state"));
     try {
-      TestSerializable unserialized = Serializer.unserialize(serialized);
+      TestSerializable unserialized = Serializer.deserialize(serialized);
       assertTrue(unserialized instanceof TestSerializable);
       assertEquals("bar", unserialized.getField("foo"));
     }

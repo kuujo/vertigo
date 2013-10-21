@@ -121,33 +121,6 @@ public abstract class ComponentContext implements Serializable {
   }
 
   /**
-   * Returns a list of component instance contexts.
-   *
-   * @return
-   *   A list of component instance contexts.
-   */
-  public List<InstanceContext> getInstances() {
-    JsonArray instanceContexts = context.getArray(Component.INSTANCES);
-    if (instanceContexts == null) {
-      instanceContexts = new JsonArray();
-    }
-
-    List<InstanceContext> instances = new ArrayList<>();
-    for (Object instanceContext : instanceContexts) {
-      try {
-        InstanceContext instance = Serializer.unserialize((JsonObject) instanceContext);
-        if (instance != null) {
-          instances.add(instance);
-        }
-      }
-      catch (SerializationException e) {
-        continue;
-      }
-    }
-    return instances;
-  }
-
-  /**
    * Returns a list of component inputs.
    *
    * @return
@@ -162,7 +135,7 @@ public abstract class ComponentContext implements Serializable {
     List<Input> inputs = new ArrayList<>();
     for (Object inputInfo : inputsInfo) {
       try {
-        Input input = Serializer.unserialize((JsonObject) inputInfo);
+        Input input = Serializer.deserialize((JsonObject) inputInfo);
         if (input != null) {
           inputs.add(input);
         }

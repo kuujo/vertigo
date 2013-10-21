@@ -123,7 +123,7 @@ public class NetworkContext implements Serializable {
     JsonObject componentContexts = context.getObject(Network.COMPONENTS);
     for (String address : componentContexts.getFieldNames()) {
       try {
-        ComponentContext component = Serializer.unserialize(componentContexts.getObject(address));
+        ComponentContext component = Serializer.deserialize(componentContexts.getObject(address));
         if (component != null) {
           components.add(component);
         }
@@ -150,7 +150,7 @@ public class NetworkContext implements Serializable {
     }
     if (components.getFieldNames().contains(address)) {
       try {
-        return Serializer.unserialize(components.getObject(address));
+        return Serializer.deserialize(components.getObject(address));
       }
       catch (SerializationException e) {
         return null;

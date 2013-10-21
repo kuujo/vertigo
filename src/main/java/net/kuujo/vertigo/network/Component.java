@@ -21,10 +21,9 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.input.Filter;
-import net.kuujo.vertigo.input.Grouping;
 import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.input.filter.Filter;
+import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -174,13 +173,13 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *
    * @param address
    *   The input address.
-   * @param grouping
-   *   An input grouping.
+   * @param selector
+   *   An input selector.
    * @return
    *   The new input instance.
    */
   public Input addInput(String address, Grouping grouping) {
-    return addInput(new Input(address).deliverBy(grouping));
+    return addInput(new Input(address).groupBy(grouping));
   }
 
   /**
@@ -214,7 +213,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The new input instance.
    */
   public Input addInput(String address, Grouping grouping, Filter... filters) {
-    Input input = addInput(new Input(address).deliverBy(grouping));
+    Input input = addInput(new Input(address).groupBy(grouping));
     for (Filter filter : filters) {
       input.filterBy(filter);
     }
@@ -247,13 +246,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
       config = new JsonObject();
       context.putObject(CONFIG, config);
     }
-
-    JsonArray instanceContexts = new JsonArray();
-    int instances = context.getInteger(INSTANCES, 1);
-    for (int i = 0; i < instances; i++) {
-      instanceContexts.add(Serializer.serialize(InstanceContext.fromJson(new JsonObject().putString(ADDRESS, String.format("%s.%d", getAddress(), i+1)).putObject("parent", context))));
-    }
-    context.putArray(INSTANCES, instanceContexts);
 
     JsonArray inputs = context.getArray(INPUTS);
     if (inputs == null) {

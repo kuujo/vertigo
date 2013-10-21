@@ -174,7 +174,7 @@ public class Network implements Serializable {
 
     if (components.getFieldNames().contains(address)) {
       try {
-        return Serializer.unserialize(components.getObject(address));
+        return Serializer.deserialize(components.getObject(address));
       }
       catch (SerializationException e) {
         return null;

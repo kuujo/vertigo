@@ -15,11 +15,11 @@
 */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.Cluster;
-import net.kuujo.vertigo.Component;
-import net.kuujo.vertigo.LocalCluster;
-import net.kuujo.vertigo.Network;
-import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.context_old.NetworkContext;
+import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.testtools.TestAckingFeeder;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
 import net.kuujo.vertigo.testtools.TestFailingFeeder;

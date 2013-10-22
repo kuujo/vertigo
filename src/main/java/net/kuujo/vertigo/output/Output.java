@@ -1,3 +1,18 @@
+/*
+* Copyright 2013 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package net.kuujo.vertigo.output;
 
 import java.util.ArrayList;
@@ -8,6 +23,9 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.filter.Filter;
+import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.network.MalformedNetworkException;
+import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -19,15 +37,34 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public class Output implements Serializable {
-
-  private static final String ADDRESS = "address";
-  private static final String GROUP = "group";
   public static final String SELECTOR = "selector";
-  public static final String FILTERS = "filters";
+  public static final String CONDITIONS = "conditions";
 
-  public static Output fromInput(Input input) {
+  /**
+   * Creates an output from input.
+   *
+   * @param input
+   *   The input from which to create an output.
+   * @return
+   *   A new output instance.
+   * @throws MalformedNetworkException 
+   */
+  public static Output fromInput(Input input) throws MalformedNetworkException {
+    JsonObject definition = new JsonObject();
+    Grouping grouping = input.getGrouping();
+    if (grouping == null) {
+      throw new MalformedNetworkException("Invalid input. No input grouping specified.");
+    }
+
+    definition.putObject(SELECTOR, Serializer.serialize(grouping.createSelector()));
+
+    JsonArray conditions = new JsonArray();
+    for (Filter filter : input.getFilters()) {
+      conditions.add(Serializer.serialize(filter.createCondition()));
+    }
+    definition.putArray(CONDITIONS, conditions);
     Output output = new Output();
-    output.setState(input.getState());
+    output.setState(definition);
     return output;
   }
 
@@ -36,14 +73,12 @@ public class Output implements Serializable {
   public Output() {
   }
 
-  public Output(String address) {
-    definition = new JsonObject().putString(ADDRESS, address);
-  }
-
-  public String getGroup() {
-    return definition.getString(GROUP);
-  }
-
+  /**
+   * Returns the output selector.
+   *
+   * @return
+   *   An output selector.
+   */
   public Selector getSelector() {
     JsonObject selectorInfo = definition.getObject(SELECTOR);
     try {
@@ -54,21 +89,28 @@ public class Output implements Serializable {
     }
   }
 
-  public List<Filter> getFilters() {
-    List<Filter> filters = new ArrayList<Filter>();
-    JsonArray filterInfos = definition.getArray(FILTERS);
-    if (filterInfos == null) {
-      return filters;
+  /**
+   * Returns a list of conditions for the output.
+   *
+   * @return
+   *   A list of output conditions.
+   */
+  public List<Condition> getConditions() {
+    List<Condition> conditions = new ArrayList<Condition>();
+    JsonArray conditionInfos = definition.getArray(CONDITIONS);
+    if (conditionInfos == null) {
+      return conditions;
     }
 
-    for (Object filterInfo : filterInfos) {
+    for (Object conditionInfo : conditionInfos) {
       try {
-        filters.add(Serializer.<Filter>deserialize((JsonObject) filterInfo));
-      } catch (SerializationException e) {
+        conditions.add(Serializer.<Condition>deserialize((JsonObject) conditionInfo));
+      }
+      catch (SerializationException e) {
         // Do nothing.
       }
     }
-    return filters;
+    return conditions;
   }
 
   @Override

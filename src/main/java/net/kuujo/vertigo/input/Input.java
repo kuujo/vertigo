@@ -15,12 +15,16 @@
 */
 package net.kuujo.vertigo.input;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 /**
@@ -67,6 +71,22 @@ public class Input implements Serializable {
   }
 
   /**
+   * Returns the current input grouping.
+   *
+   * @return
+   *   The current input grouping.
+   */
+  public Grouping getGrouping() {
+    JsonObject groupingInfo = definition.getObject(GROUPING);
+    try {
+      return groupingInfo != null ? Serializer.<Grouping>deserialize(groupingInfo) : null;
+    }
+    catch (SerializationException e) {
+      return null;
+    }
+  }
+
+  /**
    * Adds an input filter.
    *
    * @param filter
@@ -82,6 +102,30 @@ public class Input implements Serializable {
     }
     filters.add(Serializer.serialize(filter));
     return this;
+  }
+
+  /**
+   * Returns a list of input filters.
+   *
+   * @return
+   *   A list of input filters.
+   */
+  public List<Filter> getFilters() {
+    List<Filter> filters = new ArrayList<>();
+    JsonArray filterInfos = definition.getArray(FILTERS);
+    if (filterInfos == null) {
+      return filters;
+    }
+
+    for (Object filterInfo : filterInfos) {
+      try {
+        filters.add(Serializer.<Filter>deserialize((JsonObject) filterInfo));
+      }
+      catch (SerializationException e) {
+        continue;
+      }
+    }
+    return filters;
   }
 
   @Override

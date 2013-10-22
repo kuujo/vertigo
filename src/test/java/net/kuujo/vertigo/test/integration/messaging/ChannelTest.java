@@ -50,9 +50,9 @@ public class ChannelTest extends TestVerticle {
 
   private Channel createChannel(Dispatcher dispatcher) {
     Channel channel = new BasicChannel(dispatcher);
-    channel.addConnection(new EventBusConnection("test.1", vertx.eventBus()));
-    channel.addConnection(new EventBusConnection("test.2", vertx.eventBus()));
-    channel.addConnection(new EventBusConnection("test.3", vertx.eventBus()));
+    channel.addConnection(new DefaultConnection("test.1", vertx.eventBus()));
+    channel.addConnection(new DefaultConnection("test.2", vertx.eventBus()));
+    channel.addConnection(new DefaultConnection("test.3", vertx.eventBus()));
     return channel;
   }
 

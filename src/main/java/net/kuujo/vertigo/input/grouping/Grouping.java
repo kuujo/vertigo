@@ -19,6 +19,24 @@ public interface Grouping extends Serializable {
   public String id();
 
   /**
+   * Returns the grouping count.
+   *
+   * @return
+   *   The grouping count.
+   */
+  public int count();
+
+  /**
+   * Sets the grouping count.
+   *
+   * @param count
+   *   The grouping count.
+   * @return
+   *   The called grouping instance.
+   */
+  public Grouping setCount(int count);
+
+  /**
    * Creates an output selector from the grouping.
    *
    * @return

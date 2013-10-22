@@ -44,6 +44,11 @@ public class FieldsSelector extends AbstractSelector {
     this.fieldName = fieldName;
   }
 
+  public FieldsSelector(String fieldName, int count, String grouping) {
+    super(count, grouping);
+    this.fieldName = fieldName;
+  }
+
   /**
    * Sets the grouping field.
    *

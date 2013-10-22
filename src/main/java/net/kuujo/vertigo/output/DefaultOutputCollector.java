@@ -93,7 +93,7 @@ public class DefaultOutputCollector implements OutputCollector {
 
       final Channel channel;
       if (!channels.containsKey(grouping)) {
-        channel = new DefaultChannel(output.getSelector(), output.getConditions());
+        channel = new DefaultChannel(output.getSelector(), output.getConditions(), eventBus);
         channels.put(grouping, channel);
       }
       else {
@@ -101,7 +101,7 @@ public class DefaultOutputCollector implements OutputCollector {
       }
 
       if (!channel.containsConnection(address)) {
-        channel.addConnection(new EventBusConnection(address, eventBus));
+        channel.addConnection(new DefaultConnection(address, eventBus));
       }
 
       if (connectionTimers.containsKey(address)) {

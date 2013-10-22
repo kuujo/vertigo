@@ -40,6 +40,10 @@ public class RoundSelector extends AbstractSelector {
     super(grouping);
   }
 
+  public RoundSelector(int count, String grouping) {
+    super(count, grouping);
+  }
+
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     current++;

@@ -40,6 +40,10 @@ public class RandomSelector extends AbstractSelector {
     super(grouping);
   }
 
+  public RandomSelector(int count, String grouping) {
+    super(count, grouping);
+  }
+
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     int index = rand.nextInt(connections.size());

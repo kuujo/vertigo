@@ -37,6 +37,14 @@ public interface Selector extends Serializable {
   public String getGrouping();
 
   /**
+   * Returns the selector connection count.
+   *
+   * @return
+   *   The selector connection count.
+   */
+  public int getConnectionCount();
+
+  /**
    * Selects a list of connections to which to emit messages.
    *
    * @param message

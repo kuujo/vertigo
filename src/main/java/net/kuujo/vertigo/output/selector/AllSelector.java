@@ -35,6 +35,10 @@ public class AllSelector extends AbstractSelector {
     super(grouping);
   }
 
+  public AllSelector(int count, String grouping) {
+    super(count, grouping);
+  }
+
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     return connections;

@@ -18,6 +18,8 @@ package net.kuujo.vertigo.output;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vertx.java.core.eventbus.EventBus;
+
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
@@ -31,16 +33,46 @@ public class DefaultChannel implements Channel {
   private Selector selector;
   private List<Condition> conditions = new ArrayList<Condition>();
   private List<Connection> connections = new ArrayList<Connection>();
+  private EventBus eventBus;
 
-  public DefaultChannel(Selector selector, List<Condition> conditions) {
+  public DefaultChannel(Selector selector, List<Condition> conditions, EventBus eventBus) {
     this.selector = selector;
     this.conditions = conditions;
+    init();
+  }
+
+  /**
+   * Initializes channel connections.
+   */
+  private void init() {
+    int count = selector.getConnectionCount();
+    if (count > 0) {
+      for (int i = 0; i < count; i++) {
+        addConnection(new PseudoConnection(eventBus));
+      }
+    }
   }
 
   @Override
   public Channel addConnection(Connection connection) {
     if (!connections.contains(connection)) {
       connections.add(connection);
+    }
+
+    int count = selector.getConnectionCount();
+    if (count > 0) {
+      boolean removed = false;
+      for (Connection conn : connections) {
+        if (conn instanceof PseudoConnection) {
+          connections.remove(conn);
+          removed = true;
+          break;
+        }
+      }
+
+      if (!removed) {
+        connections.remove(0);
+      }
     }
     return this;
   }
@@ -49,6 +81,13 @@ public class DefaultChannel implements Channel {
   public Channel removeConnection(Connection connection) {
     if (connections.contains(connection)) {
       connections.remove(connection);
+    }
+
+    int count = selector.getConnectionCount();
+    if (count > 0 && connections.size() < count) {
+      for (int i = connections.size(); i < count; i++) {
+        connections.add(new PseudoConnection(eventBus));
+      }
     }
     return this;
   }

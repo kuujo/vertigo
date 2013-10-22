@@ -8,7 +8,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public abstract class AbstractSelector implements Selector {
-
+  protected int connectionCount;
   protected String grouping;
 
   protected AbstractSelector() {
@@ -16,6 +16,16 @@ public abstract class AbstractSelector implements Selector {
 
   protected AbstractSelector(String grouping) {
     this.grouping = grouping;
+  }
+
+  protected AbstractSelector(int count, String grouping) {
+    this.connectionCount = count;
+    this.grouping = grouping;
+  }
+
+  @Override
+  public int getConnectionCount() {
+    return connectionCount;
   }
 
   @Override

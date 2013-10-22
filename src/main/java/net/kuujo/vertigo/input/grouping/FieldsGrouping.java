@@ -75,7 +75,7 @@ public class FieldsGrouping extends AbstractGrouping {
 
   @Override
   public Selector createSelector() {
-    return new FieldsSelector(getField(), id());
+    return new FieldsSelector(getField(), count(), id());
   }
 
 }

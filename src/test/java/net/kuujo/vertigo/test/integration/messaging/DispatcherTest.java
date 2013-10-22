@@ -57,7 +57,7 @@ public class DispatcherTest extends TestVerticle {
 
     final Set<String> complete = new HashSet<String>();
 
-    Connection connectionOne = new EventBusConnection("test.1", eventBus);
+    Connection connectionOne = new DefaultConnection("test.1", eventBus);
     eventBus.registerHandler("test.1", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -74,7 +74,7 @@ public class DispatcherTest extends TestVerticle {
     });
     connections.add(connectionOne);
 
-    Connection connectionTwo = new EventBusConnection("test.2", eventBus);
+    Connection connectionTwo = new DefaultConnection("test.2", eventBus);
     eventBus.registerHandler("test.2", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -91,7 +91,7 @@ public class DispatcherTest extends TestVerticle {
     });
     connections.add(connectionTwo);
 
-    Connection connectionThree = new EventBusConnection("test.3", eventBus);
+    Connection connectionThree = new DefaultConnection("test.3", eventBus);
     eventBus.registerHandler("test.3", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -122,7 +122,7 @@ public class DispatcherTest extends TestVerticle {
     final List<String> order = new ArrayList<String>();
     final List<String> complete = new ArrayList<String>();
 
-    Connection connectionOne = new EventBusConnection("test.1", eventBus);
+    Connection connectionOne = new DefaultConnection("test.1", eventBus);
     eventBus.registerHandler("test.1", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -141,7 +141,7 @@ public class DispatcherTest extends TestVerticle {
     });
     connections.add(connectionOne);
 
-    Connection connectionTwo = new EventBusConnection("test.2", eventBus);
+    Connection connectionTwo = new DefaultConnection("test.2", eventBus);
     eventBus.registerHandler("test.2", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -160,7 +160,7 @@ public class DispatcherTest extends TestVerticle {
     });
     connections.add(connectionTwo);
 
-    Connection connectionThree = new EventBusConnection("test.3", eventBus);
+    Connection connectionThree = new DefaultConnection("test.3", eventBus);
     eventBus.registerHandler("test.3", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -199,7 +199,7 @@ public class DispatcherTest extends TestVerticle {
     final List<String> order = new ArrayList<String>();
     final List<String> complete = new ArrayList<String>();
 
-    Connection connectionOne = new EventBusConnection("test.1", eventBus);
+    Connection connectionOne = new DefaultConnection("test.1", eventBus);
     eventBus.registerHandler("test.1", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -218,7 +218,7 @@ public class DispatcherTest extends TestVerticle {
     });
     connections.add(connectionOne);
 
-    Connection connectionTwo = new EventBusConnection("test.2", eventBus);
+    Connection connectionTwo = new DefaultConnection("test.2", eventBus);
     eventBus.registerHandler("test.2", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
@@ -237,7 +237,7 @@ public class DispatcherTest extends TestVerticle {
     });
     connections.add(connectionTwo);
 
-    Connection connectionThree = new EventBusConnection("test.3", eventBus);
+    Connection connectionThree = new DefaultConnection("test.3", eventBus);
     eventBus.registerHandler("test.3", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {

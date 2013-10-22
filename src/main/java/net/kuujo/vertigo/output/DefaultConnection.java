@@ -26,11 +26,11 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class EventBusConnection implements Connection {
+public class DefaultConnection implements Connection {
   protected String address;
   protected EventBus eventBus;
 
-  public EventBusConnection(String address, EventBus eventBus) {
+  public DefaultConnection(String address, EventBus eventBus) {
     this.address = address;
     this.eventBus = eventBus;
   }
@@ -49,7 +49,7 @@ public class EventBusConnection implements Connection {
   /**
    * Sends audit info to the message auditor.
    */
-  private JsonMessage audit(JsonMessage message) {
+  protected JsonMessage audit(JsonMessage message) {
     String auditor = message.auditor();
     if (auditor != null) {
       String parent = message.parent();

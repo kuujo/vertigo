@@ -98,6 +98,7 @@ public class DefaultInputCollector implements InputCollector {
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
           for (Input input : context.getInputs()) {
+            input.getGrouping().setCount(context.getInstances());
             try {
               periodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }
@@ -120,6 +121,7 @@ public class DefaultInputCollector implements InputCollector {
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
           for (Input input : context.getInputs()) {
+            input.getGrouping().setCount(context.getInstances());
             try {
               periodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }

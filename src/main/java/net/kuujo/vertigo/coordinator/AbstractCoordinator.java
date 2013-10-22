@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.vertigo.auditor.Auditor;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.vertigo.heartbeat.HeartbeatMonitor;
@@ -51,7 +51,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
   protected Map<String, String> deploymentMap = new HashMap<>();
 
-  protected Map<String, InstanceContext> contextMap = new HashMap<>();
+  protected Map<String, ComponentContext> contextMap = new HashMap<>();
 
   protected Map<String, HeartbeatMonitor> heartbeats = new HashMap<>();
 

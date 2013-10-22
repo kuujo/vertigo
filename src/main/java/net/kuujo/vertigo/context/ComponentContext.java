@@ -131,6 +131,16 @@ public abstract class ComponentContext implements Serializable {
   }
 
   /**
+   * Gets the number of component instances.
+   *
+   * @return
+   *   The number of component instances.
+   */
+  public int getInstances() {
+    return context.getInteger(Component.INSTANCES, 1);
+  }
+
+  /**
    * Returns a list of component inputs.
    *
    * @return

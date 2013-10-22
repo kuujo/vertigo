@@ -54,7 +54,7 @@ public class ConnectionTest extends TestVerticle {
     }, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
-        Connection connection = new EventBusConnection(TEST_ADDRESS, vertx.eventBus());
+        Connection connection = new DefaultConnection(TEST_ADDRESS, vertx.eventBus());
         connection.write(DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "foo", "auditor"));
       }
     });

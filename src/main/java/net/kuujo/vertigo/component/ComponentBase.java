@@ -165,7 +165,7 @@ public abstract class ComponentBase implements Component {
 
         Set<String> addresses = connectionContext.getAddresses();
         for (String address : addresses) {
-          channel.addConnection(new EventBusConnection(address, eventBus));
+          channel.addConnection(new DefaultConnection(address, eventBus));
         }
         output.addChannel(channel);
       }

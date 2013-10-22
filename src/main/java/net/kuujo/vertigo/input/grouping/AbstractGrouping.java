@@ -23,6 +23,17 @@ public abstract class AbstractGrouping implements Grouping {
   }
 
   @Override
+  public int count() {
+    return definition.getInteger("count", 0);
+  }
+
+  @Override
+  public Grouping setCount(int count) {
+    definition.putNumber("count", count);
+    return this;
+  }
+
+  @Override
   public JsonObject getState() {
     return definition.copy();
   }

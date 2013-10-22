@@ -31,15 +31,17 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class FieldsSelector implements Selector {
+public class FieldsSelector extends AbstractSelector {
 
-  private JsonObject definition = new JsonObject();
+  private String fieldName;
 
   public FieldsSelector() {
+    super();
   }
 
-  public FieldsSelector(String fieldName) {
-    definition.putString("field", fieldName);
+  public FieldsSelector(String fieldName, String grouping) {
+    super(grouping);
+    this.fieldName = fieldName;
   }
 
   /**
@@ -50,8 +52,8 @@ public class FieldsSelector implements Selector {
    * @return
    *   The called grouping instance.
    */
-  public FieldsSelector field(String fieldName) {
-    definition.putString("field", fieldName);
+  public FieldsSelector setField(String fieldName) {
+    this.fieldName = fieldName;
     return this;
   }
 
@@ -61,23 +63,24 @@ public class FieldsSelector implements Selector {
    * @return
    *   The grouping field.
    */
-  public String field() {
-    return definition.getString("field");
+  public String getField() {
+    return fieldName;
   }
 
   @Override
   public JsonObject getState() {
-    return definition;
+    return super.getState().putString("field", fieldName);
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    super.setState(state);
+    fieldName = state.getString("field");
   }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
-    String value = message.body().getString(definition.getString("field"));
+    String value = message.body().getString(fieldName);
     if (value != null) {
       int index = value.length() % connections.size();
       connections.subList(index, index+1);

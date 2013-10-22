@@ -20,8 +20,6 @@ import java.util.List;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * A *round* selector.
  *
@@ -30,21 +28,9 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class RoundSelector implements Selector {
-
-  private JsonObject definition = new JsonObject();
+public class RoundSelector extends AbstractSelector {
 
   private int current;
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
-  }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {

@@ -20,8 +20,6 @@ import java.util.List;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * An *all* selector.
  *
@@ -31,18 +29,10 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class AllSelector implements Selector {
+public class AllSelector extends AbstractSelector {
 
-  private JsonObject definition = new JsonObject();
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
+  public AllSelector(String grouping) {
+    super(grouping);
   }
 
   @Override

@@ -29,6 +29,14 @@ import net.kuujo.vertigo.serializer.Serializable;
 public interface Selector extends Serializable {
 
   /**
+   * Returns the selector grouping.
+   *
+   * @return
+   *   The unique selector grouping identifier.
+   */
+  public String getGrouping();
+
+  /**
    * Selects a list of connections to which to emit messages.
    *
    * @param message

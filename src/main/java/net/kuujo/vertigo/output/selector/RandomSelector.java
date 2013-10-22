@@ -21,8 +21,6 @@ import java.util.Random;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * A *random* selector.
  *
@@ -30,21 +28,9 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class RandomSelector implements Selector {
-
-  private JsonObject definition = new JsonObject();
+public class RandomSelector extends AbstractSelector {
 
   private Random rand = new Random();
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
-  }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {

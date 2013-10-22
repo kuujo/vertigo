@@ -25,7 +25,7 @@ public class VerticleContext extends ComponentContext {
    * @return
    *   The verticle main.
    */
-  public String main() {
+  public String getMain() {
     return context.getString(Verticle.MAIN);
   }
 

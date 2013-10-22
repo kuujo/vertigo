@@ -25,7 +25,7 @@ public class ModuleContext extends ComponentContext {
    * @return
    *   The module name.
    */
-  public String module() {
+  public String getModule() {
     return context.getString(Module.MODULE);
   }
 

@@ -27,7 +27,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class RandomGrouping implements Grouping {
+public class RandomGrouping extends AbstractGrouping {
 
   private JsonObject definition = new JsonObject();
 

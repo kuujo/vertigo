@@ -29,7 +29,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class AllGrouping implements Grouping {
+public class AllGrouping extends AbstractGrouping {
 
   private JsonObject definition = new JsonObject();
 

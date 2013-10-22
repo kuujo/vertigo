@@ -11,6 +11,14 @@ import net.kuujo.vertigo.serializer.Serializable;
 public interface Grouping extends Serializable {
 
   /**
+   * Returns the grouping identifier.
+   *
+   * @return
+   *   The unique grouping identifier.
+   */
+  public String id();
+
+  /**
    * Creates an output selector from the grouping.
    *
    * @return

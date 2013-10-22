@@ -48,7 +48,7 @@ public class FieldsGrouping extends AbstractGrouping {
    * @return
    *   The called grouping instance.
    */
-  public FieldsGrouping field(String fieldName) {
+  public FieldsGrouping setField(String fieldName) {
     definition.putString("field", fieldName);
     return this;
   }
@@ -59,7 +59,7 @@ public class FieldsGrouping extends AbstractGrouping {
    * @return
    *   The grouping field.
    */
-  public String field() {
+  public String getField() {
     return definition.getString("field");
   }
 
@@ -75,7 +75,7 @@ public class FieldsGrouping extends AbstractGrouping {
 
   @Override
   public Selector createSelector() {
-    return new FieldsSelector(definition.getString("field"));
+    return new FieldsSelector(getField(), id());
   }
 
 }

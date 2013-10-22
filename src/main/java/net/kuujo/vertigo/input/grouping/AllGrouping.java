@@ -45,7 +45,7 @@ public class AllGrouping extends AbstractGrouping {
 
   @Override
   public Selector createSelector() {
-    return new AllSelector();
+    return new AllSelector(id());
   }
 
 }

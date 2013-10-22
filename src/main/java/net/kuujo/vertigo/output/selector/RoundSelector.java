@@ -32,6 +32,14 @@ public class RoundSelector extends AbstractSelector {
 
   private int current;
 
+  public RoundSelector() {
+    super();
+  }
+
+  public RoundSelector(String grouping) {
+    super(grouping);
+  }
+
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     current++;

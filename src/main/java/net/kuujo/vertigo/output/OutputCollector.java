@@ -39,18 +39,18 @@ public interface OutputCollector {
   /**
    * Emits a message to all output channels.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @return
    *   The called output collector instance.
    */
-  public OutputCollector emit(JsonObject data);
+  public OutputCollector emit(JsonObject body);
 
   /**
    * Emits a message to all output channels.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param tag
    *   A tag to apply to output data.
    * @return
@@ -61,8 +61,8 @@ public interface OutputCollector {
   /**
    * Emits a message to all output channels.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param parent
    *   The parent message of the data.
    * @return
@@ -73,8 +73,8 @@ public interface OutputCollector {
   /**
    * Emits a message to all output channels.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param tag
    *   A tag to apply to output data.
    * @param parent

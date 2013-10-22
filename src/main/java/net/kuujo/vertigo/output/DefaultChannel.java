@@ -81,7 +81,7 @@ public class DefaultChannel implements Channel {
   /**
    * Indicates whether the given message is valid.
    */
-  public boolean isValid(JsonMessage message) {
+  private boolean isValid(JsonMessage message) {
     for (Condition condition : conditions) {
       if (!condition.isValid(message)) {
         return false;

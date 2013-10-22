@@ -16,9 +16,13 @@
 package net.kuujo.vertigo.output;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
+import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
@@ -36,23 +40,24 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector {
-  private String address;
   private Vertx vertx;
   private EventBus eventBus;
+  private ComponentContext context;
+  private List<String> auditors;
+  private Random random;
   private Map<String, Channel> channels = new HashMap<>();
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
-  public DefaultOutputCollector(String address, Vertx vertx) {
-    this.address = address;
-    this.vertx = vertx;
-    this.eventBus = vertx.eventBus();
+  public DefaultOutputCollector(Vertx vertx, ComponentContext context) {
+    this(vertx, vertx.eventBus(), context);
   }
 
-  public DefaultOutputCollector(String address, Vertx vertx, EventBus eventBus) {
-    this.address = address;
+  public DefaultOutputCollector(Vertx vertx, EventBus eventBus, ComponentContext context) {
     this.vertx = vertx;
     this.eventBus = eventBus;
+    this.context = context;
+    auditors = context.getNetwork().getAuditors();
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -122,47 +127,64 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String getAddress() {
-    return address;
+    return context.getAddress();
   }
 
   @Override
-  public OutputCollector emit(JsonObject data) {
-    return this;
+  public OutputCollector emit(JsonObject body) {
+    return doEmit(DefaultJsonMessage.create(context.getAddress(), body, selectRandomAuditor()));
   }
 
   @Override
-  public OutputCollector emit(JsonObject data, String tag) {
-    return this;
+  public OutputCollector emit(JsonObject body, String tag) {
+    return doEmit(DefaultJsonMessage.create(context.getAddress(), body, tag, selectRandomAuditor()));
   }
 
   @Override
-  public OutputCollector emit(JsonObject data, JsonMessage parent) {
-    return this;
+  public OutputCollector emit(JsonObject body, JsonMessage parent) {
+    return doEmit(parent.createChild(body));
   }
 
   @Override
-  public OutputCollector emit(JsonObject data, String tag, JsonMessage parent) {
+  public OutputCollector emit(JsonObject body, String tag, JsonMessage parent) {
+    return doEmit(parent.createChild(body, tag));
+  }
+
+  /**
+   * Emits a message.
+   */
+  private OutputCollector doEmit(JsonMessage message) {
+    for (Channel channel : channels.values()) {
+      channel.publish(message);
+    }
     return this;
+  }
+
+  /**
+   * Returns a random auditor address.
+   */
+  private String selectRandomAuditor() {
+    return auditors.get(random.nextInt(auditors.size()));
   }
 
   @Override
   public void start() {
-    
+    eventBus.registerHandler(context.getAddress(), handler);
   }
 
   @Override
   public void start(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.registerHandler(address, handler, doneHandler);
+    eventBus.registerHandler(context.getAddress(), handler, doneHandler);
   }
 
   @Override
   public void stop() {
-    eventBus.unregisterHandler(address, handler);
+    eventBus.unregisterHandler(context.getAddress(), handler);
   }
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.unregisterHandler(address, handler, doneHandler);
+    eventBus.unregisterHandler(context.getAddress(), handler, doneHandler);
   }
 
 }

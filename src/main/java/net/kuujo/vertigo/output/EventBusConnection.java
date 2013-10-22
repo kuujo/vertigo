@@ -19,6 +19,7 @@ import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An eventbus-based connection.
@@ -41,8 +42,39 @@ public class EventBusConnection implements Connection {
 
   @Override
   public Connection write(JsonMessage message) {
-    eventBus.send(address, Serializer.serialize(message));
+    eventBus.send(address, Serializer.serialize(audit(message)));
     return this;
+  }
+
+  /**
+   * Sends audit info to the message auditor.
+   */
+  private JsonMessage audit(JsonMessage message) {
+    String auditor = message.auditor();
+    if (auditor != null) {
+      String parent = message.parent();
+      if (parent != null) {
+        eventBus.send(auditor, createForkAction(message.id(), parent));
+      }
+      else {
+        eventBus.send(auditor, createNewAction(message.id()));
+      }
+    }
+    return message;
+  }
+
+  /**
+   * Creates a new message tree action.
+   */
+  private static final JsonObject createNewAction(String id) {
+    return new JsonObject().putString("action", "create").putString("id", id);
+  }
+
+  /**
+   * Creates a forked message tree action.
+   */
+  private static final JsonObject createForkAction(String id, String parent) {
+    return new JsonObject().putString("action", "fork").putString("id", id).putString("parent", parent);
   }
 
 }

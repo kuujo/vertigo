@@ -94,7 +94,7 @@ public class DefaultChannel implements Channel {
   public Channel publish(JsonMessage message) {
     if (isValid(message)) {
       for (Connection connection : selector.select(message, connections)) {
-        connection.write(message);
+        connection.write(message.copy());
       }
     }
     return this;

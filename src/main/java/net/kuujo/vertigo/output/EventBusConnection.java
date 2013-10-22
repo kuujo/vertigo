@@ -26,9 +26,7 @@ import org.vertx.java.core.eventbus.EventBus;
  * @author Jordan Halterman
  */
 public class EventBusConnection implements Connection {
-
   protected String address;
-
   protected EventBus eventBus;
 
   public EventBusConnection(String address, EventBus eventBus) {

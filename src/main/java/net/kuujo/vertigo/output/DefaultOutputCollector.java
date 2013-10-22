@@ -168,13 +168,15 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public void start() {
+  public OutputCollector start() {
     eventBus.registerHandler(context.getAddress(), handler);
+    return this;
   }
 
   @Override
-  public void start(Handler<AsyncResult<Void>> doneHandler) {
+  public OutputCollector start(Handler<AsyncResult<Void>> doneHandler) {
     eventBus.registerHandler(context.getAddress(), handler, doneHandler);
+    return this;
   }
 
   @Override

@@ -86,16 +86,21 @@ public interface OutputCollector {
 
   /**
    * Starts the output collector.
+   *
+   * @return
+   *   The called output collector instance.
    */
-  public void start();
+  public OutputCollector start();
 
   /**
    * Starts the output collector.
    *
    * @param doneHandler
    *   An asynchronous handler to be invoked once the collector is started.
+   * @return
+   *   The called output collector instance.
    */
-  public void start(Handler<AsyncResult<Void>> doneHandler);
+  public OutputCollector start(Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops the output collector.

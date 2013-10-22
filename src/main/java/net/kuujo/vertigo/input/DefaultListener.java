@@ -18,6 +18,8 @@ package net.kuujo.vertigo.input;
 import java.util.UUID;
 
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.network.MalformedNetworkException;
+import net.kuujo.vertigo.output.Output;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -113,32 +115,44 @@ public class DefaultListener implements Listener {
 
   @Override
   public Listener start() {
-    eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.succeeded()) {
-          periodicListen();
+    try {
+      final Output output = Output.fromInput(input);
+      eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.succeeded()) {
+            periodicListen(output);
+          }
         }
-      }
-    });
+      });
+    }
+    catch (MalformedNetworkException e) {
+      // Output is invalid. Do nothing.
+    }
     return this;
   }
 
   @Override
   public Listener start(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.succeeded()) {
-          periodicListen();
-          future.setResult(null);
+    try {
+      final Output output = Output.fromInput(input);
+      eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.succeeded()) {
+            periodicListen(output);
+            future.setResult(null);
+          }
+          else {
+            future.setFailure(result.cause());
+          }
         }
-        else {
-          future.setFailure(result.cause());
-        }
-      }
-    });
+      });
+    }
+    catch (MalformedNetworkException e) {
+      future.setFailure(e);
+    }
     return this;
   }
 
@@ -146,12 +160,12 @@ public class DefaultListener implements Listener {
    * Periodically sends listen messages to the listen source to
    * let it know we're still interested in receiving messages.
    */
-  private void periodicListen() {
+  private void periodicListen(final Output output) {
     listenTimerID = vertx.setTimer(LISTEN_PERIOD, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
-        eventBus.publish(input.getAddress(), Serializer.serialize(input).putString("action", "listen").putString("address", address));
-        periodicListen();
+        eventBus.publish(input.getAddress(), Serializer.serialize(output).putString("action", "listen").putString("address", address));
+        periodicListen(output);
       }
     });
   }

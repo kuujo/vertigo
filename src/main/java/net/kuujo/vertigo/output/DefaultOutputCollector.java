@@ -17,8 +17,8 @@ package net.kuujo.vertigo.output;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
@@ -36,11 +36,12 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector {
-
   private String address;
   private Vertx vertx;
   private EventBus eventBus;
   private Map<String, Channel> channels = new HashMap<>();
+  private Map<String, Long> connectionTimers = new HashMap<>();
+  private static final long LISTEN_INTERVAL = 15000;
 
   public DefaultOutputCollector(String address, Vertx vertx) {
     this.address = address;
@@ -73,22 +74,46 @@ public class DefaultOutputCollector implements OutputCollector {
    * Starts listening to messages from this output collector.
    */
   private void doListen(JsonObject info) {
-    String address = info.getString("address");
+    final String address = info.getString("address");
+    if (address == null) {
+      return;
+    }
+
     try {
-      Output output = Output.fromInput((Input) Serializer.deserialize(info));
-      String group = output.getGroup();
-      Channel channel;
-      if (!channels.containsKey(group)) {
-        channel = new DefaultChannel(output);
-        channels.put(group, channel);
+      Output output = Serializer.deserialize(info);
+      String grouping = output.getSelector().getGrouping();
+      if (grouping == null) {
+        grouping = UUID.randomUUID().toString();
+      }
+
+      final Channel channel;
+      if (!channels.containsKey(grouping)) {
+        channel = new DefaultChannel(output.getSelector(), output.getConditions());
+        channels.put(grouping, channel);
       }
       else {
-        channel = channels.get(group);
+        channel = channels.get(grouping);
       }
 
       if (!channel.containsConnection(address)) {
         channel.addConnection(new EventBusConnection(address, eventBus));
       }
+
+      if (connectionTimers.containsKey(address)) {
+        vertx.cancelTimer(connectionTimers.remove(address));
+      }
+
+      // Set a timer that, if triggered, will remove the connection from the channel.
+      // This indicates that we haven't received a keep-alive message in LISTEN_INTERVAL.
+      connectionTimers.put(address, vertx.setTimer(LISTEN_INTERVAL, new Handler<Long>() {
+        @Override
+        public void handle(Long timerID) {
+          if (channel.containsConnection(address)) {
+            channel.removeConnection(channel.getConnection(address));
+          }
+          connectionTimers.remove(address);
+        }
+      }));
     }
     catch (SerializationException e) {
       // Failed to unserialize the input info.

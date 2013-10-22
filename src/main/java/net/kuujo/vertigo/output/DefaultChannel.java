@@ -18,8 +18,8 @@ package net.kuujo.vertigo.output;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
@@ -28,15 +28,13 @@ import net.kuujo.vertigo.output.selector.Selector;
  * @author Jordan Halterman
  */
 public class DefaultChannel implements Channel {
-  private Output output;
   private Selector selector;
-  private List<Filter> filters = new ArrayList<Filter>();
+  private List<Condition> conditions = new ArrayList<Condition>();
   private List<Connection> connections = new ArrayList<Connection>();
 
-  public DefaultChannel(Output output) {
-    this.output = output;
-    this.selector = output.getSelector();
-    this.filters = output.getFilters();
+  public DefaultChannel(Selector selector, List<Condition> conditions) {
+    this.selector = selector;
+    this.conditions = conditions;
   }
 
   @Override
@@ -70,12 +68,22 @@ public class DefaultChannel implements Channel {
     return false;
   }
 
+  @Override
+  public Connection getConnection(String address) {
+    for (Connection connection : connections) {
+      if (connection.address().equals(address)) {
+        return connection;
+      }
+    }
+    return null;
+  }
+
   /**
    * Indicates whether the given message is valid.
    */
   public boolean isValid(JsonMessage message) {
-    for (Filter filter : filters) {
-      if (!filter.isValid(message)) {
+    for (Condition condition : conditions) {
+      if (!condition.isValid(message)) {
         return false;
       }
     }

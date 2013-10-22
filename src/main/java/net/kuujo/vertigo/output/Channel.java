@@ -65,6 +65,16 @@ public interface Channel {
   public boolean containsConnection(String address);
 
   /**
+   * Returns a connection by address.
+   *
+   * @param address
+   *   The connection address.
+   * @return
+   *   A connection instance or null if the connection doesn't exist.
+   */
+  public Connection getConnection(String address);
+
+  /**
    * Publishes a message to the channel.
    *
    * @param message

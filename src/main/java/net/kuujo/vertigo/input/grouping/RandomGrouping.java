@@ -42,7 +42,7 @@ public class RandomGrouping extends AbstractGrouping {
 
   @Override
   public Selector createSelector() {
-    return new RandomSelector(id());
+    return new RandomSelector(count(), id());
   }
 
 }

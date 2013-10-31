@@ -91,7 +91,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
           future.setFailure(result.cause());
         }
         else {
-          future.setResult(null);
+          future.setResult((T) AbstractExecutor.this);
         }
       }
     });

@@ -127,7 +127,7 @@ public class DefaultInputCollector implements InputCollector {
           for (Input input : context.getInputs()) {
             input.getGrouping().setCount(context.getInstances());
             try {
-              periodicListen(UUID.randomUUID(), input, Output.fromInput(input));
+              startPeriodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }
             catch (MalformedNetworkException e) {
               stopListeners();
@@ -143,6 +143,14 @@ public class DefaultInputCollector implements InputCollector {
       }
     });
     return this;
+  }
+
+  /**
+   * Starts periodically listening for messages from a source.
+   */
+  private void startPeriodicListen(final UUID id, final Input input, final Output output) {
+    eventBus.publish(input.getAddress(), Serializer.serialize(output).putString("action", "listen").putString("address", address));
+    periodicListen(id, input, output);
   }
 
   /**

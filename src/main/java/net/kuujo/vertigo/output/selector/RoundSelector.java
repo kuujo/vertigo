@@ -46,7 +46,7 @@ public class RoundSelector extends AbstractSelector {
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     current++;
-    if (current > connections.size()) {
+    if (current >= connections.size()) {
       current = 0;
     }
     return connections.subList(current, current+1);

@@ -23,7 +23,7 @@ public abstract class AbstractGrouping implements Grouping {
 
   @Override
   public int count() {
-    return definition.getInteger("count", 0);
+    return definition.getInteger("count", 1);
   }
 
   @Override

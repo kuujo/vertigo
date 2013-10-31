@@ -43,7 +43,7 @@ public class RoundGrouping extends AbstractGrouping {
 
   @Override
   public Selector createSelector() {
-    return new RoundSelector(id());
+    return new RoundSelector(count(), id());
   }
 
 }

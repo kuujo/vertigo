@@ -40,6 +40,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public static final String MODULE = "module";
   public static final String CONFIG = "config";
   public static final String INSTANCES = "instances";
+  public static final String HEARTBEAT_INTERVAL = "heartbeat";
   public static final String INPUTS = "inputs";
 
   protected JsonObject definition;
@@ -135,6 +136,30 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   @SuppressWarnings("unchecked")
   public T setInstances(int instances) {
     definition.putNumber(INSTANCES, instances);
+    return (T) this;
+  }
+
+  /**
+   * Returns the component heartbeat interval.
+   *
+   * @return
+   *   The component heartbeat interval.
+   */
+  public long getHeartbeatInterval() {
+    return definition.getLong(HEARTBEAT_INTERVAL, 1000);
+  }
+
+  /**
+   * Sets the component heartbeat interval.
+   *
+   * @param interval
+   *   The component heartbeat interval.
+   * @return
+   *   The called component instance.
+   */
+  @SuppressWarnings("unchecked")
+  public T setHeartbeatInterval(long interval) {
+    definition.putNumber(HEARTBEAT_INTERVAL, interval);
     return (T) this;
   }
 

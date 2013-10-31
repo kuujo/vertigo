@@ -39,6 +39,10 @@ public class DefaultHeartbeatEmitter implements HeartbeatEmitter {
   public DefaultHeartbeatEmitter() {
   }
 
+  public DefaultHeartbeatEmitter(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
   public DefaultHeartbeatEmitter(String address) {
     this.address = address;
   }

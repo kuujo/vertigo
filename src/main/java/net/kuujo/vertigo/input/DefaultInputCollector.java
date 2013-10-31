@@ -34,6 +34,8 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.platform.Container;
 
 /**
  * A default input collector implementation.
@@ -41,21 +43,23 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultInputCollector implements InputCollector {
-  private String address;
-  private Vertx vertx;
-  private EventBus eventBus;
-  private ComponentContext context;
+  private final String address;
+  private final Vertx vertx;
+  private final Logger logger;
+  private final EventBus eventBus;
+  private final ComponentContext context;
   private Handler<JsonMessage> messageHandler;
   private Map<UUID, Long> listenTimers = new HashMap<>();
   private static final long LISTEN_PERIOD = 5000;
 
-  public DefaultInputCollector(Vertx vertx, ComponentContext context) {
-    this(vertx, vertx.eventBus(), context);
+  public DefaultInputCollector(Vertx vertx, Container container, ComponentContext context) {
+    this(vertx, container, vertx.eventBus(), context);
   }
 
-  public DefaultInputCollector(Vertx vertx, EventBus eventBus, ComponentContext context) {
+  public DefaultInputCollector(Vertx vertx, Container container, EventBus eventBus, ComponentContext context) {
     this.address = UUID.randomUUID().toString();
     this.vertx = vertx;
+    this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
   }
@@ -81,7 +85,7 @@ public class DefaultInputCollector implements InputCollector {
       }
     }
     catch (SerializationException e) {
-      // Do nothing.
+      logger.warn(e);
     }
   }
 

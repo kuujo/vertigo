@@ -16,19 +16,17 @@
 package net.kuujo.vertigo.component;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.messaging.DefaultJsonMessage;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.DefaultOutputCollector;
+import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
 import net.kuujo.vertigo.heartbeat.HeartbeatEmitter;
+import net.kuujo.vertigo.input.DefaultInputCollector;
+import net.kuujo.vertigo.input.InputCollector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -48,29 +46,29 @@ import org.vertx.java.platform.Container;
  */
 public abstract class ComponentBase implements Component {
 
-  protected Vertx vertx;
+  protected final Vertx vertx;
 
-  protected EventBus eventBus;
+  protected final EventBus eventBus;
 
-  protected Container container;
+  protected final Container container;
 
-  protected Logger logger;
+  protected final Logger logger;
 
-  protected ComponentContext context;
+  protected final ComponentContext context;
 
-  protected String address;
+  protected final String address;
 
-  protected String networkAddress;
+  protected final String networkAddress;
 
-  protected List<String> auditors;
+  protected final List<String> auditors;
 
-  protected String broadcastAddress;
+  protected final String broadcastAddress;
 
-  protected HeartbeatEmitter heartbeat;
+  protected final HeartbeatEmitter heartbeat;
 
-  protected OutputCollector output;
+  protected final InputCollector input;
 
-  private Random random = new Random();
+  protected final OutputCollector output;
 
   protected ComponentBase(Vertx vertx, Container container, ComponentContext context) {
     this.vertx = vertx;
@@ -87,29 +85,73 @@ public abstract class ComponentBase implements Component {
       auditors.add(auditorAddress);
     }
     broadcastAddress = networkContext.getBroadcastAddress();
+    heartbeat = new DefaultHeartbeatEmitter(vertx);
+    input = new DefaultInputCollector(vertx, container, context);
+    output = new DefaultOutputCollector(vertx, container, context);
   }
 
   @Override
   public JsonObject config() {
-    return context.getComponent().getConfig();
+    return context.getConfig();
   }
 
   @Override
-  public InstanceContext context() {
+  public ComponentContext context() {
     return context;
   }
 
   /**
-   * Sets up the heartbeat.
+   * Sets up the component.
    */
-  protected void setupHeartbeat() {
-    setupHeartbeat(null);
+  protected void setup(Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          setupInput(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                future.setFailure(result.cause());
+              }
+              else {
+                setupOutput(new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      future.setFailure(result.cause());
+                    }
+                    else {
+                      ready(new Handler<AsyncResult<Void>>() {
+                        @Override
+                        public void handle(AsyncResult<Void> result) {
+                          if (result.failed()) {
+                            future.setFailure(result.cause());
+                          }
+                          else {
+                            future.setResult(null);
+                          }
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    });
   }
 
   /**
    * Sets up the heartbeat.
    */
-  protected void setupHeartbeat(Handler<AsyncResult<Void>> doneHandler) {
+  private void setupHeartbeat(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     if (doneHandler != null) {
       future.setHandler(doneHandler);
@@ -120,137 +162,30 @@ public abstract class ComponentBase implements Component {
       public void handle(AsyncResult<Message<String>> result) {
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
-          heartbeat = new DefaultHeartbeatEmitter(heartbeatAddress, vertx);
-          heartbeat.setInterval(context.getComponent().getDefinition().getHeartbeatInterval());
+          heartbeat.setAddress(heartbeatAddress);
+          heartbeat.setInterval(context.getHeartbeatInterval());
           heartbeat.start();
           future.setResult(null);
         }
         else {
-          future.setFailure(new VertigoException(String.format("Failed to fetch heartbeat address from network.")));
+          future.setFailure(new VertigoException("Failed to fetch heartbeat address from network."));
         }
       }
     });
   }
 
   /**
-   * Sets up outputs.
+   * Sets up component input.
    */
-  protected void setupOutputs() {
-    setupOutputs(null);
+  private void setupInput(Handler<AsyncResult<Void>> doneHandler) {
+    input.start(doneHandler);
   }
 
   /**
-   * Sets up outputs.
+   * Sets up component output.
    */
-  protected void setupOutputs(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    if (doneHandler != null) {
-      future.setHandler(doneHandler);
-    }
-
-    output = new LinearOutputCollector(eventBus);
-
-    Collection<ConnectionContext> connections = context.getComponentContext().getConnectionContexts();
-    Iterator<ConnectionContext> iter = connections.iterator();
-    while (iter.hasNext()) {
-      ConnectionContext connectionContext = iter.next();
-      try {
-        GroupingContext groupingContext = connectionContext.getGrouping();
-        Dispatcher dispatcher = groupingContext.createDispatcher();
-        Channel channel = new BasicChannel(dispatcher);
-
-        for (FilterContext filterContext : connectionContext.getFilters()) {
-          channel.addCondition(filterContext.createCondition());
-        }
-
-        Set<String> addresses = connectionContext.getAddresses();
-        for (String address : addresses) {
-          channel.addConnection(new DefaultConnection(address, eventBus));
-        }
-        output.addChannel(channel);
-      }
-      catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        container.logger().error("Failed to find grouping handler.");
-      }
-    }
-    future.setResult(null);
-  }
-
-  /**
-   * Sets up inputs.
-   */
-  protected void setupInputs() {
-    setupInputs(null);
-  }
-
-  /**
-   * Sets up input handlers.
-   */
-  protected void setupInputs(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    if (doneHandler != null) {
-      future.setHandler(doneHandler);
-    }
-
-    eventBus.registerHandler(address, new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          doReceive(new DefaultJsonMessage(body));
-        }
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else {
-          eventBus.registerHandler(broadcastAddress, new Handler<Message<JsonObject>>() {
-            @Override
-            public void handle(Message<JsonObject> message) {
-              JsonObject body = message.body();
-              if (body != null) {
-                String action = body.getString("action");
-                if (action != null) {
-                  switch (action) {
-                    case "ack":
-                      String ackId = body.getString("id");
-                      if (ackId != null) {
-                        doAck(ackId);
-                      }
-                      break;
-                    case "fail":
-                      String failId = body.getString("id");
-                      if (failId != null) {
-                        String failMessage = body.getString("message");
-                        if (failMessage != null) {
-                          doFail(failId, failMessage);
-                        }
-                        else {
-                          doFail(failId);
-                        }
-                      }
-                      break;
-                  }
-                }
-              }
-            }
-          }, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
-              }
-              else {
-                future.setResult(null);
-              }
-            }
-          });
-        }
-      }
-    });
+  private void setupOutput(Handler<AsyncResult<Void>> doneHandler) {
+    output.start(doneHandler);
   }
 
   /**
@@ -275,93 +210,6 @@ public abstract class ComponentBase implements Component {
         future.setResult(null);
       }
     });
-  }
-
-  /**
-   * Returns a random auditor address.
-   */
-  private String selectRandomAuditor() {
-    return auditors.get(random.nextInt(auditors.size()));
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param body
-   *   The message body.
-   * @return
-   *   A new JSON message.
-   */
-  protected JsonMessage createMessage(JsonObject body) {
-    return DefaultJsonMessage.create(address, body, selectRandomAuditor());
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param body
-   *   The message body.
-   * @param parent
-   *   The message parent.
-   * @return
-   *   A new JSON message.
-   */
-  protected JsonMessage createMessage(JsonObject body, JsonMessage parent) {
-    return parent.createChild(body);
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param body
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the message.
-   * @return
-   *   A new JSON message.
-   */
-  protected JsonMessage createMessage(JsonObject body, String tag) {
-    return DefaultJsonMessage.create(address, body, tag, selectRandomAuditor());
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param body
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the message.
-   * @param parent
-   *   The message parent.
-   * @return
-   *   A new JSON message.
-   */
-  protected JsonMessage createMessage(JsonObject body, String tag, JsonMessage parent) {
-    return parent.createChild(body, tag);
-  }
-
-  /**
-   * Called when a message is acked.
-   */
-  protected void doAck(String id) {
-  }
-
-  /**
-   * Called when a message is failed.
-   */
-  protected void doFail(String id) {
-  }
-
-  /**
-   * Called when a message is failed with a failure message.
-   */
-  protected void doFail(String id, String message) {
-  }
-
-  /**
-   * Called when a message is received.
-   */
-  protected void doReceive(JsonMessage message) {
   }
 
 }

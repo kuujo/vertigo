@@ -33,6 +33,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.platform.Container;
 
 /**
  * A default output collector implementation.
@@ -40,21 +42,23 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector {
-  private Vertx vertx;
-  private EventBus eventBus;
-  private ComponentContext context;
-  private List<String> auditors;
+  private final Vertx vertx;
+  private final Logger logger;
+  private final EventBus eventBus;
+  private final ComponentContext context;
+  private final List<String> auditors;
   private Random random;
   private Map<String, Channel> channels = new HashMap<>();
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
-  public DefaultOutputCollector(Vertx vertx, ComponentContext context) {
-    this(vertx, vertx.eventBus(), context);
+  public DefaultOutputCollector(Vertx vertx, Container container, ComponentContext context) {
+    this(vertx, container, vertx.eventBus(), context);
   }
 
-  public DefaultOutputCollector(Vertx vertx, EventBus eventBus, ComponentContext context) {
+  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, ComponentContext context) {
     this.vertx = vertx;
+    this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
     auditors = context.getNetwork().getAuditors();
@@ -121,7 +125,7 @@ public class DefaultOutputCollector implements OutputCollector {
       }));
     }
     catch (SerializationException e) {
-      // Failed to unserialize the input info.
+      logger.error(e);
     }
   }
 

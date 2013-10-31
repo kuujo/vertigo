@@ -141,6 +141,16 @@ public abstract class ComponentContext implements Serializable {
   }
 
   /**
+   * Gets the component heartbeat interval.
+   *
+   * @return
+   *   The component heartbeat interval.
+   */
+  public long getHeartbeatInterval() {
+    return context.getLong(Component.HEARTBEAT_INTERVAL, 1000);
+  }
+
+  /**
    * Returns a list of component inputs.
    *
    * @return

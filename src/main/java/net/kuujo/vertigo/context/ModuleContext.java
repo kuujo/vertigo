@@ -10,13 +10,13 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class ModuleContext extends ComponentContext {
+ 
+  public ModuleContext() {
+    super();
+  }
 
   ModuleContext(JsonObject context) {
     super(context);
-  }
-
-  ModuleContext(JsonObject context, JsonObject parent) {
-    super(context, parent);
   }
 
   /**

@@ -10,13 +10,13 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class VerticleContext extends ComponentContext {
+ 
+  public VerticleContext() {
+    super();
+  }
 
   VerticleContext(JsonObject context) {
     super(context);
-  }
-
-  VerticleContext(JsonObject context, JsonObject parent) {
-    super(context, parent);
   }
 
   /**

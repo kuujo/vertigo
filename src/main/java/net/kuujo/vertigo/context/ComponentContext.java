@@ -37,7 +37,7 @@ public abstract class ComponentContext implements Serializable {
   public static final String MODULE = "module";
 
   protected JsonObject context;
-  protected JsonObject parent;
+  protected NetworkContext parent;
 
   public ComponentContext() {
     context = new JsonObject();
@@ -46,13 +46,9 @@ public abstract class ComponentContext implements Serializable {
   ComponentContext(JsonObject context) {
     this.context = context;
     if (context.getFieldNames().contains("parent")) {
-      parent = context.getObject("parent");
+      parent = new NetworkContext();
+      parent.setState(context.getObject("parent"));
     }
-  }
-
-  ComponentContext(JsonObject context, JsonObject parent) {
-    this.context = context;
-    this.parent = parent;
   }
 
   /**
@@ -73,6 +69,14 @@ public abstract class ComponentContext implements Serializable {
       default:
         return null;
     }
+  }
+
+  /**
+   * Sets the component parent.
+   */
+  ComponentContext setParent(NetworkContext context) {
+    parent = context;
+    return this;
   }
 
   /**
@@ -192,10 +196,9 @@ public abstract class ComponentContext implements Serializable {
 
   @Override
   public JsonObject getState() {
-    // Always copy the context state so it can't be modified externally.
-    JsonObject context = this.context;
+    JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("parent", parent.copy());
+      context.putObject("parent", parent.getState());
     }
     return context;
   }

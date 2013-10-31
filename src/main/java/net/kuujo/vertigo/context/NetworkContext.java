@@ -148,7 +148,7 @@ public class NetworkContext implements Serializable {
     }
     if (components.getFieldNames().contains(address)) {
       try {
-        return Serializer.deserialize(components.getObject(address));
+        return Serializer.<ComponentContext>deserialize(components.getObject(address)).setParent(this);
       }
       catch (SerializationException e) {
         return null;

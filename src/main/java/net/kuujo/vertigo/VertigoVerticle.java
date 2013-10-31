@@ -16,9 +16,13 @@
 package net.kuujo.vertigo;
 
 import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
@@ -33,6 +37,8 @@ import org.vertx.java.platform.Verticle;
 public class VertigoVerticle extends Verticle {
   protected Vertigo vertigo;
   protected ComponentContext context;
+  protected JsonObject config;
+  protected Logger logger;
 
   @Override
   public void setContainer(Container container) {
@@ -47,7 +53,20 @@ public class VertigoVerticle extends Verticle {
   @Override
   public void start(Future<Void> startedResult) {
     vertigo = new DefaultVertigo(vertx, container);
-    context = ComponentContext.fromJson(container.config().getObject("__context__"));
+    config = container.config();
+    logger = container.logger();
+    JsonObject contextInfo = config.getObject("__context__");
+    if (contextInfo == null) {
+      logger.error("Invalid component context.");
+    }
+
+    config.removeField("__context__");
+    try {
+      context = Serializer.<ComponentContext>deserialize(contextInfo);
+    }
+    catch (SerializationException e) {
+      logger.error(e);
+    }
     vertigo.setContext(context);
     super.start(startedResult);
   }

@@ -53,7 +53,7 @@ abstract class AbstractCluster implements Cluster {
       container.deployVerticle(coordinator, Serializer.serialize(context));
     }
     catch (MalformedNetworkException e) {
-      // Do nothing.
+      container.logger().error(e);
     }
   }
 

@@ -17,11 +17,14 @@ package net.kuujo.vertigo.test.unit;
 
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
@@ -150,16 +153,21 @@ public class MessageTest {
   public void testLoadMessage() {
     JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
     JsonMessage child = message.createChild(new JsonObject().putString("body2", "Hello world again!"), "bar");
-    JsonMessage loaded = new DefaultJsonMessage(child.serialize());
-    assertNull(loaded.body().getString("body"));
-    assertEquals("Hello world again!", loaded.body().getString("body2"));
-    assertNotNull(loaded.id());
-    assertFalse(loaded.id().equals(message.id()));
-    assertEquals(message.id(), loaded.parent());
-    assertEquals(message.id(), loaded.ancestor());
-    assertEquals("test", loaded.source());
-    assertEquals("bar", loaded.tag());
-    assertEquals("audit", message.auditor());
+    try {
+      JsonMessage loaded = Serializer.deserialize(Serializer.serialize(child));
+      assertNull(loaded.body().getString("body"));
+      assertEquals("Hello world again!", loaded.body().getString("body2"));
+      assertNotNull(loaded.id());
+      assertFalse(loaded.id().equals(message.id()));
+      assertEquals(message.id(), loaded.parent());
+      assertEquals(message.id(), loaded.ancestor());
+      assertEquals("test", loaded.source());
+      assertEquals("bar", loaded.tag());
+      assertEquals("audit", message.auditor());
+    }
+    catch (SerializationException e) {
+      assertTrue(false);
+    }
   }
 
 }

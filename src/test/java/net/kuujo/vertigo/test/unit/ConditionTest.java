@@ -15,15 +15,12 @@
 */
 package net.kuujo.vertigo.test.unit;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import net.kuujo.vertigo.filter.Condition;
-import net.kuujo.vertigo.input.filter.FieldFilter;
-import net.kuujo.vertigo.input.filter.SourceFilter;
-import net.kuujo.vertigo.input.filter.TagsFilter;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.output.condition.Condition;
+import net.kuujo.vertigo.output.condition.FieldCondition;
+import net.kuujo.vertigo.output.condition.SourceCondition;
+import net.kuujo.vertigo.output.condition.TagsCondition;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;
@@ -40,10 +37,7 @@ public class ConditionTest {
 
   @Test
   public void testTagsCondition() {
-    Set<String> tags = new HashSet<String>();
-    tags.add("foo");
-    tags.add("bar");
-    Condition condition = new TagsFilter.TagsCondition(tags);
+    Condition condition = new TagsCondition("foo", "bar");
 
     JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor");
     assertFalse(condition.isValid(message1));
@@ -60,7 +54,7 @@ public class ConditionTest {
 
   @Test
   public void testFieldCondition() {
-    Condition condition = new FieldFilter.FieldCondition("foo", "bar");
+    Condition condition = new FieldCondition("foo", "bar");
 
     JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("bar", "foo"), "auditor");
     assertFalse(condition.isValid(message1));
@@ -74,7 +68,7 @@ public class ConditionTest {
 
   @Test
   public void testSourceCondition() {
-    Condition condition = new SourceFilter.SourceCondition("foo");
+    Condition condition = new SourceCondition("foo");
 
     JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor");
     assertFalse(condition.isValid(message1));

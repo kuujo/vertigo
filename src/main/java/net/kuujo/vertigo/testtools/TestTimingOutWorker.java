@@ -22,7 +22,7 @@ import org.vertx.java.core.Handler;
 import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.messaging.JsonMessage;
-import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.network.Verticle;
 
 /**
  * A test worker that times out messages.
@@ -37,22 +37,21 @@ public class TestTimingOutWorker extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Component createDefinition() {
+  public static Verticle createDefinition() {
     return createDefinition(1);
   }
 
   /**
    * Creates an timeout worker definition.
    *
-   * @param workers
-   *   The number of workers.
+   * @param instances
+   *   The number of instances.
    * @return
    *   A component definition.
    */
-  public static Component createDefinition(int workers) {
-    return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(TestTimingOutWorker.class.getName())
-        .setWorkers(workers);
+  public static Verticle createDefinition(int instances) {
+    return new Verticle(UUID.randomUUID().toString())
+        .setMain(TestTimingOutWorker.class.getName()).setInstances(instances);
   }
 
   @Override

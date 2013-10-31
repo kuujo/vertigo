@@ -23,7 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.network.Verticle;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -42,10 +42,9 @@ public class TestAckingFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Component createDefinition(JsonObject data) {
-    return new Component(UUID.randomUUID().toString())
-        .setType(Component.VERTICLE).setMain(TestAckingFeeder.class.getName())
-        .setConfig(data);
+  public static Verticle createDefinition(JsonObject data) {
+    return new Verticle(UUID.randomUUID().toString())
+        .setMain(TestAckingFeeder.class.getName()).setConfig(data);
   }
 
   @Override

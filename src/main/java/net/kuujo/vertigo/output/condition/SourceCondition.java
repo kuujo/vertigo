@@ -47,7 +47,7 @@ public class SourceCondition implements Condition {
   @Override
   public boolean isValid(JsonMessage message) {
     String source = message.source();
-    return source != null && source.equals(source);
+    return source != null && source.equals(this.source);
   }
 
 }

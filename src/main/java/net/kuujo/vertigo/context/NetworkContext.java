@@ -121,7 +121,7 @@ public class NetworkContext implements Serializable {
     JsonObject componentContexts = context.getObject(Network.COMPONENTS);
     for (String address : componentContexts.getFieldNames()) {
       try {
-        ComponentContext component = Serializer.deserialize(componentContexts.getObject(address));
+        ComponentContext component = Serializer.<ComponentContext>deserialize(componentContexts.getObject(address)).setParent(this);
         if (component != null) {
           components.add(component);
         }

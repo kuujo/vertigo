@@ -555,8 +555,14 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         contextMap.put(context.getAddress(), context);
         future.setHandler(resultHandler);
 
+        JsonObject config = context.getConfig();
+        if (config == null) {
+          config = new JsonObject();
+        }
+        config.putObject("__context__", Serializer.serialize(context));
+
         if (context.isVerticle()) {
-          deployVerticle(((VerticleContext) context).getMain(), Serializer.serialize(context), new Handler<AsyncResult<String>>() {
+          deployVerticle(((VerticleContext) context).getMain(), config, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.succeeded()) {
@@ -570,7 +576,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
           });
         }
         else if (context.isModule()) {
-          deployModule(((ModuleContext) context).getModule(), Serializer.serialize(context), new Handler<AsyncResult<String>>() {
+          deployModule(((ModuleContext) context).getModule(), config, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.succeeded()) {

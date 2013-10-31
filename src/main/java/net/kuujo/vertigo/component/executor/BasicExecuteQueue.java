@@ -104,13 +104,6 @@ public class BasicExecuteQueue implements ExecuteQueue {
   }
 
   @Override
-  public void fail(String id, String message) {
-    if (queueItems.containsKey(id)) {
-      queueItems.get(id).fail(message);
-    }
-  }
-
-  @Override
   public void receive(JsonMessage message) {
     String id = message.ancestor();
     if (queueItems.containsKey(id)) {
@@ -172,7 +165,6 @@ public class BasicExecuteQueue implements ExecuteQueue {
     private final Future<JsonMessage> future;
     private boolean acked;
     private boolean ack;
-    private String failureMessage;
     private JsonMessage result;
     private Timer timer;
     private boolean complete;
@@ -197,15 +189,6 @@ public class BasicExecuteQueue implements ExecuteQueue {
      */
     private void fail() {
       acked = true; ack = false;
-      checkResult();
-    }
-
-    /**
-     * Fails the queue item with a message.
-     */
-    private void fail(String message) {
-      acked = true; ack = false;
-      failureMessage = message;
       checkResult();
     }
 
@@ -235,12 +218,7 @@ public class BasicExecuteQueue implements ExecuteQueue {
     private void checkResult() {
       if (!complete && acked) {
         if (!ack) {
-          if (failureMessage != null) {
-            future.setFailure(new FailureException(failureMessage));
-          }
-          else {
-            future.setFailure(new FailureException("A failure occurred."));
-          }
+          future.setFailure(new FailureException("A failure occurred."));
           complete = true;
           queueItems.remove(id);
           timer.ids.remove(id);

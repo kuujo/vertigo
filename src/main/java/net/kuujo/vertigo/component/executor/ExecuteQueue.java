@@ -108,16 +108,6 @@ public interface ExecuteQueue {
   public void fail(String id);
 
   /**
-   * Fails a message in the queue with a failure message.
-   *
-   * @param id
-   *   The unique message ID.
-   * @param message
-   *   A failure message.
-   */
-  public void fail(String id, String message);
-
-  /**
    * Receives a response.
    *
    * @param message

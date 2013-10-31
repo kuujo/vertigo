@@ -24,7 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 /**
@@ -38,10 +38,32 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
 
   protected ExecuteQueue queue;
 
-  protected AbstractExecutor(Vertx vertx, Container container, InstanceContext context) {
+  protected AbstractExecutor(Vertx vertx, Container container, ComponentContext context) {
     super(vertx, container, context);
     queue = new BasicExecuteQueue(vertx);
   }
+
+  private Handler<String> ackHandler = new Handler<String>() {
+    @Override
+    public void handle(String id) {
+      queue.ack(id);
+    }
+  };
+
+  private Handler<String> failHandler = new Handler<String>() {
+    @Override
+    public void handle(String id) {
+      queue.fail(id);
+    }
+  };
+
+  private Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
+    @Override
+    public void handle(JsonMessage message) {
+      input.ack(message);
+      queue.receive(message);
+    }
+  };
 
   @Override
   @SuppressWarnings("unchecked")
@@ -58,45 +80,19 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   @Override
   @SuppressWarnings("unchecked")
   public T start(Handler<AsyncResult<T>> doneHandler) {
+    output.ackHandler(ackHandler);
+    output.failHandler(failHandler);
+    input.messageHandler(messageHandler);
+
     final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
-    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+    setup(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
         else {
-          setupOutputs(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
-              }
-              else {
-                setupInputs(new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    if (result.failed()) {
-                      future.setFailure(result.cause());
-                    }
-                    else {
-                      ready(new Handler<AsyncResult<Void>>() {
-                        @Override
-                        public void handle(AsyncResult<Void> result) {
-                          if (result.failed()) {
-                            future.setFailure(result.cause());
-                          }
-                          else {
-                            future.setResult((T) AbstractExecutor.this);
-                          }
-                        }
-                      });
-                    }
-                  }
-                });
-              }
-            }
-          });
+          future.setResult(null);
         }
       }
     });
@@ -137,31 +133,15 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
    */
   @SuppressWarnings("unchecked")
   protected T doExecute(final JsonObject data, final String tag, Handler<AsyncResult<JsonMessage>> handler) {
-    JsonMessage message = createMessage(data, tag);
-    queue.enqueue(message.id(), handler);
-    output.emit(message);
+    final String id;
+    if (tag != null) {
+      id = output.emit(data, tag);
+    }
+    else {
+      id = output.emit(data);
+    }
+    queue.enqueue(id, handler);
     return (T) this;
-  }
-
-  @Override
-  protected void doAck(String id) {
-    queue.ack(id);
-  }
-
-  @Override
-  protected void doFail(String id) {
-    queue.fail(id);
-  }
-
-  @Override
-  protected void doFail(String id, String message) {
-    queue.fail(id, message);
-  }
-
-  @Override
-  protected void doReceive(JsonMessage message) {
-    output.ack(message);
-    queue.receive(message);
   }
 
 }

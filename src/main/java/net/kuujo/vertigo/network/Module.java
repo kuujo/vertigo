@@ -10,7 +10,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class Module extends Component<Module> {
-
   public static final String MODULE = "module";
 
   public Module() {

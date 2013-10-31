@@ -35,7 +35,6 @@ import net.kuujo.vertigo.messaging.JsonMessage;
  * @param <T> The executor type
  */
 public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentBase implements Executor<T> {
-
   protected ExecuteQueue queue;
 
   protected AbstractExecutor(Vertx vertx, Container container, ComponentContext context) {

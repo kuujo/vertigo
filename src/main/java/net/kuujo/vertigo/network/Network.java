@@ -31,7 +31,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class Network implements Serializable {
-
   public static final String ADDRESS = "address";
   public static final String BROADCAST = "broadcast";
   public static final String AUDITORS = "auditors";

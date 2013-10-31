@@ -29,7 +29,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class TagsCondition implements Condition {
-
   private Set<String> tags = new HashSet<>();
 
   public TagsCondition() {

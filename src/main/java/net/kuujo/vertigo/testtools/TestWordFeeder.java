@@ -65,9 +65,7 @@ public class TestWordFeeder extends VertigoVerticle {
   }
 
   private String field;
-
   private String[] words;
-
   private Random random = new Random();
 
   @Override

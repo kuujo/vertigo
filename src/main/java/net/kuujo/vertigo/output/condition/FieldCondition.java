@@ -25,7 +25,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldCondition implements Condition {
-
   private String fieldName;
   private Object value;
 

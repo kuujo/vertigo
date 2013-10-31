@@ -29,7 +29,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class RoundGrouping extends AbstractGrouping {
-
   private JsonObject definition = new JsonObject();
 
   @Override

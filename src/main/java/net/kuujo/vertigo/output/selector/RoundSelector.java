@@ -29,7 +29,6 @@ import net.kuujo.vertigo.output.Connection;
  * @author Jordan Halterman
  */
 public class RoundSelector extends AbstractSelector {
-
   private int current;
 
   public RoundSelector() {

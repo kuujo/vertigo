@@ -31,9 +31,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class BasicFeedQueue implements FeedQueue {
-
   private Map<String, Future<Void>> futures = new HashMap<String, Future<Void>>();
-
   private long maxQueueSize = 1000;
 
   @Override

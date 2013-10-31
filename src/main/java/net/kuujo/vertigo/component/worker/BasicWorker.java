@@ -33,7 +33,6 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class BasicWorker extends ComponentBase implements Worker {
-
   protected Handler<JsonMessage> messageHandler;
 
   public BasicWorker(Vertx vertx, Container container, ComponentContext context) {

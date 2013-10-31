@@ -30,11 +30,8 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> implements StreamExecutor {
-
   private Handler<Void> fullHandler;
-
   private Handler<Void> drainHandler;
-
   private boolean paused;
 
   public DefaultStreamExecutor(Vertx vertx, Container container, ComponentContext context) {

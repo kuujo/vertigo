@@ -27,7 +27,6 @@ import net.kuujo.vertigo.output.condition.TagsCondition;
  * @author Jordan Halterman
  */
 public class TagsFilter implements Filter {
-
   private JsonObject definition;
 
   public TagsFilter() {

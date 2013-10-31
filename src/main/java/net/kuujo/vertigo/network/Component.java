@@ -33,7 +33,6 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Haltermam
  */
 public abstract class Component<T extends Component<T>> implements Serializable {
-
   public static final String ADDRESS = "address";
   public static final String TYPE = "type";
   public static final String VERTICLE = "verticle";

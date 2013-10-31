@@ -30,11 +30,8 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements StreamFeeder {
-
   private Handler<Void> fullHandler;
-
   private Handler<Void> drainHandler;
-
   private boolean paused;
 
   public DefaultStreamFeeder(Vertx vertx, Container container, ComponentContext context) {

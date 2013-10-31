@@ -31,9 +31,7 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 public class VertigoVerticle extends Verticle {
-
   protected Vertigo vertigo;
-
   protected ComponentContext context;
 
   @Override

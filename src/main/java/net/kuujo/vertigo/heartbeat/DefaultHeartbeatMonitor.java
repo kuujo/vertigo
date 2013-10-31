@@ -26,15 +26,10 @@ import org.vertx.java.core.eventbus.Message;
  * @author Jordan Halterman
  */
 public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
-
   private String address;
-
   private Vertx vertx;
-
   private EventBus eventBus;
-
   private long interval = 5000;
-
   private AddressMonitor currentMonitor;
 
   public DefaultHeartbeatMonitor(Vertx vertx) {

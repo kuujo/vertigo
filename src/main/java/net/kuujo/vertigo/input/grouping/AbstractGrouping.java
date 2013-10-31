@@ -10,7 +10,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public abstract class AbstractGrouping implements Grouping {
-
   private JsonObject definition = new JsonObject();
 
   public AbstractGrouping() {

@@ -45,29 +45,17 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public abstract class ComponentBase implements Component {
-
   protected final Vertx vertx;
-
   protected final EventBus eventBus;
-
   protected final Container container;
-
   protected final Logger logger;
-
   protected final ComponentContext context;
-
   protected final String address;
-
   protected final String networkAddress;
-
   protected final List<String> auditors;
-
   protected final String broadcastAddress;
-
   protected final HeartbeatEmitter heartbeat;
-
   protected final InputCollector input;
-
   protected final OutputCollector output;
 
   protected ComponentBase(Vertx vertx, Container container, ComponentContext context) {

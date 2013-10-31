@@ -32,11 +32,8 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase implements Feeder<T> {
-
   protected FeedQueue queue;
-
   protected boolean autoRetry;
-
   protected int retryAttempts = -1;
 
   protected AbstractFeeder(Vertx vertx, Container container, ComponentContext context) {

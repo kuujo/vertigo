@@ -10,7 +10,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class Verticle extends Component<Verticle> {
-
   public static final String MAIN = "main";
 
   public Verticle() {

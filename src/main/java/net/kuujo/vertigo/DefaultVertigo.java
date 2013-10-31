@@ -41,11 +41,8 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultVertigo implements Vertigo {
-
   private Vertx vertx;
-
   private Container container;
-
   private ComponentContext context;
 
   public DefaultVertigo(Vertx vertx, Container container) {

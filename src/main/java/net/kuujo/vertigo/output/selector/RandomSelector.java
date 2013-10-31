@@ -29,7 +29,6 @@ import net.kuujo.vertigo.output.Connection;
  * @author Jordan Halterman
  */
 public class RandomSelector extends AbstractSelector {
-
   private Random rand = new Random();
 
   public RandomSelector() {

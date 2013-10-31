@@ -36,13 +36,9 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 abstract class AbstractCluster implements Cluster {
-
   private EventBus eventBus;
-
   private Container container;
-
   protected String coordinator;
-
   protected String master;
 
   public AbstractCluster(Vertx vertx, Container container) {

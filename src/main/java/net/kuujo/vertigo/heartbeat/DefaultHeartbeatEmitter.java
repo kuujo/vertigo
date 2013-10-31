@@ -25,15 +25,10 @@ import org.vertx.java.core.eventbus.EventBus;
  * @author Jordan Halterman
  */
 public class DefaultHeartbeatEmitter implements HeartbeatEmitter {
-
   private String address;
-
   private Vertx vertx;
-
   private EventBus eventBus;
-
   private long interval = 1000;
-
   private long timerID;
 
   public DefaultHeartbeatEmitter() {

@@ -35,15 +35,10 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class BasicExecuteQueue implements ExecuteQueue {
-
   private Vertx vertx;
-
   private Map<String, QueueItem> queueItems = new HashMap<String, QueueItem>();
-
   private Map<Long, Timer> timers = new HashMap<>();
-
   private long replyTimeout = 15000;
-
   private long maxQueueSize = 1000;
 
   public BasicExecuteQueue(Vertx vertx) {

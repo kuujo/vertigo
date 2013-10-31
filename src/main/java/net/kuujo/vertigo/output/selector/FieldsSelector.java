@@ -32,7 +32,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldsSelector extends AbstractSelector {
-
   private String fieldName;
 
   public FieldsSelector() {

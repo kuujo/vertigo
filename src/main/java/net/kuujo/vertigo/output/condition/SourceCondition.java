@@ -25,7 +25,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class SourceCondition implements Condition {
-
   private String source;
 
   public SourceCondition() {

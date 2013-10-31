@@ -25,7 +25,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultJsonMessage implements JsonMessage {
-
   private JsonObject body;
 
   private static String createUniqueId() {

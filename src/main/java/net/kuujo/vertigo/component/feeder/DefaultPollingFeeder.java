@@ -31,11 +31,8 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
-
   private Handler<PollingFeeder> feedHandler;
-
   private long feedDelay = 100;
-
   private boolean fed;
 
   public DefaultPollingFeeder(Vertx vertx, Container container, ComponentContext context) {

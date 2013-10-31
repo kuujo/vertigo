@@ -33,7 +33,6 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public abstract class ComponentContext implements Serializable {
-
   public static final String VERTICLE = "verticle";
   public static final String MODULE = "module";
 

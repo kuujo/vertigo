@@ -29,9 +29,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class RemoteCoordinator extends AbstractCoordinator {
-
   private String address;
-
   private EventBus eventBus;
 
   @Override

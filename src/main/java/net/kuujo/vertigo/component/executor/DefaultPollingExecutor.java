@@ -32,16 +32,13 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> implements PollingExecutor {
+  private Handler<PollingExecutor> executeHandler;
+  private long executeDelay = 100;
+  private boolean executed;
 
   public DefaultPollingExecutor(Vertx vertx, Container container, ComponentContext context) {
     super(vertx, container, context);
   }
-
-  private Handler<PollingExecutor> executeHandler;
-
-  private long executeDelay = 100;
-
-  private boolean executed;
 
   @Override
   public PollingExecutor start() {

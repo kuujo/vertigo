@@ -32,9 +32,7 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public class NetworkContext implements Serializable {
-
   private JsonObject context;
-
   private static final long DEFAULT_ACK_EXPIRE = 30000;
 
   public NetworkContext() {

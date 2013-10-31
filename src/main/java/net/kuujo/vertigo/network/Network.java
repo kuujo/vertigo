@@ -389,7 +389,9 @@ public class Network implements Serializable {
     for (String componentAddress : componentDefs.getFieldNames()) {
       JsonObject componentContext = Serializer.serialize(getComponent(componentAddress).createContext());
       if (componentContext != null) {
-        componentContexts.putObject(componentAddress, componentContext.putObject("parent", context));
+        // Adding the parent context here causes a circular reference in serialization.
+        // componentContexts.putObject(componentAddress, componentContext.putObject("parent", context));
+        componentContexts.putObject(componentAddress, componentContext);
       }
     }
     context.putObject(COMPONENTS, componentContexts);

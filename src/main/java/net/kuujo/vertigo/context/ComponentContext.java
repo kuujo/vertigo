@@ -193,7 +193,7 @@ public abstract class ComponentContext implements Serializable {
   @Override
   public JsonObject getState() {
     // Always copy the context state so it can't be modified externally.
-    JsonObject context = this.context.copy();
+    JsonObject context = this.context;
     if (parent != null) {
       context.putObject("parent", parent.copy());
     }

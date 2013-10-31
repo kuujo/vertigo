@@ -32,6 +32,7 @@ import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.vertigo.heartbeat.HeartbeatMonitor;
+import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.busmods.BusModBase;
@@ -59,7 +60,12 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   @Override
   public void start() {
     super.start();
-    context = NetworkContext.fromJson(config);
+    try {
+      context = Serializer.deserialize(config);
+    }
+    catch (SerializationException e) {
+      logger.error(e);
+    }
     eb.registerHandler(context.getAddress(), this);
     doDeploy();
   }

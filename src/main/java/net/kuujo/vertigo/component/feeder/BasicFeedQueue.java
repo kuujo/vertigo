@@ -78,11 +78,4 @@ public class BasicFeedQueue implements FeedQueue {
     }
   }
 
-  @Override
-  public void fail(String id, String message) {
-    if (futures.containsKey(id)) {
-      futures.remove(id).setFailure(new FailureException(message));
-    }
-  }
-
 }

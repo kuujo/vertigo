@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component.feeder;
 
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -31,7 +31,7 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultBasicFeeder extends AbstractFeeder<BasicFeeder> implements BasicFeeder {
 
-  public DefaultBasicFeeder(Vertx vertx, Container container, InstanceContext context) {
+  public DefaultBasicFeeder(Vertx vertx, Container container, ComponentContext context) {
     super(vertx, container, context);
   }
 

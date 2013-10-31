@@ -17,7 +17,6 @@ package net.kuujo.vertigo.component.feeder;
 
 import net.kuujo.vertigo.component.ComponentBase;
 import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -45,6 +44,20 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
     queue = new BasicFeedQueue();
   }
 
+  private Handler<String> ackHandler = new Handler<String>() {
+    @Override
+    public void handle(String id) {
+      queue.ack(id);
+    }
+  };
+
+  private Handler<String> failHandler = new Handler<String>() {
+    @Override
+    public void handle(String id) {
+      queue.fail(id);
+    }
+  };
+
   @Override
   @SuppressWarnings("unchecked")
   public T start() {
@@ -60,6 +73,8 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   @Override
   @SuppressWarnings("unchecked")
   public T start(Handler<AsyncResult<T>> doneHandler) {
+    output.ackHandler(ackHandler);
+    output.failHandler(failHandler);
     final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
     setup(new Handler<AsyncResult<Void>>() {
       @Override
@@ -121,8 +136,15 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
    */
   @SuppressWarnings("unchecked")
   protected T doFeed(final JsonObject data, final String tag, final int attempts, final Future<Void> future) {
-    final JsonMessage message = createMessage(data, tag);
-    queue.enqueue(message.id(), new Handler<AsyncResult<Void>>() {
+    final String id;
+    if (tag != null) {
+      id = output.emit(data, tag);
+    }
+    else {
+      id = output.emit(data);
+    }
+
+    queue.enqueue(id, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -138,23 +160,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
         }
       }
     });
-    output.emit(message);
     return (T) this;
-  }
-
-  @Override
-  protected void doAck(String id) {
-    queue.ack(id);
-  }
-
-  @Override
-  protected void doFail(String id) {
-    queue.fail(id);
-  }
-
-  @Override
-  protected void doFail(String id, String message) {
-    queue.fail(id, message);
   }
 
 }

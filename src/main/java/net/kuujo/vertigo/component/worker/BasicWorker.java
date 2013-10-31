@@ -110,9 +110,4 @@ public class BasicWorker extends ComponentBase implements Worker {
     input.fail(message);
   }
 
-  @Override
-  public void fail(JsonMessage message, String failureMessage) {
-    input.fail(message, failureMessage);
-  }
-
 }

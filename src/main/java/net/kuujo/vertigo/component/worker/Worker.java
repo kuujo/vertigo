@@ -121,14 +121,4 @@ public interface Worker extends Component {
    */
   void fail(JsonMessage message);
 
-  /**
-   * Fails processing of a message with a fail message.
-   *
-   * @param message
-   *   The message to fail.
-   * @param failureMessage
-   *   A fail message to sent to the data source.
-   */
-  void fail(JsonMessage message, String failureMessage);
-
 }

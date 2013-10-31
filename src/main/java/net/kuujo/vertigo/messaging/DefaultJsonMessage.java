@@ -131,6 +131,17 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
+  public JsonMessage createChild() {
+    JsonObject newMessage = this.body.copy();
+    if (!newMessage.getFieldNames().contains("ancestor")) {
+      newMessage.putString("ancestor", this.body.getString("id"));
+    }
+    newMessage.putString("parent", this.body.getString("id"));
+    newMessage.putString("id", createUniqueId());
+    return new DefaultJsonMessage(newMessage);
+  }
+
+  @Override
   public JsonMessage createChild(JsonObject body) {
     JsonObject newMessage = this.body.copy();
     if (!newMessage.getFieldNames().contains("ancestor")) {

@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.feeder;
 
 import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -40,7 +40,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
 
   protected int retryAttempts = -1;
 
-  protected AbstractFeeder(Vertx vertx, Container container, InstanceContext context) {
+  protected AbstractFeeder(Vertx vertx, Container container, ComponentContext context) {
     super(vertx, container, context);
     queue = new BasicFeedQueue();
   }
@@ -61,44 +61,14 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   @SuppressWarnings("unchecked")
   public T start(Handler<AsyncResult<T>> doneHandler) {
     final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
-    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+    setup(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
         else {
-          setupOutputs(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
-              }
-              else {
-                setupInputs(new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    if (result.failed()) {
-                      future.setFailure(result.cause());
-                    }
-                    else {
-                      ready(new Handler<AsyncResult<Void>>() {
-                        @Override
-                        public void handle(AsyncResult<Void> result) {
-                          if (result.failed()) {
-                            future.setFailure(result.cause());
-                          }
-                          else {
-                            future.setResult((T) AbstractFeeder.this);
-                          }
-                        }
-                      });
-                    }
-                  }
-                });
-              }
-            }
-          });
+          future.setResult((T) AbstractFeeder.this);
         }
       }
     });

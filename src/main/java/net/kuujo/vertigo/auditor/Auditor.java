@@ -31,17 +31,11 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class Auditor extends BusModBase implements Handler<Message<JsonObject>> {
-
   private String address;
-
   private String broadcastAddress;
-
   private boolean enabled;
-
   private long expire = 30000;
-
   private Map<String, Node> nodes = new HashMap<>();
-
   private Map<Long, Timer> timers = new HashMap<>();
 
   @Override

@@ -83,6 +83,14 @@ public interface JsonMessage extends Serializable {
   public String tag();
 
   /**
+   * Creates a new child of the message with the same message data.
+   *
+   * @return
+   *   A new child message.
+   */
+  public JsonMessage createChild();
+
+  /**
    * Creates a new child of the message.
    *
    * @param body

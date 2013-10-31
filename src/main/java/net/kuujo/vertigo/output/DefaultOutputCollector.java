@@ -28,10 +28,12 @@ import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
@@ -47,6 +49,8 @@ public class DefaultOutputCollector implements OutputCollector {
   private final EventBus eventBus;
   private final ComponentContext context;
   private final List<String> auditors;
+  private Handler<String> ackHandler;
+  private Handler<String> failHandler;
   private Random random;
   private Map<String, Channel> channels = new HashMap<>();
   private Map<String, Long> connectionTimers = new HashMap<>();
@@ -73,6 +77,24 @@ public class DefaultOutputCollector implements OutputCollector {
         switch (action) {
           case "listen":
             doListen(body);
+            break;
+        }
+      }
+    }
+  };
+
+  private Handler<Message<JsonObject>> ackerHandler = new Handler<Message<JsonObject>>() {
+    @Override
+    public void handle(Message<JsonObject> message) {
+      JsonObject body = message.body();
+      if (body != null) {
+        String action = body.getString("action");
+        switch (action) {
+          case "ack":
+            doAck(message);
+            break;
+          case "fail":
+            doFail(message);
             break;
         }
       }
@@ -135,33 +157,74 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector emit(JsonObject body) {
-    return doEmit(DefaultJsonMessage.create(context.getAddress(), body, selectRandomAuditor()));
+  public OutputCollector ackHandler(Handler<String> handler) {
+    this.ackHandler = handler;
+    return this;
+  }
+
+  private void doAck(Message<JsonObject> message) {
+    if (ackHandler != null) {
+      String id = message.body().getString("id");
+      if (id != null) {
+        ackHandler.handle(id);
+      }
+    }
   }
 
   @Override
-  public OutputCollector emit(JsonObject body, String tag) {
-    return doEmit(DefaultJsonMessage.create(context.getAddress(), body, tag, selectRandomAuditor()));
+  public OutputCollector failHandler(Handler<String> handler) {
+    this.failHandler = handler;
+    return this;
+  }
+
+  private void doFail(Message<JsonObject> message) {
+    if (failHandler != null) {
+      String id = message.body().getString("id");
+      if (id != null) {
+        failHandler.handle(id);
+      }
+    }
   }
 
   @Override
-  public OutputCollector emit(JsonObject body, JsonMessage parent) {
-    return doEmit(parent.createChild(body));
+  public String emit(JsonObject body) {
+    return emitNew(DefaultJsonMessage.create(context.getAddress(), body, selectRandomAuditor()));
   }
 
   @Override
-  public OutputCollector emit(JsonObject body, String tag, JsonMessage parent) {
-    return doEmit(parent.createChild(body, tag));
+  public String emit(JsonObject body, String tag) {
+    return emitNew(DefaultJsonMessage.create(context.getAddress(), body, tag, selectRandomAuditor()));
+  }
+
+  @Override
+  public String emit(JsonObject body, JsonMessage parent) {
+    return emitChild(parent.createChild(body));
+  }
+
+  @Override
+  public String emit(JsonObject body, String tag, JsonMessage parent) {
+    return emitChild(parent.createChild(body, tag));
   }
 
   /**
-   * Emits a message.
+   * Emits a new message.
    */
-  private OutputCollector doEmit(JsonMessage message) {
+  private String emitNew(JsonMessage message) {
+    eventBus.send(message.auditor(), new JsonObject().putString("action", "create").putString("id", message.id()));
     for (Channel channel : channels.values()) {
-      channel.publish(message);
+      channel.publish(message.createChild());
     }
-    return this;
+    return message.id();
+  }
+
+  /**
+   * Emits a child message.
+   */
+  private String emitChild(JsonMessage message) {
+    for (Channel channel : channels.values()) {
+      channel.publish(message.copy());
+    }
+    return message.parent();
   }
 
   /**
@@ -174,23 +237,67 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public OutputCollector start() {
     eventBus.registerHandler(context.getAddress(), handler);
+    eventBus.registerHandler(context.getNetwork().getBroadcastAddress(), ackerHandler);
     return this;
   }
 
   @Override
   public OutputCollector start(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.registerHandler(context.getAddress(), handler, doneHandler);
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    eventBus.registerHandler(context.getAddress(), handler, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          eventBus.registerHandler(context.getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                future.setFailure(result.cause());
+              }
+              else {
+                future.setResult(null);
+              }
+            }
+          });
+        }
+      }
+    });
     return this;
   }
 
   @Override
   public void stop() {
     eventBus.unregisterHandler(context.getAddress(), handler);
+    eventBus.unregisterHandler(context.getNetwork().getBroadcastAddress(), ackerHandler);
   }
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.unregisterHandler(context.getAddress(), handler, doneHandler);
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    eventBus.unregisterHandler(context.getAddress(), handler, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          eventBus.unregisterHandler(context.getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                future.setFailure(result.cause());
+              }
+              else {
+                future.setResult(null);
+              }
+            }
+          });
+        }
+      }
+    });
   }
 
 }

@@ -37,41 +37,41 @@ public interface OutputCollector {
   public String getAddress();
 
   /**
-   * Emits a message to all output channels.
+   * Emits a new message to all output channels.
    *
    * @param body
    *   The message body.
    * @return
-   *   The called output collector instance.
+   *   The unique output message correlation identifier.
    */
-  public OutputCollector emit(JsonObject body);
+  public String emit(JsonObject body);
 
   /**
-   * Emits a message to all output channels.
+   * Emits a new message to all output channels.
    *
    * @param body
    *   The message body.
    * @param tag
-   *   A tag to apply to output data.
+   *   A tag to apply to the message.
    * @return
-   *   The called output collector instance.
+   *   The unique output message correlation identifier.
    */
-  public OutputCollector emit(JsonObject data, String tag);
+  public String emit(JsonObject data, String tag);
 
   /**
-   * Emits a message to all output channels.
+   * Emits a child message to all output channels.
    *
    * @param body
    *   The message body.
    * @param parent
    *   The parent message of the data.
    * @return
-   *   The called output collector instance.
+   *   The unique child message correlation identifier.
    */
-  public OutputCollector emit(JsonObject data, JsonMessage parent);
+  public String emit(JsonObject data, JsonMessage parent);
 
   /**
-   * Emits a message to all output channels.
+   * Emits a child message to all output channels.
    *
    * @param body
    *   The message body.
@@ -80,9 +80,29 @@ public interface OutputCollector {
    * @param parent
    *   The parent message of the data.
    * @return
+   *   The unique child message correlation identifier.
+   */
+  public String emit(JsonObject data, String tag, JsonMessage parent);
+
+  /**
+   * Sets an ack handler on the output collector.
+   *
+   * @param handler
+   *   A handler to be invoked when an ack message is received.
+   * @return
    *   The called output collector instance.
    */
-  public OutputCollector emit(JsonObject data, String tag, JsonMessage parent);
+  public OutputCollector ackHandler(Handler<String> handler);
+
+  /**
+   * Sets a fail handler on the output collector.
+   *
+   * @param handler
+   *   A handler to be invoked when a fail message is received.
+   * @return
+   *   The called output collector instance.
+   */
+  public OutputCollector failHandler(Handler<String> handler);
 
   /**
    * Starts the output collector.

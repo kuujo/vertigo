@@ -202,14 +202,7 @@ public abstract class ComponentBase implements Component {
   /**
    * Indicates to the network that the component is ready.
    */
-  protected void ready() {
-    ready(null);
-  }
-
-  /**
-   * Indicates to the network that the component is ready.
-   */
-  protected void ready(Handler<AsyncResult<Void>> doneHandler) {
+  private void ready(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>();
     if (doneHandler != null) {
       future.setHandler(doneHandler);

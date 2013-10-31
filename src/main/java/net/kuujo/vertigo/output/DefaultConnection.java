@@ -54,27 +54,11 @@ public class DefaultConnection implements Connection {
     if (auditor != null) {
       String parent = message.parent();
       if (parent != null) {
-        eventBus.send(auditor, createForkAction(message.id(), parent));
-      }
-      else {
-        eventBus.send(auditor, createNewAction(message.id()));
+        eventBus.send(auditor, new JsonObject().putString("action", "fork")
+            .putString("id", message.id()).putString("parent", parent));
       }
     }
     return message;
-  }
-
-  /**
-   * Creates a new message tree action.
-   */
-  private static final JsonObject createNewAction(String id) {
-    return new JsonObject().putString("action", "create").putString("id", id);
-  }
-
-  /**
-   * Creates a forked message tree action.
-   */
-  private static final JsonObject createForkAction(String id, String parent) {
-    return new JsonObject().putString("action", "fork").putString("id", id).putString("parent", parent);
   }
 
 }

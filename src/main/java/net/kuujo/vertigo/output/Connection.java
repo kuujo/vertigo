@@ -30,7 +30,7 @@ public interface Connection {
    * @return
    *   The remote connection address.
    */
-  public String address();
+  String getAddress();
 
   /**
    * Writes a message to the connection.
@@ -40,6 +40,6 @@ public interface Connection {
    * @return
    *   The called writable instance.
    */
-  public Connection write(JsonMessage message);
+  Connection write(JsonMessage message);
 
 }

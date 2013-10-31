@@ -34,7 +34,7 @@ public interface Selector extends Serializable {
    * @return
    *   The unique selector grouping identifier.
    */
-  public String getGrouping();
+  String getGrouping();
 
   /**
    * Returns the selector connection count.
@@ -42,7 +42,7 @@ public interface Selector extends Serializable {
    * @return
    *   The selector connection count.
    */
-  public int getConnectionCount();
+  int getConnectionCount();
 
   /**
    * Selects a list of connections to which to emit messages.
@@ -54,6 +54,6 @@ public interface Selector extends Serializable {
    * @return
    *   A list of selected connections.
    */
-  public List<Connection> select(JsonMessage message, List<Connection> connections);
+  List<Connection> select(JsonMessage message, List<Connection> connections);
 
 }

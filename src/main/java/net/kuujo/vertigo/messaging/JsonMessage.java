@@ -32,7 +32,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The message ID.
    */
-  public String id();
+  String id();
 
   /**
    * Returns the message source address.
@@ -40,7 +40,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The source address.
    */
-  public String source();
+  String source();
 
   /**
    * Returns the parent ID.
@@ -48,7 +48,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The parent message ID.
    */
-  public String parent();
+  String parent();
 
   /**
    * Returns the ancestor ID.
@@ -56,7 +56,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The ancestor message ID.
    */
-  public String ancestor();
+  String ancestor();
 
   /**
    * Returns the auditor address.
@@ -64,7 +64,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The message's auditor address.
    */
-  public String auditor();
+  String auditor();
 
   /**
    * Returns the message body.
@@ -72,7 +72,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The message body.
    */
-  public JsonObject body();
+  JsonObject body();
 
   /**
    * Returns the message tag.
@@ -80,7 +80,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   A message tag.
    */
-  public String tag();
+  String tag();
 
   /**
    * Creates a new child of the message with the same message data.
@@ -88,7 +88,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   A new child message.
    */
-  public JsonMessage createChild();
+  JsonMessage createChild();
 
   /**
    * Creates a new child of the message.
@@ -98,7 +98,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   A new child message.
    */
-  public JsonMessage createChild(JsonObject body);
+  JsonMessage createChild(JsonObject body);
 
   /**
    * Creates a new child of the message.
@@ -111,7 +111,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   A new child message.
    */
-  public JsonMessage createChild(JsonObject body, String tag);
+  JsonMessage createChild(JsonObject body, String tag);
 
   /**
    * Creates a copy of the message.
@@ -119,6 +119,6 @@ public interface JsonMessage extends Serializable {
    * @return
    *   A copy of the message.
    */
-  public JsonMessage copy();
+  JsonMessage copy();
 
 }

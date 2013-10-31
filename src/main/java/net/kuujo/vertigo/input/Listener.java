@@ -35,7 +35,7 @@ public interface Listener {
    * @return
    *   The called listener instance.
    */
-  public Listener messageHandler(Handler<JsonMessage> handler);
+  Listener messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Starts the listener.
@@ -43,7 +43,7 @@ public interface Listener {
    * @return
    *   The called listener instance.
    */
-  public Listener start();
+  Listener start();
 
   /**
    * Starts the listener.
@@ -53,12 +53,12 @@ public interface Listener {
    * @return
    *   The called listener instance.
    */
-  public Listener start(Handler<AsyncResult<Void>> doneHandler);
+  Listener start(Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops the listener.
    */
-  public void stop();
+  void stop();
 
   /**
    * Stops the listener.
@@ -66,6 +66,6 @@ public interface Listener {
    * @param doneHandler
    *   An asynchronous handler to be invoked once the listener is stopped.
    */
-  public void stop(Handler<AsyncResult<Void>> doneHandler);
+  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

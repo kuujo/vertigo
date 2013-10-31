@@ -32,7 +32,7 @@ public interface StreamExecutor extends Executor<StreamExecutor> {
    * @return
    *   The called executor instance.
    */
-  public StreamExecutor fullHandler(Handler<Void> handler);
+  StreamExecutor fullHandler(Handler<Void> handler);
 
   /**
    * Sets a drain handler on the executor.
@@ -42,6 +42,6 @@ public interface StreamExecutor extends Executor<StreamExecutor> {
    * @return
    *   The called executor instance.
    */
-  public StreamExecutor drainHandler(Handler<Void> handler);
+  StreamExecutor drainHandler(Handler<Void> handler);
 
 }

@@ -32,7 +32,7 @@ public interface HeartbeatMonitor {
    * @return
    *   The called monitor instance.
    */
-  public HeartbeatMonitor setAddress(String address);
+  HeartbeatMonitor setAddress(String address);
 
   /**
    * Gets the heartbeat monitor address.
@@ -40,7 +40,7 @@ public interface HeartbeatMonitor {
    * @return
    *   The heartbeat monitor address.
    */
-  public String address();
+  String getAddress();
 
   /**
    * Sets the required heartbeat interval.
@@ -51,7 +51,7 @@ public interface HeartbeatMonitor {
    * @return
    *   The called monitor instance.
    */
-  public HeartbeatMonitor setRequiredInterval(long interval);
+  HeartbeatMonitor setRequiredInterval(long interval);
 
   /**
    * Returns the required heartbeat interval.
@@ -59,7 +59,7 @@ public interface HeartbeatMonitor {
    * @return
    *   The required heartbeat interval.
    */
-  public long requiredInterval();
+  long getRequiredInterval();
 
   /**
    * Starts monitoring heartbeats at the given address.
@@ -67,11 +67,11 @@ public interface HeartbeatMonitor {
    * @param failHandler
    *   A handler to be invoked if heartbeats fail.
    */
-  public void listen(Handler<String> failHandler);
+  void listen(Handler<String> failHandler);
 
   /**
    * Stops monitoring heartbeats at the given address.
    */
-  public void unlisten();
+  void unlisten();
 
 }

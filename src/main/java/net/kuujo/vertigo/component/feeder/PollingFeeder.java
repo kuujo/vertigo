@@ -32,7 +32,7 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  public PollingFeeder setFeedDelay(long delay);
+  PollingFeeder setFeedDelay(long delay);
 
   /**
    * Gets the feed delay.
@@ -40,7 +40,7 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The empty feed delay.
    */
-  public long getFeedDelay();
+  long getFeedDelay();
 
   /**
    * Sets a feed handler.
@@ -50,6 +50,6 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  public PollingFeeder feedHandler(Handler<PollingFeeder> handler);
+  PollingFeeder feedHandler(Handler<PollingFeeder> handler);
 
 }

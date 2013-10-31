@@ -33,6 +33,6 @@ public interface Condition extends Serializable {
    * @return
    *   Indicates whether the given message is valid.
    */
-  public boolean isValid(JsonMessage message);
+  boolean isValid(JsonMessage message);
 
 }

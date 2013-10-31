@@ -35,7 +35,7 @@ public interface Worker extends Component {
    * @return
    *   The called worker instance.
    */
-  public Worker start();
+  Worker start();
 
   /**
    * Starts the worker.
@@ -45,7 +45,7 @@ public interface Worker extends Component {
    * @return
    *   The called worker instance.
    */
-  public Worker start(Handler<AsyncResult<Worker>> doneHandler);
+  Worker start(Handler<AsyncResult<Worker>> doneHandler);
 
   /**
    * Sets a worker data handler.
@@ -55,7 +55,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  public Worker messageHandler(Handler<JsonMessage> handler);
+  Worker messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Emits data from the worker.
@@ -65,7 +65,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  public Worker emit(JsonObject data);
+  Worker emit(JsonObject data);
 
   /**
    * Emits data from the worker with a tag.
@@ -77,7 +77,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  public Worker emit(JsonObject data, String tag);
+  Worker emit(JsonObject data, String tag);
 
   /**
    * Emits child data from the worker.
@@ -89,7 +89,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  public Worker emit(JsonObject data, JsonMessage parent);
+  Worker emit(JsonObject data, JsonMessage parent);
 
   /**
    * Emits child data from the worker with a tag.
@@ -103,7 +103,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  public Worker emit(JsonObject data, String tag, JsonMessage parent);
+  Worker emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Acknowledges processing of a message.
@@ -111,7 +111,7 @@ public interface Worker extends Component {
    * @param message
    *   The message to ack.
    */
-  public void ack(JsonMessage message);
+  void ack(JsonMessage message);
 
   /**
    * Fails processing of a message.
@@ -119,7 +119,7 @@ public interface Worker extends Component {
    * @param message
    *   The message to fail.
    */
-  public void fail(JsonMessage message);
+  void fail(JsonMessage message);
 
   /**
    * Fails processing of a message with a fail message.
@@ -129,6 +129,6 @@ public interface Worker extends Component {
    * @param failureMessage
    *   A fail message to sent to the data source.
    */
-  public void fail(JsonMessage message, String failureMessage);
+  void fail(JsonMessage message, String failureMessage);
 
 }

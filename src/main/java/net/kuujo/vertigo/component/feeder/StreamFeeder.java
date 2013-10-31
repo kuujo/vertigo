@@ -32,7 +32,7 @@ public interface StreamFeeder extends Feeder<StreamFeeder> {
    * @return
    *   The called feeder instance.
    */
-  public StreamFeeder fullHandler(Handler<Void> handler);
+  StreamFeeder fullHandler(Handler<Void> handler);
 
   /**
    * Sets a drain handler on the feeder.
@@ -42,6 +42,6 @@ public interface StreamFeeder extends Feeder<StreamFeeder> {
    * @return
    *   The called feeder instance.
    */
-  public StreamFeeder drainHandler(Handler<Void> handler);
+  StreamFeeder drainHandler(Handler<Void> handler);
 
 }

@@ -16,7 +16,7 @@ public interface Grouping extends Serializable {
    * @return
    *   The unique grouping identifier.
    */
-  public String id();
+  String id();
 
   /**
    * Returns the grouping count.
@@ -24,7 +24,7 @@ public interface Grouping extends Serializable {
    * @return
    *   The grouping count.
    */
-  public int count();
+  int count();
 
   /**
    * Sets the grouping count.
@@ -34,7 +34,7 @@ public interface Grouping extends Serializable {
    * @return
    *   The called grouping instance.
    */
-  public Grouping setCount(int count);
+  Grouping setCount(int count);
 
   /**
    * Creates an output selector from the grouping.
@@ -42,6 +42,6 @@ public interface Grouping extends Serializable {
    * @return
    *   An output selector.
    */
-  public Selector createSelector();
+  Selector createSelector();
 
 }

@@ -41,7 +41,7 @@ public interface Vertigo {
    * @param context
    *   An instance context.
    */
-  public void setContext(ComponentContext context);
+  void setContext(ComponentContext context);
 
   /**
    * Creates a network.
@@ -51,7 +51,7 @@ public interface Vertigo {
    * @return
    *   A new network instance.
    */
-  public Network createNetwork(String address);
+  Network createNetwork(String address);
 
   /**
    * Creates a feeder.
@@ -59,7 +59,7 @@ public interface Vertigo {
    * @return
    *   A new feeder instance.
    */
-  public BasicFeeder createFeeder();
+  BasicFeeder createFeeder();
 
   /**
    * Creates a basic feeder.
@@ -67,7 +67,7 @@ public interface Vertigo {
    * @return
    *   A new basic feeder instance.
    */
-  public BasicFeeder createBasicFeeder();
+  BasicFeeder createBasicFeeder();
 
   /**
    * Creates a polling feeder.
@@ -75,7 +75,7 @@ public interface Vertigo {
    * @return
    *   A new poll feeder instance.
    */
-  public PollingFeeder createPollingFeeder();
+  PollingFeeder createPollingFeeder();
 
   /**
    * Creates a stream feeder.
@@ -83,7 +83,7 @@ public interface Vertigo {
    * @return
    *   A new stream feeder instance.
    */
-  public StreamFeeder createStreamFeeder();
+  StreamFeeder createStreamFeeder();
 
   /**
    * Creates a basic executor.
@@ -91,7 +91,7 @@ public interface Vertigo {
    * @return
    *   A new basic executor instance.
    */
-  public BasicExecutor createExecutor();
+  BasicExecutor createExecutor();
 
   /**
    * Creates a basic executor.
@@ -99,7 +99,7 @@ public interface Vertigo {
    * @return
    *   A new basic executor instance.
    */
-  public BasicExecutor createBasicExecutor();
+  BasicExecutor createBasicExecutor();
 
   /**
    * Creates a polling executor.
@@ -107,7 +107,7 @@ public interface Vertigo {
    * @return
    *   A new polling executor instance.
    */
-  public PollingExecutor createPollingExecutor();
+  PollingExecutor createPollingExecutor();
 
   /**
    * Creates a stream executor.
@@ -115,7 +115,7 @@ public interface Vertigo {
    * @return
    *   A new stream executor instance.
    */
-  public StreamExecutor createStreamExecutor();
+  StreamExecutor createStreamExecutor();
 
   /**
    * Creates a worker.
@@ -123,6 +123,6 @@ public interface Vertigo {
    * @return
    *   A new worker instance.
    */
-  public Worker createWorker();
+  Worker createWorker();
 
 }

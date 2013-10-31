@@ -30,7 +30,7 @@ public interface HeartbeatEmitter {
    * @return
    *   The called monitor instance.
    */
-  public HeartbeatEmitter setAddress(String address);
+  HeartbeatEmitter setAddress(String address);
 
   /**
    * Gets the heartbeat address.
@@ -38,7 +38,7 @@ public interface HeartbeatEmitter {
    * @return
    *   The heartbeat address.
    */
-  public String address();
+  String getAddress();
 
   /**
    * Sets the heartbeat interval.
@@ -48,7 +48,7 @@ public interface HeartbeatEmitter {
    *   be emitted.
    * @return
    */
-  public HeartbeatEmitter setInterval(long interval);
+  HeartbeatEmitter setInterval(long interval);
 
   /**
    * Gets the heartbeat interval.
@@ -56,16 +56,16 @@ public interface HeartbeatEmitter {
    * @return
    *   The heartbeat interval.
    */
-  public long interval();
+  long getInterval();
 
   /**
    * Starts emitting heartbeats at an address.
    */
-  public void start();
+  void start();
 
   /**
    * Stops emitting heartbeats to an address.
    */
-  public void stop();
+  void stop();
 
 }

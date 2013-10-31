@@ -35,7 +35,7 @@ public interface InputCollector {
    * @return
    *   The called collector instance.
    */
-  public InputCollector messageHandler(Handler<JsonMessage> handler);
+  InputCollector messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Acknowledges a message.
@@ -45,7 +45,7 @@ public interface InputCollector {
    * @return
    *   The called input collector instance.
    */
-  public InputCollector ack(JsonMessage message);
+  InputCollector ack(JsonMessage message);
 
   /**
    * Fails a message.
@@ -55,19 +55,7 @@ public interface InputCollector {
    * @return
    *   The called input collector instance.
    */
-  public InputCollector fail(JsonMessage message);
-
-  /**
-   * Fails a message with a failure message.
-   *
-   * @param message
-   *   The message to fail.
-   * @param failMessage
-   *   A failure message.
-   * @return
-   *   The called input collector instance.
-   */
-  public InputCollector fail(JsonMessage message, String failMessage);
+  InputCollector fail(JsonMessage message);
 
   /**
    * Starts the input collector.
@@ -75,7 +63,7 @@ public interface InputCollector {
    * @return
    *   The called input collector instance.
    */
-  public InputCollector start();
+  InputCollector start();
 
   /**
    * Starts the input collector.
@@ -85,12 +73,12 @@ public interface InputCollector {
    * @return
    *   The called input collector instance.
    */
-  public InputCollector start(Handler<AsyncResult<Void>> doneHandler);
+  InputCollector start(Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops the input collector.
    */
-  public void stop();
+  void stop();
 
   /**
    * Stops the input collector.
@@ -98,6 +86,6 @@ public interface InputCollector {
    * @param doneHandler
    *   An asynchronous handler to be invoked once the collector is stopped.
    */
-  public void stop(Handler<AsyncResult<Void>> doneHandler);
+  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

@@ -32,7 +32,7 @@ public interface Channel {
    * @return
    *   The called channel instance.
    */
-  public Channel addConnection(Connection connection);
+  Channel addConnection(Connection connection);
 
   /**
    * Removes a connection from the channel.
@@ -42,7 +42,7 @@ public interface Channel {
    * @return
    *   The called channel instance.
    */
-  public Channel removeConnection(Connection connection);
+  Channel removeConnection(Connection connection);
 
   /**
    * Returns a boolean indicating whether the channel contains a connection.
@@ -52,7 +52,7 @@ public interface Channel {
    * @return
    *   A boolean indicating whether the channel contains the connection.
    */
-  public boolean containsConnection(Connection connection);
+  boolean containsConnection(Connection connection);
 
   /**
    * Returns a boolean indicating whether the channel contains a connection by address.
@@ -62,7 +62,7 @@ public interface Channel {
    * @return
    *   A boolean indicating whether the channel contains a connection at that address.
    */
-  public boolean containsConnection(String address);
+  boolean containsConnection(String address);
 
   /**
    * Returns a connection by address.
@@ -72,7 +72,7 @@ public interface Channel {
    * @return
    *   A connection instance or null if the connection doesn't exist.
    */
-  public Connection getConnection(String address);
+  Connection getConnection(String address);
 
   /**
    * Publishes a message to the channel.
@@ -82,6 +82,6 @@ public interface Channel {
    * @return
    *   The called channel instance.
    */
-  public Channel publish(JsonMessage message);
+  Channel publish(JsonMessage message);
 
 }

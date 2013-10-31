@@ -36,7 +36,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T start();
+  T start();
 
   /**
    * Starts the feeder.
@@ -46,7 +46,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T start(Handler<AsyncResult<T>> doneHandler);
+  T start(Handler<AsyncResult<T>> doneHandler);
 
   /**
    * Sets the maximum feed queue size.
@@ -56,7 +56,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T setMaxQueueSize(long maxSize);
+  T setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum feed queue size.
@@ -64,7 +64,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The maximum queue size allowed for the feeder.
    */
-  public long getMaxQueueSize();
+  long getMaxQueueSize();
 
   /**
    * Indicates whether the feed queue is full.
@@ -72,7 +72,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   A boolean indicating whether the feed queue is full.
    */
-  public boolean queueFull();
+  boolean queueFull();
 
   /**
    * Sets the feeder auto-retry option.
@@ -82,7 +82,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T setAutoRetry(boolean retry);
+  T setAutoRetry(boolean retry);
 
   /**
    * Gets the feeder auto-retry option.
@@ -90,7 +90,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   Indicates whether the feeder with automatically retry emitting failed data.
    */
-  public boolean isAutoRetry();
+  boolean isAutoRetry();
 
   /**
    * Sets the number of automatic retry attempts for a single failed message.
@@ -101,7 +101,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T setRetryAttempts(int attempts);
+  T setRetryAttempts(int attempts);
 
   /**
    * Gets the number of automatic retry attempts.
@@ -109,7 +109,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   Indicates the number of retry attempts allowed for the feeder.
    */
-  public int getRetryAttempts();
+  int getRetryAttempts();
 
   /**
    * Feeds data through the feeder.
@@ -119,7 +119,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T feed(JsonObject data);
+  T feed(JsonObject data);
 
   /**
    * Feeds data through the feeder.
@@ -131,7 +131,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T feed(JsonObject data, String tag);
+  T feed(JsonObject data, String tag);
 
   /**
    * Feeds data to the network with an ack handler.
@@ -143,7 +143,7 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
+  T feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Feeds data to the network with an ack handler.
@@ -157,6 +157,6 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  public T feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
+  T feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
 }

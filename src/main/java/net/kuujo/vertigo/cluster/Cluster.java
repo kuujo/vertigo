@@ -34,7 +34,7 @@ public interface Cluster {
    * @param network
    *   The network definition.
    */
-  public void deploy(Network network);
+  void deploy(Network network);
 
   /**
    * Deploys a network.
@@ -44,7 +44,7 @@ public interface Cluster {
    * @param doneHandler
    *   An asynchronous result handler to be invoked with a network context.
    */
-  public void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
+  void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Shuts down a network.
@@ -52,7 +52,7 @@ public interface Cluster {
    * @param context
    *   The network context.
    */
-  public void shutdown(NetworkContext context);
+  void shutdown(NetworkContext context);
 
   /**
    * Shuts down a network, awaiting a result.
@@ -62,6 +62,6 @@ public interface Cluster {
    * @param doneHandler
    *   An asynchronous result handler to be invoked once the shutdown is complete.
    */
-  public void shutdown(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
+  void shutdown(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
 
 }

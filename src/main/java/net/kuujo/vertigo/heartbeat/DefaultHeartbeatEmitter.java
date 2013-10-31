@@ -60,7 +60,7 @@ public class DefaultHeartbeatEmitter implements HeartbeatEmitter {
   }
 
   @Override
-  public String address() {
+  public String getAddress() {
     return address;
   }
 
@@ -71,7 +71,7 @@ public class DefaultHeartbeatEmitter implements HeartbeatEmitter {
   }
 
   @Override
-  public long interval() {
+  public long getInterval() {
     return interval;
   }
 

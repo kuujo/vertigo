@@ -34,7 +34,7 @@ public interface OutputCollector {
    * @return
    *   The output address.
    */
-  public String getAddress();
+  String getAddress();
 
   /**
    * Emits a new message to all output channels.
@@ -44,7 +44,7 @@ public interface OutputCollector {
    * @return
    *   The unique output message correlation identifier.
    */
-  public String emit(JsonObject body);
+  String emit(JsonObject body);
 
   /**
    * Emits a new message to all output channels.
@@ -56,7 +56,7 @@ public interface OutputCollector {
    * @return
    *   The unique output message correlation identifier.
    */
-  public String emit(JsonObject data, String tag);
+  String emit(JsonObject data, String tag);
 
   /**
    * Emits a child message to all output channels.
@@ -68,7 +68,7 @@ public interface OutputCollector {
    * @return
    *   The unique child message correlation identifier.
    */
-  public String emit(JsonObject data, JsonMessage parent);
+  String emit(JsonObject data, JsonMessage parent);
 
   /**
    * Emits a child message to all output channels.
@@ -82,7 +82,7 @@ public interface OutputCollector {
    * @return
    *   The unique child message correlation identifier.
    */
-  public String emit(JsonObject data, String tag, JsonMessage parent);
+  String emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Sets an ack handler on the output collector.
@@ -92,7 +92,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  public OutputCollector ackHandler(Handler<String> handler);
+  OutputCollector ackHandler(Handler<String> handler);
 
   /**
    * Sets a fail handler on the output collector.
@@ -102,7 +102,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  public OutputCollector failHandler(Handler<String> handler);
+  OutputCollector failHandler(Handler<String> handler);
 
   /**
    * Starts the output collector.
@@ -110,7 +110,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  public OutputCollector start();
+  OutputCollector start();
 
   /**
    * Starts the output collector.
@@ -120,12 +120,12 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  public OutputCollector start(Handler<AsyncResult<Void>> doneHandler);
+  OutputCollector start(Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops the output collector.
    */
-  public void stop();
+  void stop();
 
   /**
    * Stops the output collector.
@@ -133,6 +133,6 @@ public interface OutputCollector {
    * @param doneHandler
    *   An asynchronous handler to be invoked once the collector is stopped.
    */
-  public void stop(Handler<AsyncResult<Void>> doneHandler);
+  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

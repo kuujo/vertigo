@@ -35,7 +35,7 @@ public interface ExecuteQueue {
    * @return
    *   The called executor queue instance.
    */
-  public ExecuteQueue setReplyTimeout(long timeout);
+  ExecuteQueue setReplyTimeout(long timeout);
 
   /**
    * Gets the queue reply timeout.
@@ -43,7 +43,7 @@ public interface ExecuteQueue {
    * @return
    *   The queue reply timeout.
    */
-  public long getReplyTimeout();
+  long getReplyTimeout();
 
   /**
    * Sets the maximum executor queue size.
@@ -53,7 +53,7 @@ public interface ExecuteQueue {
    * @return
    *   The called executor queue instance.
    */
-  public ExecuteQueue setMaxQueueSize(long maxSize);
+  ExecuteQueue setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum executor queue size.
@@ -61,7 +61,7 @@ public interface ExecuteQueue {
    * @return
    *   The maximum allowed executor queue size.
    */
-  public long getMaxQueueSize();
+  long getMaxQueueSize();
 
   /**
    * Indicates the current executor queue size.
@@ -69,7 +69,7 @@ public interface ExecuteQueue {
    * @return
    *   The current feed executor size.
    */
-  public long size();
+  long size();
 
   /**
    * Indicates whether the executor queue is full.
@@ -77,7 +77,7 @@ public interface ExecuteQueue {
    * @return
    *   A boolean indicating whether the executor queue is full.
    */
-  public boolean full();
+  boolean full();
 
   /**
    * Adds a unique ID to the queue.
@@ -89,7 +89,7 @@ public interface ExecuteQueue {
    * @return
    *   The called executor queue instance.
    */
-  public ExecuteQueue enqueue(String id, Handler<AsyncResult<JsonMessage>> resultHandler);
+  ExecuteQueue enqueue(String id, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Acks a message in the queue.
@@ -97,7 +97,7 @@ public interface ExecuteQueue {
    * @param id
    *   The unique message ID.
    */
-  public void ack(String id);
+  void ack(String id);
 
   /**
    * Fails a message in the queue.
@@ -105,7 +105,7 @@ public interface ExecuteQueue {
    * @param id
    *   The unique message ID.
    */
-  public void fail(String id);
+  void fail(String id);
 
   /**
    * Receives a response.
@@ -113,6 +113,6 @@ public interface ExecuteQueue {
    * @param message
    *   The response message.
    */
-  public void receive(JsonMessage message);
+  void receive(JsonMessage message);
 
 }

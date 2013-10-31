@@ -31,6 +31,6 @@ public interface Filter extends Serializable {
    * @return
    *   An output condition.
    */
-  public Condition createCondition();
+  Condition createCondition();
 
 }

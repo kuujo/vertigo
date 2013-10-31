@@ -205,27 +205,11 @@ public class DefaultInputCollector implements InputCollector {
     return this;
   }
 
-  @Override
-  public InputCollector fail(JsonMessage message, String failMessage) {
-    String auditor = message.auditor();
-    if (auditor != null) {
-      eventBus.send(auditor, createFailAction(message.id(), failMessage));
-    }
-    return this;
-  }
-
   /**
    * Creates a fail message action.
    */
   private static final JsonObject createFailAction(String id) {
     return new JsonObject().putString("action", "fail").putString("id", id);
-  }
-
-  /**
-   * Creates a fail message action with a fail message.
-   */
-  private static final JsonObject createFailAction(String id, String message) {
-    return new JsonObject().putString("action", "fail").putString("id", id).putString("message", message);
   }
 
 }

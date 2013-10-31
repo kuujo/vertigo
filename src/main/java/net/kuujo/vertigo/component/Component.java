@@ -30,7 +30,7 @@ public interface Component {
    * @return
    *   The component configuration.
    */
-  public JsonObject config();
+  JsonObject config();
 
   /**
    * Returns the component context.
@@ -38,6 +38,6 @@ public interface Component {
    * @return
    *   The component context.
    */
-  public ComponentContext context();
+  ComponentContext context();
 
 }

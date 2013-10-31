@@ -36,7 +36,7 @@ public class DefaultConnection implements Connection {
   }
 
   @Override
-  public String address() {
+  public String getAddress() {
     return address;
   }
 

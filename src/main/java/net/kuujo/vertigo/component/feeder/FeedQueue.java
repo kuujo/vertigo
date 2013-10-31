@@ -33,7 +33,7 @@ public interface FeedQueue {
    * @return
    *   The called feed queue instance.
    */
-  public FeedQueue setMaxQueueSize(long maxSize);
+  FeedQueue setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum feed queue size.
@@ -41,7 +41,7 @@ public interface FeedQueue {
    * @return
    *   The maximum allowed feed queue size.
    */
-  public long getMaxQueueSize();
+  long getMaxQueueSize();
 
   /**
    * Indicates the current feed queue size.
@@ -49,7 +49,7 @@ public interface FeedQueue {
    * @return
    *   The current feed queue size.
    */
-  public long size();
+  long size();
 
   /**
    * Indicates whether the feed queue is full.
@@ -57,7 +57,7 @@ public interface FeedQueue {
    * @return
    *   A boolean indicating whether the feed queue is full.
    */
-  public boolean full();
+  boolean full();
 
   /**
    * Adds a unique ID to the queue.
@@ -70,7 +70,7 @@ public interface FeedQueue {
    * @return
    *   The called feed queue instance.
    */
-  public FeedQueue enqueue(String id, Handler<AsyncResult<Void>> ackHandler);
+  FeedQueue enqueue(String id, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Acks a message in the queue.
@@ -78,7 +78,7 @@ public interface FeedQueue {
    * @param id
    *   The unique message ID.
    */
-  public void ack(String id);
+  void ack(String id);
 
   /**
    * Fails a message in the queue.
@@ -86,6 +86,6 @@ public interface FeedQueue {
    * @param id
    *   The unique message ID.
    */
-  public void fail(String id);
+  void fail(String id);
 
 }

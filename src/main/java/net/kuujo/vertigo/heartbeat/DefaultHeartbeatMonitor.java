@@ -55,7 +55,7 @@ public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
   }
 
   @Override
-  public String address() {
+  public String getAddress() {
     return address;
   }
 
@@ -66,7 +66,7 @@ public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
   }
 
   @Override
-  public long requiredInterval() {
+  public long getRequiredInterval() {
     return interval;
   }
 

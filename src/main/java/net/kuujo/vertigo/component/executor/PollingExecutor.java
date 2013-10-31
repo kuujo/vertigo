@@ -12,7 +12,7 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The called executor instance.
    */
-  public PollingExecutor setExecuteDelay(long delay);
+  PollingExecutor setExecuteDelay(long delay);
 
   /**
    * Gets the execute delay.
@@ -20,7 +20,7 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The empty executor delay.
    */
-  public long getExecuteDelay();
+  long getExecuteDelay();
 
   /**
    * Sets an execute handler.
@@ -30,6 +30,6 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The called executor instance.
    */
-  public PollingExecutor executeHandler(Handler<PollingExecutor> handler);
+  PollingExecutor executeHandler(Handler<PollingExecutor> handler);
 
 }

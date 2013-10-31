@@ -35,7 +35,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T start();
+  T start();
 
   /**
    * Starts the executor.
@@ -45,7 +45,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T start(Handler<AsyncResult<T>> doneHandler);
+  T start(Handler<AsyncResult<T>> doneHandler);
 
   /**
    * Sets the execution reply timeout.
@@ -55,7 +55,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T setReplyTimeout(long timeout);
+  T setReplyTimeout(long timeout);
 
   /**
    * Gets the execution reply timeout.
@@ -63,7 +63,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *  An execution reply timeout.
    */
-  public long getReplyTimeout();
+  long getReplyTimeout();
 
   /**
    * Sets the maximum execution queue size.
@@ -73,7 +73,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T setMaxQueueSize(long maxSize);
+  T setMaxQueueSize(long maxSize);
 
   /**
    * Gets the maximum execution queue size.
@@ -81,7 +81,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The maximum queue size allowed for the executor.
    */
-  public long getMaxQueueSize();
+  long getMaxQueueSize();
 
   /**
    * Indicates whether the execution queue is full.
@@ -89,7 +89,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   A boolean indicating whether the execution queue is full.
    */
-  public boolean queueFull();
+  boolean queueFull();
 
   /**
    * Executes the network.
@@ -101,7 +101,7 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+  T execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Executes the network.
@@ -115,6 +115,6 @@ public interface Executor<T extends Executor<T>> extends Component {
    * @return
    *   The called executor instance.
    */
-  public T execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
+  T execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
 }

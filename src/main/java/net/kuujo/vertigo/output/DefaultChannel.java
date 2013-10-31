@@ -100,7 +100,7 @@ public class DefaultChannel implements Channel {
   @Override
   public boolean containsConnection(String address) {
     for (Connection connection : connections) {
-      if (connection.address().equals(address)) {
+      if (connection.getAddress().equals(address)) {
         return true;
       }
     }
@@ -110,7 +110,7 @@ public class DefaultChannel implements Channel {
   @Override
   public Connection getConnection(String address) {
     for (Connection connection : connections) {
-      if (connection.address().equals(address)) {
+      if (connection.getAddress().equals(address)) {
         return connection;
       }
     }

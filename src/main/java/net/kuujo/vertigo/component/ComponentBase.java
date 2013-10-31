@@ -103,8 +103,19 @@ public abstract class ComponentBase implements Component {
   /**
    * Sets up the component.
    */
+  protected void setup() {
+    setup(null);
+  }
+
+  /**
+   * Sets up the component.
+   */
   protected void setup(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    if (doneHandler != null) {
+      future.setHandler(doneHandler);
+    }
+
     setupHeartbeat(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {

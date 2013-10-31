@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.worker;
 
 import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -36,7 +36,7 @@ public class BasicWorker extends ComponentBase implements Worker {
 
   protected Handler<JsonMessage> messageHandler;
 
-  public BasicWorker(Vertx vertx, Container container, InstanceContext context) {
+  public BasicWorker(Vertx vertx, Container container, ComponentContext context) {
     super(vertx, container, context);
   }
 
@@ -54,39 +54,15 @@ public class BasicWorker extends ComponentBase implements Worker {
   @Override
   public Worker start(Handler<AsyncResult<Worker>> doneHandler) {
     final Future<Worker> future = new DefaultFutureResult<Worker>().setHandler(doneHandler);
-    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+    setup(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
         else {
-          setupOutputs(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
-              }
-              else {
-                setupInputs(new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    ready(new Handler<AsyncResult<Void>>() {
-                      @Override
-                      public void handle(AsyncResult<Void> result) {
-                        if (result.failed()) {
-                          future.setFailure(result.cause());
-                        }
-                        else {
-                          future.setResult(BasicWorker.this);
-                        }
-                      }
-                    });
-                  }
-                });
-              }
-            }
-          });
+          input.messageHandler(messageHandler);
+          future.setResult(BasicWorker.this);
         }
       }
     });
@@ -94,55 +70,49 @@ public class BasicWorker extends ComponentBase implements Worker {
   }
 
   @Override
-  protected void doReceive(JsonMessage message) {
-    if (messageHandler != null) {
-      messageHandler.handle(message);
-    }
-  }
-
-  @Override
   public Worker messageHandler(Handler<JsonMessage> handler) {
     messageHandler = handler;
+    input.messageHandler(messageHandler);
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data) {
-    output.emit(createMessage(data));
+    output.emit(data);
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data, String tag) {
-    output.emit(createMessage(data, tag));
+    output.emit(data, tag);
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data, JsonMessage parent) {
-    output.emit(createMessage(data, parent));
+    output.emit(data, parent);
     return this;
   }
 
   @Override
   public Worker emit(JsonObject data, String tag, JsonMessage parent) {
-    output.emit(createMessage(data, tag, parent));
+    output.emit(data, tag, parent);
     return this;
   }
 
   @Override
   public void ack(JsonMessage message) {
-    output.ack(message);
+    input.ack(message);
   }
 
   @Override
   public void fail(JsonMessage message) {
-    output.fail(message);
+    input.fail(message);
   }
 
   @Override
   public void fail(JsonMessage message, String failureMessage) {
-    output.fail(message, failureMessage);
+    input.fail(message, failureMessage);
   }
 
 }

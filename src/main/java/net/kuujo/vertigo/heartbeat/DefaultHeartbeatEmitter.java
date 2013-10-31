@@ -31,15 +31,9 @@ public class DefaultHeartbeatEmitter implements HeartbeatEmitter {
   private long interval = 1000;
   private long timerID;
 
-  public DefaultHeartbeatEmitter() {
-  }
-
   public DefaultHeartbeatEmitter(Vertx vertx) {
     this.vertx = vertx;
-  }
-
-  public DefaultHeartbeatEmitter(String address) {
-    this.address = address;
+    this.eventBus = vertx.eventBus();
   }
 
   public DefaultHeartbeatEmitter(String address, Vertx vertx) {

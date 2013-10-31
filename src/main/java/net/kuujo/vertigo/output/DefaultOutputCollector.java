@@ -51,7 +51,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final List<String> auditors;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
-  private Random random;
+  private Random random = new Random();
   private Map<String, Channel> channels = new HashMap<>();
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;

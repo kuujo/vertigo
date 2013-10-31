@@ -23,6 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
@@ -78,11 +79,16 @@ public class Input implements Serializable {
    */
   public Grouping getGrouping() {
     JsonObject groupingInfo = definition.getObject(GROUPING);
-    try {
-      return groupingInfo != null ? Serializer.<Grouping>deserialize(groupingInfo) : null;
+    if (groupingInfo == null) {
+      return new RoundGrouping();
     }
-    catch (SerializationException e) {
-      return null;
+    else {
+      try {
+        return Serializer.<Grouping>deserialize(groupingInfo);
+      }
+      catch (SerializationException e) {
+        return null;
+      }
     }
   }
 

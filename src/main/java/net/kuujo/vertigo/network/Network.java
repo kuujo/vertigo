@@ -38,7 +38,7 @@ public class Network implements Serializable {
   public static final String ACK_EXPIRE = "ack_expire";
   public static final String COMPONENTS = "components";
 
-  private static final long DEFAULT_ACK_EXPIRE = 30000;
+  public static final long DEFAULT_ACK_EXPIRE = 30000;
 
   private JsonObject definition;
 

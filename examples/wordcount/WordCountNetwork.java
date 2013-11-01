@@ -14,19 +14,19 @@
 * limitations under the License.
 */
 package wordcount;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.Cluster;
-import net.kuujo.vertigo.LocalCluster;
-import net.kuujo.vertigo.Networks;
+import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.grouping.FieldsGrouping;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.definition.ComponentDefinition;
-import net.kuujo.vertigo.definition.NetworkDefinition;
-import net.kuujo.vertigo.grouping.FieldsGrouping;
-import net.kuujo.vertigo.java.VertigoVerticle;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -105,12 +105,10 @@ public class WordCountNetwork extends Verticle {
 
   @Override
   public void start() {
-    NetworkDefinition network = Networks.createNetwork("word_count");
-    ComponentDefinition feeder = network.fromVerticle("word_feeder", WordFeeder.class.getName());
-
-    // Group the word counter worker by the "word" field. This ensures that the
-    // same word field always go to the same verticle instance.
-    feeder.toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+    Network network = new Network("word_count");
+    Component feeder = network.addComponent("word_feeder", WordFeeder.class.getName());
+    Component counter = network.addComponent("word_counter", WordCountWorker.class.getName(), 4);
+    counter.addInput("word_feeder").groupBy(new FieldsGrouping("word"));
 
     final Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {

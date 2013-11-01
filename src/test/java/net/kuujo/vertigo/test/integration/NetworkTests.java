@@ -64,7 +64,6 @@ public class NetworkTests extends TestVerticle {
     });
   }
 
-  /*
   @Test
   public void testBasicFailFeeder() {
     Network network = new Network("test");
@@ -106,6 +105,7 @@ public class NetworkTests extends TestVerticle {
     });
   }
 
+  /*
   @Test
   public void testBasicExecutor() {
     Network network = new Network("test");

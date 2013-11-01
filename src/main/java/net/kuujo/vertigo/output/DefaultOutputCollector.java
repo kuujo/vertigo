@@ -105,7 +105,8 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private void doListen(JsonObject info) {
     final String address = info.getString("address");
-    if (address == null) {
+    final String statusAddress = info.getString("status");
+    if (address == null || statusAddress == null) {
       return;
     }
 
@@ -122,6 +123,7 @@ public class DefaultOutputCollector implements OutputCollector {
       else {
         channel = channels.get(id);
       }
+      eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
 
       if (!channel.containsConnection(address)) {
         channel.addConnection(new DefaultConnection(address, eventBus));

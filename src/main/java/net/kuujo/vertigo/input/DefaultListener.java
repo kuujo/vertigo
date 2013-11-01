@@ -17,6 +17,7 @@ package net.kuujo.vertigo.input;
 
 import java.util.UUID;
 
+import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.output.Output;
@@ -31,6 +32,7 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 
 /**
  * A default listener implementation.
@@ -38,40 +40,91 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultListener implements Listener {
-  private String address;
-  private Input input;
-  private Vertx vertx;
-  private EventBus eventBus;
+  private final String address;
+  private final String statusAddress;
+  private final Input input;
+  private Output output;
+  private final Vertx vertx;
+  private final EventBus eventBus;
+  private final Logger logger;
+  private boolean autoAck = true;
   private Handler<JsonMessage> messageHandler;
-  private static final long LISTEN_PERIOD = 5000;
-  private long listenTimerID;
+  private Future<Void> startFuture;
+  private long pollTimer;
+  private static final long POLL_INTERVAL = 1000;
+  private long timeoutTimer;
+  private static final long START_TIMEOUT = 30000;
 
   public DefaultListener(String address, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
     this.input = new Input(address);
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
+    this.logger = null;
+  }
+
+  public DefaultListener(String address, Vertx vertx, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.input = new Input(address);
+    this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
+    this.logger = logger;
   }
 
   public DefaultListener(String address, Vertx vertx, EventBus eventBus) {
     this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
     this.input = new Input(address);
     this.vertx = vertx;
     this.eventBus = eventBus;
+    this.logger = null;
+  }
+
+  public DefaultListener(String address, Vertx vertx, EventBus eventBus, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.input = new Input(address);
+    this.vertx = vertx;
+    this.eventBus = eventBus;
+    this.logger = logger;
   }
 
   public DefaultListener(Input input, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
     this.input = input;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
+    this.logger = null;
+  }
+
+  public DefaultListener(Input input, Vertx vertx, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.input = input;
+    this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
+    this.logger = logger;
   }
 
   public DefaultListener(Input input, Vertx vertx, EventBus eventBus) {
     this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
     this.input = input;
     this.vertx = vertx;
     this.eventBus = eventBus;
+    this.logger = null;
+  }
+
+  public DefaultListener(Input input, Vertx vertx, EventBus eventBus, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.input = input;
+    this.vertx = vertx;
+    this.eventBus = eventBus;
+    this.logger = logger;
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -84,27 +137,52 @@ public class DefaultListener implements Listener {
     }
   };
 
+  private Handler<Message<JsonObject>> statusHandler = new Handler<Message<JsonObject>>() {
+    @Override
+    public void handle(Message<JsonObject> message) {
+      JsonObject body = message.body();
+      if (body != null) {
+        String id = body.getString("id");
+        if (id != null) {
+          completeStart(id);
+        }
+      }
+    }
+  };
+
   /**
    * Receives message data.
    */
   private void doReceive(JsonObject messageData) {
     try {
       JsonMessage message = (JsonMessage) Serializer.deserialize(messageData);
-      String auditor = message.auditor();
- 
+
       // Call the message handler.
       if (messageHandler != null) {
         messageHandler.handle(message);
       }
 
-      // Always attempt to ack the message once the handler has been called.
-      if (auditor != null) {
-        eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", message.id()));
+      // If auto acking is enabled then ack the message.
+      if (autoAck) {
+        ack(message);
       }
     }
     catch (SerializationException e) {
-      // Do nothing.
+      if (logger != null) {
+        logger.warn(e);
+      }
     }
+  }
+
+  @Override
+  public Listener setAutoAck(boolean autoAck) {
+    this.autoAck = autoAck;
+    return this;
+  }
+
+  @Override
+  public boolean isAutoAck() {
+    return autoAck;
   }
 
   @Override
@@ -114,76 +192,146 @@ public class DefaultListener implements Listener {
   }
 
   @Override
+  public Listener ack(JsonMessage message) {
+    String auditor = message.auditor();
+    if (auditor != null) {
+      eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", message.id()));
+    }
+    return this;
+  }
+
+  @Override
+  public Listener fail(JsonMessage message) {
+    String auditor = message.auditor();
+    if (auditor != null) {
+      eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", message.id()));
+    }
+    return this;
+  }
+
+  @Override
   public Listener start() {
     try {
-      final Output output = Output.fromInput(input);
+      output = Output.fromInput(input);
+      timeoutTimer = vertx.setTimer(START_TIMEOUT, new Handler<Long>() {
+        @Override
+        public void handle(Long timerID) {
+          stop();
+        }
+      });
+
       eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.succeeded()) {
-            periodicListen(output);
+            eventBus.registerHandler(statusAddress, statusHandler, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.succeeded()) {
+                  recursiveListen();
+                }
+                else {
+                  eventBus.unregisterHandler(address, handler);
+                }
+              }
+            });
           }
         }
       });
     }
     catch (MalformedNetworkException e) {
-      // Output is invalid. Do nothing.
+      stop();
     }
     return this;
   }
 
   @Override
   public Listener start(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+    startFuture = new DefaultFutureResult<Void>().setHandler(doneHandler);
     try {
-      final Output output = Output.fromInput(input);
+      output = Output.fromInput(input);
+  
+      // Set a start timeout timer that will be cancelled once the input is started.
+      timeoutTimer = vertx.setTimer(START_TIMEOUT, new Handler<Long>() {
+        @Override
+        public void handle(Long timerID) {
+          stop();
+          startFuture.setFailure(new VertigoException("Failed to start input."));
+        }
+      });
+
       eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.succeeded()) {
-            periodicListen(output);
-            future.setResult(null);
+          if (result.failed()) {
+            startFuture.setFailure(result.cause());
           }
           else {
-            future.setFailure(result.cause());
+            eventBus.registerHandler(statusAddress, statusHandler, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.succeeded()) {
+                  recursiveListen();
+                }
+                else {
+                  eventBus.unregisterHandler(address, handler);
+                  startFuture.setFailure(result.cause());
+                }
+              }
+            });
           }
         }
       });
     }
     catch (MalformedNetworkException e) {
-      future.setFailure(e);
+      startFuture.setFailure(e);
     }
     return this;
   }
 
   /**
-   * Periodically sends listen messages to the listen source to
-   * let it know we're still interested in receiving messages.
+   * Recursively sends listen messages to the source until a valid
+   * response is received.
    */
-  private void periodicListen(final Output output) {
-    listenTimerID = vertx.setTimer(LISTEN_PERIOD, new Handler<Long>() {
+  private void recursiveListen() {
+    eventBus.publish(input.getAddress(), Serializer.serialize(output).putString("action", "listen").putString("address", address).putString("status", statusAddress));
+    pollTimer = vertx.setTimer(POLL_INTERVAL, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
-        eventBus.publish(input.getAddress(), Serializer.serialize(output).putString("action", "listen").putString("address", address));
-        periodicListen(output);
+        recursiveListen();
       }
     });
   }
 
+  /**
+   * Finishes starting the input.
+   */
+  private void completeStart(String id) {
+    if (timeoutTimer > 0) {
+      vertx.cancelTimer(timeoutTimer);
+      timeoutTimer = 0;
+    }
+    if (startFuture != null) {
+      startFuture.setResult(null);
+      startFuture = null;
+    }
+  }
+
   @Override
   public void stop() {
-    if (listenTimerID > 0) {
-      vertx.cancelTimer(listenTimerID);
+    if (pollTimer > 0) {
+      vertx.cancelTimer(pollTimer);
+      pollTimer = 0;
     }
-    eventBus.unregisterHandler(address, handler);
   }
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    if (listenTimerID > 0) {
-      vertx.cancelTimer(listenTimerID);
+    if (pollTimer > 0) {
+      vertx.cancelTimer(pollTimer);
+      pollTimer = 0;
     }
-    eventBus.unregisterHandler(address, handler, doneHandler);
+    new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
   }
 
 }

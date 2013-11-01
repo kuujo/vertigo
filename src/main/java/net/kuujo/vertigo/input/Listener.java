@@ -28,6 +28,24 @@ import org.vertx.java.core.Handler;
 public interface Listener {
 
   /**
+   * Sets auto acking on the listener.
+   *
+   * @param autoAck
+   *   Indicates whether to automatically ack messages received by the listener.
+   * @return
+   *   The called listener instance.
+   */
+  Listener setAutoAck(boolean autoAck);
+
+  /**
+   * Gets the auto ack setting on the listener.
+   *
+   * @return
+   *   Indicates whether the listener auto acks received messages.
+   */
+  boolean isAutoAck();
+
+  /**
    * Sets a message handler on the listener.
    *
    * @param handler
@@ -36,6 +54,26 @@ public interface Listener {
    *   The called listener instance.
    */
   Listener messageHandler(Handler<JsonMessage> handler);
+
+  /**
+   * Acknowledges a message.
+   *
+   * @param message
+   *   The message to ack.
+   * @return
+   *   The called listener instance.
+   */
+  Listener ack(JsonMessage message);
+
+  /**
+   * Fails a message.
+   *
+   * @param message
+   *   The message to fail.
+   * @return
+   *   The called listener instance.
+   */
+  Listener fail(JsonMessage message);
 
   /**
    * Starts the listener.

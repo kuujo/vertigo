@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
@@ -107,7 +108,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       // are acked the parent will be acked which will also bubble up to the root.
       Timer timer = getCurrentTimer();
       timer.ids.add(id);
-      Node node = new Root(id, timer);
+      Node node = new Root(id, timer, vertx, delay);
       node.ackHandler(ackHandler);
       node.failHandler(failHandler);
       nodes.put(node.id, node);
@@ -160,7 +161,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     String parentId = getMandatoryString("parent", message);
     if (nodes.containsKey(parentId)) {
       String id = getMandatoryString("id", message);
-      Node node = new Node(id);
+      Node node = new Node(id, vertx, delay);
       nodes.get(parentId).addChild(node);
       nodes.put(id, node);
     }
@@ -237,6 +238,9 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private static class Node {
     private final String id;
     private final Timer timer;
+    private final Vertx vertx;
+    private final long delay;
+    private long delayTimer;
     private final Set<Node> children = new HashSet<>();
     private final Set<Node> complete = new HashSet<>();
     private Handler<Node> ackHandler;
@@ -269,14 +273,18 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       }
     };
 
-    private Node(String id) {
+    private Node(String id, Vertx vertx, long delay) {
       this.id = id;
       this.timer = null;
+      this.vertx = vertx;
+      this.delay = delay;
     }
 
-    private Node(String id, Timer timer) {
+    private Node(String id, Timer timer, Vertx vertx, long delay) {
       this.id = id;
       this.timer = timer;
+      this.vertx = vertx;
+      this.delay = delay;
     }
 
     /**
@@ -326,8 +334,22 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       if (!locked && acked) {
         // If the message is ready and acked then invoke the ack handler.
         if (ack && ready) {
-          locked = true;
-          ackHandler.handle(this);
+          // If the auditor is using a delay timer, set the timer. If a child
+          // message is added to the tree before the timer expires the timer
+          // will be removed.
+          if (delay > 0) {
+            delayTimer = vertx.setTimer(delay, new Handler<Long>() {
+              @Override
+              public void handle(Long timerID) {
+                locked = true;
+                ackHandler.handle(Node.this);
+              }
+            });
+          }
+          else {
+            locked = true;
+            ackHandler.handle(this);
+          }
         }
         // If the message was failed then immediately invoke the fail handler.
         else if (!ack) {
@@ -362,6 +384,10 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       ready = false;
       child.ackHandler(childAckHandler);
       child.failHandler(childFailHandler);
+      if (delay > 0 && delayTimer > 0) {
+        vertx.cancelTimer(delayTimer);
+        delayTimer = 0;
+      }
     }
   }
 
@@ -369,12 +395,12 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    * Represents the root element of a message tree.
    */
   private static class Root extends Node {
-    private Root(String id) {
-      super(id);
+    private Root(String id, Vertx vertx, long delay) {
+      super(id, vertx, delay);
     }
 
-    private Root(String id, Timer timer) {
-      super(id, timer);
+    private Root(String id, Timer timer, Vertx vertx, long delay) {
+      super(id, timer, vertx, delay);
     }
 
     @Override

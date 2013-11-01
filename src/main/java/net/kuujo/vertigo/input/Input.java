@@ -17,6 +17,7 @@ package net.kuujo.vertigo.input;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -34,7 +35,8 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public class Input implements Serializable {
-
+  public static final String ID = "id";
+  public static final String COUNT = "count";
   public static final String ADDRESS = "address";
   public static final String GROUPING = "grouping";
   public static final String FILTERS = "filters";
@@ -45,7 +47,41 @@ public class Input implements Serializable {
   }
 
   public Input(String address) {
-    definition = new JsonObject().putString(ADDRESS, address);
+    definition = new JsonObject().putString(ADDRESS, address).putString(ID, UUID.randomUUID().toString());
+    groupBy(new RoundGrouping());
+  }
+
+  /**
+   * Returns the input id.
+   *
+   * @return
+   *   The input id.
+   */
+  public String id() {
+    return definition.getString(ID);
+  }
+
+  /**
+   * Returns the input count.
+   *
+   * @return
+   *   The input count.
+   */
+  public int getCount() {
+    return definition.getInteger(COUNT, 1);
+  }
+
+  /**
+   * Sets the input count.
+   *
+   * @param count
+   *   The input count.
+   * @return
+   *   The called input instance.
+   */
+  public Input setCount(int count) {
+    definition.putNumber(COUNT, count);
+    return this;
   }
 
   /**
@@ -79,16 +115,11 @@ public class Input implements Serializable {
    */
   public Grouping getGrouping() {
     JsonObject groupingInfo = definition.getObject(GROUPING);
-    if (groupingInfo == null) {
-      return new RoundGrouping();
+    try {
+      return Serializer.<Grouping>deserialize(groupingInfo);
     }
-    else {
-      try {
-        return Serializer.<Grouping>deserialize(groupingInfo);
-      }
-      catch (SerializationException e) {
-        return null;
-      }
+    catch (SerializationException e) {
+      return null;
     }
   }
 

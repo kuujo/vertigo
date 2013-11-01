@@ -29,22 +29,21 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class AllGrouping extends AbstractGrouping {
-  private JsonObject definition = new JsonObject();
+public class AllGrouping implements Grouping {
 
   @Override
   public JsonObject getState() {
-    return definition;
+    return new JsonObject();
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    // No state to store.
   }
 
   @Override
   public Selector createSelector() {
-    return new AllSelector(count(), id());
+    return new AllSelector();
   }
 
 }

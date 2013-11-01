@@ -29,7 +29,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class FieldsGrouping extends AbstractGrouping {
+public class FieldsGrouping implements Grouping {
   private JsonObject definition = new JsonObject();
 
   public FieldsGrouping() {
@@ -74,7 +74,7 @@ public class FieldsGrouping extends AbstractGrouping {
 
   @Override
   public Selector createSelector() {
-    return new FieldsSelector(getField(), count(), id());
+    return new FieldsSelector(getField());
   }
 
 }

@@ -18,6 +18,8 @@ package net.kuujo.vertigo.output.selector;
 import java.util.List;
 import java.util.Random;
 
+import org.vertx.java.core.json.JsonObject;
+
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
@@ -28,25 +30,26 @@ import net.kuujo.vertigo.output.Connection;
  *
  * @author Jordan Halterman
  */
-public class RandomSelector extends AbstractSelector {
+public class RandomSelector implements Selector {
   private Random rand = new Random();
 
   public RandomSelector() {
-    super();
-  }
-
-  public RandomSelector(String grouping) {
-    super(grouping);
-  }
-
-  public RandomSelector(int count, String grouping) {
-    super(count, grouping);
   }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     int index = rand.nextInt(connections.size());
     return connections.subList(index, index+1);
+  }
+
+  @Override
+  public JsonObject getState() {
+    return new JsonObject();
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    // No state to store.
   }
 
 }

@@ -26,6 +26,7 @@ import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 /**
@@ -137,6 +138,22 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   @SuppressWarnings("unchecked")
   public T setNumInstances(int numInstances) {
     definition.putNumber(NUM_INSTANCES, numInstances);
+
+    JsonArray inputs = definition.getArray(INPUTS);
+    JsonArray newInputs = new JsonArray();
+    if (inputs == null) {
+      inputs = new JsonArray();
+    }
+
+    for (Object inputInfo : inputs) {
+      try {
+        newInputs.add(Serializer.serialize(Serializer.<Input>deserialize((JsonObject) inputInfo).setCount(numInstances)));
+      }
+      catch (SerializationException e) {
+        continue;
+      }
+    }
+    definition.putArray(INPUTS, newInputs);
     return (T) this;
   }
 
@@ -178,7 +195,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
       inputs = new JsonArray();
       definition.putArray(INPUTS, inputs);
     }
-    inputs.add(Serializer.serialize(input));
+    inputs.add(Serializer.serialize(input.setCount(getNumInstances())));
     return input;
   }
 

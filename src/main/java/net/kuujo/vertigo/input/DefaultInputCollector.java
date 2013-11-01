@@ -102,9 +102,8 @@ public class DefaultInputCollector implements InputCollector {
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
           for (Input input : context.getComponent().getInputs()) {
-            input.getGrouping().setCount(context.getComponent().getNumInstances());
             try {
-              periodicListen(UUID.randomUUID(), input, Output.fromInput(input));
+              startPeriodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }
             catch (MalformedNetworkException e) {
               stopListeners();
@@ -125,7 +124,6 @@ public class DefaultInputCollector implements InputCollector {
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
           for (Input input : context.getComponent().getInputs()) {
-            input.getGrouping().setCount(context.getComponent().getNumInstances());
             try {
               startPeriodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }

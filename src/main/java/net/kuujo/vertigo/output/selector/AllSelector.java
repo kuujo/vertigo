@@ -17,6 +17,8 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
+import org.vertx.java.core.json.JsonObject;
+
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
@@ -29,19 +31,24 @@ import net.kuujo.vertigo.output.Connection;
  *
  * @author Jordan Halterman
  */
-public class AllSelector extends AbstractSelector {
+public class AllSelector implements Selector {
 
-  public AllSelector(String grouping) {
-    super(grouping);
-  }
-
-  public AllSelector(int count, String grouping) {
-    super(count, grouping);
+  public AllSelector() {
   }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     return connections;
+  }
+
+  @Override
+  public JsonObject getState() {
+    return new JsonObject();
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    // No state to store.
   }
 
 }

@@ -37,6 +37,8 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public class Output implements Serializable {
+  public static final String ID = "id";
+  public static final String COUNT = "count";
   public static final String SELECTOR = "selector";
   public static final String CONDITIONS = "conditions";
 
@@ -51,6 +53,9 @@ public class Output implements Serializable {
    */
   public static Output fromInput(Input input) throws MalformedNetworkException {
     JsonObject definition = new JsonObject();
+    definition.putString(ID, input.id());
+    definition.putNumber(COUNT, input.getCount());
+
     Grouping grouping = input.getGrouping();
     if (grouping == null) {
       throw new MalformedNetworkException("Invalid input. No input grouping specified.");
@@ -63,14 +68,36 @@ public class Output implements Serializable {
       conditions.add(Serializer.serialize(filter.createCondition()));
     }
     definition.putArray(CONDITIONS, conditions);
-    Output output = new Output();
-    output.setState(definition);
-    return output;
+    return new Output(definition);
   }
 
   private JsonObject definition;
 
   public Output() {
+  }
+
+  private Output(JsonObject definition) {
+    this.definition = definition;
+  }
+
+  /**
+   * Returns the output id.
+   *
+   * @return
+   *   The output id.
+   */
+  public String id() {
+    return definition.getString(ID);
+  }
+
+  /**
+   * Returns the output count.
+   *
+   * @return
+   *   The output connection count.
+   */
+  public int getCount() {
+    return definition.getInteger(COUNT, 1);
   }
 
   /**

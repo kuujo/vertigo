@@ -27,22 +27,21 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class RandomGrouping extends AbstractGrouping {
-  private JsonObject definition = new JsonObject();
+public class RandomGrouping implements Grouping {
 
   @Override
   public JsonObject getState() {
-    return definition;
+    return new JsonObject();
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    // No state to store.
   }
 
   @Override
   public Selector createSelector() {
-    return new RandomSelector(count(), id());
+    return new RandomSelector();
   }
 
 }

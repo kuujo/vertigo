@@ -17,6 +17,8 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
+import org.vertx.java.core.json.JsonObject;
+
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
@@ -28,19 +30,10 @@ import net.kuujo.vertigo.output.Connection;
  *
  * @author Jordan Halterman
  */
-public class RoundSelector extends AbstractSelector {
+public class RoundSelector implements Selector {
   private int current;
 
   public RoundSelector() {
-    super();
-  }
-
-  public RoundSelector(String grouping) {
-    super(grouping);
-  }
-
-  public RoundSelector(int count, String grouping) {
-    super(count, grouping);
   }
 
   @Override
@@ -50,6 +43,16 @@ public class RoundSelector extends AbstractSelector {
       current = 0;
     }
     return connections.subList(current, current+1);
+  }
+
+  @Override
+  public JsonObject getState() {
+    return new JsonObject();
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    // No state to store.
   }
 
 }

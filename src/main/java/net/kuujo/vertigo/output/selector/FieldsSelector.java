@@ -31,20 +31,13 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class FieldsSelector extends AbstractSelector {
+public class FieldsSelector implements Selector {
   private String fieldName;
 
   public FieldsSelector() {
-    super();
   }
 
-  public FieldsSelector(String fieldName, String grouping) {
-    super(grouping);
-    this.fieldName = fieldName;
-  }
-
-  public FieldsSelector(String fieldName, int count, String grouping) {
-    super(count, grouping);
+  public FieldsSelector(String fieldName) {
     this.fieldName = fieldName;
   }
 
@@ -72,17 +65,6 @@ public class FieldsSelector extends AbstractSelector {
   }
 
   @Override
-  public JsonObject getState() {
-    return super.getState().putString("field", fieldName);
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    super.setState(state);
-    fieldName = state.getString("field");
-  }
-
-  @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     String value = message.body().getString(fieldName);
     if (value != null) {
@@ -90,6 +72,16 @@ public class FieldsSelector extends AbstractSelector {
       connections.subList(index, index+1);
     }
     return null;
+  }
+
+  @Override
+  public JsonObject getState() {
+    return new JsonObject().putString("field", fieldName);
+  }
+
+  @Override
+  public void setState(JsonObject state) {
+    fieldName = state.getString("field");
   }
 
 }

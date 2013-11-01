@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
@@ -112,18 +111,16 @@ public class DefaultOutputCollector implements OutputCollector {
 
     try {
       Output output = Serializer.deserialize(info);
-      String grouping = output.getSelector().getGrouping();
-      if (grouping == null) {
-        grouping = UUID.randomUUID().toString();
-      }
+      String id = output.id();
 
       final Channel channel;
-      if (!channels.containsKey(grouping)) {
+      if (!channels.containsKey(id)) {
         channel = new DefaultChannel(output.getSelector(), output.getConditions(), eventBus);
-        channels.put(grouping, channel);
+        channel.setConnectionCount(output.getCount());
+        channels.put(id, channel);
       }
       else {
-        channel = channels.get(grouping);
+        channel = channels.get(id);
       }
 
       if (!channel.containsConnection(address)) {

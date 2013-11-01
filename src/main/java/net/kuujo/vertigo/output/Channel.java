@@ -25,6 +25,16 @@ import net.kuujo.vertigo.messaging.JsonMessage;
 public interface Channel {
 
   /**
+   * Sets the target channel connection count.
+   *
+   * @param connectionCount
+   *   The target channel connection count.
+   * @return
+   *   The called channel instance.
+   */
+  Channel setConnectionCount(int connectionCount);
+
+  /**
    * Adds a connection to the channel.
    *
    * @param connection
@@ -43,16 +53,6 @@ public interface Channel {
    *   The called channel instance.
    */
   Channel removeConnection(Connection connection);
-
-  /**
-   * Returns a boolean indicating whether the channel contains a connection.
-   *
-   * @param connection
-   *   The connection to check.
-   * @return
-   *   A boolean indicating whether the channel contains the connection.
-   */
-  boolean containsConnection(Connection connection);
 
   /**
    * Returns a boolean indicating whether the channel contains a connection by address.

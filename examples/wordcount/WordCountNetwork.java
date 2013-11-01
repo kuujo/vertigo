@@ -106,8 +106,8 @@ public class WordCountNetwork extends Verticle {
   @Override
   public void start() {
     Network network = new Network("word_count");
-    Component feeder = network.addComponent("word_feeder", WordFeeder.class.getName());
-    Component counter = network.addComponent("word_counter", WordCountWorker.class.getName(), 4);
+    Component feeder = network.addVerticle("word_feeder", WordFeeder.class.getName());
+    Component counter = network.addVerticle("word_counter", WordCountWorker.class.getName(), 4);
     counter.addInput("word_feeder").groupBy(new FieldsGrouping("word"));
 
     final Cluster cluster = new LocalCluster(vertx, container);

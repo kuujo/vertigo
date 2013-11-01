@@ -21,11 +21,11 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.json.JsonObject;
 
-import net.kuujo.vertigo.java.VertigoVerticle;
-import net.kuujo.vertigo.Cluster;
-import net.kuujo.vertigo.LocalCluster;
-import net.kuujo.vertigo.definition.NetworkDefinition;
-import net.kuujo.vertigo.definition.ComponentDefinition;
+import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.grouping.RandomGrouping;
 import net.kuujo.vertigo.grouping.RoundGrouping;
@@ -111,33 +111,46 @@ public class ComplexNetworkVerticle extends Verticle {
   public void start() {
     logger = container.logger();
 
-    NetworkDefinition network = new NetworkDefinition();
-    // Create feeder A
-    ComponentDefinition feederA = network.fromVerticle("feeder-a", ExampleFeeder.class.getName());
+    Network network = new Network("test");
 
-    // Create feeder B
-    ComponentDefinition feederB = network.fromVerticle("feeder-b", ExampleFeeder.class.getName());
+    // Create feeder A at the event bus address "feeder-a"
+    Component feederA = network.addVerticle("feeder-a", ExampleFeeder.class.getName());
 
-    // Feeder A feeds worker A, worker A needs to be saved to a variable so we
-    // can feed its output to other workers.
-    ComponentDefinition workerA = feederA.toVerticle("worker-a", ExampleWorker.class.getName(), 4).groupBy(new RandomGrouping());
+    // Create feeder B at the event bus address "feeder-b"
+    Component feederB = network.addVerticle("feeder-b", ExampleFeeder.class.getName());
 
-    // Worker A feeds both worker B and worker C.
-    workerA.toVerticle("worker-b", ExampleWorker.class.getName(), 4).groupBy(new RandomGrouping());
-    workerA.toVerticle("worker-c", ExampleWorker.class.getName(), 4).groupBy(new RandomGrouping());
+    // Create worker A at the event bus address "worker-a"
+    Component workerA = network.addVerticle("worker-a", ExampleWorker.class.getName(), 4);
+
+    // Worker A listens for output from feeder A.
+    workerA.addInput("feeder-a").groupBy(new RandomGrouping());
+
+    // Create worker B and worker C, both of which listen for output from worker A.
+    Component workerB = network.addVerticle("worker-b", ExampleWorker.class.getName(), 2);
+    workerB.addInput("worker-a").groupBy(new RandomGrouping());
+
+    Component workerC = network.addVerticle("worker-b", ExampleWorker.class.getName(), 4);
+    workerC.addInput("worker-a").groupBy(new RandomGrouping());
 
     // Feeder A also feeds worker D.
-    ComponentDefinition workerD = feederA.toVerticle("worker-d", ExampleWorker.class.getName(), 2).groupBy(new RoundGrouping());
+    Component workerD = network.addVerticle("worker-d", ExampleWorker.class.getName(), 2);
+    workerD.addInput("feeder-a", new RoundGrouping());
 
-    // Worker D feeds worker E which feeds worker F. We need to safe worker F
-    // (the return value) to a variable since it's fed by more than one other component.
-    ComponentDefinition workerF = workerD.toVerticle("worker-e", ExampleWorker.class.getName(), 4).groupBy(new AllGrouping())
-        .toVerticle("worker-f", ExampleWorker.class.getName(), 2).groupBy(new RandomGrouping());
+    // Worker D feeds worker E which feeds worker F.
+    Component workerE = network.addVerticle("worker-e", ExampleWorker.class.getName(), 4);
+    workerE.addInput("worker-d", new AllGrouping());
+
+    Component workerF = network.addVerticle("worker-f", ExampleWorker.class.getName(), 2);
+    workerF.addInput("worker-e", new RandomGrouping());
 
     // Feeder B feeds worker G which feeds worker H which feeds worker F.
-    feederB.toVerticle("worker-g", ExampleWorker.class.getName(), 2).groupBy(new FieldsGrouping("count"))
-        .toVerticle("worker-h", ExampleWorker.class.getName(), 2).groupBy(new RandomGrouping()).filterBy(new TagsFilter("count"))
-        .toVerticle(workerF);
+    Component workerG = network.addVerticle("worker-g", ExampleWorker.class.getName(), 2);
+    workerG.addInput("feeder-b").groupBy(new FieldsGrouping("count"));
+
+    Component workerH = network.addVerticle("worker-h", ExampleWorker.class.getName(), 2);
+    workerH.addInput("worker-g", new RandomGrouping()).filterBy(new TagsFilter("count"));
+
+    workerF.addInput("worker-h");
 
     // Deploy the network usign a local cluster.
     final Cluster cluster = new LocalCluster(vertx, container);

@@ -46,8 +46,12 @@ public abstract class ComponentContext implements Serializable {
   public ComponentContext(JsonObject context) {
     this.context = context;
     if (context.getFieldNames().contains("parent")) {
-      parent = new NetworkContext();
-      parent.setState(context.getObject("parent"));
+      try {
+        parent = Serializer.deserialize(context.getObject("parent"));
+      }
+      catch (SerializationException e) {
+        // Invalid parent.
+      }
     }
   }
 
@@ -130,17 +134,20 @@ public abstract class ComponentContext implements Serializable {
    *   A list of component instance contexts.
    */
   public List<InstanceContext> getInstances() {
-    JsonArray instanceInfo = context.getArray(Component.INSTANCES);
-    if (instanceInfo == null) {
-      instanceInfo = new JsonArray();
+    JsonArray instancesInfo = context.getArray(Component.INSTANCES);
+    if (instancesInfo == null) {
+      instancesInfo = new JsonArray();
     }
     List<InstanceContext> instances = new ArrayList<InstanceContext>();
-    for (Object instance : instanceInfo) {
+    for (Object instanceInfo : instancesInfo) {
       try {
-        instances.add(Serializer.<InstanceContext>deserialize((JsonObject) instance).setParent(this));
+        InstanceContext instance = Serializer.<InstanceContext>deserialize((JsonObject) instanceInfo).setParent(this);
+        if (instance != null) {
+          instances.add(instance);
+        }
       }
       catch (SerializationException e) {
-        // Failed to deserialize the instance.
+        continue;
       }
     }
     return instances;
@@ -197,7 +204,7 @@ public abstract class ComponentContext implements Serializable {
   public JsonObject getState() {
     JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("parent", parent.getState());
+      context.putObject("parent", Serializer.serialize(parent));
     }
     return context;
   }
@@ -205,6 +212,14 @@ public abstract class ComponentContext implements Serializable {
   @Override
   public void setState(JsonObject state) {
     context = state.copy();
+    if (context.getFieldNames().contains("parent")) {
+      try {
+        parent = Serializer.deserialize(context.getObject("parent"));
+      }
+      catch (SerializationException e) {
+        // Invalid parent.
+      }
+    }
   }
 
 }

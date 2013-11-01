@@ -113,14 +113,14 @@ public abstract class ComponentBase implements Component {
           future.setFailure(result.cause());
         }
         else {
-          setupInput(new Handler<AsyncResult<Void>>() {
+          setupOutput(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 future.setFailure(result.cause());
               }
               else {
-                setupOutput(new Handler<AsyncResult<Void>>() {
+                setupInput(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {

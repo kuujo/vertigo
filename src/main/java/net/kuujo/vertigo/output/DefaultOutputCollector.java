@@ -123,7 +123,6 @@ public class DefaultOutputCollector implements OutputCollector {
       else {
         channel = channels.get(id);
       }
-      eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
 
       if (!channel.containsConnection(address)) {
         channel.addConnection(new DefaultConnection(address, eventBus));
@@ -144,6 +143,8 @@ public class DefaultOutputCollector implements OutputCollector {
           connectionTimers.remove(address);
         }
       }));
+
+      eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
     }
     catch (SerializationException e) {
       logger.error(e);

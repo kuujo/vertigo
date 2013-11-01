@@ -256,7 +256,7 @@ public class DefaultListener implements Listener {
         @Override
         public void handle(Long timerID) {
           stop();
-          startFuture.setFailure(new VertigoException("Failed to start input."));
+          startFuture.setFailure(new VertigoException("Failed to start listener."));
         }
       });
 

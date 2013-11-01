@@ -56,8 +56,14 @@ public final class Networks {
     network.setAckExpire(json.getLong(Network.ACK_EXPIRE, Network.DEFAULT_ACK_EXPIRE));
 
     JsonObject components = json.getObject("components");
+    if (components == null) {
+      components = new JsonObject();
+    }
+
     for (String address : components.getFieldNames()) {
       JsonObject componentInfo = components.getObject(address);
+      componentInfo.putString(Component.ADDRESS, address);
+
       String type = componentInfo.getString(Component.TYPE);
       Component<?> component;
       if (type == "module") {
@@ -79,13 +85,18 @@ public final class Networks {
       component.setHeartbeatInterval(componentInfo.getLong(Component.HEARTBEAT_INTERVAL, 1000));
 
       // Create component inputs.
-      JsonObject inputs = componentInfo.getObject("inputs", new JsonObject());
-      for (String inputAddress : inputs.getFieldNames()) {
-        JsonObject inputInfo = inputs.getObject(inputAddress);
+      JsonArray inputs = componentInfo.getArray("inputs", new JsonArray());
+      for (Object inputData : inputs) {
+        JsonObject inputInfo = (JsonObject) inputData;
+        String inputAddress = inputInfo.getString(Input.ADDRESS);
+        if (inputAddress == null) {
+          throw new MalformedNetworkException("Invalid input address.");
+        }
+
         Input input = component.addInput(inputAddress);
 
         // Set up the input grouping.
-        JsonObject groupingInfo = inputInfo.getObject("grouping");
+        JsonObject groupingInfo = inputInfo.getObject(Input.GROUPING);
         if (groupingInfo == null) {
           groupingInfo = new JsonObject().putString("type", "round");
         }

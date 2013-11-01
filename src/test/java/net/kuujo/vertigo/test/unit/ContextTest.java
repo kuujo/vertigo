@@ -18,10 +18,12 @@ package net.kuujo.vertigo.test.unit;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.Networks;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.junit.Test;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
@@ -56,6 +58,27 @@ public class ContextTest {
       catch (SerializationException e) {
         fail(e.getMessage());
       }
+    }
+    catch (MalformedNetworkException e) {
+      fail(e.getMessage());
+    }
+  }
+
+  @Test
+  public void testContextFromJson() {
+    JsonObject json = new JsonObject();
+    json.putString("address", "test");
+    JsonObject components = new JsonObject();
+    components.putObject("test2", new JsonObject()
+      .putString("type", "verticle").putString("main", "net.kuujo.vertigo.input.grouping.RandomGrouping"));
+    components.putObject("test2", new JsonObject()
+      .putString("type", "verticle").putString("main", "net.kuujo.vertigo.VertigoVerticle")
+      .putArray("inputs", new JsonArray().add(new JsonObject().putString("address", "test2").putObject("grouping",
+          new JsonObject().putString("type", "net.kuujo.vertigo.input.grouping.RoundGrouping")))));
+
+    try {
+      Network network = Networks.fromJson(json);
+      network.createContext();
     }
     catch (MalformedNetworkException e) {
       fail(e.getMessage());

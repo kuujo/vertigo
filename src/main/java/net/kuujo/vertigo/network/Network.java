@@ -36,9 +36,11 @@ public class Network implements Serializable {
   public static final String AUDITORS = "auditors";
   public static final String ACKING = "acking";
   public static final String ACK_EXPIRE = "ack_expire";
+  public static final String ACK_DELAY = "ack_delay";
   public static final String COMPONENTS = "components";
 
   public static final long DEFAULT_ACK_EXPIRE = 30000;
+  public static final long DEFAULT_ACK_DELAY = 0;
 
   private JsonObject definition;
 
@@ -154,6 +156,29 @@ public class Network implements Serializable {
    */
   public long getAckExpire() {
     return definition.getLong(ACK_EXPIRE, DEFAULT_ACK_EXPIRE);
+  }
+
+  /**
+   * Sets the network ack delay.
+   *
+   * @param delay
+   *   The ack delay.
+   * @return
+   *   The called network instance.
+   */
+  public Network setAckDelay(long delay) {
+    definition.putNumber(ACK_DELAY, delay);
+    return this;
+  }
+
+  /**
+   * Gets the network ack delay.
+   *
+   * @return
+   *   Ack delay for the network.
+   */
+  public long getAckDelay() {
+    return definition.getLong(ACK_DELAY, DEFAULT_ACK_DELAY);
   }
 
   /**
@@ -372,6 +397,7 @@ public class Network implements Serializable {
     context.putString(BROADCAST, context.getString(BROADCAST, String.format("%s.%s", address, BROADCAST)));
     context.putBoolean(ACKING, context.getBoolean(ACKING, true));
     context.putNumber(ACK_EXPIRE, context.getLong(ACK_EXPIRE, DEFAULT_ACK_EXPIRE));
+    context.putNumber(ACK_DELAY, context.getLong(ACK_DELAY, DEFAULT_ACK_DELAY));
 
     int numAuditors = context.getInteger(AUDITORS, 1);
     JsonArray auditors = new JsonArray();

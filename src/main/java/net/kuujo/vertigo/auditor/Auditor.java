@@ -35,6 +35,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private String broadcastAddress;
   private boolean enabled;
   private long expire = 30000;
+  private long delay = 0;
   private Map<String, Node> nodes = new HashMap<>();
   private Map<Long, Timer> timers = new HashMap<>();
 
@@ -45,6 +46,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     broadcastAddress = getMandatoryStringConfig("broadcast");
     enabled = getOptionalBooleanConfig("enabled", true);
     expire = getOptionalLongConfig("expire", expire);
+    delay = getOptionalLongConfig("delay", delay);
     eb.registerHandler(address, this);
   }
 
@@ -105,7 +107,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       // are acked the parent will be acked which will also bubble up to the root.
       Timer timer = getCurrentTimer();
       timer.ids.add(id);
-      Node node = new Node(id, timer);
+      Node node = new Root(id, timer);
       node.ackHandler(ackHandler);
       node.failHandler(failHandler);
       nodes.put(node.id, node);
@@ -232,7 +234,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   /**
    * Represents a single node in a message tree.
    */
-  private static final class Node {
+  private static class Node {
     private final String id;
     private final Timer timer;
     private final Set<Node> children = new HashSet<>();
@@ -288,7 +290,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     /**
      * Acks the message.
      */
-    private void ack() {
+    protected final void ack() {
       acked = true; ack = true;
       checkAck();
     }
@@ -296,7 +298,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     /**
      * Fails the message.
      */
-    private void fail() {
+    protected final void fail() {
       acked = true; ack = false;
       checkAck();
     }
@@ -304,7 +306,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     /**
      * Fails the message.
      */
-    private void fail(String message) {
+    protected final void fail(String message) {
       acked = true; ack = false;
       this.failureMessage = message;
       checkAck();
@@ -313,7 +315,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     /**
      * Indicates whether the message has been failed.
      */
-    private final boolean failed() {
+    protected final boolean failed() {
       return acked && !ack;
     }
 
@@ -355,11 +357,32 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
      * @param child
      *   The child message.
      */
-    private final void addChild(Node child) {
+    protected void addChild(Node child) {
       children.add(child);
       ready = false;
       child.ackHandler(childAckHandler);
       child.failHandler(childFailHandler);
+    }
+  }
+
+  /**
+   * Represents the root element of a message tree.
+   */
+  private static class Root extends Node {
+    private Root(String id) {
+      super(id);
+    }
+
+    private Root(String id, Timer timer) {
+      super(id, timer);
+    }
+
+    @Override
+    protected void addChild(Node child) {
+      super.addChild(child);
+      if (!failed()) {
+        ack();
+      }
     }
   }
 

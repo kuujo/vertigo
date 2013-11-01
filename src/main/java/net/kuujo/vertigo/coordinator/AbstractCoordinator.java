@@ -210,7 +210,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       JsonObject auditorConfig = new JsonObject().putString("address", address)
         .putString("broadcast", context.getBroadcastAddress())
         .putBoolean("enabled", context.isAckingEnabled())
-        .putNumber("expire", context.getAckExpire());
+        .putNumber("expire", context.getAckExpire())
+        .putNumber("delay", context.getAckDelay());
       deployVerticle(Auditor.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {

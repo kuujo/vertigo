@@ -33,7 +33,6 @@ import net.kuujo.vertigo.serializer.Serializer;
  */
 public class NetworkContext implements Serializable {
   private JsonObject context;
-  private static final long DEFAULT_ACK_EXPIRE = 30000;
 
   public NetworkContext() {
     context = new JsonObject();
@@ -107,7 +106,17 @@ public class NetworkContext implements Serializable {
    *   Ack expirations for the network.
    */
   public long getAckExpire() {
-    return context.getLong(Network.ACK_EXPIRE, DEFAULT_ACK_EXPIRE);
+    return context.getLong(Network.ACK_EXPIRE, Network.DEFAULT_ACK_EXPIRE);
+  }
+
+  /**
+   * Returns network ack delay.
+   *
+   * @return
+   *   Ack delay for the network.
+   */
+  public long getAckDelay() {
+    return context.getLong(Network.ACK_DELAY, Network.DEFAULT_ACK_DELAY);
   }
 
   /**

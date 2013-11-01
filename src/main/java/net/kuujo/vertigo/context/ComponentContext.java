@@ -43,31 +43,11 @@ public abstract class ComponentContext implements Serializable {
     context = new JsonObject();
   }
 
-  ComponentContext(JsonObject context) {
+  public ComponentContext(JsonObject context) {
     this.context = context;
     if (context.getFieldNames().contains("parent")) {
       parent = new NetworkContext();
       parent.setState(context.getObject("parent"));
-    }
-  }
-
-  /**
-   * Creates a component context from JSON.
-   *
-   * @param context
-   *   A JSON representation of the component context.
-   * @return
-   *   A new component context instance.
-   */
-  public static ComponentContext fromJson(JsonObject context) {
-    String type = context.getString(Component.TYPE);
-    switch (type) {
-      case Component.MODULE:
-        return new ModuleContext(context);
-      case Component.VERTICLE:
-        return new VerticleContext(context);
-      default:
-        return null;
     }
   }
 
@@ -139,8 +119,31 @@ public abstract class ComponentContext implements Serializable {
    * @return
    *   The number of component instances.
    */
-  public int getInstances() {
-    return context.getInteger(Component.INSTANCES, 1);
+  public int getNumInstances() {
+    return context.getInteger(Component.NUM_INSTANCES, 1);
+  }
+
+  /**
+   * Gets a list of all component instances.
+   *
+   * @return
+   *   A list of component instance contexts.
+   */
+  public List<InstanceContext> getInstances() {
+    JsonArray instanceInfo = context.getArray(Component.INSTANCES);
+    if (instanceInfo == null) {
+      instanceInfo = new JsonArray();
+    }
+    List<InstanceContext> instances = new ArrayList<InstanceContext>();
+    for (Object instance : instanceInfo) {
+      try {
+        instances.add(Serializer.<InstanceContext>deserialize((JsonObject) instance).setParent(this));
+      }
+      catch (SerializationException e) {
+        // Failed to deserialize the instance.
+      }
+    }
+    return instances;
   }
 
   /**
@@ -187,11 +190,7 @@ public abstract class ComponentContext implements Serializable {
    *   The parent network context.
    */
   public NetworkContext getNetwork() {
-    JsonObject parent = context.getObject("parent");
-    if (parent == null) {
-      parent = new JsonObject();
-    }
-    return NetworkContext.fromJson(parent);
+    return parent;
   }
 
   @Override

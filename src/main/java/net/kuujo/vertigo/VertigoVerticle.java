@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -36,7 +36,7 @@ import org.vertx.java.platform.Verticle;
  */
 public class VertigoVerticle extends Verticle {
   protected Vertigo vertigo;
-  protected ComponentContext context;
+  protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
 
@@ -62,7 +62,7 @@ public class VertigoVerticle extends Verticle {
 
     config.removeField("__context__");
     try {
-      context = Serializer.<ComponentContext>deserialize(contextInfo);
+      context = Serializer.<InstanceContext>deserialize(contextInfo);
     }
     catch (SerializationException e) {
       logger.error(e);

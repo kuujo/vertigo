@@ -1,6 +1,7 @@
 package net.kuujo.vertigo.network;
 
 import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.ModuleContext;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -56,7 +57,7 @@ public class Module extends Component<Module> {
     if (moduleName == null) {
       throw new MalformedNetworkException("Invalid module component. No module name defined.");
     }
-    return ComponentContext.fromJson(context);
+    return new ModuleContext(context);
   }
 
 }

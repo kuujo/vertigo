@@ -255,7 +255,7 @@ public class Network implements Serializable {
    *   The new verticle component instance.
    */
   public Verticle addVerticle(String address, String main, int instances) {
-    return addComponent(new Verticle(address).setMain(main).setInstances(instances));
+    return addComponent(new Verticle(address).setMain(main).setNumInstances(instances));
   }
 
   /**
@@ -273,7 +273,7 @@ public class Network implements Serializable {
    *   The new verticle component instance.
    */
   public Verticle addVerticle(String address, String main, JsonObject config, int instances) {
-    return addComponent(new Verticle(address).setMain(main).setConfig(config).setInstances(instances));
+    return addComponent(new Verticle(address).setMain(main).setConfig(config).setNumInstances(instances));
   }
 
   /**
@@ -331,7 +331,7 @@ public class Network implements Serializable {
    *   The new module component instance.
    */
   public Module addModule(String address, String moduleName, int instances) {
-    return addComponent(new Module(address).setModule(moduleName).setInstances(instances));
+    return addComponent(new Module(address).setModule(moduleName).setNumInstances(instances));
   }
 
   /**
@@ -349,7 +349,7 @@ public class Network implements Serializable {
    *   The new module component instance.
    */
   public Module addModule(String address, String moduleName, JsonObject config, int instances) {
-    return addComponent(new Module(address).setModule(moduleName).setConfig(config).setInstances(instances));
+    return addComponent(new Module(address).setModule(moduleName).setConfig(config).setNumInstances(instances));
   }
 
   /**

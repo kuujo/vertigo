@@ -21,7 +21,7 @@ import java.util.List;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.output.DefaultOutputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
 import net.kuujo.vertigo.heartbeat.HeartbeatEmitter;
@@ -49,7 +49,8 @@ public abstract class ComponentBase implements Component {
   protected final EventBus eventBus;
   protected final Container container;
   protected final Logger logger;
-  protected final ComponentContext context;
+  protected final InstanceContext context;
+  protected final String instanceId;
   protected final String address;
   protected final String networkAddress;
   protected final List<String> auditors;
@@ -58,14 +59,15 @@ public abstract class ComponentBase implements Component {
   protected final InputCollector input;
   protected final OutputCollector output;
 
-  protected ComponentBase(Vertx vertx, Container container, ComponentContext context) {
+  protected ComponentBase(Vertx vertx, Container container, InstanceContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
     this.logger = container.logger();
     this.context = context;
-    this.address = context.getAddress();
-    NetworkContext networkContext = context.getNetwork();
+    this.instanceId = context.id();
+    this.address = context.getComponent().getAddress();
+    NetworkContext networkContext = context.getComponent().getNetwork();
     networkAddress = networkContext.getAddress();
     List<String> auditorAddresses = networkContext.getAuditors();
     auditors = new ArrayList<String>();
@@ -80,11 +82,11 @@ public abstract class ComponentBase implements Component {
 
   @Override
   public JsonObject config() {
-    return context.getConfig();
+    return context.getComponent().getConfig();
   }
 
   @Override
-  public ComponentContext context() {
+  public InstanceContext context() {
     return context;
   }
 
@@ -162,7 +164,7 @@ public abstract class ComponentBase implements Component {
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
           heartbeat.setAddress(heartbeatAddress);
-          heartbeat.setInterval(context.getHeartbeatInterval());
+          heartbeat.setInterval(context.getComponent().getHeartbeatInterval());
           heartbeat.start();
           future.setResult(null);
         }
@@ -196,7 +198,7 @@ public abstract class ComponentBase implements Component {
       future.setHandler(doneHandler);
     }
 
-    eventBus.send(networkAddress, new JsonObject().putString("action", "ready").putString("address", address), new Handler<Message<Void>>() {
+    eventBus.send(networkAddress, new JsonObject().putString("action", "ready").putString("id", instanceId), new Handler<Message<Void>>() {
       @Override
       public void handle(Message<Void> message) {
         future.setResult(null);

@@ -51,7 +51,7 @@ public class TestAckingWorker extends VertigoVerticle {
    */
   public static Verticle createDefinition(int instances) {
     return new Verticle(UUID.randomUUID().toString())
-        .setMain(TestAckingWorker.class.getName()).setInstances(instances);
+        .setMain(TestAckingWorker.class.getName()).setNumInstances(instances);
   }
 
   @Override

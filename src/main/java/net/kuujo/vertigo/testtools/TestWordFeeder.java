@@ -70,8 +70,8 @@ public class TestWordFeeder extends VertigoVerticle {
 
   @Override
   public void start() {
-    field = context.getConfig().getString("field");
-    words = (String[]) context.getConfig().getArray("words").toArray();
+    field = container.config().getString("field");
+    words = (String[]) container.config().getArray("words").toArray();
 
     vertigo.createPollingFeeder().start(new Handler<AsyncResult<PollingFeeder>>() {
       @Override

@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component.executor;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -34,7 +34,7 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
   private Handler<Void> drainHandler;
   private boolean paused;
 
-  public DefaultStreamExecutor(Vertx vertx, Container container, ComponentContext context) {
+  public DefaultStreamExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

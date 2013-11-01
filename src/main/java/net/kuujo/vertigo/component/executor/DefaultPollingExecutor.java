@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component.executor;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -36,7 +36,7 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   private long executeDelay = 100;
   private boolean executed;
 
-  public DefaultPollingExecutor(Vertx vertx, Container container, ComponentContext context) {
+  public DefaultPollingExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

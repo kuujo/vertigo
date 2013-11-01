@@ -1,8 +1,8 @@
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.network.Module;
-
 import org.vertx.java.core.json.JsonObject;
+
+import net.kuujo.vertigo.network.Module;
 
 /**
  * A module component context.
@@ -15,7 +15,7 @@ public class ModuleContext extends ComponentContext {
     super();
   }
 
-  ModuleContext(JsonObject context) {
+  public ModuleContext(JsonObject context) {
     super(context);
   }
 

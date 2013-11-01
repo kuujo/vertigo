@@ -1,6 +1,7 @@
 package net.kuujo.vertigo.network;
 
 import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.VerticleContext;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -56,7 +57,7 @@ public class Verticle extends Component<Verticle> {
     if (main == null) {
       throw new MalformedNetworkException("Invalid verticle component. No verticle main defined.");
     }
-    return ComponentContext.fromJson(context);
+    return new VerticleContext(context);
   }
 
 }

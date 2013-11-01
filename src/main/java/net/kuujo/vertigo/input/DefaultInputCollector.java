@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.output.Output;
@@ -47,17 +47,17 @@ public class DefaultInputCollector implements InputCollector {
   private final Vertx vertx;
   private final Logger logger;
   private final EventBus eventBus;
-  private final ComponentContext context;
+  private final InstanceContext context;
   private Handler<JsonMessage> messageHandler;
   private Map<UUID, Long> listenTimers = new HashMap<>();
   private static final long LISTEN_PERIOD = 5000;
 
-  public DefaultInputCollector(Vertx vertx, Container container, ComponentContext context) {
+  public DefaultInputCollector(Vertx vertx, Container container, InstanceContext context) {
     this(vertx, container, vertx.eventBus(), context);
   }
 
-  public DefaultInputCollector(Vertx vertx, Container container, EventBus eventBus, ComponentContext context) {
-    this.address = UUID.randomUUID().toString();
+  public DefaultInputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context) {
+    this.address = context.id();
     this.vertx = vertx;
     this.logger = container.logger();
     this.eventBus = eventBus;
@@ -101,8 +101,8 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
-          for (Input input : context.getInputs()) {
-            input.getGrouping().setCount(context.getInstances());
+          for (Input input : context.getComponent().getInputs()) {
+            input.getGrouping().setCount(context.getComponent().getNumInstances());
             try {
               periodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }
@@ -124,8 +124,8 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
-          for (Input input : context.getInputs()) {
-            input.getGrouping().setCount(context.getInstances());
+          for (Input input : context.getComponent().getInputs()) {
+            input.getGrouping().setCount(context.getComponent().getNumInstances());
             try {
               startPeriodicListen(UUID.randomUUID(), input, Output.fromInput(input));
             }

@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.feeder;
 
 import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -36,7 +36,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   protected boolean autoRetry;
   protected int retryAttempts = -1;
 
-  protected AbstractFeeder(Vertx vertx, Container container, ComponentContext context) {
+  protected AbstractFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
     queue = new BasicFeedQueue();
   }

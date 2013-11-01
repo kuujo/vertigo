@@ -75,7 +75,7 @@ public final class Networks {
       }
 
       component.setConfig(componentInfo.getObject(Component.CONFIG, new JsonObject()));
-      component.setInstances(componentInfo.getInteger(Component.INSTANCES, 1));
+      component.setNumInstances(componentInfo.getInteger(Component.NUM_INSTANCES, 1));
       component.setHeartbeatInterval(componentInfo.getLong(Component.HEARTBEAT_INTERVAL, 1000));
 
       // Create component inputs.

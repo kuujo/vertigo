@@ -51,7 +51,7 @@ public class TestTimingOutWorker extends VertigoVerticle {
    */
   public static Verticle createDefinition(int instances) {
     return new Verticle(UUID.randomUUID().toString())
-        .setMain(TestTimingOutWorker.class.getName()).setInstances(instances);
+        .setMain(TestTimingOutWorker.class.getName()).setNumInstances(instances);
   }
 
   @Override

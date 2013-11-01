@@ -1,8 +1,8 @@
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.network.Verticle;
-
 import org.vertx.java.core.json.JsonObject;
+
+import net.kuujo.vertigo.network.Verticle;
 
 /**
  * A verticle component context.
@@ -15,7 +15,7 @@ public class VerticleContext extends ComponentContext {
     super();
   }
 
-  VerticleContext(JsonObject context) {
+  public VerticleContext(JsonObject context) {
     super(context);
   }
 

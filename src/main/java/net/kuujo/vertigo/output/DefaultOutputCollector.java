@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.messaging.DefaultJsonMessage;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -47,7 +47,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Vertx vertx;
   private final Logger logger;
   private final EventBus eventBus;
-  private final ComponentContext context;
+  private final InstanceContext context;
   private final List<String> auditors;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
@@ -56,16 +56,16 @@ public class DefaultOutputCollector implements OutputCollector {
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
-  public DefaultOutputCollector(Vertx vertx, Container container, ComponentContext context) {
+  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext context) {
     this(vertx, container, vertx.eventBus(), context);
   }
 
-  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, ComponentContext context) {
+  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context) {
     this.vertx = vertx;
     this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
-    auditors = context.getNetwork().getAuditors();
+    auditors = context.getComponent().getNetwork().getAuditors();
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -153,7 +153,7 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String getAddress() {
-    return context.getAddress();
+    return context.getComponent().getAddress();
   }
 
   @Override
@@ -188,12 +188,12 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String emit(JsonObject body) {
-    return emitNew(DefaultJsonMessage.create(context.getAddress(), body, selectRandomAuditor()));
+    return emitNew(DefaultJsonMessage.create(context.getComponent().getAddress(), body, selectRandomAuditor()));
   }
 
   @Override
   public String emit(JsonObject body, String tag) {
-    return emitNew(DefaultJsonMessage.create(context.getAddress(), body, tag, selectRandomAuditor()));
+    return emitNew(DefaultJsonMessage.create(context.getComponent().getAddress(), body, tag, selectRandomAuditor()));
   }
 
   @Override
@@ -236,22 +236,22 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector start() {
-    eventBus.registerHandler(context.getAddress(), handler);
-    eventBus.registerHandler(context.getNetwork().getBroadcastAddress(), ackerHandler);
+    eventBus.registerHandler(context.getComponent().getAddress(), handler);
+    eventBus.registerHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler);
     return this;
   }
 
   @Override
   public OutputCollector start(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.registerHandler(context.getAddress(), handler, new Handler<AsyncResult<Void>>() {
+    eventBus.registerHandler(context.getComponent().getAddress(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
         else {
-          eventBus.registerHandler(context.getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
+          eventBus.registerHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
@@ -270,21 +270,21 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public void stop() {
-    eventBus.unregisterHandler(context.getAddress(), handler);
-    eventBus.unregisterHandler(context.getNetwork().getBroadcastAddress(), ackerHandler);
+    eventBus.unregisterHandler(context.getComponent().getAddress(), handler);
+    eventBus.unregisterHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler);
   }
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.unregisterHandler(context.getAddress(), handler, new Handler<AsyncResult<Void>>() {
+    eventBus.unregisterHandler(context.getComponent().getAddress(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
         else {
-          eventBus.unregisterHandler(context.getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
+          eventBus.unregisterHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {

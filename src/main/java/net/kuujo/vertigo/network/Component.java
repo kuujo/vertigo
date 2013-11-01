@@ -21,6 +21,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
@@ -39,6 +40,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public static final String MODULE = "module";
   public static final String CONFIG = "config";
   public static final String INSTANCES = "instances";
+  public static final String NUM_INSTANCES = "num_instances";
   public static final String HEARTBEAT_INTERVAL = "heartbeat";
   public static final String INPUTS = "inputs";
 
@@ -120,21 +122,21 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The number of component instances.
    */
-  public int getInstances() {
-    return definition.getInteger(INSTANCES, 1);
+  public int getNumInstances() {
+    return definition.getInteger(NUM_INSTANCES, 1);
   }
 
   /**
    * Sets the number of component instances.
    *
-   * @param instances
+   * @param numInstances
    *   The number of component instances.
    * @return
    *   The called component instance.
    */
   @SuppressWarnings("unchecked")
-  public T setInstances(int instances) {
-    definition.putNumber(INSTANCES, instances);
+  public T setNumInstances(int numInstances) {
+    definition.putNumber(NUM_INSTANCES, numInstances);
     return (T) this;
   }
 
@@ -276,6 +278,14 @@ public abstract class Component<T extends Component<T>> implements Serializable 
       inputs = new JsonArray();
       context.putArray(INPUTS, inputs);
     }
+
+    JsonArray instances = new JsonArray();
+    int numInstances = getNumInstances();
+    for (int i = 0; i < numInstances; i++) {
+      String id = UUID.randomUUID().toString();
+      instances.add(Serializer.serialize(new InstanceContext(new JsonObject().putString("id", id))));
+    }
+    context.putArray(INSTANCES, instances);
     return context;
   }
 

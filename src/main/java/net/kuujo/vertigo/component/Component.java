@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -33,11 +33,11 @@ public interface Component {
   JsonObject config();
 
   /**
-   * Returns the component context.
+   * Returns the component instance context.
    *
    * @return
    *   The component context.
    */
-  ComponentContext context();
+  InstanceContext context();
 
 }

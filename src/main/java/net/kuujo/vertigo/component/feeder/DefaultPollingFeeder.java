@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.component.feeder;
 
-import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -35,7 +35,7 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   private long feedDelay = 100;
   private boolean fed;
 
-  public DefaultPollingFeeder(Vertx vertx, Container container, ComponentContext context) {
+  public DefaultPollingFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

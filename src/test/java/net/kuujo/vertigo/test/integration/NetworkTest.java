@@ -41,7 +41,7 @@ import org.vertx.testtools.TestVerticle;
  *
  * @author Jordan Halterman
  */
-public class NetworkTests extends TestVerticle {
+public class NetworkTest extends TestVerticle {
 
   @Test
   public void testBasicAckFeeder() {

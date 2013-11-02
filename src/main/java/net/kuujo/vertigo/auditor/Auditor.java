@@ -40,6 +40,12 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private Map<String, Node> nodes = new HashMap<>();
   private Map<Long, Timer> timers = new HashMap<>();
 
+  public static final String ADDRESS = "address";
+  public static final String BROADCAST = "broadcast";
+  public static final String ENABLED = "enabled";
+  public static final String EXPIRE = "expire";
+  public static final String DELAY = "delay";
+
   @Override
   public void start() {
     super.start();

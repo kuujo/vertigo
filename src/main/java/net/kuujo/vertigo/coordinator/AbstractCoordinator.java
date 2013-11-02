@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import net.kuujo.vertigo.Events;
 import net.kuujo.vertigo.auditor.Auditor;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -50,6 +51,7 @@ import org.vertx.java.core.json.JsonObject;
  */
 abstract class AbstractCoordinator extends BusModBase implements Handler<Message<JsonObject>> {
   protected NetworkContext context;
+  protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();
   protected Map<String, InstanceContext> contextMap = new HashMap<>();
   protected Map<String, HeartbeatMonitor> heartbeats = new HashMap<>();
@@ -60,6 +62,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   @Override
   public void start() {
     super.start();
+    events = new Events(eb);
     try {
       context = Serializer.deserialize(config);
     }
@@ -194,6 +197,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
                 container.logger().error("Failed to deploy network.", result.cause());
                 container.exit();
               }
+              else {
+                events.trigger(Events.Network.Deploy.class, context.getAddress(), context);
+              }
             }
           });
         }
@@ -327,6 +333,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         for (String address : auditorDeploymentIds) {
           undeployVerticle(address);
         }
+        events.trigger(Events.Network.Shutdown.class, context.getAddress(), context);
         message.reply(result.succeeded());
       }
     });
@@ -353,10 +360,16 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    * Indicates that a component instance is ready.
    */
   private void doReady(Message<JsonObject> message) {
-    ready.put(getMandatoryString("id", message), message);
-    if (ready.size() == workers.size()) {
-      for (Message<JsonObject> replyMessage : ready.values()) {
-        replyMessage.reply();
+    String id = getMandatoryString("id", message);
+    if (id != null) {
+      ready.put(id, message);
+      InstanceContext context = contextMap.get(id);
+      events.trigger(Events.Component.Start.class, context.getComponent().getAddress(), context);
+      if (ready.size() == workers.size()) {
+        events.trigger(Events.Network.Start.class, this.context.getAddress(), context);
+        for (Message<JsonObject> replyMessage : ready.values()) {
+          replyMessage.reply();
+        }
       }
     }
   }
@@ -567,6 +580,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
                 future.setResult(result.result());
               }
               else {
+                events.trigger(Events.Component.Deploy.class, context.getComponent().getAddress(), context);
                 future.setFailure(result.cause());
               }
             }
@@ -581,6 +595,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
                 future.setResult(result.result());
               }
               else {
+                events.trigger(Events.Component.Deploy.class, context.getComponent().getAddress(), context);
                 future.setFailure(result.cause());
               }
             }
@@ -589,7 +604,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       }
 
       @Override
-      protected void doUndeploy(InstanceContext context, Handler<AsyncResult<Void>> resultHandler) {
+      protected void doUndeploy(final InstanceContext context, Handler<AsyncResult<Void>> resultHandler) {
         final Future<Void> future = new DefaultFutureResult<Void>();
         future.setHandler(resultHandler);
         String id = context.id();
@@ -603,6 +618,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
                   future.setFailure(result.cause());
                 }
                 else {
+                  events.trigger(Events.Component.Shutdown.class, context.getComponent().getAddress(), context);
                   future.setResult(result.result());
                 }
               }
@@ -616,6 +632,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
                   future.setFailure(result.cause());
                 }
                 else {
+                  events.trigger(Events.Component.Shutdown.class, context.getComponent().getAddress(), context);
                   future.setResult(result.result());
                 }
               }

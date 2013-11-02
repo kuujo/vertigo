@@ -176,4 +176,38 @@ public final class Networks {
     return network;
   }
 
+  /**
+   * Creates a JSON representation of a network.
+   *
+   * @param network
+   *   The network for which to create a JSON representation.
+   * @return
+   *   A JSON representation of the network.
+   */
+  public static JsonObject toJson(Network network) {
+    JsonObject json = network.getState();
+    JsonObject components = new JsonObject();
+    for (Component<?> component : network.getComponents()) {
+      JsonObject componentInfo = component.getState();
+      JsonArray inputs = new JsonArray();
+      for (Input input : component.getInputs()) {
+        JsonObject inputInfo = input.getState();
+        Grouping grouping = input.getGrouping();
+        if (grouping != null) {
+          inputInfo.putObject(Input.GROUPING, grouping.getState().putString("type", grouping.getClass().getName()));
+        }
+        JsonArray filters = new JsonArray();
+        for (Filter filter : input.getFilters()) {
+          filters.add(filter.getState().putString("type", filter.getClass().getName()));
+        }
+        inputInfo.putArray(Input.FILTERS, filters);
+        inputs.add(inputInfo);
+      }
+      componentInfo.putArray(Component.INPUTS, inputs);
+      components.putObject(component.getAddress(), componentInfo);
+    }
+    json.putObject(Network.COMPONENTS, components);
+    return json;
+  }
+
 }

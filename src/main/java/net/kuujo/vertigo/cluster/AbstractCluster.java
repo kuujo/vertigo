@@ -58,7 +58,7 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+  public void deploy(final Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {
       final NetworkContext context = network.createContext();
@@ -85,7 +85,7 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public void shutdown(NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+  public void shutdown(final NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     eventBus.sendWithTimeout(context.getAddress(), new JsonObject().putString("action", "shutdown"), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override

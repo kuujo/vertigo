@@ -15,6 +15,8 @@
 */
 package net.kuujo.vertigo.network;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.NetworkContext;
@@ -179,6 +181,29 @@ public class Network implements Serializable {
    */
   public long getAckDelay() {
     return definition.getLong(ACK_DELAY, DEFAULT_ACK_DELAY);
+  }
+
+  /**
+   * Gets a list of network components.
+   *
+   * @return
+   *   A list of network components.
+   */
+  public List<Component<?>> getComponents() {
+    List<Component<?>> components = new ArrayList<Component<?>>();
+    JsonObject componentInfo = definition.getObject(COMPONENTS);
+    if (componentInfo == null) {
+      componentInfo = new JsonObject();
+      definition.putObject(COMPONENTS, componentInfo);
+    }
+
+    for (String address : componentInfo.getFieldNames()) {
+      Component<?> component = getComponent(address);
+      if (component != null) {
+        components.add(component);
+      }
+    }
+    return components;
   }
 
   /**

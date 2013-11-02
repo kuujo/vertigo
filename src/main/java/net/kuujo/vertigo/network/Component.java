@@ -15,6 +15,8 @@
 */
 package net.kuujo.vertigo.network;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.vertx.java.core.json.JsonArray;
@@ -179,6 +181,31 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public T setHeartbeatInterval(long interval) {
     definition.putNumber(HEARTBEAT_INTERVAL, interval);
     return (T) this;
+  }
+
+  /**
+   * Gets a list of component inputs.
+   *
+   * @return
+   *   A list of component inputs.
+   */
+  public List<Input> getInputs() {
+    JsonArray inputsInfo = definition.getArray(INPUTS);
+    if (inputsInfo == null) {
+      inputsInfo = new JsonArray();
+      definition.putArray(INPUTS, inputsInfo);
+    }
+
+    List<Input> inputs = new ArrayList<Input>();
+    for (Object inputInfo : inputsInfo) {
+      try {
+        inputs.add(Serializer.<Input>deserialize((JsonObject) inputInfo));
+      }
+      catch (SerializationException e) {
+        // Do nothing.
+      }
+    }
+    return inputs;
   }
 
   /**

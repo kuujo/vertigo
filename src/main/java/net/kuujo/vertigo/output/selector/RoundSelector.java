@@ -15,6 +15,7 @@
 */
 package net.kuujo.vertigo.output.selector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.vertx.java.core.json.JsonObject;
@@ -38,11 +39,15 @@ public class RoundSelector implements Selector {
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
-    current++;
-    if (current >= connections.size()) {
+    if (connections.size() == 0) {
+      return new ArrayList<Connection>();
+    }
+    else if (current >= connections.size()) {
       current = 0;
     }
-    return connections.subList(current, current+1);
+    List<Connection> results = connections.subList(current, current+1);
+    current++;
+    return results;
   }
 
   @Override

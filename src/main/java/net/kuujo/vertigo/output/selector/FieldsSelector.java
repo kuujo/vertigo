@@ -66,10 +66,10 @@ public class FieldsSelector implements Selector {
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
-    String value = message.body().getString(fieldName);
+    Object value = message.body().getValue(fieldName);
     if (value != null) {
-      int index = value.length() % connections.size();
-      connections.subList(index, index+1);
+      int index = value.hashCode() % connections.size();
+      return connections.subList(index, index+1);
     }
     return null;
   }

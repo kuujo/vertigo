@@ -20,6 +20,7 @@ import java.util.List;
 import net.kuujo.vertigo.messaging.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -32,56 +33,44 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldsSelector implements Selector {
-  private String fieldName;
+  private String[] fieldNames;
 
   public FieldsSelector() {
   }
 
-  public FieldsSelector(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
-  /**
-   * Sets the grouping field.
-   *
-   * @param fieldName
-   *   The grouping field name.
-   * @return
-   *   The called grouping instance.
-   */
-  public FieldsSelector setField(String fieldName) {
-    this.fieldName = fieldName;
-    return this;
-  }
-
-  /**
-   * Gets the grouping field.
-   *
-   * @return
-   *   The grouping field.
-   */
-  public String getField() {
-    return fieldName;
+  public FieldsSelector(String... fieldNames) {
+    this.fieldNames = fieldNames;
   }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
-    Object value = message.body().getValue(fieldName);
-    if (value != null) {
-      int index = value.hashCode() % connections.size();
-      return connections.subList(index, index+1);
+    JsonObject body = message.body();
+    String hash = "";
+    for (String fieldName : fieldNames) {
+      Object value = body.getValue(fieldName);
+      if (value != null) {
+        hash += value.hashCode();
+      }
     }
-    return null;
+    int index = Integer.valueOf(hash) % connections.size();
+    return connections.subList(index, index+1);
   }
 
   @Override
   public JsonObject getState() {
-    return new JsonObject().putString("field", fieldName);
+    return new JsonObject().putArray("fields", new JsonArray(fieldNames));
   }
 
   @Override
   public void setState(JsonObject state) {
-    fieldName = state.getString("field");
+    JsonArray fields = state.getArray("fields");
+    if (fields == null) {
+      fields = new JsonArray();
+    }
+    fieldNames = new String[fields.size()];
+    for (int i = 0; i < fields.size(); i++) {
+      fieldNames[i] = fields.get(i);
+    }
   }
 
 }

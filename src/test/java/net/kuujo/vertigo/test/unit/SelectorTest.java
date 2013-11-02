@@ -112,6 +112,29 @@ public class SelectorTest {
     List<Connection> connections6 = selector.select(test3, testConnections);
     assertEquals(1, connections6.size());
     assertEquals(connections5.get(0), connections6.get(0));
+
+    Selector multiSelector = new FieldsSelector("test1", "test2");
+
+    JsonMessage test4 = DefaultJsonMessage.create(new JsonObject().putString("test1", "a"), "auditor");
+    List<Connection> connections7 = multiSelector.select(test4, testConnections);
+    assertEquals(1, connections7.size());
+    List<Connection> connections8 = multiSelector.select(test4, testConnections);
+    assertEquals(1, connections8.size());
+    assertEquals(connections7.get(0), connections8.get(0));
+
+    JsonMessage test5 = DefaultJsonMessage.create(new JsonObject().putString("test2", "ab"), "auditor");
+    List<Connection> connections9 = multiSelector.select(test5, testConnections);
+    assertEquals(1, connections9.size());
+    List<Connection> connections10 = multiSelector.select(test5, testConnections);
+    assertEquals(1, connections10.size());
+    assertEquals(connections9.get(0), connections10.get(0));
+
+    JsonMessage test6 = DefaultJsonMessage.create(new JsonObject().putString("test1", "ab").putString("test2", "abc"), "auditor");
+    List<Connection> connections11 = multiSelector.select(test6, testConnections);
+    assertEquals(1, connections11.size());
+    List<Connection> connections12 = multiSelector.select(test6, testConnections);
+    assertEquals(1, connections12.size());
+    assertEquals(connections11.get(0), connections12.get(0));
   }
 
 }

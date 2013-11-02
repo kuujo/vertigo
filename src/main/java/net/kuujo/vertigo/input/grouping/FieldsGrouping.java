@@ -18,6 +18,7 @@ package net.kuujo.vertigo.input.grouping;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -35,31 +36,39 @@ public class FieldsGrouping implements Grouping {
   public FieldsGrouping() {
   }
 
-  public FieldsGrouping(String fieldName) {
-    definition.putString("field", fieldName);
+  public FieldsGrouping(String... fieldNames) {
+    definition.putArray("fields", new JsonArray(fieldNames));
   }
 
   /**
-   * Sets the grouping field.
+   * Sets the grouping fields.
    *
-   * @param fieldName
-   *   The grouping field name.
+   * @param fieldNames
+   *   The grouping field names.
    * @return
    *   The called grouping instance.
    */
-  public FieldsGrouping setField(String fieldName) {
-    definition.putString("field", fieldName);
+  public FieldsGrouping setFields(String... fieldNames) {
+    definition.putArray("fields", new JsonArray(fieldNames));
     return this;
   }
 
   /**
-   * Gets the grouping field.
+   * Gets the grouping fields.
    *
    * @return
-   *   The grouping field.
+   *   The grouping fields.
    */
-  public String getField() {
-    return definition.getString("field");
+  public String[] getFields() {
+    JsonArray fieldNames = definition.getArray("fields");
+    if (fieldNames == null) {
+      fieldNames = new JsonArray();
+    }
+    String[] fields = new String[fieldNames.size()];
+    for (int i = 0; i < fieldNames.size(); i++) {
+      fields[i] = fieldNames.get(i);
+    }
+    return fields;
   }
 
   @Override
@@ -74,7 +83,7 @@ public class FieldsGrouping implements Grouping {
 
   @Override
   public Selector createSelector() {
-    return new FieldsSelector(getField());
+    return new FieldsSelector(getFields());
   }
 
 }

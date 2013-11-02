@@ -58,7 +58,7 @@ within larger Vert.x applications.
    * [The complete network](#the-complete-network)
 1. [Creating Components](#creating-components)
    * [Contexts](#contexts)
-      * [WorkerContext](#workercontext)
+      * [InstanceContext](#instancecontext)
       * [ComponentContext](#componentcontext)
       * [NetworkContext](#networkcontext)
    * [Feeders](#feeders)
@@ -82,6 +82,12 @@ within larger Vert.x applications.
    * [Remote procedure calls](#defining-remote-procedure-calls)
 1. [Network deployment](#network-deployment)
    * [Clustering](#clustering)
+1. [Events](#events)
+   * [Network events](#network-events)
+   * [Component events](#component-events)
+1. [Advanced features](#advanced-features)
+   * [Wire taps](#wire-taps)
+   * [Nested networks](#nested-networks)
 
 ## Networks
 A network is the representation of a collection of [components](#components) - special
@@ -120,13 +126,22 @@ provides many reliability features on top of the event bus.
 
 ### How components communicate
 Network components communicate with each other directly over the event bus
-rather than being routed through a central message broker. When a network
-is created, Vertigo assigns unique addresses *to each component (verticle)
-instance* which that verticle uses to communicate with the verticles around
-it. Thus, each component instance essentially maintains a direct connection
-to its neighbors, ensuring fast messaging between them.
+rather than being routed through a central message broker. In Vertigo, this
+is accomplished using a publish-subscribe-like messaging scheme. When component
+instance is started, the component sends a message to any other component from
+which it is interested in receiving messages. Similarly, it listens for other
+components that are interested in receiving messages. This allows components
+to set up direct connections between one another, ensuring fast messaging
+between them.
 
 ![Communication Channels](http://s7.postimg.org/unzwkrvgb/vertigo_channel.png)
+
+This type of messaging also allows for components to be "tapped" externally.
+By instantiating a `Listener` instance from anywhere in a Vert.x application,
+you can listen to output from any component in any network. This also means
+that one network can receive input from another network without that network
+even knowing it exists. See [wire taps](#wire-taps) and
+[nested networks](#nested-networks) for more information.
 
 ### Message distribution
 When messages are sent between components which have multiple instances running
@@ -204,27 +219,35 @@ In order to get a better understanding of the concepts introduced in
 Vertigo, let's take a look at a simple network example.
 
 ### Defining the network
-Vertigo networks are defined using the [definitions](#defining-networks)
+Vertigo networks are defined using the [networks](#defining-networks)
 API.
 
 ```java
 Network network = new Network("word_count");
-network.fromVerticle("word_feeder", WordFeeder.class.getName())
-  .toVerticle("word_counter", WordCountWorker.class.getName(), 4)
-  .groupBy(new FieldsGrouping("word"));
+network.addVerticle("word_count.word_feeder", WordFeeder.class.getName());
+network.addVerticle("word_count.word_counter", WordCountWorker.class.getName(), 4)
+  .addInput("word_count.word_feeder").groupBy(new FieldsGrouping("word"));
 ```
 
-This network definition defines a simple network that consists of only two
-verticles, a feeder and a worker. First, we define a new network named *word_count*.
-Each vertigo network should have a unique name which is used to derive each
-of the network's *component* instances unique addresses (Vertigo addresses are
-generated in a predictable manner). With the new network defined, we add a
-*source* verticle to the network - this is usually a feeder or executor, though
-workers can be used in more complex cases - which connects to a *worker* verticle.
-In Vertigo, each of the elements is known as a *component* - either a verticle
-or module - each of which can have any number of instances. In this case, the
-*word_counter* component has four instances. This means that Vertigo will deploy
-four instances of the `WordCountWorker` verticle when deploying the network.
+This code defines a simple network that consists of only two verticles, a
+feeder and a worker. First, we define a new network named *word_count*.
+This is the address that will be used by the network coordinator once the
+network is deployed.
+
+Next, we add the *word_feeder* component to the network. Components may be
+either verticles or modules, with `addVerticle` and `addModule` methods for
+adding each type respectively. The first argument to any `addVerticle` or
+`addModule` method is the component address. *Note that this is actually
+the event bus address to which other components may connect to receive
+messages from the component, so it's important that this name does not
+conflict with other addresses on the event bus.*
+
+Next, we add the *word_counter* verticle, which will count words. After the word
+counter is added we indicate that the word counter should receive messages
+from the component at *word_count.word_feeder* by adding an input from
+that address. This means that once the network is started, each *word_count*
+instance will notify all instances of the *word_feeder* component that it
+is interested in receiving messages emitted by the *word_feeder*.
 
 Finally, we group the `word_counter` component using a `FieldsGrouping`. Because
 this particular component counts the number of words arriving to it, the same
@@ -418,16 +441,14 @@ the data source and the worker.
 
 ```java
 Network network = new Network("word_count");
-Component executor = network.fromVerticle("word_executor", WordExecutor.class.getName());
-executor.toVerticle("word_counter", WordCountWorker.class.getName(), 4)
-  .groupBy(new FieldsGrouping("word"))
-  .to(executor);
+network.addVerticle("word_count.word_executor", WordExecutor.class.getName())
+  .addInput("word_count.word_counter");
+network.addVerticle("word_count.word_counter", WordCountWorker.class.getName(), 4)
+  .addInput("word_count.word_executor", new FieldsGrouping("word"));
 ```
 
-First, we store the `word_executor` component definition in a variable, connect
-it to the `word_counter`, and then connect the `word_counter` back to the
-`word_executor`. This creates the circular connections that are required for
-remote procedure calls.
+Here we simply add the word counter's address as an input to the word executor,
+thus creating the circular connection.
 
 Now that we have our circular connections, we can re-define the original feeder
 to expect a result using an executor.
@@ -476,15 +497,14 @@ Finally, we have our complete Java network example.
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.Cluster;
-import net.kuujo.vertigo.LocalCluster;
+import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.component.feeder.BasicFeeder;
 import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.Network;
-import net.kuujo.vertigo.Component;
+import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.grouping.FieldsGrouping;
-import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.messaging.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -579,8 +599,9 @@ public class WordCountNetwork extends Verticle {
   @Override
   public void start() {
     Network network = new Network("word_count");
-    network.fromVerticle("word_feeder", WordFeeder.class.getName())
-      .toVerticle("word_counter", WordCountWorker.class.getName(), 4).groupBy(new FieldsGrouping("word"));
+    network.addVerticle("word_count.word_feeder", WordFeeder.class.getName());
+    network.addVerticle("word_count.word_counter", WordCountWorker.class.getName(), 4)
+      .addInput("word_count.word_feeder", new FieldsGrouping("word"));
 
     final Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -611,7 +632,7 @@ a special `Verticle` helper for Java-based component verticles. To create a Java
 component verticle, extend the `VertigoVerticle` class. The `VertigoVerticle`
 provides a couple more *protected* members for component instances.
 * `vertigo` - an instance of `Vertigo`
-* `context` - a `WorkerContext` object
+* `context` - a `InstanceContext` object
 
 The `Vertigo` interface is similar to that Vert.x's `Vertx` interface in that
 it is essentially a helper for creating Vertigo components. The `Vertigo` object
@@ -625,37 +646,36 @@ exposes the following methods:
 * `createWorker()` - creates a [worker](#workers)
 
 ### Contexts
-The `WorkerContext` object contains information relevant to the current component
+The `InstanceContext` object contains information relevant to the current component
 instance, as well as its parent component definition and even information about
 the entire network layout, including unique addresses for each network component
 instance.
 
-#### WorkerContext
-The `WorkerContext` exposes the following interface:
-* `address()` - the unique worker event bus address
-* `config()` - the worker configuration - this is inherited from the component definition
-* `getComponentContext()` - returns the parent component context
+#### InstanceContext
+The `InstanceContext` exposes the following interface:
+* `getAddress()` - the unique worker event bus address
+* `getComponent()` - returns the parent component context
 
 #### ComponentContext
 The `ComponentContext` exposes the following interface:
-* `address()` - the component address - this is the basis for all component instance addresses
-* `getConnectionContexts()` - a collection of `ConnectionContext` instances that
-  describe the addresses to which this component feeds/emits messages and their
-  component [filters](#component-filters) and [groupings](#component-groupings)
-* `getWorkerContexts()` - a collection of all component instance contexts for the component
-* `getDefinition()` - the component [definition](#defining-network-components)
-* `getNetworkContext()` - returns the parent network context
+* `getAddress()` - the component address - this is the basis for all component instance addresses
+* `getType()` - the component type, either "module" or "verticle"
+* `isModule()` - indicates whether the component is a module
+* `isVerticle()` - indicates whether the component is a verticle
+* `getConfig()` - the component configuration
+* `getNumInstaces()` - the number of component instances
+* `getInputs()` - a list of component inputs
+* `getInstaces()` - a list of component instance contexts
+* `getNetwork()` - the parent network context
 
 #### NetworkContext
 The `NetworkContext` exposes the following interface:
-* `address()` - the network address - this is the basis for all component addresses
+* `getAddress()` - the network address - this is the basis for all component addresses
 * `getBroadcastAddress()` - the network broadcast address - this is the event bus
   address used by network [auditors](#message-acking) to broadcast message statuses (acks/nacks)
-* `getNumAuditors()` - returns the number of network [auditors](#message-acking)
-* `getAuditors()` - returns a set of network auditor addresses, each auditor is
+* `getAuditors()` - returns a set of network [auditor](#message-acking) addresses, each auditor is
   assigned its own unique event bus address
-* `getComponentContexts()` - a collection of all network component contexts
-* `getDefinition()` - the network [definition](#defining-networks)
+* `getComponents()` - a collection of all network component contexts
 
 ### Feeders
 Feeders are components whose sole responsibility is to feed data to a network.
@@ -898,9 +918,6 @@ The `Worker` provides the following methods for acks/fails:
   processed
 * `fail(JsonMessage message)` - indicates that a message has failed processing.
   This can be used as a vehicle for notifying data sources of invalid data
-* `fail(JsonMessage message, String failureMessage)` - indicates that a message
-  has failed processing, passing a failure message that will be passed on to
-  the data source
 
 ```java
 worker.messageHandler(new Handler<JsonMessage>() {
@@ -913,7 +930,7 @@ worker.messageHandler(new Handler<JsonMessage>() {
     }
     else {
       // This is an invalid message.
-      worker.fail(message, "Invalid data.");
+      worker.fail(message);
     }
   }
 });
@@ -1084,22 +1101,28 @@ The `Network` exposes the following configuration methods:
 * `getNumAuditors()` - indicates the number of network auditors
 * `setAckExpire(long expire)` - sets the message ack expiration for the network
 * `getAckExpire()` - indicates the ack expiration for the network
+* `setAckDelay(long delay)` - sets an optional period of time to way after a message
+  tree has been fully acked to ensure that more children will not be created. This
+  is useful in cases where new message children may be created after some time
+  has passed (messages are stored in memory in a component for a period of time).
+  Defaults to `0`
+* `getAckDelay()` - indicates the ack delay for the network
 
 ### Defining network components
 The `Network` class provides several methods for adding components
 to the network.
 
-* `from(Component component)`
-* `fromVerticle(String name)`
-* `fromVerticle(String name, String main)`
-* `fromVerticle(String name, String main, JsonObject config)`
-* `fromVerticle(String name, String main, int instances)`
-* `fromVerticle(String name, String main, JsonObject config, int instances)`
-* `fromModule(String name)`
-* `fromModule(String name, String moduleName)`
-* `fromModule(String name, String moduleName, JsonObject config)`
-* `fromModule(String name, String moduleName, int instances)`
-* `fromModule(String name, String moduleName, JsonObject config, int instances)`
+* `addComponent(Component<?> component)`
+* `addVerticle(String address)`
+* `addVerticle(String address, String main)`
+* `addVerticle(String address, String main, JsonObject config)`
+* `addVerticle(String address, String main, int instances)`
+* `addVerticle(String address, String main, JsonObject config, int instances)`
+* `addModule(String address)`
+* `addModule(String address, String moduleName)`
+* `addModule(String address, String moduleName, JsonObject config)`
+* `addModule(String address, String moduleName, int instances)`
+* `addModule(String address, String moduleName, JsonObject config, int instances)`
 
 Note that Vertigo supports both verticles and modules as network components.
 The return value of each of these methods is a new `Component` instance
@@ -1108,33 +1131,32 @@ on which you can set the following properties:
 * `setType(String type)` - sets the component type, *verticle* or *module*
   Two constants are also available, `Component.VERTICLE` or
   `Component.MODULE`
-* `setMain(String main)` - sets a verticle main
-* `setModule(String moduleName)` - sets a module name
-* `setConfig(JsonObject config)` - sets the component configuration. This is made available within
-  component verticles via the instance's `WorkerContext`
-* `setWorkers(int numWorkers)` - sets the number of component workers
-* `groupBy(Grouping grouping)` - sets the component grouping, see [groupings](#component-groupings)
-* `filterBy(Filter filter)` - adds a component filter, see [filters](#component-filters)
+* `setConfig(JsonObject config)` - sets the component configuration. This is made available
+  as the normal Vert.x configuration within a component instance
+* `setNumInstances(int numInstances)` - sets the number of component instances
+
+There are two specific types of components, `Verticle` and `Module`.
+The `Verticle` class adds the `setMain(String main)` and `getMain()` methods.
+The `Module` class adds the `setModule(String moduleName)` and `getModule()` methods.
 
 ### Defining connections
-Connections between components are created by `toVerticle` and `toModule`
-instances on `Component` objects. By calling one of the `to*` methods,
-a connection from one component to the new component is implicitly created,
-and a new component definition is returned. These methods follow the same
-interface as the `fromVerticle` and `fromModule` methods on the `Network`
-class.
+Conncetions between components are created by adding an input to a
+component definition. Inputs indicate which components a given component
+is interested in receiving messages from. Vertigo uses a publish/subscribe
+messaging system, so when a component is started, it will subscribe to
+messages from other components according to its input configurations.
 
-* `to(Component component)`
-* `toVerticle(String name)`
-* `toVerticle(String name, String main)`
-* `toVerticle(String name, String main, JsonObject config)`
-* `toVerticle(String name, String main, int instances)`
-* `toVerticle(String name, String main, JsonObject config, int instances)`
-* `toModule(String name)`
-* `toModule(String name, String moduleName)`
-* `toModule(String name, String moduleName, JsonObject config)`
-* `toModule(String name, String moduleName, int instances)`
-* `toModule(String name, String moduleName, JsonObject config, int instances)`
+Inputs may be added to any component with the `addInput` method:
+* `addInput(Input input)`
+* `addInput(String address)`
+* `addInput(String address, Grouping grouping)`
+* `addInput(String address, Filter... filters)`
+* `addInput(String address, Grouping grouping, Filter... filters)`
+
+Each of these methods returns the added `Input` instance which exposes
+the following methods:
+* `groupBy(Grouping grouping)` - sets the input grouping
+* `filterBy(Filter filter)` - adds an input filter
 
 ### Component Groupings
 With each component instance maintaining its own unique event bus address,
@@ -1151,17 +1173,16 @@ Groupings are abstracted from component implementations, so they can be added
 when *defining* a network component rather than within component verticles
 themselves.
 
-To set a component grouping, call the `groupBy()` method on a component
-definition, passing a grouping instance.
+To set a component grouping, call the `groupBy()` method on a component input.
 
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).groupBy(new FieldsGrouping("type"));
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new FieldsGrouping("type"));
 ```
 
 When messages are emitted to instances of the component, the related grouping
-*dispatcher* will be used to determine to which component instance a given
+*selector* will be used to determine to which component instance a given
 message is sent.
 
 Vertigo provides several grouping types:
@@ -1169,30 +1190,32 @@ Vertigo provides several grouping types:
 * `RandomGrouping` - component instances receive messages in random order
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).groupBy(new RandomGrouping());
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new RandomGroupig());
 ```
 
 * `RoundGrouping` - component instances receive messages in round-robin fashion
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).groupBy(new RoundGrouping());
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new RoundGrouping());
 ```
 
 * `FieldsGrouping` - component instances receive messages according to basic
   consistent hashing based on a given field
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).groupBy(new FieldsGrouping("type"));
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new FieldsGrouping("type"));
 ```
+
+Consistent hashing supports multiple fields as well.
 
 * `AllGrouping` - all component instances receive a copy of each message
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).groupBy(new AllGrouping());
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new AllGrouping());
 ```
 
 ### Component Filters
@@ -1206,14 +1229,14 @@ Filters are abstracted from component implementations, so they can be added
 when *defining* a network rather than within component verticles themselves.
 
 To add a filter to a component, call the `filterBy()` method on a component
-definition, passing a filter instance. Multiple filters can be set on any
+input, passing a filter instance. Multiple filters can be set on any
 given component, in which case a message must pass *all* filters before being
 sent to the component.
 
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).filterBy(new TagsFilter("product"));
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new TagsFilter("product"));
 ```
 
 Vertigo provides several types of filters:
@@ -1221,22 +1244,22 @@ Vertigo provides several types of filters:
 * `TagsFilter` - filters messages by tags
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).filterBy(new TagsFilter("product"));
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new TagsFilter("product"));
 ```
 
 * `FieldFilter` - filters messages according to a field/value
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).filterBy(new FieldFilter("type", "product"));
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new FieldFilter("type", "product"));
 ```
 
 * `SourceFilter` - filters messages according to the source component name
 ```java
 Network network = new Network("foo");
-network.fromVerticle("bar", "com.mycompany.myproject.MyFeederVerticle")
-  .toVerticle("baz", "some_worker.py", 2).filterBy(new SourceFilter("rabbit"));
+network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
+network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new SourceFilter("rabbit"));
 ```
 
 ### Network structures
@@ -1256,8 +1279,8 @@ method of a component instance.
 
 ```java
 Network network = new Network("rpc");
-Component executor = network.fromVerticle("executor", "executor.py");
-executor.toVerticle("sum", "com.mycompany.myproject.SumVerticle").to(executor);
+network.addVerticle("rpc.executor", "executor.py").addInput("rpc.sum");
+network.addVerticle("rpc.sum", "sum.py").addInput("rpc.executor");
 ```
 
 ## Network deployment
@@ -1299,3 +1322,112 @@ control component assignments.
 
 See the [Via documentation](https://github.com/kuujo/via) for more information
 on clustering with Vertigo.
+
+## Events
+Vertigo emits event messages over the Vert.x event bus when certain special
+events occur. To listen for a Vertigo system event, simply register a handler
+on the Vert.x event bus at the specified event address. Currently, Vertigo events
+are limited, but more will be added in the future (and by request).
+
+### Network events
+* `vertigo.network.deploy` - triggered when a network is deployed
+   * `address` - the network address
+   * `network` - a JSON representation of the network
+* `vertigo.network.start` - triggered when an entire network has been started
+   * `address` - the network address
+   * `context` - a JSON representation of the network context
+* `vertigo.network.shutdown` - triggered when a network has been shutdown
+   * `address` - the network address
+   * `context` - a JSON representation of the network context
+
+### Component events
+* `vertigo.component.deploy` - triggered when a component instance is deployed
+   * `address` - the component address
+   * `context` - a JSON representation of the component instance context
+* `vertigo.network.start` - triggered when a component instance has been started
+   * `address` - the component address
+   * `context` - a JSON representation of the component instance context
+* `vertigo.network.shutdown` - triggered when a component instance has been shutdown
+   * `address` - the component address
+   * `context` - a JSON representation of the component instance context
+
+## Advanced Features
+The Vertigo communication system was intentionally designed so that no component
+needs to know too much about who it is receiving messages from or who it is sending
+messages to. This results in a flexible messaging system, allowing users to tap
+into specific portions of networks or join multiple networks together.
+
+### Wire taps
+A Vertigo component's output is not strictly limited to components within its own
+network. Vertigo uses a publish-subscribe style messaging scheme, so components can
+send messages to anyone who's interested in listening. This means you can "tap in"
+to any component on any network from any Vert.x verticle (as long as you know the
+component's addresss).
+
+
+For example, let's say we've deployed the following network:
+
+```java
+Network network = new Network("tap");
+network.addVerticle("tap.first", "first.js", 2);
+network.addVerticle("tap.second", "second.py", 2).addInput("tap.first");
+network.addVerticle("tap.third", "Third.java", 4).addInput("tap.second");
+```
+
+We can tap into the output of any of the network's components using a `Listener` instance.
+Listeners behave just as any other message receiving API in Vertigo - in fact, listeners
+underly the `InputCollector` API. So, we simply create a new listener, assign a `messageHandler`
+to the listener, and start it.
+
+```java
+Listener listener = new DefaultListener("tap.second", vertx);
+listener.messageHandler(new Handler<JsonMessage>() {
+  @Override
+  public void handle(JsonMessage message) {
+    System.out.println("This message came from tap.second:");
+    System.out.println(message.body().encode());
+  }
+}).start();
+```
+
+When the listener is started, it will begin *publishing* heartbeat messages to
+`tap.second` on the event bus. Heartbeat messages to `tap.second` will be received
+by *both* of the component instances at `tap.second`, each of which will add the
+listener (and its unique address) as an output channel. If this verticle is stopped
+or the `stop()` method is called on the listener, the component instances at `tap.second`
+will stop receiving heartbeats and will thus remove the listener as an output channel.
+
+Note that the `Listener` constructor can also accept an `Input` instance as an argument,
+so multiple instances of the same verticle can be supported.
+
+### Nested networks
+Just as any Vert.x verticle can request input from any network component, networks too
+can receive input from any other network's component. This can be accomplished simply
+by adding the component's address as an input to any network component.
+
+Using the same network as before:
+
+```java
+Network network = new Network("tap");
+network.addVerticle("tap.first", "first.js", 2);
+network.addVerticle("tap.second", "second.py", 2).addInput("tap.first");
+network.addVerticle("tap.third", "Third.java", 4).addInput("tap.second");
+```
+
+We can create another network that receives input from `tap.second`:
+
+```java
+Network network = new Network("tapper");
+network.addVerticle("tapper.worker1", "tapper_worker1.js", 2)
+  .addInput("tap.second").groupBy(new RandomGrouping());
+network.addVerticle("tapper.worker2", "tapper.worker2.py", 4)
+  .addInput("tapper.worker1").groupBy(new RoundGrouping());
+```
+
+This results in a network that has no feeders, but instead essentially adds workers to
+the first network. In fact, since Vertigo's ack/fail system is similarly abstracted from
+network details - auditors are independent of networks, and each message tree is assigned
+a specific auditor - messages will behave as if the appended network is indeed a part
+of the original network, and the original message source will not receive ack/fail
+notification until the second network has completed processing of the received message.
+This makes this a reliable method of expanding upon existing running networks.

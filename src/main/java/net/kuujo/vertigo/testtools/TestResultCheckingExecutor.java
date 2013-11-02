@@ -22,10 +22,10 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.VertigoVerticle;
-import net.kuujo.vertigo.component.executor.BasicExecutor;
-import net.kuujo.vertigo.component.executor.DefaultBasicExecutor;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Verticle;
+import net.kuujo.vertigo.rpc.BasicExecutor;
+import net.kuujo.vertigo.rpc.DefaultBasicExecutor;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.testComplete;

@@ -15,15 +15,15 @@
 */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.component.executor.BasicExecutor;
-import net.kuujo.vertigo.component.executor.PollingExecutor;
-import net.kuujo.vertigo.component.executor.StreamExecutor;
-import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.component.feeder.PollingFeeder;
-import net.kuujo.vertigo.component.feeder.StreamFeeder;
-import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.feeder.PollingFeeder;
+import net.kuujo.vertigo.feeder.StreamFeeder;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.rpc.BasicExecutor;
+import net.kuujo.vertigo.rpc.PollingExecutor;
+import net.kuujo.vertigo.rpc.StreamExecutor;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * Primary Vert.igo API.

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 import net.kuujo.vertigo.serializer.Serializable;
 

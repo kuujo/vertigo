@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

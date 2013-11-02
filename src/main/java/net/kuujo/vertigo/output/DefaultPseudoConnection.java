@@ -17,7 +17,7 @@ package net.kuujo.vertigo.output;
 
 import java.util.UUID;
 
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.eventbus.EventBus;
 

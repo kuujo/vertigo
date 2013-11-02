@@ -15,8 +15,8 @@
 */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.messaging.DefaultJsonMessage;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.DefaultJsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 

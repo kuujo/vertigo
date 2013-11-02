@@ -22,12 +22,12 @@ import net.kuujo.vertigo.VertigoVerticle;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.grouping.FieldsGrouping;
-import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.component.worker.Worker;
+import net.kuujo.vertigo.input.grouping.FieldsGrouping;
+import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

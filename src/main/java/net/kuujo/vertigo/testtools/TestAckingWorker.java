@@ -20,9 +20,9 @@ import java.util.UUID;
 import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.VertigoVerticle;
-import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Verticle;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that acks and emits all messages as children.

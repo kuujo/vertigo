@@ -15,7 +15,7 @@
 */
 package net.kuujo.vertigo.output.condition;
 
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.serializer.Serializable;
 
 /**

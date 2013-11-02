@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
 /**

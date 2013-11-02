@@ -18,7 +18,7 @@ package net.kuujo.vertigo.input;
 import java.util.UUID;
 
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.output.Output;
 import net.kuujo.vertigo.serializer.SerializationException;

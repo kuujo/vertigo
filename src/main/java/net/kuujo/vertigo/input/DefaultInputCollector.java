@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

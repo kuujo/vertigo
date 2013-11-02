@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.kuujo.vertigo.messaging.DefaultJsonMessage;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.DefaultJsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 import net.kuujo.vertigo.output.DefaultConnection;
 import net.kuujo.vertigo.output.DefaultPseudoConnection;

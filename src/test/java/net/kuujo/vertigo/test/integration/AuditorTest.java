@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.auditor.Auditor;
-import net.kuujo.vertigo.messaging.DefaultJsonMessage;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.DefaultJsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

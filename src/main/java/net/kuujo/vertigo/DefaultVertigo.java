@@ -15,22 +15,22 @@
 */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.component.executor.BasicExecutor;
-import net.kuujo.vertigo.component.executor.DefaultBasicExecutor;
-import net.kuujo.vertigo.component.executor.DefaultPollingExecutor;
-import net.kuujo.vertigo.component.executor.DefaultStreamExecutor;
-import net.kuujo.vertigo.component.executor.PollingExecutor;
-import net.kuujo.vertigo.component.executor.StreamExecutor;
-import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.component.feeder.DefaultBasicFeeder;
-import net.kuujo.vertigo.component.feeder.DefaultPollingFeeder;
-import net.kuujo.vertigo.component.feeder.DefaultStreamFeeder;
-import net.kuujo.vertigo.component.feeder.PollingFeeder;
-import net.kuujo.vertigo.component.feeder.StreamFeeder;
-import net.kuujo.vertigo.component.worker.BasicWorker;
-import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.feeder.DefaultBasicFeeder;
+import net.kuujo.vertigo.feeder.DefaultPollingFeeder;
+import net.kuujo.vertigo.feeder.DefaultStreamFeeder;
+import net.kuujo.vertigo.feeder.PollingFeeder;
+import net.kuujo.vertigo.feeder.StreamFeeder;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.rpc.BasicExecutor;
+import net.kuujo.vertigo.rpc.DefaultBasicExecutor;
+import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
+import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
+import net.kuujo.vertigo.rpc.PollingExecutor;
+import net.kuujo.vertigo.rpc.StreamExecutor;
+import net.kuujo.vertigo.worker.BasicWorker;
+import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;

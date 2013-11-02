@@ -24,13 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import net.kuujo.vertigo.Events;
 import net.kuujo.vertigo.auditor.Auditor;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.events.Events;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatMonitor;
 import net.kuujo.vertigo.heartbeat.HeartbeatMonitor;
 import net.kuujo.vertigo.serializer.SerializationException;

@@ -24,7 +24,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.VertigoVerticle;
-import net.kuujo.vertigo.component.feeder.PollingFeeder;
+import net.kuujo.vertigo.feeder.PollingFeeder;
 import net.kuujo.vertigo.network.Verticle;
 
 /**

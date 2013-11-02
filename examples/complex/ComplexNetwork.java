@@ -27,14 +27,14 @@ import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.grouping.RandomGrouping;
-import net.kuujo.vertigo.grouping.RoundGrouping;
-import net.kuujo.vertigo.grouping.FieldsGrouping;
-import net.kuujo.vertigo.grouping.AllGrouping;
-import net.kuujo.vertigo.filter.TagsFilter;
-import net.kuujo.vertigo.component.feeder.BasicFeeder;
-import net.kuujo.vertigo.component.worker.Worker;
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.input.grouping.RandomGrouping;
+import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.input.grouping.FieldsGrouping;
+import net.kuujo.vertigo.input.grouping.AllGrouping;
+import net.kuujo.vertigo.input.filter.TagsFilter;
+import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.message.JsonMessage;
 
 /**
  * A complex network implementation.

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.vertx.java.core.eventbus.EventBus;
 
-import net.kuujo.vertigo.messaging.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
 

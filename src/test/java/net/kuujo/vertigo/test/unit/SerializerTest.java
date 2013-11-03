@@ -59,8 +59,7 @@ public class SerializerTest {
   public void testSerialize() {
     TestSerializable serializable = new TestSerializable(new JsonObject().putString("foo", "bar"));
     JsonObject serialized = Serializer.serialize(serializable);
-    assertNotNull(serialized.getString("class"));
-    assertNotNull(serialized.getObject("state"));
+    assertNotNull(serialized.getString("type"));
     try {
       TestSerializable unserialized = Serializer.deserialize(serialized);
       assertTrue(unserialized instanceof TestSerializable);

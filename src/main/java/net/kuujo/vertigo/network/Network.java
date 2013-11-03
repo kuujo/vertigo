@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import net.kuujo.vertigo.context.MalformedContextException;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.serializer.Serializable;
 
@@ -480,7 +481,12 @@ public class Network implements Serializable {
       }
     }
     context.putObject(COMPONENTS, componentContexts);
-    return NetworkContext.fromJson(context);
+    try {
+      return NetworkContext.fromJson(context);
+    }
+    catch (MalformedContextException e) {
+      throw new MalformedNetworkException(e);
+    }
   }
 
   @Override

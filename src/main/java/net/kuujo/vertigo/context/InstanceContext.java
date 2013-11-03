@@ -18,8 +18,6 @@ package net.kuujo.vertigo.context;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
 
 public class InstanceContext implements Serializable {
   public static final String ID = "id";
@@ -31,16 +29,28 @@ public class InstanceContext implements Serializable {
     context = new JsonObject();
   }
 
-  public InstanceContext(JsonObject context) {
+  private InstanceContext(JsonObject context) {
     this.context = context;
     if (context.getFieldNames().contains("parent")) {
       try {
-        parent = Serializer.deserialize(context.getObject("parent"));
+        parent = ComponentContext.fromJson(context.getObject("parent"));
       }
-      catch (SerializationException e) {
+      catch (MalformedContextException e) {
         // Invalid parent.
       }
     }
+  }
+
+  /**
+   * Creates a new instance context from JSON.
+   *
+   * @param context
+   *   A JSON representation of the instance context.
+   * @return
+   *   A new instance context instance.
+   */
+  public static InstanceContext fromJson(JsonObject context) {
+    return new InstanceContext(context);
   }
 
   /**
@@ -75,7 +85,7 @@ public class InstanceContext implements Serializable {
   public JsonObject getState() {
     JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("parent", Serializer.serialize(parent));
+      context.putObject("parent", parent.getState());
     }
     return context;
   }
@@ -85,9 +95,9 @@ public class InstanceContext implements Serializable {
     context = state.copy();
     if (context.getFieldNames().contains("parent")) {
       try {
-        parent = Serializer.deserialize(context.getObject("parent"));
+        parent = ComponentContext.fromJson(context.getObject("parent"));
       }
-      catch (SerializationException e) {
+      catch (MalformedContextException e) {
         // Invalid parent.
       }
     }

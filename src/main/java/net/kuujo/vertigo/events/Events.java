@@ -18,7 +18,6 @@ package net.kuujo.vertigo.events;
 import java.lang.reflect.InvocationTargetException;
 
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -134,7 +133,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", Serializer.serialize(context)));
+        eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
 
@@ -162,7 +161,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         NetworkContext context = (NetworkContext) args[0];
-        eventBus.publish(SHUTDOWN, new JsonObject().putObject("context", Serializer.serialize(context)));
+        eventBus.publish(SHUTDOWN, new JsonObject().putObject("context", context.getState()));
       } 
     }
 
@@ -202,7 +201,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", Serializer.serialize(context)));
+        eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
 
@@ -233,7 +232,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", Serializer.serialize(context)));
+        eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
 
@@ -264,7 +263,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", Serializer.serialize(context)));
+        eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
 

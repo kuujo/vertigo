@@ -80,6 +80,8 @@ within larger Vert.x applications.
    * [Component Filters](#component-filters)
    * [Network structures](#network-structures)
    * [Remote procedure calls](#defining-remote-procedure-calls)
+   * [Defining networks in JSON](#defining-networks-in-json)
+   * [Instantiating networks from JSON](#instantiating-networks-from-json)
 1. [Network deployment](#network-deployment)
    * [Clustering](#clustering)
 1. [Events](#events)
@@ -1273,14 +1275,189 @@ When an executor executes a message, the message is tagged with a unique
 ID and the executor waits for a message with the same ID to make its return.
 Thus, the network must eventually lead back to the executor component.
 
-To create a connection back to the original executor, you must store the
-executor definition in a variable and then pass the definition to the `to()`
-method of a component instance.
-
 ```java
 Network network = new Network("rpc");
 network.addVerticle("rpc.executor", "executor.py").addInput("rpc.sum");
 network.addVerticle("rpc.sum", "sum.py").addInput("rpc.executor");
+```
+
+### Defining networks in JSON
+Since *networks*, *inputs*, *groupings*, and *filters* are all sent over
+the Vert.x event bus at some point, each of these types are built
+upon `JsonObject` instances. The JSON underlying the network definitions
+API is designed to be user-readable, so networks can be created in JSON
+configuration files.
+
+The `Network` class uses the following underlying `JsonObject` structure:
+* `address` - the `String` network address
+* `broadcast` - the `String` network broadcast address. This is the address on which
+  components listen for ack/fail messages from auditors. Defaults to
+  `{network}.broadcast`
+* `auditors` - the `int` number of network auditors (ackers). Defaults to `1`
+* `acking` - a `boolean` indicating whether acking is enabled for the network.
+  Defaults to `true`
+* `ack_expire` - a `long` auditor ack expiration. Note that auditors and feeders
+  maintain *separate* ack timers, so this differs from those of feeders and
+  executors
+* `ack_delay` - a `long` ack delay. The ack delay indicates the amount of time an
+  auditor will wait after a message tree has been acked to ensure no more child
+  messages will be created. In most cases, this is unnecessary because of the
+  pattern used by auditors to determine ack/fail statuses of message trees.
+  However, in cases where components may hold messages in memory for a period
+  of time before creating child messages, this option should be set to `> 0`.
+  Defaults to `0` (no delay)
+* `components` - a JSON object containing component definitions. Each component
+  should be keyed by the unique component event bus address, with the following options:
+   * `address` - the `String` component address. This will always be set to the object key
+   * `type` - the `String` component type. This must be either `module` or `verticle`.
+   * `module` - the `String` module name (for module type components)
+   * `main` - the `String` verticle main (for verticle type components)
+   * `config` - a JSON object component configuration. This will be available as
+     the normal verticle configuration via `container.config()`
+   * `instances` - the `int` number of component instances
+   * `heartbeat_interval` - the `long` component heartbeat interval. This indicates
+     the period at which component instances will send heartbeat messages to the
+     network coordinator
+   * `inputs` - a JSON array of component inputs, with each element of the array
+     being a JSON object containing the following options:
+     * `address` - the absolute input component address
+     * `grouping` - a JSON object input grouping definition. Grouping options are
+       dependent upon the grouping type. At a minimum, an input grouping must
+       contain the following required options:
+        * `type` - the `String` grouping class name. This must be a class that implements
+          the `net.kuujo.vertigo.input.grouping.Grouping` interface
+        * See [grouping options](#grouping-options) for grouping-specific options
+     * `filters` - a JSON array of input filters, with each element of the array
+       being a JSON object defining a single input filter. Input filter definition
+       options are dependent upon the filter type. At a minimum, a filter must
+       contain the following required options:
+        * `type` - the `String` filter class name. This must be a class that implements the
+          `net.kuujo.vertigo.input.filter.Filter` interface
+        * See [filter options](#filter-options) for filter-specific options
+
+#### Grouping options
+* `AllGrouping` - none
+* `RoundGrouping` - none
+* `RandomGrouping` - none
+* `FieldsGrouping`
+   * `fields` - an array of field names on which to group
+
+##### Filter options
+* `FieldFilter`
+   * `field` - the `String` field name
+   * `value` - the `Object` required field value
+* `TagsFilter`
+   * `tags` - a JSON array of allowed tags
+* `SourceFilter`
+   * `source` - a `String` source component address on which to filter
+
+### An example JSON network
+Here's a simple example of a network defined in JSON:
+
+```
+{
+  "address": "test",
+  "broadcast": "test.broadcast",
+  "auditors": 2,
+  "ack_expire": 15000,
+  "ack_delay": 1000,
+  "components": {
+    "test.feeder1": {
+      "type": "verticle",
+      "main": "com.mycompany.myproject.FeederVerticleOne",
+      "config": {
+        "foo": "bar"
+      }
+    },
+    "test.feeder2": {
+      "type": "module",
+      "module": "com.mycompany~feeder-two~1.0",
+      "instances": 2
+    },
+    "test.first_worker": {
+      "type": "verticle",
+      "main": "first_worker.js",
+      "instances": 4,
+      "inputs": [
+        {
+          "address": "test.feeder1",
+          "grouping": {"type": "net.kuujo.vertigo.input.grouping.RandomGrouping"}
+        },
+        {
+          "address": "test.feeder2",
+          "grouping": {"type": "net.kuujo.vertigo.input.grouping.RandomGrouping"},
+          "filters": [
+            {
+              "type": "net.kuujo.vertigo.input.filter.TagsFilter",
+              "tags": ["order"]
+            }
+          ]
+        }
+      ]
+    },
+    "test.second_worker": {
+      "type": "module",
+      "module": "com.mycompany~second-worker~1.0",
+      "config": {
+        "wubz": "bubz"
+      },
+      "instances": 2,
+      "inputs": [
+        {
+          "address": "test.first_worker",
+          "grouping": {
+            "type": "net.kuujo.vertigo.input.grouping.FieldsGrouping",
+            "fields": ["type"]
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### Instantiating networks from JSON
+Given a valid JSON network definition, we can construct a new `Network` instance
+using the `Networks` API.
+
+Let's say we start a verticle with the previously defined network JSON structure
+in its configuration file:
+
+```
+vertx run MyVerticle.java -conf network.json
+```
+
+Here's an example of how we can create a network from that JSON configuration:
+
+```java
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.Networks;
+
+import org.vertx.java.platform.Verticle;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.json.JsonObject;
+
+public class MyVerticle extends Verticle {
+
+  @Override
+  public void start() {
+    JsonObject config = container.config();
+    Network network = Networks.fromJson(config);
+    final Cluster cluster = new LocalCluster(vertx, container);
+    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.succeeded()) {
+          cluster.shutdown(network);
+        }
+      }
+    });
+  }
+
+}
 ```
 
 ## Network deployment

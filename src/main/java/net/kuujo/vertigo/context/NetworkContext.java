@@ -23,8 +23,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A network context.
@@ -49,8 +47,26 @@ public class NetworkContext implements Serializable {
    *   A JSON representation of the network context.
    * @return
    *   A new network context instance.
+   * @throws MalformedContextException
+   *   If the network context is malformed.
    */
-  public static NetworkContext fromJson(JsonObject context) {
+  public static NetworkContext fromJson(JsonObject context) throws MalformedContextException {
+    JsonObject components = context.getObject(Network.COMPONENTS);
+    if (components == null) {
+      components = new JsonObject();
+      context.putObject(Network.COMPONENTS, components);
+    }
+
+    for (String address : components.getFieldNames()) {
+      JsonObject componentInfo = components.getObject(address);
+      if (componentInfo == null) {
+        components.removeField(address);
+      }
+      else {
+        // Instantiate a component context to throw an exception if the context is malformed.
+        ComponentContext.fromJson(componentInfo);
+      }
+    }
     return new NetworkContext(context);
   }
 
@@ -130,12 +146,12 @@ public class NetworkContext implements Serializable {
     JsonObject componentContexts = context.getObject(Network.COMPONENTS);
     for (String address : componentContexts.getFieldNames()) {
       try {
-        ComponentContext component = Serializer.<ComponentContext>deserialize(componentContexts.getObject(address)).setParent(this);
+        ComponentContext component = ComponentContext.fromJson(componentContexts.getObject(address)).setParent(this);
         if (component != null) {
           components.add(component);
         }
       }
-      catch (SerializationException e) {
+      catch (MalformedContextException e) {
         continue;
       }
     }
@@ -157,9 +173,9 @@ public class NetworkContext implements Serializable {
     }
     if (components.getFieldNames().contains(address)) {
       try {
-        return Serializer.<ComponentContext>deserialize(components.getObject(address)).setParent(this);
+        return ComponentContext.fromJson(components.getObject(address)).setParent(this);
       }
-      catch (SerializationException e) {
+      catch (MalformedContextException e) {
         return null;
       }
     }

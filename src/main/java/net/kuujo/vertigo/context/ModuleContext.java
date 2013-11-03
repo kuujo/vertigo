@@ -15,7 +15,7 @@ public class ModuleContext extends ComponentContext {
     super();
   }
 
-  public ModuleContext(JsonObject context) {
+  protected ModuleContext(JsonObject context) {
     super(context);
   }
 

@@ -43,7 +43,7 @@ public abstract class ComponentContext implements Serializable {
     context = new JsonObject();
   }
 
-  public ComponentContext(JsonObject context) {
+  protected ComponentContext(JsonObject context) {
     this.context = context;
     if (context.getFieldNames().contains("parent")) {
       try {
@@ -52,6 +52,38 @@ public abstract class ComponentContext implements Serializable {
       catch (SerializationException e) {
         // Invalid parent.
       }
+    }
+  }
+
+  /**
+   * Creates a component context from JSON.
+   *
+   * @param context
+   *   A JSON representation of the component context.
+   * @return
+   *   A component context instance.
+   * @throws MalformedContextException
+   *   If the context is malformed.
+   */
+  public static ComponentContext fromJson(JsonObject context) throws MalformedContextException {
+    String type = context.getString(Component.TYPE);
+    if (type == null) {
+      throw new MalformedContextException("Invalid component type. No type defined.");
+    }
+
+    JsonArray instances = context.getArray(Component.INSTANCES);
+    if (instances == null) {
+      instances = new JsonArray();
+      context.putArray(Component.INSTANCES, instances);
+    }
+
+    switch (type) {
+      case MODULE:
+        return new ModuleContext(context);
+      case VERTICLE:
+        return new VerticleContext(context);
+      default:
+        throw new MalformedContextException(String.format("Invalid component type %s.", type));
     }
   }
 
@@ -118,16 +150,6 @@ public abstract class ComponentContext implements Serializable {
   }
 
   /**
-   * Gets the number of component instances.
-   *
-   * @return
-   *   The number of component instances.
-   */
-  public int getNumInstances() {
-    return context.getInteger(Component.NUM_INSTANCES, 1);
-  }
-
-  /**
    * Gets a list of all component instances.
    *
    * @return
@@ -140,14 +162,9 @@ public abstract class ComponentContext implements Serializable {
     }
     List<InstanceContext> instances = new ArrayList<InstanceContext>();
     for (Object instanceInfo : instancesInfo) {
-      try {
-        InstanceContext instance = Serializer.<InstanceContext>deserialize((JsonObject) instanceInfo).setParent(this);
-        if (instance != null) {
-          instances.add(instance);
-        }
-      }
-      catch (SerializationException e) {
-        continue;
+      InstanceContext instance = InstanceContext.fromJson((JsonObject) instanceInfo).setParent(this);
+      if (instance != null) {
+        instances.add(instance);
       }
     }
     return instances;
@@ -204,7 +221,7 @@ public abstract class ComponentContext implements Serializable {
   public JsonObject getState() {
     JsonObject context = this.context.copy();
     if (parent != null) {
-      context.putObject("parent", Serializer.serialize(parent));
+      context.putObject("parent", parent.getState());
     }
     return context;
   }
@@ -214,9 +231,9 @@ public abstract class ComponentContext implements Serializable {
     context = state.copy();
     if (context.getFieldNames().contains("parent")) {
       try {
-        parent = Serializer.deserialize(context.getObject("parent"));
+        parent = NetworkContext.fromJson(context.getObject("parent"));
       }
-      catch (SerializationException e) {
+      catch (MalformedContextException e) {
         // Invalid parent.
       }
     }

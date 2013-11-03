@@ -356,7 +356,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     int numInstances = getNumInstances();
     for (int i = 0; i < numInstances; i++) {
       String id = UUID.randomUUID().toString();
-      instances.add(new InstanceContext(new JsonObject().putString("id", id)).getState());
+      instances.add(InstanceContext.fromJson(new JsonObject().putString("id", id)).getState());
     }
     context.putArray(INSTANCES, instances);
     return context;

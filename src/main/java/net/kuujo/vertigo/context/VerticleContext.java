@@ -15,7 +15,7 @@ public class VerticleContext extends ComponentContext {
     super();
   }
 
-  public VerticleContext(JsonObject context) {
+  protected VerticleContext(JsonObject context) {
     super(context);
   }
 

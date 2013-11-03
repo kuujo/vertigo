@@ -18,7 +18,6 @@ package net.kuujo.vertigo.events;
 import java.lang.reflect.InvocationTargetException;
 
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.network.Networks;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
@@ -104,7 +103,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         net.kuujo.vertigo.network.Network network = (net.kuujo.vertigo.network.Network) args[0];
-        eventBus.publish(DEPLOY, new JsonObject().putObject("network", Networks.toJson(network)));
+        eventBus.publish(DEPLOY, new JsonObject().putObject("network", network.getState()));
       }
     }
 

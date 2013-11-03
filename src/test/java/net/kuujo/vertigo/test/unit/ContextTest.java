@@ -18,7 +18,6 @@ package net.kuujo.vertigo.test.unit;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.Networks;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -77,7 +76,7 @@ public class ContextTest {
           new JsonObject().putString("type", "net.kuujo.vertigo.input.grouping.RoundGrouping")))));
 
     try {
-      Network network = Networks.fromJson(json);
+      Network network = Network.fromJson(json);
       network.createContext();
     }
     catch (MalformedNetworkException e) {

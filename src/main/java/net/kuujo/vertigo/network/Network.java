@@ -21,8 +21,6 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -51,9 +49,45 @@ public class Network implements Serializable {
     init();
   }
 
+  private Network(JsonObject definition) {
+    this.definition = definition;
+    init();
+  }
+
   public Network(String address) {
     definition = new JsonObject().putString(ADDRESS, address);
     init();
+  }
+
+  /**
+   * Creates a network from JSON.
+   *
+   * @param json
+   *   A JSON representation of the network.
+   * @return
+   *   A new network instance.
+   * @throws MalformedNetworkException
+   *   If the network definition is malformed.
+   */
+  public static Network fromJson(JsonObject json) throws MalformedNetworkException {
+    JsonObject components = json.getObject(COMPONENTS);
+    if (components == null) {
+      components = new JsonObject();
+      json.putObject(COMPONENTS, components);
+    }
+
+    for (String address : components.getFieldNames()) {
+      JsonObject componentInfo = components.getObject(address);
+      if (componentInfo == null) {
+        components.removeField(address);
+      }
+      else {
+        componentInfo.putString(Component.ADDRESS, address);
+        // Construct the component instance to make sure the definition is not malformed.
+        Component.fromJson(componentInfo);
+      }
+    }
+    return new Network(json);
   }
 
   /**
@@ -223,9 +257,9 @@ public class Network implements Serializable {
 
     if (components.getFieldNames().contains(address)) {
       try {
-        return Serializer.deserialize(components.getObject(address));
+        return Component.fromJson(components.getObject(address));
       }
-      catch (SerializationException e) {
+      catch (MalformedNetworkException e) {
         return null;
       }
     }
@@ -246,7 +280,7 @@ public class Network implements Serializable {
       components = new JsonObject();
       definition.putObject(COMPONENTS, components);
     }
-    components.putObject(component.getAddress(), Serializer.serialize(component));
+    components.putObject(component.getAddress(), component.getState());
     return component;
   }
 
@@ -438,7 +472,7 @@ public class Network implements Serializable {
 
     JsonObject componentContexts = new JsonObject();
     for (String componentAddress : componentDefs.getFieldNames()) {
-      JsonObject componentContext = Serializer.serialize(getComponent(componentAddress).createContext());
+      JsonObject componentContext = getComponent(componentAddress).createContext().getState();
       if (componentContext != null) {
         // Adding the parent context here causes a circular reference in serialization.
         // componentContexts.putObject(componentAddress, componentContext.putObject("parent", context));

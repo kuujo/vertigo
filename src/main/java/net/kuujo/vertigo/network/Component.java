@@ -43,7 +43,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public static final String MODULE = "module";
   public static final String CONFIG = "config";
   public static final String INSTANCES = "instances";
-  public static final String NUM_INSTANCES = "num_instances";
   public static final String HEARTBEAT_INTERVAL = "heartbeat";
   public static final String INPUTS = "inputs";
 
@@ -54,9 +53,39 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     init();
   }
 
+  protected Component(JsonObject definition) {
+    this.definition = definition;
+  }
+
   public Component(String address) {
     definition = new JsonObject().putString(ADDRESS, address);
     init();
+  }
+
+  /**
+   * Creates a component instance from JSON.
+   *
+   * @param json
+   *   A JSON representation of the component instance.
+   * @return
+   *   A constructed component instance.
+   * @throws MalformedNetworkException
+   *   If the component definition is malformed.
+   */
+  public static Component<?> fromJson(JsonObject json) throws MalformedNetworkException {
+    String type = json.getString(TYPE);
+    if (type == null) {
+      throw new MalformedNetworkException("Invalid component type. No type defined.");
+    }
+
+    switch (type) {
+      case MODULE:
+        return new Module(json);
+      case VERTICLE:
+        return new Verticle(json);
+      default:
+        throw new MalformedNetworkException(String.format("Invalid component type %s.", type));
+    }
   }
 
   /**
@@ -126,7 +155,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The number of component instances.
    */
   public int getNumInstances() {
-    return definition.getInteger(NUM_INSTANCES, 1);
+    return definition.getInteger(INSTANCES, 1);
   }
 
   /**
@@ -139,7 +168,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public T setNumInstances(int numInstances) {
-    definition.putNumber(NUM_INSTANCES, numInstances);
+    definition.putNumber(INSTANCES, numInstances);
 
     JsonArray inputs = definition.getArray(INPUTS);
     JsonArray newInputs = new JsonArray();
@@ -327,7 +356,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     int numInstances = getNumInstances();
     for (int i = 0; i < numInstances; i++) {
       String id = UUID.randomUUID().toString();
-      instances.add(Serializer.serialize(new InstanceContext(new JsonObject().putString("id", id))));
+      instances.add(new InstanceContext(new JsonObject().putString("id", id)).getState());
     }
     context.putArray(INSTANCES, instances);
     return context;

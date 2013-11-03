@@ -21,6 +21,10 @@ public class Module extends Component<Module> {
     super(address);
   }
 
+  protected Module(JsonObject definition) {
+    super(definition);
+  }
+
   @Override
   public String getType() {
     return MODULE;

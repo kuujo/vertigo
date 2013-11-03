@@ -21,6 +21,10 @@ public class Verticle extends Component<Verticle> {
     super(address);
   }
 
+  protected Verticle(JsonObject definition) {
+    super(definition);
+  }
+
   @Override
   public String getType() {
     return VERTICLE;

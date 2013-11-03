@@ -173,6 +173,18 @@ public class Input implements Serializable {
   @Override
   public void setState(JsonObject state) {
     definition = state;
+    if (!definition.getFieldNames().contains(ID)) {
+      definition.putString(ID, UUID.randomUUID().toString());
+    }
+    JsonObject grouping = definition.getObject(GROUPING);
+    if (grouping == null) {
+      groupBy(new RoundGrouping());
+    }
+    JsonArray filters = definition.getArray(FILTERS);
+    if (filters == null) {
+      filters = new JsonArray();
+      definition.putArray(FILTERS, filters);
+    }
   }
 
 }

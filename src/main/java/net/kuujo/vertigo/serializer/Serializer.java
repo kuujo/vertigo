@@ -24,6 +24,8 @@ import org.vertx.java.core.json.JsonObject;
  */
 public final class Serializer {
 
+  private static final String CLASS_KEY = "type";
+
   private Serializer() {
   }
 
@@ -36,10 +38,7 @@ public final class Serializer {
    *   Serialized object information.
    */
   public static JsonObject serialize(Serializable serializable) {
-    JsonObject serialized = new JsonObject();
-    serialized.putString("class", serializable.getClass().getName());
-    serialized.putObject("state", serializable.getState());
-    return serialized;
+    return serializable.getState().putString(CLASS_KEY, serializable.getClass().getName());
   }
 
   /**
@@ -54,19 +53,14 @@ public final class Serializer {
    */
   @SuppressWarnings("unchecked")
   public static <T extends Serializable> T deserialize(JsonObject serialized) throws SerializationException {
-    String className = serialized.getString("class");
+    String className = serialized.getString(CLASS_KEY);
     if (className == null) {
       throw new SerializationException("Invalid serialization info. No class name found.");
     }
 
-    JsonObject state = serialized.getObject("state");
-    if (state == null) {
-      throw new SerializationException("Invalid serialization info. No object state found.");
-    }
-
     try {
       T obj = (T) Class.forName(className).newInstance();
-      obj.setState(state);
+      obj.setState(serialized);
       return obj;
     }
     catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {

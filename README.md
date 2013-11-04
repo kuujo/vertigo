@@ -11,7 +11,7 @@ allows real-time problems to be broken down into smaller tasks (as Vert.x
 verticles) and distributed across **one or many Vert.x instances**, managing
 communication between components in a **predictable and reliable** manner.
 
-**See [how it works](#networks)**
+**For more information on how Vertigo works see [how it works](#how-it-works)
 
 * Manages multi-step event processing systems, from simple pipelines to
   **complex networks of Vert.x modules/verticles**, including **remote procedure
@@ -28,27 +28,22 @@ communication between components in a **predictable and reliable** manner.
 * **Monitors networks for failures** and automatically reassigns/redeploys failed
   verticles and modules
 * Network components can be written in **any Vert.x supported language**, with
-  current integration for Java and [Python](https://github.com/kuujo/vertigo-python)
+  APIs being developed for [Javascript](https://github.com/kuujo/vertigo-js)
+  and [Python](https://github.com/kuujo/vertigo-python)
 * Integrates seemlessly with existing Vert.x applications
 
 Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
 
-**For a quick introduction, see the [simple network example](#a-simple-network)**
+## [Java API manual](#java-user-manual)
+## [How it works](#how-it-works)
 
-## Java User Manual
+# Java User Manual
 
-1. [Networks](#networks)
-1. [Components](#components)
-1. [Messaging](#messaging)
-   * [How components communicate](#how-components-communicate)
-   * [Message distribution](#message-distribution)
-   * [Messages](#messages)
-1. [Reliability](#reliability)
-   * [Component supervision](#component-supervision)
-   * [Message acking](#message-acking)
-   * [How acking works](#how-acking-works)
+1. [Concepts](#concepts)
+   * [Networks](#networks)
+   * [Components](#components)
 1. [A Simple Network](#a-simple-network)
    * [Defining the network](#defining-the-network)
    * [Creating the feeder](#creating-the-feeder)
@@ -83,7 +78,8 @@ within larger Vert.x applications.
    * [Defining networks in JSON](#defining-networks-in-json)
    * [Instantiating networks from JSON](#instantiating-networks-from-json)
 1. [Network deployment](#network-deployment)
-   * [Clustering](#clustering)
+   * [Deploying networks locally](#deploying-networks-locally)
+   * [Deploying networks across a cluster](#deploying-networks-across-a-cluster)
 1. [Events](#events)
    * [Network events](#network-events)
    * [Component events](#component-events)
@@ -119,102 +115,6 @@ a component can be defined as a verticle that may receive messages from zero or
 many verticles and send messages to one or many verticles. What happens within the
 verticle depends entirely where they appear in a network graph and how the component
 is implemented. Vertigo provides several component implementations.
-
-## Messaging
-One of the primary responsibilities of Vertigo is managing communication between
-network components in a consistent, predictable, and reliable manner. Vertigo
-uses the Vert.x event bus for inter-component communication, but Vertigo also
-provides many reliability features on top of the event bus.
-
-### How components communicate
-Network components communicate with each other directly over the event bus
-rather than being routed through a central message broker. In Vertigo, this
-is accomplished using a publish-subscribe-like messaging scheme. When component
-instance is started, the component sends a message to any other component from
-which it is interested in receiving messages. Similarly, it listens for other
-components that are interested in receiving messages. This allows components
-to set up direct connections between one another, ensuring fast messaging
-between them.
-
-![Communication Channels](http://s7.postimg.org/unzwkrvgb/vertigo_channel.png)
-
-This type of messaging also allows for components to be "tapped" externally.
-By instantiating a `Listener` instance from anywhere in a Vert.x application,
-you can listen to output from any component in any network. This also means
-that one network can receive input from another network without that network
-even knowing it exists. See [wire taps](#wire-taps) and
-[nested networks](#nested-networks) for more information.
-
-### Message distribution
-When messages are sent between components which have multiple instances running
-within a network, Vertigo can manage distribution of messages between component
-instances. To do this, Vertigo provides a *grouping* abstraction that allows
-users to define how messages are dispatched to a set of component instances.
-For instance, one component may require messages to be distributed among its
-instances in a round-robin fashion, while another may require a consisten
-hashing based approach. [Vertigo provides numerous component groupings for
-different scenarios](#component-groupings).
-
-### Messages
-Messages are sent over the event bus in the form of `JsonObject` instances.
-Just as Vertigo networks have a structure, Vertigo messages can have structure
-as well: trees. Messages can be emitted from components either as individuals
-or as children of other messages. This hierarchical system integrates with the
-[message acking](#message-acking) system to provide increased reliability -
-acking for entire message trees, not just individual messages.
-
-Vertigo messages also contain a number of metadata fields in addition to
-the message body. These fields describe things like where the message came
-from, who the message's parents and ancestors are, and other interesting
-information. [Read more about message fields here](#jsonmessage)
-
-## Reliability
-Vertigo provides a number of reliability features that help ensure networks
-continue to run and messages are never lost.
-
-### Component supervision
-When a Vertigo network is deployed, a special *coordinator* verticle is
-deployed as well. It is *coordinator's* task to ensure that all component
-instances continue to run smoothly. To do so, component instances connect
-to the *coordinator* verticle, receive a unique heartbeat address, and begin
-sending heartbeat messages to the coordinator. If a component fails to send
-a heartbeat within a certain amount of time, the component is assumed to be
-dead and will be automatically re-deployed.
-
-This concept holds true for both local and clustered Vertigo networks. In
-the case of using [Via](https://github.com/kuujo/via) for clustering, the
-*coordinator* verticle will simply re-deploy failed component verticles
-or modules using the Via API, resulting in the component being assigned
-to a new machine.
-
-### Message acking
-In addition to the *coordinator* verticle being deployed for each Vertigo
-network, another special verticle called the *auditor* verticle is deployed,
-as well. The Vertigo *auditor* is tasked with monitoring messages within the
-network, tracking acks and nacks throughout the network, and notifying
-*feeders* when a message tree fails.
-
-![Network Auditor](http://s14.postimg.org/kkl297qo1/vertigo_acker.png)
-
-Each network may have any number of auditor verticles (this is configurable
-via the network definition).
-
-#### How acking works
-When a component creates and emits a new message, the message will be
-assigned an *auditor* verticle (each auditor for any given network has
-a unique event bus address). Any time the message or a descendent message
-is emitted, acked, or failed from a component, the assigned *auditor*
-will be sent a message notifying it of the change. A source message
-can potentially have thousands of messages created based on its data,
-and Vertigo tracks all of the messages that originate from a source
-message. If a message or one of its descendents is failed or times
-out at any point within the network, the original source will be
-notified immediately. Internally, the auditor maintains a record of the
-entire message tree structure, and only once all of the messages have
-been acked will it send a message back to the original data source (the
-component that created the first message). In this way, Vertigo
-tracks a single message's transformation - no matter how complex -
-to completion before notifying the data source.
 
 ## A simple network
 In order to get a better understanding of the concepts introduced in
@@ -1608,3 +1508,284 @@ a specific auditor - messages will behave as if the appended network is indeed a
 of the original network, and the original message source will not receive ack/fail
 notification until the second network has completed processing of the received message.
 This makes this a reliable method of expanding upon existing running networks.
+
+# How it works
+
+1. [How networks are defined](#how-networks-are-defined)
+   * [Networks](#networks)
+   * [Components](#components)
+   * [Inputs](#inputs)
+   * [Groupings](#groupings)
+   * [Filters](#filters)
+   * [Serialization](#serialization)
+1. [How networks are deployed](#how-networks-are-deployed)
+   * [Contexts](#contexts)
+   * [Coordinators](#coordinators)
+   * [Clustering](#clustering)
+      * [Local clusters](#local-clusters)
+      * [Remote clusters](#remote-clusters)
+1. [How components communicate](#how-components-communicate)
+   * [Messages](#messages)
+   * [Input collectors](#input-collectors)
+   * [Listeners](#listeners)
+   * [Output collectors](#output-collectors)
+1. [How Vertigo guarantees message processing](#how-vertigo-guarantees-message-processing)
+   * [Auditors](#auditors)
+
+## How networks are defined
+Vertigo provides an API for defining network structures. Network APIs are
+simply wrappers around Vert.x `JsonObject` instances, so networks may also
+be defined in and constructed from pure JSON. This allows network structures
+to be passed between verticles via the Vert.x event bus. All Vertigo data
+structures follow this pattern.
+
+### Networks
+Each Vertigo network must have a unique address. This address is used by Vertigo
+as the network's [coordinator](#coordinators) address. Additionally, each network
+may contain any number of components, with components being represented as Vert.x
+verticles or modules. Networks place no limitations on structure, as networks are
+not interested in the relationships between components.
+
+```java
+Network network = new Network("network.address");
+```
+
+### Components
+Vertigo is built on Vert.x, and thus network components are simply Vert.x verticles
+or modules. This means Vertigo can support verticles in various languages within
+the same network (any Vert.x supported language). Each component must be assigned
+a *unique event bus address* - the address on which the component's
+[output collector](#output-collectors) will listen for connections.
+
+```java
+network.addVerticle("first.component", "com.mycompany.myproject.FirstVerticle", 2);
+network.addModule("second.component", "com.mycompany~second-verticle~1.0", 4);
+```
+
+### Inputs
+Vertigo uses a publish-subscribe style messaging paradigm to manage communication
+between network components. This system is represented in the networks API as
+*inputs*. Essentially, an *input* defines a subscription to the *output* of
+another component. In fact, this is represented in the [input](#input-collectors)
+and [output](#output-collectors) collectors of component implementaitons. Each
+Vertigo component may have any number of inputs, with each input indicating the
+address to which the component is subscribing.
+
+```java
+Input input = network.addVerticle("some.address", "com.mycompany.myproject.MyVerticle").addInput("some.other.address");
+```
+
+Inputs are the API for defining relationships between components, but once
+a component subscribes to another component's output, an input becomes an
+[output](#outputs).
+
+### Groupings
+Publish-subscribe style messaging is simple to manage between two components,
+but what do we do when dealing with multiple component instances? You may not
+want all instances of a component to receive a copy of the same message. A
+component may require that all messages with a specific field value are always
+sent to the same component instance. For this, Vertigo provides a *groupings*
+API that helps users manage how messages are distributed between multiple
+component instances.
+
+```java
+network.addVerticle("some.address", "some_verticle.py", 2)
+  .addInput("other.address").groupBy(new FieldsGrouping("type"));
+```
+
+When the `some.address` component sends a `listen` message to the component
+at `other.address`, it will send along with its subscription request a
+[selector](#selectors) definition. The component at `other.address` will then
+use that selector information to select the appropriate component instance
+to which to send each message.
+
+See [component groupings](#component-groupings) for more examples
+
+### Filters
+In some cases a component may subscribe to output from a component that may
+not always output messages that are of interest. For these cases, inputs
+provide a filtering mechanism.
+
+```java
+network.addVerticle("some.address", "some_verticle.py", 2)
+  .addInput("other.address").filterBy(new TagsFilter("foo"));
+```
+
+When the `some.address` component sends a `listen` message to the component
+at `other.address`, it will send along with its subscription request a set
+of [conditions](#conditions). The component at `other.address` will then use
+that condition information to filter its output.
+
+See [component filters](#component-filters) for more examples
+
+### Serialization
+All network definition APIs - networks, inputs, groupings, and filters - are
+"serializable" to `JsonObject` instances via the Vertigo `Serializable`
+interface. This allows network information to be passed between verticles on
+the Vert.x event bus.
+
+```java
+eventBus.registerHandler("deserialize", new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> message) {
+    try {
+      Network network = Serializer.deserialize(message.body());
+    }
+    catch (SerializationException e) {
+      e.printStackTrace();
+    }
+  }
+});
+
+Network network = new Network("test");
+network.addVerticle("test.one", "one.js", 3);
+JsonObject serialized = Serializer.serialize(network);
+eventBus.send("deserialize", serialized);
+```
+
+This allows users to provide custom [groupings](#groupings) and
+[filters](#filters) that can be reliably distributed around a Vertigo
+cluster.
+
+## How networks are deployed
+Once a network is defined and deployed - whether within a single
+Vert.x or a cluster of Vert.x instances - Vertigo handles a number of
+processes to start and monitor the network.
+
+### Contexts
+The first step to deploying a Vertigo network is converting its structure
+to a network context. Network contexts are simply immutable network
+definitions which are used by Vertigo verticles to deploy, start, and
+monitor various components.
+
+### Coordinators
+When a Vertigo network is deployed, the verticle from which the network
+is deployed does not actually deploy component modules and verticles.
+Instead, a single special verticle known as the *coordinator* is deployed.
+As the name implies, the coordinators job is to coordinate deployment,
+setup, and monitoring of component instances.
+
+When the coordinator is deployed its first task is to deploy component
+verticles and modules. How verticles and modules are deployed depends on
+the [cluster](#clustering) type. If any verticle or module fails to deploy,
+the network deployment will fail and the original deployer will be notified.
+
+Once a component instance has been deployed by the coordinator it must then
+connect back to the coordinator to send it heartbeat messages. Heartbeats
+are the mechanism by which the coordinator ensures component verticles and
+modules continue to run. If a heartbeat times out, the coordinator will
+consider the component module or verticle to be failed and attempt to redeploy
+it. Once all component instances have begun to send heartbeat messages to
+the coordinator, the network is considered to be *deployed*.
+
+But deployment isn't the only consideration in network coordination. Once
+each component instance is deployed, it must register various handlers on
+the event bus as well. It is critical that no feeder begin to send messages
+before all components have completed setup, so the coordinator requires
+that components send it *ready* messages once each component instance has
+completed its respective setup as well. This allows the coordinator to
+notify each component instance once the entire network has been setup so
+no messages are lost.
+
+### Clustering
+Vertigo supports deploying networks within a single Vert.x instance or
+across a cluster of Vert.x instances. To do so, two separate types of
+coordinators are provided, supporting local and remote deployment
+respectively.
+
+#### Local clusters
+Local clusters are deployed within a single Vert.x instance using the
+standard Vert.x `Container` API.
+
+#### Remote clusters
+Remote clusters a deployed across multiple Vert.x instances using
+[Via](https://github.com/kuujo/via).
+
+## How components communicate
+One of the primary responsibilities of Vertigo is managing communication between
+network components in a consistent, predictable, and reliable manner. Vertigo
+uses the Vert.x event bus for inter-component communication, but Vertigo also
+provides many reliability features on top of the event bus.
+
+Network components communicate with each other directly over the event bus
+rather than being routed through a central message broker. In Vertigo, this
+is accomplished using a publish-subscribe-like messaging scheme. When component
+instance is started, the component sends a message to any other component from
+which it is interested in receiving messages. Similarly, it listens for other
+components that are interested in receiving messages. This allows components
+to set up direct connections between one another, ensuring fast messaging
+between them.
+
+![Communication Channels](http://s7.postimg.org/unzwkrvgb/vertigo_channel.png)
+
+The requirement for direct communication between components using a
+publish-subscribe style system combined with the need for flexible messaging
+schemes via [groupings](#groupings) and [filters](#filters) results in some
+pretty interesting APIs - APIs which can be used to mimic Vertigo components
+and tap into existing networks.
+
+### Messages
+Messages are sent over the event bus in the form of `JsonObject` instances.
+Just as Vertigo networks have a structure, Vertigo messages can have structure
+as well: trees. Messages can be emitted from components either as individuals
+or as children of other messages. This hierarchical system integrates with the
+message acking system to provide increased reliability - acking for entire
+message trees, not just individual messages.
+
+Vertigo messages also contain a number of metadata fields in addition to
+the message body. These fields describe things like where the message came
+from, who the message's parents and ancestors are, and other interesting
+information. [Read more about message fields here](#jsonmessage)
+
+### Input collectors
+One of the core components of each Vertigo component is an *input collector*.
+The input collector is tasked with sending `listen` messages to addresses from
+which it is interested in receiving messages. Each input collector has a unique
+address *even across multiple instances of the same component*. This unique
+address is used by [selectors](#selectors) to choose between component instances
+to which to send any given message.
+
+### Listeners
+Underlying a component's input collector is any number of *listeners*. Listeners
+are essentially subsribers that are directly related to a single component input.
+In fact, listeners can be used outside of components to tap into component output.
+See [wire taps](#wire-taps) for a brief tutorial on listening to a component's output.
+
+When a listener is started, it begins *publishing* periodic `listen` messages to
+the interesting component's event bus address. This ensures that *each instance of
+that component* receives the listen request.
+
+### Output collectors
+The other core component of each Vertigo component is the *output collector*.
+The output collector is tasked with receiving `listen` requests from other components
+and sending messages to those listening components. When the output collector is
+started, it *binds to the component's address*.
+
+## How Vertigo gurantees message processing
+As messages make their way through networks Vertigo tracks them. Messages
+can have hierarchical structures - [message trees](#messages) - and Vertigo
+ensures that if any message at any point in a tree fails to be processed (times
+out or is failed), the message source will be notified. To do so, Vertigo uses
+special *auditor* verticles.
+
+### Auditors
+Auditor verticles are special verticles that are deployed along with
+each network. Auditors are tasks with tracking message trees and handling
+ack/fail/timeouts of each message.
+
+![Network Auditor](http://s14.postimg.org/kkl297qo1/vertigo_acker.png)
+
+When a component creates and emits a new message, the message will be
+assigned an *auditor* verticle (each auditor for any given network has
+a unique event bus address). Any time the message or a descendent message
+is emitted, acked, or failed from a component, the assigned *auditor*
+will be sent a message notifying it of the change. A source message
+can potentially have thousands of messages created based on its data,
+and Vertigo tracks all of the messages that originate from a source
+message. If a message or one of its descendents is failed or times
+out at any point within the network, the original source will be
+notified immediately. Internally, the auditor maintains a record of the
+entire message tree structure, and only once all of the messages have
+been acked will it send a message back to the original data source (the
+component that created the first message). In this way, Vertigo
+tracks a single message's transformation - no matter how complex -
+to completion before notifying the data source.

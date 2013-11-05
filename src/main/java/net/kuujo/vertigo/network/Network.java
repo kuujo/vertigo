@@ -1,18 +1,18 @@
 /*
-* Copyright 2013 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.network;
 
 import java.util.ArrayList;
@@ -110,6 +110,9 @@ public class Network implements Serializable {
   /**
    * Returns the network address.
    *
+   * This is the event bus address at which the network's coordinator will register
+   * a handler for components to connect to once deployed.
+   *
    * @return
    *   The network address.
    */
@@ -130,6 +133,10 @@ public class Network implements Serializable {
   /**
    * Sets the number of network auditors.
    *
+   * This is the number of auditor verticle instances that will be used to track
+   * messages throughout a network. If the network is slowing due to acking
+   * overflows, you may need to increase the number of network auditors.
+   *
    * @param numAuditors
    *   The number of network auditors.
    * @return
@@ -143,6 +150,9 @@ public class Network implements Serializable {
   /**
    * Enables acking on the network.
    *
+   * When acking is enabled, network auditors will track message trees throughout
+   * the network and notify messages sources once messages have completed processing.
+   *
    * @return
    *   The called network instance.
    */
@@ -153,6 +163,9 @@ public class Network implements Serializable {
 
   /**
    * Disables acking on the network.
+   *
+   * When acking is disabled, network auditors will immediately ack any new
+   * messages that are made known to them.
    *
    * @return
    *   The called network instance.
@@ -175,6 +188,10 @@ public class Network implements Serializable {
   /**
    * Sets the network ack expiration.
    *
+   * This indicates the maximum amount of time an auditor will hold message
+   * information in memory before considering it to be failed. Note that this
+   * differs from ack timeouts set on feeders which have their own timers.
+   *
    * @param expire
    *   An ack expiration.
    * @return
@@ -189,7 +206,7 @@ public class Network implements Serializable {
    * Gets the network ack expiration.
    *
    * @return
-   *   Ack expiration for the network.
+   *   Ack expiration for the network. Defaults to 30000
    */
   public long getAckExpire() {
     return definition.getLong(ACK_EXPIRE, DEFAULT_ACK_EXPIRE);
@@ -197,6 +214,15 @@ public class Network implements Serializable {
 
   /**
    * Sets the network ack delay.
+   *
+   * This indicates the amount of time an auditor will wait before notifying a
+   * message source that a message has complete processing. If a new descendant
+   * message is created during the delay period, the auditor will continue tracking
+   * the tree and will not notify the message source until the new message and
+   * its descendants have completed processing. This allows component implementations
+   * to hold messages in memory for some period before creating new children. It
+   * may also help resolve issues where blocking is preventing auditors from working
+   * properly.
    *
    * @param delay
    *   The ack delay.
@@ -212,7 +238,7 @@ public class Network implements Serializable {
    * Gets the network ack delay.
    *
    * @return
-   *   Ack delay for the network.
+   *   Ack delay for the network. Defaults to 0
    */
   public long getAckDelay() {
     return definition.getLong(ACK_DELAY, DEFAULT_ACK_DELAY);
@@ -289,7 +315,8 @@ public class Network implements Serializable {
    * Adds a verticle component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @return
    *   The new verticle component instance.
    */
@@ -301,7 +328,8 @@ public class Network implements Serializable {
    * Adds a verticle component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param main
    *   The verticle main.
    * @return
@@ -315,11 +343,13 @@ public class Network implements Serializable {
    * Adds a verticle component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param main
    *   The verticle main.
    * @param config
-   *   The verticle component configuration.
+   *   The verticle component configuration. This configuration will be made
+   *   available as the normal Vert.x container configuration within the verticle.
    * @return
    *   The new verticle component instance.
    */
@@ -331,7 +361,8 @@ public class Network implements Serializable {
    * Adds a verticle component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param main
    *   The verticle main.
    * @param instances
@@ -340,32 +371,35 @@ public class Network implements Serializable {
    *   The new verticle component instance.
    */
   public Verticle addVerticle(String address, String main, int instances) {
-    return addComponent(new Verticle(address).setMain(main).setNumInstances(instances));
+    return addComponent(new Verticle(address).setMain(main).setInstances(instances));
   }
 
   /**
    * Adds a verticle component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param main
    *   The verticle main.
    * @param config
-   *   The verticle component configuration.
+   *   The verticle component configuration. This configuration will be made
+   *   available as the normal Vert.x container configuration within the verticle.
    * @param instances
    *   The number of component instances.
    * @return
    *   The new verticle component instance.
    */
   public Verticle addVerticle(String address, String main, JsonObject config, int instances) {
-    return addComponent(new Verticle(address).setMain(main).setConfig(config).setNumInstances(instances));
+    return addComponent(new Verticle(address).setMain(main).setConfig(config).setInstances(instances));
   }
 
   /**
    * Adds a module component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @return
    *   The new module component instance.
    */
@@ -377,7 +411,8 @@ public class Network implements Serializable {
    * Adds a module component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param moduleName
    *   The module name.
    * @return
@@ -391,11 +426,13 @@ public class Network implements Serializable {
    * Adds a module component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param moduleName
    *   The module name.
    * @param config
-   *   The module component configuration.
+   *   The module component configuration. This configuration will be made
+   *   available as the normal Vert.x container configuration within the module.
    * @return
    *   The new module component instance.
    */
@@ -407,7 +444,8 @@ public class Network implements Serializable {
    * Adds a module component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param moduleName
    *   The module name.
    * @param instances
@@ -416,25 +454,27 @@ public class Network implements Serializable {
    *   The new module component instance.
    */
   public Module addModule(String address, String moduleName, int instances) {
-    return addComponent(new Module(address).setModule(moduleName).setNumInstances(instances));
+    return addComponent(new Module(address).setModule(moduleName).setInstances(instances));
   }
 
   /**
    * Adds a module component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This is the address to which other components may
+   *   connect to listen to the component's output.
    * @param moduleName
    *   The module name.
    * @param config
-   *   The module component configuration.
+   *   The module component configuration. This configuration will be made
+   *   available as the normal Vert.x container configuration within the module.
    * @param instances
    *   The number of component instances.
    * @return
    *   The new module component instance.
    */
   public Module addModule(String address, String moduleName, JsonObject config, int instances) {
-    return addComponent(new Module(address).setModule(moduleName).setConfig(config).setNumInstances(instances));
+    return addComponent(new Module(address).setModule(moduleName).setConfig(config).setInstances(instances));
   }
 
   /**

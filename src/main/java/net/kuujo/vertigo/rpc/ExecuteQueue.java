@@ -1,18 +1,18 @@
 /*
-* Copyright 2013 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.message.JsonMessage;
@@ -22,6 +22,10 @@ import org.vertx.java.core.Handler;
 
 /**
  * An executor queue.
+ *
+ * An execute queue underlies each executor implementation. It maintains, in memory,
+ * a record of messages currently in transit from the current feeder, and assists
+ * in notifying the correct handler once a message result has been received.
  *
  * @author Jordan Halterman
  */

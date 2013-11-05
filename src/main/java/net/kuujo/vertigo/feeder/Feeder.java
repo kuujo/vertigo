@@ -1,18 +1,18 @@
 /*
-* Copyright 2013 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.feeder;
 
 import org.vertx.java.core.AsyncResult;
@@ -22,7 +22,14 @@ import org.vertx.java.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 
 /**
- * A message feeder component.
+ * A message feeder.
+ *
+ * Feeders are tasked with feeding messages from a data source to a network.
+ * When data is emitted from a feeder, the data will be transformed into a
+ * message and tagged with a unique identifier. This identifier is used to track
+ * the message and its descendents throughout the network. Once the message and
+ * all of its descendants have been fully processed (acked), the feeder may
+ * optionally be notified via asynchronous result handlers.
  *
  * @author Jordan Halterman
  *
@@ -51,6 +58,10 @@ public interface Feeder<T extends Feeder<T>> extends Component {
   /**
    * Sets the maximum feed queue size.
    *
+   * The feeder uses an underlying queue to track which messages have been emitted
+   * from the component but not yet acked. This indicates how many messages may
+   * reside in the queue (in memory) at any given time.
+   *
    * @param maxSize
    *   The maximum queue size allowed for the feeder.
    * @return
@@ -61,6 +72,10 @@ public interface Feeder<T extends Feeder<T>> extends Component {
   /**
    * Gets the maximum feed queue size.
    *
+   * The feeder uses an underlying queue to track which messages have been emitted
+   * from the component but not yet acked. This indicates how many messages may
+   * reside in the queue (in memory) at any given time.
+   *
    * @return
    *   The maximum queue size allowed for the feeder.
    */
@@ -69,6 +84,9 @@ public interface Feeder<T extends Feeder<T>> extends Component {
   /**
    * Indicates whether the feed queue is full.
    *
+   * Depending on the feeder implementation, this method may be used to check
+   * whether the feed queue is full prior to feeding additional data to a network.
+   *
    * @return
    *   A boolean indicating whether the feed queue is full.
    */
@@ -76,6 +94,9 @@ public interface Feeder<T extends Feeder<T>> extends Component {
 
   /**
    * Sets the feeder auto-retry option.
+   *
+   * If this option is enabled, the feeder will automatically retry sending
+   * failed or timed out messages.
    *
    * @param retry
    *   Indicates whether to automatically retry emitting failed data.
@@ -86,6 +107,9 @@ public interface Feeder<T extends Feeder<T>> extends Component {
 
   /**
    * Gets the feeder auto-retry option.
+   *
+   * If this option is enabled, the feeder will automatically retry sending
+   * failed or timed out messages.
    *
    * @return
    *   Indicates whether the feeder with automatically retry emitting failed data.

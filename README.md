@@ -68,11 +68,11 @@ within larger Vert.x applications.
       * [BasicExecutor](#basic-executor)
       * [PollingExecutor](#polling-executor)
       * [StreamExecutor](#stream-executor)
-1. [Defining networks](#defining-networks)
-   * [Defining network components](#defining-network-components)
-   * [Defining connections](#defining-connections)
-   * [Component Groupings](#component-groupings)
-   * [Component Filters](#component-filters)
+1. [Creating networks](#creating-networks)
+   * [Adding components](#adding-components)
+   * [Adding inputs](#adding-inputs)
+   * [Input groupings](#input-groupings)
+   * [Input filters](#input-filters)
    * [Network structures](#network-structures)
    * [Remote procedure calls](#defining-remote-procedure-calls)
    * [Defining networks in JSON](#defining-networks-in-json)
@@ -976,7 +976,7 @@ connections between network components. See
 [defining remote procedure calls](#defining-remote-procedure-calls) for more
 on how this works.
 
-## Defining networks
+## Creating networks
 Networks are defined in code using a `Network` instance. 
 
 Some [examples](https://github.com/kuujo/vertigo/tree/master/examples/complex)
@@ -994,8 +994,9 @@ generated in a predictable manner, and this name is used to prefix all
 component addresses and instance addresses.
 
 The `Network` exposes the following configuration methods:
-* `setAddress(String address)` - sets the network address, this is the basis
-  for all generated network addresses and is synonymous with the network `name`
+* `setAddress(String address)` - sets the network address, this is a unique event
+  bus address at which the network coordinator will coordinate deployment and
+  monitoring of network components
 * `enableAcking()` - enables acking for the network
 * `disableAcking()` - disabled acking for the network
 * `isAckingEnabled()` - indicates whether acking is enabled for the network
@@ -1010,7 +1011,7 @@ The `Network` exposes the following configuration methods:
   Defaults to `0`
 * `getAckDelay()` - indicates the ack delay for the network
 
-### Defining network components
+### Adding components
 The `Network` class provides several methods for adding components
 to the network.
 
@@ -1035,13 +1036,13 @@ on which you can set the following properties:
   `Component.MODULE`
 * `setConfig(JsonObject config)` - sets the component configuration. This is made available
   as the normal Vert.x configuration within a component instance
-* `setNumInstances(int numInstances)` - sets the number of component instances
+* `setInstances(int instances)` - sets the number of component instances
 
 There are two specific types of components, `Verticle` and `Module`.
 The `Verticle` class adds the `setMain(String main)` and `getMain()` methods.
 The `Module` class adds the `setModule(String moduleName)` and `getModule()` methods.
 
-### Defining connections
+### Adding inputs
 Conncetions between components are created by adding an input to a
 component definition. Inputs indicate which components a given component
 is interested in receiving messages from. Vertigo uses a publish/subscribe
@@ -1060,7 +1061,13 @@ the following methods:
 * `groupBy(Grouping grouping)` - sets the input grouping
 * `filterBy(Filter filter)` - adds an input filter
 
-### Component Groupings
+The input address should be the event bus address for a component to which
+the input will subscribe to receive new output messages. Note that this
+subscription pattern does not place any restrictions on the input address,
+so users can subscribe a component to output from any component in any network.
+See [nested networks](#nested-networks) for an example.
+
+### Input Groupings
 With each component instance maintaining its own unique event bus address,
 Vertigo needs a way to determine which component messages emitted from one
 component are dispatched to. Each component may indicate a *grouping* which
@@ -1120,7 +1127,7 @@ network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
 network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new AllGrouping());
 ```
 
-### Component Filters
+### Input Filters
 Vertigo messages contain metadata in addition to the message body. And just
 as with grouping component instances, sometimes components may be only
 interested in receiving messages containing specific metadata. For this,

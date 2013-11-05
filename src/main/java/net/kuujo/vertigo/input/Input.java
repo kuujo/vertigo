@@ -1,18 +1,18 @@
 /*
-* Copyright 2013 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.input;
 
 import java.util.ArrayList;
@@ -31,6 +31,11 @@ import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A component input.
+ *
+ * Inputs define a relationship between two components. Essentially, each input
+ * represents a subscription of the component to another component's output.
+ * Inputs also help define which messages the component is interested in receiving,
+ * and how to distribute messages between multiple instances of the component.
  *
  * @author Jordan Halterman
  */
@@ -52,7 +57,8 @@ public class Input implements Serializable {
   }
 
   /**
-   * Returns the input id.
+   * Returns the input id. This is a unique value used to identify identical inputs
+   * between multiple component instances.
    *
    * @return
    *   The input id.
@@ -72,7 +78,9 @@ public class Input implements Serializable {
   }
 
   /**
-   * Sets the input count.
+   * Sets the input count. This indicates the total number of expected
+   * subscriptions from the input component and helps ensure consistency in
+   * message distribution between multiple component instances.
    *
    * @param count
    *   The input count.
@@ -87,6 +95,8 @@ public class Input implements Serializable {
   /**
    * Returns the input address.
    *
+   * This indicates the address to which the input listens.
+   *
    * @return
    *   The input address.
    */
@@ -96,6 +106,9 @@ public class Input implements Serializable {
 
   /**
    * Sets the input grouping.
+   *
+   * The input grouping indicates how messages should be distributed between
+   * multiple instances of the input component.
    *
    * @param grouping
    *   An input grouping.
@@ -125,6 +138,9 @@ public class Input implements Serializable {
 
   /**
    * Adds an input filter.
+   *
+   * Filters allow the input to specify which messages it is interested in
+   * receiving before they are sent.
    *
    * @param filter
    *   An input filter.

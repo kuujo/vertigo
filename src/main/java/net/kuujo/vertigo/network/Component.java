@@ -1,18 +1,18 @@
 /*
-* Copyright 2013 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.network;
 
 import java.util.ArrayList;
@@ -107,6 +107,10 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   /**
    * Returns the component address.
    *
+   * This address is an event bus address at which the component will register
+   * a handler to listen for connections when started. Thus, this address must
+   * be unique.
+   *
    * @return
    *   The component address.
    */
@@ -115,7 +119,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   }
 
   /**
-   * Returns the component type.
+   * Returns the component type, either "module" or "verticle".
    *
    * @return
    *   The component type.
@@ -137,6 +141,9 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   /**
    * Sets the component configuration.
    *
+   * This configuration will be passed to component implementations as the verticle
+   * or module configuration when the component is started.
+   *
    * @param config
    *   The component configuration.
    * @return
@@ -154,21 +161,21 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The number of component instances.
    */
-  public int getNumInstances() {
+  public int getInstances() {
     return definition.getInteger(INSTANCES, 1);
   }
 
   /**
    * Sets the number of component instances.
    *
-   * @param numInstances
+   * @param instances
    *   The number of component instances.
    * @return
    *   The called component instance.
    */
   @SuppressWarnings("unchecked")
-  public T setNumInstances(int numInstances) {
-    definition.putNumber(INSTANCES, numInstances);
+  public T setInstances(int instances) {
+    definition.putNumber(INSTANCES, instances);
 
     JsonArray inputs = definition.getArray(INPUTS);
     JsonArray newInputs = new JsonArray();
@@ -178,7 +185,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
 
     for (Object inputInfo : inputs) {
       try {
-        newInputs.add(Serializer.serialize(Serializer.<Input>deserialize((JsonObject) inputInfo).setCount(numInstances)));
+        newInputs.add(Serializer.serialize(Serializer.<Input>deserialize((JsonObject) inputInfo).setCount(instances)));
       }
       catch (SerializationException e) {
         continue;
@@ -200,6 +207,10 @@ public abstract class Component<T extends Component<T>> implements Serializable 
 
   /**
    * Sets the component heartbeat interval.
+   *
+   * This is the interval at which the component will send heartbeat messages to
+   * the network's coordinator. It may be necessary to increase heartbeat frequency
+   * if the component blocks frequently.
    *
    * @param interval
    *   The component heartbeat interval.
@@ -251,7 +262,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
       inputs = new JsonArray();
       definition.putArray(INPUTS, inputs);
     }
-    inputs.add(Serializer.serialize(input.setCount(getNumInstances())));
+    inputs.add(Serializer.serialize(input.setCount(getInstances())));
     return input;
   }
 
@@ -259,7 +270,8 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * Adds a component input.
    *
    * @param address
-   *   The input address.
+   *   The input address. This is the event bus address of a component to which
+   *   this component will listen for output.
    * @return
    *   The new input instance.
    */
@@ -271,9 +283,11 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * Adds a component input with a grouping.
    *
    * @param address
-   *   The input address.
-   * @param selector
-   *   An input selector.
+   *   The input address. This is the event bus address of a component to which
+   *   this component will listen for output.
+   * @param grouping
+   *   An input grouping. This input grouping helps determine how messages will
+   *   be distributed among multiple instances of this component.
    * @return
    *   The new input instance.
    */
@@ -285,7 +299,8 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * Adds a component input with filters.
    *
    * @param address
-   *   The input address.
+   *   The input address. This is the event bus address of a component to which
+   *   this component will listen for output.
    * @param filters
    *   A list of input filters.
    * @return
@@ -303,9 +318,11 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * Adds a component input with grouping and filters.
    *
    * @param address
-   *   The input address.
+   *   The input address. This is the event bus address of a component to which
+   *   this component will listen for output.
    * @param grouping
-   *   An input grouping.
+   *   An input grouping. This input grouping helps determine how messages will
+   *   be distributed among multiple instances of this component.
    * @param filters
    *   A list of input filters.
    * @return
@@ -353,7 +370,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     }
 
     JsonArray instances = new JsonArray();
-    int numInstances = getNumInstances();
+    int numInstances = getInstances();
     for (int i = 0; i < numInstances; i++) {
       String id = UUID.randomUUID().toString();
       instances.add(InstanceContext.fromJson(new JsonObject().putString("id", id)).getState());

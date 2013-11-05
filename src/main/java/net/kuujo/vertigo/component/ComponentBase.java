@@ -81,12 +81,7 @@ public abstract class ComponentBase implements Component {
   }
 
   @Override
-  public JsonObject config() {
-    return context.getComponent().getConfig();
-  }
-
-  @Override
-  public InstanceContext context() {
+  public InstanceContext getContext() {
     return context;
   }
 

@@ -17,20 +17,10 @@ package net.kuujo.vertigo.component;
 
 import net.kuujo.vertigo.context.InstanceContext;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * A network component.
  */
 public interface Component {
-
-  /**
-   * Returns the component configuration.
-   *
-   * @return
-   *   The component configuration.
-   */
-  JsonObject config();
 
   /**
    * Returns the component instance context.
@@ -38,6 +28,6 @@ public interface Component {
    * @return
    *   The component context.
    */
-  InstanceContext context();
+  InstanceContext getContext();
 
 }

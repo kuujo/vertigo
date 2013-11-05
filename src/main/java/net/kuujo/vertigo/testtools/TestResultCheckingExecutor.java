@@ -63,12 +63,12 @@ public class TestResultCheckingExecutor extends VertigoVerticle {
         }
         else {
           final BasicExecutor executor = result.result();
-          executor.execute(executor.config().getObject("input"), new Handler<AsyncResult<JsonMessage>>() {
+          executor.execute(container.config().getObject("input"), new Handler<AsyncResult<JsonMessage>>() {
             @Override
             public void handle(AsyncResult<JsonMessage> result) {
               assertTrue(result.succeeded());
               JsonObject body = result.result().body();
-              JsonObject output = executor.config().getObject("output");
+              JsonObject output = container.config().getObject("output");
               for (String fieldName : output.getFieldNames()) {
                 assertEquals(output.getValue(fieldName), body.getValue(fieldName));
               }

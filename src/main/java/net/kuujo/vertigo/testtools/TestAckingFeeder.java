@@ -57,7 +57,7 @@ public class TestAckingFeeder extends VertigoVerticle {
         }
         else {
           BasicFeeder feeder = result.result();
-          feeder.feed(feeder.config(), new Handler<AsyncResult<Void>>() {
+          feeder.feed(container.config(), new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               assertTrue(result.succeeded());

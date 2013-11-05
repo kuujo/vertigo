@@ -72,8 +72,8 @@ public class TestPeriodicFeeder extends VertigoVerticle {
         }
         else {
           final BasicFeeder feeder = result.result();
-          final JsonArray fields = feeder.config().getArray("fields");
-          final long interval = feeder.config().getLong("interval");
+          final JsonArray fields = container.config().getArray("fields");
+          final long interval = container.config().getLong("interval");
           vertx.setPeriodic(interval, new Handler<Long>() {
             @Override
             public void handle(Long timerId) {

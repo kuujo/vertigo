@@ -30,7 +30,7 @@ import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
 import net.kuujo.vertigo.rpc.StreamExecutor;
 import net.kuujo.vertigo.worker.BasicWorker;
-import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.worker.DefaultBasicWorker;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
@@ -101,8 +101,8 @@ public class DefaultVertigo implements Vertigo {
   }
 
   @Override
-  public Worker createWorker() {
-    return new BasicWorker(vertx, container, context);
+  public BasicWorker createWorker() {
+    return new DefaultBasicWorker(vertx, container, context);
   }
 
 }

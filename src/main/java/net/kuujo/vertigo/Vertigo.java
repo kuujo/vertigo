@@ -23,7 +23,7 @@ import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.rpc.BasicExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
 import net.kuujo.vertigo.rpc.StreamExecutor;
-import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.worker.BasicWorker;
 
 /**
  * Primary Vert.igo API.
@@ -118,11 +118,11 @@ public interface Vertigo {
   StreamExecutor createStreamExecutor();
 
   /**
-   * Creates a worker.
+   * Creates a basic worker.
    *
    * @return
    *   A new worker instance.
    */
-  Worker createWorker();
+  BasicWorker createWorker();
 
 }

@@ -15,98 +15,10 @@
 */
 package net.kuujo.vertigo.worker;
 
-import net.kuujo.vertigo.component.ComponentBase;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.message.JsonMessage;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
-
 /**
- * A basic worker implementation.
+ * A basic worker.
  *
  * @author Jordan Halterman
  */
-public class BasicWorker extends ComponentBase implements Worker {
-  protected Handler<JsonMessage> messageHandler;
-
-  public BasicWorker(Vertx vertx, Container container, InstanceContext context) {
-    super(vertx, container, context);
-  }
-
-  @Override
-  public Worker start() {
-    start(new Handler<AsyncResult<Worker>>() {
-      @Override
-      public void handle(AsyncResult<Worker> result) {
-        // Do nothing.
-      }
-    });
-    return this;
-  }
-
-  @Override
-  public Worker start(Handler<AsyncResult<Worker>> doneHandler) {
-    final Future<Worker> future = new DefaultFutureResult<Worker>().setHandler(doneHandler);
-    setup(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else {
-          input.messageHandler(messageHandler);
-          future.setResult(BasicWorker.this);
-        }
-      }
-    });
-    return this;
-  }
-
-  @Override
-  public Worker messageHandler(Handler<JsonMessage> handler) {
-    messageHandler = handler;
-    input.messageHandler(messageHandler);
-    return this;
-  }
-
-  @Override
-  public Worker emit(JsonObject data) {
-    output.emit(data);
-    return this;
-  }
-
-  @Override
-  public Worker emit(JsonObject data, String tag) {
-    output.emit(data, tag);
-    return this;
-  }
-
-  @Override
-  public Worker emit(JsonObject data, JsonMessage parent) {
-    output.emit(data, parent);
-    return this;
-  }
-
-  @Override
-  public Worker emit(JsonObject data, String tag, JsonMessage parent) {
-    output.emit(data, tag, parent);
-    return this;
-  }
-
-  @Override
-  public void ack(JsonMessage message) {
-    input.ack(message);
-  }
-
-  @Override
-  public void fail(JsonMessage message) {
-    input.fail(message);
-  }
-
+public interface BasicWorker extends Worker {
 }

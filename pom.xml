@@ -29,6 +29,7 @@
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
     <maven.dependency.plugin.version>2.7</maven.dependency.plugin.version>
     <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
+    <maven.javadoc.plugin.version>2.8.1</maven.javadoc.plugin.version>
   </properties>
 
   <licenses>
@@ -230,6 +231,30 @@
         <configuration>
           <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven.javadoc.plugin.version}</version>
+        <configuration>
+          <show>public</show>
+          <excludePackageNames>net.kuujo.vertigo.auditor:net.kuujo.vertigo.coordinator:net.kuujo.vertigo.heartbeat</excludePackageNames>
+        </configuration>
+        <executions>
+          <execution>
+            <id>javadoc-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <includeDependencySources>true</includeDependencySources>
+              <dependencySourceIncludes>
+                <dependencySourceInclude>org.vertx.java.core:*</dependencySourceInclude>
+              </dependencySourceIncludes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
 

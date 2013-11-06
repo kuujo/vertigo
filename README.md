@@ -36,7 +36,7 @@ Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
 
-## [Java API manual](#java-user-manual)
+## [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java/)
 ## [How it works](#how-it-works)
 
 # Java User Manual

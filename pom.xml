@@ -323,7 +323,7 @@
               <show>public</show>
               <excludePackageNames>net.kuujo.vertigo.auditor:net.kuujo.vertigo.coordinator:net.kuujo.vertigo.heartbeat</excludePackageNames>
               <reportOutputDirectory>docs</reportOutputDirectory>
-              <destDir>docs</destDir>
+              <destDir>java</destDir>
             </configuration>
             <executions>
               <execution>

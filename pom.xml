@@ -311,6 +311,37 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>javadoc</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven.javadoc.plugin.version}</version>
+            <configuration>
+              <show>public</show>
+              <excludePackageNames>net.kuujo.vertigo.auditor:net.kuujo.vertigo.coordinator:net.kuujo.vertigo.heartbeat</excludePackageNames>
+              <destDir>docs</destDir>
+            </configuration>
+            <executions>
+              <execution>
+                <id>javadoc-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <includeDependencySources>true</includeDependencySources>
+                  <dependencySourceIncludes>
+                    <dependencySourceInclude>org.vertx.java.core:*</dependencySourceInclude>
+                  </dependencySourceIncludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
-
 </project>

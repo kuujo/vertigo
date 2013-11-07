@@ -35,10 +35,13 @@ Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
 
-#### [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java/)
-#### [How it works](#how-it-works)
-#### The Vertigo [Javascript API](https://github.com/kuujo/vertigo-js) is under development
-#### The Vertigo [Python API](https://github.com/kuujo/vertigo-python) is under development
+**[Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
+
+**[How it works](#how-it-works)**
+
+**The Vertigo [Javascript API](https://github.com/kuujo/vertigo-js) is under development**
+
+**The Vertigo [Python API](https://github.com/kuujo/vertigo-python) is under development**
 
 ### The Vertigo API has changed!
 After weeks of careful consideration and tireless refactoring efforts,
@@ -56,6 +59,7 @@ conflicted with several planned project features. What the project needed
 was a minor overhaul of how components connect to and communicate with
 each other.
 
+#### New networks
 First, the network definitions (now simply *networks*) had to be refactored
 so to represent components *subscribing* to addresses from which they wanted
 to receive messages rather than explicitly *indicatis* components to which
@@ -69,6 +73,7 @@ Network network = new Network("test");
 network.addVerticle("test.first_verticle", FirstVerticle.class.getName());
 ```
 
+#### Component inputs
 After changing replacing the `fromVerticle` and `fromModule` methods, I
 needed a new way to represent subscriptions to other addresses. For this,
 I added an `Input` abstraction. [Inputs](#inputs) simply represent subscriptions
@@ -92,6 +97,7 @@ over the event bus. Thus, I created a "serialization" class that supports
 serializing any filter or grouping implementation to a Vert.x `JsonObject`
 instance and sending it over the event bus as part of any input definition.
 
+#### Publish-subscribe messaging
 With the new Networks API, I needed a way to translate the new network
 and component definition structures to reality. Creating a communcation
 system based on publish-subscribe mechanisms rather than explicit fixed
@@ -109,6 +115,11 @@ an `OutputCollector`. [Output collectors](#output-collectors) listen for
 as new outputs of the component. Ultimately, output collectors became the
 primary interface for *emitting* messages from any component.
 
+```java
+OutputCollector output = new DefaultOutputCollector(vertx, container, context);
+output.emit(new JsonObject().putString("foo", "bar"));
+```
+
 With output collectors listening for subscribers in each component instance,
 I needed a method for interested components to subscribe by sending messages
 to output collectors. For this, I created two new interfaces, the
@@ -117,6 +128,15 @@ may be many [listeners](#listeners), and listeners are the components that
 send `listen` messages and await output from a specific address. These
 APIs became the primary interfaces for *receiving* messages emitted by
 other components.
+
+```java
+InputCollector input = new DefaultInputCollector(vertx, container, context);
+input.messageHandler(new Handler<JsonMessage>() {
+  public void handle(JsonMessage message) {
+    output.emit(message.body());
+  }
+});
+```
 
 With changes to the method of communication between components,
 details of where any given component is sending messages have been completely
@@ -130,6 +150,7 @@ all components of a network had been set up. This means that only once
 all components of a network have been set up and indicated as much will
 the network start.
 
+#### Conclusion
 Ultimately, this refactoring of Vertigo communication methods opens up
 a host of possibilities - see [wire taps](#wire-taps) and
 [nested networks](#nested-networks). Network communication is no longer

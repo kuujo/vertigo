@@ -18,10 +18,10 @@ package net.kuujo.vertigo.testtools;
 import java.util.UUID;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Verticle;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -29,7 +29,7 @@ import net.kuujo.vertigo.worker.Worker;
  *
  * @author Jordan Halterman
  */
-public class TestTimingOutWorker extends VertigoVerticle {
+public class TestTimingOutWorker extends Verticle {
 
   /**
    * Creates an timeout worker definition.
@@ -37,7 +37,7 @@ public class TestTimingOutWorker extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition() {
+  public static net.kuujo.vertigo.network.Verticle createDefinition() {
     return createDefinition(1);
   }
 
@@ -49,13 +49,14 @@ public class TestTimingOutWorker extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(int instances) {
-    return new Verticle(UUID.randomUUID().toString())
+  public static net.kuujo.vertigo.network.Verticle createDefinition(int instances) {
+    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString())
         .setMain(TestTimingOutWorker.class.getName()).setInstances(instances);
   }
 
   @Override
   public void start() {
+    Vertigo vertigo = new Vertigo(this);
     final Worker worker = vertigo.createWorker();
     worker.messageHandler(new Handler<JsonMessage>() {
       @Override

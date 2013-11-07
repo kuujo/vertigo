@@ -22,17 +22,17 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.feeder.PollingFeeder;
-import net.kuujo.vertigo.network.Verticle;
 
 /**
  * A feeder that feeder "random" test words to a network.
  *
  * @author Jordan Halterman
  */
-public class TestWordFeeder extends VertigoVerticle {
+public class TestWordFeeder extends Verticle {
 
   /**
    * Creates a test word feeder definition.
@@ -42,7 +42,7 @@ public class TestWordFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(String field) {
+  public static net.kuujo.vertigo.network.Verticle createDefinition(String field) {
     String[] words = new String[]{"apples", "bananas", "oranges", "peaches", "pears", "strawberries"};
     return createDefinition(field, words);
   }
@@ -57,8 +57,8 @@ public class TestWordFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(String field, String[] words) {
-    return new Verticle(UUID.randomUUID().toString())
+  public static net.kuujo.vertigo.network.Verticle createDefinition(String field, String[] words) {
+    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString())
       .setMain(TestWordFeeder.class.getName())
       .setConfig(new JsonObject().putString("field", field)
       .putArray("words", new JsonArray(words)));
@@ -70,6 +70,7 @@ public class TestWordFeeder extends VertigoVerticle {
 
   @Override
   public void start() {
+    Vertigo vertigo = new Vertigo(this);
     field = container.config().getString("field");
     words = (String[]) container.config().getArray("words").toArray();
 

@@ -20,12 +20,11 @@ import java.util.UUID;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Verticle;
 import net.kuujo.vertigo.rpc.BasicExecutor;
-import net.kuujo.vertigo.rpc.DefaultBasicExecutor;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.testComplete;
@@ -35,7 +34,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  *
  * @author Jordan Halterman
  */
-public class TestResultCheckingExecutor extends VertigoVerticle {
+public class TestResultCheckingExecutor extends Verticle {
 
   /**
    * Creates an ack checking feeder definition.
@@ -47,15 +46,15 @@ public class TestResultCheckingExecutor extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(JsonObject input, JsonObject output) {
-    return new Verticle(UUID.randomUUID().toString()).setMain(TestResultCheckingExecutor.class.getName())
+  public static net.kuujo.vertigo.network.Verticle createDefinition(JsonObject input, JsonObject output) {
+    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString()).setMain(TestResultCheckingExecutor.class.getName())
         .setConfig(new JsonObject().putObject("input", input).putObject("output", output));
   }
 
   @Override
   public void start() {
-    BasicExecutor executor = new DefaultBasicExecutor(vertx, container, context);
-    executor.start(new Handler<AsyncResult<BasicExecutor>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.createBasicExecutor().start(new Handler<AsyncResult<BasicExecutor>>() {
       @Override
       public void handle(AsyncResult<BasicExecutor> result) {
         if (result.failed()) {

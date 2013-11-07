@@ -18,7 +18,7 @@ package wordcount;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -44,7 +44,7 @@ import org.vertx.java.platform.Verticle;
  */
 public class WordCountNetwork extends Verticle {
 
-  public static class WordCountWorker extends VertigoVerticle {
+  public static class WordCountWorker extends Verticle {
 
     private Worker worker;
 
@@ -52,6 +52,7 @@ public class WordCountNetwork extends Verticle {
 
     @Override
     public void start() {
+      Vertigo vertigo = new Vertigo(this);
       worker = vertigo.createWorker();
       worker.messageHandler(new Handler<JsonMessage>() {
         @Override
@@ -69,10 +70,11 @@ public class WordCountNetwork extends Verticle {
     }
   }
 
-  public static class WordFeeder extends VertigoVerticle {
+  public static class WordFeeder extends Verticle {
 
     @Override
     public void start() {
+      Vertigo vertigo = new Vertigo(this);
       vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
         @Override
         public void handle(AsyncResult<BasicFeeder> result) {

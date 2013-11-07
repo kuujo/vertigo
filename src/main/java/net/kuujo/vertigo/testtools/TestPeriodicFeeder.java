@@ -21,17 +21,17 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.feeder.BasicFeeder;
-import net.kuujo.vertigo.network.Verticle;
 
 /**
  * A feeder that periodically feeds a network with randomly generated field values.
  *
  * @author Jordan Halterman
  */
-public class TestPeriodicFeeder extends VertigoVerticle {
+public class TestPeriodicFeeder extends Verticle {
 
   private static final long DEFAULT_INTERVAL = 100;
 
@@ -43,7 +43,7 @@ public class TestPeriodicFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(String[] fields) {
+  public static net.kuujo.vertigo.network.Verticle createDefinition(String[] fields) {
     return createDefinition(fields, DEFAULT_INTERVAL);
   }
 
@@ -57,13 +57,14 @@ public class TestPeriodicFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(String[] fields, long interval) {
-    return new Verticle(UUID.randomUUID().toString()).setMain(TestPeriodicFeeder.class.getName())
+  public static net.kuujo.vertigo.network.Verticle createDefinition(String[] fields, long interval) {
+    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString()).setMain(TestPeriodicFeeder.class.getName())
         .setConfig(new JsonObject().putArray("fields", new JsonArray(fields)).putNumber("interval", interval));
   }
 
   @Override
   public void start() {
+    Vertigo vertigo = new Vertigo(this);
     vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
       @Override
       public void handle(AsyncResult<BasicFeeder> result) {

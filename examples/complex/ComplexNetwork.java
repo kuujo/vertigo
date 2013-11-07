@@ -21,7 +21,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.json.JsonObject;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.network.Network;
@@ -46,12 +46,13 @@ public class ComplexNetworkVerticle extends Verticle {
   /**
    * An example feeder verticle.
    */
-  public static class ExampleFeeder extends VertigoVerticle {
+  public static class ExampleFeeder extends Verticle {
 
     private Logger logger;
 
     @Override
     public void start() {
+      Vertigo vertigo = new Vertigo(this);
       logger = container.logger();
       vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
         @Override
@@ -85,7 +86,7 @@ public class ComplexNetworkVerticle extends Verticle {
    * that different network components use different groupings and filters. This
    * is demonstrative of the separation between component definitions and implementations.
    */
-  public static class ExampleWorker extends VertigoVerticle {
+  public static class ExampleWorker extends Verticle {
 
     private Logger logger;
 
@@ -93,6 +94,7 @@ public class ComplexNetworkVerticle extends Verticle {
 
     @Override
     public void start() {
+      Vertigo vertigo = new Vertigo(this);
       worker = vertigo.createWorker();
       worker.messageHandler(new Handler<JsonMessage>() {
         @Override

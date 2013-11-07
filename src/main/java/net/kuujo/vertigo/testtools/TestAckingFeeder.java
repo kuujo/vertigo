@@ -20,10 +20,10 @@ import java.util.UUID;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.VertigoVerticle;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.feeder.BasicFeeder;
-import net.kuujo.vertigo.network.Verticle;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -32,7 +32,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  *
  * @author Jordan Halterman
  */
-public class TestAckingFeeder extends VertigoVerticle {
+public class TestAckingFeeder extends Verticle {
 
   /**
    * Creates an ack checking feeder definition.
@@ -42,13 +42,14 @@ public class TestAckingFeeder extends VertigoVerticle {
    * @return
    *   A component definition.
    */
-  public static Verticle createDefinition(JsonObject data) {
-    return new Verticle(UUID.randomUUID().toString())
+  public static net.kuujo.vertigo.network.Verticle createDefinition(JsonObject data) {
+    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString())
         .setMain(TestAckingFeeder.class.getName()).setConfig(data);
   }
 
   @Override
   public void start() {
+    Vertigo vertigo = new Vertigo(this);
     vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
       @Override
       public void handle(AsyncResult<BasicFeeder> result) {

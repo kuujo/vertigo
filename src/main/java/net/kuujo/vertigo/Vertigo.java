@@ -15,47 +15,78 @@
  */
 package net.kuujo.vertigo;
 
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
+
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.feeder.DefaultBasicFeeder;
+import net.kuujo.vertigo.feeder.DefaultPollingFeeder;
+import net.kuujo.vertigo.feeder.DefaultStreamFeeder;
 import net.kuujo.vertigo.feeder.PollingFeeder;
 import net.kuujo.vertigo.feeder.StreamFeeder;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.rpc.BasicExecutor;
+import net.kuujo.vertigo.rpc.DefaultBasicExecutor;
+import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
+import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
 import net.kuujo.vertigo.rpc.StreamExecutor;
 import net.kuujo.vertigo.worker.BasicWorker;
+import net.kuujo.vertigo.worker.DefaultBasicWorker;
 
 /**
  * Primary Vert.igo API.
  *
  * This is the primary API for creating Vertigo objects within component
- * implementations. When implementing a new component by extending the
- * {@link VertigoVerticle} base class, an {@link Vertigo} instance will be
- * made available as a protected member. This should be used to instantiate any
- * feeders, workers, or executors that are used by the component implementation.
+ * implementations. This should be used to instantiate any feeders, workers, or
+ * executors that are used by the component implementation.
  *
  * @author Jordan Halterman
  */
-public interface Vertigo {
+public final class Vertigo {
+  private Vertx vertx;
+  private Container container;
+  private InstanceContext context;
+
+  public Vertigo(Verticle verticle) {
+    this(verticle.getVertx(), verticle.getContainer());
+  }
+
+  public Vertigo(Vertx vertx, Container container) {
+    InstanceContext context = null;
+    JsonObject config = container.config();
+    if (config != null && config.getFieldNames().contains("__context__")) {
+      JsonObject contextInfo = config.getObject("__context__");
+      context = InstanceContext.fromJson(contextInfo);
+      config.removeField("__context__");
+    }
+    this.vertx = vertx;
+    this.container = container;
+    this.context = context;
+  }
 
   /**
-   * Sets the component instance context.
-   *
-   * @param context
-   *   An instance context.
-   */
-  void setContext(InstanceContext context);
-
-  /**
-   * Gets the component instance context.
-   *
-   * The instance context can be used to retrieve useful information about an
-   * entire network.
+   * Indicates whether this verticle was deployed as a component instance.
    *
    * @return
-   *   The instance context.
+   *  Indicates whether this verticle is a Vertigo component instance.
    */
-  InstanceContext getContext();
+  public boolean isComponent() {
+    return context != null;
+  }
+
+  /**
+   * Returns the current Vertigo instance context (if any).
+   *
+   * @return
+   *   The current Vertigo instance context.
+   */
+  public InstanceContext getContext() {
+    return context;
+  }
 
   /**
    * Creates a new network.
@@ -65,7 +96,9 @@ public interface Vertigo {
    * @return
    *   A new network instance.
    */
-  Network createNetwork(String address);
+  public Network createNetwork(String address) {
+    return new Network(address);
+  }
 
   /**
    * Creates a basic feeder.
@@ -73,7 +106,9 @@ public interface Vertigo {
    * @return
    *   A new feeder instance.
    */
-  BasicFeeder createFeeder();
+  public BasicFeeder createFeeder() {
+    return createBasicFeeder();
+  }
 
   /**
    * Creates a basic feeder.
@@ -81,7 +116,9 @@ public interface Vertigo {
    * @return
    *   A new basic feeder instance.
    */
-  BasicFeeder createBasicFeeder();
+  public BasicFeeder createBasicFeeder() {
+    return new DefaultBasicFeeder(vertx, container, context);
+  }
 
   /**
    * Creates a polling feeder.
@@ -89,7 +126,9 @@ public interface Vertigo {
    * @return
    *   A new poll feeder instance.
    */
-  PollingFeeder createPollingFeeder();
+  public PollingFeeder createPollingFeeder() {
+    return new DefaultPollingFeeder(vertx, container, context);
+  }
 
   /**
    * Creates a stream feeder.
@@ -97,7 +136,9 @@ public interface Vertigo {
    * @return
    *   A new stream feeder instance.
    */
-  StreamFeeder createStreamFeeder();
+  public StreamFeeder createStreamFeeder() {
+    return new DefaultStreamFeeder(vertx, container, context);
+  }
 
   /**
    * Creates a basic executor.
@@ -105,7 +146,9 @@ public interface Vertigo {
    * @return
    *   A new basic executor instance.
    */
-  BasicExecutor createExecutor();
+  public BasicExecutor createExecutor() {
+    return createBasicExecutor();
+  }
 
   /**
    * Creates a basic executor.
@@ -113,7 +156,9 @@ public interface Vertigo {
    * @return
    *   A new basic executor instance.
    */
-  BasicExecutor createBasicExecutor();
+  public BasicExecutor createBasicExecutor() {
+    return new DefaultBasicExecutor(vertx, container, context);
+  }
 
   /**
    * Creates a polling executor.
@@ -121,7 +166,9 @@ public interface Vertigo {
    * @return
    *   A new polling executor instance.
    */
-  PollingExecutor createPollingExecutor();
+  public PollingExecutor createPollingExecutor() {
+    return new DefaultPollingExecutor(vertx, container, context);
+  }
 
   /**
    * Creates a stream executor.
@@ -129,7 +176,9 @@ public interface Vertigo {
    * @return
    *   A new stream executor instance.
    */
-  StreamExecutor createStreamExecutor();
+  public StreamExecutor createStreamExecutor() {
+    return new DefaultStreamExecutor(vertx, container, context);
+  }
 
   /**
    * Creates a basic worker.
@@ -137,6 +186,18 @@ public interface Vertigo {
    * @return
    *   A new worker instance.
    */
-  BasicWorker createWorker();
+  public BasicWorker createWorker() {
+    return createBasicWorker();
+  }
+
+  /**
+   * Creates a basic worker.
+   *
+   * @return
+   *   A new worker instance.
+   */
+  public BasicWorker createBasicWorker() {
+    return new DefaultBasicWorker(vertx, container, context);
+  }
 
 }

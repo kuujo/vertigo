@@ -1,8 +1,7 @@
 Vert.igo
 ========
 
-**The Vertigo [Javascript API](https://github.com/kuujo/vertigo-js) is under development**
-**The Vertigo [Python API](https://github.com/kuujo/vertigo-python) is under development**
+#### [The Vertigo networks API has changed!](#the-vertigo-api-has-changed)
 
 Vertigo is a distributed event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Following a concept and
@@ -38,6 +37,105 @@ within larger Vert.x applications.
 
 #### [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java/)
 #### [How it works](#how-it-works)
+#### The Vertigo [Javascript API](https://github.com/kuujo/vertigo-js) is under development
+#### The Vertigo [Python API](https://github.com/kuujo/vertigo-python) is under development
+
+### The Vertigo API has changed!
+After weeks of careful consideration and tireless refactoring efforts,
+the Vertigo networks API has changed. Note that this does *not* effect
+any of the component implementations (aside from imports). See the
+following rational...
+
+#### Rationale for API changes
+The original Vertigo network definitions API had a number of flaws that
+were ultimately significant enough that it warranted a change. The issue
+was that the network definitions API forced networks to be rigid in
+structure. Each component defined who it would send messages to, and once
+those components were started that fact could not change. This fact ultimately
+conflicted with several planned project features. What the project needed
+was a minor overhaul of how components connect to and communicate with
+each other.
+
+First, the network definitions (now simply *networks*) had to be refactored
+so to represent components *subscribing* to addresses from which they wanted
+to receive messages rather than explicitly *indicatis* components to which
+they would send messages. A side benefit of this was cleaning up the
+underlying JSON network definition structure. So, with the new Networks
+API, components are added to a network using the `addVerticle`, `addModule`,
+and `addComponent` methods.
+
+```java
+Network network = new Network("test");
+network.addVerticle("test.first_verticle", FirstVerticle.class.getName());
+```
+
+After changing replacing the `fromVerticle` and `fromModule` methods, I
+needed a new way to represent subscriptions to other addresses. For this,
+I added an `Input` abstraction. [Inputs](#inputs) simply represent subscriptions
+from one network component to another. Each input may define a
+[grouping](#groupings) and any number of [filters](#filters). The result
+of this is that rather than applying groupings and filters to components,
+they can now be applied to specific connections between components.
+
+```java
+network.addVerticle("test.second_verticle", SecondVerticle.class.getName())
+  .addInput("test.first_verticle").groupBy(new RoundGrouping());
+```
+
+This API allows components to be stripped down to mere event bus addresses,
+meaning any code that can access the event bus can potentially access the
+output of a component.
+
+Another limitation of the existing network definitions API was that it
+could not easily support sending custom filter and grouping information
+over the event bus. Thus, I created a "serialization" class that supports
+serializing any filter or grouping implementation to a Vert.x `JsonObject`
+instance and sending it over the event bus as part of any input definition.
+
+With the new Networks API, I needed a way to translate the new network
+and component definition structures to reality. Creating a communcation
+system based on publish-subscribe mechanisms rather than explicit fixed
+connections between components opens up a host of possibilities (see
+the new [advanced features](#advanced-features) section). But it also
+meant a major refactoring of the underlying communication components was
+in order.
+
+The primary component of the new communication structure was a publish-subscribe
+mechanism. When a network is defined, each component is assigned its own
+event bus address. Each instance of a component needed to register a handler
+at this address to listen for interested components. For this, I created
+an `OutputCollector`. [Output collectors](#output-collectors) listen for
+`listen` messages from any interested sources and register those messages
+as new outputs of the component. Ultimately, output collectors became the
+primary interface for *emitting* messages from any component.
+
+With output collectors listening for subscribers in each component instance,
+I needed a method for interested components to subscribe by sending messages
+to output collectors. For this, I created two new interfaces, the
+`InputCollector` and `Listener`. Underlying each [input collector](#input-collectors)
+may be many [listeners](#listeners), and listeners are the components that
+send `listen` messages and await output from a specific address. These
+APIs became the primary interfaces for *receiving* messages emitted by
+other components.
+
+With changes to the method of communication between components,
+details of where any given component is sending messages have been completely
+abstracted from that component. But this means that the component doesn't
+have any way of determining when all relevant parties have started listening.
+It's important that a network not start before all components have been
+set up - and handlers have been registered on the event bus - lest messages
+be lost due to the fact that components weren't listening. Thus, network
+[coordinators](#coordinators) have been refactored to be notified once
+all components of a network had been set up. This means that only once
+all components of a network have been set up and indicated as much will
+the network start.
+
+Ultimately, this refactoring of Vertigo communication methods opens up
+a host of possibilities - see [wire taps](#wire-taps) and
+[nested networks](#nested-networks). Network communication is no longer
+beholden to a fixed structure defined at the point of deployment. This
+means that network structures can potentially be updated with no down
+time, adding and removing components in real-time.
 
 # Java User Manual
 

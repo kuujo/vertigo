@@ -81,7 +81,7 @@ public class TestPeriodicFeeder extends VertigoVerticle {
               for (Object field : fields) {
                 data.putString((String) field, UUID.randomUUID().toString());
               }
-              feeder.feed(data);
+              feeder.emit(data);
             }
           });
         }

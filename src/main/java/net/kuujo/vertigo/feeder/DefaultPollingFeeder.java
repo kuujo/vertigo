@@ -121,28 +121,28 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data) {
+  public PollingFeeder emit(JsonObject data) {
     fed = true;
     doFeed(data, null, 0, null);
     return this;
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data, String tag) {
+  public PollingFeeder emit(JsonObject data, String tag) {
     fed = true;
     doFeed(data, tag, 0, null);
     return this;
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+  public PollingFeeder emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
     fed = true;
     doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
     return this;
   }
 
   @Override
-  public PollingFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+  public PollingFeeder emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
     fed = true;
     doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
     return this;

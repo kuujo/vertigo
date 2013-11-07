@@ -85,7 +85,7 @@ public class TestWordFeeder extends VertigoVerticle {
             public void handle(PollingFeeder feeder) {
               String word = words[random.nextInt(words.length)];
               JsonObject data = new JsonObject().putString(field, word);
-              feeder.feed(data);
+              feeder.emit(data);
             }
           });
         }

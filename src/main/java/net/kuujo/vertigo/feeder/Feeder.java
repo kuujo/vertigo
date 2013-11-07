@@ -136,17 +136,17 @@ public interface Feeder<T extends Feeder<T>> extends Component {
   int getRetryAttempts();
 
   /**
-   * Feeds data through the feeder.
+   * Emits data from the feeder.
    *
    * @param data
-   *   The data to feed.
+   *   The data to emit.
    * @return
    *   The called feeder instance.
    */
-  T feed(JsonObject data);
+  T emit(JsonObject data);
 
   /**
-   * Feeds data through the feeder.
+   * Emits data from the feeder.
    *
    * @param data
    *   The data to feed.
@@ -155,25 +155,25 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  T feed(JsonObject data, String tag);
+  T emit(JsonObject data, String tag);
 
   /**
-   * Feeds data to the network with an ack handler.
+   * Emits data to from the feeder with an ack handler.
    *
    * @param data
-   *   The data to feed.
+   *   The data to emit.
    * @param ackHandler
    *   An asynchronous result handler to be invoke with the ack result.
    * @return
    *   The called feeder instance.
    */
-  T feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
+  T emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
-   * Feeds data to the network with an ack handler.
+   * Emits data from the feeder with an ack handler.
    *
    * @param data
-   *   The data to feed.
+   *   The data to emit.
    * @param tag
    *   A tag to apply to the data.
    * @param ackHandler
@@ -181,6 +181,6 @@ public interface Feeder<T extends Feeder<T>> extends Component {
    * @return
    *   The called feeder instance.
    */
-  T feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
+  T emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
 }

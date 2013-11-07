@@ -56,28 +56,28 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
   }
 
   @Override
-  public StreamFeeder feed(JsonObject data) {
+  public StreamFeeder emit(JsonObject data) {
     doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
     checkPause();
     return this;
   }
 
   @Override
-  public StreamFeeder feed(JsonObject data, String tag) {
+  public StreamFeeder emit(JsonObject data, String tag) {
     doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
     checkPause();
     return this;
   }
 
   @Override
-  public StreamFeeder feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+  public StreamFeeder emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
     doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
     checkPause();
     return this;
   }
 
   @Override
-  public StreamFeeder feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+  public StreamFeeder emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
     doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
     checkPause();
     return this;

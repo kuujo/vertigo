@@ -11,7 +11,7 @@ allows real-time problems to be broken down into smaller tasks (as Vert.x
 verticles) and distributed across **one or many Vert.x instances**, managing
 communication between components in a **predictable and reliable** manner.
 
-**For more information on how Vertigo works see [how it works](#how-it-works)
+**For more information on how Vertigo works see [how it works](#how-it-works)**
 
 * Manages multi-step event processing systems, from simple pipelines to
   **complex networks of Vert.x modules/verticles**, including **remote procedure
@@ -36,8 +36,8 @@ Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
 
-## [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java/)
-## [How it works](#how-it-works)
+#### [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java/)
+#### [How it works](#how-it-works)
 
 # Java User Manual
 
@@ -87,7 +87,9 @@ within larger Vert.x applications.
    * [Wire taps](#wire-taps)
    * [Nested networks](#nested-networks)
 
-## Networks
+## Concepts
+
+### Networks
 A network is the representation of a collection of [components](#components) - special
 Vert.x verticle implementations- and the connections between them. Put together,
 a network processes streams of data in real-time. Vertigo puts no limitations
@@ -106,7 +108,7 @@ reliable manner.
 
 See the [complex network example](https://github.com/kuujo/vertigo/tree/master/examples/complex)
 
-## Components
+### Components
 A component represents a single vertex in a Vertigo network graph. Each network
 may contain any number of components, and each component may have any number of
 instances running within the network (each of which may be assigned to different
@@ -121,7 +123,7 @@ In order to get a better understanding of the concepts introduced in
 Vertigo, let's take a look at a simple network example.
 
 ### Defining the network
-Vertigo networks are defined using the [networks](#defining-networks)
+Vertigo networks are defined using the [networks](#creating-networks)
 API.
 
 ```java
@@ -203,7 +205,7 @@ Here we feed a random word from a list of words to the network. But what if
 the data fails to be processed? How can we be notified? The Vertigo feeder
 API provides for additional arguments that allow the feeder to be notified
 once a message is successfully processed.
-[See what successfully processing means](#how-acking-words)
+[See what successfully processing means](#how-acking-works)
 
 ```java
 feeder.feedHandler(new Handler<PollingFeeder>() {
@@ -541,10 +543,11 @@ it is essentially a helper for creating Vertigo components. The `Vertigo` object
 exposes the following methods:
 * `createFeeder()` - creates a [basic feeder](#basic-feeder)
 * `createBasicFeeder()` - creates a [basic feeder](#basic-feeder)
-* `createPollingFeeder()` - creates a [polling feeder](#polling-feeders)
-* `createStreamFeeder()` - creates a [stream feeder](#stream-feeders)
-* `createExecutor()` - creates a [basic executor](#executors)
-* `createBasicExecutor()` - creates a [basic executor](#executors)
+* `createPollingFeeder()` - creates a [polling feeder](#polling-feeder)
+* `createStreamFeeder()` - creates a [stream feeder](#stream-feeder)
+* `createExecutor()` - creates a [basic executor](#basic-executor)
+* `createBasicExecutor()` - creates a [basic executor](#basic-executor)
+* `createPollingExecutor()` - creates a [polling executor](#polling-executor)
 * `createWorker()` - creates a [worker](#workers)
 
 ### Contexts
@@ -574,8 +577,8 @@ The `ComponentContext` exposes the following interface:
 The `NetworkContext` exposes the following interface:
 * `getAddress()` - the network address - this is the basis for all component addresses
 * `getBroadcastAddress()` - the network broadcast address - this is the event bus
-  address used by network [auditors](#message-acking) to broadcast message statuses (acks/nacks)
-* `getAuditors()` - returns a set of network [auditor](#message-acking) addresses, each auditor is
+  address used by network [auditors](#auditors) to broadcast message statuses (acks/nacks)
+* `getAuditors()` - returns a set of network [auditor](#auditors) addresses, each auditor is
   assigned its own unique event bus address
 * `getComponents()` - a collection of all network component contexts
 
@@ -590,7 +593,7 @@ Each feeder exposes the following configuration methods:
 * `getMaxQueueSize()` - gets the maximum feed queue size
 * `queueFull()` - indicates whether the feed queue is full
 * `setAutoRetry(boolean retry)` - sets whether to automatically retry sending
-  [failed](#message-acking) messages
+  [failed](#auditors) messages
 * `isAutoRetry()` - indicates whether auto retry is enabled
 * `setRetryAttempts(int attempts)` - sets the number of retries to attempt
   before explicitly failing the feed. To set an infinite number of retry
@@ -601,10 +604,10 @@ To start a feeder, call the `start()` method:
 * `start(Handler<AsyncResult<BasicFeeder>> startHandler)`
 
 Once a feeder has been started, you can feed messages using the `feed()` method:
-* `feed(JsonObject data)`
-* `feed(JsonObject data, String tag)`
-* `feed(JsonObject data, Handler<AsyncResult<Void>> ackHandler)`
-* `feed(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler)`
+* `feed(JsonObject body)`
+* `feed(JsonObject body, String tag)`
+* `feed(JsonObject body, Handler<AsyncResult<Void>> ackHandler)`
+* `feed(JsonObject body, String tag, Handler<AsyncResult<Void>> ackHandler)`
 
 When passing an `ackHandler` to a `feed` method, the handler will be invoked
 once an `ack` or `fail` message is received from a network *auditor*. If
@@ -772,7 +775,7 @@ with the following methods:
 * `parent()` - the parent message's unique identifier
 * `ancestor()` - the original message's unique identifier, the identifier
   of the source of the message tree
-* `auditor()` - the address of the auditor for this message's message tree
+* `auditor()` - the address of the [auditor](#auditors) for this message's message tree
 
 ```java
 worker.messageHandler(new Handler<JsonMessage>() {
@@ -787,11 +790,11 @@ Each worker component can both receive and emit messages. Of course, where
 a message goes once it is emitted from a worker instance is abstracted from
 the implementation, and the `Worker` interface behaves accordingly. The
 `Worker` exposes the following methods for emitting messages
-* `emit(JsonObject data)` - emits a message body
-* `emit(JsonObject data, String tag)` - emits a message body with a tag
-* `emit(JsonObject data, JsonMessage parent)` - emits a message body as
+* `emit(JsonObject body)` - emits a message body
+* `emit(JsonObject body, String tag)` - emits a message body with a tag
+* `emit(JsonObject body, JsonMessage parent)` - emits a message body as
   a child of the given `JsonMessage` instance
-* `emit(JsonObject data, String tag, JsonMessage parent)` emits a message body
+* `emit(JsonObject body, String tag, JsonMessage parent)` emits a message
   with a tag as a child of the given `JsonMessage` instance
 
 ```java
@@ -837,6 +840,9 @@ worker.messageHandler(new Handler<JsonMessage>() {
   }
 });
 ```
+
+For more information see
+[how Vertigo guarantees message processing](#how-vertigo-guarantees-message-processing)
 
 ### Executors
 Executors are components that execute part or all of a network essential
@@ -1000,8 +1006,8 @@ The `Network` exposes the following configuration methods:
 * `enableAcking()` - enables acking for the network
 * `disableAcking()` - disabled acking for the network
 * `isAckingEnabled()` - indicates whether acking is enabled for the network
-* `setNumAuditors(int numAuditors)` - sets the number of network auditors (ackers)
-* `getNumAuditors()` - indicates the number of network auditors
+* `setNumAuditors(int numAuditors)` - sets the number of network [auditors](#auditors) (ackers)
+* `getNumAuditors()` - indicates the number of network [auditors](#auditors)
 * `setAckExpire(long expire)` - sets the message ack expiration for the network
 * `getAckExpire()` - indicates the ack expiration for the network
 * `setAckDelay(long delay)` - sets an optional period of time to way after a message
@@ -1100,14 +1106,16 @@ Vertigo provides several grouping types:
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new RandomGroupig());
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").groupBy(new RandomGroupig());
 ```
 
 * `RoundGrouping` - component instances receive messages in round-robin fashion
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new RoundGrouping());
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").groupBy(new RoundGrouping());
 ```
 
 * `FieldsGrouping` - component instances receive messages according to basic
@@ -1115,7 +1123,8 @@ network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new FieldsGrouping("type"));
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").groupBy(new FieldsGrouping("type"));
 ```
 
 Consistent hashing supports multiple fields as well.
@@ -1124,7 +1133,8 @@ Consistent hashing supports multiple fields as well.
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").groupBy(new AllGrouping());
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").groupBy(new AllGrouping());
 ```
 
 ### Input Filters
@@ -1145,7 +1155,8 @@ sent to the component.
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new TagsFilter("product"));
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").filterBy(new TagsFilter("product"));
 ```
 
 Vertigo provides several types of filters:
@@ -1154,21 +1165,24 @@ Vertigo provides several types of filters:
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new TagsFilter("product"));
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").filterBy(new TagsFilter("product"));
 ```
 
 * `FieldFilter` - filters messages according to a field/value
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new FieldFilter("type", "product"));
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").filterBy(new FieldFilter("type", "product"));
 ```
 
 * `SourceFilter` - filters messages according to the source component name
 ```java
 Network network = new Network("foo");
 network.addComponent("foo.bar", "com.mycompany.myproject.MyFeederVerticle");
-network.addComponent("foo.baz", "some_worder.py", 2).addInput("foo.bar").filterBy(new SourceFilter("rabbit"));
+network.addComponent("foo.baz", "some_worder.py", 2)
+  .addInput("foo.bar").filterBy(new SourceFilter("rabbit"));
 ```
 
 ### Network structures
@@ -1200,7 +1214,7 @@ The `Network` class uses the following underlying `JsonObject` structure:
 * `broadcast` - the `String` network broadcast address. This is the address on which
   components listen for ack/fail messages from auditors. Defaults to
   `{network}.broadcast`
-* `auditors` - the `int` number of network auditors (ackers). Defaults to `1`
+* `auditors` - the `int` number of network [auditors](#auditors) (ackers). Defaults to `1`
 * `acking` - a `boolean` indicating whether acking is enabled for the network.
   Defaults to `true`
 * `ack_expire` - a `long` auditor ack expiration. Note that auditors and feeders
@@ -1383,6 +1397,11 @@ be returned if a `doneHandler` was provided. The `NetworkContext` instance
 contains information about the network components, including component
 definitions, addresses, and connections.
 
+### Deploying networks locally
+To deploy a network locally (within a single Vert.x instance) use the
+`LocalCluster`. The local cluster uses the core Vert.x `Container` API
+to deploy network verticles and modules locally.
+
 ```java
 final Cluster cluster = new LocalCluster(vertx, container);
 cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -1395,17 +1414,31 @@ cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
 });
 ```
 
-## Clustering
-Vertigo supports distributing network components across multiple Vert.x
-instances using [Via](https://github.com/kuujo/via), a distributed
-deployment framework for Vert.x (Via was specifically developed for Vertigo).
-Following the same `Cluster` API, Via will handle assigning component
-instances to various Vert.x instances within a cluster in a predictable
-manner. Users can optionally specify custom Via *schedulers* in order to
-control component assignments.
+### Deploying networks across a cluster
+Vertigo also supports deploying networks across a cluster of Vert.x instances.
+This is supported using the [Via](https://github.com/kuujo/via) distributed
+deployment module. Via allows Vertigo to essentially deploy network
+verticles and modules by sending messages over the event bus to other
+Vert.x instances. This can result in a much more stable network since
+Via can reassign components to other Vert.x instances if a specific node
+dies.
 
-See the [Via documentation](https://github.com/kuujo/via) for more information
-on clustering with Vertigo.
+Via clusters use the same interface as local clusters, but with an additional
+`address` argument to the constructor - the address to the Via *master*
+through which the network's coordinator should deploy component modules
+and verticles.
+
+```java
+final Cluster cluster = new ViaCluster(vertx, container, "via.master");
+cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+  public void handle(AsyncResult<NetworkContext> result) {
+    if (result.succeeded()) {
+      NetworkContext context = result.result();
+      cluster.shutdown(context);
+    }
+  }
+});
+```
 
 ## Events
 Vertigo emits event messages over the Vert.x event bus when certain special
@@ -1526,7 +1559,7 @@ This makes this a reliable method of expanding upon existing running networks.
    * [Filters](#filters)
    * [Serialization](#serialization)
 1. [How networks are deployed](#how-networks-are-deployed)
-   * [Contexts](#contexts)
+   * [Contexts](#contexts-1)
    * [Coordinators](#coordinators)
    * [Clustering](#clustering)
       * [Local clusters](#local-clusters)
@@ -1767,7 +1800,7 @@ The output collector is tasked with receiving `listen` requests from other compo
 and sending messages to those listening components. When the output collector is
 started, it *binds to the component's address*.
 
-## How Vertigo gurantees message processing
+## How Vertigo guarantees message processing
 As messages make their way through networks Vertigo tracks them. Messages
 can have hierarchical structures - [message trees](#messages) - and Vertigo
 ensures that if any message at any point in a tree fails to be processed (times

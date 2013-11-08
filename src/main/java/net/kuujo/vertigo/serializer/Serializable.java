@@ -37,7 +37,9 @@ public interface Serializable {
    *
    * @param state
    *   A JSON object representation of the serializable object's internal state.
+   * @throws SerializationException
+   *   If the given state is not applicable.
    */
-  void setState(JsonObject state);
+  void setState(JsonObject state) throws SerializationException;
 
 }

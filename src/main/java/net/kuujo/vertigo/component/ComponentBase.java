@@ -81,6 +81,16 @@ public abstract class ComponentBase implements Component {
   }
 
   @Override
+  public InputCollector getInput() {
+    return input;
+  }
+
+  @Override
+  public OutputCollector getOutput() {
+    return output;
+  }
+
+  @Override
   public InstanceContext getContext() {
     return context;
   }

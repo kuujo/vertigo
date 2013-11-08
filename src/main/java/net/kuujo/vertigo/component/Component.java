@@ -16,11 +16,31 @@
 package net.kuujo.vertigo.component;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.output.OutputCollector;
 
 /**
  * A network component.
  */
 public interface Component {
+
+  /**
+   * Returns the component's {@link InputCollector}. This is the element of the
+   * component which subscribes to and receives input from other components.
+   *
+   * @return
+   *   The components {@link InputCollector}.
+   */
+  InputCollector getInput();
+
+  /**
+   * Returns the component's {@link OutputCollector}. This is the element of the
+   * component which receives subscriptions and emits messages to other components.
+   *
+   * @return
+   *   The component's {@link OutputCollector}.
+   */
+  OutputCollector getOutput();
 
   /**
    * Returns the component instance context.

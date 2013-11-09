@@ -20,5 +20,5 @@ package net.kuujo.vertigo.worker;
  *
  * @author Jordan Halterman
  */
-public interface BasicWorker extends Worker {
+public interface BasicWorker extends Worker<BasicWorker> {
 }

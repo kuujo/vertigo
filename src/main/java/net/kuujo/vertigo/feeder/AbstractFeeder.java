@@ -22,7 +22,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -31,7 +30,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase implements Feeder<T> {
+public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<T> implements Feeder<T> {
   protected FeedQueue queue;
   protected boolean autoRetry;
   protected int retryAttempts = -1;
@@ -56,35 +55,10 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase 
   };
 
   @Override
-  @SuppressWarnings("unchecked")
-  public T start() {
-    start(new Handler<AsyncResult<T>>() {
-      @Override
-      public void handle(AsyncResult<T> result) {
-        // Do nothing.
-      }
-    });
-    return (T) this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
   public T start(Handler<AsyncResult<T>> doneHandler) {
     output.ackHandler(ackHandler);
     output.failHandler(failHandler);
-    final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
-    setup(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else {
-          future.setResult((T) AbstractFeeder.this);
-        }
-      }
-    });
-    return (T) this;
+    return super.start(doneHandler);
   }
 
   @Override

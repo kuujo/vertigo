@@ -35,25 +35,7 @@ import net.kuujo.vertigo.component.Component;
  *
  * @param <T> The feeder type
  */
-public interface Feeder<T extends Feeder<T>> extends Component {
-
-  /**
-   * Starts the feeder.
-   *
-   * @return
-   *   The called feeder instance.
-   */
-  T start();
-
-  /**
-   * Starts the feeder.
-   *
-   * @param doneHandler
-   *   An asyncronous result handler to be invoked once the feeder is started.
-   * @return
-   *   The called feeder instance.
-   */
-  T start(Handler<AsyncResult<T>> doneHandler);
+public interface Feeder<T extends Feeder<T>> extends Component<T> {
 
   /**
    * Sets the maximum feed queue size.

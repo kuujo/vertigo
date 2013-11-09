@@ -31,25 +31,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Executor<T extends Executor<T>> extends Component {
-
-  /**
-   * Starts the executor.
-   *
-   * @return
-   *   The called executor instance.
-   */
-  T start();
-
-  /**
-   * Starts the executor.
-   *
-   * @param doneHandler
-   *   An asyncronous result handler to be invoked once the executor is started.
-   * @return
-   *   The called executor instance.
-   */
-  T start(Handler<AsyncResult<T>> doneHandler);
+public interface Executor<T extends Executor<T>> extends Component<T> {
 
   /**
    * Sets the execution reply timeout.

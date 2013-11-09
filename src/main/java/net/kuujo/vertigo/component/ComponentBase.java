@@ -44,7 +44,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public abstract class ComponentBase implements Component {
+public abstract class ComponentBase<T> implements Component<T> {
   protected final Vertx vertx;
   protected final EventBus eventBus;
   protected final Container container;
@@ -98,14 +98,7 @@ public abstract class ComponentBase implements Component {
   /**
    * Sets up the component.
    */
-  protected void setup() {
-    setup(null);
-  }
-
-  /**
-   * Sets up the component.
-   */
-  protected void setup(Handler<AsyncResult<Void>> doneHandler) {
+  private void setup(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     if (doneHandler != null) {
       future.setHandler(doneHandler);
@@ -209,6 +202,36 @@ public abstract class ComponentBase implements Component {
         future.setResult(null);
       }
     });
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T start() {
+    start(new Handler<AsyncResult<T>>() {
+      @Override
+      public void handle(AsyncResult<T> result) {
+        // Do nothing.
+      }
+    });
+    return (T) this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T start(Handler<AsyncResult<T>> doneHandler) {
+    final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
+    setup(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          future.setFailure(result.cause());
+        }
+        else {
+          future.setResult((T) ComponentBase.this);
+        }
+      }
+    });
+    return (T) this;
   }
 
 }

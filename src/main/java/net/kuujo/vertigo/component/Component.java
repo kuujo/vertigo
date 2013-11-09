@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.component;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
@@ -22,7 +25,7 @@ import net.kuujo.vertigo.output.OutputCollector;
 /**
  * A network component.
  */
-public interface Component {
+public interface Component<T> {
 
   /**
    * Returns the component's {@link InputCollector}. This is the element of the
@@ -52,5 +55,23 @@ public interface Component {
    *   The instance context.
    */
   InstanceContext getContext();
+
+  /**
+   * Starts the component.
+   *
+   * @return
+   *   The called component instance.
+   */
+  T start();
+
+  /**
+   * Starts the component.
+   *
+   * @param doneHandler
+   *   An asynchronous handler to be invoked once the component is started.
+   * @return
+   *   The called component instance.
+   */
+  T start(Handler<AsyncResult<T>> doneHandler);
 
 }

@@ -18,7 +18,6 @@ package net.kuujo.vertigo.worker;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.message.JsonMessage;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
@@ -35,25 +34,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Worker extends Component {
-
-  /**
-   * Starts the worker.
-   *
-   * @return
-   *   The called worker instance.
-   */
-  Worker start();
-
-  /**
-   * Starts the worker.
-   *
-   * @param doneHandler
-   *   An asynchronous result handler to be invoked once the worker is started.
-   * @return
-   *   The called worker instance.
-   */
-  Worker start(Handler<AsyncResult<Worker>> doneHandler);
+public interface Worker<T extends Worker<T>> extends Component<T> {
 
   /**
    * Sets a worker data handler.
@@ -64,7 +45,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  Worker messageHandler(Handler<JsonMessage> handler);
+  T messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Emits data from the worker.
@@ -74,7 +55,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  Worker emit(JsonObject data);
+  T emit(JsonObject data);
 
   /**
    * Emits data from the worker with a tag.
@@ -86,7 +67,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  Worker emit(JsonObject data, String tag);
+  T emit(JsonObject data, String tag);
 
   /**
    * Emits child data from the worker.
@@ -98,7 +79,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  Worker emit(JsonObject data, JsonMessage parent);
+  T emit(JsonObject data, JsonMessage parent);
 
   /**
    * Emits child data from the worker with a tag.
@@ -112,7 +93,7 @@ public interface Worker extends Component {
    * @return 
    *   The called worker instance.
    */
-  Worker emit(JsonObject data, String tag, JsonMessage parent);
+  T emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Acknowledges processing of a message.

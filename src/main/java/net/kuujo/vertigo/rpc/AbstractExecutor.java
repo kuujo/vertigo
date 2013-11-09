@@ -16,10 +16,8 @@
 package net.kuujo.vertigo.rpc;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -34,7 +32,7 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @param <T> The executor type
  */
-public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentBase implements Executor<T> {
+public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentBase<T> implements Executor<T> {
   protected ExecuteQueue queue;
 
   protected AbstractExecutor(Vertx vertx, Container container, InstanceContext context) {
@@ -65,37 +63,11 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   };
 
   @Override
-  @SuppressWarnings("unchecked")
-  public T start() {
-    start(new Handler<AsyncResult<T>>() {
-      @Override
-      public void handle(AsyncResult<T> result) {
-        // Do nothing.
-      }
-    });
-    return (T) this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
   public T start(Handler<AsyncResult<T>> doneHandler) {
     output.ackHandler(ackHandler);
     output.failHandler(failHandler);
     input.messageHandler(messageHandler);
-
-    final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
-    setup(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else {
-          future.setResult((T) AbstractExecutor.this);
-        }
-      }
-    });
-    return (T) this;
+    return super.start(doneHandler);
   }
 
   @Override

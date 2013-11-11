@@ -56,31 +56,31 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
   }
 
   @Override
-  public StreamFeeder emit(JsonObject data) {
-    doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
+  public String emit(JsonObject data) {
+    String id = doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
     checkPause();
-    return this;
+    return id;
   }
 
   @Override
-  public StreamFeeder emit(JsonObject data, String tag) {
-    doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
+  public String emit(JsonObject data, String tag) {
+    String id = doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
     checkPause();
-    return this;
+    return id;
   }
 
   @Override
-  public StreamFeeder emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
-    doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
+  public String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+    String id = doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
     checkPause();
-    return this;
+    return id;
   }
 
   @Override
-  public StreamFeeder emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
-    doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
+  public String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+    String id = doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
     checkPause();
-    return this;
+    return id;
   }
 
   /**

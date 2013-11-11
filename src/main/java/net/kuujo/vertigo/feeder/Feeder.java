@@ -123,9 +123,9 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * @param data
    *   The data to emit.
    * @return
-   *   The called feeder instance.
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data);
+  String emit(JsonObject data);
 
   /**
    * Emits data from the feeder.
@@ -135,9 +135,9 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * @param tag
    *   A tag to apply to the data.
    * @return
-   *   The called feeder instance.
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data, String tag);
+  String emit(JsonObject data, String tag);
 
   /**
    * Emits data to from the feeder with an ack handler.
@@ -147,9 +147,9 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * @param ackHandler
    *   An asynchronous result handler to be invoke with the ack result.
    * @return
-   *   The called feeder instance.
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
+  String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Emits data from the feeder with an ack handler.
@@ -161,8 +161,8 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * @param ackHandler
    *   An asynchronous result handler to be invoke with the ack result.
    * @return
-   *   The called feeder instance.
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
+  String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
 }

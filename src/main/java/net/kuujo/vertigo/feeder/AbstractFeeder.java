@@ -105,8 +105,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
   /**
    * Executes a feed.
    */
-  @SuppressWarnings("unchecked")
-  protected T doFeed(final JsonObject data, final String tag, final int attempts, final Future<Void> future) {
+  protected String doFeed(final JsonObject data, final String tag, final int attempts, final Future<Void> future) {
     final String id;
     if (tag != null) {
       id = output.emit(data, tag);
@@ -131,7 +130,7 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
         }
       }
     });
-    return (T) this;
+    return id;
   }
 
 }

@@ -36,22 +36,22 @@ public class DefaultBasicFeeder extends AbstractFeeder<BasicFeeder> implements B
   }
 
   @Override
-  public BasicFeeder emit(JsonObject data) {
+  public String emit(JsonObject data) {
     return doFeed(data, null, 0, null);
   }
 
   @Override
-  public BasicFeeder emit(JsonObject data, String tag) {
+  public String emit(JsonObject data, String tag) {
     return doFeed(data, tag, 0, null);
   }
 
   @Override
-  public BasicFeeder emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
+  public String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
     return doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
   }
 
   @Override
-  public BasicFeeder emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
+  public String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
     return doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
   }
 

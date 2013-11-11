@@ -56,17 +56,17 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
   }
 
   @Override
-  public StreamExecutor execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    doExecute(args, null, resultHandler);
+  public String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    String id = doExecute(args, null, resultHandler);
     checkPause();
-    return this;
+    return id;
   }
 
   @Override
-  public StreamExecutor execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    doExecute(args, tag, resultHandler);
+  public String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    String id = doExecute(args, tag, resultHandler);
     checkPause();
-    return this;
+    return id;
   }
 
   /**

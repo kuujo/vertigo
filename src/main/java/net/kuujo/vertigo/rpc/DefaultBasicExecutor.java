@@ -36,12 +36,12 @@ public class DefaultBasicExecutor extends AbstractExecutor<BasicExecutor> implem
   }
 
   @Override
-  public BasicExecutor execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
     return doExecute(args, null, resultHandler);
   }
 
   @Override
-  public BasicExecutor execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
     return doExecute(args, tag, resultHandler);
   }
 

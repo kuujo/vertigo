@@ -85,9 +85,9 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @param resultHandler
    *   An asynchronous result handler to be invoke with the execution result.
    * @return
-   *   The called executor instance.
+   *   The emitted message correlation identifier.
    */
-  T execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+  String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Executes the network.
@@ -99,8 +99,8 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @param resultHandler
    *   An asynchronous result handler to be invoke with the execution result.
    * @return
-   *   The called executor instance.
+   *   The emitted message correlation identifier.
    */
-  T execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
+  String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
 }

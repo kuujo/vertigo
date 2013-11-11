@@ -122,17 +122,15 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   }
 
   @Override
-  public PollingExecutor execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
     executed = true;
-    doExecute(args, null, resultHandler);
-    return this;
+    return doExecute(args, null, resultHandler);
   }
 
   @Override
-  public PollingExecutor execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
     executed = true;
-    doExecute(args, tag, resultHandler);
-    return this;
+    return doExecute(args, tag, resultHandler);
   }
 
 }

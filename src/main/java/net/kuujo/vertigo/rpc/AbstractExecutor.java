@@ -102,8 +102,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   /**
    * Executes a feed.
    */
-  @SuppressWarnings("unchecked")
-  protected T doExecute(final JsonObject data, final String tag, Handler<AsyncResult<JsonMessage>> handler) {
+  protected String doExecute(final JsonObject data, final String tag, Handler<AsyncResult<JsonMessage>> handler) {
     final String id;
     if (tag != null) {
       id = output.emit(data, tag);
@@ -112,7 +111,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       id = output.emit(data);
     }
     queue.enqueue(id, handler);
-    return (T) this;
+    return id;
   }
 
 }

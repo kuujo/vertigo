@@ -15,7 +15,9 @@
  */
 package net.kuujo.vertigo.output.selector;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
@@ -45,14 +47,12 @@ public class FieldsSelector implements Selector {
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     JsonObject body = message.body();
-    String hash = "";
+    Map<String, Object> fields = new HashMap<>(fieldNames.length + 1);
     for (String fieldName : fieldNames) {
       Object value = body.getValue(fieldName);
-      if (value != null) {
-        hash += value.hashCode();
-      }
+      fields.put(fieldName, value);
     }
-    int index = Integer.valueOf(hash) % connections.size();
+    int index = Math.abs(fields.hashCode() % connections.size());
     return connections.subList(index, index+1);
   }
 

@@ -44,27 +44,23 @@ public class DefaultBasicWorker extends ComponentBase<BasicWorker> implements Ba
   }
 
   @Override
-  public BasicWorker emit(JsonObject data) {
-    output.emit(data);
-    return this;
+  public String emit(JsonObject data) {
+    return output.emit(data);
   }
 
   @Override
-  public BasicWorker emit(JsonObject data, String tag) {
-    output.emit(data, tag);
-    return this;
+  public String emit(JsonObject data, String tag) {
+    return output.emit(data, tag);
   }
 
   @Override
-  public BasicWorker emit(JsonObject data, JsonMessage parent) {
-    output.emit(data, parent);
-    return this;
+  public String emit(JsonObject data, JsonMessage parent) {
+    return output.emit(data, parent);
   }
 
   @Override
-  public BasicWorker emit(JsonObject data, String tag, JsonMessage parent) {
-    output.emit(data, tag, parent);
-    return this;
+  public String emit(JsonObject data, String tag, JsonMessage parent) {
+    return output.emit(data, tag, parent);
   }
 
   @Override

@@ -52,10 +52,10 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    *
    * @param data
    *   The data to emit.
-   * @return 
-   *   The called worker instance.
+   * @return
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data);
+  String emit(JsonObject data);
 
   /**
    * Emits data from the worker with a tag.
@@ -64,10 +64,10 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    *   The data to emit.
    * @param tag
    *   A tag to apply to the message.
-   * @return 
-   *   The called worker instance.
+   * @return
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data, String tag);
+  String emit(JsonObject data, String tag);
 
   /**
    * Emits child data from the worker.
@@ -76,10 +76,10 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    *   The data to emit.
    * @param parent
    *   The parent message.
-   * @return 
-   *   The called worker instance.
+   * @return
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data, JsonMessage parent);
+  String emit(JsonObject data, JsonMessage parent);
 
   /**
    * Emits child data from the worker with a tag.
@@ -90,10 +90,10 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    *   A tag to apply to the message.
    * @param parent
    *   The parent message.
-   * @return 
-   *   The called worker instance.
+   * @return
+   *   The emitted message identifier.
    */
-  T emit(JsonObject data, String tag, JsonMessage parent);
+  String emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Acknowledges processing of a message.

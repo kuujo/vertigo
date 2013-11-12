@@ -23,7 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.feeder.StreamFeeder;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -50,14 +50,14 @@ public class TestFailingFeeder extends Verticle {
   @Override
   public void start() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
+    vertigo.createStreamFeeder().start(new Handler<AsyncResult<StreamFeeder>>() {
       @Override
-      public void handle(AsyncResult<BasicFeeder> result) {
+      public void handle(AsyncResult<StreamFeeder> result) {
         if (result.failed()) {
           container.logger().error(result.cause());
         }
         else {
-          BasicFeeder feeder = result.result();
+          StreamFeeder feeder = result.result();
           feeder.emit(container.config(), new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {

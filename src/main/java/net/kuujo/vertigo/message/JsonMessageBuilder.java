@@ -184,15 +184,15 @@ public class JsonMessageBuilder {
   }
 
   /**
-   * Sets the message ancestor.
+   * Sets the message root.
    *
-   * @param ancestor
-   *   The message ancestor.
+   * @param root
+   *   The message root.
    * @return
    *   The called message builder.
    */
-  public JsonMessageBuilder setAncestor(String ancestor) {
-    structure.putString("ancestor", ancestor);
+  public JsonMessageBuilder setRoot(String root) {
+    structure.putString("root", root);
     return this;
   }
 

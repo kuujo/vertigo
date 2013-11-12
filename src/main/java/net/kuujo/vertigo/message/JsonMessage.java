@@ -52,13 +52,13 @@ public interface JsonMessage extends Serializable {
   String parent();
 
   /**
-   * Returns the ancestor ID. This is the ID of the original message in the
+   * Returns the root ID. This is the ID of the original message in the
    * message tree.
    *
    * @return
-   *   The ancestor message ID.
+   *   The root message ID.
    */
-  String ancestor();
+  String root();
 
   /**
    * Returns the auditor address.

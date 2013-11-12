@@ -54,8 +54,8 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public String ancestor() {
-    return body.getString("ancestor");
+  public String root() {
+    return body.getString("root");
   }
 
   @Override
@@ -76,8 +76,8 @@ public class DefaultJsonMessage implements JsonMessage {
   @Override
   public JsonMessage createChild() {
     JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains("ancestor")) {
-      newMessage.putString("ancestor", this.body.getString("id"));
+    if (!newMessage.getFieldNames().contains("root")) {
+      newMessage.putString("root", this.body.getString("id"));
     }
     newMessage.putString("parent", this.body.getString("id"));
     newMessage.putString("id", createUniqueId());
@@ -87,8 +87,8 @@ public class DefaultJsonMessage implements JsonMessage {
   @Override
   public JsonMessage createChild(JsonObject body) {
     JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains("ancestor")) {
-      newMessage.putString("ancestor", this.body.getString("id"));
+    if (!newMessage.getFieldNames().contains("root")) {
+      newMessage.putString("root", this.body.getString("id"));
     }
     newMessage.putString("parent", this.body.getString("id"));
     newMessage.putString("id", createUniqueId())
@@ -99,8 +99,8 @@ public class DefaultJsonMessage implements JsonMessage {
   @Override
   public JsonMessage createChild(JsonObject body, String tag) {
     JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains("ancestor")) {
-      newMessage.putString("ancestor", this.body.getString("id"));
+    if (!newMessage.getFieldNames().contains("root")) {
+      newMessage.putString("root", this.body.getString("id"));
     }
     newMessage.putString("parent", this.body.getString("id"));
     newMessage.putString("id", createUniqueId())

@@ -129,7 +129,7 @@ public interface OutputCollector {
    *
    * This handler will be called with the correlation identifier of the message
    * that was failed. Not that even if a descendant of the output message was
-   * failed, all parent and ancestor messages are failed as well.
+   * failed, all parent and ancestor messages are failed as well, up to the root.
    *
    * @param handler
    *   A handler to be invoked when a fail message is received.

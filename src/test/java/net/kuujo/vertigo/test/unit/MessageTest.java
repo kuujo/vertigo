@@ -43,7 +43,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertNull(message.source());
     assertNull(message.tag());
     assertEquals("audit", message.auditor());
@@ -56,7 +56,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertNull(message.source());
     assertEquals("test", message.tag());
     assertEquals("audit", message.auditor());
@@ -69,7 +69,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertEquals("test", message.source());
     assertNull(message.tag());
     assertEquals("audit", message.auditor());
@@ -82,7 +82,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
     assertEquals("audit", message.auditor());
@@ -95,7 +95,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
     assertEquals("audit", message.auditor());
@@ -104,7 +104,7 @@ public class MessageTest {
     assertNotNull(newMessage.id());
     assertFalse(newMessage.id().equals(message.id()));
     assertNull(newMessage.parent());
-    assertNull(newMessage.ancestor());
+    assertNull(newMessage.root());
     assertEquals("test", newMessage.source());
     assertEquals("foo", newMessage.tag());
     assertEquals("audit", message.auditor());
@@ -117,7 +117,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
     assertEquals("audit", message.auditor());
@@ -127,7 +127,7 @@ public class MessageTest {
     assertNotNull(child.id());
     assertFalse(child.id().equals(message.id()));
     assertEquals(message.id(), child.parent());
-    assertEquals(message.id(), child.ancestor());
+    assertEquals(message.id(), child.root());
     assertEquals("test", child.source());
     assertEquals("foo", child.tag());
     assertEquals("audit", message.auditor());
@@ -140,7 +140,7 @@ public class MessageTest {
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
-    assertNull(message.ancestor());
+    assertNull(message.root());
     assertEquals("test", message.source());
     assertEquals("foo", message.tag());
     assertEquals("audit", message.auditor());
@@ -150,7 +150,7 @@ public class MessageTest {
     assertNotNull(child.id());
     assertFalse(child.id().equals(message.id()));
     assertEquals(message.id(), child.parent());
-    assertEquals(message.id(), child.ancestor());
+    assertEquals(message.id(), child.root());
     assertEquals("test", child.source());
     assertEquals("bar", child.tag());
     assertEquals("audit", message.auditor());
@@ -168,7 +168,7 @@ public class MessageTest {
       assertNotNull(loaded.id());
       assertFalse(loaded.id().equals(message.id()));
       assertEquals(message.id(), loaded.parent());
-      assertEquals(message.id(), loaded.ancestor());
+      assertEquals(message.id(), loaded.root());
       assertEquals("test", loaded.source());
       assertEquals("bar", loaded.tag());
       assertEquals("audit", message.auditor());

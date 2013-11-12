@@ -207,12 +207,12 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
      * Sets the result of an item in the queue.
      */
     private void result(JsonMessage message) {
-      HandlerHolder holder = handlers.get(message.ancestor());
+      HandlerHolder holder = handlers.get(message.root());
       if (holder != null) {
         holder.result = message;
         if (holder.acked) {
           vertx.cancelTimer(holder.timer);
-          handlers.remove(message.ancestor()).resultHandler.handle(message);
+          handlers.remove(message.root()).resultHandler.handle(message);
         }
       }
     }

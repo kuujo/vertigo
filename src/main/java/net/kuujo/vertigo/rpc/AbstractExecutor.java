@@ -117,6 +117,9 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     return id;
   }
 
+  /**
+   * An internal execute queue.
+   */
   private static class InternalQueue {
     private final Vertx vertx;
     private final Map<String, HandlerHolder> handlers = new HashMap<String, HandlerHolder>();
@@ -127,6 +130,9 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       this.vertx = vertx;
     }
 
+    /**
+     * Holds execute queue handlers.
+     */
     private static class HandlerHolder {
       private final Long timer;
       private final Handler<JsonMessage> resultHandler;
@@ -141,14 +147,24 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       }
     }
 
+    /**
+     * Returns the execute queue size.
+     */
     private final int size() {
       return handlers.size();
     }
 
+    /**
+     * Indicates whether the execute queue is full.
+     */
     private final boolean full() {
       return size() > maxSize;
     }
 
+    /**
+     * Enqueues a new item in the execute queue. When the item is acked or failed
+     * by ID, or when a result is received, the appropriate handlers will be called.
+     */
     private void enqueue(final String id, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
       long timerId = vertx.setTimer(replyTimeout, new Handler<Long>() {
         @Override
@@ -162,6 +178,9 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       handlers.put(id, new HandlerHolder(timerId, resultHandler, failHandler));
     }
 
+    /**
+     * Acks an item in the queue.
+     */
     private void ack(String id) {
       HandlerHolder holder = handlers.get(id);
       if (holder != null) {
@@ -173,6 +192,9 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       }
     }
 
+    /**
+     * Fails an item in the queue.
+     */
     private void fail(String id) {
       HandlerHolder holder = handlers.remove(id);
       if (holder != null) {
@@ -181,6 +203,9 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       }
     }
 
+    /**
+     * Sets the result of an item in the queue.
+     */
     private void result(JsonMessage message) {
       HandlerHolder holder = handlers.get(message.ancestor());
       if (holder != null) {

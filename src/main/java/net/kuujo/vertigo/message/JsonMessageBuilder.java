@@ -127,7 +127,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setId(String id) {
-    structure.putString("id", id);
+    structure.putString(DefaultJsonMessage.ID, id);
     return this;
   }
 
@@ -140,7 +140,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setBody(JsonObject body) {
-    structure.putObject("body", body);
+    structure.putObject(DefaultJsonMessage.BODY, body);
     return this;
   }
 
@@ -153,7 +153,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setTag(String tag) {
-    structure.putString("tag", tag);
+    structure.putString(DefaultJsonMessage.TAG, tag);
     return this;
   }
 
@@ -166,7 +166,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setSource(String source) {
-    structure.putString("source", source);
+    structure.putString(DefaultJsonMessage.SOURCE, source);
     return this;
   }
 
@@ -179,7 +179,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setParent(String parent) {
-    structure.putString("parent", parent);
+    structure.putString(DefaultJsonMessage.PARENT, parent);
     return this;
   }
 
@@ -192,7 +192,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setRoot(String root) {
-    structure.putString("root", root);
+    structure.putString(DefaultJsonMessage.ROOT, root);
     return this;
   }
 
@@ -205,7 +205,7 @@ public class JsonMessageBuilder {
    *   The called message builder.
    */
   public JsonMessageBuilder setAuditor(String auditor) {
-    structure.putString("auditor", auditor);
+    structure.putString(DefaultJsonMessage.AUDITOR, auditor);
     return this;
   }
 

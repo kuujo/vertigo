@@ -26,6 +26,13 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultJsonMessage implements JsonMessage {
   private JsonObject body;
+  public static final String ID = "id";
+  public static final String SOURCE = "source";
+  public static final String PARENT = "parent";
+  public static final String ROOT = "root";
+  public static final String AUDITOR = "auditor";
+  public static final String BODY = "body";
+  public static final String TAG = "tag";
 
   private static String createUniqueId() {
     return UUID.randomUUID().toString();
@@ -40,78 +47,78 @@ public class DefaultJsonMessage implements JsonMessage {
 
   @Override
   public String id() {
-    return body.getString("id");
+    return body.getString(ID);
   }
 
   @Override
   public String source() {
-    return body.getString("source");
+    return body.getString(SOURCE);
   }
 
   @Override
   public String parent() {
-    return body.getString("parent");
+    return body.getString(PARENT);
   }
 
   @Override
   public String root() {
-    return body.getString("root");
+    return body.getString(ROOT);
   }
 
   @Override
   public String auditor() {
-    return body.getString("auditor");
+    return body.getString(AUDITOR);
   }
 
   @Override
   public JsonObject body() {
-    return body.getObject("body");
+    return body.getObject(BODY);
   }
 
   @Override
   public String tag() {
-    return body.getString("tag");
+    return body.getString(TAG);
   }
 
   @Override
   public JsonMessage createChild() {
     JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains("root")) {
-      newMessage.putString("root", this.body.getString("id"));
+    if (!newMessage.getFieldNames().contains(ROOT)) {
+      newMessage.putString(ROOT, this.body.getString(ID));
     }
-    newMessage.putString("parent", this.body.getString("id"));
-    newMessage.putString("id", createUniqueId());
+    newMessage.putString(PARENT, this.body.getString(ID));
+    newMessage.putString(ID, createUniqueId());
     return new DefaultJsonMessage(newMessage);
   }
 
   @Override
   public JsonMessage createChild(JsonObject body) {
     JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains("root")) {
-      newMessage.putString("root", this.body.getString("id"));
+    if (!newMessage.getFieldNames().contains(ROOT)) {
+      newMessage.putString(ROOT, this.body.getString(ID));
     }
-    newMessage.putString("parent", this.body.getString("id"));
-    newMessage.putString("id", createUniqueId())
-      .putObject("body", body);
+    newMessage.putString(PARENT, this.body.getString(ID));
+    newMessage.putString(ID, createUniqueId())
+      .putObject(BODY, body);
     return new DefaultJsonMessage(newMessage);
   }
 
   @Override
   public JsonMessage createChild(JsonObject body, String tag) {
     JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains("root")) {
-      newMessage.putString("root", this.body.getString("id"));
+    if (!newMessage.getFieldNames().contains(ROOT)) {
+      newMessage.putString(ROOT, this.body.getString(ID));
     }
-    newMessage.putString("parent", this.body.getString("id"));
-    newMessage.putString("id", createUniqueId())
-      .putObject("body", body)
-      .putString("tag", tag);
+    newMessage.putString(PARENT, this.body.getString(ID));
+    newMessage.putString(ID, createUniqueId())
+      .putObject(BODY, body)
+      .putString(TAG, tag);
     return new DefaultJsonMessage(newMessage);
   }
 
   @Override
   public JsonMessage copy() {
-    return new DefaultJsonMessage(body.copy().putString("id", createUniqueId()));
+    return new DefaultJsonMessage(body.copy().putString(ID, createUniqueId()));
   }
 
   @Override

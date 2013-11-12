@@ -99,7 +99,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
         timer.ids.add(node.id);
       }
       clearRoot(node);
-      eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id).putString("message", node.failureMessage));
+      eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id));
     }
   };
 
@@ -254,7 +254,6 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     private boolean ready = true;
     private boolean acked;
     private boolean ack;
-    private String failureMessage;
     private boolean locked;
 
     private Handler<Node> childAckHandler = new Handler<Node>() {
@@ -273,7 +272,6 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       @Override
       public void handle(Node node) {
         if (!failed()) {
-          Node.this.failureMessage = node.failureMessage;
           fail();
         }
       }
@@ -322,7 +320,6 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
      */
     protected final void fail(String message) {
       acked = true; ack = false;
-      this.failureMessage = message;
       checkAck();
     }
 

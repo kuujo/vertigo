@@ -24,7 +24,7 @@ import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.rpc.BasicExecutor;
+import net.kuujo.vertigo.rpc.StreamExecutor;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.testComplete;
@@ -54,14 +54,14 @@ public class TestResultCheckingExecutor extends Verticle {
   @Override
   public void start() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.createBasicExecutor().start(new Handler<AsyncResult<BasicExecutor>>() {
+    vertigo.createStreamExecutor().start(new Handler<AsyncResult<StreamExecutor>>() {
       @Override
-      public void handle(AsyncResult<BasicExecutor> result) {
+      public void handle(AsyncResult<StreamExecutor> result) {
         if (result.failed()) {
           container.logger().error(result.cause());
         }
         else {
-          final BasicExecutor executor = result.result();
+          final StreamExecutor executor = result.result();
           executor.execute(container.config().getObject("input"), new Handler<AsyncResult<JsonMessage>>() {
             @Override
             public void handle(AsyncResult<JsonMessage> result) {

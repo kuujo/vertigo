@@ -15,7 +15,11 @@
  */
 package net.kuujo.vertigo.rpc;
 
+import net.kuujo.vertigo.message.JsonMessage;
+
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.streams.ReadStream;
 import org.vertx.java.core.streams.WriteStream;
 
@@ -30,16 +34,30 @@ import org.vertx.java.core.streams.WriteStream;
 public interface StreamExecutor extends Executor<StreamExecutor> {
 
   /**
-   * Sets a full handler on the executor.
+   * Executes the network.
    *
-   * The full handler will be called when the execute queue becomes full.
-   *
-   * @param handler
-   *   A handler to be invoked when the execute queue is full.
+   * @param args
+   *   Execution arguments.
+   * @param resultHandler
+   *   An asynchronous result handler to be invoke with the execution result.
    * @return
-   *   The called executor instance.
+   *   The emitted message correlation identifier.
    */
-  StreamExecutor fullHandler(Handler<Void> handler);
+  String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param tag
+   *   A tag to apply to the arguments.
+   * @param resultHandler
+   *   An asynchronous result handler to be invoke with the execution result.
+   * @return
+   *   The emitted message correlation identifier.
+   */
+  String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Sets a drain handler on the executor.

@@ -15,7 +15,10 @@
  */
 package net.kuujo.vertigo.rpc;
 
+import net.kuujo.vertigo.message.JsonMessage;
+
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * A polling executor.
@@ -67,5 +70,47 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    *   The called executor instance.
    */
   PollingExecutor executeHandler(Handler<PollingExecutor> handler);
+
+  /**
+   * Sets a result handler on the executor.
+   *
+   * @param resultHandler
+   *   A handler to be invoked when a result is received.
+   * @return
+   *   The called executor instance.
+   */
+  PollingExecutor resultHandler(Handler<JsonMessage> resultHandler);
+
+  /**
+   * Sets a fail handler on the executor.
+   *
+   * @param failHandler
+   *   A handler to be invoked when a failure is received.
+   * @return
+   *   The called executor instance.
+   */
+  PollingExecutor failHandler(Handler<String> failHandler);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Execution arguments.
+   * @return
+   *   The emitted message correlation identifier.
+   */
+  String execute(JsonObject args);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param tag
+   *   A tag to apply to the arguments.
+   * @return
+   *   The emitted message correlation identifier.
+   */
+  String execute(JsonObject args, String tag);
 
 }

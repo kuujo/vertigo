@@ -28,8 +28,6 @@ import net.kuujo.vertigo.feeder.DefaultStreamFeeder;
 import net.kuujo.vertigo.feeder.PollingFeeder;
 import net.kuujo.vertigo.feeder.StreamFeeder;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.rpc.BasicExecutor;
-import net.kuujo.vertigo.rpc.DefaultBasicExecutor;
 import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
 import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
@@ -138,26 +136,6 @@ public final class Vertigo {
    */
   public StreamFeeder createStreamFeeder() {
     return new DefaultStreamFeeder(vertx, container, context);
-  }
-
-  /**
-   * Creates a basic executor.
-   *
-   * @return
-   *   A new basic executor instance.
-   */
-  public BasicExecutor createExecutor() {
-    return createBasicExecutor();
-  }
-
-  /**
-   * Creates a basic executor.
-   *
-   * @return
-   *   A new basic executor instance.
-   */
-  public BasicExecutor createBasicExecutor() {
-    return new DefaultBasicExecutor(vertx, container, context);
   }
 
   /**

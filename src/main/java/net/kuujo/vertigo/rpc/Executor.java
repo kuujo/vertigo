@@ -16,11 +16,6 @@
 package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.message.JsonMessage;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * A network executor.
@@ -76,31 +71,5 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    *   A boolean indicating whether the execution queue is full.
    */
   boolean queueFull();
-
-  /**
-   * Executes the network.
-   *
-   * @param args
-   *   Execution arguments.
-   * @param resultHandler
-   *   An asynchronous result handler to be invoke with the execution result.
-   * @return
-   *   The emitted message correlation identifier.
-   */
-  String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
-
-  /**
-   * Executes the network.
-   *
-   * @param args
-   *   Execution arguments.
-   * @param tag
-   *   A tag to apply to the arguments.
-   * @param resultHandler
-   *   An asynchronous result handler to be invoke with the execution result.
-   * @return
-   *   The emitted message correlation identifier.
-   */
-  String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
 }

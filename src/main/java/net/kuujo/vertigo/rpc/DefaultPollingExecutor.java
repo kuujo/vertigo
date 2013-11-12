@@ -33,8 +33,28 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> implements PollingExecutor {
   private Handler<PollingExecutor> executeHandler;
+  private Handler<JsonMessage> resultHandler;
+  private Handler<String> failHandler;
   private long executeDelay = 100;
   private boolean executed;
+
+  private Handler<JsonMessage> internalResultHandler = new Handler<JsonMessage>() {
+    @Override
+    public void handle(JsonMessage result) {
+      if (resultHandler != null) {
+        resultHandler.handle(result);
+      }
+    }
+  };
+
+  private Handler<String> internalFailHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      if (failHandler != null) {
+        failHandler.handle(messageId);
+      }
+    }
+  };
 
   public DefaultPollingExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
@@ -70,9 +90,9 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   }
 
   /**
-   * Schedules a feed.
+   * Schedules an execution.
    */
-  private void scheduleFeed() {
+  private void scheduleExecute() {
     vertx.setTimer(executeDelay, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
@@ -82,17 +102,17 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   }
 
   /**
-   * Recursively invokes the feed handler.
-   * If the feed handler is invoked and no messages are fed from the handler,
-   * a timer is set to restart the feed in the future.
+   * Recursively invokes the execute handler.
+   * If the feed handler is invoked and no messages are executed from the handler,
+   * a timer is set to restart the execution in the future.
    */
   private void recursiveFeed() {
     executed = true;
-    while (executed && !queue.full()) {
+    while (executed && !queueFull()) {
       executed = false;
       doFeed();
     }
-    scheduleFeed();
+    scheduleExecute();
   }
 
   /**
@@ -122,15 +142,27 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   }
 
   @Override
-  public String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    executed = true;
-    return doExecute(args, null, resultHandler);
+  public PollingExecutor resultHandler(Handler<JsonMessage> resultHandler) {
+    this.resultHandler = resultHandler;
+    return this;
   }
 
   @Override
-  public String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public PollingExecutor failHandler(Handler<String> failHandler) {
+    this.failHandler = failHandler;
+    return this;
+  }
+
+  @Override
+  public String execute(JsonObject args) {
     executed = true;
-    return doExecute(args, tag, resultHandler);
+    return doExecute(args, null, internalResultHandler, internalFailHandler);
+  }
+
+  @Override
+  public String execute(JsonObject args, String tag) {
+    executed = true;
+    return doExecute(args, tag, internalResultHandler, internalFailHandler);
   }
 
 }

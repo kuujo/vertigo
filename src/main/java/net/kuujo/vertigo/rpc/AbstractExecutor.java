@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.rpc;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -33,11 +36,11 @@ import net.kuujo.vertigo.message.JsonMessage;
  * @param <T> The executor type
  */
 public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentBase<T> implements Executor<T> {
-  protected ExecuteQueue queue;
+  protected InternalQueue queue;
 
   protected AbstractExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
-    queue = new BasicExecuteQueue(vertx);
+    queue = new InternalQueue(vertx);
   }
 
   private Handler<String> ackHandler = new Handler<String>() {
@@ -58,7 +61,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     @Override
     public void handle(JsonMessage message) {
       input.ack(message);
-      queue.receive(message);
+      queue.result(message);
     }
   };
 
@@ -73,25 +76,25 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   @Override
   @SuppressWarnings("unchecked")
   public T setReplyTimeout(long timeout) {
-    queue.setReplyTimeout(timeout);
+    queue.replyTimeout = timeout;
     return (T) this;
   }
 
   @Override
   public long getReplyTimeout() {
-    return queue.getReplyTimeout();
+    return queue.replyTimeout;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public T setMaxQueueSize(long maxSize) {
-    queue.setMaxQueueSize(maxSize);
+    queue.maxSize = maxSize;
     return (T) this;
   }
 
   @Override
   public long getMaxQueueSize() {
-    return queue.getMaxQueueSize();
+    return queue.maxSize;
   }
 
   @Override
@@ -102,7 +105,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   /**
    * Executes a feed.
    */
-  protected String doExecute(final JsonObject data, final String tag, Handler<AsyncResult<JsonMessage>> handler) {
+  protected String doExecute(final JsonObject data, final String tag, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
     final String id;
     if (tag != null) {
       id = output.emit(data, tag);
@@ -110,8 +113,84 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     else {
       id = output.emit(data);
     }
-    queue.enqueue(id, handler);
+    queue.enqueue(id, resultHandler, failHandler);
     return id;
+  }
+
+  private static class InternalQueue {
+    private final Vertx vertx;
+    private final Map<String, HandlerHolder> handlers = new HashMap<String, HandlerHolder>();
+    private long replyTimeout = 30000;
+    private long maxSize = 1000;
+
+    private InternalQueue(Vertx vertx) {
+      this.vertx = vertx;
+    }
+
+    private static class HandlerHolder {
+      private final Long timer;
+      private final Handler<JsonMessage> resultHandler;
+      private final Handler<String> failHandler;
+      private boolean acked;
+      private JsonMessage result;
+
+      public HandlerHolder(Long timer, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
+        this.timer = timer;
+        this.resultHandler = resultHandler;
+        this.failHandler = failHandler;
+      }
+    }
+
+    private final int size() {
+      return handlers.size();
+    }
+
+    private final boolean full() {
+      return size() > maxSize;
+    }
+
+    private void enqueue(final String id, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
+      long timerId = vertx.setTimer(replyTimeout, new Handler<Long>() {
+        @Override
+        public void handle(Long timerId) {
+          HandlerHolder holder = handlers.get(id);
+          if (holder != null) {
+            handlers.remove(id).failHandler.handle(id);
+          }
+        }
+      });
+      handlers.put(id, new HandlerHolder(timerId, resultHandler, failHandler));
+    }
+
+    private void ack(String id) {
+      HandlerHolder holder = handlers.get(id);
+      if (holder != null) {
+        holder.acked = true;
+        if (holder.result != null) {
+          vertx.cancelTimer(holder.timer);
+          handlers.remove(id).resultHandler.handle(holder.result);
+        }
+      }
+    }
+
+    private void fail(String id) {
+      HandlerHolder holder = handlers.remove(id);
+      if (holder != null) {
+        vertx.cancelTimer(holder.timer);
+        holder.failHandler.handle(id);
+      }
+    }
+
+    private void result(JsonMessage message) {
+      HandlerHolder holder = handlers.get(message.ancestor());
+      if (holder != null) {
+        holder.result = message;
+        if (holder.acked) {
+          vertx.cancelTimer(holder.timer);
+          handlers.remove(message.ancestor()).resultHandler.handle(message);
+        }
+      }
+    }
   }
 
 }

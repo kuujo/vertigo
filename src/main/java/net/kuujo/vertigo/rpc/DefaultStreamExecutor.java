@@ -17,10 +17,13 @@ package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.runtime.FailureException;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -30,7 +33,6 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> implements StreamExecutor {
-  private Handler<Void> fullHandler;
   private Handler<Void> drainHandler;
   private boolean paused;
 
@@ -44,12 +46,6 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
   }
 
   @Override
-  public StreamExecutor fullHandler(Handler<Void> handler) {
-    fullHandler = handler;
-    return this;
-  }
-
-  @Override
   public StreamExecutor drainHandler(Handler<Void> handler) {
     drainHandler = handler;
     return this;
@@ -57,14 +53,27 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
 
   @Override
   public String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    String id = doExecute(args, null, resultHandler);
-    checkPause();
-    return id;
+    return execute(args, null, resultHandler);
   }
 
   @Override
   public String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    String id = doExecute(args, tag, resultHandler);
+    final Future<JsonMessage> future = new DefaultFutureResult<JsonMessage>().setHandler(resultHandler);
+    String id = doExecute(args, tag,
+        new Handler<JsonMessage>() {
+          @Override
+          public void handle(JsonMessage result) {
+            future.setResult(result);
+            checkPause();
+          }
+        },
+        new Handler<String>() {
+          @Override
+          public void handle(String event) {
+            future.setFailure(new FailureException("Processing failed."));
+            checkPause();
+          }
+        });
     checkPause();
     return id;
   }
@@ -74,20 +83,15 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
    */
   private void checkPause() {
     if (paused) {
-      if (queue.size() < queue.getMaxQueueSize() * .75) {
+      if (queueFull()) {
         paused = false;
         if (drainHandler != null) {
           drainHandler.handle(null);
         }
       }
     }
-    else {
-      if (queue.size() >= queue.getMaxQueueSize()) {
-        paused = true;
-        if (fullHandler != null) {
-          fullHandler.handle(null);
-        }
-      }
+    else if (queueFull()) {
+      paused = true;
     }
   }
 

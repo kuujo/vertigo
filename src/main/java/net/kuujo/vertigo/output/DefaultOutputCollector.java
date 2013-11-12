@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Random;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.message.DefaultJsonMessage;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -188,12 +188,12 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String emit(JsonObject body) {
-    return emitNew(DefaultJsonMessage.create(context.getComponent().getAddress(), body, selectRandomAuditor()));
+    return emitNew(JsonMessageBuilder.create(body).setSource(context.getComponent().getAddress()).setAuditor(selectRandomAuditor()).toMessage());
   }
 
   @Override
   public String emit(JsonObject body, String tag) {
-    return emitNew(DefaultJsonMessage.create(context.getComponent().getAddress(), body, tag, selectRandomAuditor()));
+    return emitNew(JsonMessageBuilder.create(body, tag).setSource(context.getComponent().getAddress()).setAuditor(selectRandomAuditor()).toMessage());
   }
 
   @Override

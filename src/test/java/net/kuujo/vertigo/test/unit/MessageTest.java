@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.message.DefaultJsonMessage;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -38,7 +38,8 @@ public class MessageTest {
 
   @Test
   public void testCreateMessage() {
-    JsonMessage message = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -50,7 +51,8 @@ public class MessageTest {
 
   @Test
   public void testCreateMessageWithTag() {
-    JsonMessage message = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "test", "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setTag("test").setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -62,7 +64,8 @@ public class MessageTest {
 
   @Test
   public void testCreateMessageWithSource() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setSource("test").setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -74,7 +77,8 @@ public class MessageTest {
 
   @Test
   public void testCreateMessageWithSourceAndTag() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setSource("test").setTag("foo").setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -86,7 +90,8 @@ public class MessageTest {
 
   @Test
   public void testCopyMessage() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setSource("test").setTag("foo").setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -107,7 +112,8 @@ public class MessageTest {
 
   @Test
   public void testCreateChild() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setSource("test").setTag("foo").setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -129,7 +135,8 @@ public class MessageTest {
 
   @Test
   public void testCreateChildWithTag() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setSource("test").setTag("foo").setAuditor("audit").toMessage();
     assertEquals("Hello world!", message.body().getString("body"));
     assertNotNull(message.id());
     assertNull(message.parent());
@@ -151,7 +158,8 @@ public class MessageTest {
 
   @Test
   public void testLoadMessage() {
-    JsonMessage message = DefaultJsonMessage.create("test", new JsonObject().putString("body", "Hello world!"), "foo", "audit");
+    JsonMessage message = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!"))
+        .setSource("test").setTag("foo").setAuditor("audit").toMessage();
     JsonMessage child = message.createChild(new JsonObject().putString("body2", "Hello world again!"), "bar");
     try {
       JsonMessage loaded = Serializer.deserialize(Serializer.serialize(child));

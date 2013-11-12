@@ -38,62 +38,6 @@ public class DefaultJsonMessage implements JsonMessage {
     this.body = body;
   }
 
-  /**
-   * Creates a new JSON message.
-   *
-   * @param body
-   *   The message body.
-   * @return
-   *   A new JSON message instance.
-   */
-  public static JsonMessage create(JsonObject body, String auditor) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("auditor", auditor));
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param body
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the message.
-   * @return
-   *   A new JSON message instance.
-   */
-  public static JsonMessage create(JsonObject body, String tag, String auditor) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putObject("body", body).putString("tag", tag).putString("auditor", auditor));
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param source
-   *   The message source.
-   * @param body
-   *   The message body.
-   * @return
-   *   A new JSON message instance.
-   */
-  public static JsonMessage create(String source, JsonObject body, String auditor) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body).putString("auditor", auditor));
-  }
-
-  /**
-   * Creates a new JSON message.
-   *
-   * @param source
-   *   The message source.
-   * @param body
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the message.
-   * @return
-   *   A new JSON message instance.
-   */
-  public static JsonMessage create(String source, JsonObject body, String tag, String auditor) {
-    return new DefaultJsonMessage(new JsonObject().putString("id", createUniqueId()).putString("source", source).putObject("body", body).putString("tag", tag).putString("auditor", auditor));
-  }
-
   @Override
   public String id() {
     return body.getString("id");

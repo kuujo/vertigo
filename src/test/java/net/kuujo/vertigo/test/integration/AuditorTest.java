@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.auditor.Auditor;
-import net.kuujo.vertigo.message.DefaultJsonMessage;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessageBuilder;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -102,7 +102,7 @@ public class AuditorTest extends TestVerticle {
   @Test
   public void testAck() {
     final String auditor = "test";
-    final JsonMessage source = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), auditor);
+    final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
 
     vertx.eventBus().registerHandler("broadcast", ackHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -157,7 +157,7 @@ public class AuditorTest extends TestVerticle {
   @Test
   public void testChildFail() {
     final String auditor = "test";
-    final JsonMessage source = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), auditor);
+    final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -189,7 +189,7 @@ public class AuditorTest extends TestVerticle {
   @Test
   public void testDescendantFail() {
     final String auditor = "test";
-    final JsonMessage source = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), auditor);
+    final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -244,7 +244,7 @@ public class AuditorTest extends TestVerticle {
   @Test
   public void testExpire() {
     final String auditor = "test";
-    final JsonMessage source = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), auditor);
+    final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -279,7 +279,7 @@ public class AuditorTest extends TestVerticle {
   @Test
   public void testDelayedForkAck() {
     final String auditor = "test";
-    final JsonMessage source = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), auditor);
+    final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
 
     vertx.eventBus().registerHandler("broadcast", ackHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -339,7 +339,7 @@ public class AuditorTest extends TestVerticle {
   @Test
   public void testDelayedForkFail() {
     final String auditor = "test";
-    final JsonMessage source = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), auditor);
+    final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override

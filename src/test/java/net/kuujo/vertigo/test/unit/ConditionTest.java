@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.message.DefaultJsonMessage;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.condition.FieldCondition;
 import net.kuujo.vertigo.output.condition.SourceCondition;
@@ -39,16 +39,16 @@ public class ConditionTest {
   public void testTagsCondition() {
     Condition condition = new TagsCondition("foo", "bar");
 
-    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor");
+    JsonMessage message1 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor("audit").toMessage();
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "baz", "auditor");
+    JsonMessage message2 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setTag("baz").setAuditor("audit").toMessage();
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "foo", "auditor");
+    JsonMessage message3 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setTag("foo").setAuditor("audit").toMessage();
     assertTrue(condition.isValid(message3));
 
-    JsonMessage message4 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "bar", "auditor");
+    JsonMessage message4 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setTag("bar").setAuditor("audit").toMessage();
     assertTrue(condition.isValid(message4));
   }
 
@@ -56,13 +56,13 @@ public class ConditionTest {
   public void testFieldCondition() {
     Condition condition = new FieldCondition("foo", "bar");
 
-    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("bar", "foo"), "auditor");
+    JsonMessage message1 = JsonMessageBuilder.create(new JsonObject().putString("bar", "foo")).setAuditor("audit").toMessage();
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = DefaultJsonMessage.create(new JsonObject().putString("foo", "baz"), "auditor");
+    JsonMessage message2 = JsonMessageBuilder.create(new JsonObject().putString("foo", "baz")).setAuditor("audit").toMessage();
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = DefaultJsonMessage.create(new JsonObject().putString("foo", "bar"), "auditor");
+    JsonMessage message3 = JsonMessageBuilder.create(new JsonObject().putString("foo", "bar")).setAuditor("audit").toMessage();
     assertTrue(condition.isValid(message3));
   }
 
@@ -70,13 +70,13 @@ public class ConditionTest {
   public void testSourceCondition() {
     Condition condition = new SourceCondition("foo");
 
-    JsonMessage message1 = DefaultJsonMessage.create(new JsonObject().putString("body", "Hello world!"), "auditor");
+    JsonMessage message1 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor("audit").toMessage();
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = DefaultJsonMessage.create("bar", new JsonObject().putString("body", "Hello world!"), "auditor");
+    JsonMessage message2 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setSource("bar").setAuditor("audit").toMessage();
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = DefaultJsonMessage.create("foo", new JsonObject().putString("body", "Hello world!"), "auditor");
+    JsonMessage message3 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setSource("foo").setAuditor("audit").toMessage();
     assertTrue(condition.isValid(message3));
   }
 

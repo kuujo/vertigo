@@ -139,10 +139,16 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
     return id;
   }
 
+  /**
+   * An internal feeder queue.
+   */
   private static class InternalQueue {
-    private Map<String, HandlerHolder> handlers = new HashMap<String, HandlerHolder>();
+    private final Map<String, HandlerHolder> handlers = new HashMap<String, HandlerHolder>();
     private long maxSize = 1000;
 
+    /**
+     * A holder for ack/fail handlers.
+     */
     private static class HandlerHolder {
       private final Handler<String> ackHandler;
       private final Handler<String> failHandler;
@@ -152,18 +158,30 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
       }
     }
 
+    /**
+     * Returns the queue size.
+     */
     private int size() {
       return handlers.size();
     }
 
+    /**
+     * Returns a boolean indicating whether the queue is full.
+     */
     private boolean full() {
       return size() >= maxSize;
     }
 
+    /**
+     * Enqueues a new item. The item is enqueued with an ack and fail handler.
+     */
     private void enqueue(String id, Handler<String> ackHandler, Handler<String> failHandler) {
       handlers.put(id, new HandlerHolder(ackHandler, failHandler));
     }
 
+    /**
+     * Acks an item in the queue. The item will be removed and its ack handler called.
+     */
     private void ack(String id) {
       HandlerHolder holder = handlers.remove(id);
       if (holder != null) {
@@ -171,6 +189,9 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
       }
     }
 
+    /**
+     * Fails an item in the queue. The item will be removed and its fail handler called.
+     */
     private void fail(String id) {
       HandlerHolder holder = handlers.remove(id);
       if (holder != null) {

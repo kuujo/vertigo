@@ -15,7 +15,9 @@
  */
 package net.kuujo.vertigo.feeder;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.streams.ReadStream;
 import org.vertx.java.core.streams.WriteStream;
 
@@ -30,18 +32,6 @@ import org.vertx.java.core.streams.WriteStream;
 public interface StreamFeeder extends Feeder<StreamFeeder> {
 
   /**
-   * Sets a full handler on the feeder.
-   *
-   * The full handler will be called when the feed queue becomes full.
-   *
-   * @param handler
-   *   A handler to be invoked when the feed queue is full.
-   * @return
-   *   The called feeder instance.
-   */
-  StreamFeeder fullHandler(Handler<Void> handler);
-
-  /**
    * Sets a drain handler on the feeder.
    *
    * The drain handler will be called when the feed queue is available to
@@ -53,5 +43,31 @@ public interface StreamFeeder extends Feeder<StreamFeeder> {
    *   The called feeder instance.
    */
   StreamFeeder drainHandler(Handler<Void> handler);
+
+  /**
+   * Emits data to from the feeder with an ack handler.
+   *
+   * @param data
+   *   The data to emit.
+   * @param ackHandler
+   *   An asynchronous result handler to be invoke with the ack result.
+   * @return
+   *   The emitted message identifier.
+   */
+  String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
+
+  /**
+   * Emits data from the feeder with an ack handler.
+   *
+   * @param data
+   *   The data to emit.
+   * @param tag
+   *   A tag to apply to the data.
+   * @param ackHandler
+   *   An asynchronous result handler to be invoke with the ack result.
+   * @return
+   *   The emitted message identifier.
+   */
+  String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
 }

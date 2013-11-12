@@ -15,11 +15,13 @@
  */
 package net.kuujo.vertigo.feeder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.kuujo.vertigo.component.ComponentBase;
 import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
@@ -31,13 +33,12 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<T> implements Feeder<T> {
-  protected FeedQueue queue;
+  protected InternalQueue queue = new InternalQueue();
   protected boolean autoRetry;
   protected int retryAttempts = -1;
 
   protected AbstractFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
-    queue = new BasicFeedQueue();
   }
 
   private Handler<String> ackHandler = new Handler<String>() {
@@ -64,13 +65,13 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
   @Override
   @SuppressWarnings("unchecked")
   public T setMaxQueueSize(long maxSize) {
-    queue.setMaxQueueSize(maxSize);
+    queue.maxSize = maxSize;
     return (T) this;
   }
 
   @Override
   public long getMaxQueueSize() {
-    return queue.getMaxQueueSize();
+    return queue.maxSize;
   }
 
   @Override
@@ -105,7 +106,8 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
   /**
    * Executes a feed.
    */
-  protected String doFeed(final JsonObject data, final String tag, final int attempts, final Future<Void> future) {
+  protected String doFeed(final JsonObject data, final String tag, final int attempts,
+      final Handler<String> ackHandler, final Handler<String> failHandler) {
     final String id;
     if (tag != null) {
       id = output.emit(data, tag);
@@ -114,23 +116,67 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
       id = output.emit(data);
     }
 
-    queue.enqueue(id, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
-            doFeed(data, tag, attempts+1, future);
+    queue.enqueue(id,
+        new Handler<String>() {
+          @Override
+          public void handle(String messageId) {
+            if (ackHandler != null) {
+              ackHandler.handle(id);
+            }
           }
-          else if (future != null) {
-            future.setFailure(result.cause());
+        },
+        new Handler<String>() {
+          @Override
+          public void handle(String messageId) {
+            if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
+              doFeed(data, tag, attempts+1, ackHandler, failHandler);
+            }
+            else if (failHandler != null) {
+              failHandler.handle(id);
+            }
           }
-        }
-        else if (future != null) {
-          future.setResult(result.result());
-        }
-      }
-    });
+        });
     return id;
+  }
+
+  private static class InternalQueue {
+    private Map<String, HandlerHolder> handlers = new HashMap<String, HandlerHolder>();
+    private long maxSize = 1000;
+
+    private static class HandlerHolder {
+      private final Handler<String> ackHandler;
+      private final Handler<String> failHandler;
+      public HandlerHolder(Handler<String> ackHandler, Handler<String> failHandler) {
+        this.ackHandler = ackHandler;
+        this.failHandler = failHandler;
+      }
+    }
+
+    private int size() {
+      return handlers.size();
+    }
+
+    private boolean full() {
+      return size() >= maxSize;
+    }
+
+    private void enqueue(String id, Handler<String> ackHandler, Handler<String> failHandler) {
+      handlers.put(id, new HandlerHolder(ackHandler, failHandler));
+    }
+
+    private void ack(String id) {
+      HandlerHolder holder = handlers.remove(id);
+      if (holder != null) {
+        holder.ackHandler.handle(id);
+      }
+    }
+
+    private void fail(String id) {
+      HandlerHolder holder = handlers.remove(id);
+      if (holder != null) {
+        holder.failHandler.handle(id);
+      }
+    }
   }
 
 }

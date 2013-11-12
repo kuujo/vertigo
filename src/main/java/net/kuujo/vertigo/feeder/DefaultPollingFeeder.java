@@ -32,8 +32,28 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
   private Handler<PollingFeeder> feedHandler;
+  private Handler<String> ackHandler;
+  private Handler<String> failHandler;
   private long feedDelay = 100;
   private boolean fed;
+
+  private Handler<String> internalAckHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      if (ackHandler != null) {
+        ackHandler.handle(messageId);
+      }
+    }
+  };
+
+  private Handler<String> internalFailHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      if (failHandler != null) {
+        failHandler.handle(messageId);
+      }
+    }
+  };
 
   public DefaultPollingFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
@@ -86,29 +106,23 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   /**
-   * Schedules a feed.
-   */
-  private void scheduleFeed() {
-    vertx.setTimer(feedDelay, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        recursiveFeed();
-      }
-    });
-  }
-
-  /**
    * Recursively invokes the feed handler.
    * If the feed handler is invoked and no messages are fed from the handler,
    * a timer is set to restart the feed in the future.
    */
   private void recursiveFeed() {
     fed = true;
-    while (fed && !queue.full()) {
+    while (fed && !queueFull()) {
       fed = false;
       doFeed();
     }
-    scheduleFeed();
+
+    vertx.setTimer(feedDelay, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        recursiveFeed();
+      }
+    });
   }
 
   /**
@@ -121,27 +135,27 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
+  public PollingFeeder ackHandler(Handler<String> ackHandler) {
+    this.ackHandler = ackHandler;
+    return this;
+  }
+
+  @Override
+  public PollingFeeder failHandler(Handler<String> failHandler) {
+    this.failHandler = failHandler;
+    return this;
+  }
+
+  @Override
   public String emit(JsonObject data) {
     fed = true;
-    return doFeed(data, null, 0, null);
+    return doFeed(data, null, 0, internalAckHandler, internalFailHandler);
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
     fed = true;
-    return doFeed(data, tag, 0, null);
-  }
-
-  @Override
-  public String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
-    fed = true;
-    return doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
-  }
-
-  @Override
-  public String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
-    fed = true;
-    return doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
+    return doFeed(data, tag, 0, internalAckHandler, internalFailHandler);
   }
 
 }

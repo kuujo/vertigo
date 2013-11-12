@@ -16,8 +16,10 @@
 package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.runtime.FailureException;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
@@ -30,7 +32,6 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements StreamFeeder {
-  private Handler<Void> fullHandler;
   private Handler<Void> drainHandler;
   private boolean paused;
 
@@ -38,15 +39,36 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
     super(vertx, container, context);
   }
 
-  @Override
-  public boolean queueFull() {
-    return paused;
+  private Handler<String> ackFailHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      checkPause();
+    }
+  };
+
+  private Handler<String> createAckHandler(final Future<Void> future) {
+    return new Handler<String>() {
+      @Override
+      public void handle(String messageId) {
+        checkPause();
+        future.setResult(null);
+      }
+    };
+  }
+
+  private Handler<String> createFailHandler(final Future<Void> future) {
+    return new Handler<String>() {
+      @Override
+      public void handle(String messageId) {
+        checkPause();
+        future.setFailure(new FailureException("Processing failed."));
+      }
+    };
   }
 
   @Override
-  public StreamFeeder fullHandler(Handler<Void> handler) {
-    fullHandler = handler;
-    return this;
+  public boolean queueFull() {
+    return paused;
   }
 
   @Override
@@ -57,50 +79,32 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
 
   @Override
   public String emit(JsonObject data) {
-    String id = doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
+    String id = doFeed(data, null, 0, ackFailHandler, ackFailHandler);
     checkPause();
     return id;
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
-    String id = doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(null)));
+    String id = doFeed(data, tag, 0, ackFailHandler, ackFailHandler);
     checkPause();
     return id;
   }
 
   @Override
   public String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
-    String id = doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
+    Future<Void> future = new DefaultFutureResult<Void>().setHandler(ackHandler);
+    String id = doFeed(data, null, 0, createAckHandler(future), createFailHandler(future));
     checkPause();
     return id;
   }
 
   @Override
   public String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
-    String id = doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(createAckHandler(ackHandler)));
+    Future<Void> future = new DefaultFutureResult<Void>().setHandler(ackHandler);
+    String id = doFeed(data, tag, 0, createAckHandler(future), createFailHandler(future));
     checkPause();
     return id;
-  }
-
-  /**
-   * Creates a message ack handler.
-   */
-  private Handler<AsyncResult<Void>> createAckHandler(final Handler<AsyncResult<Void>> ackHandler) {
-    return new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        checkPause();
-        if (ackHandler != null) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>().setHandler(ackHandler).setFailure(result.cause());
-          }
-          else {
-            new DefaultFutureResult<Void>().setHandler(ackHandler).setResult(result.result());
-          }
-        }
-      }
-    };
   }
 
   /**
@@ -108,20 +112,15 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
    */
   private void checkPause() {
     if (paused) {
-      if (queue.size() < queue.getMaxQueueSize() * .75) {
+      if (!queueFull()) {
         paused = false;
         if (drainHandler != null) {
           drainHandler.handle(null);
         }
       }
     }
-    else {
-      if (queue.size() >= queue.getMaxQueueSize()) {
-        paused = true;
-        if (fullHandler != null) {
-          fullHandler.handle(null);
-        }
-      }
+    else if (queueFull()) {
+      paused = true;
     }
   }
 

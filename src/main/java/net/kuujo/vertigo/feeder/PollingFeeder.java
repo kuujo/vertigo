@@ -68,4 +68,24 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    */
   PollingFeeder feedHandler(Handler<PollingFeeder> handler);
 
+  /**
+   * Sets an ack handler on the feeder.
+   *
+   * @param ackHandler
+   *   A handler to be invoked when a message is acked.
+   * @return
+   *   The called feeder instance.
+   */
+  PollingFeeder ackHandler(Handler<String> ackHandler);
+
+  /**
+   * Sets a fail handler on the feeder.
+   *
+   * @param failHandler
+   *   A handler to be invoked when a message is failed.
+   * @return
+   *   The called feeder instance.
+   */
+  PollingFeeder failHandler(Handler<String> failHandler);
+
 }

@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.feeder;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.component.Component;
@@ -138,31 +136,5 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    *   The emitted message identifier.
    */
   String emit(JsonObject data, String tag);
-
-  /**
-   * Emits data to from the feeder with an ack handler.
-   *
-   * @param data
-   *   The data to emit.
-   * @param ackHandler
-   *   An asynchronous result handler to be invoke with the ack result.
-   * @return
-   *   The emitted message identifier.
-   */
-  String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
-
-  /**
-   * Emits data from the feeder with an ack handler.
-   *
-   * @param data
-   *   The data to emit.
-   * @param tag
-   *   A tag to apply to the data.
-   * @param ackHandler
-   *   An asynchronous result handler to be invoke with the ack result.
-   * @return
-   *   The emitted message identifier.
-   */
-  String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
 }

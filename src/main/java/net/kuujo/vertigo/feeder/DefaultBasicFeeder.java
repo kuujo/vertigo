@@ -17,10 +17,7 @@ package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.context.InstanceContext;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -37,22 +34,12 @@ public class DefaultBasicFeeder extends AbstractFeeder<BasicFeeder> implements B
 
   @Override
   public String emit(JsonObject data) {
-    return doFeed(data, null, 0, null);
+    return doFeed(data, null, 0, null, null);
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
-    return doFeed(data, tag, 0, null);
-  }
-
-  @Override
-  public String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
-    return doFeed(data, null, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
-  }
-
-  @Override
-  public String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
-    return doFeed(data, tag, 0, new DefaultFutureResult<Void>().setHandler(ackHandler));
+    return doFeed(data, tag, 0, null, null);
   }
 
 }

@@ -37,14 +37,14 @@ public abstract class FeederVerticle extends Verticle {
   private Handler<String> ackHandler = new Handler<String>() {
     @Override
     public void handle(String messageId) {
-      ack(messageId);
+      handleAck(messageId);
     }
   };
 
   private Handler<String> failHandler = new Handler<String>() {
     @Override
     public void handle(String messageId) {
-      fail(messageId);
+      handleFailure(messageId);
     }
   };
 
@@ -103,7 +103,7 @@ public abstract class FeederVerticle extends Verticle {
    * @param id
    *   The acked message identifier.
    */
-  protected abstract void ack(String id);
+  protected abstract void handleAck(String id);
 
   /**
    * Called when a message has been failed.
@@ -111,6 +111,6 @@ public abstract class FeederVerticle extends Verticle {
    * @param id
    *   The failed message identifier.
    */
-  protected abstract void fail(String id);
+  protected abstract void handleFailure(String id);
 
 }

@@ -215,7 +215,6 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
           }
         }
       });
-      timers.put(endTime, this);
       return this;
     }
 
@@ -234,7 +233,9 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       return timers.get(end);
     }
     else {
-      return new Timer(end).start();
+      Timer timer = new Timer(end);
+      timers.put(end, timer);
+      return timer.start();
     }
   }
 

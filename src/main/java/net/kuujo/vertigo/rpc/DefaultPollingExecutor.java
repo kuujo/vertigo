@@ -35,7 +35,8 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   private Handler<PollingExecutor> executeHandler;
   private Handler<JsonMessage> resultHandler;
   private Handler<String> failHandler;
-  private long executeDelay = 100;
+  private static final long DEFAULT_EXECUTE_DELAY = 10;
+  private long executeDelay = DEFAULT_EXECUTE_DELAY;
   private boolean executed;
 
   private Handler<JsonMessage> internalResultHandler = new Handler<JsonMessage>() {

@@ -34,7 +34,8 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   private Handler<PollingFeeder> feedHandler;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
-  private long feedDelay = 100;
+  private static final long DEFAULT_FEED_DELAY = 10;
+  private long feedDelay = DEFAULT_FEED_DELAY;
   private boolean fed;
 
   private Handler<String> internalAckHandler = new Handler<String>() {

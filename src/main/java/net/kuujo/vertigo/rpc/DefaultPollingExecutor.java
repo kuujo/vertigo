@@ -67,7 +67,7 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
       @Override
       public void handle(AsyncResult<PollingExecutor> result) {
         if (result.succeeded()) {
-          recursiveFeed();
+          recursiveExecute();
         }
       }
     });
@@ -83,21 +83,9 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
           future.setFailure(result.cause());
         }
         else {
-          recursiveFeed();
           future.setResult(result.result());
+          recursiveExecute();
         }
-      }
-    });
-  }
-
-  /**
-   * Schedules an execution.
-   */
-  private void scheduleExecute() {
-    vertx.setTimer(executeDelay, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        recursiveFeed();
       }
     });
   }
@@ -107,22 +95,21 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
    * If the feed handler is invoked and no messages are executed from the handler,
    * a timer is set to restart the execution in the future.
    */
-  private void recursiveFeed() {
-    executed = true;
-    while (executed && !queueFull()) {
-      executed = false;
-      doFeed();
-    }
-    scheduleExecute();
-  }
-
-  /**
-   * Invokes the feed handler.
-   */
-  private void doFeed() {
+  private void recursiveExecute() {
     if (executeHandler != null) {
-      executeHandler.handle(this);
+      executed = true;
+      while (executed && !queueFull()) {
+        executed = false;
+        executeHandler.handle(this);
+      }
     }
+
+    vertx.setTimer(executeDelay, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        recursiveExecute();
+      }
+    });
   }
 
   @Override

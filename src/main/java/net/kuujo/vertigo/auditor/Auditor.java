@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo.auditor;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -202,8 +202,8 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
     private final long expire;
     private final long delay;
     private long delayTimer;
-    private final Set<Node> children = new HashSet<>();
-    private final Set<Node> complete = new HashSet<>();
+    private final List<Node> children = new ArrayList<>();
+    private final List<Node> complete = new ArrayList<>();
     private Handler<Node> ackHandler;
     private Handler<Node> failHandler;
     private boolean ready = true;

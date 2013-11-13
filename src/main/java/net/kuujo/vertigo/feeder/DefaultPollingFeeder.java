@@ -99,8 +99,8 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
           future.setFailure(result.cause());
         }
         else {
-          recursiveFeed();
           future.setResult(result.result());
+          recursiveFeed();
         }
       }
     });
@@ -112,10 +112,12 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
    * a timer is set to restart the feed in the future.
    */
   private void recursiveFeed() {
-    fed = true;
-    while (fed && !queueFull()) {
-      fed = false;
-      doFeed();
+    if (feedHandler != null) {
+      fed = true;
+      while (fed && !queueFull()) {
+        fed = false;
+        feedHandler.handle(this);
+      }
     }
 
     vertx.setTimer(feedDelay, new Handler<Long>() {
@@ -124,15 +126,6 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
         recursiveFeed();
       }
     });
-  }
-
-  /**
-   * Invokes the feed handler.
-   */
-  private void doFeed() {
-    if (feedHandler != null) {
-      feedHandler.handle(this);
-    }
   }
 
   @Override

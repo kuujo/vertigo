@@ -49,7 +49,7 @@ public final class Events {
    */
   public void trigger(Class<? extends Event> eventClass, Object... args) {
     try {
-      eventClass.getConstructor(new Class<?>[]{EventBus.class}).newInstance(eventBus).trigger(args);;
+      eventClass.getConstructor(new Class<?>[]{EventBus.class}).newInstance(eventBus).trigger(args);
     }
     catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
         InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -73,6 +73,7 @@ public final class Events {
      *   Event arguments.
      */
     public abstract void trigger(Object... args);
+
   }
 
   /**
@@ -86,7 +87,8 @@ public final class Events {
      * Triggered when a network is deployed.
      *
      * Keys:
-     * - network: a JSON representation of the network definition
+     * - address: the network address
+     * - network: a JSON representation of the network context
      */
     public static final String DEPLOY = "vertigo.network.deploy";
 
@@ -94,19 +96,21 @@ public final class Events {
      * A deploy event.
      *
      * Arguments:
-     * - Network: the network being deployed
+     * - address: the network address
+     * - context: the network context
      *
      * @author Jordan Halterman
      */
     public static final class Deploy extends Event {
-      protected Deploy(EventBus eventBus) {
+      public Deploy(EventBus eventBus) {
         super(eventBus);
       }
 
       @Override
       public void trigger(Object... args) {
-        net.kuujo.vertigo.network.Network network = (net.kuujo.vertigo.network.Network) args[0];
-        eventBus.publish(DEPLOY, new JsonObject().putObject("network", network.getState()));
+        String address = (String) args[0];
+        NetworkContext context = (NetworkContext) args[1];
+        eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
 
@@ -129,7 +133,7 @@ public final class Events {
      * @author Jordan Halterman
      */
     public static final class Start extends Event {
-      protected Start(EventBus eventBus) {
+      public Start(EventBus eventBus) {
         super(eventBus);
       }
 
@@ -158,14 +162,15 @@ public final class Events {
      * @author Jordan Halterman
      */
     public static final class Shutdown extends Event {
-      protected Shutdown(EventBus eventBus) {
+      public Shutdown(EventBus eventBus) {
         super(eventBus);
       }
 
       @Override
       public void trigger(Object... args) {
-        NetworkContext context = (NetworkContext) args[0];
-        eventBus.publish(SHUTDOWN, new JsonObject().putObject("context", context.getState()));
+        String address = (String) args[0];
+        NetworkContext context = (NetworkContext) args[1];
+        eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", context.getState()));
       } 
     }
 
@@ -197,7 +202,7 @@ public final class Events {
      * @author Jordan Halterman
      */
     public static final class Deploy extends Event {
-      protected Deploy(EventBus eventBus) {
+      public Deploy(EventBus eventBus) {
         super(eventBus);
       }
 
@@ -228,7 +233,7 @@ public final class Events {
      * @author Jordan Halterman
      */
     public static final class Start extends Event {
-      protected Start(EventBus eventBus) {
+      public Start(EventBus eventBus) {
         super(eventBus);
       }
 
@@ -259,7 +264,7 @@ public final class Events {
      * @author Jordan Halterman
      */
     public static final class Shutdown extends Event {
-      protected Shutdown(EventBus eventBus) {
+      public Shutdown(EventBus eventBus) {
         super(eventBus);
       }
 

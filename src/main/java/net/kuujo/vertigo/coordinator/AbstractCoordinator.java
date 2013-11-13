@@ -366,7 +366,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       InstanceContext context = contextMap.get(id);
       events.trigger(Events.Component.Start.class, context.getComponent().getAddress(), context);
       if (ready.size() == workers.size()) {
-        events.trigger(Events.Network.Start.class, this.context.getAddress(), context);
+        events.trigger(Events.Network.Start.class, this.context.getAddress(), this.context);
         for (Message<JsonObject> replyMessage : ready.values()) {
           replyMessage.reply();
         }

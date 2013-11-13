@@ -400,7 +400,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     JsonObject hooks = context.getObject(HOOKS);
     if (hooks == null) {
       hooks = new JsonObject();
-      context.putObject(INPUTS, hooks);
+      context.putObject(HOOKS, hooks);
     }
 
     JsonArray inputs = context.getArray(INPUTS);

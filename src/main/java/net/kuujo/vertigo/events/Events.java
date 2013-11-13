@@ -17,6 +17,7 @@ package net.kuujo.vertigo.events;
 
 import java.lang.reflect.InvocationTargetException;
 
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 
 import org.vertx.java.core.eventbus.EventBus;
@@ -190,8 +191,8 @@ public final class Events {
      * A component deploy event.
      *
      * Arguments:
-     * - string: the network address
-     * - context: the network context
+     * - string: the component address
+     * - context: the instance context
      *
      * @author Jordan Halterman
      */
@@ -203,7 +204,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         String address = (String) args[0];
-        NetworkContext context = (NetworkContext) args[1];
+        InstanceContext context = (InstanceContext) args[1];
         eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
@@ -221,8 +222,8 @@ public final class Events {
      * A start event.
      *
      * Arguments:
-     * - string: the network address
-     * - context: the network context
+     * - string: the component address
+     * - context: the instance context
      *
      * @author Jordan Halterman
      */
@@ -234,7 +235,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         String address = (String) args[0];
-        NetworkContext context = (NetworkContext) args[1];
+        InstanceContext context = (InstanceContext) args[1];
         eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }
@@ -252,8 +253,8 @@ public final class Events {
      * A stop event.
      *
      * Arguments:
-     * - string: the network address
-     * - context: the network context
+     * - string: the component address
+     * - context: the instance context
      *
      * @author Jordan Halterman
      */
@@ -265,7 +266,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         String address = (String) args[0];
-        NetworkContext context = (NetworkContext) args[1];
+        InstanceContext context = (InstanceContext) args[1];
         eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", context.getState()));
       }
     }

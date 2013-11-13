@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.output;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
   private Random random = new Random();
-  private Map<String, Channel> channels = new HashMap<>();
+  private List<Channel> channels = new ArrayList<Channel>();
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
@@ -112,18 +113,8 @@ public class DefaultOutputCollector implements OutputCollector {
 
     try {
       Output output = Serializer.deserialize(info);
-      String id = output.id();
 
-      final Channel channel;
-      if (!channels.containsKey(id)) {
-        channel = new DefaultChannel(output.getSelector(), output.getConditions(), eventBus);
-        channel.setConnectionCount(output.getCount());
-        channels.put(id, channel);
-      }
-      else {
-        channel = channels.get(id);
-      }
-
+      final Channel channel = findChannel(output);
       if (!channel.containsConnection(address)) {
         channel.addConnection(new DefaultConnection(address, eventBus));
       }
@@ -143,12 +134,26 @@ public class DefaultOutputCollector implements OutputCollector {
           connectionTimers.remove(address);
         }
       }));
-
       eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
     }
     catch (SerializationException e) {
       logger.error(e);
     }
+  }
+
+  /**
+   * Finds a channel by ID.
+   */
+  private Channel findChannel(Output output) {
+    for (Channel channel : channels) {
+      if (channel.id().equals(output.id())) {
+        return channel;
+      }
+    }
+    Channel channel = new DefaultChannel(output.id(), output.getSelector(),
+        output.getConditions(), eventBus).setConnectionCount(output.getCount());
+    channels.add(channel);
+    return channel;
   }
 
   @Override
@@ -211,7 +216,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private String emitNew(JsonMessage message) {
     eventBus.send(message.auditor(), new JsonObject().putString("action", "create").putString("id", message.id()));
-    for (Channel channel : channels.values()) {
+    for (Channel channel : channels) {
       channel.publish(message.createChild());
     }
     return message.id();
@@ -221,7 +226,7 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a child message.
    */
   private String emitChild(JsonMessage message) {
-    for (Channel channel : channels.values()) {
+    for (Channel channel : channels) {
       channel.publish(message.copy());
     }
     return message.parent();

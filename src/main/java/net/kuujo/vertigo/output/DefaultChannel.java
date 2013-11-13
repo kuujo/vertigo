@@ -32,16 +32,24 @@ import net.kuujo.vertigo.output.selector.Selector;
  * @author Jordan Halterman
  */
 public class DefaultChannel implements Channel {
-  private Selector selector;
-  private List<Condition> conditions = new ArrayList<Condition>();
+  private final String id;
+  private final Selector selector;
+  private final List<Condition> conditions;
   private int connectionCount;
   private List<Connection> connections = new ArrayList<Connection>();
   private Map<String, Integer> connectionMap = new HashMap<String, Integer>();
-  private EventBus eventBus;
+  private final EventBus eventBus;
 
-  public DefaultChannel(Selector selector, List<Condition> conditions, EventBus eventBus) {
+  public DefaultChannel(String id, Selector selector, List<Condition> conditions, EventBus eventBus) {
+    this.id = id;
     this.selector = selector;
     this.conditions = conditions;
+    this.eventBus = eventBus;
+  }
+
+  @Override
+  public String id() {
+    return id;
   }
 
   @Override

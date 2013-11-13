@@ -31,6 +31,14 @@ import net.kuujo.vertigo.message.JsonMessage;
 public interface Channel {
 
   /**
+   * Gets the channel identifier.
+   *
+   * @return
+   *   The unique channel identifier.
+   */
+  String id();
+
+  /**
    * Sets the target channel connection count.
    *
    * @param connectionCount

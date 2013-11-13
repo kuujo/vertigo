@@ -125,13 +125,14 @@ public class DefaultChannel implements Channel {
   }
 
   @Override
-  public Channel publish(JsonMessage message) {
+  public List<String> publish(JsonMessage message) {
+    List<String> ids = new ArrayList<String>();
     if (isValid(message)) {
       for (Connection connection : selector.select(message, connections)) {
-        connection.write(message.copy());
+        ids.add(connection.write(message));
       }
     }
-    return this;
+    return ids;
   }
 
 }

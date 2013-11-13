@@ -35,6 +35,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
@@ -280,10 +281,12 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a new message.
    */
   private String emitNew(JsonMessage message) {
-    eventBus.send(message.auditor(), new JsonObject().putString("action", "create").putString("id", message.id()));
+    List<Object> ids = new ArrayList<Object>();
     for (Channel channel : channels) {
-      channel.publish(message.createChild());
+      ids.addAll(channel.publish(message.createChild()));
     }
+    eventBus.send(message.auditor(), new JsonObject().putString("action", "create")
+        .putString("id", message.id()).putArray("forks", new JsonArray(ids)));
     hookEmit(message.id());
     return message.id();
   }
@@ -292,9 +295,12 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a child message.
    */
   private String emitChild(JsonMessage message) {
+    List<Object> ids = new ArrayList<Object>();
     for (Channel channel : channels) {
-      channel.publish(message.copy());
+      ids.addAll(channel.publish(message.copy()));
     }
+    eventBus.send(message.auditor(), new JsonObject().putString("action", "fork")
+        .putString("parent", message.parent()).putArray("forks", new JsonArray(ids)));
     hookEmit(message.parent());
     return message.parent();
   }

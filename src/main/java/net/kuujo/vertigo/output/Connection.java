@@ -42,8 +42,8 @@ public interface Connection {
    * @param message
    *   The message to write to the connection.
    * @return
-   *   The called connection instance.
+   *   The written message identifier.
    */
-  Connection write(JsonMessage message);
+  String write(JsonMessage message);
 
 }

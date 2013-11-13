@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.output;
 
+import java.util.List;
+
 import net.kuujo.vertigo.message.JsonMessage;
 
 /**
@@ -94,8 +96,8 @@ public interface Channel {
    * @param message
    *   The message to publish to the channel.
    * @return
-   *   The called channel instance.
+   *   A list of written message identifiers.
    */
-  Channel publish(JsonMessage message);
+  List<String> publish(JsonMessage message);
 
 }

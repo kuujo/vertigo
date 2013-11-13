@@ -33,9 +33,8 @@ public class DefaultPseudoConnection extends DefaultConnection implements Pseudo
   }
 
   @Override
-  public Connection write(JsonMessage message) {
-    audit(message);
-    return this;
+  public String write(JsonMessage message) {
+    return message.copy().id();
   }
 
 }

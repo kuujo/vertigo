@@ -19,7 +19,6 @@ import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * A default connection.
@@ -41,24 +40,10 @@ public class DefaultConnection implements Connection {
   }
 
   @Override
-  public Connection write(JsonMessage message) {
-    eventBus.send(address, Serializer.serialize(audit(message)));
-    return this;
-  }
-
-  /**
-   * Sends audit info to the message auditor.
-   */
-  protected JsonMessage audit(JsonMessage message) {
-    String auditor = message.auditor();
-    if (auditor != null) {
-      String parent = message.parent();
-      if (parent != null) {
-        eventBus.send(auditor, new JsonObject().putString("action", "fork")
-            .putString("id", message.id()).putString("parent", parent));
-      }
-    }
-    return message;
+  public String write(JsonMessage message) {
+    JsonMessage copy = message.copy();
+    eventBus.send(address, Serializer.serialize(copy));
+    return copy.id();
   }
 
 }

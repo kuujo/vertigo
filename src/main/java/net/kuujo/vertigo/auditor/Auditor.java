@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.auditor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -37,7 +39,7 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   private boolean enabled;
   private long expire = 30000;
   private long delay = 0;
-  private long cleanupInterval = 100;
+  private long cleanupInterval = 500;
   private Map<String, Node> nodes = new LinkedHashMap<>();
 
   public static final String ADDRESS = "address";
@@ -80,9 +82,11 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
     // Nodes are stored in a LinkedHashMap in the order in which they're created,
     // so we can iterate up to the oldest node which has not yet expired and stop.
     long currentTime = System.currentTimeMillis();
-    for (Map.Entry<String, Node> entry : nodes.entrySet()) {
-      Node node = entry.getValue();
+    Iterator<Map.Entry<String, Node>> iterator = nodes.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Node node = iterator.next().getValue();
       if (node.expire <= currentTime) {
+        iterator.remove();
         node.fail();
       }
       else {
@@ -116,7 +120,6 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   private Handler<Node> ackHandler = new Handler<Node>() {
     @Override
     public void handle(Node node) {
-      clearNode(node);
       eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", node.id));
     }
   };
@@ -124,7 +127,6 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   private Handler<Node> failHandler = new Handler<Node>() {
     @Override
     public void handle(Node node) {
-      clearNode(node);
       eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id));
     }
   };
@@ -135,6 +137,13 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   private void doCreate(Message<JsonObject> message) {
     String id = getMandatoryString("id", message);
     if (enabled) {
+      // If no forks were defined for the message, just send a failure.
+      JsonArray forks = message.body().getArray("forks");
+      if (forks == null || forks.size() == 0) {
+        eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", id));
+        return;
+      }
+
        // We simply add ack and fail handlers to the root node. If a descendant
       // node is failed then it will bubble up to the root. Once all child nodes
       // are acked the parent will be acked which will also bubble up to the root.
@@ -142,6 +151,13 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
       node.ackHandler(ackHandler);
       node.failHandler(failHandler);
       nodes.put(node.id, node);
+
+      // Add all initial forks for the root.
+      for (Object forkId : forks) {
+        Node fork = new Node((String) forkId, vertx, System.currentTimeMillis() + expire, delay);
+        node.addChild(fork);
+        nodes.put(fork.id, fork);
+      }
     }
     // If acking is disabled then immediately ack the message back to its source.
     else {
@@ -153,9 +169,6 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
    * Clears all children of a node from storage.
    */
   private void clearNode(Node node) {
-    for (Node child : node.children) {
-      clearNode(child);
-    }
     nodes.remove(node.id);
   }
 
@@ -165,10 +178,14 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   private void doFork(Message<JsonObject> message) {
     String parentId = getMandatoryString("parent", message);
     if (nodes.containsKey(parentId)) {
-      String id = getMandatoryString("id", message);
-      Node node = new Node(id, vertx, System.currentTimeMillis() + expire, delay);
-      nodes.get(parentId).addChild(node);
-      nodes.put(id, node);
+      JsonArray forks = message.body().getArray("forks");
+      if (forks != null) {
+        for (Object forkId : forks) {
+          Node node = new Node((String) forkId, vertx, System.currentTimeMillis() + expire, delay);
+          nodes.get(parentId).addChild(node);
+          nodes.put(node.id, node);
+        }
+      }
     }
   }
 
@@ -196,7 +213,7 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   /**
    * Represents a single node in a message tree.
    */
-  private static class Node {
+  private class Node {
     private final String id;
     private final Vertx vertx;
     private final long expire;
@@ -294,18 +311,21 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
               public void handle(Long timerID) {
                 locked = true;
                 ackHandler.handle(Node.this);
+                clearNode(Node.this);
               }
             });
           }
           else {
             locked = true;
             ackHandler.handle(this);
+            clearNode(Node.this);
           }
         }
         // If the message was failed then immediately invoke the fail handler.
         else if (!ack) {
           locked = true;
           failHandler.handle(this);
+          clearNode(Node.this);
         }
       }
     }
@@ -345,7 +365,7 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
   /**
    * Represents the root element of a message tree.
    */
-  private static final class Root extends Node {
+  private final class Root extends Node {
     private Root(String id, Vertx vertx, long expire, long delay) {
       super(id, vertx, expire, delay);
     }

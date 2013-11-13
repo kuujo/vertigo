@@ -28,6 +28,7 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
@@ -103,6 +104,7 @@ public class AuditorTest extends TestVerticle {
   public void testAck() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
+    final JsonMessage child = source.createChild();
 
     vertx.eventBus().registerHandler("broadcast", ackHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -113,30 +115,33 @@ public class AuditorTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
             final EventBus eventBus = vertx.eventBus();
-            final JsonMessage test1 = source.createChild();
-            final JsonMessage test2 = source.createChild();
+            final JsonMessage test1 = child.createChild();
+            final JsonMessage test2 = child.createChild();
             final JsonMessage test3 = test1.createChild();
             final JsonMessage test4 = test1.createChild();
 
             run(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id())
+                    .putArray("forks", new JsonArray().add(child.id())));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test1.id()).putString("parent", test1.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test2.id()).putString("parent", test2.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test1.parent())
+                    .putArray("forks", new JsonArray().add(test1.id()).add(test2.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", child.id()));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test3.id()).putString("parent", test3.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test4.id()).putString("parent", test4.parent()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test3.parent())
+                    .putArray("forks", new JsonArray().add(test3.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test4.parent())
+                    .putArray("forks", new JsonArray().add(test4.id())));
                 eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", test1.id()));
                 eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", test2.id()));
               }
@@ -158,6 +163,7 @@ public class AuditorTest extends TestVerticle {
   public void testChildFail() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
+    final JsonMessage child = source.createChild();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -171,13 +177,14 @@ public class AuditorTest extends TestVerticle {
             run(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id())
+                    .putArray("forks", new JsonArray().add(child.id())));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", child.id()));
               }
             });
           }
@@ -190,6 +197,7 @@ public class AuditorTest extends TestVerticle {
   public void testDescendantFail() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
+    final JsonMessage child = source.createChild();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -200,30 +208,35 @@ public class AuditorTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
             final EventBus eventBus = vertx.eventBus();
-            final JsonMessage test1 = source.createChild();
-            final JsonMessage test2 = source.createChild();
+            final JsonMessage test1 = child.createChild();
+            final JsonMessage test2 = child.createChild();
             final JsonMessage test3 = test1.createChild();
             final JsonMessage test4 = test1.createChild();
 
             run(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id())
+                    .putArray("forks", new JsonArray().add(child.id())));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test1.id()).putString("parent", test1.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test2.id()).putString("parent", test2.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test1.parent())
+                    .putArray("forks", new JsonArray().add(test1.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test2.parent())
+                    .putArray("forks", new JsonArray().add(test2.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", child.id()));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test3.id()).putString("parent", test3.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test4.id()).putString("parent", test4.parent()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test3.parent())
+                    .putArray("forks", new JsonArray().add(test3.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test4.parent())
+                    .putArray("forks", new JsonArray().add(test4.id())));
                 eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", test1.id()));
                 eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", test2.id()));
               }
@@ -245,6 +258,7 @@ public class AuditorTest extends TestVerticle {
   public void testExpire() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
+    final JsonMessage child = source.createChild();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -255,19 +269,22 @@ public class AuditorTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
             final EventBus eventBus = vertx.eventBus();
-            final JsonMessage test1 = source.createChild();
-            final JsonMessage test2 = source.createChild();
+            final JsonMessage test1 = child.createChild();
+            final JsonMessage test2 = child.createChild();
             run(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id())
+                    .putArray("forks", new JsonArray().add(child.id())));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test1.id()).putString("parent", test1.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test2.id()).putString("parent", test2.parent()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test1.parent())
+                    .putArray("forks", new JsonArray().add(test1.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test2.parent())
+                    .putArray("forks", new JsonArray().add(test2.id())));
               }
             });
           }
@@ -280,6 +297,7 @@ public class AuditorTest extends TestVerticle {
   public void testDelayedForkAck() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
+    final JsonMessage child = source.createChild();
 
     vertx.eventBus().registerHandler("broadcast", ackHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -290,23 +308,26 @@ public class AuditorTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
             final EventBus eventBus = vertx.eventBus();
-            final JsonMessage test1 = source.createChild();
-            final JsonMessage test2 = source.createChild();
+            final JsonMessage test1 = child.createChild();
+            final JsonMessage test2 = child.createChild();
             final JsonMessage test3 = test1.createChild();
             final JsonMessage test4 = test1.createChild();
 
             run(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id())
+                    .putArray("forks", new JsonArray().add(child.id())));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test1.id()).putString("parent", test1.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test2.id()).putString("parent", test2.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test1.parent())
+                    .putArray("forks", new JsonArray().add(test1.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test2.parent())
+                    .putArray("forks", new JsonArray().add(test2.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", child.id()));
               }
             })
             .then(new VoidHandler() {
@@ -319,8 +340,10 @@ public class AuditorTest extends TestVerticle {
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test3.id()).putString("parent", test3.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test4.id()).putString("parent", test4.parent()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test3.parent())
+                    .putArray("forks", new JsonArray().add(test3.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test4.parent())
+                    .putArray("forks", new JsonArray().add(test4.id())));
               }
             })
             .then(new VoidHandler() {
@@ -340,6 +363,7 @@ public class AuditorTest extends TestVerticle {
   public void testDelayedForkFail() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
+    final JsonMessage child = source.createChild();
 
     vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
@@ -350,23 +374,26 @@ public class AuditorTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
             final EventBus eventBus = vertx.eventBus();
-            final JsonMessage test1 = source.createChild();
-            final JsonMessage test2 = source.createChild();
+            final JsonMessage test1 = child.createChild();
+            final JsonMessage test2 = child.createChild();
             final JsonMessage test3 = test1.createChild();
             final JsonMessage test4 = test1.createChild();
 
             run(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "create").putString("id", source.id())
+                    .putArray("forks", new JsonArray().add(child.id())));
               }
             })
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test1.id()).putString("parent", test1.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test2.id()).putString("parent", test2.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", source.id()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test1.parent())
+                    .putArray("forks", new JsonArray().add(test1.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test2.parent())
+                    .putArray("forks", new JsonArray().add(test2.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", child.id()));
               }
             })
             .then(new VoidHandler() {
@@ -379,8 +406,10 @@ public class AuditorTest extends TestVerticle {
             .then(new VoidHandler() {
               @Override
               protected void handle() {
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test3.id()).putString("parent", test3.parent()));
-                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("id", test4.id()).putString("parent", test4.parent()));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test3.parent())
+                    .putArray("forks", new JsonArray().add(test3.id())));
+                eventBus.send(auditor, new JsonObject().putString("action", "fork").putString("parent", test4.parent())
+                    .putArray("forks", new JsonArray().add(test4.id())));
               }
             })
             .then(new VoidHandler() {

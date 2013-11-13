@@ -15,10 +15,8 @@
  */
 package net.kuujo.vertigo.auditor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,30 +31,64 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class Auditor extends BusModBase implements Handler<Message<JsonObject>> {
+public final class Auditor extends BusModBase implements Handler<Message<JsonObject>> {
   private String address;
   private String broadcastAddress;
   private boolean enabled;
   private long expire = 30000;
   private long delay = 0;
-  private Map<String, Node> nodes = new HashMap<>();
-  private List<Timer> timers = new ArrayList<Timer>();
+  private long cleanupInterval = 100;
+  private Map<String, Node> nodes = new LinkedHashMap<>();
 
   public static final String ADDRESS = "address";
   public static final String BROADCAST = "broadcast";
   public static final String ENABLED = "enabled";
   public static final String EXPIRE = "expire";
   public static final String DELAY = "delay";
+  public static final String CLEANUP_INTERVAL = "cleanup";
 
   @Override
   public void start() {
     super.start();
-    address = getMandatoryStringConfig("address");
-    broadcastAddress = getMandatoryStringConfig("broadcast");
-    enabled = getOptionalBooleanConfig("enabled", true);
-    expire = getOptionalLongConfig("expire", expire);
-    delay = getOptionalLongConfig("delay", delay);
+    address = getMandatoryStringConfig(ADDRESS);
+    broadcastAddress = getMandatoryStringConfig(BROADCAST);
+    enabled = getOptionalBooleanConfig(ENABLED, true);
+    expire = getOptionalLongConfig(EXPIRE, expire);
+    delay = getOptionalLongConfig(DELAY, delay);
+    cleanupInterval = getOptionalLongConfig(CLEANUP_INTERVAL, cleanupInterval);
     eb.registerHandler(address, this);
+    startTimer();
+  }
+
+  /**
+   * Starts a periodic timer that checks for expired messages.
+   */
+  private void startTimer() {
+    vertx.setPeriodic(cleanupInterval, new Handler<Long>() {
+      @Override
+      public void handle(Long timerId) {
+        checkExpire();
+      }
+    });
+  }
+
+  /**
+   * Checks messages for expirations.
+   */
+  private void checkExpire() {
+    // Iterate over nodes and fail any nodes whose expiration time has passed.
+    // Nodes are stored in a LinkedHashMap in the order in which they're created,
+    // so we can iterate up to the oldest node which has not yet expired and stop.
+    long currentTime = System.currentTimeMillis();
+    for (Map.Entry<String, Node> entry : nodes.entrySet()) {
+      Node node = entry.getValue();
+      if (node.expire <= currentTime) {
+        node.fail();
+      }
+      else {
+        break;
+      }
+    }
   }
 
   @Override
@@ -84,11 +116,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private Handler<Node> ackHandler = new Handler<Node>() {
     @Override
     public void handle(Node node) {
-      Timer timer = node.timer;
-      if (timer != null) {
-        timer.ids.remove(node.id);
-      }
-      clearRoot(node);
+      clearNode(node);
       eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", node.id));
     }
   };
@@ -96,11 +124,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private Handler<Node> failHandler = new Handler<Node>() {
     @Override
     public void handle(Node node) {
-      Timer timer = node.timer;
-      if (timer != null) {
-        timer.ids.remove(node.id);
-      }
-      clearRoot(node);
+      clearNode(node);
       eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id));
     }
   };
@@ -114,9 +138,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
        // We simply add ack and fail handlers to the root node. If a descendant
       // node is failed then it will bubble up to the root. Once all child nodes
       // are acked the parent will be acked which will also bubble up to the root.
-      Timer timer = getCurrentTimer();
-      timer.ids.add(id);
-      Node node = new Root(id, timer, vertx, delay);
+      Node node = new Root(id, vertx, System.currentTimeMillis() + expire, delay);
       node.ackHandler(ackHandler);
       node.failHandler(failHandler);
       nodes.put(node.id, node);
@@ -128,38 +150,13 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   }
 
   /**
-   * Expires a node by ID.
-   */
-  private void expire(String id) {
-    // Simply clear the expired node. It should be up to the feeder to timeout
-    // the node if it failed. This is simply an added mechanism to prevent memory leaks.
-    if (nodes.containsKey(id)) {
-      nodes.get(id).fail();
-    }
-  }
-
-  /**
-   * Clears an entire message tree from storage.
-   */
-  private void clearRoot(Node node) {
-    clearNode(node);
-  }
-
-  /**
    * Clears all children of a node from storage.
    */
   private void clearNode(Node node) {
-    if (!node.children.isEmpty()) {
-      for (Node child : node.children) {
-        clearNode(child);
-      }
-      if (nodes.containsKey(node.id)) {
-        nodes.remove(node.id);
-      }
+    for (Node child : node.children) {
+      clearNode(child);
     }
-    else if (nodes.containsKey(node.id)) {
-      nodes.remove(node.id);
-    }
+    nodes.remove(node.id);
   }
 
   /**
@@ -169,7 +166,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     String parentId = getMandatoryString("parent", message);
     if (nodes.containsKey(parentId)) {
       String id = getMandatoryString("id", message);
-      Node node = new Node(id, vertx, delay);
+      Node node = new Node(id, vertx, System.currentTimeMillis() + expire, delay);
       nodes.get(parentId).addChild(node);
       nodes.put(id, node);
     }
@@ -197,65 +194,12 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   }
 
   /**
-   * An expire timer.
-   */
-  private class Timer {
-    private final long endTime;
-    private final Set<String> ids = new HashSet<String>();
-
-    private Timer(long endTime) {
-      this.endTime = endTime;
-    }
-
-    private Timer start() {
-      vertx.setTimer(expire, new Handler<Long>() {
-        @Override
-        public void handle(Long timerId) {
-          timers.remove(endTime);
-          for (String id : ids) {
-            expire(id);
-          }
-        }
-      });
-      return this;
-    }
-
-  }
-
-  /**
-   * Gets the current timer.
-   *
-   * Timers are grouped by rounding the expire time to the nearest .1 second.
-   * Message timeouts should be lengthy, and this ensures that a timer
-   * is not created for every single message emitted from a feeder.
-   */
-  private Timer getCurrentTimer() {
-    long end = Math.round((System.currentTimeMillis() + expire) / 100) * 100;
-    if (!timers.isEmpty()) {
-      Timer last = timers.get(timers.size()-1);
-      if (last.endTime == end) {
-        return last;
-      }
-      else {
-        Timer timer = new Timer(end);
-        timers.add(timer);
-        return timer.start();
-      }
-    }
-    else {
-      Timer timer = new Timer(end);
-      timers.add(timer);
-      return timer.start();
-    }
-  }
-
-  /**
    * Represents a single node in a message tree.
    */
   private static class Node {
     private final String id;
-    private final Timer timer;
     private final Vertx vertx;
+    private final long expire;
     private final long delay;
     private long delayTimer;
     private final Set<Node> children = new HashSet<>();
@@ -288,17 +232,10 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
       }
     };
 
-    private Node(String id, Vertx vertx, long delay) {
+    private Node(String id, Vertx vertx, long expire, long delay) {
       this.id = id;
-      this.timer = null;
       this.vertx = vertx;
-      this.delay = delay;
-    }
-
-    private Node(String id, Timer timer, Vertx vertx, long delay) {
-      this.id = id;
-      this.timer = timer;
-      this.vertx = vertx;
+      this.expire = expire;
       this.delay = delay;
     }
 
@@ -408,17 +345,13 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   /**
    * Represents the root element of a message tree.
    */
-  private static class Root extends Node {
-    private Root(String id, Vertx vertx, long delay) {
-      super(id, vertx, delay);
-    }
-
-    private Root(String id, Timer timer, Vertx vertx, long delay) {
-      super(id, timer, vertx, delay);
+  private static final class Root extends Node {
+    private Root(String id, Vertx vertx, long expire, long delay) {
+      super(id, vertx, expire, delay);
     }
 
     @Override
-    protected void addChild(Node child) {
+    protected final void addChild(Node child) {
       super.addChild(child);
       if (!failed()) {
         ack();

@@ -63,6 +63,35 @@ public abstract class ComponentBase<T> implements Component<T> {
   protected final OutputCollector output;
   protected final List<ComponentHook> hooks = new ArrayList<ComponentHook>();
 
+  private InputHook inputHook = new InputHook() {
+    @Override
+    public void start(InputCollector subject) {
+      // Do nothing. This hook is called elsewhere.
+    }
+    @Override
+    public void received(String id) {
+      for (ComponentHook hook : hooks) {
+        hook.received(id);
+      }
+    }
+    @Override
+    public void ack(String id) {
+      for (ComponentHook hook : hooks) {
+        hook.ack(id);
+      }
+    }
+    @Override
+    public void fail(String id) {
+      for (ComponentHook hook : hooks) {
+        hook.fail(id);
+      }
+    }
+    @Override
+    public void stop(InputCollector subject) {
+      // Do nothing. This hook is called elsewhere.
+    }
+  };
+
   private OutputHook outputHook = new OutputHook() {
     @Override
     public void start(OutputCollector subject) {
@@ -110,6 +139,7 @@ public abstract class ComponentBase<T> implements Component<T> {
     broadcastAddress = networkContext.getBroadcastAddress();
     heartbeat = new DefaultHeartbeatEmitter(vertx);
     input = new DefaultInputCollector(vertx, container, context);
+    input.addHook(inputHook);
     output = new DefaultOutputCollector(vertx, container, context);
     output.addHook(outputHook);
   }

@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.input;
 
+import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -32,6 +33,16 @@ import org.vertx.java.core.Handler;
  * @author Jordan Halterman
  */
 public interface InputCollector {
+
+  /**
+   * Adds an input hook to the input collector.
+   *
+   * @param hook
+   *   An input hook.
+   * @return
+   *   The called input collector instance.
+   */
+  InputCollector addHook(InputHook hook);
 
   /**
    * Sets a message handler on the collector.

@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -42,6 +43,7 @@ public class DefaultInputCollector implements InputCollector {
   private final Logger logger;
   private final EventBus eventBus;
   private final InstanceContext context;
+  private final List<InputHook> hooks = new ArrayList<InputHook>();
   private Handler<JsonMessage> messageHandler;
   private List<Listener> listeners;
 
@@ -54,6 +56,12 @@ public class DefaultInputCollector implements InputCollector {
     this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
+  }
+
+  @Override
+  public InputCollector addHook(InputHook hook) {
+    hooks.add(hook);
+    return this;
   }
 
   @Override

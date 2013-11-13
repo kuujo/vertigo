@@ -21,6 +21,7 @@ import java.util.List;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.serializer.Serializable;
@@ -178,6 +179,54 @@ public abstract class ComponentContext implements Serializable {
    */
   public long getHeartbeatInterval() {
     return context.getLong(Component.HEARTBEAT_INTERVAL, 1000);
+  }
+
+  /**
+   * Gets a list of component hooks.
+   *
+   * @return
+   *   A list of component hooks.
+   */
+  public List<ComponentHook> getHooks() {
+    List<ComponentHook> hooks = new ArrayList<ComponentHook>();
+    JsonObject hooksInfo = context.getObject(Component.HOOKS);
+    if (hooksInfo == null) {
+      hooksInfo = new JsonObject();
+    }
+
+    // Deserialize serializable hooks.
+    JsonArray serializedHooks = hooksInfo.getArray(Component.SERIALIZABLE_HOOKS);
+    if (serializedHooks != null) {
+      for (Object serializedHook : serializedHooks) {
+        try {
+          ComponentHook hook = Serializer.deserialize((JsonObject) serializedHook);
+          if (hook != null) {
+            hooks.add(hook);
+          }
+        }
+        catch (SerializationException e) {
+          continue;
+        }
+      }
+    }
+
+    // Instantiate bare (unserializable) hooks.
+    JsonArray bareHooks = hooksInfo.getArray(Component.BARE_HOOKS);
+    if (bareHooks != null) {
+      for (Object bareHook : bareHooks) {
+        String className = ((JsonObject) bareHook).getString("type");
+        if (className != null) {
+          try {
+            ComponentHook hook = (ComponentHook) Class.forName(className).newInstance();
+            hooks.add(hook);
+          }
+          catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            continue;
+          }
+        }
+      }
+    }
+    return hooks;
   }
 
   /**

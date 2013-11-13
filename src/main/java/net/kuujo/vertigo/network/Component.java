@@ -24,6 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
@@ -44,6 +45,9 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public static final String CONFIG = "config";
   public static final String INSTANCES = "instances";
   public static final String HEARTBEAT_INTERVAL = "heartbeat";
+  public static final String HOOKS = "hooks";
+  public static final String BARE_HOOKS = "bare";
+  public static final String SERIALIZABLE_HOOKS = "serializable";
   public static final String INPUTS = "inputs";
 
   protected JsonObject definition;
@@ -223,6 +227,36 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     return (T) this;
   }
 
+  @SuppressWarnings("unchecked")
+  public T addHook(ComponentHook hook) {
+    JsonObject hooksInfo = definition.getObject(HOOKS);
+    if (hooksInfo == null) {
+      hooksInfo = new JsonObject();
+      definition.putObject(HOOKS, hooksInfo);
+    }
+
+    // We support two types of hooks. If a hook class implement the Serializable
+    // interface, then serialize and store its state, otherwise simply store the
+    // class name. If only the class name is stored, it must have a default constructor.
+    if (hook instanceof Serializable) {
+      JsonArray serializable = hooksInfo.getArray(SERIALIZABLE_HOOKS);
+      if (serializable == null) {
+        serializable = new JsonArray();
+        hooksInfo.putArray(SERIALIZABLE_HOOKS, serializable);
+      }
+      serializable.add(Serializer.serialize((Serializable) hook));
+    }
+    else {
+      JsonArray bare = hooksInfo.getArray(BARE_HOOKS);
+      if (bare == null) {
+        bare = new JsonArray();
+        hooksInfo.putArray(BARE_HOOKS, bare);
+      }
+      bare.add(new JsonObject().putString("type", hook.getClass().getName()));
+    }
+    return (T) this;
+  }
+
   /**
    * Gets a list of component inputs.
    *
@@ -361,6 +395,12 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     if (config == null) {
       config = new JsonObject();
       context.putObject(CONFIG, config);
+    }
+
+    JsonObject hooks = context.getObject(HOOKS);
+    if (hooks == null) {
+      hooks = new JsonObject();
+      context.putObject(INPUTS, hooks);
     }
 
     JsonArray inputs = context.getArray(INPUTS);

@@ -61,7 +61,7 @@ public abstract class ComponentBase<T> implements Component<T> {
   protected final HeartbeatEmitter heartbeat;
   protected final InputCollector input;
   protected final OutputCollector output;
-  protected final List<ComponentHook> hooks = new ArrayList<ComponentHook>();
+  protected final List<ComponentHook> hooks;
 
   private InputHook inputHook = new InputHook() {
     @Override
@@ -127,6 +127,7 @@ public abstract class ComponentBase<T> implements Component<T> {
     this.container = container;
     this.logger = container.logger();
     this.context = context;
+    this.hooks = context.getComponent().getHooks();
     this.instanceId = context.id();
     this.address = context.getComponent().getAddress();
     NetworkContext networkContext = context.getComponent().getNetwork();

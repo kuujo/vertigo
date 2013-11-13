@@ -48,6 +48,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Logger logger;
   private final EventBus eventBus;
   private final InstanceContext context;
+  private final String componentAddress;
   private final List<String> auditors;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
@@ -66,6 +67,7 @@ public class DefaultOutputCollector implements OutputCollector {
     this.eventBus = eventBus;
     this.context = context;
     auditors = context.getComponent().getNetwork().getAuditors();
+    componentAddress = context.getComponent().getAddress();
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -193,12 +195,14 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String emit(JsonObject body) {
-    return emitNew(JsonMessageBuilder.create(body).setSource(context.getComponent().getAddress()).setAuditor(selectRandomAuditor()).toMessage());
+    return emitNew(JsonMessageBuilder.create(body).setSource(componentAddress)
+        .setAuditor(selectRandomAuditor()).toMessage());
   }
 
   @Override
   public String emit(JsonObject body, String tag) {
-    return emitNew(JsonMessageBuilder.create(body, tag).setSource(context.getComponent().getAddress()).setAuditor(selectRandomAuditor()).toMessage());
+    return emitNew(JsonMessageBuilder.create(body, tag).setSource(componentAddress)
+        .setAuditor(selectRandomAuditor()).toMessage());
   }
 
   @Override

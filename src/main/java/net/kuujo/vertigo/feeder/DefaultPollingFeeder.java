@@ -32,27 +32,21 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implements PollingFeeder {
   private Handler<PollingFeeder> feedHandler;
-  private Handler<String> ackHandler;
-  private Handler<String> failHandler;
   private static final long DEFAULT_FEED_DELAY = 10;
   private long feedDelay = DEFAULT_FEED_DELAY;
   private boolean fed;
 
-  private Handler<String> internalAckHandler = new Handler<String>() {
+  private Handler<String> ackHandler = new Handler<String>() {
     @Override
     public void handle(String messageId) {
-      if (ackHandler != null) {
-        ackHandler.handle(messageId);
-      }
+      
     }
   };
 
-  private Handler<String> internalFailHandler = new Handler<String>() {
+  private Handler<String> failHandler = new Handler<String>() {
     @Override
     public void handle(String messageId) {
-      if (failHandler != null) {
-        failHandler.handle(messageId);
-      }
+      
     }
   };
 
@@ -129,27 +123,47 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder ackHandler(Handler<String> ackHandler) {
-    this.ackHandler = ackHandler;
+  public PollingFeeder ackHandler(final Handler<String> ackHandler) {
+    if (ackHandler != null) {
+      this.ackHandler = ackHandler;
+    }
+    else {
+      this.ackHandler = new Handler<String>() {
+        @Override
+        public void handle(String messageId) {
+          
+        }
+      };
+    }
     return this;
   }
 
   @Override
-  public PollingFeeder failHandler(Handler<String> failHandler) {
-    this.failHandler = failHandler;
+  public PollingFeeder failHandler(final Handler<String> failHandler) {
+    if (failHandler != null) {
+      this.failHandler = failHandler;
+    }
+    else {
+      this.failHandler = new Handler<String>() {
+        @Override
+        public void handle(String messageId) {
+          
+        }
+      };
+    }
     return this;
   }
 
   @Override
   public String emit(JsonObject data) {
     fed = true;
-    return doFeed(data, null, 0, internalAckHandler, internalFailHandler);
+    return doFeed(data, null, 0, ackHandler, failHandler);
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
     fed = true;
-    return doFeed(data, tag, 0, internalAckHandler, internalFailHandler);
+    return doFeed(data, tag, 0, ackHandler, failHandler);
   }
 
 }

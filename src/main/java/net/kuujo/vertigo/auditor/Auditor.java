@@ -15,8 +15,10 @@
  */
 package net.kuujo.vertigo.auditor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,7 +40,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
   private long expire = 30000;
   private long delay = 0;
   private Map<String, Node> nodes = new HashMap<>();
-  private Map<Long, Timer> timers = new HashMap<>();
+  private List<Timer> timers = new ArrayList<Timer>();
 
   public static final String ADDRESS = "address";
   public static final String BROADCAST = "broadcast";
@@ -96,7 +98,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
     public void handle(Node node) {
       Timer timer = node.timer;
       if (timer != null) {
-        timer.ids.add(node.id);
+        timer.ids.remove(node.id);
       }
       clearRoot(node);
       eb.publish(broadcastAddress, new JsonObject().putString("action", "fail").putString("id", node.id));
@@ -147,7 +149,7 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    * Clears all children of a node from storage.
    */
   private void clearNode(Node node) {
-    if (node.children.size() > 0) {
+    if (!node.children.isEmpty()) {
       for (Node child : node.children) {
         clearNode(child);
       }
@@ -229,12 +231,20 @@ public class Auditor extends BusModBase implements Handler<Message<JsonObject>> 
    */
   private Timer getCurrentTimer() {
     long end = Math.round((System.currentTimeMillis() + expire) / 100) * 100;
-    if (timers.containsKey(end)) {
-      return timers.get(end);
+    if (!timers.isEmpty()) {
+      Timer last = timers.get(timers.size()-1);
+      if (last.endTime == end) {
+        return last;
+      }
+      else {
+        Timer timer = new Timer(end);
+        timers.add(timer);
+        return timer.start();
+      }
     }
     else {
       Timer timer = new Timer(end);
-      timers.put(end, timer);
+      timers.add(timer);
       return timer.start();
     }
   }

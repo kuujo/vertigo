@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Random;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -49,6 +50,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final EventBus eventBus;
   private final InstanceContext context;
   private final String componentAddress;
+  private final List<OutputHook> hooks = new ArrayList<OutputHook>();
   private final List<String> auditors;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
@@ -161,6 +163,12 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public String getAddress() {
     return context.getComponent().getAddress();
+  }
+
+  @Override
+  public OutputCollector addHook(OutputHook hook) {
+    hooks.add(hook);
+    return this;
   }
 
   @Override

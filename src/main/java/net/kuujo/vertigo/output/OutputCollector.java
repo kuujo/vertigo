@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.output;
 
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -42,6 +43,16 @@ public interface OutputCollector {
    *   The output address.
    */
   String getAddress();
+
+  /**
+   * Adds an output hook to the output collector.
+   *
+   * @param hook
+   *   The hook to add.
+   * @return
+   *   The called output collector instance.
+   */
+  OutputCollector addHook(OutputHook hook);
 
   /**
    * Emits a new message to all output channels.

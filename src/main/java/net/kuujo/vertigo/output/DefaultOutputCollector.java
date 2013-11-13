@@ -171,17 +171,66 @@ public class DefaultOutputCollector implements OutputCollector {
     return this;
   }
 
+  /**
+   * Calls start hooks.
+   */
+  private final void hookStart() {
+    for (OutputHook hook : hooks) {
+      hook.start(this);
+    }
+  }
+
+  /**
+   * Calls acked hooks.
+   */
+  private final void hookAcked(final String id) {
+    for (OutputHook hook : hooks) {
+      hook.acked(id);
+    }
+  }
+
+  /**
+   * Calls failed hooks.
+   */
+  private final void hookFailed(final String id) {
+    for (OutputHook hook : hooks) {
+      hook.failed(id);
+    }
+  }
+
+  /**
+   * Calls emit hooks.
+   */
+  private final void hookEmit(final String id) {
+    for (OutputHook hook : hooks) {
+      hook.emit(id);
+    }
+  }
+
+  /**
+   * Calls stop hooks.
+   */
+  private final void hookStop() {
+    for (OutputHook hook : hooks) {
+      hook.stop(this);
+    }
+  }
+
   @Override
   public OutputCollector ackHandler(Handler<String> handler) {
     this.ackHandler = handler;
     return this;
   }
 
+  /**
+   * Receives an ack message.
+   */
   private void doAck(Message<JsonObject> message) {
     if (ackHandler != null) {
       String id = message.body().getString("id");
       if (id != null) {
         ackHandler.handle(id);
+        hookAcked(id);
       }
     }
   }
@@ -192,11 +241,15 @@ public class DefaultOutputCollector implements OutputCollector {
     return this;
   }
 
+  /**
+   * Receives a fail message.
+   */
   private void doFail(Message<JsonObject> message) {
     if (failHandler != null) {
       String id = message.body().getString("id");
       if (id != null) {
         failHandler.handle(id);
+        hookFailed(id);
       }
     }
   }
@@ -231,6 +284,7 @@ public class DefaultOutputCollector implements OutputCollector {
     for (Channel channel : channels) {
       channel.publish(message.createChild());
     }
+    hookEmit(message.id());
     return message.id();
   }
 
@@ -241,6 +295,7 @@ public class DefaultOutputCollector implements OutputCollector {
     for (Channel channel : channels) {
       channel.publish(message.copy());
     }
+    hookEmit(message.parent());
     return message.parent();
   }
 
@@ -255,6 +310,7 @@ public class DefaultOutputCollector implements OutputCollector {
   public OutputCollector start() {
     eventBus.registerHandler(context.getComponent().getAddress(), handler);
     eventBus.registerHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler);
+    hookStart();
     return this;
   }
 
@@ -276,6 +332,7 @@ public class DefaultOutputCollector implements OutputCollector {
               }
               else {
                 future.setResult(null);
+                hookStart();
               }
             }
           });
@@ -289,6 +346,7 @@ public class DefaultOutputCollector implements OutputCollector {
   public void stop() {
     eventBus.unregisterHandler(context.getComponent().getAddress(), handler);
     eventBus.unregisterHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler);
+    hookStop();
   }
 
   @Override
@@ -309,6 +367,7 @@ public class DefaultOutputCollector implements OutputCollector {
               }
               else {
                 future.setResult(null);
+                hookStop();
               }
             }
           });

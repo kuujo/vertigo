@@ -177,6 +177,15 @@ public abstract class ComponentBase<T> implements Component<T> {
   }
 
   /**
+   * Calls start hooks.
+   */
+  private void hookStart() {
+    for (ComponentHook hook : hooks) {
+      hook.start(this);
+    }
+  }
+
+  /**
    * Sets up the component.
    */
   private void setup(Handler<AsyncResult<Void>> doneHandler) {
@@ -308,6 +317,7 @@ public abstract class ComponentBase<T> implements Component<T> {
           future.setFailure(result.cause());
         }
         else {
+          hookStart();
           future.setResult((T) ComponentBase.this);
         }
       }

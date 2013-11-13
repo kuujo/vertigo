@@ -64,15 +64,70 @@ public class DefaultInputCollector implements InputCollector {
     return this;
   }
 
+  /**
+   * Calls start hooks.
+   */
+  private void hookStart() {
+    for (InputHook hook : hooks) {
+      hook.start(this);
+    }
+  }
+
+  /**
+   * Calls receive hooks.
+   */
+  private void hookReceived(final String id) {
+    for (InputHook hook : hooks) {
+      hook.received(id);;
+    }
+  }
+
+  /**
+   * Calls ack hooks.
+   */
+  private void hookAck(final String id) {
+    for (InputHook hook : hooks) {
+      hook.ack(id);;
+    }
+  }
+
+  /**
+   * Calls fail hooks.
+   */
+  private void hookFail(final String id) {
+    for (InputHook hook : hooks) {
+      hook.fail(id);;
+    }
+  }
+
+  /**
+   * Calls stop hooks.
+   */
+  private void hookStop() {
+    for (InputHook hook : hooks) {
+      hook.start(this);
+    }
+  }
+
   @Override
   public InputCollector messageHandler(Handler<JsonMessage> handler) {
-    this.messageHandler = handler;
+    this.messageHandler = wrapMessageHandler(handler);
     if (listeners != null) {
       for (Listener listener : listeners) {
         listener.messageHandler(messageHandler);
       }
     }
     return this;
+  }
+
+  private Handler<JsonMessage> wrapMessageHandler(final Handler<JsonMessage> handler) {
+    return new Handler<JsonMessage>() {
+      @Override
+      public void handle(JsonMessage message) {
+        handler.handle(message);
+        hookReceived(message.id());
+      }
+    };
   }
 
   @Override
@@ -132,6 +187,7 @@ public class DefaultInputCollector implements InputCollector {
     }
     else {
       future.setResult(null);
+      hookStart();
     }
   }
 
@@ -146,6 +202,9 @@ public class DefaultInputCollector implements InputCollector {
             logger.error(result.cause());
           }
           listeners = null;
+          for (InputHook hook : hooks) {
+            hook.stop(DefaultInputCollector.this);
+          }
         }
       });
       recursiveStop(listeners.iterator(), future);
@@ -195,6 +254,7 @@ public class DefaultInputCollector implements InputCollector {
     }
     else {
       future.setResult(null);
+      hookStop();
     }
   }
 
@@ -204,6 +264,7 @@ public class DefaultInputCollector implements InputCollector {
     if (auditor != null) {
       eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", message.id()));
     }
+    hookAck(message.id());
     return this;
   }
 
@@ -213,6 +274,7 @@ public class DefaultInputCollector implements InputCollector {
     if (auditor != null) {
       eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", message.id()));
     }
+    hookFail(message.id());
     return this;
   }
 

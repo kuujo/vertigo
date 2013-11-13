@@ -228,7 +228,7 @@ public class DefaultListener implements Listener {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.succeeded()) {
-                  recursiveListen();
+                  startListen();
                 }
                 else {
                   eventBus.unregisterHandler(address, handler);
@@ -271,7 +271,7 @@ public class DefaultListener implements Listener {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.succeeded()) {
-                  recursiveListen();
+                  startListen();
                 }
                 else {
                   eventBus.unregisterHandler(address, handler);
@@ -290,15 +290,14 @@ public class DefaultListener implements Listener {
   }
 
   /**
-   * Recursively sends listen messages to the source until a valid
-   * response is received.
+   * Sends periodic listen messages to the source.
    */
-  private void recursiveListen() {
-    eventBus.publish(input.getAddress(), Serializer.serialize(output).putString("action", "listen").putString("address", address).putString("status", statusAddress));
-    pollTimer = vertx.setTimer(POLL_INTERVAL, new Handler<Long>() {
+  private void startListen() {
+    pollTimer = vertx.setPeriodic(POLL_INTERVAL, new Handler<Long>() {
       @Override
-      public void handle(Long timerID) {
-        recursiveListen();
+      public void handle(Long timerId) {
+        eventBus.publish(input.getAddress(), Serializer.serialize(output).putString("action", "listen")
+            .putString("address", address).putString("status", statusAddress));
       }
     });
   }

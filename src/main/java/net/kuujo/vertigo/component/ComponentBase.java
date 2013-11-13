@@ -25,6 +25,9 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
 import net.kuujo.vertigo.heartbeat.HeartbeatEmitter;
+import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.DefaultInputCollector;
 import net.kuujo.vertigo.input.InputCollector;
 
@@ -58,6 +61,7 @@ public abstract class ComponentBase<T> implements Component<T> {
   protected final HeartbeatEmitter heartbeat;
   protected final InputCollector input;
   protected final OutputCollector output;
+  protected final List<ComponentHook> hooks = new ArrayList<ComponentHook>();
 
   protected ComponentBase(Vertx vertx, Container container, InstanceContext context) {
     this.vertx = vertx;
@@ -81,6 +85,16 @@ public abstract class ComponentBase<T> implements Component<T> {
   }
 
   @Override
+  public Vertx getVertx() {
+    return vertx;
+  }
+
+  @Override
+  public Container getContainer() {
+    return container;
+  }
+
+  @Override
   public InputCollector getInput() {
     return input;
   }
@@ -93,6 +107,13 @@ public abstract class ComponentBase<T> implements Component<T> {
   @Override
   public InstanceContext getContext() {
     return context;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T addHook(ComponentHook hook) {
+    hooks.add(hook);
+    return (T) this;
   }
 
   /**

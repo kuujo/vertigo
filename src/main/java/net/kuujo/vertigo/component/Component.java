@@ -17,8 +17,11 @@ package net.kuujo.vertigo.component;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
 
@@ -26,6 +29,22 @@ import net.kuujo.vertigo.output.OutputCollector;
  * A network component.
  */
 public interface Component<T> {
+
+  /**
+   * Gets the component Vertx instance.
+   *
+   * @return
+   *   The component Vertx instance.
+   */
+  Vertx getVertx();
+
+  /**
+   * Gets the component container instance.
+   *
+   * @return
+   *   The component container instance.
+   */
+  Container getContainer();
 
   /**
    * Returns the component's {@link InputCollector}. This is the element of the
@@ -55,6 +74,16 @@ public interface Component<T> {
    *   The instance context.
    */
   InstanceContext getContext();
+
+  /**
+   * Adds a hook to the component.
+   *
+   * @param hook
+   *   The hook to add.
+   * @return
+   *   The called component instance.
+   */
+  T addHook(ComponentHook hook);
 
   /**
    * Starts the component.

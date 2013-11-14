@@ -16,9 +16,14 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.network.Network;
 
 /**
  * An output hook.
+ *
+ * This hook type may be added to any {@link OutputCollector} instance
+ * either directly via the {@link OutputCollector} interface or via a
+ * {@link Network} definition.
  *
  * @author Jordan Halterman
  */

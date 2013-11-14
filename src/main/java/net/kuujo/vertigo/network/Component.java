@@ -25,9 +25,14 @@ import org.vertx.java.core.json.JsonObject;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.hooks.Hook;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
@@ -46,6 +51,9 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public static final String INSTANCES = "instances";
   public static final String HEARTBEAT_INTERVAL = "heartbeat";
   public static final String HOOKS = "hooks";
+  public static final String INPUT_HOOKS = "input";
+  public static final String OUTPUT_HOOKS = "output";
+  public static final String COMPONENT_HOOKS = "component";
   public static final String BARE_HOOKS = "bare";
   public static final String SERIALIZABLE_HOOKS = "serializable";
   public static final String INPUTS = "inputs";
@@ -227,34 +235,118 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     return (T) this;
   }
 
+  /**
+   * Adds an input hook to the component.
+   *
+   * The output hook can be used to receive notifications on events that occur
+   * within the component's {@link InputCollector} instance. If the hook requires
+   * constructor arguments or otherwise contains any state, the hook should
+   * implement the {@link Serializable} interface. Serializable hooks will be
+   * serialized with state, but non-serializable hooks will be reconstructed from
+   * the class name only. This means for the hook to be properly started, it must
+   * be available on the class path of the deployed component verticle or module.
+   *
+   * @param hook
+   *   An input hook.
+   * @return
+   *   The called component instance.
+   * @see {@link InputHook}
+   */
+  @SuppressWarnings("unchecked")
+  public T addHook(InputHook hook) {
+    addHook(INPUT_HOOKS, hook);
+    return (T) this;
+  }
+
+  /**
+   * Adds an output hook to the component.
+   *
+   * The output hook can be used to receive notifications on events that occur
+   * within the component's {@link OutputCollector} instance. If the hook requires
+   * constructor arguments or otherwise contains any state, the hook should
+   * implement the {@link Serializable} interface. Serializable hooks will be
+   * serialized with state, but non-serializable hooks will be reconstructed from
+   * the class name only. This means for the hook to be properly started, it must
+   * be available on the class path of the deployed component verticle or module.
+   *
+   * @param hook
+   *   An output hook.
+   * @return
+   *   The called component instance.
+   * @see {@link OutputHook}
+   */
+  @SuppressWarnings("unchecked")
+  public T addHook(OutputHook hook) {
+    addHook(OUTPUT_HOOKS, hook);
+    return (T) this;
+  }
+
+  /**
+   * Adds a component hook to the component.
+   *
+   * The output hook can be used to receive notifications on events that occur
+   * within the component instance's inputs and outputs. If the hook requires
+   * constructor arguments or otherwise contains any state, the hook should
+   * implement the {@link Serializable} interface. Serializable hooks will be
+   * serialized with state, but non-serializable hooks will be reconstructed from
+   * the class name only. This means for the hook to be properly started, it must
+   * be available on the class path of the deployed component verticle or module.
+   *
+   * @param hook
+   *   A component hook.
+   * @return
+   *   The called component instance.
+   * @see {@link ComponentHook}
+   */
   @SuppressWarnings("unchecked")
   public T addHook(ComponentHook hook) {
+    addHook(COMPONENT_HOOKS, hook);
+    return (T) this;
+  }
+
+  /**
+   * Returns hook definitions for a specific hook type.
+   */
+  private JsonObject getHooks(String type) {
     JsonObject hooksInfo = definition.getObject(HOOKS);
     if (hooksInfo == null) {
       hooksInfo = new JsonObject();
       definition.putObject(HOOKS, hooksInfo);
     }
 
-    // We support two types of hooks. If a hook class implement the Serializable
-    // interface, then serialize and store its state, otherwise simply store the
-    // class name. If only the class name is stored, it must have a default constructor.
+    JsonObject typeHooks = hooksInfo.getObject(type);
+    if (typeHooks == null) {
+      typeHooks = new JsonObject();
+      hooksInfo.putObject(type, typeHooks);
+    }
+    return typeHooks;
+  }
+
+  /**
+   * Adds a hook to a JSON definition.
+   * 
+   * We support two types of hooks. If a hook class implement the Serializable
+   * interface, then serialize and store its state, otherwise simply store the
+   * class name. If only the class name is stored, it must have a default constructor.
+   */
+  private <H extends Hook<?>> void addHook(String type, H hook) {
+    JsonObject hookInfo = getHooks(type);
     if (hook instanceof Serializable) {
-      JsonArray serializable = hooksInfo.getArray(SERIALIZABLE_HOOKS);
+      JsonArray serializable = hookInfo.getArray(SERIALIZABLE_HOOKS);
       if (serializable == null) {
         serializable = new JsonArray();
-        hooksInfo.putArray(SERIALIZABLE_HOOKS, serializable);
+        hookInfo.putArray(SERIALIZABLE_HOOKS, serializable);
       }
       serializable.add(Serializer.serialize((Serializable) hook));
     }
     else {
-      JsonArray bare = hooksInfo.getArray(BARE_HOOKS);
+      JsonArray bare = hookInfo.getArray(BARE_HOOKS);
       if (bare == null) {
         bare = new JsonArray();
-        hooksInfo.putArray(BARE_HOOKS, bare);
+        hookInfo.putArray(BARE_HOOKS, bare);
       }
       bare.add(new JsonObject().putString("type", hook.getClass().getName()));
     }
-    return (T) this;
   }
 
   /**
@@ -401,6 +493,24 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     if (hooks == null) {
       hooks = new JsonObject();
       context.putObject(HOOKS, hooks);
+    }
+
+    JsonObject inputHooks = hooks.getObject(INPUT_HOOKS);
+    if (inputHooks == null) {
+      inputHooks = new JsonObject();
+      hooks.putObject(INPUT_HOOKS, inputHooks);
+    }
+
+    JsonObject outputHooks = hooks.getObject(OUTPUT_HOOKS);
+    if (outputHooks == null) {
+      outputHooks = new JsonObject();
+      hooks.putObject(OUTPUT_HOOKS, outputHooks);
+    }
+
+    JsonObject componentHooks = hooks.getObject(COMPONENT_HOOKS);
+    if (componentHooks == null) {
+      componentHooks = new JsonObject();
+      hooks.putObject(COMPONENT_HOOKS, componentHooks);
     }
 
     JsonArray inputs = context.getArray(INPUTS);

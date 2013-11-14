@@ -15,8 +15,21 @@
  */
 package net.kuujo.vertigo.hooks;
 
+import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.network.Network;
+
 /**
  * A base hook.
+ *
+ * Hooks may be used to receive notification of certain events that occur
+ * within various Vertigo objects.
+ *
+ * This hook receives notifications of when a Vertigo object starts or
+ * stops, such as an {@link InputCollector}, {@link OutputCollector},
+ * or a {@link Component} instance. Hooks can be added either directly
+ * on the relevant object or added externally via a {@link Network} definition.
  *
  * @author Jordan Halterman
  *

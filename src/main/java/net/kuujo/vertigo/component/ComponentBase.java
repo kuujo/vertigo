@@ -127,7 +127,7 @@ public abstract class ComponentBase<T> implements Component<T> {
     this.container = container;
     this.logger = container.logger();
     this.context = context;
-    this.hooks = context.getComponent().getHooks();
+    this.hooks = context.getComponent().getComponentHooks();
     this.instanceId = context.id();
     this.address = context.getComponent().getAddress();
     NetworkContext networkContext = context.getComponent().getNetwork();
@@ -139,9 +139,21 @@ public abstract class ComponentBase<T> implements Component<T> {
     }
     broadcastAddress = networkContext.getBroadcastAddress();
     heartbeat = new DefaultHeartbeatEmitter(vertx);
+
     input = new DefaultInputCollector(vertx, container, context);
+
+    // Add input hooks to the input collector.
     input.addHook(inputHook);
+    for (InputHook inputHook : context.getComponent().getInputHooks()) {
+      input.addHook(inputHook);
+    }
+
     output = new DefaultOutputCollector(vertx, container, context);
+
+    // Add output hooks to the output collector.
+    for (OutputHook outputHook : context.getComponent().getOutputHooks()) {
+      output.addHook(outputHook);
+    }
     output.addHook(outputHook);
   }
 

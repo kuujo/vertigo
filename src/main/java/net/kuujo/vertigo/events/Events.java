@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -27,7 +28,11 @@ import org.vertx.java.core.json.JsonObject;
  * Vertigo event constants.
  *
  * Vertigo publishes events on the default Vert.x event bus when certain events
- * occur. These classes contain constants for event addresses.
+ * occur. These classes contain constants for event addresses and methods for
+ * triggering specific events. Events are triggered by Vertigo. Users should
+ * register handlers on the event bus to receive event notifications. For
+ * messaging related events, see {@link ComponentHook} and other hook related
+ * classes.
  *
  * @author Jordan Halterman
  */

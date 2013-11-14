@@ -37,6 +37,8 @@ import net.kuujo.vertigo.message.JsonMessage;
  */
 public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentBase<T> implements Executor<T> {
   protected InternalQueue queue;
+  private boolean autoRetry;
+  private int retryAttempts = -1;
 
   protected AbstractExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
@@ -57,6 +59,13 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     }
   };
 
+  private Handler<String> timeoutHandler = new Handler<String>() {
+    @Override
+    public void handle(String id) {
+      queue.timeout(id);
+    }
+  };
+
   private Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
     @Override
     public void handle(JsonMessage message) {
@@ -69,6 +78,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
   public T start(Handler<AsyncResult<T>> doneHandler) {
     output.ackHandler(ackHandler);
     output.failHandler(failHandler);
+    output.timeoutHandler(timeoutHandler);
     input.messageHandler(messageHandler);
     return super.start(doneHandler);
   }
@@ -102,10 +112,43 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     return queue.full();
   }
 
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setAutoRetry(boolean retry) {
+    autoRetry = retry;
+    return (T) this;
+  }
+
+  @Override
+  public boolean isAutoRetry() {
+    return autoRetry;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setRetryAttempts(int attempts) {
+    retryAttempts = attempts;
+    return (T) this;
+  }
+
+  @Override
+  public int getRetryAttempts() {
+    return retryAttempts;
+  }
+
   /**
-   * Executes a feed.
+   * Executes an execution.
    */
-  protected String doExecute(final JsonObject data, final String tag, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
+  protected String doExecute(final JsonObject data, final String tag,
+      final Handler<JsonMessage> resultHandler, final Handler<String> failHandler, final Handler<String> timeoutHandler) {
+    return doExecute(data, tag, 0, resultHandler, failHandler, timeoutHandler);
+  }
+
+  /**
+   * Executes an execution.
+   */
+  protected String doExecute(final JsonObject data, final String tag, final int attempts,
+        final Handler<JsonMessage> resultHandler, final Handler<String> failHandler, final Handler<String> timeoutHandler) {
     final String id;
     if (tag != null) {
       id = output.emit(data, tag);
@@ -113,7 +156,35 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     else {
       id = output.emit(data);
     }
-    queue.enqueue(id, resultHandler, failHandler);
+
+    queue.enqueue(id,
+        new Handler<JsonMessage>() {
+          @Override
+          public void handle(JsonMessage message) {
+            if (resultHandler != null) {
+              resultHandler.handle(message);
+            }
+          }
+        },
+        new Handler<String>() {
+          @Override
+          public void handle(String messageId) {
+            if (failHandler != null) {
+              failHandler.handle(id);
+            }
+          }
+        },
+        new Handler<String>() {
+          @Override
+          public void handle(String messageId) {
+            if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
+              doExecute(data, tag, attempts+1, resultHandler, failHandler, timeoutHandler);
+            }
+            else if (timeoutHandler != null) {
+              timeoutHandler.handle(id);
+            }
+          }
+        });
     return id;
   }
 
@@ -137,13 +208,16 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       private final Long timer;
       private final Handler<JsonMessage> resultHandler;
       private final Handler<String> failHandler;
+      private final Handler<String> timeoutHandler;
       private boolean acked;
       private JsonMessage result;
 
-      public HandlerHolder(Long timer, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
+      public HandlerHolder(Long timer, Handler<JsonMessage> resultHandler,
+          Handler<String> failHandler, Handler<String> timeoutHandler) {
         this.timer = timer;
         this.resultHandler = resultHandler;
         this.failHandler = failHandler;
+        this.timeoutHandler = timeoutHandler;
       }
     }
 
@@ -165,7 +239,8 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
      * Enqueues a new item in the execute queue. When the item is acked or failed
      * by ID, or when a result is received, the appropriate handlers will be called.
      */
-    private void enqueue(final String id, Handler<JsonMessage> resultHandler, Handler<String> failHandler) {
+    private void enqueue(final String id, Handler<JsonMessage> resultHandler,
+        Handler<String> failHandler, Handler<String> timeoutHandler) {
       long timerId = vertx.setTimer(replyTimeout, new Handler<Long>() {
         @Override
         public void handle(Long timerId) {
@@ -175,7 +250,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
           }
         }
       });
-      handlers.put(id, new HandlerHolder(timerId, resultHandler, failHandler));
+      handlers.put(id, new HandlerHolder(timerId, resultHandler, failHandler, timeoutHandler));
     }
 
     /**
@@ -200,6 +275,17 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       if (holder != null) {
         vertx.cancelTimer(holder.timer);
         holder.failHandler.handle(id);
+      }
+    }
+
+    /**
+     * Times out an item in the queue.
+     */
+    private void timeout(String id) {
+      HandlerHolder holder = handlers.remove(id);
+      if (holder != null) {
+        vertx.cancelTimer(holder.timer);
+        holder.timeoutHandler.handle(id);
       }
     }
 

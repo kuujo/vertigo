@@ -90,7 +90,7 @@ public class NetworkTest extends TestVerticle {
     Component<?> feeder = TestFailingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!"));
     network.addComponent(feeder);
     network.addComponent(TestTimingOutWorker.createDefinition(2)).addInput(feeder.getAddress());
-    network.setAckExpire(1000);
+    network.setAckTimeout(1000);
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override

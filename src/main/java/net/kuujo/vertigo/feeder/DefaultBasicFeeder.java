@@ -34,12 +34,12 @@ public class DefaultBasicFeeder extends AbstractFeeder<BasicFeeder> implements B
 
   @Override
   public String emit(JsonObject data) {
-    return doFeed(data, null, 0, null, null);
+    return doFeed(data, null, null, null, null);
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
-    return doFeed(data, tag, 0, null, null);
+    return doFeed(data, tag, null, null, null);
   }
 
 }

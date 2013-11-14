@@ -50,6 +50,13 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
     }
   };
 
+  private Handler<String> timeoutHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      
+    }
+  };
+
   public DefaultPollingFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
@@ -155,15 +162,31 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
+  public PollingFeeder timeoutHandler(final Handler<String> timeoutHandler) {
+    if (timeoutHandler != null) {
+      this.timeoutHandler = timeoutHandler;
+    }
+    else {
+      this.timeoutHandler = new Handler<String>() {
+        @Override
+        public void handle(String messageId) {
+          
+        }
+      };
+    }
+    return this;
+  }
+
+  @Override
   public String emit(JsonObject data) {
     fed = true;
-    return doFeed(data, null, 0, ackHandler, failHandler);
+    return doFeed(data, null, ackHandler, failHandler, timeoutHandler);
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
     fed = true;
-    return doFeed(data, tag, 0, ackHandler, failHandler);
+    return doFeed(data, tag, ackHandler, failHandler, timeoutHandler);
   }
 
 }

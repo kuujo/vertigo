@@ -35,6 +35,7 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   private Handler<PollingExecutor> executeHandler;
   private Handler<JsonMessage> resultHandler;
   private Handler<String> failHandler;
+  private Handler<String> timeoutHandler;
   private static final long DEFAULT_EXECUTE_DELAY = 10;
   private long executeDelay = DEFAULT_EXECUTE_DELAY;
   private boolean executed;
@@ -53,6 +54,15 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
     public void handle(String messageId) {
       if (failHandler != null) {
         failHandler.handle(messageId);
+      }
+    }
+  };
+
+  private Handler<String> internalTimeoutHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      if (timeoutHandler != null) {
+        timeoutHandler.handle(messageId);
       }
     }
   };
@@ -142,15 +152,21 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   }
 
   @Override
+  public PollingExecutor timeoutHandler(Handler<String> timeoutHandler) {
+    this.timeoutHandler = timeoutHandler;
+    return this;
+  }
+
+  @Override
   public String execute(JsonObject args) {
     executed = true;
-    return doExecute(args, null, internalResultHandler, internalFailHandler);
+    return doExecute(args, null, internalResultHandler, internalFailHandler, internalTimeoutHandler);
   }
 
   @Override
   public String execute(JsonObject args, String tag) {
     executed = true;
-    return doExecute(args, tag, internalResultHandler, internalFailHandler);
+    return doExecute(args, tag, internalResultHandler, internalFailHandler, internalTimeoutHandler);
   }
 
 }

@@ -92,6 +92,16 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
   PollingExecutor failHandler(Handler<String> failHandler);
 
   /**
+   * Sets a timeout handler on the executor.
+   *
+   * @param timeoutHandler
+   *   A handler to be invoked when a timeout is received.
+   * @return
+   *   The called executor instance.
+   */
+  PollingExecutor timeoutHandler(Handler<String> timeoutHandler);
+
+  /**
    * Executes the network.
    *
    * @param args

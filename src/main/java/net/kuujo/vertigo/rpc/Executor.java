@@ -72,4 +72,47 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    */
   boolean queueFull();
 
+  /**
+   * Sets the executor auto-retry option.
+   *
+   * If this option is enabled, the executor will automatically retry sending
+   * timed out messages.
+   *
+   * @param retry
+   *   Indicates whether to automatically executor emitting timed out data.
+   * @return
+   *   The called executor instance.
+   */
+  T setAutoRetry(boolean retry);
+
+  /**
+   * Gets the executor auto-retry option.
+   *
+   * If this option is enabled, the executor will automatically retry sending
+   * timed out messages.
+   *
+   * @return
+   *   Indicates whether the executor with automatically retry emitting timed out data.
+   */
+  boolean isAutoRetry();
+
+  /**
+   * Sets the number of automatic retry attempts for a single timed out message.
+   *
+   * @param attempts
+   *   The number of retry attempts allowed. If attempts is -1 then an infinite
+   *   number of retry attempts will be allowed.
+   * @return
+   *   The called executor instance.
+   */
+  T setRetryAttempts(int attempts);
+
+  /**
+   * Gets the number of automatic retry attempts.
+   *
+   * @return
+   *   Indicates the number of retry attempts allowed for the executor.
+   */
+  int getRetryAttempts();
+
 }

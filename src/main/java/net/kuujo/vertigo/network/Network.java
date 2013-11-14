@@ -36,11 +36,11 @@ public class Network implements Serializable {
   public static final String BROADCAST = "broadcast";
   public static final String AUDITORS = "auditors";
   public static final String ACKING = "acking";
-  public static final String ACK_EXPIRE = "ack_expire";
+  public static final String ACK_TIMEOUT = "timeout";
   public static final String ACK_DELAY = "ack_delay";
   public static final String COMPONENTS = "components";
 
-  public static final long DEFAULT_ACK_EXPIRE = 30000;
+  public static final long DEFAULT_ACK_TIMEOUT = 30000;
   public static final long DEFAULT_ACK_DELAY = 0;
 
   private JsonObject definition;
@@ -186,30 +186,29 @@ public class Network implements Serializable {
   }
 
   /**
-   * Sets the network ack expiration.
+   * Sets the network ack timeout.
    *
    * This indicates the maximum amount of time an auditor will hold message
-   * information in memory before considering it to be failed. Note that this
-   * differs from ack timeouts set on feeders which have their own timers.
+   * information in memory before considering it to be timed out.
    *
-   * @param expire
-   *   An ack expiration.
+   * @param timeout
+   *   An ack timeout.
    * @return
    *   The called network instance.
    */
-  public Network setAckExpire(long expire) {
-    definition.putNumber(ACK_EXPIRE, expire);
+  public Network setAckTimeout(long timeout) {
+    definition.putNumber(ACK_TIMEOUT, timeout);
     return this;
   }
 
   /**
-   * Gets the network ack expiration.
+   * Gets the network ack timeout.
    *
    * @return
-   *   Ack expiration for the network. Defaults to 30000
+   *   Ack timeout for the network. Defaults to 30000
    */
-  public long getAckExpire() {
-    return definition.getLong(ACK_EXPIRE, DEFAULT_ACK_EXPIRE);
+  public long getAckTimeout() {
+    return definition.getLong(ACK_TIMEOUT, DEFAULT_ACK_TIMEOUT);
   }
 
   /**
@@ -496,7 +495,7 @@ public class Network implements Serializable {
 
     context.putString(BROADCAST, context.getString(BROADCAST, String.format("%s.%s", address, BROADCAST)));
     context.putBoolean(ACKING, context.getBoolean(ACKING, true));
-    context.putNumber(ACK_EXPIRE, context.getLong(ACK_EXPIRE, DEFAULT_ACK_EXPIRE));
+    context.putNumber(ACK_TIMEOUT, context.getLong(ACK_TIMEOUT, DEFAULT_ACK_TIMEOUT));
     context.putNumber(ACK_DELAY, context.getLong(ACK_DELAY, DEFAULT_ACK_DELAY));
 
     int numAuditors = context.getInteger(AUDITORS, 1);

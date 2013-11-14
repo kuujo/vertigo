@@ -116,13 +116,13 @@ public class NetworkContext implements Serializable {
   }
 
   /**
-   * Returns network ack expiration.
+   * Returns network ack timeout.
    *
    * @return
-   *   Ack expirations for the network.
+   *   Ack timeout for the network.
    */
-  public long getAckExpire() {
-    return context.getLong(Network.ACK_EXPIRE, Network.DEFAULT_ACK_EXPIRE);
+  public long getAckTimeout() {
+    return context.getLong(Network.ACK_TIMEOUT, Network.DEFAULT_ACK_TIMEOUT);
   }
 
   /**

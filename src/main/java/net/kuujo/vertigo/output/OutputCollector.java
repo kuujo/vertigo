@@ -139,7 +139,7 @@ public interface OutputCollector {
    * Sets a fail handler on the output collector.
    *
    * This handler will be called with the correlation identifier of the message
-   * that was failed. Not that even if a descendant of the output message was
+   * that was failed. Note that even if a descendant of the output message was
    * failed, all parent and ancestor messages are failed as well, up to the root.
    *
    * @param handler
@@ -148,6 +148,20 @@ public interface OutputCollector {
    *   The called output collector instance.
    */
   OutputCollector failHandler(Handler<String> handler);
+
+  /**
+   * Sets a timeout handler on the output collector.
+   *
+   * This handler will be called with the correlation identifier of the message
+   * that timed out. Note that timeouts apply only to root messages, not children
+   * of other messages.
+   *
+   * @param handler
+   *   A handler to be invoked when a message has timed out.
+   * @return
+   *   The called output collector instance.
+   */
+  OutputCollector timeoutHandler(Handler<String> handler);
 
   /**
    * Starts the output collector.

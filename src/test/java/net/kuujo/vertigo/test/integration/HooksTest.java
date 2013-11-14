@@ -30,6 +30,7 @@ import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
 import net.kuujo.vertigo.testtools.TestFailingWorker;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
+import net.kuujo.vertigo.testtools.TestTimingOutWorker;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -139,6 +140,12 @@ public class HooksTest extends TestVerticle {
       }
     }
     @Override
+    public void timeout(String id) {
+      if (hook.equals("timeout")) {
+        testComplete();
+      }
+    }
+    @Override
     public JsonObject getState() {
       return new JsonObject().putString("hook", hook);
     }
@@ -203,6 +210,12 @@ public class HooksTest extends TestVerticle {
     @Override
     public void failed(String id) {
       if (hook.equals("failed")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void timeout(String id) {
+      if (hook.equals("timeout")) {
         testComplete();
       }
     }
@@ -313,6 +326,19 @@ public class HooksTest extends TestVerticle {
   }
 
   @Test
+  public void testOutputTimeoutHook() {
+    Network network = new Network("test");
+    network.setAckTimeout(1000);
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestTimingOutWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestOutputHook("timeout"));
+    deploy(network);
+  }
+
+  @Test
   public void testComponentStartHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
@@ -393,6 +419,19 @@ public class HooksTest extends TestVerticle {
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
     feeder.addHook(new TestComponentHook("failed"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentTimeoutHook() {
+    Network network = new Network("test");
+    network.setAckTimeout(1000);
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestTimingOutWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestComponentHook("timeout"));
     deploy(network);
   }
 

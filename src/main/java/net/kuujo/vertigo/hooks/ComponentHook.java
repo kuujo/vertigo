@@ -77,4 +77,12 @@ public interface ComponentHook extends Hook<Component<?>> {
    */
   void failed(String id);
 
+  /**
+   * Called when the component receives a timeout for an emitted message.
+   *
+   * @param id
+   *   The unique message identifier.
+   */
+  void timeout(String id);
+
 }

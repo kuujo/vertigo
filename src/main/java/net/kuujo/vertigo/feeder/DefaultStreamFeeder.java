@@ -17,6 +17,7 @@ package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.runtime.FailureException;
+import net.kuujo.vertigo.runtime.TimeoutException;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -35,11 +36,17 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
   private Handler<Void> drainHandler;
   private boolean paused;
 
+  private static final FailureException FAILURE_EXCEPTION = new FailureException("Processing failed.");
+  static { FAILURE_EXCEPTION.setStackTrace(new StackTraceElement[0]); }
+
+  private static final TimeoutException TIMEOUT_EXCEPTION = new TimeoutException("Processing timed out.");
+  static { TIMEOUT_EXCEPTION.setStackTrace(new StackTraceElement[0]); }
+
   public DefaultStreamFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 
-  private Handler<String> ackFailHandler = new Handler<String>() {
+  private Handler<String> ackFailTimeoutHandler = new Handler<String>() {
     @Override
     public void handle(String messageId) {
       checkPause();
@@ -61,7 +68,17 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
       @Override
       public void handle(String messageId) {
         checkPause();
-        future.setFailure(new FailureException("Processing failed."));
+        future.setFailure(FAILURE_EXCEPTION);
+      }
+    };
+  }
+
+  private Handler<String> createTimeoutHandler(final Future<Void> future) {
+    return new Handler<String>() {
+      @Override
+      public void handle(String messageId) {
+        checkPause();
+        future.setFailure(TIMEOUT_EXCEPTION);
       }
     };
   }
@@ -79,14 +96,14 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
 
   @Override
   public String emit(JsonObject data) {
-    String id = doFeed(data, null, 0, ackFailHandler, ackFailHandler);
+    String id = doFeed(data, null, ackFailTimeoutHandler, ackFailTimeoutHandler, ackFailTimeoutHandler);
     checkPause();
     return id;
   }
 
   @Override
   public String emit(JsonObject data, String tag) {
-    String id = doFeed(data, tag, 0, ackFailHandler, ackFailHandler);
+    String id = doFeed(data, tag, ackFailTimeoutHandler, ackFailTimeoutHandler, ackFailTimeoutHandler);
     checkPause();
     return id;
   }
@@ -94,7 +111,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
   @Override
   public String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler) {
     Future<Void> future = new DefaultFutureResult<Void>().setHandler(ackHandler);
-    String id = doFeed(data, null, 0, createAckHandler(future), createFailHandler(future));
+    String id = doFeed(data, null, createAckHandler(future), createFailHandler(future), createTimeoutHandler(future));
     checkPause();
     return id;
   }
@@ -102,7 +119,7 @@ public class DefaultStreamFeeder extends AbstractFeeder<StreamFeeder> implements
   @Override
   public String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler) {
     Future<Void> future = new DefaultFutureResult<Void>().setHandler(ackHandler);
-    String id = doFeed(data, tag, 0, createAckHandler(future), createFailHandler(future));
+    String id = doFeed(data, tag, createAckHandler(future), createFailHandler(future), createTimeoutHandler(future));
     checkPause();
     return id;
   }

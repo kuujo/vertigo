@@ -213,11 +213,12 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   private void recursiveDeployAuditors(final List<String> auditors, final Future<Void> future) {
     if (auditors.size() > 0) {
       final String address = auditors.iterator().next();
-      JsonObject auditorConfig = new JsonObject().putString("address", address)
-        .putString("broadcast", context.getBroadcastAddress())
-        .putBoolean("enabled", context.isAckingEnabled())
-        .putNumber("expire", context.getAckExpire())
-        .putNumber("delay", context.getAckDelay());
+      JsonObject auditorConfig = new JsonObject()
+        .putString(Auditor.ADDRESS, address)
+        .putString(Auditor.BROADCAST, context.getBroadcastAddress())
+        .putBoolean(Auditor.ENABLED, context.isAckingEnabled())
+        .putNumber(Auditor.TIMEOUT, context.getAckTimeout())
+        .putNumber(Auditor.DELAY, context.getAckDelay());
       deployVerticle(Auditor.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {

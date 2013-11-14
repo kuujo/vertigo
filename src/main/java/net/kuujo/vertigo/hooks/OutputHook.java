@@ -53,4 +53,12 @@ public interface OutputHook extends Hook<OutputCollector> {
    */
   void failed(String id);
 
+  /**
+   * Called when the output receives a timeout for an emitted message.
+   *
+   * @param id
+   *   The unique message identifier.
+   */
+  void timeout(String id);
+
 }

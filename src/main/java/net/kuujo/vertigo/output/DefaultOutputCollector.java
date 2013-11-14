@@ -55,6 +55,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final List<String> auditors;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
+  private Handler<String> timeoutHandler;
   private Random random = new Random();
   private List<Channel> channels = new ArrayList<Channel>();
   private Map<String, Long> connectionTimers = new HashMap<>();
@@ -100,6 +101,9 @@ public class DefaultOutputCollector implements OutputCollector {
             break;
           case "fail":
             doFail(message);
+            break;
+          case "timeout":
+            doTimeout(message);
             break;
         }
       }
@@ -200,6 +204,15 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   /**
+   * Calls timed-out hooks.
+   */
+  private final void hookTimeout(final String id) {
+    for (OutputHook hook : hooks) {
+      hook.timeout(id);
+    }
+  }
+
+  /**
    * Calls emit hooks.
    */
   private final void hookEmit(final String id) {
@@ -251,6 +264,25 @@ public class DefaultOutputCollector implements OutputCollector {
       if (id != null) {
         failHandler.handle(id);
         hookFailed(id);
+      }
+    }
+  }
+
+  @Override
+  public OutputCollector timeoutHandler(Handler<String> handler) {
+    this.timeoutHandler = handler;
+    return this;
+  }
+
+  /**
+   * Receives a timeput message.
+   */
+  private void doTimeout(Message<JsonObject> message) {
+    if (timeoutHandler != null) {
+      String id = message.body().getString("id");
+      if (id != null) {
+        timeoutHandler.handle(id);
+        hookTimeout(id);
       }
     }
   }

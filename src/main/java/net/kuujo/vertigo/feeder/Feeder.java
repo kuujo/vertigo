@@ -76,10 +76,10 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * Sets the feeder auto-retry option.
    *
    * If this option is enabled, the feeder will automatically retry sending
-   * failed or timed out messages.
+   * timed out messages.
    *
    * @param retry
-   *   Indicates whether to automatically retry emitting failed data.
+   *   Indicates whether to automatically retry emitting timed out data.
    * @return
    *   The called feeder instance.
    */
@@ -89,15 +89,15 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * Gets the feeder auto-retry option.
    *
    * If this option is enabled, the feeder will automatically retry sending
-   * failed or timed out messages.
+   * timed out messages.
    *
    * @return
-   *   Indicates whether the feeder with automatically retry emitting failed data.
+   *   Indicates whether the feeder with automatically retry emitting timed out data.
    */
   boolean isAutoRetry();
 
   /**
-   * Sets the number of automatic retry attempts for a single failed message.
+   * Sets the number of automatic retry attempts for a single timed out message.
    *
    * @param attempts
    *   The number of retry attempts allowed. If attempts is -1 then an infinite

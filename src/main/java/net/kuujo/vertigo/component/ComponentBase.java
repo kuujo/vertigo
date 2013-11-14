@@ -116,6 +116,12 @@ public abstract class ComponentBase<T> implements Component<T> {
       }
     }
     @Override
+    public void timeout(String id) {
+      for (ComponentHook hook : hooks) {
+        hook.timeout(id);
+      }
+    }
+    @Override
     public void stop(OutputCollector subject) {
       // Do nothing. This hook is called elsewhere.
     }

@@ -83,6 +83,12 @@ public class EventBusHook implements ComponentHook {
   }
 
   @Override
+  public void timeout(String id) {
+    eventBus.publish(String.format("vertigo.component.%s.timeout", address),
+        new JsonObject().putString("id", id));
+  }
+
+  @Override
   public void stop(Component<?> subject) {
     eventBus.publish(String.format("vertigo.component.%s.stop", address),
         new JsonObject().putObject("context", context.getState()));

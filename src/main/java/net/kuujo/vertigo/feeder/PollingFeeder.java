@@ -88,4 +88,14 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    */
   PollingFeeder failHandler(Handler<String> failHandler);
 
+  /**
+   * Sets a timeout handler on the feeder.
+   *
+   * @param timeoutHandler
+   *   A handler to be invoked when a message times out.
+   * @return
+   *   The called feeder instance.
+   */
+  PollingFeeder timeoutHandler(Handler<String> timeoutHandler);
+
 }

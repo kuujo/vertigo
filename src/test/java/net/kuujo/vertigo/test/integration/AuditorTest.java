@@ -53,12 +53,12 @@ public class AuditorTest extends TestVerticle {
     deployAuditor(address, broadcast, true, expire, 0, doneHandler);
   }
 
-  private void deployAuditor(String address, String broadcast, boolean enabled, long expire, long delay, Handler<AsyncResult<Void>> doneHandler) {
+  private void deployAuditor(String address, String broadcast, boolean enabled, long timeout, long delay, Handler<AsyncResult<Void>> doneHandler) {
     JsonObject config = new JsonObject()
       .putString(Auditor.ADDRESS, address)
       .putString(Auditor.BROADCAST, broadcast)
       .putBoolean(Auditor.ENABLED, enabled)
-      .putNumber(Auditor.EXPIRE, expire)
+      .putNumber(Auditor.TIMEOUT, timeout)
       .putNumber(Auditor.DELAY, delay);
 
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
@@ -93,6 +93,21 @@ public class AuditorTest extends TestVerticle {
         assertNotNull(body);
         String action = body.getString("action");
         assertEquals("fail", action);
+        String returnId = body.getString("id");
+        assertEquals(id, returnId);
+        testComplete();
+      }
+    };
+  }
+
+  private Handler<Message<JsonObject>> timeoutHandler(final String id) {
+    return new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        assertNotNull(body);
+        String action = body.getString("action");
+        assertEquals("timeout", action);
         String returnId = body.getString("id");
         assertEquals(id, returnId);
         testComplete();
@@ -255,12 +270,12 @@ public class AuditorTest extends TestVerticle {
   }
 
   @Test
-  public void testExpire() {
+  public void testTimeout() {
     final String auditor = "test";
     final JsonMessage source = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor(auditor).toMessage();
     final JsonMessage child = source.createChild();
 
-    vertx.eventBus().registerHandler("broadcast", failHandler(source.id()), new Handler<AsyncResult<Void>>() {
+    vertx.eventBus().registerHandler("broadcast", timeoutHandler(source.id()), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());

@@ -18,6 +18,7 @@ package net.kuujo.vertigo.rpc;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.runtime.FailureException;
+import net.kuujo.vertigo.runtime.TimeoutException;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -35,6 +36,12 @@ import org.vertx.java.platform.Container;
 public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> implements StreamExecutor {
   private Handler<Void> drainHandler;
   private boolean paused;
+
+  private static final FailureException FAILURE_EXCEPTION = new FailureException("Processing failed.");
+  static { FAILURE_EXCEPTION.setStackTrace(new StackTraceElement[0]); }
+
+  private static final TimeoutException TIMEOUT_EXCEPTION = new TimeoutException("Processing timed out.");
+  static { TIMEOUT_EXCEPTION.setStackTrace(new StackTraceElement[0]); }
 
   public DefaultStreamExecutor(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
@@ -70,7 +77,14 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
         new Handler<String>() {
           @Override
           public void handle(String event) {
-            future.setFailure(new FailureException("Processing failed."));
+            future.setFailure(FAILURE_EXCEPTION);
+            checkPause();
+          }
+        },
+        new Handler<String>() {
+          @Override
+          public void handle(String event) {
+            future.setFailure(TIMEOUT_EXCEPTION);
             checkPause();
           }
         });

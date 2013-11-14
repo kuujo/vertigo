@@ -48,10 +48,18 @@ public abstract class FeederVerticle extends Verticle {
     }
   };
 
+  private Handler<String> timeoutHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      handleTimeout(messageId);
+    }
+  };
+
   @Override
   public void start(final Future<Void> future) {
     vertigo = new Vertigo(this);
-    feeder = vertigo.createPollingFeeder().ackHandler(ackHandler).failHandler(failHandler);
+    feeder = vertigo.createPollingFeeder()
+        .ackHandler(ackHandler).failHandler(failHandler).timeoutHandler(timeoutHandler);
     context = feeder.getContext();
     feeder.start(new Handler<AsyncResult<PollingFeeder>>() {
       @Override
@@ -112,5 +120,13 @@ public abstract class FeederVerticle extends Verticle {
    *   The failed message identifier.
    */
   protected abstract void handleFailure(String id);
+
+  /**
+   * Called when a message has timed out.
+   *
+   * @param id
+   *   The timed out message identifier.
+   */
+  protected abstract void handleTimeout(String id);
 
 }

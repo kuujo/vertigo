@@ -35,24 +35,32 @@ public abstract class ExecutorVerticle extends Verticle {
   protected PollingExecutor executor;
   protected InstanceContext context;
 
-  private Handler<JsonMessage> resultHandler = new Handler<JsonMessage>() {
+  private final Handler<JsonMessage> resultHandler = new Handler<JsonMessage>() {
     @Override
     public void handle(JsonMessage message) {
       handleResult(message);
     }
   };
 
-  private Handler<String> failHandler = new Handler<String>() {
+  private final Handler<String> failHandler = new Handler<String>() {
     @Override
     public void handle(String messageId) {
       handleFailure(messageId);
     }
   };
 
+  private final Handler<String> timeoutHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      handleTimeout(messageId);
+    }
+  };
+
   @Override
   public void start(final Future<Void> future) {
     vertigo = new Vertigo(this);
-    executor = vertigo.createPollingExecutor().resultHandler(resultHandler).failHandler(failHandler);
+    executor = vertigo.createPollingExecutor()
+        .resultHandler(resultHandler).failHandler(failHandler).timeoutHandler(timeoutHandler);
     context = executor.getContext();
     executor.start(new Handler<AsyncResult<PollingExecutor>>() {
       @Override
@@ -113,5 +121,13 @@ public abstract class ExecutorVerticle extends Verticle {
    *   The failed message identifier.
    */
   protected abstract void handleFailure(String id);
+
+  /**
+   * Called when an execution timeout is received.
+   *
+   * @param id
+   *   The timed out message identifier.
+   */
+  protected abstract void handleTimeout(String id);
 
 }

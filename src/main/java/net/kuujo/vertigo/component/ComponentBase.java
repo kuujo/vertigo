@@ -65,64 +65,64 @@ public abstract class ComponentBase<T> implements Component<T> {
 
   private InputHook inputHook = new InputHook() {
     @Override
-    public void start(InputCollector subject) {
+    public void handleStart(InputCollector subject) {
       // Do nothing. This hook is called elsewhere.
     }
     @Override
-    public void received(String id) {
+    public void handleReceive(String id) {
       for (ComponentHook hook : hooks) {
-        hook.received(id);
+        hook.handleReceive(id);
       }
     }
     @Override
-    public void ack(String id) {
+    public void handleAck(String id) {
       for (ComponentHook hook : hooks) {
-        hook.ack(id);
+        hook.handleAck(id);
       }
     }
     @Override
-    public void fail(String id) {
+    public void handleFail(String id) {
       for (ComponentHook hook : hooks) {
-        hook.fail(id);
+        hook.handleFail(id);
       }
     }
     @Override
-    public void stop(InputCollector subject) {
+    public void handleStop(InputCollector subject) {
       // Do nothing. This hook is called elsewhere.
     }
   };
 
   private OutputHook outputHook = new OutputHook() {
     @Override
-    public void start(OutputCollector subject) {
+    public void handleStart(OutputCollector subject) {
       // Do nothing. This hook is called elsewhere.
     }
     @Override
-    public void emit(String id) {
+    public void handleEmit(String id) {
       for (ComponentHook hook : hooks) {
-        hook.emit(id);
+        hook.handleEmit(id);
       }
     }
     @Override
-    public void acked(String id) {
+    public void handleAcked(String id) {
       for (ComponentHook hook : hooks) {
-        hook.acked(id);
+        hook.handleAcked(id);
       }
     }
     @Override
-    public void failed(String id) {
+    public void handleFailed(String id) {
       for (ComponentHook hook : hooks) {
-        hook.failed(id);
+        hook.handleFailed(id);
       }
     }
     @Override
-    public void timeout(String id) {
+    public void handleTimeout(String id) {
       for (ComponentHook hook : hooks) {
-        hook.timeout(id);
+        hook.handleTimeout(id);
       }
     }
     @Override
-    public void stop(OutputCollector subject) {
+    public void handleStop(OutputCollector subject) {
       // Do nothing. This hook is called elsewhere.
     }
   };
@@ -200,7 +200,7 @@ public abstract class ComponentBase<T> implements Component<T> {
    */
   private void hookStart() {
     for (ComponentHook hook : hooks) {
-      hook.start(this);
+      hook.handleStart(this);
     }
   }
 

@@ -69,7 +69,7 @@ public class DefaultInputCollector implements InputCollector {
    */
   private void hookStart() {
     for (InputHook hook : hooks) {
-      hook.start(this);
+      hook.handleStart(this);
     }
   }
 
@@ -78,7 +78,7 @@ public class DefaultInputCollector implements InputCollector {
    */
   private void hookReceived(final String id) {
     for (InputHook hook : hooks) {
-      hook.received(id);;
+      hook.handleReceive(id);;
     }
   }
 
@@ -87,7 +87,7 @@ public class DefaultInputCollector implements InputCollector {
    */
   private void hookAck(final String id) {
     for (InputHook hook : hooks) {
-      hook.ack(id);;
+      hook.handleAck(id);;
     }
   }
 
@@ -96,7 +96,7 @@ public class DefaultInputCollector implements InputCollector {
    */
   private void hookFail(final String id) {
     for (InputHook hook : hooks) {
-      hook.fail(id);;
+      hook.handleFail(id);;
     }
   }
 
@@ -105,7 +105,7 @@ public class DefaultInputCollector implements InputCollector {
    */
   private void hookStop() {
     for (InputHook hook : hooks) {
-      hook.start(this);
+      hook.handleStart(this);
     }
   }
 
@@ -203,7 +203,7 @@ public class DefaultInputCollector implements InputCollector {
           }
           listeners = null;
           for (InputHook hook : hooks) {
-            hook.stop(DefaultInputCollector.this);
+            hook.handleStop(DefaultInputCollector.this);
           }
         }
       });

@@ -35,7 +35,7 @@ public interface InputHook extends Hook<InputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void received(String id);
+  void handleReceive(String id);
 
   /**
    * Called when the component acks a received message.
@@ -43,7 +43,7 @@ public interface InputHook extends Hook<InputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void ack(String id);
+  void handleAck(String id);
 
   /**
    * Called when the component fails a received message.
@@ -51,6 +51,6 @@ public interface InputHook extends Hook<InputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void fail(String id);
+  void handleFail(String id);
 
 }

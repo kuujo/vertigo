@@ -60,31 +60,31 @@ public class HooksTest extends TestVerticle {
       this.hook = hook;
     }
     @Override
-    public void start(InputCollector subject) {
+    public void handleStart(InputCollector subject) {
       if (hook.equals("start")) {
         testComplete();
       }
     }
     @Override
-    public void stop(InputCollector subject) {
+    public void handleStop(InputCollector subject) {
       if (hook.equals("stop")) {
         testComplete();
       }
     }
     @Override
-    public void received(String id) {
+    public void handleReceive(String id) {
       if (hook.equals("received")) {
         testComplete();
       }
     }
     @Override
-    public void ack(String id) {
+    public void handleAck(String id) {
       if (hook.equals("ack")) {
         testComplete();
       }
     }
     @Override
-    public void fail(String id) {
+    public void handleFail(String id) {
       if (hook.equals("fail")) {
         testComplete();
       }
@@ -110,37 +110,37 @@ public class HooksTest extends TestVerticle {
       this.hook = hook;
     }
     @Override
-    public void start(OutputCollector subject) {
+    public void handleStart(OutputCollector subject) {
       if (hook.equals("start")) {
         testComplete();
       }
     }
     @Override
-    public void stop(OutputCollector subject) {
+    public void handleStop(OutputCollector subject) {
       if (hook.equals("stop")) {
         testComplete();
       }
     }
     @Override
-    public void emit(String id) {
+    public void handleEmit(String id) {
       if (hook.equals("emit")) {
         testComplete();
       }
     }
     @Override
-    public void acked(String id) {
+    public void handleAcked(String id) {
       if (hook.equals("acked")) {
         testComplete();
       }
     }
     @Override
-    public void failed(String id) {
+    public void handleFailed(String id) {
       if (hook.equals("failed")) {
         testComplete();
       }
     }
     @Override
-    public void timeout(String id) {
+    public void handleTimeout(String id) {
       if (hook.equals("timeout")) {
         testComplete();
       }
@@ -166,55 +166,55 @@ public class HooksTest extends TestVerticle {
       this.hook = hook;
     }
     @Override
-    public void start(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStart(net.kuujo.vertigo.component.Component<?> subject) {
       if (hook.equals("start")) {
         testComplete();
       }
     }
     @Override
-    public void stop(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStop(net.kuujo.vertigo.component.Component<?> subject) {
       if (hook.equals("stop")) {
         testComplete();
       }
     }
     @Override
-    public void received(String id) {
+    public void handleReceive(String id) {
       if (hook.equals("received")) {
         testComplete();
       }
     }
     @Override
-    public void ack(String id) {
+    public void handleAck(String id) {
       if (hook.equals("ack")) {
         testComplete();
       }
     }
     @Override
-    public void fail(String id) {
+    public void handleFail(String id) {
       if (hook.equals("fail")) {
         testComplete();
       }
     }
     @Override
-    public void emit(String id) {
+    public void handleEmit(String id) {
       if (hook.equals("emit")) {
         testComplete();
       }
     }
     @Override
-    public void acked(String id) {
+    public void handleAcked(String id) {
       if (hook.equals("acked")) {
         testComplete();
       }
     }
     @Override
-    public void failed(String id) {
+    public void handleFailed(String id) {
       if (hook.equals("failed")) {
         testComplete();
       }
     }
     @Override
-    public void timeout(String id) {
+    public void handleTimeout(String id) {
       if (hook.equals("timeout")) {
         testComplete();
       }

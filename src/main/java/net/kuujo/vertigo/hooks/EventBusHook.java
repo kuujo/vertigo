@@ -38,7 +38,7 @@ public class EventBusHook implements ComponentHook {
   private String address;
 
   @Override
-  public void start(Component<?> component) {
+  public void handleStart(Component<?> component) {
     this.eventBus = component.getVertx().eventBus();
     this.context = component.getContext();
     this.address = component.getContext().getComponent().getAddress();
@@ -47,49 +47,49 @@ public class EventBusHook implements ComponentHook {
   }
 
   @Override
-  public void received(String id) {
+  public void handleReceive(String id) {
     eventBus.publish(String.format("vertigo.component.%s.received", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void ack(String id) {
+  public void handleAck(String id) {
     eventBus.publish(String.format("vertigo.component.%s.ack", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void fail(String id) {
+  public void handleFail(String id) {
     eventBus.publish(String.format("vertigo.component.%s.fail", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void emit(String id) {
+  public void handleEmit(String id) {
     eventBus.publish(String.format("vertigo.component.%s.emit", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void acked(String id) {
+  public void handleAcked(String id) {
     eventBus.publish(String.format("vertigo.component.%s.acked", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void failed(String id) {
+  public void handleFailed(String id) {
     eventBus.publish(String.format("vertigo.component.%s.failed", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void timeout(String id) {
+  public void handleTimeout(String id) {
     eventBus.publish(String.format("vertigo.component.%s.timeout", address),
         new JsonObject().putString("id", id));
   }
 
   @Override
-  public void stop(Component<?> subject) {
+  public void handleStop(Component<?> subject) {
     eventBus.publish(String.format("vertigo.component.%s.stop", address),
         new JsonObject().putObject("context", context.getState()));
   }

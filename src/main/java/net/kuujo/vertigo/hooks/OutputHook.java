@@ -35,7 +35,7 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void emit(String id);
+  void handleEmit(String id);
 
   /**
    * Called when the output receives an ack for an emitted message.
@@ -43,7 +43,7 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void acked(String id);
+  void handleAcked(String id);
 
   /**
    * Called when the output receives a failure for an emitted message.
@@ -51,7 +51,7 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void failed(String id);
+  void handleFailed(String id);
 
   /**
    * Called when the output receives a timeout for an emitted message.
@@ -59,6 +59,6 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param id
    *   The unique message identifier.
    */
-  void timeout(String id);
+  void handleTimeout(String id);
 
 }

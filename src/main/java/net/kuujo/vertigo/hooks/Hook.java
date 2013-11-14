@@ -43,7 +43,7 @@ public interface Hook<T> {
    * @param subject
    *   The hook subject.
    */
-  void start(T subject);
+  void handleStart(T subject);
 
   /**
    * Called when the hook subject has stopped.
@@ -51,6 +51,6 @@ public interface Hook<T> {
    * @param subject
    *   The hook subject.
    */
-  void stop(T subject);
+  void handleStop(T subject);
 
 }

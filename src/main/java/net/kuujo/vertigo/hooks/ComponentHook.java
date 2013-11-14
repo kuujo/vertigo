@@ -35,7 +35,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void received(String id);
+  void handleReceive(String id);
 
   /**
    * Called when the component acks a received message.
@@ -43,7 +43,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void ack(String id);
+  void handleAck(String id);
 
   /**
    * Called when the component fails a received message.
@@ -51,7 +51,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void fail(String id);
+  void handleFail(String id);
 
   /**
    * Called when the component emits a message.
@@ -59,7 +59,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void emit(String id);
+  void handleEmit(String id);
 
   /**
    * Called when the component receives an ack for an emitted message.
@@ -67,7 +67,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void acked(String id);
+  void handleAcked(String id);
 
   /**
    * Called when the component receives a failure for an emitted message.
@@ -75,7 +75,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void failed(String id);
+  void handleFailed(String id);
 
   /**
    * Called when the component receives a timeout for an emitted message.
@@ -83,6 +83,6 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param id
    *   The unique message identifier.
    */
-  void timeout(String id);
+  void handleTimeout(String id);
 
 }

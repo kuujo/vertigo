@@ -183,7 +183,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private final void hookStart() {
     for (OutputHook hook : hooks) {
-      hook.start(this);
+      hook.handleStart(this);
     }
   }
 
@@ -192,7 +192,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private final void hookAcked(final String id) {
     for (OutputHook hook : hooks) {
-      hook.acked(id);
+      hook.handleAcked(id);
     }
   }
 
@@ -201,7 +201,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private final void hookFailed(final String id) {
     for (OutputHook hook : hooks) {
-      hook.failed(id);
+      hook.handleFailed(id);
     }
   }
 
@@ -210,7 +210,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private final void hookTimeout(final String id) {
     for (OutputHook hook : hooks) {
-      hook.timeout(id);
+      hook.handleTimeout(id);
     }
   }
 
@@ -219,7 +219,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private final void hookEmit(final String id) {
     for (OutputHook hook : hooks) {
-      hook.emit(id);
+      hook.handleEmit(id);
     }
   }
 
@@ -228,7 +228,7 @@ public class DefaultOutputCollector implements OutputCollector {
    */
   private final void hookStop() {
     for (OutputHook hook : hooks) {
-      hook.stop(this);
+      hook.handleStop(this);
     }
   }
 

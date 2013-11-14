@@ -31,6 +31,15 @@ communication between components in a **predictable and reliable** manner.
   and [Python](https://github.com/kuujo/vertigo-python)
 * Integrates seemlessly with existing Vert.x applications
 
+#### New in Vertigo 5.3
+
+* New feeder and worker verticle implementations for Java verticles
+* Improved performance, efficiency, and stability in message tracking algorithms
+* Improved ack/fail/timeout feedback mechanisms
+* Network deployment events via the Vert.x event bus
+* Input, Output, and Component hooks, including core hook implementations
+* Solidified feeder, worker, and executor APIs
+
 Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.

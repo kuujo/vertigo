@@ -57,7 +57,6 @@ public class AuditorTest extends TestVerticle {
     JsonObject config = new JsonObject()
       .putString(Auditor.ADDRESS, address)
       .putString(Auditor.BROADCAST, broadcast)
-      .putBoolean(Auditor.ENABLED, enabled)
       .putNumber(Auditor.TIMEOUT, timeout)
       .putNumber(Auditor.DELAY, delay);
 

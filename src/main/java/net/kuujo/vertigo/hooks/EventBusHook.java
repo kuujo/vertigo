@@ -25,10 +25,10 @@ import org.vertx.java.core.json.JsonObject;
  * An event bus publishing hook.
  *
  * This hook publishes events to the event bus. Messages are published using the
- * string format "vertigo.component.%s.%s" where the first argument is the full
- * component address and the second argument is the event type (the method name).
- * If the method argument is a component, the component context will be provided.
- * If the method argument is a string ID, the ID will be provided.
+ * string format "vertigo.hooks.%s" where the string argument is the full
+ * component address. If the method argument is a component, the component
+ * context will be provided. If the method argument is a string ID, the ID
+ * will be provided.
  *
  * @author Jordan Halterman
  */
@@ -42,56 +42,56 @@ public class EventBusHook implements ComponentHook {
     this.eventBus = component.getVertx().eventBus();
     this.context = component.getContext();
     this.address = component.getContext().getComponent().getAddress();
-    eventBus.publish(String.format("vertigo.component.%s.start", address),
-        new JsonObject().putObject("context", context.getState()));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "start").putObject("context", context.getState()));
   }
 
   @Override
   public void handleReceive(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.received", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "receive").putString("id", id));
   }
 
   @Override
   public void handleAck(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.ack", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "ack").putString("id", id));
   }
 
   @Override
   public void handleFail(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.fail", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "fail").putString("id", id));
   }
 
   @Override
   public void handleEmit(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.emit", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "emit").putString("id", id));
   }
 
   @Override
   public void handleAcked(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.acked", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "acked").putString("id", id));
   }
 
   @Override
   public void handleFailed(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.failed", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "failed").putString("id", id));
   }
 
   @Override
   public void handleTimeout(String id) {
-    eventBus.publish(String.format("vertigo.component.%s.timeout", address),
-        new JsonObject().putString("id", id));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "timeout").putString("id", id));
   }
 
   @Override
   public void handleStop(Component<?> subject) {
-    eventBus.publish(String.format("vertigo.component.%s.stop", address),
-        new JsonObject().putObject("context", context.getState()));
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "stop").putObject("context", context.getState()));
   }
 
 }

@@ -50,6 +50,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Logger logger;
   private final EventBus eventBus;
   private final InstanceContext context;
+  private final boolean ackingEnabled;
   private final String componentAddress;
   private final List<OutputHook> hooks = new ArrayList<OutputHook>();
   private final List<String> auditors;
@@ -70,6 +71,7 @@ public class DefaultOutputCollector implements OutputCollector {
     this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
+    ackingEnabled = context.getComponent().getNetwork().isAckingEnabled();
     auditors = context.getComponent().getNetwork().getAuditors();
     componentAddress = context.getComponent().getAddress();
   }
@@ -313,12 +315,15 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a new message.
    */
   private String emitNew(JsonMessage message) {
-    List<Object> ids = new ArrayList<Object>();
+    final List<Object> ids = new ArrayList<Object>();
     for (Channel channel : channels) {
       ids.addAll(channel.publish(message.createChild()));
     }
-    eventBus.send(message.auditor(), new JsonObject().putString("action", "create")
-        .putString("id", message.id()).putArray("forks", new JsonArray(ids)));
+    final String auditor = message.auditor();
+    if (auditor != null) {
+      eventBus.send(auditor, new JsonObject().putString("action", "create")
+          .putString("id", message.id()).putArray("forks", new JsonArray(ids)));
+    }
     hookEmit(message.id());
     return message.id();
   }
@@ -327,12 +332,15 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a child message.
    */
   private String emitChild(JsonMessage message) {
-    List<Object> ids = new ArrayList<Object>();
+    final List<Object> ids = new ArrayList<Object>();
     for (Channel channel : channels) {
       ids.addAll(channel.publish(message.copy()));
     }
-    eventBus.send(message.auditor(), new JsonObject().putString("action", "fork")
-        .putString("parent", message.parent()).putArray("forks", new JsonArray(ids)));
+    final String auditor = message.auditor();
+    if (auditor != null) {
+      eventBus.send(auditor, new JsonObject().putString("action", "fork")
+          .putString("parent", message.parent()).putArray("forks", new JsonArray(ids)));
+    }
     hookEmit(message.parent());
     return message.parent();
   }
@@ -341,7 +349,11 @@ public class DefaultOutputCollector implements OutputCollector {
    * Returns a random auditor address.
    */
   private String selectRandomAuditor() {
-    return auditors.get(random.nextInt(auditors.size()));
+    // If acking is not enabled then don't assign any auditor to the message.
+    if (ackingEnabled) {
+      return auditors.get(random.nextInt(auditors.size()));
+    }
+    return null;
   }
 
   @Override

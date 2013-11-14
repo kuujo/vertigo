@@ -37,7 +37,6 @@ import org.vertx.java.core.json.JsonObject;
 public final class Auditor extends BusModBase implements Handler<Message<JsonObject>> {
   private String address;
   private String broadcastAddress;
-  private boolean enabled;
   private long timeout = 30000;
   private long delay = 0;
   private long cleanupInterval = 500;
@@ -46,7 +45,6 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
 
   public static final String ADDRESS = "address";
   public static final String BROADCAST = "broadcast";
-  public static final String ENABLED = "enabled";
   public static final String TIMEOUT = "timeout";
   public static final String DELAY = "delay";
   public static final String CLEANUP_INTERVAL = "cleanup";
@@ -56,7 +54,6 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
     super.start();
     address = getMandatoryStringConfig(ADDRESS);
     broadcastAddress = getMandatoryStringConfig(BROADCAST);
-    enabled = getOptionalBooleanConfig(ENABLED, true);
     timeout = getOptionalLongConfig(TIMEOUT, timeout);
     delay = getOptionalLongConfig(DELAY, delay);
     cleanupInterval = getOptionalLongConfig(CLEANUP_INTERVAL, cleanupInterval);
@@ -156,33 +153,27 @@ public final class Auditor extends BusModBase implements Handler<Message<JsonObj
    */
   private void doCreate(Message<JsonObject> message) {
     String id = getMandatoryString("id", message);
-    if (enabled) {
-      // If no forks were defined for the message, just send a failure.
-      JsonArray forks = message.body().getArray("forks");
-      if (forks == null || forks.size() == 0) {
-        eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", id));
-        return;
-      }
-
-       // We simply add ack and fail handlers to the root node. If a descendant
-      // node is failed then it will bubble up to the root. Once all child nodes
-      // are acked the parent will be acked which will also bubble up to the root.
-      Root root = new Root(id, vertx, System.currentTimeMillis() + timeout, delay);
-      root.ackHandler = ackHandler;
-      root.failHandler = failHandler;
-      root.timeoutHandler = timeoutHandler;
-      roots.put(root.id, root);
-
-      // Add all initial forks for the root.
-      for (Object forkId : forks) {
-        Node fork = new Node((String) forkId, vertx, delay);
-        root.addChild(fork);
-        nodes.put(fork.id, fork);
-      }
-    }
-    // If acking is disabled then immediately ack the message back to its source.
-    else {
+    // If no forks were defined for the message, just send a failure.
+    JsonArray forks = message.body().getArray("forks");
+    if (forks == null || forks.size() == 0) {
       eb.publish(broadcastAddress, new JsonObject().putString("action", "ack").putString("id", id));
+      return;
+    }
+
+    // We simply add ack and fail handlers to the root node. If a descendant
+    // node is failed then it will bubble up to the root. Once all child nodes
+    // are acked the parent will be acked which will also bubble up to the root.
+    Root root = new Root(id, vertx, System.currentTimeMillis() + timeout, delay);
+    root.ackHandler = ackHandler;
+    root.failHandler = failHandler;
+    root.timeoutHandler = timeoutHandler;
+    roots.put(root.id, root);
+
+    // Add all initial forks for the root.
+    for (Object forkId : forks) {
+      Node fork = new Node((String) forkId, vertx, delay);
+      root.addChild(fork);
+      nodes.put(fork.id, fork);
     }
   }
 

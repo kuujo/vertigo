@@ -182,29 +182,45 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    * Deploys the network.
    */
   private void doDeploy() {
-    recursiveDeployAuditors(context.getAuditors(), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          logger.error("Failed to deploy auditor verticle.", result.cause());
-          container.exit();
-        }
-        else {
-          new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                container.logger().error("Failed to deploy network.", result.cause());
-                container.exit();
+    if (context.isAckingEnabled()) {
+      recursiveDeployAuditors(context.getAuditors(), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            logger.error("Failed to deploy auditor verticle.", result.cause());
+            container.exit();
+          }
+          else {
+            new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  container.logger().error("Failed to deploy network.", result.cause());
+                  container.exit();
+                }
+                else {
+                  events.trigger(Events.Network.Deploy.class, context.getAddress(), context);
+                }
               }
-              else {
-                events.trigger(Events.Network.Deploy.class, context.getAddress(), context);
-              }
-            }
-          });
+            });
+          }
         }
-      }
-    }));
+      }));
+    }
+    else {
+      new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            container.logger().error("Failed to deploy network.", result.cause());
+            container.exit();
+          }
+          else {
+            events.trigger(Events.Network.Deploy.class, context.getAddress(), context);
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -216,7 +232,6 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       JsonObject auditorConfig = new JsonObject()
         .putString(Auditor.ADDRESS, address)
         .putString(Auditor.BROADCAST, context.getBroadcastAddress())
-        .putBoolean(Auditor.ENABLED, context.isAckingEnabled())
         .putNumber(Auditor.TIMEOUT, context.getAckTimeout())
         .putNumber(Auditor.DELAY, context.getAckDelay());
       deployVerticle(Auditor.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {

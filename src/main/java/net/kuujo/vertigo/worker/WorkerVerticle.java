@@ -69,7 +69,7 @@ public abstract class WorkerVerticle extends Verticle {
   protected abstract void handleMessage(JsonMessage message);
 
   /**
-   * Emits a message from the worker.
+   * Emits a new message from the worker.
    *
    * @param data
    *   The message body.
@@ -81,7 +81,7 @@ public abstract class WorkerVerticle extends Verticle {
   }
 
   /**
-   * Emits a message from the worker.
+   * Emits a new message from the worker.
    *
    * @param data
    *   The message body.
@@ -92,6 +92,36 @@ public abstract class WorkerVerticle extends Verticle {
    */
   protected String emit(JsonObject data, String tag) {
     return worker.emit(data, tag);
+  }
+
+  /**
+   * Emits a child message from the worker.
+   *
+   * @param data
+   *   The message body.
+   * @param parent
+   *   The message parent.
+   * @return
+   *   The unique message identifier.
+   */
+  protected String emit(JsonObject data, JsonMessage parent) {
+    return worker.emit(data, parent);
+  }
+
+  /**
+   * Emits a child message from the worker.
+   *
+   * @param data
+   *   The message body.
+   * @param tag
+   *   A tag to apply to the message.
+   * @param parent
+   *   The message parent.
+   * @return
+   *   The unique message identifier.
+   */
+  protected String emit(JsonObject data, String tag, JsonMessage parent) {
+    return worker.emit(data, tag, parent);
   }
 
   /**

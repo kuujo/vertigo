@@ -31,7 +31,7 @@ communication between components in a **predictable and reliable** manner.
   and [Python](https://github.com/kuujo/vertigo-python)
 * Integrates seemlessly with existing Vert.x applications
 
-#### New in Vertigo 5.3
+#### New in Vertigo 5.4
 
 * New feeder and worker verticle implementations for Java verticles
 * Improved performance, efficiency, and stability in message tracking algorithms

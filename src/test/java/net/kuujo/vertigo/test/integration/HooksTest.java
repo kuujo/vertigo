@@ -18,8 +18,12 @@ package net.kuujo.vertigo.test.integration;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.OutputHook;
+import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -45,13 +49,113 @@ import org.vertx.testtools.TestVerticle;
 public class HooksTest extends TestVerticle {
 
   /**
-   * A test hook.
+   * A test input hook.
    */
-  public static class TestHook implements ComponentHook, Serializable {
+  public static class TestInputHook implements InputHook, Serializable {
     private String hook;
-    public TestHook() {
+    public TestInputHook() {
     }
-    public TestHook(String hook) {
+    public TestInputHook(String hook) {
+      this.hook = hook;
+    }
+    @Override
+    public void start(InputCollector subject) {
+      if (hook.equals("start")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void stop(InputCollector subject) {
+      if (hook.equals("stop")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void received(String id) {
+      if (hook.equals("received")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void ack(String id) {
+      if (hook.equals("ack")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void fail(String id) {
+      if (hook.equals("fail")) {
+        testComplete();
+      }
+    }
+    @Override
+    public JsonObject getState() {
+      return new JsonObject().putString("hook", hook);
+    }
+    @Override
+    public void setState(JsonObject state) throws SerializationException {
+      this.hook = state.getString("hook");
+    }
+  }
+
+  /**
+   * A test output hook.
+   */
+  public static class TestOutputHook implements OutputHook, Serializable {
+    private String hook;
+    public TestOutputHook() {
+    }
+    public TestOutputHook(String hook) {
+      this.hook = hook;
+    }
+    @Override
+    public void start(OutputCollector subject) {
+      if (hook.equals("start")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void stop(OutputCollector subject) {
+      if (hook.equals("stop")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void emit(String id) {
+      if (hook.equals("emit")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void acked(String id) {
+      if (hook.equals("acked")) {
+        testComplete();
+      }
+    }
+    @Override
+    public void failed(String id) {
+      if (hook.equals("failed")) {
+        testComplete();
+      }
+    }
+    @Override
+    public JsonObject getState() {
+      return new JsonObject().putString("hook", hook);
+    }
+    @Override
+    public void setState(JsonObject state) throws SerializationException {
+      this.hook = state.getString("hook");
+    }
+  }
+
+  /**
+   * A test component hook.
+   */
+  public static class TestComponentHook implements ComponentHook, Serializable {
+    private String hook;
+    public TestComponentHook() {
+    }
+    public TestComponentHook(String hook) {
       this.hook = hook;
     }
     @Override
@@ -113,86 +217,182 @@ public class HooksTest extends TestVerticle {
   }
 
   @Test
-  public void testStartHook() {
+  public void testInputStartHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
     final Component<?> worker1 = TestAckingWorker.createDefinition(2);
 
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestHook("start"));
+    worker1.addHook(new TestInputHook("start"));
     deploy(network);
   }
 
   @Test
-  public void testEmitHook() {
+  public void testInputReceivedHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
     final Component<?> worker1 = TestAckingWorker.createDefinition(2);
 
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestHook("emit"));
+    worker1.addHook(new TestInputHook("received"));
     deploy(network);
   }
 
   @Test
-  public void testReceivedHook() {
+  public void testInputAckHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
     final Component<?> worker1 = TestAckingWorker.createDefinition(2);
 
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestHook("received"));
+    worker1.addHook(new TestInputHook("ack"));
     deploy(network);
   }
 
   @Test
-  public void testAckHook() {
-    Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestHook("ack"));
-    deploy(network);
-  }
-
-  @Test
-  public void testFailHook() {
+  public void testInputFailHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
     final Component<?> worker1 = TestFailingWorker.createDefinition(2);
 
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestHook("fail"));
+    worker1.addHook(new TestInputHook("fail"));
     deploy(network);
   }
 
   @Test
-  public void testAckedHook() {
+  public void testOutputStartHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
     final Component<?> worker1 = TestAckingWorker.createDefinition(2);
 
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestHook("acked"));
+    worker1.addHook(new TestOutputHook("start"));
     deploy(network);
   }
 
   @Test
-  public void testFailedHook() {
+  public void testOutputEmitHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestOutputHook("emit"));
+    deploy(network);
+  }
+
+  @Test
+  public void testOutputAckedHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestOutputHook("acked"));
+    deploy(network);
+  }
+
+  @Test
+  public void testOutputFailedHook() {
     Network network = new Network("test");
     final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
     final Component<?> worker1 = TestFailingWorker.createDefinition(2);
 
     network.addComponent(feeder);
     network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestHook("failed"));
+    feeder.addHook(new TestOutputHook("failed"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentStartHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    worker1.addHook(new TestComponentHook("start"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentEmitHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestComponentHook("emit"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentReceivedHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    worker1.addHook(new TestComponentHook("received"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentAckHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    worker1.addHook(new TestComponentHook("ack"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentFailHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestFailingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    worker1.addHook(new TestComponentHook("fail"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentAckedHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestComponentHook("acked"));
+    deploy(network);
+  }
+
+  @Test
+  public void testComponentFailedHook() {
+    Network network = new Network("test");
+    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
+    final Component<?> worker1 = TestFailingWorker.createDefinition(2);
+
+    network.addComponent(feeder);
+    network.addComponent(worker1).addInput(feeder.getAddress());
+    feeder.addHook(new TestComponentHook("failed"));
     deploy(network);
   }
 

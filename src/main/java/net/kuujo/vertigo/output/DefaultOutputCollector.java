@@ -52,13 +52,13 @@ public class DefaultOutputCollector implements OutputCollector {
   private final InstanceContext context;
   private final boolean ackingEnabled;
   private final String componentAddress;
-  private final List<OutputHook> hooks = new ArrayList<OutputHook>();
+  private final List<OutputHook> hooks = new ArrayList<>();
   private final List<String> auditors;
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
   private Handler<String> timeoutHandler;
   private Random random = new Random();
-  private List<Channel> channels = new ArrayList<Channel>();
+  private List<Channel> channels = new ArrayList<>();
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
@@ -139,9 +139,12 @@ public class DefaultOutputCollector implements OutputCollector {
       connectionTimers.put(address, vertx.setTimer(LISTEN_INTERVAL, new Handler<Long>() {
         @Override
         public void handle(Long timerID) {
-          if (channel.containsConnection(address)) {
-            channel.removeConnection(channel.getConnection(address));
-          }
+            Connection connection = channel.getConnection(address);
+            // if null it means the connection doesn't exist or it is already a PseudConnection
+            // so we don't need to remove it again
+            if (connection != null) {
+              channel.removeConnection(connection);
+            }
           connectionTimers.remove(address);
         }
       }));
@@ -181,7 +184,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls start hooks.
    */
-  private final void hookStart() {
+  private void hookStart() {
     for (OutputHook hook : hooks) {
       hook.handleStart(this);
     }
@@ -190,7 +193,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls acked hooks.
    */
-  private final void hookAcked(final String id) {
+  private void hookAcked(final String id) {
     for (OutputHook hook : hooks) {
       hook.handleAcked(id);
     }
@@ -199,7 +202,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls failed hooks.
    */
-  private final void hookFailed(final String id) {
+  private void hookFailed(final String id) {
     for (OutputHook hook : hooks) {
       hook.handleFailed(id);
     }
@@ -208,7 +211,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls timed-out hooks.
    */
-  private final void hookTimeout(final String id) {
+  private void hookTimeout(final String id) {
     for (OutputHook hook : hooks) {
       hook.handleTimeout(id);
     }
@@ -217,7 +220,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls emit hooks.
    */
-  private final void hookEmit(final String id) {
+  private void hookEmit(final String id) {
     for (OutputHook hook : hooks) {
       hook.handleEmit(id);
     }
@@ -226,7 +229,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls stop hooks.
    */
-  private final void hookStop() {
+  private void hookStop() {
     for (OutputHook hook : hooks) {
       hook.handleStop(this);
     }
@@ -315,7 +318,7 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a new message.
    */
   private String emitNew(JsonMessage message) {
-    final List<Object> ids = new ArrayList<Object>();
+    final List<Object> ids = new ArrayList<>();
     for (Channel channel : channels) {
       ids.addAll(channel.publish(message.createChild()));
     }
@@ -332,7 +335,7 @@ public class DefaultOutputCollector implements OutputCollector {
    * Emits a child message.
    */
   private String emitChild(JsonMessage message) {
-    final List<Object> ids = new ArrayList<Object>();
+    final List<Object> ids = new ArrayList<>();
     for (Channel channel : channels) {
       ids.addAll(channel.publish(message.copy()));
     }

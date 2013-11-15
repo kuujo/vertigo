@@ -36,8 +36,8 @@ public class DefaultChannel implements Channel {
   private final Selector selector;
   private final List<Condition> conditions;
   private int connectionCount;
-  private List<Connection> connections = new ArrayList<Connection>();
-  private Map<String, Integer> connectionMap = new HashMap<String, Integer>();
+  private List<Connection> connections = new ArrayList<>();
+  private Map<String, Integer> connectionMap = new HashMap<>();
   private final EventBus eventBus;
 
   public DefaultChannel(String id, Selector selector, List<Condition> conditions, EventBus eventBus) {
@@ -55,8 +55,8 @@ public class DefaultChannel implements Channel {
   @Override
   public Channel setConnectionCount(int connectionCount) {
     this.connectionCount = connectionCount;
-    connectionMap = new HashMap<String, Integer>();
-    connections = new ArrayList<Connection>();
+    connectionMap = new HashMap<>();
+    connections = new ArrayList<>();
     for (int i = 0; i < connectionCount; i++) {
       connections.add(new DefaultPseudoConnection(eventBus));
     }
@@ -92,8 +92,7 @@ public class DefaultChannel implements Channel {
     // will have the effect of failing messages sent to this connection.
     if (connectionMap.containsKey(connection.getAddress())) {
       int index = connectionMap.get(connection.getAddress());
-      connections.remove(index);
-      connections.add(index, new DefaultPseudoConnection(eventBus));
+      connections.set(index, new DefaultPseudoConnection(eventBus));
     }
     return this;
   }
@@ -126,7 +125,7 @@ public class DefaultChannel implements Channel {
 
   @Override
   public List<String> publish(JsonMessage message) {
-    List<String> ids = new ArrayList<String>();
+    List<String> ids = new ArrayList<>();
     if (isValid(message)) {
       for (Connection connection : selector.select(message, connections)) {
         ids.add(connection.write(message));

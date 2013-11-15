@@ -246,7 +246,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
         public void handle(Long timerId) {
           HandlerHolder holder = handlers.get(id);
           if (holder != null) {
-            handlers.remove(id).failHandler.handle(id);
+            handlers.remove(id).timeoutHandler.handle(id);
           }
         }
       });

@@ -66,11 +66,11 @@ public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
   }
 
   @Override
-  public void listen(Handler<String> failHandler) {
+  public void listen(Handler<String> timeoutHandler) {
     if (currentMonitor != null) {
       currentMonitor.stop();
     }
-    currentMonitor = new AddressMonitor(address, failHandler);
+    currentMonitor = new AddressMonitor(address, timeoutHandler);
     currentMonitor.start();
   }
 
@@ -86,11 +86,8 @@ public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
   * A monitor on a single address.
   */
   private class AddressMonitor {
-
     private String address;
-
-    private Handler<String> failHandler;
-
+    private Handler<String> timeoutHandler;
     private long timerID;
 
     private Handler<Message<Boolean>> handler = new Handler<Message<Boolean>>() {
@@ -100,22 +97,22 @@ public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
       }
     };
 
-    public AddressMonitor(String address, Handler<String> failHandler) {
+    public AddressMonitor(String address, Handler<String> timeoutHandler) {
       this.address = address;
-      this.failHandler = failHandler;
+      this.timeoutHandler = timeoutHandler;
     }
 
     /**
     * Starts the monitor.
     */
-    public void start() {
+    private void start() {
       eventBus.registerHandler(address, handler);
     }
 
     /**
     * Stops the monitor.
     */
-    public void stop() {
+    private void stop() {
       eventBus.unregisterHandler(address, handler);
       if (timerID != 0) {
         vertx.cancelTimer(timerID);
@@ -130,12 +127,12 @@ public class DefaultHeartbeatMonitor implements HeartbeatMonitor {
       if (timerID != 0) {
         vertx.cancelTimer(timerID);
       }
-      // Then, create a new timer that triggers the failHandler if called.
+      // Then, create a new timer that triggers the timeoutHandler if called.
       timerID = vertx.setTimer(interval, new Handler<Long>() {
         @Override
         public void handle(Long event) {
           eventBus.unregisterHandler(address, handler);
-          failHandler.handle(address);
+          timeoutHandler.handle(address);
         }
       });
     }

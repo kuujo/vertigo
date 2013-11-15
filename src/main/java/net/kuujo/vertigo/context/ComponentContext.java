@@ -22,9 +22,6 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.hooks.Hook;
-import net.kuujo.vertigo.hooks.InputHook;
-import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.serializer.Serializable;
@@ -185,56 +182,24 @@ public abstract class ComponentContext implements Serializable {
   }
 
   /**
-   * Gets a list of input hooks.
-   *
-   * @return
-   *   A list of component input hooks.
-   */
-  public List<InputHook> getInputHooks() {
-    return getHooks(Component.INPUT_HOOKS);
-  }
-
-  /**
-   * Gets a list of output hooks.
-   *
-   * @return
-   *   A list of component output hooks.
-   */
-  public List<OutputHook> getOutputHooks() {
-    return getHooks(Component.OUTPUT_HOOKS);
-  }
-
-  /**
    * Gets a list of component hooks.
    *
    * @return
    *   A list of component hooks.
    */
-  public List<ComponentHook> getComponentHooks() {
-    return getHooks(Component.COMPONENT_HOOKS);
-  }
-
-  /**
-   * Returns a list of hooks by type.
-   */
-  private <H extends Hook<?>> List<H> getHooks(String type) {
-    List<H> hooks = new ArrayList<H>();
+  public List<ComponentHook> getHooks() {
+    List<ComponentHook> hooks = new ArrayList<>();
     JsonObject hooksInfo = context.getObject(Component.HOOKS);
     if (hooksInfo == null) {
       return hooks;
     }
 
-    JsonObject hooksDefs = hooksInfo.getObject(type);
-    if (hooksDefs == null) {
-      return hooks;
-    }
-
     // Deserialize serializable hooks.
-    JsonArray serializedHooks = hooksDefs.getArray(Component.SERIALIZABLE_HOOKS);
+    JsonArray serializedHooks = hooksInfo.getArray(Component.SERIALIZABLE_HOOKS);
     if (serializedHooks != null) {
       for (Object serializedHook : serializedHooks) {
         try {
-          H hook = Serializer.deserialize((JsonObject) serializedHook);
+          ComponentHook hook = Serializer.deserialize((JsonObject) serializedHook);
           if (hook != null) {
             hooks.add(hook);
           }
@@ -246,15 +211,13 @@ public abstract class ComponentContext implements Serializable {
     }
 
     // Instantiate bare (unserializable) hooks.
-    JsonArray bareHooks = hooksDefs.getArray(Component.BARE_HOOKS);
+    JsonArray bareHooks = hooksInfo.getArray(Component.BARE_HOOKS);
     if (bareHooks != null) {
       for (Object bareHook : bareHooks) {
         String className = ((JsonObject) bareHook).getString("type");
         if (className != null) {
           try {
-            @SuppressWarnings("unchecked")
-            H hook = (H) Class.forName(className).newInstance();
-            hooks.add(hook);
+            hooks.add((ComponentHook) Class.forName(className).newInstance());
           }
           catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             continue;

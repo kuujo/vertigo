@@ -30,6 +30,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
 
 /**
  * An abstract cluster.
@@ -41,6 +42,11 @@ abstract class AbstractCluster implements Cluster {
   private Container container;
   protected String coordinator;
   protected String master;
+
+  public AbstractCluster(Verticle verticle) {
+    this.eventBus = verticle.getVertx().eventBus();
+    this.container = verticle.getContainer();
+  }
 
   public AbstractCluster(Vertx vertx, Container container) {
     this.eventBus = vertx.eventBus();

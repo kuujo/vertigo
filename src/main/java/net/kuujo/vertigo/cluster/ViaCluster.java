@@ -17,6 +17,7 @@ package net.kuujo.vertigo.cluster;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.coordinator.RemoteCoordinator;
 
@@ -34,6 +35,10 @@ import net.kuujo.vertigo.coordinator.RemoteCoordinator;
  * @author Jordan Halterman
  */
 public class ViaCluster extends AbstractCluster {
+
+  public ViaCluster(Verticle verticle) {
+    super(verticle);
+  }
 
   public ViaCluster(Vertx vertx, Container container, String address) {
     super(vertx, container);

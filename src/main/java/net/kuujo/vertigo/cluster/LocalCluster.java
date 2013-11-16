@@ -17,6 +17,7 @@ package net.kuujo.vertigo.cluster;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.coordinator.LocalCoordinator;
 
@@ -26,6 +27,10 @@ import net.kuujo.vertigo.coordinator.LocalCoordinator;
  * @author Jordan Halterman
  */
 public class LocalCluster extends AbstractCluster {
+
+  public LocalCluster(Verticle verticle) {
+    super(verticle);
+  }
 
   public LocalCluster(Vertx vertx, Container container) {
     super(vertx, container);

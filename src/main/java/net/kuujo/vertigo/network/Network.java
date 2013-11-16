@@ -19,11 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import net.kuujo.vertigo.context.MalformedContextException;
-import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.serializer.Serializable;
 
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -118,6 +115,30 @@ public class Network implements Serializable {
    */
   public String getAddress() {
     return definition.getString(ADDRESS);
+  }
+
+  /**
+   * Returns the network broadcaster address.
+   *
+   * @return
+   *   The network broadcast address.
+   */
+  public String getBroadcastAddress() {
+    return definition.getString(BROADCAST, String.format("%s.%s", getAddress(), BROADCAST));
+  }
+
+  /**
+   * Sets the network broadcast event bus address.
+   *
+   * @param address
+   *   The network broadcast address. This is the address at which the network
+   *   will publish ack/fail/timeout messages.
+   * @return
+   *   The called network instance.
+   */
+  public Network setBroadcastAddress(String address) {
+    definition.putString(BROADCAST, address);
+    return this;
   }
 
   /**
@@ -474,58 +495,6 @@ public class Network implements Serializable {
    */
   public Module addModule(String address, String moduleName, JsonObject config, int instances) {
     return addComponent(new Module(address).setModule(moduleName).setConfig(config).setInstances(instances));
-  }
-
-  /**
-   * Creates a network context from network definition.
-   *
-   * @return
-   *   A network context.
-   * @throws MalformedNetworkException
-   *   If the network definition is invalid.
-   */
-  public NetworkContext createContext() throws MalformedNetworkException {
-    JsonObject context = definition.copy();
-
-    String address = context.getString(ADDRESS);
-    if (address == null) {
-      address = UUID.randomUUID().toString();
-      context.putString(ADDRESS, address);
-    }
-
-    context.putString(BROADCAST, context.getString(BROADCAST, String.format("%s.%s", address, BROADCAST)));
-    context.putBoolean(ACKING, context.getBoolean(ACKING, true));
-    context.putNumber(ACK_TIMEOUT, context.getLong(ACK_TIMEOUT, DEFAULT_ACK_TIMEOUT));
-    context.putNumber(ACK_DELAY, context.getLong(ACK_DELAY, DEFAULT_ACK_DELAY));
-
-    int numAuditors = context.getInteger(AUDITORS, 1);
-    JsonArray auditors = new JsonArray();
-    for (int i = 0; i < numAuditors; i++) {
-      auditors.add(String.format("%s.auditor.%d", getAddress(), i+1));
-    }
-    context.putArray(AUDITORS, auditors);
-
-    JsonObject componentDefs = definition.getObject(COMPONENTS);
-    if (componentDefs == null) {
-      componentDefs = new JsonObject();
-    }
-
-    JsonObject componentContexts = new JsonObject();
-    for (String componentAddress : componentDefs.getFieldNames()) {
-      JsonObject componentContext = getComponent(componentAddress).createContext().getState();
-      if (componentContext != null) {
-        // Adding the parent context here causes a circular reference in serialization.
-        // componentContexts.putObject(componentAddress, componentContext.putObject("parent", context));
-        componentContexts.putObject(componentAddress, componentContext);
-      }
-    }
-    context.putObject(COMPONENTS, componentContexts);
-    try {
-      return NetworkContext.fromJson(context);
-    }
-    catch (MalformedContextException e) {
-      throw new MalformedNetworkException(e);
-    }
   }
 
   @Override

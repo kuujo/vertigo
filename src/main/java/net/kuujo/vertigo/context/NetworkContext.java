@@ -30,6 +30,14 @@ import net.kuujo.vertigo.serializer.Serializable;
  * @author Jordan Halterman
  */
 public class NetworkContext implements Serializable {
+  public static final String ADDRESS = "address";
+  public static final String BROADCAST = "broadcast";
+  public static final String AUDITORS = "auditors";
+  public static final String ACKING = "acking";
+  public static final String ACK_TIMEOUT = "timeout";
+  public static final String ACK_DELAY = "ack_delay";
+  public static final String COMPONENTS = "components";
+
   private JsonObject context;
 
   public NetworkContext() {
@@ -51,10 +59,10 @@ public class NetworkContext implements Serializable {
    *   If the network context is malformed.
    */
   public static NetworkContext fromJson(JsonObject context) throws MalformedContextException {
-    JsonObject components = context.getObject(Network.COMPONENTS);
+    JsonObject components = context.getObject(COMPONENTS);
     if (components == null) {
       components = new JsonObject();
-      context.putObject(Network.COMPONENTS, components);
+      context.putObject(COMPONENTS, components);
     }
 
     for (String address : components.getFieldNames()) {
@@ -77,7 +85,7 @@ public class NetworkContext implements Serializable {
    *   The network address.
    */
   public String getAddress() {
-    return context.getString(Network.ADDRESS);
+    return context.getString(ADDRESS);
   }
 
   /**
@@ -87,7 +95,7 @@ public class NetworkContext implements Serializable {
    *   The network broadcast address.
    */
   public String getBroadcastAddress() {
-    return context.getString(Network.BROADCAST);
+    return context.getString(BROADCAST);
   }
 
   /**
@@ -98,7 +106,7 @@ public class NetworkContext implements Serializable {
    */
   public List<String> getAuditors() {
     List<String> auditors = new ArrayList<>();
-    JsonArray auditorInfo = context.getArray(Network.AUDITORS);
+    JsonArray auditorInfo = context.getArray(AUDITORS);
     for (Object address : auditorInfo) {
       auditors.add((String) address);
     }
@@ -112,7 +120,7 @@ public class NetworkContext implements Serializable {
    *   Indicates whether acking is enabled for the network.
    */
   public boolean isAckingEnabled() {
-    return context.getBoolean(Network.ACKING, true);
+    return context.getBoolean(ACKING, true);
   }
 
   /**
@@ -122,7 +130,7 @@ public class NetworkContext implements Serializable {
    *   Ack timeout for the network.
    */
   public long getAckTimeout() {
-    return context.getLong(Network.ACK_TIMEOUT, Network.DEFAULT_ACK_TIMEOUT);
+    return context.getLong(ACK_TIMEOUT, Network.DEFAULT_ACK_TIMEOUT);
   }
 
   /**
@@ -132,7 +140,7 @@ public class NetworkContext implements Serializable {
    *   Ack delay for the network.
    */
   public long getAckDelay() {
-    return context.getLong(Network.ACK_DELAY, Network.DEFAULT_ACK_DELAY);
+    return context.getLong(ACK_DELAY, Network.DEFAULT_ACK_DELAY);
   }
 
   /**
@@ -143,7 +151,7 @@ public class NetworkContext implements Serializable {
    */
   public List<ComponentContext> getComponents() {
     List<ComponentContext> components = new ArrayList<>();
-    JsonObject componentContexts = context.getObject(Network.COMPONENTS);
+    JsonObject componentContexts = context.getObject(COMPONENTS);
     for (String address : componentContexts.getFieldNames()) {
       try {
         ComponentContext component = ComponentContext.fromJson(componentContexts.getObject(address)).setParent(this);
@@ -167,7 +175,7 @@ public class NetworkContext implements Serializable {
    *   A component context, or null if the component does not exist.
    */
   public ComponentContext getComponent(String address) {
-    JsonObject components = context.getObject("components");
+    JsonObject components = context.getObject(COMPONENTS);
     if (components == null) {
       components = new JsonObject();
     }

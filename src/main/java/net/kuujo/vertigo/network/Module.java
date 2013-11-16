@@ -15,9 +15,6 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.MalformedContextException;
-
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -69,22 +66,6 @@ public class Module extends Component<Module> {
   public Module setModule(String moduleName) {
     definition.putString(MODULE, moduleName);
     return this;
-  }
-
-  @Override
-  public ComponentContext createContext() throws MalformedNetworkException {
-    JsonObject context = super.createJsonContext();
-    context.putString(TYPE, Component.MODULE);
-    String moduleName = context.getString(MODULE);
-    if (moduleName == null) {
-      throw new MalformedNetworkException("Invalid module component. No module name defined.");
-    }
-    try {
-      return ComponentContext.fromJson(context);
-    }
-    catch (MalformedContextException e) {
-      throw new MalformedNetworkException(e);
-    }
   }
 
 }

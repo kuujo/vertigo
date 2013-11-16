@@ -17,15 +17,14 @@ package net.kuujo.vertigo.context;
 
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.network.Module;
-
 /**
  * A module component context.
  *
  * @author Jordan Halterman
  */
 public class ModuleContext extends ComponentContext {
- 
+  public static final String MODULE = "module";
+
   public ModuleContext() {
     super();
   }
@@ -41,7 +40,7 @@ public class ModuleContext extends ComponentContext {
    *   The module name.
    */
   public String getModule() {
-    return context.getString(Module.MODULE);
+    return context.getString(MODULE);
   }
 
 }

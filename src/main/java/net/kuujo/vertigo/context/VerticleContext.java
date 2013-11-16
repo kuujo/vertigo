@@ -17,14 +17,13 @@ package net.kuujo.vertigo.context;
 
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.network.Verticle;
-
 /**
  * A verticle component context.
  *
  * @author Jordan Halterman
  */
 public class VerticleContext extends ComponentContext {
+  public static final String MAIN = "main";
  
   public VerticleContext() {
     super();
@@ -41,7 +40,7 @@ public class VerticleContext extends ComponentContext {
    *   The verticle main.
    */
   public String getMain() {
-    return context.getString(Verticle.MAIN);
+    return context.getString(MAIN);
   }
 
 }

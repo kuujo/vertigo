@@ -34,8 +34,17 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public abstract class ComponentContext implements Serializable {
+  public static final String ADDRESS = "address";
+  public static final String TYPE = "type";
   public static final String VERTICLE = "verticle";
   public static final String MODULE = "module";
+  public static final String CONFIG = "config";
+  public static final String INSTANCES = "instances";
+  public static final String HEARTBEAT_INTERVAL = "heartbeat";
+  public static final String HOOKS = "hooks";
+  public static final String BARE_HOOKS = "bare";
+  public static final String SERIALIZABLE_HOOKS = "serializable";
+  public static final String INPUTS = "inputs";
 
   protected JsonObject context;
   protected NetworkContext parent;

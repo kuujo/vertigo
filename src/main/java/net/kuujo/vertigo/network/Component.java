@@ -22,8 +22,6 @@ import java.util.UUID;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.filter.Filter;
@@ -426,55 +424,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
       input.filterBy(filter);
     }
     return input;
-  }
-
-  /**
-   * Creates a component context from the component definition.
-   *
-   * @return
-   *   A component context.
-   * @throws MalformedNetworkException
-   *   If the component definition is invalid.
-   */
-  public abstract ComponentContext createContext() throws MalformedNetworkException;
-
-  /**
-   * Creates a JSON context.
-   */
-  protected JsonObject createJsonContext() {
-    JsonObject context = definition.copy();
-    String address = context.getString(ADDRESS);
-    if (address == null) {
-      address = UUID.randomUUID().toString();
-      context.putString(ADDRESS, address);
-    }
-
-    JsonObject config = context.getObject(CONFIG);
-    if (config == null) {
-      config = new JsonObject();
-      context.putObject(CONFIG, config);
-    }
-
-    JsonObject hooks = context.getObject(HOOKS);
-    if (hooks == null) {
-      hooks = new JsonObject();
-      context.putObject(HOOKS, hooks);
-    }
-
-    JsonArray inputs = context.getArray(INPUTS);
-    if (inputs == null) {
-      inputs = new JsonArray();
-      context.putArray(INPUTS, inputs);
-    }
-
-    JsonArray instances = new JsonArray();
-    int numInstances = getInstances();
-    for (int i = 0; i < numInstances; i++) {
-      String id = UUID.randomUUID().toString();
-      instances.add(InstanceContext.fromJson(new JsonObject().putString("id", id)).getState());
-    }
-    context.putArray(INSTANCES, instances);
-    return context;
   }
 
   @Override

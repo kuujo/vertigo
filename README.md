@@ -50,3 +50,24 @@ For an in-depth look at the concepts underlying Vertigo, check out
 **[Javascript API](https://github.com/kuujo/vertigo-js) is under development**
 
 **[Python API](https://github.com/kuujo/vertigo-python) is under development**
+
+### Adding Vertigo as a Maven dependency
+
+```
+<dependency>
+  <groupId>net.kuujo</groupId>
+  <artifactId>vertigo</artifactId>
+  <version>${vertigo.version}</version>
+</dependency>
+```
+
+### Including Vertigo in a Vert.x module
+To use the Vertigo Java API, you can include the Vertigo module in your module's
+`mod.json` file. This will make Vertigo classes available within your module.
+
+```
+{
+  "main": "com.mycompany.myproject.MyVerticle",
+  "includes": "net.kuujo~vertigo~0.5.4"
+}
+```

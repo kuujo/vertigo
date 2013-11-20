@@ -19,6 +19,7 @@ import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.schema.MessageSchema;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -48,6 +49,12 @@ public abstract class WorkerVerticle extends Verticle {
     vertigo = new Vertigo(this);
     worker = vertigo.createBasicWorker().messageHandler(messageHandler);
     context = worker.getContext();
+
+    MessageSchema schema = declareSchema();
+    if (schema != null) {
+      worker.declareSchema(schema);
+    }
+
     worker.start(new Handler<AsyncResult<BasicWorker>>() {
       @Override
       public void handle(AsyncResult<BasicWorker> result) {
@@ -59,6 +66,18 @@ public abstract class WorkerVerticle extends Verticle {
         }
       }
     });
+  }
+
+  /**
+   * Declares a worker input schema.
+   *
+   * Override this method to provide a required input schema.
+   *
+   * @return
+   *   An input message schema.
+   */
+  protected MessageSchema declareSchema() {
+    return null;
   }
 
   /**

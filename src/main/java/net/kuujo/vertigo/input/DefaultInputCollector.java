@@ -25,6 +25,8 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.schema.JsonValidator;
+import net.kuujo.vertigo.schema.MessageSchema;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -45,6 +47,7 @@ public class DefaultInputCollector implements InputCollector {
   private final InstanceContext context;
   private final List<InputHook> hooks = new ArrayList<InputHook>();
   private final Acker acker;
+  private JsonValidator validator;
   private Handler<JsonMessage> messageHandler;
   private List<Listener> listeners;
 
@@ -114,6 +117,12 @@ public class DefaultInputCollector implements InputCollector {
   }
 
   @Override
+  public InputCollector declareSchema(MessageSchema schema) {
+    validator = schema.getValidator();
+    return this;
+  }
+
+  @Override
   public InputCollector messageHandler(Handler<JsonMessage> handler) {
     this.messageHandler = wrapMessageHandler(handler);
     if (listeners != null) {
@@ -124,12 +133,24 @@ public class DefaultInputCollector implements InputCollector {
     return this;
   }
 
+  /**
+   * Validates that the given message body has a valid schema.
+   */
+  private boolean hasValidSchema(JsonMessage message) {
+    return validator == null || validator.validate(message.body());
+  }
+
   private Handler<JsonMessage> wrapMessageHandler(final Handler<JsonMessage> handler) {
     return new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {
-        handler.handle(message);
-        hookReceived(message.messageId());
+        if (hasValidSchema(message)) {
+          handler.handle(message);
+          hookReceived(message.messageId());
+        }
+        else {
+          fail(message);
+        }
       }
     };
   }

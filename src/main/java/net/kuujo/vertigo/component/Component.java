@@ -24,6 +24,7 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.schema.MessageSchema;
 
 /**
  * A network component.
@@ -84,6 +85,19 @@ public interface Component<T> {
    *   The called component instance.
    */
   T addHook(ComponentHook hook);
+
+  /**
+   * Declares an input message schema for the component.
+   *
+   * Any messages that fail to comply with the required component input schema
+   * will be automatically failed.
+   *
+   * @param schema
+   *   The input schema required by the component.
+   * @return
+   *   The called component instance.
+   */
+  T declareSchema(MessageSchema schema);
 
   /**
    * Starts the component.

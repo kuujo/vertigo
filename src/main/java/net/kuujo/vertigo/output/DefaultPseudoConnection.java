@@ -18,6 +18,7 @@ package net.kuujo.vertigo.output;
 import java.util.UUID;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.eventbus.EventBus;
 
@@ -33,8 +34,8 @@ public class DefaultPseudoConnection extends DefaultConnection implements Pseudo
   }
 
   @Override
-  public String write(JsonMessage message) {
-    return message.copy().id();
+  public MessageId write(JsonMessage message) {
+    return message.messageId();
   }
 
 }

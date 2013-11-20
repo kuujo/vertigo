@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -27,9 +29,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
@@ -41,21 +41,24 @@ import org.vertx.java.platform.Container;
 public class DefaultInputCollector implements InputCollector {
   private final Vertx vertx;
   private final Logger logger;
-  private final EventBus eventBus;
   private final InstanceContext context;
   private final List<InputHook> hooks = new ArrayList<InputHook>();
+  private final Acker acker;
   private Handler<JsonMessage> messageHandler;
   private List<Listener> listeners;
 
   public DefaultInputCollector(Vertx vertx, Container container, InstanceContext context) {
-    this(vertx, container, vertx.eventBus(), context);
-  }
-
-  public DefaultInputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context) {
     this.vertx = vertx;
     this.logger = container.logger();
-    this.eventBus = eventBus;
     this.context = context;
+    this.acker = new DefaultAcker(context.id(), vertx.eventBus());
+  }
+
+  public DefaultInputCollector(Vertx vertx, Container container, InstanceContext context, Acker acker) {
+    this.vertx = vertx;
+    this.logger = container.logger();
+    this.context = context;
+    this.acker = acker;
   }
 
   @Override
@@ -125,7 +128,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(JsonMessage message) {
         handler.handle(message);
-        hookReceived(message.id());
+        hookReceived(message.messageId().correlationId());
       }
     };
   }
@@ -260,21 +263,15 @@ public class DefaultInputCollector implements InputCollector {
 
   @Override
   public InputCollector ack(JsonMessage message) {
-    String auditor = message.auditor();
-    if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", message.id()));
-    }
-    hookAck(message.id());
+    acker.ack(message.messageId());
+    hookAck(message.messageId().correlationId());
     return this;
   }
 
   @Override
   public InputCollector fail(JsonMessage message) {
-    String auditor = message.auditor();
-    if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", message.id()));
-    }
-    hookFail(message.id());
+    acker.fail(message.messageId());
+    hookFail(message.messageId().correlationId());
     return this;
   }
 

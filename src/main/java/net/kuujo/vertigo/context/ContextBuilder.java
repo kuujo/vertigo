@@ -52,10 +52,8 @@ public final class ContextBuilder {
 
     // Add basic configuration items.
     context.putString(NetworkContext.ADDRESS, network.getAddress());
-    context.putString(NetworkContext.BROADCAST, network.getBroadcastAddress());
     context.putBoolean(NetworkContext.ACKING, network.isAckingEnabled());
     context.putNumber(NetworkContext.ACK_TIMEOUT, network.getAckTimeout());
-    context.putNumber(NetworkContext.ACK_DELAY, network.getAckDelay());
 
     // Create an array of auditor addresses.
     JsonArray auditors = new JsonArray();

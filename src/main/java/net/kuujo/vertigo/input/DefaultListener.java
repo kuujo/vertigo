@@ -193,18 +193,18 @@ public class DefaultListener implements Listener {
 
   @Override
   public Listener ack(JsonMessage message) {
-    String auditor = message.auditor();
+    String auditor = message.messageId().auditor();
     if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", message.id()));
+      eventBus.send(auditor, new JsonObject().putString("action", "ack").putObject("id", message.messageId().toJson()));
     }
     return this;
   }
 
   @Override
   public Listener fail(JsonMessage message) {
-    String auditor = message.auditor();
+    String auditor = message.messageId().auditor();
     if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", message.id()));
+      eventBus.send(auditor, new JsonObject().putString("action", "fail").putObject("id", message.messageId().toJson()));
     }
     return this;
   }

@@ -15,9 +15,7 @@
  */
 package net.kuujo.vertigo.message;
 
-import java.util.UUID;
-
-import net.kuujo.vertigo.serializer.SerializationException;
+import java.util.Random;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -26,204 +24,173 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class JsonMessageBuilder {
-  private JsonObject structure = new JsonObject();
+public final class JsonMessageBuilder {
+  private final String address;
+  private final String prefix;
+  private long counter;
+  private final Random random = new Random();
 
-  public JsonMessageBuilder() {
-  }
-
-  public JsonMessageBuilder(JsonObject body) {
-    setBody(body);
-  }
-
-  public JsonMessageBuilder(JsonObject body, String tag) {
-    setBody(body).setTag(tag);
+  public JsonMessageBuilder(String address) {
+    this.address = address;
+    this.prefix = address + ":";
   }
 
   /**
-   * Creates a new message builder.
-   *
-   * @param id
-   *   The message identifier.
-   * @return
-   *   A new message builder.
+   * Creates a new message.
    */
-  public static JsonMessageBuilder create(String id) {
-    return new JsonMessageBuilder().setId(id);
+  public JsonMessageStruct createNew(String auditor) {
+    return new JsonMessageStruct().setMessageId(createNewId(auditor));
   }
 
   /**
-   * Creates a new message builder.
-   *
-   * @param id
-   *   The message identifier.
-   * @param body
-   *   The message body.
-   * @return
-   *   A new message builder.
+   * Creates a new message ID.
    */
-  public static JsonMessageBuilder create(String id, JsonObject body) {
-    return new JsonMessageBuilder(body).setId(id);
+  private MessageId createNewId(String auditor) {
+    return new DefaultMessageId(new JsonObject()
+        .putNumber(DefaultMessageId.CODE, generateCode())
+        .putString(DefaultMessageId.ID, nextId())
+        .putString(DefaultMessageId.OWNER, address)
+        .putString(DefaultMessageId.AUDITOR, auditor));
   }
 
   /**
-   * Creates a new message builder.
-   *
-   * @param id
-   *   The message identifier.
-   * @param body
-   *   The message body.
-   * @param tag
-   *   The message tag.
-   * @return
-   *   A new message builder.
+   * Creates a child message.
    */
-  public static JsonMessageBuilder create(String id, JsonObject body, String tag) {
-    return new JsonMessageBuilder(body, tag).setId(id);
+  public JsonMessageStruct createChild(JsonMessage parent) {
+    return new JsonMessageStruct().setMessageId(createChildId(parent.messageId()))
+        .setSource(parent.source());
   }
 
   /**
-   * Creates a new message builder.
-   *
-   * @param body
-   *   The message body.
-   * @return
-   *   A new message builder.
+   * Creates a child message ID.
    */
-  public static JsonMessageBuilder create(JsonObject body) {
-    return new JsonMessageBuilder(body).setId(generateRandomId());
-  }
-
-  /**
-   * Creates a new message builder.
-   *
-   * @param body
-   *   The message body.
-   * @param tag
-   *   The message tag.
-   * @return
-   *   A new message builder.
-   */
-  public static JsonMessageBuilder create(JsonObject body, String tag) {
-    return new JsonMessageBuilder(body, tag).setId(generateRandomId());
-  }
-
-  /**
-   * Generates a random message ID.
-   *
-   * @return
-   *   A random unique message identifier.
-   */
-  public static String generateRandomId() {
-    return UUID.randomUUID().toString();
-  }
-
-  /**
-   * Sets the unique message identifier.
-   *
-   * @param id
-   *   The unique message identifier.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setId(String id) {
-    structure.putString(DefaultJsonMessage.ID, id);
-    return this;
-  }
-
-  /**
-   * Sets the message body.
-   *
-   * @param body
-   *   The message body.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setBody(JsonObject body) {
-    structure.putObject(DefaultJsonMessage.BODY, body);
-    return this;
-  }
-
-  /**
-   * Sets the message tag.
-   *
-   * @param tag
-   *   The message tag.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setTag(String tag) {
-    structure.putString(DefaultJsonMessage.TAG, tag);
-    return this;
-  }
-
-  /**
-   * Sets the message source.
-   *
-   * @param source
-   *   The message source.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setSource(String source) {
-    structure.putString(DefaultJsonMessage.SOURCE, source);
-    return this;
-  }
-
-  /**
-   * Sets the message parent.
-   *
-   * @param parent
-   *   The message parent.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setParent(String parent) {
-    structure.putString(DefaultJsonMessage.PARENT, parent);
-    return this;
-  }
-
-  /**
-   * Sets the message root.
-   *
-   * @param root
-   *   The message root.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setRoot(String root) {
-    structure.putString(DefaultJsonMessage.ROOT, root);
-    return this;
-  }
-
-  /**
-   * Sets the message auditor.
-   *
-   * @param auditor
-   *   The message auditor.
-   * @return
-   *   The called message builder.
-   */
-  public JsonMessageBuilder setAuditor(String auditor) {
-    structure.putString(DefaultJsonMessage.AUDITOR, auditor);
-    return this;
-  }
-
-  /**
-   * Returns a new JSON message from the built message structure.
-   *
-   * @return
-   *   A new {@link JsonMessage} instance.
-   */
-  public JsonMessage toMessage() {
-    JsonMessage message = new DefaultJsonMessage();
-    try {
-      message.setState(structure);
+  private MessageId createChildId(MessageId parentId) {
+    if (parentId.isRoot()) {
+      return new DefaultMessageId(new JsonObject()
+          .putNumber(DefaultMessageId.CODE, generateCode())
+          .putString(DefaultMessageId.ID, nextId())
+          .putString(DefaultMessageId.PARENT, parentId.correlationId())
+          .putString(DefaultMessageId.ROOT, parentId.correlationId())
+          .putString(DefaultMessageId.OWNER, address)
+          .putString(DefaultMessageId.AUDITOR, parentId.auditor()));
     }
-    catch (SerializationException e) {
-      return null;
+    else {
+      return new DefaultMessageId(new JsonObject()
+          .putNumber(DefaultMessageId.CODE, generateCode())
+          .putString(DefaultMessageId.ID, nextId())
+          .putString(DefaultMessageId.PARENT, parentId.correlationId())
+          .putString(DefaultMessageId.ROOT, parentId.root())
+          .putString(DefaultMessageId.OWNER, address)
+          .putString(DefaultMessageId.AUDITOR, parentId.auditor()));
     }
-    return message;
+  }
+
+  /**
+   * Creates a copy of the message with a new ID.
+   */
+  public JsonMessageStruct createCopy(JsonMessage sibling) {
+    return new JsonMessageStruct(sibling.getState().copy())
+        .setMessageId(createSiblingId(sibling.messageId()));
+  }
+
+  /**
+   * Creates a sibling message ID.
+   */
+  private MessageId createSiblingId(MessageId siblingId) {
+    return new DefaultMessageId(siblingId.toJson().copy()
+        .putNumber(DefaultMessageId.CODE, generateCode())
+        .putString(DefaultMessageId.ID, nextId()));
+  }
+
+  /**
+   * Generates a message ack code.
+   */
+  private int generateCode() {
+    return random.nextInt();
+  }
+
+  /**
+   * Generates a unique message ID.
+   */
+  private String nextId() {
+    return prefix + ++counter;
+  }
+
+  /**
+   * A Json message structure.
+   */
+  public static final class JsonMessageStruct {
+    private final JsonObject structure;
+
+    public JsonMessageStruct() {
+      this.structure = new JsonObject();
+    }
+
+    public JsonMessageStruct(JsonObject structure) {
+      this.structure = structure;
+    }
+
+    /**
+     * Sets the message ID.
+     *
+     * @param messageId
+     *   The message ID.
+     * @return
+     *   The called structure.
+     */
+    public JsonMessageStruct setMessageId(MessageId messageId) {
+      structure.putObject(DefaultJsonMessage.ID, messageId.toJson());
+      return this;
+    }
+
+    /**
+     * Sets the message body.
+     *
+     * @param body
+     *   The message body.
+     * @return
+     *   The called structure.
+     */
+    public JsonMessageStruct setBody(JsonObject body) {
+      structure.putObject(DefaultJsonMessage.BODY, body);
+      return this;
+    }
+
+    /**
+     * Sets the message tag.
+     *
+     * @param tag
+     *   The message tag.
+     * @return
+     *   The called structure.
+     */
+    public JsonMessageStruct setTag(String tag) {
+      structure.putString(DefaultJsonMessage.TAG, tag);
+      return this;
+    }
+
+    /**
+     * Sets the message source.
+     *
+     * @param source
+     *   The message source.
+     * @return
+     *   The called structure.
+     */
+    public JsonMessageStruct setSource(String source) {
+      structure.putString(DefaultJsonMessage.SOURCE, source);
+      return this;
+    }
+
+    /**
+     * Returns a new JSON message from the built message structure.
+     *
+     * @return
+     *   A new {@link JsonMessage} instance.
+     */
+    public JsonMessage toMessage() {
+      return new DefaultJsonMessage(structure);
+    }
   }
 
 }

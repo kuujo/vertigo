@@ -30,7 +30,6 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class Network implements Serializable {
   public static final String ADDRESS = "address";
-  public static final String BROADCAST = "broadcast";
   public static final String AUDITORS = "auditors";
   public static final String ACKING = "acking";
   public static final String ACK_TIMEOUT = "timeout";
@@ -97,11 +96,6 @@ public class Network implements Serializable {
       address = UUID.randomUUID().toString();
       definition.putString(ADDRESS, address);
     }
-
-    String broadcast = definition.getString(BROADCAST);
-    if (broadcast == null) {
-      definition.putString(BROADCAST, String.format("%s.%s", address, BROADCAST));
-    }
   }
 
   /**
@@ -115,57 +109,6 @@ public class Network implements Serializable {
    */
   public String getAddress() {
     return definition.getString(ADDRESS);
-  }
-
-  /**
-   * Returns the network broadcaster address.
-   *
-   * @return
-   *   The network broadcast address.
-   */
-  public String getBroadcastAddress() {
-    return definition.getString(BROADCAST, String.format("%s.%s", getAddress(), BROADCAST));
-  }
-
-  /**
-   * Sets the network broadcast event bus address.
-   *
-   * @param address
-   *   The network broadcast address. This is the address at which the network
-   *   will publish ack/fail/timeout messages.
-   * @return
-   *   The called network instance.
-   */
-  public Network setBroadcastAddress(String address) {
-    definition.putString(BROADCAST, address);
-    return this;
-  }
-
-  /**
-   * Returns the number of network auditors.
-   *
-   * @return
-   *   The number of network auditors.
-   */
-  public int getNumAuditors() {
-    return definition.getInteger(AUDITORS, 1);
-  }
-
-  /**
-   * Sets the number of network auditors.
-   *
-   * This is the number of auditor verticle instances that will be used to track
-   * messages throughout a network. If the network is slowing due to acking
-   * overflows, you may need to increase the number of network auditors.
-   *
-   * @param numAuditors
-   *   The number of network auditors.
-   * @return
-   *   The called network instance.
-   */
-  public Network setNumAuditors(int numAuditors) {
-    definition.putNumber(AUDITORS, numAuditors);
-    return this;
   }
 
   /**
@@ -207,6 +150,33 @@ public class Network implements Serializable {
   }
 
   /**
+   * Returns the number of network auditors.
+   *
+   * @return
+   *   The number of network auditors.
+   */
+  public int getNumAuditors() {
+    return definition.getInteger(AUDITORS, 1);
+  }
+
+  /**
+   * Sets the number of network auditors.
+   *
+   * This is the number of auditor verticle instances that will be used to track
+   * messages throughout a network. If the network is slowing due to acking
+   * overflows, you may need to increase the number of network auditors.
+   *
+   * @param numAuditors
+   *   The number of network auditors.
+   * @return
+   *   The called network instance.
+   */
+  public Network setNumAckers(int numAuditors) {
+    definition.putNumber(AUDITORS, numAuditors);
+    return this;
+  }
+
+  /**
    * Sets the network ack timeout.
    *
    * This indicates the maximum amount of time an auditor will hold message
@@ -230,38 +200,6 @@ public class Network implements Serializable {
    */
   public long getAckTimeout() {
     return definition.getLong(ACK_TIMEOUT, DEFAULT_ACK_TIMEOUT);
-  }
-
-  /**
-   * Sets the network ack delay.
-   *
-   * This indicates the amount of time an auditor will wait before notifying a
-   * message source that a message has complete processing. If a new descendant
-   * message is created during the delay period, the auditor will continue tracking
-   * the tree and will not notify the message source until the new message and
-   * its descendants have completed processing. This allows component implementations
-   * to hold messages in memory for some period before creating new children. It
-   * may also help resolve issues where blocking is preventing auditors from working
-   * properly.
-   *
-   * @param delay
-   *   The ack delay.
-   * @return
-   *   The called network instance.
-   */
-  public Network setAckDelay(long delay) {
-    definition.putNumber(ACK_DELAY, delay);
-    return this;
-  }
-
-  /**
-   * Gets the network ack delay.
-   *
-   * @return
-   *   Ack delay for the network. Defaults to 0
-   */
-  public long getAckDelay() {
-    return definition.getLong(ACK_DELAY, DEFAULT_ACK_DELAY);
   }
 
   /**

@@ -32,44 +32,7 @@ public interface JsonMessage extends Serializable {
    * @return
    *   The message ID.
    */
-  String id();
-
-  /**
-   * Returns the message source address. This is the event bus address of the
-   * component from which this message tree originated.
-   *
-   * @return
-   *   The source address.
-   */
-  String source();
-
-  /**
-   * Returns the parent ID.
-   *
-   * @return
-   *   The parent message ID.
-   */
-  String parent();
-
-  /**
-   * Returns the root ID. This is the ID of the original message in the
-   * message tree.
-   *
-   * @return
-   *   The root message ID.
-   */
-  String root();
-
-  /**
-   * Returns the auditor address.
-   *
-   * When a new message is emitted from a component it is assigned an auditor.
-   * Any children created from the message will inherit the same auditor address.
-   *
-   * @return
-   *   The message's auditor address.
-   */
-  String auditor();
+  MessageId messageId();
 
   /**
    * Returns the message body.
@@ -88,42 +51,12 @@ public interface JsonMessage extends Serializable {
   String tag();
 
   /**
-   * Creates a new child of the message with the same message data.
+   * Returns the message source. This is the event bus address of the
+   * component from which this message tree originated.
    *
    * @return
-   *   A new child message.
+   *   The source address.
    */
-  JsonMessage createChild();
-
-  /**
-   * Creates a new child of the message.
-   *
-   * @param body
-   *   The child body.
-   * @return
-   *   A new child message.
-   */
-  JsonMessage createChild(JsonObject body);
-
-  /**
-   * Creates a new child of the message.
-   *
-   * @param body
-   *   The child body.
-   * @param tag
-   *   A tag to apply to the child. If no tag is specified then the
-   *   parent tag will be inherited.
-   * @return
-   *   A new child message.
-   */
-  JsonMessage createChild(JsonObject body, String tag);
-
-  /**
-   * Creates a copy of the message.
-   *
-   * @return
-   *   A copy of the message.
-   */
-  JsonMessage copy();
+  String source();
 
 }

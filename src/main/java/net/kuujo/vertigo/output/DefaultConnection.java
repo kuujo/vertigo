@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
@@ -40,10 +41,9 @@ public class DefaultConnection implements Connection {
   }
 
   @Override
-  public String write(JsonMessage message) {
-    JsonMessage copy = message.copy();
-    eventBus.send(address, Serializer.serialize(copy));
-    return copy.id();
+  public MessageId write(JsonMessage message) {
+    eventBus.send(address, Serializer.serialize(message));
+    return message.messageId();
   }
 
 }

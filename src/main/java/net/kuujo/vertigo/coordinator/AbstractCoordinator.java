@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import net.kuujo.vertigo.auditor.Auditor;
+import net.kuujo.vertigo.auditor.AuditorVerticle;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
@@ -230,11 +230,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     if (auditors.size() > 0) {
       final String address = auditors.iterator().next();
       JsonObject auditorConfig = new JsonObject()
-        .putString(Auditor.ADDRESS, address)
-        .putString(Auditor.BROADCAST, context.getBroadcastAddress())
-        .putNumber(Auditor.TIMEOUT, context.getAckTimeout())
-        .putNumber(Auditor.DELAY, context.getAckDelay());
-      deployVerticle(Auditor.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {
+        .putString(AuditorVerticle.ADDRESS, address)
+        .putNumber(AuditorVerticle.TIMEOUT, context.getAckTimeout());
+      deployVerticle(AuditorVerticle.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {

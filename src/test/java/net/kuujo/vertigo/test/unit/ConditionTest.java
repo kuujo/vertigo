@@ -39,16 +39,22 @@ public class ConditionTest {
   public void testTagsCondition() {
     Condition condition = new TagsCondition("foo", "bar");
 
-    JsonMessage message1 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor("audit").toMessage();
+    JsonMessageBuilder builder = new JsonMessageBuilder("test");
+
+    JsonMessage message1 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).toMessage();
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setTag("baz").setAuditor("audit").toMessage();
+    JsonMessage message2 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).setTag("baz").toMessage();
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setTag("foo").setAuditor("audit").toMessage();
-    assertTrue(condition.isValid(message3));
+    JsonMessage assertTrue = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).setTag("foo").toMessage();
+    assertTrue(condition.isValid(assertTrue));
 
-    JsonMessage message4 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setTag("bar").setAuditor("audit").toMessage();
+    JsonMessage message4 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).setTag("bar").toMessage();
     assertTrue(condition.isValid(message4));
   }
 
@@ -56,13 +62,18 @@ public class ConditionTest {
   public void testFieldCondition() {
     Condition condition = new FieldCondition("foo", "bar");
 
-    JsonMessage message1 = JsonMessageBuilder.create(new JsonObject().putString("bar", "foo")).setAuditor("audit").toMessage();
+    JsonMessageBuilder builder = new JsonMessageBuilder("test");
+
+    JsonMessage message1 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("bar", "foo")).toMessage();
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = JsonMessageBuilder.create(new JsonObject().putString("foo", "baz")).setAuditor("audit").toMessage();
+    JsonMessage message2 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("foo", "baz")).toMessage();
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = JsonMessageBuilder.create(new JsonObject().putString("foo", "bar")).setAuditor("audit").toMessage();
+    JsonMessage message3 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("foo", "bar")).toMessage();
     assertTrue(condition.isValid(message3));
   }
 
@@ -70,13 +81,18 @@ public class ConditionTest {
   public void testSourceCondition() {
     Condition condition = new SourceCondition("foo");
 
-    JsonMessage message1 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setAuditor("audit").toMessage();
+    JsonMessageBuilder builder = new JsonMessageBuilder("test");
+
+    JsonMessage message1 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).toMessage();
     assertFalse(condition.isValid(message1));
 
-    JsonMessage message2 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setSource("bar").setAuditor("audit").toMessage();
+    JsonMessage message2 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).setSource("bar").toMessage();
     assertFalse(condition.isValid(message2));
 
-    JsonMessage message3 = JsonMessageBuilder.create(new JsonObject().putString("body", "Hello world!")).setSource("foo").setAuditor("audit").toMessage();
+    JsonMessage message3 = builder.createNew("audit").setBody(new JsonObject()
+        .putString("body", "Hello world!")).setSource("foo").toMessage();
     assertTrue(condition.isValid(message3));
   }
 

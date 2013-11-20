@@ -21,10 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.JsonMessageBuilder;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -35,7 +38,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
@@ -50,13 +52,12 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Logger logger;
   private final EventBus eventBus;
   private final InstanceContext context;
+  private final Acker acker;
   private final boolean ackingEnabled;
   private final String componentAddress;
   private final List<OutputHook> hooks = new ArrayList<>();
   private final List<String> auditors;
-  private Handler<String> ackHandler;
-  private Handler<String> failHandler;
-  private Handler<String> timeoutHandler;
+  private final JsonMessageBuilder messageBuilder;
   private Random random = new Random();
   private List<Channel> channels = new ArrayList<>();
   private Map<String, Long> connectionTimers = new HashMap<>();
@@ -71,6 +72,24 @@ public class DefaultOutputCollector implements OutputCollector {
     this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
+    acker = new DefaultAcker(context.id(), eventBus);
+    messageBuilder = new JsonMessageBuilder(context.id());
+    ackingEnabled = context.getComponent().getNetwork().isAckingEnabled();
+    auditors = context.getComponent().getNetwork().getAuditors();
+    componentAddress = context.getComponent().getAddress();
+  }
+
+  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext context, Acker acker) {
+    this(vertx, container, vertx.eventBus(), context, acker);
+  }
+
+  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context, Acker acker) {
+    this.vertx = vertx;
+    this.logger = container.logger();
+    this.eventBus = eventBus;
+    this.context = context;
+    this.acker = acker;
+    messageBuilder = new JsonMessageBuilder(context.id());
     ackingEnabled = context.getComponent().getNetwork().isAckingEnabled();
     auditors = context.getComponent().getNetwork().getAuditors();
     componentAddress = context.getComponent().getAddress();
@@ -85,27 +104,6 @@ public class DefaultOutputCollector implements OutputCollector {
         switch (action) {
           case "listen":
             doListen(body);
-            break;
-        }
-      }
-    }
-  };
-
-  private Handler<Message<JsonObject>> ackerHandler = new Handler<Message<JsonObject>>() {
-    @Override
-    public void handle(Message<JsonObject> message) {
-      JsonObject body = message.body();
-      if (body != null) {
-        String action = body.getString("action");
-        switch (action) {
-          case "ack":
-            doAck(message);
-            break;
-          case "fail":
-            doFail(message);
-            break;
-          case "timeout":
-            doTimeout(message);
             break;
         }
       }
@@ -165,7 +163,7 @@ public class DefaultOutputCollector implements OutputCollector {
       }
     }
     Channel channel = new DefaultChannel(output.id(), output.getSelector(),
-        output.getConditions(), eventBus).setConnectionCount(output.getCount());
+        output.getConditions(), eventBus, messageBuilder).setConnectionCount(output.getCount());
     channels.add(channel);
     return channel;
   }
@@ -237,122 +235,108 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector ackHandler(Handler<String> handler) {
-    this.ackHandler = handler;
+    acker.ackHandler(createAckHandler(handler));
     return this;
   }
 
-  /**
-   * Receives an ack message.
-   */
-  private void doAck(Message<JsonObject> message) {
-    if (ackHandler != null) {
-      String id = message.body().getString("id");
-      if (id != null) {
-        ackHandler.handle(id);
-        hookAcked(id);
+  private Handler<MessageId> createAckHandler(final Handler<String> handler) {
+    return new Handler<MessageId>() {
+      @Override
+      public void handle(MessageId messageId) {
+        handler.handle(messageId.correlationId());
+        hookAcked(messageId.correlationId());
       }
-    }
+    };
   }
 
   @Override
   public OutputCollector failHandler(Handler<String> handler) {
-    this.failHandler = handler;
+    acker.failHandler(createFailHandler(handler));
     return this;
   }
 
-  /**
-   * Receives a fail message.
-   */
-  private void doFail(Message<JsonObject> message) {
-    if (failHandler != null) {
-      String id = message.body().getString("id");
-      if (id != null) {
-        failHandler.handle(id);
-        hookFailed(id);
+  private Handler<MessageId> createFailHandler(final Handler<String> handler) {
+    return new Handler<MessageId>() {
+      @Override
+      public void handle(MessageId messageId) {
+        handler.handle(messageId.correlationId());
+        hookFailed(messageId.correlationId());
       }
-    }
+    };
   }
 
   @Override
   public OutputCollector timeoutHandler(Handler<String> handler) {
-    this.timeoutHandler = handler;
+    acker.timeoutHandler(createTimeoutHandler(handler));
     return this;
   }
 
-  /**
-   * Receives a timeput message.
-   */
-  private void doTimeout(Message<JsonObject> message) {
-    if (timeoutHandler != null) {
-      String id = message.body().getString("id");
-      if (id != null) {
-        timeoutHandler.handle(id);
-        hookTimeout(id);
+  private Handler<MessageId> createTimeoutHandler(final Handler<String> handler) {
+    return new Handler<MessageId>() {
+      @Override
+      public void handle(MessageId messageId) {
+        handler.handle(messageId.correlationId());
+        hookTimeout(messageId.correlationId());
       }
-    }
+    };
   }
 
   @Override
   public String emit(JsonObject body) {
-    return emitNew(JsonMessageBuilder.create(body).setSource(componentAddress)
-        .setAuditor(selectRandomAuditor()).toMessage());
+    JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
+    MessageId messageId = message.messageId();
+    JsonMessage child = messageBuilder.createChild(message).setBody(body)
+        .setSource(componentAddress).toMessage();
+    for (Channel channel : channels) {
+      acker.fork(messageId, channel.publish(child));
+    }
+    acker.create(messageId);
+    hookEmit(messageId.correlationId());
+    return messageId.correlationId();
   }
 
   @Override
   public String emit(JsonObject body, String tag) {
-    return emitNew(JsonMessageBuilder.create(body, tag).setSource(componentAddress)
-        .setAuditor(selectRandomAuditor()).toMessage());
+    JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
+    MessageId messageId = message.messageId();
+    JsonMessage child = messageBuilder.createChild(message).setBody(body)
+        .setTag(tag).setSource(componentAddress).toMessage();
+    for (Channel channel : channels) {
+      acker.fork(messageId, channel.publish(child));
+    }
+    acker.create(messageId);
+    hookEmit(messageId.correlationId());
+    return messageId.correlationId();
   }
 
   @Override
   public String emit(JsonObject body, JsonMessage parent) {
-    return emitChild(parent.createChild(body));
+    JsonMessage message = messageBuilder.createChild(parent).setBody(body).toMessage();
+    MessageId messageId = message.messageId();
+    for (Channel channel : channels) {
+      acker.fork(parent.messageId(), channel.publish(message));
+    }
+    hookEmit(messageId.correlationId());
+    return messageId.correlationId();
   }
 
   @Override
   public String emit(JsonObject body, String tag, JsonMessage parent) {
-    return emitChild(parent.createChild(body, tag));
-  }
-
-  /**
-   * Emits a new message.
-   */
-  private String emitNew(JsonMessage message) {
-    final List<Object> ids = new ArrayList<>();
+    JsonMessage message = messageBuilder.createChild(parent).setBody(body)
+        .setTag(tag).toMessage();
+    MessageId messageId = message.messageId();
     for (Channel channel : channels) {
-      ids.addAll(channel.publish(message.createChild()));
+      acker.fork(parent.messageId(), channel.publish(message));
     }
-    final String auditor = message.auditor();
-    if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "create")
-          .putString("id", message.id()).putArray("forks", new JsonArray(ids)));
-    }
-    hookEmit(message.id());
-    return message.id();
-  }
-
-  /**
-   * Emits a child message.
-   */
-  private String emitChild(JsonMessage message) {
-    final List<Object> ids = new ArrayList<>();
-    for (Channel channel : channels) {
-      ids.addAll(channel.publish(message.copy()));
-    }
-    final String auditor = message.auditor();
-    if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "fork")
-          .putString("parent", message.parent()).putArray("forks", new JsonArray(ids)));
-    }
-    hookEmit(message.parent());
-    return message.parent();
+    hookEmit(messageId.correlationId());
+    return messageId.correlationId();
   }
 
   /**
    * Returns a random auditor address.
    */
   private String selectRandomAuditor() {
-    // If acking is not enabled then don't assign any auditor to the message.
+    // If acking is not enabled then don't assign any acker to the message.
     if (ackingEnabled) {
       return auditors.get(random.nextInt(auditors.size()));
     }
@@ -362,7 +346,6 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public OutputCollector start() {
     eventBus.registerHandler(context.getComponent().getAddress(), handler);
-    eventBus.registerHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler);
     hookStart();
     return this;
   }
@@ -377,18 +360,8 @@ public class DefaultOutputCollector implements OutputCollector {
           future.setFailure(result.cause());
         }
         else {
-          eventBus.registerHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
-              }
-              else {
-                future.setResult(null);
-                hookStart();
-              }
-            }
-          });
+          future.setResult(null);
+          hookStart();
         }
       }
     });
@@ -398,7 +371,6 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public void stop() {
     eventBus.unregisterHandler(context.getComponent().getAddress(), handler);
-    eventBus.unregisterHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler);
     hookStop();
   }
 
@@ -412,18 +384,8 @@ public class DefaultOutputCollector implements OutputCollector {
           future.setFailure(result.cause());
         }
         else {
-          eventBus.unregisterHandler(context.getComponent().getNetwork().getBroadcastAddress(), ackerHandler, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                future.setFailure(result.cause());
-              }
-              else {
-                future.setResult(null);
-                hookStop();
-              }
-            }
-          });
+          future.setResult(null);
+          hookStop();
         }
       }
     });

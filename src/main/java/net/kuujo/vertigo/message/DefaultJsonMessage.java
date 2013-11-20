@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.message;
 
-import java.util.UUID;
+import net.kuujo.vertigo.serializer.SerializationException;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -27,47 +27,20 @@ import org.vertx.java.core.json.JsonObject;
 public class DefaultJsonMessage implements JsonMessage {
   private JsonObject body;
   public static final String ID = "id";
-  public static final String SOURCE = "source";
-  public static final String PARENT = "parent";
-  public static final String ROOT = "root";
-  public static final String AUDITOR = "auditor";
   public static final String BODY = "body";
   public static final String TAG = "tag";
-
-  private static String createUniqueId() {
-    return UUID.randomUUID().toString();
-  }
+  public static final String SOURCE = "source";
 
   public DefaultJsonMessage() {
   }
 
-  private DefaultJsonMessage(JsonObject body) {
+  DefaultJsonMessage(JsonObject body) {
     this.body = body;
   }
 
   @Override
-  public String id() {
-    return body.getString(ID);
-  }
-
-  @Override
-  public String source() {
-    return body.getString(SOURCE);
-  }
-
-  @Override
-  public String parent() {
-    return body.getString(PARENT);
-  }
-
-  @Override
-  public String root() {
-    return body.getString(ROOT);
-  }
-
-  @Override
-  public String auditor() {
-    return body.getString(AUDITOR);
+  public MessageId messageId() {
+    return DefaultMessageId.fromJson(body.getObject(ID));
   }
 
   @Override
@@ -81,54 +54,18 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonMessage createChild() {
-    JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains(ROOT)) {
-      newMessage.putString(ROOT, this.body.getString(ID));
-    }
-    newMessage.putString(PARENT, this.body.getString(ID));
-    newMessage.putString(ID, createUniqueId());
-    return new DefaultJsonMessage(newMessage);
-  }
-
-  @Override
-  public JsonMessage createChild(JsonObject body) {
-    JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains(ROOT)) {
-      newMessage.putString(ROOT, this.body.getString(ID));
-    }
-    newMessage.putString(PARENT, this.body.getString(ID));
-    newMessage.putString(ID, createUniqueId())
-      .putObject(BODY, body);
-    return new DefaultJsonMessage(newMessage);
-  }
-
-  @Override
-  public JsonMessage createChild(JsonObject body, String tag) {
-    JsonObject newMessage = this.body.copy();
-    if (!newMessage.getFieldNames().contains(ROOT)) {
-      newMessage.putString(ROOT, this.body.getString(ID));
-    }
-    newMessage.putString(PARENT, this.body.getString(ID));
-    newMessage.putString(ID, createUniqueId())
-      .putObject(BODY, body)
-      .putString(TAG, tag);
-    return new DefaultJsonMessage(newMessage);
-  }
-
-  @Override
-  public JsonMessage copy() {
-    return new DefaultJsonMessage(body.copy().putString(ID, createUniqueId()));
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    body = state;
+  public String source() {
+    return body.getString(SOURCE);
   }
 
   @Override
   public JsonObject getState() {
     return body;
+  }
+
+  @Override
+  public void setState(JsonObject state) throws SerializationException {
+    this.body = state;
   }
 
 }

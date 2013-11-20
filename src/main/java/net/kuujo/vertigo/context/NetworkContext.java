@@ -31,7 +31,6 @@ import net.kuujo.vertigo.serializer.Serializable;
  */
 public class NetworkContext implements Serializable {
   public static final String ADDRESS = "address";
-  public static final String BROADCAST = "broadcast";
   public static final String AUDITORS = "auditors";
   public static final String ACKING = "acking";
   public static final String ACK_TIMEOUT = "timeout";
@@ -89,28 +88,18 @@ public class NetworkContext implements Serializable {
   }
 
   /**
-   * Returns the broadcast address.
-   *
-   * @return
-   *   The network broadcast address.
-   */
-  public String getBroadcastAddress() {
-    return context.getString(BROADCAST);
-  }
-
-  /**
-   * Returns a list of network auditors.
+   * Returns a list of network auditor addresses.
    *
    * @return
    *   A list of network auditors.
    */
   public List<String> getAuditors() {
-    List<String> auditors = new ArrayList<>();
-    JsonArray auditorInfo = context.getArray(AUDITORS);
-    for (Object address : auditorInfo) {
-      auditors.add((String) address);
+    List<String> ackers = new ArrayList<>();
+    JsonArray ackerInfo = context.getArray(AUDITORS);
+    for (Object address : ackerInfo) {
+      ackers.add((String) address);
     }
-    return auditors;
+    return ackers;
   }
 
   /**
@@ -131,16 +120,6 @@ public class NetworkContext implements Serializable {
    */
   public long getAckTimeout() {
     return context.getLong(ACK_TIMEOUT, Network.DEFAULT_ACK_TIMEOUT);
-  }
-
-  /**
-   * Returns network ack delay.
-   *
-   * @return
-   *   Ack delay for the network.
-   */
-  public long getAckDelay() {
-    return context.getLong(ACK_DELAY, Network.DEFAULT_ACK_DELAY);
   }
 
   /**

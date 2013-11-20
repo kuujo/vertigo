@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A single point-to-point connection.
@@ -44,6 +45,6 @@ public interface Connection {
    * @return
    *   The written message identifier.
    */
-  String write(JsonMessage message);
+  MessageId write(JsonMessage message);
 
 }

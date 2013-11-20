@@ -40,7 +40,7 @@ public class ContextTest {
   @Test
   public void testNetworkContext() {
     Network network = new Network("test");
-    network.setNumAuditors(2);
+    network.setNumAckers(2);
     network.enableAcking();
 
     network.addVerticle("test1", "net.kuujo.vertigo.VertigoVerticle");

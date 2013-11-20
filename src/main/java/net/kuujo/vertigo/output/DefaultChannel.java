@@ -23,6 +23,8 @@ import java.util.Map;
 import org.vertx.java.core.eventbus.EventBus;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.JsonMessageBuilder;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
 
@@ -39,12 +41,15 @@ public class DefaultChannel implements Channel {
   private List<Connection> connections = new ArrayList<>();
   private Map<String, Integer> connectionMap = new HashMap<>();
   private final EventBus eventBus;
+  private final JsonMessageBuilder messageBuilder;
 
-  public DefaultChannel(String id, Selector selector, List<Condition> conditions, EventBus eventBus) {
+  public DefaultChannel(String id, Selector selector, List<Condition> conditions,
+      EventBus eventBus, JsonMessageBuilder messageBuilder) {
     this.id = id;
     this.selector = selector;
     this.conditions = conditions;
     this.eventBus = eventBus;
+    this.messageBuilder = messageBuilder;
   }
 
   @Override
@@ -124,14 +129,14 @@ public class DefaultChannel implements Channel {
   }
 
   @Override
-  public List<String> publish(JsonMessage message) {
-    List<String> ids = new ArrayList<>();
+  public List<MessageId> publish(JsonMessage message) {
+    List<MessageId> messageIds = new ArrayList<>();
     if (isValid(message)) {
       for (Connection connection : selector.select(message, connections)) {
-        ids.add(connection.write(message));
+        messageIds.add(connection.write(messageBuilder.createCopy(message).toMessage()));
       }
     }
-    return ids;
+    return messageIds;
   }
 
 }

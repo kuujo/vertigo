@@ -21,6 +21,8 @@ import java.util.List;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.output.DefaultOutputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.heartbeat.DefaultHeartbeatEmitter;
@@ -53,11 +55,11 @@ public abstract class ComponentBase<T> implements Component<T> {
   protected final Container container;
   protected final Logger logger;
   protected final InstanceContext context;
+  protected final Acker acker;
   protected final String instanceId;
   protected final String address;
   protected final String networkAddress;
   protected final List<String> auditors;
-  protected final String broadcastAddress;
   protected final HeartbeatEmitter heartbeat;
   protected final InputCollector input;
   protected final OutputCollector output;
@@ -133,6 +135,7 @@ public abstract class ComponentBase<T> implements Component<T> {
     this.container = container;
     this.logger = container.logger();
     this.context = context;
+    this.acker = new DefaultAcker(context.id(), eventBus);
     this.hooks = context.getComponent().getHooks();
     this.instanceId = context.id();
     this.address = context.getComponent().getAddress();
@@ -143,15 +146,14 @@ public abstract class ComponentBase<T> implements Component<T> {
     for (String auditorAddress : auditorAddresses) {
       auditors.add(auditorAddress);
     }
-    broadcastAddress = networkContext.getBroadcastAddress();
     heartbeat = new DefaultHeartbeatEmitter(vertx);
 
     // Create an input and add the component input hook.
-    input = new DefaultInputCollector(vertx, container, context);
+    input = new DefaultInputCollector(vertx, container, context, acker);
     input.addHook(inputHook);
 
     // Create an output and add the component output hook.
-    output = new DefaultOutputCollector(vertx, container, context);
+    output = new DefaultOutputCollector(vertx, container, context, acker);
     output.addHook(outputHook);
   }
 
@@ -212,28 +214,38 @@ public abstract class ComponentBase<T> implements Component<T> {
           future.setFailure(result.cause());
         }
         else {
-          setupOutput(new Handler<AsyncResult<Void>>() {
+          acker.start(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 future.setFailure(result.cause());
               }
               else {
-                setupInput(new Handler<AsyncResult<Void>>() {
+                output.start(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       future.setFailure(result.cause());
                     }
                     else {
-                      ready(new Handler<AsyncResult<Void>>() {
+                      input.start(new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
                             future.setFailure(result.cause());
                           }
                           else {
-                            future.setResult(null);
+                            ready(new Handler<AsyncResult<Void>>() {
+                              @Override
+                              public void handle(AsyncResult<Void> result) {
+                                if (result.failed()) {
+                                  future.setFailure(result.cause());
+                                }
+                                else {
+                                  future.setResult(null);
+                                }
+                              }
+                            });
                           }
                         }
                       });
@@ -272,20 +284,6 @@ public abstract class ComponentBase<T> implements Component<T> {
         }
       }
     });
-  }
-
-  /**
-   * Sets up component input.
-   */
-  private void setupInput(Handler<AsyncResult<Void>> doneHandler) {
-    input.start(doneHandler);
-  }
-
-  /**
-   * Sets up component output.
-   */
-  private void setupOutput(Handler<AsyncResult<Void>> doneHandler) {
-    output.start(doneHandler);
   }
 
   /**

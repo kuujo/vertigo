@@ -18,6 +18,7 @@ package net.kuujo.vertigo.output;
 import java.util.List;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A uni-directional communication channel.
@@ -98,6 +99,6 @@ public interface Channel {
    * @return
    *   A list of written message identifiers.
    */
-  List<String> publish(JsonMessage message);
+  List<MessageId> publish(JsonMessage message);
 
 }

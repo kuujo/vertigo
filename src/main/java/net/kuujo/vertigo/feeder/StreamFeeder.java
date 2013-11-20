@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.feeder;
 
+import net.kuujo.vertigo.message.MessageId;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
@@ -54,7 +56,7 @@ public interface StreamFeeder extends Feeder<StreamFeeder> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
+  MessageId emit(JsonObject data, Handler<AsyncResult<Void>> ackHandler);
 
   /**
    * Emits data from the feeder with an ack handler.
@@ -68,6 +70,6 @@ public interface StreamFeeder extends Feeder<StreamFeeder> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
+  MessageId emit(JsonObject data, String tag, Handler<AsyncResult<Void>> ackHandler);
 
 }

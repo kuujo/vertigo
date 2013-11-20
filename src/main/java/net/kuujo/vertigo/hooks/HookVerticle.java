@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.hooks;
 
+import net.kuujo.vertigo.message.DefaultMessageId;
+import net.kuujo.vertigo.message.MessageId;
+
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -50,25 +53,25 @@ public abstract class HookVerticle extends Verticle {
               handleStart();
               break;
             case "receive":
-              handleReceive(body.getString("id"));
+              handleReceive(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "ack":
-              handleAck(body.getString("id"));
+              handleAck(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "fail":
-              handleFail(body.getString("id"));
+              handleFail(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "emit":
-              handleEmit(body.getString("id"));
+              handleEmit(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "acked":
-              handleAcked(body.getString("id"));
+              handleAcked(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "failed":
-              handleFailed(body.getString("id"));
+              handleFailed(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "timeout":
-              handleTimeout(body.getString("id"));
+              handleTimeout(DefaultMessageId.fromJson(body.getObject("id")));
               break;
             case "stop":
               handleStop();
@@ -95,58 +98,58 @@ public abstract class HookVerticle extends Verticle {
   /**
    * Called when the hooked component receives a message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleReceive(String id);
+  protected abstract void handleReceive(MessageId messageId);
 
   /**
    * Called when the hooked component acks a received message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleAck(String id);
+  protected abstract void handleAck(MessageId messageId);
 
   /**
    * Called when the hooked component fails a received message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleFail(String id);
+  protected abstract void handleFail(MessageId messageId);
 
   /**
    * Called when the hooked component emits a message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleEmit(String id);
+  protected abstract void handleEmit(MessageId messageId);
 
   /**
    * Called when the hooked component receives an ack for an emitted message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleAcked(String id);
+  protected abstract void handleAcked(MessageId messageId);
 
   /**
    * Called when the hooked component receives a failure for an emitted message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleFailed(String id);
+  protected abstract void handleFailed(MessageId messageId);
 
   /**
    * Called when the hooked component receives a timeout for an emitted message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleTimeout(String id);
+  protected abstract void handleTimeout(MessageId messageId);
 
   /**
    * Called when the hook component stops.

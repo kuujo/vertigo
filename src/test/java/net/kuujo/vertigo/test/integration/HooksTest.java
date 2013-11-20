@@ -18,6 +18,7 @@ package net.kuujo.vertigo.test.integration;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -68,43 +69,43 @@ public class HooksTest extends TestVerticle {
       }
     }
     @Override
-    public void handleReceive(String id) {
+    public void handleReceive(MessageId id) {
       if (hook.equals("received")) {
         testComplete();
       }
     }
     @Override
-    public void handleAck(String id) {
+    public void handleAck(MessageId id) {
       if (hook.equals("ack")) {
         testComplete();
       }
     }
     @Override
-    public void handleFail(String id) {
+    public void handleFail(MessageId id) {
       if (hook.equals("fail")) {
         testComplete();
       }
     }
     @Override
-    public void handleEmit(String id) {
+    public void handleEmit(MessageId id) {
       if (hook.equals("emit")) {
         testComplete();
       }
     }
     @Override
-    public void handleAcked(String id) {
+    public void handleAcked(MessageId id) {
       if (hook.equals("acked")) {
         testComplete();
       }
     }
     @Override
-    public void handleFailed(String id) {
+    public void handleFailed(MessageId id) {
       if (hook.equals("failed")) {
         testComplete();
       }
     }
     @Override
-    public void handleTimeout(String id) {
+    public void handleTimeout(MessageId id) {
       if (hook.equals("timeout")) {
         testComplete();
       }

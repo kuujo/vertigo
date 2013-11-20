@@ -18,6 +18,7 @@ package net.kuujo.vertigo.feeder;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A message feeder.
@@ -123,7 +124,7 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data);
+  MessageId emit(JsonObject data);
 
   /**
    * Emits data from the feeder.
@@ -135,6 +136,6 @@ public interface Feeder<T extends Feeder<T>> extends Component<T> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data, String tag);
+  MessageId emit(JsonObject data, String tag);
 
 }

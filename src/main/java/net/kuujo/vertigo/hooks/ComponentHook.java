@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
 
 /**
@@ -32,57 +33,57 @@ public interface ComponentHook extends Hook<Component<?>> {
   /**
    * Called when the component receives an input message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleReceive(String id);
+  void handleReceive(MessageId messageId);
 
   /**
    * Called when the component acks a received message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleAck(String id);
+  void handleAck(MessageId messageId);
 
   /**
    * Called when the component fails a received message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleFail(String id);
+  void handleFail(MessageId messageId);
 
   /**
    * Called when the component emits a message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleEmit(String id);
+  void handleEmit(MessageId messageId);
 
   /**
    * Called when the component receives an ack for an emitted message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleAcked(String id);
+  void handleAcked(MessageId messageId);
 
   /**
    * Called when the component receives a failure for an emitted message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleFailed(String id);
+  void handleFailed(MessageId messageId);
 
   /**
    * Called when the component receives a timeout for an emitted message.
    *
-   * @param id
+   * @param messageId
    *   The unique message identifier.
    */
-  void handleTimeout(String id);
+  void handleTimeout(MessageId messageId);
 
 }

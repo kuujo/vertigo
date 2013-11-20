@@ -18,6 +18,7 @@ package net.kuujo.vertigo.worker;
 import net.kuujo.vertigo.component.ComponentBase;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -44,22 +45,22 @@ public class DefaultBasicWorker extends ComponentBase<BasicWorker> implements Ba
   }
 
   @Override
-  public String emit(JsonObject data) {
+  public MessageId emit(JsonObject data) {
     return output.emit(data);
   }
 
   @Override
-  public String emit(JsonObject data, String tag) {
+  public MessageId emit(JsonObject data, String tag) {
     return output.emit(data, tag);
   }
 
   @Override
-  public String emit(JsonObject data, JsonMessage parent) {
+  public MessageId emit(JsonObject data, JsonMessage parent) {
     return output.emit(data, parent);
   }
 
   @Override
-  public String emit(JsonObject data, String tag, JsonMessage parent) {
+  public MessageId emit(JsonObject data, String tag, JsonMessage parent) {
     return output.emit(data, tag, parent);
   }
 

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import net.kuujo.vertigo.component.ComponentBase;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -41,23 +42,23 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
     super(vertx, container, context);
   }
 
-  private final Handler<String> internalAckHandler = new Handler<String>() {
+  private final Handler<MessageId> internalAckHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String id) {
+    public void handle(MessageId id) {
       queue.ack(id);
     }
   };
 
-  private final Handler<String> internalFailHandler = new Handler<String>() {
+  private final Handler<MessageId> internalFailHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String id) {
+    public void handle(MessageId id) {
       queue.fail(id);
     }
   };
 
-  private final Handler<String> internalTimeoutHandler = new Handler<String>() {
+  private final Handler<MessageId> internalTimeoutHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String id) {
+    public void handle(MessageId id) {
       queue.timeout(id);
     }
   };
@@ -114,17 +115,17 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
   /**
    * Executes a feed.
    */
-  protected String doFeed(final JsonObject data, final String tag,
-      final Handler<String> ackHandler, final Handler<String> failHandler, final Handler<String> timeoutHandler) {
+  protected MessageId doFeed(final JsonObject data, final String tag,
+      final Handler<MessageId> ackHandler, final Handler<MessageId> failHandler, final Handler<MessageId> timeoutHandler) {
     return doFeed(data, tag, 0, ackHandler, failHandler, timeoutHandler);
   }
 
   /**
    * Executes a feed.
    */
-  protected String doFeed(final JsonObject data, final String tag, final int attempts,
-      final Handler<String> ackHandler, final Handler<String> failHandler, final Handler<String> timeoutHandler) {
-    final String id;
+  protected MessageId doFeed(final JsonObject data, final String tag, final int attempts,
+      final Handler<MessageId> ackHandler, final Handler<MessageId> failHandler, final Handler<MessageId> timeoutHandler) {
+    final MessageId id;
     if (tag != null) {
       id = output.emit(data, tag);
     }
@@ -133,30 +134,30 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
     }
 
     queue.enqueue(id,
-        new Handler<String>() {
+        new Handler<MessageId>() {
           @Override
-          public void handle(String messageId) {
+          public void handle(MessageId messageId) {
             if (ackHandler != null) {
-              ackHandler.handle(id);
+              ackHandler.handle(messageId);
             }
           }
         },
-        new Handler<String>() {
+        new Handler<MessageId>() {
           @Override
-          public void handle(String messageId) {
+          public void handle(MessageId messageId) {
             if (failHandler != null) {
-              failHandler.handle(id);
+              failHandler.handle(messageId);
             }
           }
         },
-        new Handler<String>() {
+        new Handler<MessageId>() {
           @Override
-          public void handle(String messageId) {
+          public void handle(MessageId messageId) {
             if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)) {
               doFeed(data, tag, attempts+1, ackHandler, failHandler, timeoutHandler);
             }
             else if (timeoutHandler != null) {
-              timeoutHandler.handle(id);
+              timeoutHandler.handle(messageId);
             }
           }
         });
@@ -174,10 +175,10 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
      * A holder for ack/fail handlers.
      */
     private static class HandlerHolder {
-      private final Handler<String> ackHandler;
-      private final Handler<String> failHandler;
-      private final Handler<String> timeoutHandler;
-      public HandlerHolder(Handler<String> ackHandler, Handler<String> failHandler, Handler<String> timeoutHandler) {
+      private final Handler<MessageId> ackHandler;
+      private final Handler<MessageId> failHandler;
+      private final Handler<MessageId> timeoutHandler;
+      public HandlerHolder(Handler<MessageId> ackHandler, Handler<MessageId> failHandler, Handler<MessageId> timeoutHandler) {
         this.ackHandler = ackHandler;
         this.failHandler = failHandler;
         this.timeoutHandler = timeoutHandler;
@@ -201,15 +202,15 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
     /**
      * Enqueues a new item. The item is enqueued with an ack and fail handler.
      */
-    private void enqueue(String id, Handler<String> ackHandler, Handler<String> failHandler, Handler<String> timeoutHandler) {
-      handlers.put(id, new HandlerHolder(ackHandler, failHandler, timeoutHandler));
+    private void enqueue(MessageId id, Handler<MessageId> ackHandler, Handler<MessageId> failHandler, Handler<MessageId> timeoutHandler) {
+      handlers.put(id.correlationId(), new HandlerHolder(ackHandler, failHandler, timeoutHandler));
     }
 
     /**
      * Acks an item in the queue. The item will be removed and its ack handler called.
      */
-    private void ack(String id) {
-      HandlerHolder holder = handlers.remove(id);
+    private void ack(MessageId id) {
+      HandlerHolder holder = handlers.remove(id.correlationId());
       if (holder != null) {
         holder.ackHandler.handle(id);
       }
@@ -218,8 +219,8 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
     /**
      * Fails an item in the queue. The item will be removed and its fail handler called.
      */
-    private void fail(String id) {
-      HandlerHolder holder = handlers.remove(id);
+    private void fail(MessageId id) {
+      HandlerHolder holder = handlers.remove(id.correlationId());
       if (holder != null) {
         holder.failHandler.handle(id);
       }
@@ -228,8 +229,8 @@ public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<
     /**
      * Times out an item in the queue. The item will be removed and its timeout handler called.
      */
-    private void timeout(String id) {
-      HandlerHolder holder = handlers.remove(id);
+    private void timeout(MessageId id) {
+      HandlerHolder holder = handlers.remove(id.correlationId());
       if (holder != null) {
         holder.timeoutHandler.handle(id);
       }

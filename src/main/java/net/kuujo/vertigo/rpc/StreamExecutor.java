@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -43,7 +44,7 @@ public interface StreamExecutor extends Executor<StreamExecutor> {
    * @return
    *   The emitted message correlation identifier.
    */
-  String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+  MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Executes the network.
@@ -57,7 +58,7 @@ public interface StreamExecutor extends Executor<StreamExecutor> {
    * @return
    *   The emitted message correlation identifier.
    */
-  String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
+  MessageId execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
    * Sets a drain handler on the executor.

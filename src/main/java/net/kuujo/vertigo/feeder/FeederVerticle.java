@@ -17,6 +17,7 @@ package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -34,23 +35,23 @@ public abstract class FeederVerticle extends Verticle {
   protected PollingFeeder feeder;
   protected InstanceContext context;
 
-  private Handler<String> ackHandler = new Handler<String>() {
+  private Handler<MessageId> ackHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       handleAck(messageId);
     }
   };
 
-  private Handler<String> failHandler = new Handler<String>() {
+  private Handler<MessageId> failHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       handleFailure(messageId);
     }
   };
 
-  private Handler<String> timeoutHandler = new Handler<String>() {
+  private Handler<MessageId> timeoutHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       handleTimeout(messageId);
     }
   };
@@ -87,7 +88,7 @@ public abstract class FeederVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String emit(JsonObject data) {
+  protected MessageId emit(JsonObject data) {
     return feeder.emit(data);
   }
 
@@ -101,32 +102,32 @@ public abstract class FeederVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String emit(JsonObject data, String tag) {
+  protected MessageId emit(JsonObject data, String tag) {
     return feeder.emit(data, tag);
   }
 
   /**
    * Called when a message has been acked.
    *
-   * @param id
+   * @param messageId
    *   The acked message identifier.
    */
-  protected abstract void handleAck(String id);
+  protected abstract void handleAck(MessageId messageId);
 
   /**
    * Called when a message has been failed.
    *
-   * @param id
+   * @param messageId
    *   The failed message identifier.
    */
-  protected abstract void handleFailure(String id);
+  protected abstract void handleFailure(MessageId messageId);
 
   /**
    * Called when a message has timed out.
    *
-   * @param id
+   * @param messageId
    *   The timed out message identifier.
    */
-  protected abstract void handleTimeout(String id);
+  protected abstract void handleTimeout(MessageId messageId);
 
 }

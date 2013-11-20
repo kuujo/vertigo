@@ -24,6 +24,7 @@ import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -79,27 +80,27 @@ public class DefaultInputCollector implements InputCollector {
   /**
    * Calls receive hooks.
    */
-  private void hookReceived(final String id) {
+  private void hookReceived(final MessageId messageId) {
     for (InputHook hook : hooks) {
-      hook.handleReceive(id);;
+      hook.handleReceive(messageId);
     }
   }
 
   /**
    * Calls ack hooks.
    */
-  private void hookAck(final String id) {
+  private void hookAck(final MessageId messageId) {
     for (InputHook hook : hooks) {
-      hook.handleAck(id);;
+      hook.handleAck(messageId);
     }
   }
 
   /**
    * Calls fail hooks.
    */
-  private void hookFail(final String id) {
+  private void hookFail(final MessageId messageId) {
     for (InputHook hook : hooks) {
-      hook.handleFail(id);;
+      hook.handleFail(messageId);
     }
   }
 
@@ -128,7 +129,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(JsonMessage message) {
         handler.handle(message);
-        hookReceived(message.messageId().correlationId());
+        hookReceived(message.messageId());
       }
     };
   }
@@ -264,14 +265,14 @@ public class DefaultInputCollector implements InputCollector {
   @Override
   public InputCollector ack(JsonMessage message) {
     acker.ack(message.messageId());
-    hookAck(message.messageId().correlationId());
+    hookAck(message.messageId());
     return this;
   }
 
   @Override
   public InputCollector fail(JsonMessage message) {
     acker.fail(message.messageId());
-    hookFail(message.messageId().correlationId());
+    hookFail(message.messageId());
     return this;
   }
 

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.worker;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
@@ -55,7 +56,7 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data);
+  MessageId emit(JsonObject data);
 
   /**
    * Emits data from the worker with a tag.
@@ -67,7 +68,7 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data, String tag);
+  MessageId emit(JsonObject data, String tag);
 
   /**
    * Emits child data from the worker.
@@ -79,7 +80,7 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data, JsonMessage parent);
+  MessageId emit(JsonObject data, JsonMessage parent);
 
   /**
    * Emits child data from the worker with a tag.
@@ -93,7 +94,7 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    * @return
    *   The emitted message identifier.
    */
-  String emit(JsonObject data, String tag, JsonMessage parent);
+  MessageId emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Acknowledges processing of a message.

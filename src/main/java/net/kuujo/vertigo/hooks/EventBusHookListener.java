@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.message.DefaultMessageId;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -34,13 +36,13 @@ public class EventBusHookListener {
   private final String componentAddress;
   private final EventBus eventBus;
   private Handler<InstanceContext> startHandler;
-  private Handler<String> receiveHandler;
-  private Handler<String> ackHandler;
-  private Handler<String> failHandler;
-  private Handler<String> emitHandler;
-  private Handler<String> ackedHandler;
-  private Handler<String> failedHandler;
-  private Handler<String> timeoutHandler;
+  private Handler<MessageId> receiveHandler;
+  private Handler<MessageId> ackHandler;
+  private Handler<MessageId> failHandler;
+  private Handler<MessageId> emitHandler;
+  private Handler<MessageId> ackedHandler;
+  private Handler<MessageId> failedHandler;
+  private Handler<MessageId> timeoutHandler;
   private Handler<InstanceContext> stopHandler;
 
   public EventBusHookListener(String componentAddress, EventBus eventBus) {
@@ -67,37 +69,37 @@ public class EventBusHookListener {
               break;
             case "receive":
               if (receiveHandler != null) {
-                receiveHandler.handle(body.getString("id"));
+                receiveHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "ack":
               if (ackHandler != null) {
-                ackHandler.handle(body.getString("id"));
+                ackHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "fail":
               if (failHandler != null) {
-                failHandler.handle(body.getString("id"));
+                failHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "emit":
               if (emitHandler != null) {
-                emitHandler.handle(body.getString("id"));
+                emitHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "acked":
               if (ackedHandler != null) {
-                ackedHandler.handle(body.getString("id"));
+                ackedHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "failed":
               if (failedHandler != null) {
-                failedHandler.handle(body.getString("id"));
+                failedHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "timeout":
               if (timeoutHandler != null) {
-                timeoutHandler.handle(body.getString("id"));
+                timeoutHandler.handle(DefaultMessageId.fromJson(body.getObject("id")));
               }
               break;
             case "stop":
@@ -132,7 +134,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener receiveHandler(Handler<String> receiveHandler) {
+  public EventBusHookListener receiveHandler(Handler<MessageId> receiveHandler) {
     this.receiveHandler = receiveHandler;
     return this;
   }
@@ -145,7 +147,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener ackHandler(Handler<String> ackHandler) {
+  public EventBusHookListener ackHandler(Handler<MessageId> ackHandler) {
     this.ackHandler = ackHandler;
     return this;
   }
@@ -158,7 +160,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener failHandler(Handler<String> failHandler) {
+  public EventBusHookListener failHandler(Handler<MessageId> failHandler) {
     this.failHandler = failHandler;
     return this;
   }
@@ -171,7 +173,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener emitHandler(Handler<String> emitHandler) {
+  public EventBusHookListener emitHandler(Handler<MessageId> emitHandler) {
     this.emitHandler = emitHandler;
     return this;
   }
@@ -184,7 +186,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener ackedHandler(Handler<String> ackedHandler) {
+  public EventBusHookListener ackedHandler(Handler<MessageId> ackedHandler) {
     this.ackedHandler = ackedHandler;
     return this;
   }
@@ -197,7 +199,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener failedHandler(Handler<String> failedHandler) {
+  public EventBusHookListener failedHandler(Handler<MessageId> failedHandler) {
     this.failedHandler = failedHandler;
     return this;
   }
@@ -210,7 +212,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener timeoutHandler(Handler<String> timeoutHandler) {
+  public EventBusHookListener timeoutHandler(Handler<MessageId> timeoutHandler) {
     this.timeoutHandler = timeoutHandler;
     return this;
   }

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -34,8 +35,8 @@ import org.vertx.java.platform.Container;
 public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> implements PollingExecutor {
   private Handler<PollingExecutor> executeHandler;
   private Handler<JsonMessage> resultHandler;
-  private Handler<String> failHandler;
-  private Handler<String> timeoutHandler;
+  private Handler<MessageId> failHandler;
+  private Handler<MessageId> timeoutHandler;
   private static final long DEFAULT_EXECUTE_DELAY = 10;
   private long executeDelay = DEFAULT_EXECUTE_DELAY;
   private boolean executed;
@@ -49,18 +50,18 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
     }
   };
 
-  private Handler<String> internalFailHandler = new Handler<String>() {
+  private Handler<MessageId> internalFailHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       if (failHandler != null) {
         failHandler.handle(messageId);
       }
     }
   };
 
-  private Handler<String> internalTimeoutHandler = new Handler<String>() {
+  private Handler<MessageId> internalTimeoutHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       if (timeoutHandler != null) {
         timeoutHandler.handle(messageId);
       }
@@ -146,25 +147,25 @@ public class DefaultPollingExecutor extends AbstractExecutor<PollingExecutor> im
   }
 
   @Override
-  public PollingExecutor failHandler(Handler<String> failHandler) {
+  public PollingExecutor failHandler(Handler<MessageId> failHandler) {
     this.failHandler = failHandler;
     return this;
   }
 
   @Override
-  public PollingExecutor timeoutHandler(Handler<String> timeoutHandler) {
+  public PollingExecutor timeoutHandler(Handler<MessageId> timeoutHandler) {
     this.timeoutHandler = timeoutHandler;
     return this;
   }
 
   @Override
-  public String execute(JsonObject args) {
+  public MessageId execute(JsonObject args) {
     executed = true;
     return doExecute(args, null, internalResultHandler, internalFailHandler, internalTimeoutHandler);
   }
 
   @Override
-  public String execute(JsonObject args, String tag) {
+  public MessageId execute(JsonObject args, String tag) {
     executed = true;
     return doExecute(args, tag, internalResultHandler, internalFailHandler, internalTimeoutHandler);
   }

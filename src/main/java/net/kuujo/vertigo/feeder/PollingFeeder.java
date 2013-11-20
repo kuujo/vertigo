@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.feeder;
 
+import net.kuujo.vertigo.message.MessageId;
+
 import org.vertx.java.core.Handler;
 
 /**
@@ -76,7 +78,7 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  PollingFeeder ackHandler(Handler<String> ackHandler);
+  PollingFeeder ackHandler(Handler<MessageId> ackHandler);
 
   /**
    * Sets a fail handler on the feeder.
@@ -86,7 +88,7 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  PollingFeeder failHandler(Handler<String> failHandler);
+  PollingFeeder failHandler(Handler<MessageId> failHandler);
 
   /**
    * Sets a timeout handler on the feeder.
@@ -96,6 +98,6 @@ public interface PollingFeeder extends Feeder<PollingFeeder> {
    * @return
    *   The called feeder instance.
    */
-  PollingFeeder timeoutHandler(Handler<String> timeoutHandler);
+  PollingFeeder timeoutHandler(Handler<MessageId> timeoutHandler);
 
 }

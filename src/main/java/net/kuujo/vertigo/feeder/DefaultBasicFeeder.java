@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
@@ -33,12 +34,12 @@ public class DefaultBasicFeeder extends AbstractFeeder<BasicFeeder> implements B
   }
 
   @Override
-  public String emit(JsonObject data) {
+  public MessageId emit(JsonObject data) {
     return doFeed(data, null, null, null, null);
   }
 
   @Override
-  public String emit(JsonObject data, String tag) {
+  public MessageId emit(JsonObject data, String tag) {
     return doFeed(data, tag, null, null, null);
   }
 

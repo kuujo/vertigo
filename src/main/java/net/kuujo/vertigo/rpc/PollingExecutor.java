@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
@@ -89,7 +90,7 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The called executor instance.
    */
-  PollingExecutor failHandler(Handler<String> failHandler);
+  PollingExecutor failHandler(Handler<MessageId> failHandler);
 
   /**
    * Sets a timeout handler on the executor.
@@ -99,7 +100,7 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The called executor instance.
    */
-  PollingExecutor timeoutHandler(Handler<String> timeoutHandler);
+  PollingExecutor timeoutHandler(Handler<MessageId> timeoutHandler);
 
   /**
    * Executes the network.
@@ -109,7 +110,7 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The emitted message correlation identifier.
    */
-  String execute(JsonObject args);
+  MessageId execute(JsonObject args);
 
   /**
    * Executes the network.
@@ -121,6 +122,6 @@ public interface PollingExecutor extends Executor<PollingExecutor> {
    * @return
    *   The emitted message correlation identifier.
    */
-  String execute(JsonObject args, String tag);
+  MessageId execute(JsonObject args, String tag);
 
 }

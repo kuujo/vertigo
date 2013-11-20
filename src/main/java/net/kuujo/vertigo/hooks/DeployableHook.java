@@ -18,6 +18,7 @@ package net.kuujo.vertigo.hooks;
 import java.util.UUID;
 
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.serializer.Serializable;
 
 import org.vertx.java.core.AsyncResult;
@@ -65,51 +66,51 @@ abstract class DeployableHook implements ComponentHook, Serializable {
   }
 
   @Override
-  public void handleReceive(String id) {
+  public void handleReceive(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "receive").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "receive").putObject("id", messageId.toJson()));
     }
   }
 
   @Override
-  public void handleAck(String id) {
+  public void handleAck(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "ack").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "ack").putObject("id", messageId.toJson()));
     }
   }
 
   @Override
-  public void handleFail(String id) {
+  public void handleFail(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "fail").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "fail").putObject("id", messageId.toJson()));
     }
   }
 
   @Override
-  public void handleEmit(String id) {
+  public void handleEmit(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "emit").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "emit").putObject("id", messageId.toJson()));
     }
   }
 
   @Override
-  public void handleAcked(String id) {
+  public void handleAcked(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "acked").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "acked").putObject("id", messageId.toJson()));
     }
   }
 
   @Override
-  public void handleFailed(String id) {
+  public void handleFailed(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "failed").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "failed").putObject("id", messageId.toJson()));
     }
   }
 
   @Override
-  public void handleTimeout(String id) {
+  public void handleTimeout(MessageId messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "timeout").putString("id", id));
+      eventBus.send(address, new JsonObject().putString("event", "timeout").putObject("id", messageId.toJson()));
     }
   }
 

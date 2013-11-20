@@ -17,6 +17,7 @@ package net.kuujo.vertigo.rpc;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.runtime.FailureException;
 import net.kuujo.vertigo.runtime.TimeoutException;
 
@@ -59,14 +60,14 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
   }
 
   @Override
-  public String execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
     return execute(args, null, resultHandler);
   }
 
   @Override
-  public String execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
+  public MessageId execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
     final Future<JsonMessage> future = new DefaultFutureResult<JsonMessage>().setHandler(resultHandler);
-    String id = doExecute(args, tag,
+    MessageId id = doExecute(args, tag,
         new Handler<JsonMessage>() {
           @Override
           public void handle(JsonMessage result) {
@@ -74,16 +75,16 @@ public class DefaultStreamExecutor extends AbstractExecutor<StreamExecutor> impl
             checkPause();
           }
         },
-        new Handler<String>() {
+        new Handler<MessageId>() {
           @Override
-          public void handle(String event) {
+          public void handle(MessageId event) {
             future.setFailure(FAILURE_EXCEPTION);
             checkPause();
           }
         },
-        new Handler<String>() {
+        new Handler<MessageId>() {
           @Override
-          public void handle(String event) {
+          public void handle(MessageId event) {
             future.setFailure(TIMEOUT_EXCEPTION);
             checkPause();
           }

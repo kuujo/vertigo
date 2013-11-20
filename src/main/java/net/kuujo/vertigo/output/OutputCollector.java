@@ -17,6 +17,7 @@ package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -63,7 +64,7 @@ public interface OutputCollector {
    *   The unique output message correlation identifier. This identifier can be
    *   used to correlate new messages with the emitted message.
    */
-  String emit(JsonObject body);
+  MessageId emit(JsonObject body);
 
   /**
    * Emits a new message to all output channels.
@@ -76,7 +77,7 @@ public interface OutputCollector {
    *   The unique output message correlation identifier. This identifier can be
    *   used to correlate new messages with the emitted message.
    */
-  String emit(JsonObject body, String tag);
+  MessageId emit(JsonObject body, String tag);
 
   /**
    * Emits a child message to all output channels.
@@ -97,7 +98,7 @@ public interface OutputCollector {
    *   The unique child message correlation identifier. This identifier can be
    *   used to correlate new messages with the emitted message.
    */
-  String emit(JsonObject body, JsonMessage parent);
+  MessageId emit(JsonObject body, JsonMessage parent);
 
   /**
    * Emits a child message to all output channels.
@@ -120,7 +121,7 @@ public interface OutputCollector {
    *   The unique child message correlation identifier. This identifier can be
    *   used to correlate new messages with the emitted message.
    */
-  String emit(JsonObject body, String tag, JsonMessage parent);
+  MessageId emit(JsonObject body, String tag, JsonMessage parent);
 
   /**
    * Sets an ack handler on the output collector.
@@ -133,7 +134,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  OutputCollector ackHandler(Handler<String> handler);
+  OutputCollector ackHandler(Handler<MessageId> handler);
 
   /**
    * Sets a fail handler on the output collector.
@@ -147,7 +148,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  OutputCollector failHandler(Handler<String> handler);
+  OutputCollector failHandler(Handler<MessageId> handler);
 
   /**
    * Sets a timeout handler on the output collector.
@@ -161,7 +162,7 @@ public interface OutputCollector {
    * @return
    *   The called output collector instance.
    */
-  OutputCollector timeoutHandler(Handler<String> handler);
+  OutputCollector timeoutHandler(Handler<MessageId> handler);
 
   /**
    * Starts the output collector.

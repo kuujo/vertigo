@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.DefaultOutputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.acker.Acker;
@@ -71,19 +72,19 @@ public abstract class ComponentBase<T> implements Component<T> {
       // Do nothing. This hook is called elsewhere.
     }
     @Override
-    public void handleReceive(String id) {
+    public void handleReceive(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleReceive(id);
       }
     }
     @Override
-    public void handleAck(String id) {
+    public void handleAck(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleAck(id);
       }
     }
     @Override
-    public void handleFail(String id) {
+    public void handleFail(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleFail(id);
       }
@@ -100,25 +101,25 @@ public abstract class ComponentBase<T> implements Component<T> {
       // Do nothing. This hook is called elsewhere.
     }
     @Override
-    public void handleEmit(String id) {
+    public void handleEmit(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleEmit(id);
       }
     }
     @Override
-    public void handleAcked(String id) {
+    public void handleAcked(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleAcked(id);
       }
     }
     @Override
-    public void handleFailed(String id) {
+    public void handleFailed(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleFailed(id);
       }
     }
     @Override
-    public void handleTimeout(String id) {
+    public void handleTimeout(MessageId id) {
       for (ComponentHook hook : hooks) {
         hook.handleTimeout(id);
       }

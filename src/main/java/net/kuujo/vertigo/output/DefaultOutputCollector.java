@@ -191,36 +191,36 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls acked hooks.
    */
-  private void hookAcked(final String id) {
+  private void hookAcked(final MessageId messageId) {
     for (OutputHook hook : hooks) {
-      hook.handleAcked(id);
+      hook.handleAcked(messageId);
     }
   }
 
   /**
    * Calls failed hooks.
    */
-  private void hookFailed(final String id) {
+  private void hookFailed(final MessageId messageId) {
     for (OutputHook hook : hooks) {
-      hook.handleFailed(id);
+      hook.handleFailed(messageId);
     }
   }
 
   /**
    * Calls timed-out hooks.
    */
-  private void hookTimeout(final String id) {
+  private void hookTimeout(final MessageId messageId) {
     for (OutputHook hook : hooks) {
-      hook.handleTimeout(id);
+      hook.handleTimeout(messageId);
     }
   }
 
   /**
    * Calls emit hooks.
    */
-  private void hookEmit(final String id) {
+  private void hookEmit(final MessageId messageId) {
     for (OutputHook hook : hooks) {
-      hook.handleEmit(id);
+      hook.handleEmit(messageId);
     }
   }
 
@@ -234,55 +234,55 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector ackHandler(Handler<String> handler) {
+  public OutputCollector ackHandler(Handler<MessageId> handler) {
     acker.ackHandler(createAckHandler(handler));
     return this;
   }
 
-  private Handler<MessageId> createAckHandler(final Handler<String> handler) {
+  private Handler<MessageId> createAckHandler(final Handler<MessageId> handler) {
     return new Handler<MessageId>() {
       @Override
       public void handle(MessageId messageId) {
-        handler.handle(messageId.correlationId());
-        hookAcked(messageId.correlationId());
+        handler.handle(messageId);
+        hookAcked(messageId);
       }
     };
   }
 
   @Override
-  public OutputCollector failHandler(Handler<String> handler) {
+  public OutputCollector failHandler(Handler<MessageId> handler) {
     acker.failHandler(createFailHandler(handler));
     return this;
   }
 
-  private Handler<MessageId> createFailHandler(final Handler<String> handler) {
+  private Handler<MessageId> createFailHandler(final Handler<MessageId> handler) {
     return new Handler<MessageId>() {
       @Override
       public void handle(MessageId messageId) {
-        handler.handle(messageId.correlationId());
-        hookFailed(messageId.correlationId());
+        handler.handle(messageId);
+        hookFailed(messageId);
       }
     };
   }
 
   @Override
-  public OutputCollector timeoutHandler(Handler<String> handler) {
+  public OutputCollector timeoutHandler(Handler<MessageId> handler) {
     acker.timeoutHandler(createTimeoutHandler(handler));
     return this;
   }
 
-  private Handler<MessageId> createTimeoutHandler(final Handler<String> handler) {
+  private Handler<MessageId> createTimeoutHandler(final Handler<MessageId> handler) {
     return new Handler<MessageId>() {
       @Override
       public void handle(MessageId messageId) {
-        handler.handle(messageId.correlationId());
-        hookTimeout(messageId.correlationId());
+        handler.handle(messageId);
+        hookTimeout(messageId);
       }
     };
   }
 
   @Override
-  public String emit(JsonObject body) {
+  public MessageId emit(JsonObject body) {
     JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message).setBody(body)
@@ -291,12 +291,12 @@ public class DefaultOutputCollector implements OutputCollector {
       acker.fork(messageId, channel.publish(child));
     }
     acker.create(messageId);
-    hookEmit(messageId.correlationId());
-    return messageId.correlationId();
+    hookEmit(messageId);
+    return messageId;
   }
 
   @Override
-  public String emit(JsonObject body, String tag) {
+  public MessageId emit(JsonObject body, String tag) {
     JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message).setBody(body)
@@ -305,24 +305,24 @@ public class DefaultOutputCollector implements OutputCollector {
       acker.fork(messageId, channel.publish(child));
     }
     acker.create(messageId);
-    hookEmit(messageId.correlationId());
-    return messageId.correlationId();
+    hookEmit(messageId);
+    return messageId;
   }
 
   @Override
-  public String emit(JsonObject body, JsonMessage parent) {
+  public MessageId emit(JsonObject body, JsonMessage parent) {
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message).setBody(body).toMessage();
     for (Channel channel : channels) {
       acker.fork(parent.messageId(), channel.publish(child));
     }
-    hookEmit(messageId.correlationId());
-    return messageId.correlationId();
+    hookEmit(messageId);
+    return messageId;
   }
 
   @Override
-  public String emit(JsonObject body, String tag, JsonMessage parent) {
+  public MessageId emit(JsonObject body, String tag, JsonMessage parent) {
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message)
@@ -330,8 +330,8 @@ public class DefaultOutputCollector implements OutputCollector {
     for (Channel channel : channels) {
       acker.fork(parent.messageId(), channel.publish(child));
     }
-    hookEmit(messageId.correlationId());
-    return messageId.correlationId();
+    hookEmit(messageId);
+    return messageId;
   }
 
   /**

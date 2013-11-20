@@ -24,6 +24,7 @@ import org.vertx.java.platform.Verticle;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A Java executor verticle.
@@ -42,16 +43,16 @@ public abstract class ExecutorVerticle extends Verticle {
     }
   };
 
-  private final Handler<String> failHandler = new Handler<String>() {
+  private final Handler<MessageId> failHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       handleFailure(messageId);
     }
   };
 
-  private final Handler<String> timeoutHandler = new Handler<String>() {
+  private final Handler<MessageId> timeoutHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       handleTimeout(messageId);
     }
   };
@@ -88,7 +89,7 @@ public abstract class ExecutorVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String execute(JsonObject data) {
+  protected MessageId execute(JsonObject data) {
     return executor.execute(data);
   }
 
@@ -102,7 +103,7 @@ public abstract class ExecutorVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String execute(JsonObject data, String tag) {
+  protected MessageId execute(JsonObject data, String tag) {
     return executor.execute(data, tag);
   }
 
@@ -120,7 +121,7 @@ public abstract class ExecutorVerticle extends Verticle {
    * @param id
    *   The failed message identifier.
    */
-  protected abstract void handleFailure(String id);
+  protected abstract void handleFailure(MessageId id);
 
   /**
    * Called when an execution timeout is received.
@@ -128,6 +129,6 @@ public abstract class ExecutorVerticle extends Verticle {
    * @param id
    *   The timed out message identifier.
    */
-  protected abstract void handleTimeout(String id);
+  protected abstract void handleTimeout(MessageId id);
 
 }

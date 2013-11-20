@@ -18,6 +18,7 @@ package net.kuujo.vertigo.worker;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -76,7 +77,7 @@ public abstract class WorkerVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String emit(JsonObject data) {
+  protected MessageId emit(JsonObject data) {
     return worker.emit(data);
   }
 
@@ -90,7 +91,7 @@ public abstract class WorkerVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String emit(JsonObject data, String tag) {
+  protected MessageId emit(JsonObject data, String tag) {
     return worker.emit(data, tag);
   }
 
@@ -104,7 +105,7 @@ public abstract class WorkerVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String emit(JsonObject data, JsonMessage parent) {
+  protected MessageId emit(JsonObject data, JsonMessage parent) {
     return worker.emit(data, parent);
   }
 
@@ -120,7 +121,7 @@ public abstract class WorkerVerticle extends Verticle {
    * @return
    *   The unique message identifier.
    */
-  protected String emit(JsonObject data, String tag, JsonMessage parent) {
+  protected MessageId emit(JsonObject data, String tag, JsonMessage parent) {
     return worker.emit(data, tag, parent);
   }
 

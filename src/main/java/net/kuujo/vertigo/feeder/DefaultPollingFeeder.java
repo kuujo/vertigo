@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -36,23 +37,23 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   private long feedDelay = DEFAULT_FEED_DELAY;
   private boolean fed;
 
-  private Handler<String> ackHandler = new Handler<String>() {
+  private Handler<MessageId> ackHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       
     }
   };
 
-  private Handler<String> failHandler = new Handler<String>() {
+  private Handler<MessageId> failHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       
     }
   };
 
-  private Handler<String> timeoutHandler = new Handler<String>() {
+  private Handler<MessageId> timeoutHandler = new Handler<MessageId>() {
     @Override
-    public void handle(String messageId) {
+    public void handle(MessageId messageId) {
       
     }
   };
@@ -130,14 +131,14 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder ackHandler(final Handler<String> ackHandler) {
+  public PollingFeeder ackHandler(final Handler<MessageId> ackHandler) {
     if (ackHandler != null) {
       this.ackHandler = ackHandler;
     }
     else {
-      this.ackHandler = new Handler<String>() {
+      this.ackHandler = new Handler<MessageId>() {
         @Override
-        public void handle(String messageId) {
+        public void handle(MessageId messageId) {
           
         }
       };
@@ -146,14 +147,14 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder failHandler(final Handler<String> failHandler) {
+  public PollingFeeder failHandler(final Handler<MessageId> failHandler) {
     if (failHandler != null) {
       this.failHandler = failHandler;
     }
     else {
-      this.failHandler = new Handler<String>() {
+      this.failHandler = new Handler<MessageId>() {
         @Override
-        public void handle(String messageId) {
+        public void handle(MessageId messageId) {
           
         }
       };
@@ -162,14 +163,14 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public PollingFeeder timeoutHandler(final Handler<String> timeoutHandler) {
+  public PollingFeeder timeoutHandler(final Handler<MessageId> timeoutHandler) {
     if (timeoutHandler != null) {
       this.timeoutHandler = timeoutHandler;
     }
     else {
-      this.timeoutHandler = new Handler<String>() {
+      this.timeoutHandler = new Handler<MessageId>() {
         @Override
-        public void handle(String messageId) {
+        public void handle(MessageId messageId) {
           
         }
       };
@@ -178,13 +179,13 @@ public class DefaultPollingFeeder extends AbstractFeeder<PollingFeeder> implemen
   }
 
   @Override
-  public String emit(JsonObject data) {
+  public MessageId emit(JsonObject data) {
     fed = true;
     return doFeed(data, null, ackHandler, failHandler, timeoutHandler);
   }
 
   @Override
-  public String emit(JsonObject data, String tag) {
+  public MessageId emit(JsonObject data, String tag) {
     fed = true;
     return doFeed(data, tag, ackHandler, failHandler, timeoutHandler);
   }

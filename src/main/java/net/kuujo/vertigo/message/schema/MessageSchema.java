@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.schema;
-
-import org.vertx.java.core.json.JsonElement;
+package net.kuujo.vertigo.message.schema;
 
 /**
- * A JSON schema validator.
+ * A message body schema.
  *
  * @author Jordan Halterman
  */
-public interface JsonValidator {
+public class MessageSchema extends ObjectSchema {
 
-  /**
-   * Validates the schema of a JSON element.
-   *
-   * @param json
-   *   The JSON to validate.
-   * @return
-   *   Indicates whether the given JSON object is valid.
-   */
-  boolean validate(JsonElement json);
+  public MessageSchema() {
+    super();
+  }
+
+  public MessageSchema(Field... fields) {
+    super(fields);
+  }
+
+  public MessageSchema(Fields fields) {
+    super(fields);
+  }
 
 }

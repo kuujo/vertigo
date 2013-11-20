@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.schema;
+package net.kuujo.vertigo.message.schema;
 
 import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;

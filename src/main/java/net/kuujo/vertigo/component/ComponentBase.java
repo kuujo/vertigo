@@ -22,7 +22,7 @@ import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.DefaultOutputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.schema.MessageSchema;
+import net.kuujo.vertigo.message.schema.MessageSchema;
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;

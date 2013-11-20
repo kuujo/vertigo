@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.schema.ArraySchema;
-import net.kuujo.vertigo.schema.ObjectSchema;
+import net.kuujo.vertigo.message.schema.ArraySchema;
+import net.kuujo.vertigo.message.schema.ObjectSchema;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonArray;

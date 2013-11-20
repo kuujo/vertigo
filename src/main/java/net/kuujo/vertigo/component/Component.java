@@ -24,7 +24,7 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.schema.MessageSchema;
+import net.kuujo.vertigo.message.schema.MessageSchema;
 
 /**
  * A network component.

@@ -313,8 +313,9 @@ public class DefaultOutputCollector implements OutputCollector {
   public String emit(JsonObject body, JsonMessage parent) {
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
     MessageId messageId = message.messageId();
+    JsonMessage child = messageBuilder.createChild(message).setBody(body).toMessage();
     for (Channel channel : channels) {
-      acker.fork(parent.messageId(), channel.publish(messageBuilder.createChild(message).setBody(body).toMessage()));
+      acker.fork(parent.messageId(), channel.publish(child));
     }
     hookEmit(messageId.correlationId());
     return messageId.correlationId();
@@ -324,9 +325,10 @@ public class DefaultOutputCollector implements OutputCollector {
   public String emit(JsonObject body, String tag, JsonMessage parent) {
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
     MessageId messageId = message.messageId();
+    JsonMessage child = messageBuilder.createChild(message)
+        .setBody(body).setTag(tag).toMessage();
     for (Channel channel : channels) {
-      acker.fork(parent.messageId(), channel.publish(messageBuilder.createChild(message)
-          .setBody(body).setTag(tag).toMessage()));
+      acker.fork(parent.messageId(), channel.publish(child));
     }
     hookEmit(messageId.correlationId());
     return messageId.correlationId();

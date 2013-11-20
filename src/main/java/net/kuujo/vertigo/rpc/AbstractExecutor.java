@@ -15,7 +15,9 @@
  */
 package net.kuujo.vertigo.rpc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.vertx.java.core.AsyncResult;
@@ -209,8 +211,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
       private final Handler<JsonMessage> resultHandler;
       private final Handler<String> failHandler;
       private final Handler<String> timeoutHandler;
-      private boolean acked;
-      private JsonMessage result;
+      private final List<JsonMessage> results = new ArrayList<JsonMessage>();
 
       public HandlerHolder(Long timer, Handler<JsonMessage> resultHandler,
           Handler<String> failHandler, Handler<String> timeoutHandler) {
@@ -257,12 +258,11 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
      * Acks an item in the queue.
      */
     private void ack(String id) {
-      HandlerHolder holder = handlers.get(id);
+      HandlerHolder holder = handlers.remove(id);
       if (holder != null) {
-        holder.acked = true;
-        if (holder.result != null) {
-          vertx.cancelTimer(holder.timer);
-          handlers.remove(id).resultHandler.handle(holder.result);
+        vertx.cancelTimer(holder.timer);
+        for (JsonMessage result : holder.results) {
+          holder.resultHandler.handle(result);
         }
       }
     }
@@ -295,11 +295,7 @@ public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentB
     private void result(JsonMessage message) {
       HandlerHolder holder = handlers.get(message.messageId().root());
       if (holder != null) {
-        holder.result = message;
-        if (holder.acked) {
-          vertx.cancelTimer(holder.timer);
-          handlers.remove(message.messageId().root()).resultHandler.handle(message);
-        }
+        holder.results.add(message);
       }
     }
   }

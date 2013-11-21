@@ -18,10 +18,10 @@ package net.kuujo.vertigo.input;
 import java.util.UUID;
 
 import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.message.DefaultJsonMessage;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.output.Output;
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.AsyncResult;
@@ -46,7 +46,6 @@ public class DefaultListener implements Listener {
   private Output output;
   private final Vertx vertx;
   private final EventBus eventBus;
-  private final Logger logger;
   private boolean autoAck = true;
   private Handler<JsonMessage> messageHandler;
   private Future<Void> startFuture;
@@ -61,7 +60,6 @@ public class DefaultListener implements Listener {
     this.input = new Input(address);
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    this.logger = null;
   }
 
   public DefaultListener(String address, Vertx vertx, Logger logger) {
@@ -70,7 +68,6 @@ public class DefaultListener implements Listener {
     this.input = new Input(address);
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    this.logger = logger;
   }
 
   public DefaultListener(String address, Vertx vertx, EventBus eventBus) {
@@ -79,7 +76,6 @@ public class DefaultListener implements Listener {
     this.input = new Input(address);
     this.vertx = vertx;
     this.eventBus = eventBus;
-    this.logger = null;
   }
 
   public DefaultListener(String address, Vertx vertx, EventBus eventBus, Logger logger) {
@@ -88,7 +84,6 @@ public class DefaultListener implements Listener {
     this.input = new Input(address);
     this.vertx = vertx;
     this.eventBus = eventBus;
-    this.logger = logger;
   }
 
   public DefaultListener(Input input, Vertx vertx) {
@@ -97,7 +92,6 @@ public class DefaultListener implements Listener {
     this.input = input;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    this.logger = null;
   }
 
   public DefaultListener(Input input, Vertx vertx, Logger logger) {
@@ -106,7 +100,6 @@ public class DefaultListener implements Listener {
     this.input = input;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    this.logger = logger;
   }
 
   public DefaultListener(Input input, Vertx vertx, EventBus eventBus) {
@@ -115,7 +108,6 @@ public class DefaultListener implements Listener {
     this.input = input;
     this.vertx = vertx;
     this.eventBus = eventBus;
-    this.logger = null;
   }
 
   public DefaultListener(Input input, Vertx vertx, EventBus eventBus, Logger logger) {
@@ -124,7 +116,6 @@ public class DefaultListener implements Listener {
     this.input = input;
     this.vertx = vertx;
     this.eventBus = eventBus;
-    this.logger = logger;
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -154,23 +145,16 @@ public class DefaultListener implements Listener {
    * Receives message data.
    */
   private void doReceive(JsonObject messageData) {
-    try {
-      JsonMessage message = (JsonMessage) Serializer.deserialize(messageData);
+    JsonMessage message = DefaultJsonMessage.fromJson(messageData);
 
-      // Call the message handler.
-      if (messageHandler != null) {
-        messageHandler.handle(message);
-      }
-
-      // If auto acking is enabled then ack the message.
-      if (autoAck) {
-        ack(message);
-      }
+    // Call the message handler.
+    if (messageHandler != null) {
+      messageHandler.handle(message);
     }
-    catch (SerializationException e) {
-      if (logger != null) {
-        logger.warn(e);
-      }
+
+    // If auto acking is enabled then ack the message.
+    if (autoAck) {
+      ack(message);
     }
   }
 

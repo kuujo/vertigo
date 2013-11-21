@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.message;
 
-import net.kuujo.vertigo.serializer.SerializationException;
-
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -36,6 +34,18 @@ public class DefaultJsonMessage implements JsonMessage {
 
   DefaultJsonMessage(JsonObject body) {
     this.body = body;
+  }
+
+  /**
+   * Returns a Json message from JSON.
+   *
+   * @param json
+   *   A JSON representation of the message.
+   * @return
+   *   A new Json message object.
+   */
+  public static JsonMessage fromJson(JsonObject json) {
+    return new DefaultJsonMessage(json);
   }
 
   @Override
@@ -59,13 +69,8 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonObject getState() {
+  public JsonObject toJson() {
     return body;
-  }
-
-  @Override
-  public void setState(JsonObject state) throws SerializationException {
-    this.body = state;
   }
 
 }

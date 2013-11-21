@@ -89,7 +89,7 @@ public final class JsonMessageBuilder {
    * Creates a copy of the message with a new ID.
    */
   public JsonMessageStruct createCopy(JsonMessage sibling) {
-    return new JsonMessageStruct(sibling.getState().copy())
+    return new JsonMessageStruct(sibling.toJson().copy())
         .setMessageId(createSiblingId(sibling.messageId()));
   }
 
@@ -189,7 +189,7 @@ public final class JsonMessageBuilder {
      *   A new {@link JsonMessage} instance.
      */
     public JsonMessage toMessage() {
-      return new DefaultJsonMessage(structure);
+      return DefaultJsonMessage.fromJson(structure);
     }
   }
 

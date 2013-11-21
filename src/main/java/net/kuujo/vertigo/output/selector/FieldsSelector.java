@@ -16,8 +16,10 @@
 package net.kuujo.vertigo.output.selector;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
@@ -35,19 +37,26 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldsSelector implements Selector {
-  private String[] fieldNames;
+  private Set<String> fieldNames;
 
   public FieldsSelector() {
   }
 
   public FieldsSelector(String... fieldNames) {
+    this.fieldNames = new HashSet<>();
+    for (String fieldName : fieldNames) {
+      this.fieldNames.add(fieldName);
+    }
+  }
+
+  public FieldsSelector(Set<String> fieldNames) {
     this.fieldNames = fieldNames;
   }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     JsonObject body = message.body();
-    Map<String, Object> fields = new HashMap<>(fieldNames.length + 1);
+    Map<String, Object> fields = new HashMap<>(fieldNames.size() + 1);
     for (String fieldName : fieldNames) {
       Object value = body.getValue(fieldName);
       fields.put(fieldName, value);
@@ -58,18 +67,21 @@ public class FieldsSelector implements Selector {
 
   @Override
   public JsonObject getState() {
-    return new JsonObject().putArray("fields", new JsonArray(fieldNames));
+    JsonArray fieldsArray = new JsonArray();
+    for (String fieldName : fieldNames) {
+      fieldsArray.add(fieldName);
+    }
+    return new JsonObject().putArray("fields", fieldsArray);
   }
 
   @Override
   public void setState(JsonObject state) {
-    JsonArray fields = state.getArray("fields");
-    if (fields == null) {
-      fields = new JsonArray();
-    }
-    fieldNames = new String[fields.size()];
-    for (int i = 0; i < fields.size(); i++) {
-      fieldNames[i] = fields.get(i);
+    fieldNames = new HashSet<>();
+    JsonArray fieldsArray = state.getArray("fields");
+    if (fieldsArray != null) {
+      for (Object fieldName : fieldsArray) {
+        fieldNames.add((String) fieldName);
+      }
     }
   }
 

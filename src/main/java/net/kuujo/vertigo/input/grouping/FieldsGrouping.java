@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
@@ -31,13 +34,17 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldsGrouping implements Grouping {
-  private JsonObject definition = new JsonObject();
+  private Set<String> fields;
 
   public FieldsGrouping() {
+    fields = new HashSet<>();
   }
 
   public FieldsGrouping(String... fieldNames) {
-    definition.putArray("fields", new JsonArray(fieldNames));
+    fields = new HashSet<>();
+    for (String fieldName : fieldNames) {
+      fields.add(fieldName);
+    }
   }
 
   /**
@@ -49,7 +56,36 @@ public class FieldsGrouping implements Grouping {
    *   The called grouping instance.
    */
   public FieldsGrouping setFields(String... fieldNames) {
-    definition.putArray("fields", new JsonArray(fieldNames));
+    fields = new HashSet<>();
+    for (String fieldName : fieldNames) {
+      fields.add(fieldName);
+    }
+    return this;
+  }
+
+  /**
+   * Sets the grouping fields.
+   *
+   * @param fieldNames
+   *   The grouping field names.
+   * @return
+   *   The called grouping instance.
+   */
+  public FieldsGrouping setFields(Set<String> fieldNames) {
+    fields = fieldNames;
+    return this;
+  }
+
+  /**
+   * Adds a field to the grouping.
+   *
+   * @param fieldName
+   *   The field name.
+   * @return
+   *   The called grouping instance.
+   */
+  public FieldsGrouping addField(String fieldName) {
+    fields.add(fieldName);
     return this;
   }
 
@@ -59,26 +95,28 @@ public class FieldsGrouping implements Grouping {
    * @return
    *   The grouping fields.
    */
-  public String[] getFields() {
-    JsonArray fieldNames = definition.getArray("fields");
-    if (fieldNames == null) {
-      fieldNames = new JsonArray();
-    }
-    String[] fields = new String[fieldNames.size()];
-    for (int i = 0; i < fieldNames.size(); i++) {
-      fields[i] = fieldNames.get(i);
-    }
+  public Set<String> getFields() {
     return fields;
   }
 
   @Override
   public JsonObject getState() {
-    return definition;
+    JsonArray fieldsArray = new JsonArray();
+    for (String fieldName : fields) {
+      fieldsArray.add(fieldName);
+    }
+    return new JsonObject().putArray("fields", fieldsArray);
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    fields = new HashSet<>();
+    JsonArray fieldsArray = state.getArray("fields");
+    if (fieldsArray != null) {
+      for (Object fieldName : fieldsArray) {
+        fields.add((String) fieldName);
+      }
+    }
   }
 
   @Override

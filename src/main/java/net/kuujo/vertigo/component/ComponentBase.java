@@ -65,7 +65,7 @@ public abstract class ComponentBase<T> implements Component<T> {
   protected final HeartbeatEmitter heartbeat;
   protected final InputCollector input;
   protected final OutputCollector output;
-  protected final List<ComponentHook> hooks;
+  protected final List<ComponentHook> hooks = new ArrayList<>();
 
   private InputHook inputHook = new InputHook() {
     @Override
@@ -138,7 +138,6 @@ public abstract class ComponentBase<T> implements Component<T> {
     this.logger = container.logger();
     this.context = context;
     this.acker = new DefaultAcker(context.id(), eventBus);
-    this.hooks = context.getComponent().getHooks();
     this.instanceId = context.id();
     this.address = context.getComponent().getAddress();
     NetworkContext networkContext = context.getComponent().getNetwork();
@@ -149,14 +148,11 @@ public abstract class ComponentBase<T> implements Component<T> {
       auditors.add(auditorAddress);
     }
     heartbeat = new DefaultHeartbeatEmitter(vertx);
-
-    // Create an input and add the component input hook.
     input = new DefaultInputCollector(vertx, container, context, acker);
-    input.addHook(inputHook);
-
-    // Create an output and add the component output hook.
     output = new DefaultOutputCollector(vertx, container, context, acker);
-    output.addHook(outputHook);
+    for (ComponentHook hook : context.getComponent().getHooks()) {
+      addHook(hook);
+    }
   }
 
   @Override
@@ -187,6 +183,10 @@ public abstract class ComponentBase<T> implements Component<T> {
   @Override
   @SuppressWarnings("unchecked")
   public T addHook(ComponentHook hook) {
+    if (hooks.isEmpty()) {
+      input.addHook(inputHook);
+      output.addHook(outputHook);
+    }
     hooks.add(hook);
     return (T) this;
   }

@@ -25,7 +25,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
@@ -36,18 +35,16 @@ import net.kuujo.vertigo.output.selector.Selector;
 public class DefaultChannel implements Channel {
   private final String id;
   private final Selector selector;
-  private final List<Condition> conditions;
   private int connectionCount;
   private List<Connection> connections = new ArrayList<>();
   private Map<String, Integer> connectionMap = new HashMap<>();
   private final EventBus eventBus;
   private final JsonMessageBuilder messageBuilder;
 
-  public DefaultChannel(String id, Selector selector, List<Condition> conditions,
+  public DefaultChannel(String id, Selector selector,
       EventBus eventBus, JsonMessageBuilder messageBuilder) {
     this.id = id;
     this.selector = selector;
-    this.conditions = conditions;
     this.eventBus = eventBus;
     this.messageBuilder = messageBuilder;
   }
@@ -116,25 +113,11 @@ public class DefaultChannel implements Channel {
     return null;
   }
 
-  /**
-   * Indicates whether the given message is valid.
-   */
-  private boolean isValid(JsonMessage message) {
-    for (Condition condition : conditions) {
-      if (!condition.isValid(message)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   @Override
   public List<MessageId> publish(JsonMessage message) {
     List<MessageId> messageIds = new ArrayList<>();
-    if (isValid(message)) {
-      for (Connection connection : selector.select(message, connections)) {
-        messageIds.add(connection.write(messageBuilder.createCopy(message).toMessage()));
-      }
+    for (Connection connection : selector.select(message, connections)) {
+      messageIds.add(connection.write(messageBuilder.createCopy(message).toMessage()));
     }
     return messageIds;
   }

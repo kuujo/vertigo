@@ -15,18 +15,12 @@
  */
 package net.kuujo.vertigo.output;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.Listener;
-import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.MalformedNetworkException;
-import net.kuujo.vertigo.output.condition.Condition;
 import net.kuujo.vertigo.output.selector.Selector;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -46,7 +40,6 @@ public class Output implements Serializable {
   public static final String ID = "id";
   public static final String COUNT = "count";
   public static final String SELECTOR = "selector";
-  public static final String CONDITIONS = "conditions";
 
   /**
    * Creates an output from input.
@@ -68,12 +61,6 @@ public class Output implements Serializable {
     }
 
     definition.putObject(SELECTOR, Serializer.serialize(grouping.createSelector()));
-
-    JsonArray conditions = new JsonArray();
-    for (Filter filter : input.getFilters()) {
-      conditions.add(Serializer.serialize(filter.createCondition()));
-    }
-    definition.putArray(CONDITIONS, conditions);
     return new Output(definition);
   }
 
@@ -120,30 +107,6 @@ public class Output implements Serializable {
     catch (SerializationException e) {
       return null;
     }
-  }
-
-  /**
-   * Returns a list of conditions for the output.
-   *
-   * @return
-   *   A list of output conditions.
-   */
-  public List<Condition> getConditions() {
-    List<Condition> conditions = new ArrayList<Condition>();
-    JsonArray conditionInfos = definition.getArray(CONDITIONS);
-    if (conditionInfos == null) {
-      return conditions;
-    }
-
-    for (Object conditionInfo : conditionInfos) {
-      try {
-        conditions.add(Serializer.<Condition>deserialize((JsonObject) conditionInfo));
-      }
-      catch (SerializationException e) {
-        // Do nothing.
-      }
-    }
-    return conditions;
   }
 
   @Override

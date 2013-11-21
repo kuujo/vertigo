@@ -163,7 +163,7 @@ public class DefaultOutputCollector implements OutputCollector {
       }
     }
     Channel channel = new DefaultChannel(output.id(), output.getSelector(),
-        output.getConditions(), eventBus, messageBuilder).setConnectionCount(output.getCount());
+        eventBus, messageBuilder).setConnectionCount(output.getCount());
     channels.add(channel);
     return channel;
   }

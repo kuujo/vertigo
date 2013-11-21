@@ -19,7 +19,6 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.input.DefaultListener;
 import net.kuujo.vertigo.input.Listener;
-import net.kuujo.vertigo.input.filter.SourceFilter;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Component;
@@ -58,8 +57,8 @@ public class ListenerTest extends TestVerticle {
     network.addComponent(worker1).addInput(feeder.getAddress());
     network.addComponent(worker2).addInput(feeder.getAddress());
 
-    worker3.addInput(worker1.getAddress()).filterBy(new SourceFilter(feeder.getAddress()));
-    worker3.addInput(worker2.getAddress()).filterBy(new SourceFilter(feeder.getAddress()));
+    worker3.addInput(worker1.getAddress());
+    worker3.addInput(worker2.getAddress());
     network.addComponent(worker3);
 
     network.addComponent(worker4).addInput(worker3.getAddress()).groupBy(new RandomGrouping());

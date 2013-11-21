@@ -24,7 +24,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
-import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -383,47 +382,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   public Input addInput(String address, Grouping grouping) {
     return addInput(new Input(address).groupBy(grouping));
-  }
-
-  /**
-   * Adds a component input with filters.
-   *
-   * @param address
-   *   The input address. This is the event bus address of a component to which
-   *   this component will listen for output.
-   * @param filters
-   *   A list of input filters.
-   * @return
-   *   The new input instance.
-   */
-  public Input addInput(String address, Filter... filters) {
-    Input input = addInput(new Input(address));
-    for (Filter filter : filters) {
-      input.filterBy(filter);
-    }
-    return input;
-  }
-
-  /**
-   * Adds a component input with grouping and filters.
-   *
-   * @param address
-   *   The input address. This is the event bus address of a component to which
-   *   this component will listen for output.
-   * @param grouping
-   *   An input grouping. This input grouping helps determine how messages will
-   *   be distributed among multiple instances of this component.
-   * @param filters
-   *   A list of input filters.
-   * @return
-   *   The new input instance.
-   */
-  public Input addInput(String address, Grouping grouping, Filter... filters) {
-    Input input = addInput(new Input(address).groupBy(grouping));
-    for (Filter filter : filters) {
-      input.filterBy(filter);
-    }
-    return input;
   }
 
   @Override

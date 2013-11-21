@@ -15,14 +15,10 @@
  */
 package net.kuujo.vertigo.input;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.input.filter.Filter;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.serializer.Serializable;
@@ -44,7 +40,6 @@ public class Input implements Serializable {
   public static final String COUNT = "count";
   public static final String ADDRESS = "address";
   public static final String GROUPING = "grouping";
-  public static final String FILTERS = "filters";
 
   private JsonObject definition;
 
@@ -136,51 +131,6 @@ public class Input implements Serializable {
     }
   }
 
-  /**
-   * Adds an input filter.
-   *
-   * Filters allow the input to specify which messages it is interested in
-   * receiving before they are sent.
-   *
-   * @param filter
-   *   An input filter.
-   * @return
-   *   The called input instance.
-   */
-  public Input filterBy(Filter filter) {
-    JsonArray filters = definition.getArray(FILTERS);
-    if (filters == null) {
-      filters = new JsonArray();
-      definition.putArray(FILTERS, filters);
-    }
-    filters.add(Serializer.serialize(filter));
-    return this;
-  }
-
-  /**
-   * Returns a list of input filters.
-   *
-   * @return
-   *   A list of input filters.
-   */
-  public List<Filter> getFilters() {
-    List<Filter> filters = new ArrayList<>();
-    JsonArray filterInfos = definition.getArray(FILTERS);
-    if (filterInfos == null) {
-      return filters;
-    }
-
-    for (Object filterInfo : filterInfos) {
-      try {
-        filters.add(Serializer.<Filter>deserialize((JsonObject) filterInfo));
-      }
-      catch (SerializationException e) {
-        continue;
-      }
-    }
-    return filters;
-  }
-
   @Override
   public JsonObject getState() {
     return definition;
@@ -195,11 +145,6 @@ public class Input implements Serializable {
     JsonObject grouping = definition.getObject(GROUPING);
     if (grouping == null) {
       groupBy(new RoundGrouping());
-    }
-    JsonArray filters = definition.getArray(FILTERS);
-    if (filters == null) {
-      filters = new JsonArray();
-      definition.putArray(FILTERS, filters);
     }
   }
 

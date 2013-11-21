@@ -26,14 +26,15 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldFilter implements Filter {
-  private JsonObject definition = new JsonObject();
+  private String fieldName;
+  private Object value;
 
   public FieldFilter() {
-    definition = new JsonObject();
   }
 
   public FieldFilter(String fieldName, Object value) {
-    definition.putString("field", fieldName).putValue("value", value);
+    this.fieldName = fieldName;
+    this.value = value;
   }
 
   /**
@@ -45,7 +46,7 @@ public class FieldFilter implements Filter {
    *   The called filter instance.
    */
   public FieldFilter setField(String fieldName) {
-    definition.putString("field", fieldName);
+    this.fieldName = fieldName;
     return this;
   }
 
@@ -58,23 +59,24 @@ public class FieldFilter implements Filter {
    *   The called filter instance.
    */
   public FieldFilter setValue(Object value) {
-    definition.putValue("value", value);
+    this.value = value;
     return this;
   }
 
   @Override
   public JsonObject getState() {
-    return definition;
+    return new JsonObject().putString("field", fieldName).putValue("value", value);
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    fieldName = state.getString("field");
+    value = state.getValue("value");
   }
 
   @Override
   public Condition createCondition() {
-    return new FieldCondition(definition.getString("field"), definition.getValue("value"));
+    return new FieldCondition(fieldName, value);
   }
 
 }

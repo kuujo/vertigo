@@ -26,13 +26,13 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class SourceFilter implements Filter {
-  private JsonObject definition = new JsonObject();
+  private String source;
 
   public SourceFilter() {
   }
 
   public SourceFilter(String source) {
-    definition.putString("source", source);
+    this.source = source;
   }
 
   /**
@@ -44,23 +44,23 @@ public class SourceFilter implements Filter {
    *   The called filter instance.
    */
   public SourceFilter setSource(String source) {
-    definition.putString("source", source);
+    this.source = source;
     return this;
   }
 
   @Override
   public JsonObject getState() {
-    return definition;
+    return new JsonObject().putString("source", source);
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    source = state.getString("source");
   }
 
   @Override
   public Condition createCondition() {
-    return new SourceCondition(definition.getString("source"));
+    return new SourceCondition(source);
   }
 
 }

@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.input.filter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -27,18 +30,17 @@ import net.kuujo.vertigo.output.condition.TagsCondition;
  * @author Jordan Halterman
  */
 public class TagsFilter implements Filter {
-  private JsonObject definition;
+  private Set<String> tags;
 
   public TagsFilter() {
+    tags = new HashSet<>();
   }
 
   public TagsFilter(String... tags) {
-    definition = new JsonObject();
-    JsonArray tagList = new JsonArray();
+    this.tags = new HashSet<>();
     for (String tag : tags) {
-      tagList.add(tag);
+      this.tags.add(tag);
     }
-    definition.putArray("tags", tagList);
   }
 
   /**
@@ -50,30 +52,33 @@ public class TagsFilter implements Filter {
    *   The called filter instance.
    */
   public TagsFilter addTag(String tag) {
-    JsonArray tagList = definition.getArray("tags");
-    if (tagList == null) {
-      tagList = new JsonArray();
-      definition.putArray("tags", tagList);
-    }
-    if (!tagList.contains(tag)) {
-      tagList.add(tag);
-    }
+    tags.add(tag);
     return this;
   }
 
   @Override
   public JsonObject getState() {
-    return definition;
+    JsonArray tagsArray = new JsonArray();
+    for (String tag : tags) {
+      tagsArray.add(tag);
+    }
+    return new JsonObject().putArray("tags", tagsArray);
   }
 
   @Override
   public void setState(JsonObject state) {
-    definition = state;
+    tags = new HashSet<>();
+    JsonArray tagsArray = state.getArray("tags");
+    if (tagsArray != null) {
+      for (Object tag : tagsArray) {
+        tags.add((String) tag);
+      }
+    }
   }
 
   @Override
   public Condition createCondition() {
-    return new TagsCondition((String[]) definition.getArray("tags").toArray());
+    return new TagsCondition(tags);
   }
 
 }

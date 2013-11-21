@@ -40,6 +40,10 @@ public class TagsCondition implements Condition {
     }
   }
 
+  public TagsCondition(Set<String> tags) {
+    this.tags = tags;
+  }
+
   @Override
   public JsonObject getState() {
     JsonArray tagsArray = new JsonArray();
@@ -51,7 +55,7 @@ public class TagsCondition implements Condition {
 
   @Override
   public void setState(JsonObject state) {
-    tags = new HashSet<String>();
+    tags = new HashSet<>();
     JsonArray tagsArray = state.getArray("tags");
     if (tagsArray == null) {
       tagsArray = new JsonArray();

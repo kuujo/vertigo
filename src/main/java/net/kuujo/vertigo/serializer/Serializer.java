@@ -15,7 +15,15 @@
  */
 package net.kuujo.vertigo.serializer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * An object serializer.
@@ -23,47 +31,113 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public final class Serializer {
+  private static final String DEFAULT_SERIALIZER = "default";
+  private static final Map<String, Serializer> instances = new HashMap<>();
 
-  private static final String CLASS_KEY = "type";
+  /**
+   * Gets a default serializer instance.
+   *
+   * @return
+   *   A default serializer instance.
+   */
+  public static Serializer getInstance() {
+    return getInstance(DEFAULT_SERIALIZER);
+  }
 
-  private Serializer() {
+  /**
+   * Gets a serializer instance.
+   *
+   * @param name
+   *   The instance name.
+   * @return
+   *   A serializer instance.
+   */
+  public static Serializer getInstance(String name) {
+    if (!instances.containsKey(name)) {
+      instances.put(name, new Serializer(name));
+    }
+    return instances.get(name);
+  }
+
+  private final ObjectMapper mapper = new ObjectMapper();
+  private final SimpleModule module;
+
+  private Serializer(String name) {
+    module = new SimpleModule(name);
+    mapper.registerModule(module);
+  }
+
+  /**
+   * Gets the internal Jackson object mapper.
+   *
+   * @return
+   *   The internal object mapper.
+   */
+  public ObjectMapper getMapper() {
+    return mapper;
+  }
+
+  /**
+   * Adds a type-specific serializer to the serializer.
+   *
+   * @param serializer
+   *   The serializer to register.
+   * @return
+   *   The called serializer instance.
+   */
+  public <T> Serializer addSerializer(JsonSerializer<T> serializer) {
+    module.addSerializer(serializer);
+    return this;
+  }
+
+  /**
+   * Adds a type-specific deserializer to the serializer.
+   *
+   * @param serializer
+   *   The serializer to register.
+   * @return
+   *   The called serializer instance.
+   */
+  public <T> Serializer addDeserializer(Class<T> type, JsonDeserializer<T> deserializer) {
+    module.addDeserializer(type, deserializer);
+    return this;
   }
 
   /**
    * Serializes an object.
    *
-   * @param serializable
-   *   The serializable object.
+   * @param object
+   *   The object to serialize.
    * @return
-   *   Serialized object information.
+   *   The serialized object.
+   * @throws SerializationException
+   *   If the object cannot be serialized.
    */
-  public static JsonObject serialize(Serializable serializable) {
-    return serializable.getState().putString(CLASS_KEY, serializable.getClass().getName());
+  public JsonObject serialize(Object object) throws SerializationException {
+    try {
+      return new JsonObject(mapper.writeValueAsString(object));
+    }
+    catch (Exception e) {
+      throw new SerializationException(e);
+    }
   }
 
   /**
-   * Deserializes a serialized object.
+   * Deserializes an object.
    *
-   * @param serialized
-   *   The serialized object information.
+   * @param json
+   *   The serialized object.
    * @return
-   *   An deserialized object.
+   *   The deserialized object.
    * @throws SerializationException
-   *   If the object class cannot be found.
+   *   If the object cannot be deserialized.
    */
   @SuppressWarnings("unchecked")
-  public static <T extends Serializable> T deserialize(JsonObject serialized) throws SerializationException {
-    String className = serialized.getString(CLASS_KEY);
-    if (className == null) {
-      throw new SerializationException("Invalid serialization info. No class name found.");
-    }
-
+  public <T> T deserialize(JsonObject json, Class<?> type) throws SerializationException {
     try {
-      T obj = (T) Class.forName(className).newInstance();
-      obj.setState(serialized);
-      return obj;
+      return (T) mapper.readValue(json.encode(), type);
     }
-    catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+    catch (Exception e) {
       throw new SerializationException(e);
     }
   }

@@ -50,6 +50,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 abstract class AbstractCoordinator extends BusModBase implements Handler<Message<JsonObject>> {
+  protected final Serializer serializer = Serializer.getInstance();
   protected NetworkContext context;
   protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();
@@ -64,7 +65,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     super.start();
     events = new Events(eb);
     try {
-      context = Serializer.deserialize(config);
+      context = serializer.deserialize(config, NetworkContext.class);
     }
     catch (SerializationException e) {
       logger.error(e);
@@ -306,30 +307,40 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
           if (contextMap.containsKey(id)) {
             final InstanceContext context = contextMap.get(id);
             if (context.getComponent().isModule()) {
-              deployModule(((ModuleContext) context.getComponent()).getModule(), Serializer.serialize(context), new Handler<AsyncResult<String>>() {
-                @Override
-                public void handle(AsyncResult<String> result) {
-                  if (result.succeeded()) {
-                    deploymentMap.put(context.id(), result.result());
+              try {
+                deployModule(((ModuleContext) context.getComponent()).getModule(), serializer.serialize(context), new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    if (result.succeeded()) {
+                      deploymentMap.put(context.id(), result.result());
+                    }
+                    else {
+                      container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
+                    }
                   }
-                  else {
-                    container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
-                  }
-                }
-              });
+                });
+              }
+              catch (SerializationException e) {
+                logger.warn(e);
+              }
             }
             else if (context.getComponent().isVerticle()) {
-              deployVerticle(((VerticleContext) context.getComponent()).getMain(), Serializer.serialize(context), new Handler<AsyncResult<String>>() {
-                @Override
-                public void handle(AsyncResult<String> result) {
-                  if (result.succeeded()) {
-                    deploymentMap.put(context.id(), result.result());
+              try {
+                deployVerticle(((VerticleContext) context.getComponent()).getMain(), serializer.serialize(context), new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    if (result.succeeded()) {
+                      deploymentMap.put(context.id(), result.result());
+                    }
+                    else {
+                      container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
+                    }
                   }
-                  else {
-                    container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
-                  }
-                }
-              });
+                });
+              }
+              catch (SerializationException e) {
+                logger.warn(e);
+              }
             }
           }
         }
@@ -583,7 +594,14 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         if (config == null) {
           config = new JsonObject();
         }
-        config.putObject("__context__", Serializer.serialize(context));
+
+        try {
+          config.putObject("__context__", serializer.serialize(context));
+        }
+        catch (SerializationException e) {
+          future.setFailure(e);
+          return;
+        }
 
         if (context.getComponent().isVerticle()) {
           deployVerticle(((VerticleContext) context.getComponent()).getMain(), config, new Handler<AsyncResult<String>>() {

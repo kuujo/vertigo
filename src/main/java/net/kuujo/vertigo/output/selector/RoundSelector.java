@@ -18,8 +18,6 @@ package net.kuujo.vertigo.output.selector;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vertx.java.core.json.JsonObject;
-
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
@@ -48,16 +46,6 @@ public class RoundSelector implements Selector {
     List<Connection> results = connections.subList(current, current+1);
     current++;
     return results;
-  }
-
-  @Override
-  public JsonObject getState() {
-    return new JsonObject();
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    // No state to store.
   }
 
 }

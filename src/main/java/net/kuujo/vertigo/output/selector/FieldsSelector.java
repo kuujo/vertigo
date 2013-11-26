@@ -24,7 +24,6 @@ import java.util.Set;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -63,26 +62,6 @@ public class FieldsSelector implements Selector {
     }
     int index = Math.abs(fields.hashCode() % connections.size());
     return connections.subList(index, index+1);
-  }
-
-  @Override
-  public JsonObject getState() {
-    JsonArray fieldsArray = new JsonArray();
-    for (String fieldName : fieldNames) {
-      fieldsArray.add(fieldName);
-    }
-    return new JsonObject().putArray("fields", fieldsArray);
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    fieldNames = new HashSet<>();
-    JsonArray fieldsArray = state.getArray("fields");
-    if (fieldsArray != null) {
-      for (Object fieldName : fieldsArray) {
-        fieldNames.add((String) fieldName);
-      }
-    }
   }
 
 }

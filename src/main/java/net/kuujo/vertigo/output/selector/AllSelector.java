@@ -17,8 +17,6 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
-import org.vertx.java.core.json.JsonObject;
-
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
 
@@ -39,16 +37,6 @@ public class AllSelector implements Selector {
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     return connections;
-  }
-
-  @Override
-  public JsonObject getState() {
-    return new JsonObject();
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    // No state to store.
   }
 
 }

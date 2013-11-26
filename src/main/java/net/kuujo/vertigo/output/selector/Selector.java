@@ -17,9 +17,11 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
-import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * An output selector.
@@ -32,7 +34,14 @@ import net.kuujo.vertigo.serializer.Serializable;
  *
  * @author Jordan Halterman
  */
-public interface Selector extends Serializable {
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value=RandomSelector.class, name="random"),
+  @JsonSubTypes.Type(value=RoundSelector.class, name="round"),
+  @JsonSubTypes.Type(value=FieldsSelector.class, name="fields"),
+  @JsonSubTypes.Type(value=AllSelector.class, name="all")
+})
+public interface Selector {
 
   /**
    * Selects a list of connections to which to emit messages.

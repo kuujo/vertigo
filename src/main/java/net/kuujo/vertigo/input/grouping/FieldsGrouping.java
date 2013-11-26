@@ -21,8 +21,7 @@ import java.util.Set;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A fields selector.
@@ -34,7 +33,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldsGrouping implements Grouping {
-  private Set<String> fields;
+  @JsonProperty("fields") private Set<String> fields;
 
   public FieldsGrouping() {
     fields = new HashSet<>();
@@ -100,28 +99,8 @@ public class FieldsGrouping implements Grouping {
   }
 
   @Override
-  public JsonObject getState() {
-    JsonArray fieldsArray = new JsonArray();
-    for (String fieldName : fields) {
-      fieldsArray.add(fieldName);
-    }
-    return new JsonObject().putArray("fields", fieldsArray);
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    fields = new HashSet<>();
-    JsonArray fieldsArray = state.getArray("fields");
-    if (fieldsArray != null) {
-      for (Object fieldName : fieldsArray) {
-        fields.add((String) fieldName);
-      }
-    }
-  }
-
-  @Override
   public Selector createSelector() {
-    return new FieldsSelector(getFields());
+    return new FieldsSelector(fields);
   }
 
 }

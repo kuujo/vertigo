@@ -18,8 +18,6 @@ package net.kuujo.vertigo.input.grouping;
 import net.kuujo.vertigo.output.selector.RoundSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * A *round* selector.
  *
@@ -29,16 +27,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class RoundGrouping implements Grouping {
-
-  @Override
-  public JsonObject getState() {
-    return new JsonObject();
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    // No state to store.
-  }
 
   @Override
   public Selector createSelector() {

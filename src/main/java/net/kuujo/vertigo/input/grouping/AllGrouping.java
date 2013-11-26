@@ -18,8 +18,6 @@ package net.kuujo.vertigo.input.grouping;
 import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * An *all* selector.
  *
@@ -30,16 +28,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class AllGrouping implements Grouping {
-
-  @Override
-  public JsonObject getState() {
-    return new JsonObject();
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    // No state to store.
-  }
 
   @Override
   public Selector createSelector() {

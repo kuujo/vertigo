@@ -15,8 +15,10 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * An input grouping.
@@ -29,7 +31,14 @@ import net.kuujo.vertigo.serializer.Serializable;
  *
  * @author Jordan Halterman
  */
-public interface Grouping extends Serializable {
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value=RandomGrouping.class, name="random"),
+  @JsonSubTypes.Type(value=RoundGrouping.class, name="round"),
+  @JsonSubTypes.Type(value=FieldsGrouping.class, name="fields"),
+  @JsonSubTypes.Type(value=AllGrouping.class, name="all")
+})
+public interface Grouping {
 
   /**
    * Creates an output selector from the grouping.

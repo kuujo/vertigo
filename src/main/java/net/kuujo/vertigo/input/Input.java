@@ -36,7 +36,7 @@ public class Input {
   @JsonProperty(required=true) private String id;
   @JsonProperty(required=true) private int count = 1;
   @JsonProperty(required=true) private String address;
-  @JsonProperty                private Grouping grouping;
+  @JsonProperty(required=true) private Grouping grouping;
 
   @SuppressWarnings("unused")
   private Input() {

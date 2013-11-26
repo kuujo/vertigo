@@ -50,7 +50,7 @@ public abstract class Component<T extends Component<T>> {
   @JsonProperty(required=true) protected String address;
   @JsonProperty                protected JsonObject config;
   @JsonProperty("instances")   protected int numInstances = 1;
-  @JsonProperty("heartbeat")   protected long heartbeatInterval;
+  @JsonProperty("heartbeat")   protected long heartbeatInterval = 5000;
   @JsonProperty                protected List<ComponentHook> hooks = new ArrayList<>();
   @JsonProperty                protected List<Input> inputs = new ArrayList<>();
 
@@ -142,9 +142,9 @@ public abstract class Component<T extends Component<T>> {
   }
 
   @JsonSetter("config")
-  protected void setEncodedConfig(String config) {
-    if (config != null) {
-      this.config = new JsonObject(config);
+  protected void setEncodedConfig(String encoded) {
+    if (encoded != null) {
+      config = new JsonObject(encoded);
     }
   }
 

@@ -20,7 +20,7 @@ import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -28,9 +28,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Jordan Halterman
  */
-public class InstanceContext {
-  @JsonProperty private String id;
-  @JsonProperty private ComponentContext component;
+public final class InstanceContext {
+  @JsonProperty      private String address;
+  @JsonProperty      private String id;
+  @JsonBackReference private ComponentContext component;
 
   private InstanceContext() {
   }
@@ -78,7 +79,6 @@ public class InstanceContext {
    * @return
    *   The parent component context.
    */
-  @JsonIgnore
   public ComponentContext getComponent() {
     return component;
   }

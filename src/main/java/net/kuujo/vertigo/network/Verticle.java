@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Jordan Halterman
  */
 public class Verticle extends Component<Verticle> {
-  @JsonProperty private String main;
+  @JsonProperty("main") private String main;
 
   public Verticle() {
     super();

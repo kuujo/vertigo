@@ -308,7 +308,11 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             final InstanceContext context = contextMap.get(id);
             if (context.getComponent().isModule()) {
               try {
-                deployModule(((ModuleContext) context.getComponent()).getModule(), serializer.serialize(context), new Handler<AsyncResult<String>>() {
+                JsonObject config = new JsonObject();
+                config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
+                config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
+                    .putString("id", context.id()));
+                deployModule(((ModuleContext) context.getComponent()).getModule(), config, new Handler<AsyncResult<String>>() {
                   @Override
                   public void handle(AsyncResult<String> result) {
                     if (result.succeeded()) {
@@ -326,7 +330,11 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             }
             else if (context.getComponent().isVerticle()) {
               try {
-                deployVerticle(((VerticleContext) context.getComponent()).getMain(), serializer.serialize(context), new Handler<AsyncResult<String>>() {
+                JsonObject config = new JsonObject();
+                config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
+                config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
+                    .putString("id", context.id()));
+                deployVerticle(((VerticleContext) context.getComponent()).getMain(), config, new Handler<AsyncResult<String>>() {
                   @Override
                   public void handle(AsyncResult<String> result) {
                     if (result.succeeded()) {
@@ -596,7 +604,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         }
 
         try {
-          config.putObject("__context__", serializer.serialize(context));
+          config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
+          config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
+              .putString("id", context.id()));
         }
         catch (SerializationException e) {
           future.setFailure(e);

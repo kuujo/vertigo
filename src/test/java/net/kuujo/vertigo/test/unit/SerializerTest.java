@@ -15,16 +15,26 @@
  */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.ContextBuilder;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.VerticleContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.hooks.EventBusHook;
+import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.network.MalformedNetworkException;
+import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -34,38 +44,62 @@ import static org.junit.Assert.fail;
  */
 public class SerializerTest {
 
-  public static class TestSerializable implements Serializable {
-    private JsonObject data;
-    public TestSerializable() {
-      data = new JsonObject();
+  @Test
+  public void testSerializeNetwork() {
+    Network network = new Network("test");
+    network.setNumAuditors(2);
+    network.setAckTimeout(10000);
+    network.addVerticle("1", "1.py", 2).addHook(new EventBusHook());
+    network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
+
+    Serializer serializer = Serializer.getInstance();
+    try {
+      JsonObject serialized = serializer.serialize(network);
+      Network deserialized = serializer.deserialize(serialized, Network.class);
+      assertTrue(deserialized.isAckingEnabled());
+      assertEquals(10000, deserialized.getAckTimeout());
+      assertEquals("test", deserialized.getAddress());
     }
-    public TestSerializable(JsonObject data) {
-      this.data = data;
-    }
-    public <T> T getField(String name) {
-      return data.<T>getValue(name);
-    }
-    @Override
-    public JsonObject getState() {
-      return data.copy();
-    }
-    @Override
-    public void setState(JsonObject state) {
-      data = state.copy();
+    catch (SerializationException e) {
+      fail(e.getMessage());
     }
   }
 
   @Test
-  public void testSerialize() {
-    TestSerializable serializable = new TestSerializable(new JsonObject().putString("foo", "bar"));
-    JsonObject serialized = Serializer.serialize(serializable);
-    assertNotNull(serialized.getString("type"));
+  public void testNetworkToContext() {
+    Network network = new Network("test");
+    network.setNumAuditors(2);
+    network.setAckTimeout(10000);
+    network.addVerticle("1", "1.py", 2).setConfig(new JsonObject().putString("foo", "bar")).addHook(new EventBusHook());
+    network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
+
     try {
-      TestSerializable unserialized = Serializer.deserialize(serialized);
-      assertTrue(unserialized instanceof TestSerializable);
-      assertEquals("bar", unserialized.getField("foo"));
+      NetworkContext context = ContextBuilder.buildContext(network);
+      assertTrue(context.isAckingEnabled());
+      assertEquals(10000, context.getAckTimeout());
+      assertEquals("test", context.getAddress());
+      assertEquals(2, context.getAuditors().size());
+      ComponentContext component = context.getComponent("2");
+      assertTrue(component instanceof VerticleContext);
+      assertNotNull(component);
+      assertEquals("2", component.getAddress());
+      Input input = component.getInputs().get(0);
+      assertNotNull(input);
+      assertTrue(input.getGrouping() instanceof RoundGrouping);
+      ComponentContext component2 = context.getComponent("1");
+      assertTrue(component2 instanceof VerticleContext);
+      ComponentHook hook = component2.getHooks().get(0);
+      assertNotNull(hook);
+      assertTrue(hook instanceof EventBusHook);
+      InstanceContext instance = component2.getInstances().get(0);
+      assertNotNull(instance);
+      assertNotNull(instance.id());
+
+      Serializer serializer = Serializer.getInstance();
+      JsonObject serialized = serializer.serialize(context);
+      serializer.deserialize(serialized, NetworkContext.class);
     }
-    catch (SerializationException e) {
+    catch (MalformedNetworkException | SerializationException e) {
       fail(e.getMessage());
     }
   }

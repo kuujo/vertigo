@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Jordan Halterman
  */
-public class ModuleContext extends ComponentContext {
+public final class ModuleContext extends ComponentContext {
   @JsonProperty("module") private String moduleName;
 
   private ModuleContext() {

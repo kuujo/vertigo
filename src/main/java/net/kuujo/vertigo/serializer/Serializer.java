@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,6 +66,14 @@ public final class Serializer {
   private Serializer(String name) {
     module = new SimpleModule(name);
     mapper.registerModule(module);
+    configureMapper();
+  }
+
+  /**
+   * Sets auto-detect visibility to none for the mapper.
+   */
+  private void configureMapper() {
+    mapper.setVisibilityChecker(mapper.getVisibilityChecker().with(JsonAutoDetect.Visibility.NONE));
   }
 
   /**

@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -48,10 +49,10 @@ public abstract class ComponentContext {
   @JsonProperty              protected String address;
   @JsonProperty              protected JsonObject config;
   @JsonProperty              protected List<InstanceContext> instances = new ArrayList<>();
-  @JsonProperty("heartbeat") protected long heartbeatInterval;
+  @JsonProperty("heartbeat") protected long heartbeatInterval = 5000;
   @JsonProperty              protected List<ComponentHook> hooks = new ArrayList<>();
   @JsonProperty              protected List<Input> inputs = new ArrayList<>();
-  @JsonProperty              protected NetworkContext network;
+  @JsonBackReference         protected NetworkContext network;
 
   protected ComponentContext() {
   }
@@ -153,7 +154,27 @@ public abstract class ComponentContext {
    *   A list of component instance contexts.
    */
   public List<InstanceContext> getInstances() {
+    for (InstanceContext instance : instances) {
+      instance.setParent(this);
+    }
     return instances;
+  }
+
+  /**
+   * Gets a component instance by ID.
+   *
+   * @param id
+   *   The instance ID.
+   * @return
+   *   A component instance or null if the instance doesn't exist.
+   */
+  public InstanceContext getInstance(String id) {
+    for (InstanceContext instance : instances) {
+      if (instance.id().equals(id)) {
+        return instance.setParent(this);
+      }
+    }
+    return null;
   }
 
   /**

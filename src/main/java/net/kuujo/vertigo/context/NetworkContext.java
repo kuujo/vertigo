@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -33,7 +32,7 @@ import net.kuujo.vertigo.serializer.Serializer;
  *
  * @author Jordan Halterman
  */
-public class NetworkContext {
+public final class NetworkContext {
   @JsonProperty            private String address;
   @JsonProperty            private List<String> auditors = new ArrayList<>();
   @JsonProperty("acking")  private boolean isAcking = true;
@@ -108,11 +107,10 @@ public class NetworkContext {
    * @return
    *   A list of network component contexts.
    */
-  @JsonIgnore
   public List<ComponentContext> getComponents() {
     List<ComponentContext> components = new ArrayList<>();
     for (ComponentContext component : this.components.values()) {
-      components.add(component);
+      components.add(component.setParent(this));
     }
     return components;
   }
@@ -126,7 +124,7 @@ public class NetworkContext {
    *   A component context, or null if the component does not exist.
    */
   public ComponentContext getComponent(String address) {
-    return components.get(address);
+    return components.get(address).setParent(this);
   }
 
 }

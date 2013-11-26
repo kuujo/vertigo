@@ -22,8 +22,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Jordan Halterman
  */
-public class VerticleContext extends ComponentContext {
-  @JsonProperty private String main;
+public final class VerticleContext extends ComponentContext {
+  @JsonProperty("main") private String main;
  
   private VerticleContext() {
     super();

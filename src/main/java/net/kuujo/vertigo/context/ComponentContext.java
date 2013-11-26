@@ -18,13 +18,16 @@ package net.kuujo.vertigo.context;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
-import net.kuujo.vertigo.network.Component;
-import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -33,36 +36,24 @@ import net.kuujo.vertigo.serializer.Serializer;
  *
  * @author Jordan Halterman
  */
-public abstract class ComponentContext implements Serializable {
-  public static final String ADDRESS = "address";
-  public static final String TYPE = "type";
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value=ModuleContext.class, name=ComponentContext.MODULE),
+  @JsonSubTypes.Type(value=VerticleContext.class, name=ComponentContext.VERTICLE)
+})
+public abstract class ComponentContext {
   public static final String VERTICLE = "verticle";
   public static final String MODULE = "module";
-  public static final String CONFIG = "config";
-  public static final String INSTANCES = "instances";
-  public static final String HEARTBEAT_INTERVAL = "heartbeat";
-  public static final String HOOKS = "hooks";
-  public static final String BARE_HOOKS = "bare";
-  public static final String SERIALIZABLE_HOOKS = "serializable";
-  public static final String INPUTS = "inputs";
 
-  protected JsonObject context;
-  protected NetworkContext parent;
+  @JsonProperty              protected String address;
+  @JsonProperty              protected JsonObject config;
+  @JsonProperty              protected List<InstanceContext> instances = new ArrayList<>();
+  @JsonProperty("heartbeat") protected long heartbeatInterval;
+  @JsonProperty              protected List<ComponentHook> hooks = new ArrayList<>();
+  @JsonProperty              protected List<Input> inputs = new ArrayList<>();
+  @JsonProperty              protected NetworkContext parent;
 
-  public ComponentContext() {
-    context = new JsonObject();
-  }
-
-  protected ComponentContext(JsonObject context) {
-    this.context = context;
-    if (context.getFieldNames().contains("parent")) {
-      try {
-        parent = Serializer.deserialize(context.getObject("parent"));
-      }
-      catch (SerializationException e) {
-        // Invalid parent.
-      }
-    }
+  protected ComponentContext() {
   }
 
   /**
@@ -76,24 +67,11 @@ public abstract class ComponentContext implements Serializable {
    *   If the context is malformed.
    */
   public static ComponentContext fromJson(JsonObject context) throws MalformedContextException {
-    String type = context.getString(Component.TYPE);
-    if (type == null) {
-      throw new MalformedContextException("Invalid component type. No type defined.");
+    try {
+      return Serializer.getInstance().deserialize(context, ComponentContext.class);
     }
-
-    JsonArray instances = context.getArray(Component.INSTANCES);
-    if (instances == null) {
-      instances = new JsonArray();
-      context.putArray(Component.INSTANCES, instances);
-    }
-
-    switch (type) {
-      case MODULE:
-        return new ModuleContext(context);
-      case VERTICLE:
-        return new VerticleContext(context);
-      default:
-        throw new MalformedContextException(String.format("Invalid component type %s.", type));
+    catch (SerializationException e) {
+      throw new MalformedContextException(e);
     }
   }
 
@@ -112,7 +90,7 @@ public abstract class ComponentContext implements Serializable {
    *   The component address.
    */
   public String getAddress() {
-    return context.getString(Component.ADDRESS);
+    return address;
   }
 
   /**
@@ -121,9 +99,7 @@ public abstract class ComponentContext implements Serializable {
    * @return
    *   The component type.
    */
-  public String getType() {
-    return context.getString(Component.TYPE);
-  }
+  public abstract String getType();
 
   /**
    * Returns a boolean indicating whether the component is a module.
@@ -132,7 +108,7 @@ public abstract class ComponentContext implements Serializable {
    *   Indicates whether the component is a module.
    */
   public boolean isModule() {
-    return getType().equals(Component.MODULE);
+    return getType().equals(ComponentContext.MODULE);
   }
 
   /**
@@ -142,7 +118,7 @@ public abstract class ComponentContext implements Serializable {
    *   Indicates whether the component is a verticle.
    */
   public boolean isVerticle() {
-    return getType().equals(Component.VERTICLE);
+    return getType().equals(ComponentContext.VERTICLE);
   }
 
   /**
@@ -152,11 +128,20 @@ public abstract class ComponentContext implements Serializable {
    *   The component configuration.
    */
   public JsonObject getConfig() {
-    JsonObject config = context.getObject(Component.CONFIG);
     if (config == null) {
       config = new JsonObject();
     }
     return config;
+  }
+
+  @JsonGetter("config")
+  protected String getConfigEncoded() {
+    return config != null ? config.encode() : null;
+  }
+
+  @JsonSetter("config")
+  protected void setConfigEncoded(String encoded) {
+    config = new JsonObject(encoded);
   }
 
   /**
@@ -166,17 +151,6 @@ public abstract class ComponentContext implements Serializable {
    *   A list of component instance contexts.
    */
   public List<InstanceContext> getInstances() {
-    JsonArray instancesInfo = context.getArray(Component.INSTANCES);
-    if (instancesInfo == null) {
-      instancesInfo = new JsonArray();
-    }
-    List<InstanceContext> instances = new ArrayList<InstanceContext>();
-    for (Object instanceInfo : instancesInfo) {
-      InstanceContext instance = InstanceContext.fromJson((JsonObject) instanceInfo).setParent(this);
-      if (instance != null) {
-        instances.add(instance);
-      }
-    }
     return instances;
   }
 
@@ -187,7 +161,7 @@ public abstract class ComponentContext implements Serializable {
    *   The component heartbeat interval.
    */
   public long getHeartbeatInterval() {
-    return context.getLong(Component.HEARTBEAT_INTERVAL, 1000);
+    return heartbeatInterval;
   }
 
   /**
@@ -197,43 +171,6 @@ public abstract class ComponentContext implements Serializable {
    *   A list of component hooks.
    */
   public List<ComponentHook> getHooks() {
-    List<ComponentHook> hooks = new ArrayList<>();
-    JsonObject hooksInfo = context.getObject(Component.HOOKS);
-    if (hooksInfo == null) {
-      return hooks;
-    }
-
-    // Deserialize serializable hooks.
-    JsonArray serializedHooks = hooksInfo.getArray(Component.SERIALIZABLE_HOOKS);
-    if (serializedHooks != null) {
-      for (Object serializedHook : serializedHooks) {
-        try {
-          ComponentHook hook = Serializer.deserialize((JsonObject) serializedHook);
-          if (hook != null) {
-            hooks.add(hook);
-          }
-        }
-        catch (SerializationException e) {
-          continue;
-        }
-      }
-    }
-
-    // Instantiate bare (unserializable) hooks.
-    JsonArray bareHooks = hooksInfo.getArray(Component.BARE_HOOKS);
-    if (bareHooks != null) {
-      for (Object bareHook : bareHooks) {
-        String className = ((JsonObject) bareHook).getString("type");
-        if (className != null) {
-          try {
-            hooks.add((ComponentHook) Class.forName(className).newInstance());
-          }
-          catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            continue;
-          }
-        }
-      }
-    }
     return hooks;
   }
 
@@ -244,23 +181,6 @@ public abstract class ComponentContext implements Serializable {
    *   A list of component inputs.
    */
   public List<Input> getInputs() {
-    JsonArray inputsInfo = context.getArray(Component.INPUTS);
-    if (inputsInfo == null) {
-      inputsInfo = new JsonArray();
-    }
-
-    List<Input> inputs = new ArrayList<>();
-    for (Object inputInfo : inputsInfo) {
-      try {
-        Input input = Serializer.deserialize((JsonObject) inputInfo);
-        if (input != null) {
-          inputs.add(input);
-        }
-      }
-      catch (SerializationException e) {
-        continue;
-      }
-    }
     return inputs;
   }
 
@@ -272,28 +192,6 @@ public abstract class ComponentContext implements Serializable {
    */
   public NetworkContext getNetwork() {
     return parent;
-  }
-
-  @Override
-  public JsonObject getState() {
-    JsonObject context = this.context.copy();
-    if (parent != null) {
-      context.putObject("parent", parent.getState());
-    }
-    return context;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    context = state.copy();
-    if (context.getFieldNames().contains("parent")) {
-      try {
-        parent = NetworkContext.fromJson(context.getObject("parent"));
-      }
-      catch (MalformedContextException e) {
-        // Invalid parent.
-      }
-    }
   }
 
 }

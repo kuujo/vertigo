@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.context;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A verticle component context.
@@ -23,14 +23,15 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class VerticleContext extends ComponentContext {
-  public static final String MAIN = "main";
+  @JsonProperty private String main;
  
-  public VerticleContext() {
+  private VerticleContext() {
     super();
   }
 
-  protected VerticleContext(JsonObject context) {
-    super(context);
+  @Override
+  public String getType() {
+    return VERTICLE;
   }
 
   /**
@@ -40,7 +41,7 @@ public class VerticleContext extends ComponentContext {
    *   The verticle main.
    */
   public String getMain() {
-    return context.getString(MAIN);
+    return main;
   }
 
 }

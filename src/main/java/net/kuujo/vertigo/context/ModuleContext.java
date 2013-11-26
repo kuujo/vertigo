@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.context;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A module component context.
@@ -23,14 +23,15 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class ModuleContext extends ComponentContext {
-  public static final String MODULE = "module";
+  @JsonProperty("module") private String moduleName;
 
-  public ModuleContext() {
+  private ModuleContext() {
     super();
   }
 
-  protected ModuleContext(JsonObject context) {
-    super(context);
+  @Override
+  public String getType() {
+    return MODULE;
   }
 
   /**
@@ -40,7 +41,7 @@ public class ModuleContext extends ComponentContext {
    *   The module name.
    */
   public String getModule() {
-    return context.getString(MODULE);
+    return moduleName;
   }
 
 }

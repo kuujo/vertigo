@@ -15,35 +15,23 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
+
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.serializer.Serializable;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A component instance context.
  *
  * @author Jordan Halterman
  */
-public class InstanceContext implements Serializable {
-  public static final String ID = "id";
+public class InstanceContext {
+  @JsonProperty private String id;
+  @JsonProperty private ComponentContext parent;
 
-  private JsonObject context;
-  private ComponentContext parent;
-
-  public InstanceContext() {
-    context = new JsonObject();
-  }
-
-  private InstanceContext(JsonObject context) {
-    this.context = context;
-    if (context.getFieldNames().contains("parent")) {
-      try {
-        parent = ComponentContext.fromJson(context.getObject("parent"));
-      }
-      catch (MalformedContextException e) {
-        // Invalid parent.
-      }
-    }
+  private InstanceContext() {
   }
 
   /**
@@ -53,9 +41,16 @@ public class InstanceContext implements Serializable {
    *   A JSON representation of the instance context.
    * @return
    *   A new instance context instance.
+   * @throws MalformedContextException
+   *   If the JSON context is malformed.
    */
-  public static InstanceContext fromJson(JsonObject context) {
-    return new InstanceContext(context);
+  public static InstanceContext fromJson(JsonObject context) throws MalformedContextException {
+    try {
+      return Serializer.getInstance().deserialize(context, InstanceContext.class);
+    }
+    catch (SerializationException e) {
+      throw new MalformedContextException(e);
+    }
   }
 
   /**
@@ -73,7 +68,7 @@ public class InstanceContext implements Serializable {
    *   The unique instance id.
    */
   public String id() {
-    return context.getString(ID);
+    return id;
   }
 
   /**
@@ -84,28 +79,6 @@ public class InstanceContext implements Serializable {
    */
   public ComponentContext getComponent() {
     return parent;
-  }
-
-  @Override
-  public JsonObject getState() {
-    JsonObject context = this.context.copy();
-    if (parent != null) {
-      context.putObject("parent", parent.getState());
-    }
-    return context;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    context = state.copy();
-    if (context.getFieldNames().contains("parent")) {
-      try {
-        parent = ComponentContext.fromJson(context.getObject("parent"));
-      }
-      catch (MalformedContextException e) {
-        // Invalid parent.
-      }
-    }
   }
 
 }

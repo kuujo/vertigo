@@ -16,35 +16,30 @@
 package net.kuujo.vertigo.context;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.serializer.Serializable;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A network context.
  *
  * @author Jordan Halterman
  */
-public class NetworkContext implements Serializable {
-  public static final String ADDRESS = "address";
-  public static final String AUDITORS = "auditors";
-  public static final String ACKING = "acking";
-  public static final String ACK_TIMEOUT = "timeout";
-  public static final String ACK_DELAY = "ack_delay";
-  public static final String COMPONENTS = "components";
+public class NetworkContext {
+  @JsonProperty            private String address;
+  @JsonProperty            private List<String> auditors = new ArrayList<>();
+  @JsonProperty("acking")  private boolean isAcking = true;
+  @JsonProperty("timeout") private long ackTimeout = 30000;
+  @JsonProperty            private Map<String, ComponentContext> components = new HashMap<>();
 
-  private JsonObject context;
-
-  public NetworkContext() {
-    context = new JsonObject();
-  }
-
-  private NetworkContext(JsonObject context) {
-    this.context = context;
+  private NetworkContext() {
   }
 
   /**
@@ -58,23 +53,12 @@ public class NetworkContext implements Serializable {
    *   If the network context is malformed.
    */
   public static NetworkContext fromJson(JsonObject context) throws MalformedContextException {
-    JsonObject components = context.getObject(COMPONENTS);
-    if (components == null) {
-      components = new JsonObject();
-      context.putObject(COMPONENTS, components);
+    try {
+      return Serializer.getInstance().deserialize(context, NetworkContext.class);
     }
-
-    for (String address : components.getFieldNames()) {
-      JsonObject componentInfo = components.getObject(address);
-      if (componentInfo == null) {
-        components.removeField(address);
-      }
-      else {
-        // Instantiate a component context to throw an exception if the context is malformed.
-        ComponentContext.fromJson(componentInfo);
-      }
+    catch (SerializationException e) {
+      throw new MalformedContextException(e);
     }
-    return new NetworkContext(context);
   }
 
   /**
@@ -84,7 +68,7 @@ public class NetworkContext implements Serializable {
    *   The network address.
    */
   public String getAddress() {
-    return context.getString(ADDRESS);
+    return address;
   }
 
   /**
@@ -94,12 +78,7 @@ public class NetworkContext implements Serializable {
    *   A list of network auditors.
    */
   public List<String> getAuditors() {
-    List<String> ackers = new ArrayList<>();
-    JsonArray ackerInfo = context.getArray(AUDITORS);
-    for (Object address : ackerInfo) {
-      ackers.add((String) address);
-    }
-    return ackers;
+    return auditors;
   }
 
   /**
@@ -109,7 +88,7 @@ public class NetworkContext implements Serializable {
    *   Indicates whether acking is enabled for the network.
    */
   public boolean isAckingEnabled() {
-    return context.getBoolean(ACKING, true);
+    return isAcking;
   }
 
   /**
@@ -119,7 +98,7 @@ public class NetworkContext implements Serializable {
    *   Ack timeout for the network.
    */
   public long getAckTimeout() {
-    return context.getLong(ACK_TIMEOUT, Network.DEFAULT_ACK_TIMEOUT);
+    return ackTimeout;
   }
 
   /**
@@ -130,17 +109,8 @@ public class NetworkContext implements Serializable {
    */
   public List<ComponentContext> getComponents() {
     List<ComponentContext> components = new ArrayList<>();
-    JsonObject componentContexts = context.getObject(COMPONENTS);
-    for (String address : componentContexts.getFieldNames()) {
-      try {
-        ComponentContext component = ComponentContext.fromJson(componentContexts.getObject(address)).setParent(this);
-        if (component != null) {
-          components.add(component);
-        }
-      }
-      catch (MalformedContextException e) {
-        continue;
-      }
+    for (ComponentContext component : this.components.values()) {
+      components.add(component);
     }
     return components;
   }
@@ -154,30 +124,7 @@ public class NetworkContext implements Serializable {
    *   A component context, or null if the component does not exist.
    */
   public ComponentContext getComponent(String address) {
-    JsonObject components = context.getObject(COMPONENTS);
-    if (components == null) {
-      components = new JsonObject();
-    }
-    if (components.getFieldNames().contains(address)) {
-      try {
-        return ComponentContext.fromJson(components.getObject(address)).setParent(this);
-      }
-      catch (MalformedContextException e) {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public JsonObject getState() {
-    // Always copy the context state so it can't be modified externally.
-    return context.copy();
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    context = state.copy();
+    return components.get(address);
   }
 
 }

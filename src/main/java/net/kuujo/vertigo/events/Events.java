@@ -20,6 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -37,7 +39,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public final class Events {
-
+  private static final Serializer serializer = Serializer.getInstance();
   private final EventBus eventBus;
 
   public Events(EventBus eventBus) {
@@ -115,7 +117,12 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", context.getState()));
+        try {
+          eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+        }
+        catch (SerializationException e) {
+          // Do nothing.
+        }
       }
     }
 
@@ -146,7 +153,12 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", context.getState()));
+        try {
+          eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+        }
+        catch (SerializationException e) {
+          // Do nothing.
+        }
       }
     }
 
@@ -175,7 +187,12 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", context.getState()));
+        try {
+          eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+        }
+        catch (SerializationException e) {
+          // Do nothing.
+        }
       } 
     }
 
@@ -215,7 +232,12 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         InstanceContext context = (InstanceContext) args[1];
-        eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", context.getState()));
+        try {
+          eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+        }
+        catch (SerializationException e) {
+          // Do nothing.
+        }
       }
     }
 
@@ -246,7 +268,12 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         InstanceContext context = (InstanceContext) args[1];
-        eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", context.getState()));
+        try {
+          eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+        }
+        catch (SerializationException e) {
+          // Do nothing.
+        }
       }
     }
 
@@ -277,7 +304,12 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         InstanceContext context = (InstanceContext) args[1];
-        eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", context.getState()));
+        try {
+          eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+        }
+        catch (SerializationException e) {
+          // Do nothing.
+        }
       }
     }
 

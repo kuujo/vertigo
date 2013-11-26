@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Jordan Halterman
  */
 public class FieldsGrouping implements Grouping {
-  @JsonProperty("fields") private Set<String> fields;
+  @JsonProperty(required=true) private Set<String> fields;
 
   public FieldsGrouping() {
     fields = new HashSet<>();

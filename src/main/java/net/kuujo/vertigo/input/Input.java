@@ -17,13 +17,10 @@ package net.kuujo.vertigo.input;
 
 import java.util.UUID;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
-import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A component input.
@@ -35,19 +32,19 @@ import net.kuujo.vertigo.serializer.Serializer;
  *
  * @author Jordan Halterman
  */
-public class Input implements Serializable {
-  public static final String ID = "id";
-  public static final String COUNT = "count";
-  public static final String ADDRESS = "address";
-  public static final String GROUPING = "grouping";
+public class Input {
+  @JsonProperty(required=true) private String id;
+  @JsonProperty(required=true) private int count = 1;
+  @JsonProperty(required=true) private String address;
+  @JsonProperty                private Grouping grouping;
 
-  private JsonObject definition;
-
-  public Input() {
+  @SuppressWarnings("unused")
+  private Input() {
   }
 
   public Input(String address) {
-    definition = new JsonObject().putString(ADDRESS, address).putString(ID, UUID.randomUUID().toString());
+    this.address = address;
+    id = UUID.randomUUID().toString();
     groupBy(new RoundGrouping());
   }
 
@@ -59,7 +56,7 @@ public class Input implements Serializable {
    *   The input id.
    */
   public String id() {
-    return definition.getString(ID);
+    return id;
   }
 
   /**
@@ -69,7 +66,7 @@ public class Input implements Serializable {
    *   The input count.
    */
   public int getCount() {
-    return definition.getInteger(COUNT, 1);
+    return count;
   }
 
   /**
@@ -83,7 +80,7 @@ public class Input implements Serializable {
    *   The called input instance.
    */
   public Input setCount(int count) {
-    definition.putNumber(COUNT, count);
+    this.count = count;
     return this;
   }
 
@@ -96,7 +93,7 @@ public class Input implements Serializable {
    *   The input address.
    */
   public String getAddress() {
-    return definition.getString(ADDRESS);
+    return address;
   }
 
   /**
@@ -111,7 +108,7 @@ public class Input implements Serializable {
    *   The called input instance.
    */
   public Input groupBy(Grouping grouping) {
-    definition.putObject(GROUPING, Serializer.serialize(grouping));
+    this.grouping = grouping;
     return this;
   }
 
@@ -122,30 +119,7 @@ public class Input implements Serializable {
    *   The current input grouping.
    */
   public Grouping getGrouping() {
-    JsonObject groupingInfo = definition.getObject(GROUPING);
-    try {
-      return Serializer.<Grouping>deserialize(groupingInfo);
-    }
-    catch (SerializationException e) {
-      return null;
-    }
-  }
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
-    if (!definition.getFieldNames().contains(ID)) {
-      definition.putString(ID, UUID.randomUUID().toString());
-    }
-    JsonObject grouping = definition.getObject(GROUPING);
-    if (grouping == null) {
-      groupBy(new RoundGrouping());
-    }
+    return grouping;
   }
 
 }

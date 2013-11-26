@@ -16,44 +16,38 @@
 package net.kuujo.vertigo.network;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A Vertigo network.
  *
  * @author Jordan Halterman
  */
-public class Network implements Serializable {
-  public static final String ADDRESS = "address";
-  public static final String AUDITORS = "auditors";
-  public static final String ACKING = "acking";
-  public static final String ACK_TIMEOUT = "timeout";
-  public static final String ACK_DELAY = "ack_delay";
-  public static final String COMPONENTS = "components";
+public final class Network {
+  private static final long DEFAULT_ACK_TIMEOUT = 30000;
 
-  public static final long DEFAULT_ACK_TIMEOUT = 30000;
-  public static final long DEFAULT_ACK_DELAY = 0;
-
-  private JsonObject definition;
+  @JsonProperty(required=true) private String address;
+  @JsonProperty("auditors")    private int numAuditors = 1;
+  @JsonProperty("acking")      private boolean isAcking = true;
+  @JsonProperty("timeout")     private long ackTimeout = DEFAULT_ACK_TIMEOUT;
+  @JsonProperty                private Map<String, Component<?>> components = new HashMap<String, Component<?>>();
 
   public Network() {
-    definition = new JsonObject();
-    init();
-  }
-
-  private Network(JsonObject definition) {
-    this.definition = definition;
-    init();
+    address = UUID.randomUUID().toString();
   }
 
   public Network(String address) {
-    definition = new JsonObject().putString(ADDRESS, address);
-    init();
+    this.address = address;
   }
 
   /**
@@ -67,34 +61,11 @@ public class Network implements Serializable {
    *   If the network definition is malformed.
    */
   public static Network fromJson(JsonObject json) throws MalformedNetworkException {
-    JsonObject components = json.getObject(COMPONENTS);
-    if (components == null) {
-      components = new JsonObject();
-      json.putObject(COMPONENTS, components);
+    try {
+      return Serializer.getInstance().deserialize(json, Network.class);
     }
-
-    for (String address : components.getFieldNames()) {
-      JsonObject componentInfo = components.getObject(address);
-      if (componentInfo == null) {
-        components.removeField(address);
-      }
-      else {
-        componentInfo.putString(Component.ADDRESS, address);
-        // Construct the component instance to make sure the definition is not malformed.
-        Component.fromJson(componentInfo);
-      }
-    }
-    return new Network(json);
-  }
-
-  /**
-   * Initializes the internal definition.
-   */
-  private void init() {
-    String address = definition.getString(ADDRESS);
-    if (address == null) {
-      address = UUID.randomUUID().toString();
-      definition.putString(ADDRESS, address);
+    catch (SerializationException e) {
+      throw new MalformedNetworkException(e);
     }
   }
 
@@ -108,7 +79,7 @@ public class Network implements Serializable {
    *   The network address.
    */
   public String getAddress() {
-    return definition.getString(ADDRESS);
+    return address;
   }
 
   /**
@@ -121,7 +92,7 @@ public class Network implements Serializable {
    *   The called network instance.
    */
   public Network enableAcking() {
-    definition.putBoolean(ACKING, true);
+    isAcking = true;
     return this;
   }
 
@@ -135,7 +106,7 @@ public class Network implements Serializable {
    *   The called network instance.
    */
   public Network disableAcking() {
-    definition.putBoolean(ACKING, false);
+    isAcking = false;
     return this;
   }
 
@@ -146,7 +117,7 @@ public class Network implements Serializable {
    *   Indicates whether acking is enabled for the network.
    */
   public boolean isAckingEnabled() {
-    return definition.getBoolean(ACKING, true);
+    return isAcking;
   }
 
   /**
@@ -156,7 +127,7 @@ public class Network implements Serializable {
    *   The number of network auditors.
    */
   public int getNumAuditors() {
-    return definition.getInteger(AUDITORS, 1);
+    return numAuditors;
   }
 
   /**
@@ -172,7 +143,7 @@ public class Network implements Serializable {
    *   The called network instance.
    */
   public Network setNumAckers(int numAuditors) {
-    definition.putNumber(AUDITORS, numAuditors);
+    this.numAuditors = numAuditors;
     return this;
   }
 
@@ -188,7 +159,7 @@ public class Network implements Serializable {
    *   The called network instance.
    */
   public Network setAckTimeout(long timeout) {
-    definition.putNumber(ACK_TIMEOUT, timeout);
+    ackTimeout = timeout;
     return this;
   }
 
@@ -199,7 +170,7 @@ public class Network implements Serializable {
    *   Ack timeout for the network. Defaults to 30000
    */
   public long getAckTimeout() {
-    return definition.getLong(ACK_TIMEOUT, DEFAULT_ACK_TIMEOUT);
+    return ackTimeout;
   }
 
   /**
@@ -210,17 +181,8 @@ public class Network implements Serializable {
    */
   public List<Component<?>> getComponents() {
     List<Component<?>> components = new ArrayList<Component<?>>();
-    JsonObject componentInfo = definition.getObject(COMPONENTS);
-    if (componentInfo == null) {
-      componentInfo = new JsonObject();
-      definition.putObject(COMPONENTS, componentInfo);
-    }
-
-    for (String address : componentInfo.getFieldNames()) {
-      Component<?> component = getComponent(address);
-      if (component != null) {
-        components.add(component);
-      }
+    for (Component<?> component : this.components.values()) {
+      components.add(component);
     }
     return components;
   }
@@ -234,21 +196,7 @@ public class Network implements Serializable {
    *   A component instance, or null if the component does not exist in the network.
    */
   public Component<?> getComponent(String address) {
-    JsonObject components = definition.getObject(COMPONENTS);
-    if (components == null) {
-      components = new JsonObject();
-      definition.putObject(COMPONENTS, components);
-    }
-
-    if (components.getFieldNames().contains(address)) {
-      try {
-        return Component.fromJson(components.getObject(address));
-      }
-      catch (MalformedNetworkException e) {
-        return null;
-      }
-    }
-    return null;
+    return components.get(address);
   }
 
   /**
@@ -260,12 +208,7 @@ public class Network implements Serializable {
    *   The added component instance.
    */
   public <T extends Component<?>> T addComponent(T component) {
-    JsonObject components = definition.getObject(COMPONENTS);
-    if (components == null) {
-      components = new JsonObject();
-      definition.putObject(COMPONENTS, components);
-    }
-    components.putObject(component.getAddress(), component.getState());
+    components.put(component.getAddress(), component);
     return component;
   }
 
@@ -433,16 +376,6 @@ public class Network implements Serializable {
    */
   public Module addModule(String address, String moduleName, JsonObject config, int instances) {
     return addComponent(new Module(address).setModule(moduleName).setConfig(config).setInstances(instances));
-  }
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
   }
 
 }

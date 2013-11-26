@@ -19,13 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -34,33 +38,28 @@ import net.kuujo.vertigo.serializer.Serializer;
  *
  * @author Jordan Haltermam
  */
-public abstract class Component<T extends Component<T>> implements Serializable {
-  public static final String ADDRESS = "address";
-  public static final String TYPE = "type";
-  public static final String VERTICLE = "verticle";
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value=Module.class, name=Component.MODULE),
+  @JsonSubTypes.Type(value=Verticle.class, name=Component.VERTICLE)
+})
+public abstract class Component<T extends Component<T>> {
   public static final String MODULE = "module";
-  public static final String CONFIG = "config";
-  public static final String INSTANCES = "instances";
-  public static final String HEARTBEAT_INTERVAL = "heartbeat";
-  public static final String HOOKS = "hooks";
-  public static final String BARE_HOOKS = "bare";
-  public static final String SERIALIZABLE_HOOKS = "serializable";
-  public static final String INPUTS = "inputs";
+  public static final String VERTICLE = "verticle";
 
-  protected JsonObject definition;
+  @JsonProperty(required=true) protected String address;
+  @JsonProperty                protected JsonObject config;
+  @JsonProperty("instances")   protected int numInstances = 1;
+  @JsonProperty("heartbeat")   protected long heartbeatInterval;
+  @JsonProperty                protected List<ComponentHook> hooks = new ArrayList<>();
+  @JsonProperty                protected List<Input> inputs = new ArrayList<>();
 
   public Component() {
-    definition = new JsonObject();
-    init();
-  }
-
-  protected Component(JsonObject definition) {
-    this.definition = definition;
+    address = UUID.randomUUID().toString();
   }
 
   public Component(String address) {
-    definition = new JsonObject().putString(ADDRESS, address);
-    init();
+    this.address = address;
   }
 
   /**
@@ -74,34 +73,11 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   If the component definition is malformed.
    */
   public static Component<?> fromJson(JsonObject json) throws MalformedNetworkException {
-    String type = json.getString(TYPE);
-    if (type == null) {
-      throw new MalformedNetworkException("Invalid component type. No type defined.");
+    try {
+      return Serializer.getInstance().deserialize(json, Component.class);
     }
-
-    switch (type) {
-      case MODULE:
-        return new Module(json);
-      case VERTICLE:
-        return new Verticle(json);
-      default:
-        throw new MalformedNetworkException(String.format("Invalid component type %s.", type));
-    }
-  }
-
-  /**
-   * Initializes the internal definition.
-   */
-  protected void init() {
-    String address = definition.getString(ADDRESS);
-    if (address == null) {
-      address = UUID.randomUUID().toString();
-      definition.putString(ADDRESS, address);
-    }
-
-    JsonArray inputs = definition.getArray(INPUTS);
-    if (inputs == null) {
-      definition.putArray(INPUTS, new JsonArray());
+    catch (SerializationException e) {
+      throw new MalformedNetworkException(e);
     }
   }
 
@@ -116,7 +92,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The component address.
    */
   public String getAddress() {
-    return definition.getString(ADDRESS);
+    return address;
   }
 
   /**
@@ -125,9 +101,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The component type.
    */
-  public String getType() {
-    return definition.getString(TYPE);
-  }
+  public abstract String getType();
 
   /**
    * Returns the component configuration.
@@ -136,7 +110,10 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The component configuration.
    */
   public JsonObject getConfig() {
-    return definition.getObject(CONFIG);
+    if (config == null) {
+      config = new JsonObject();
+    }
+    return config;
   }
 
   /**
@@ -152,8 +129,23 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public T setConfig(JsonObject config) {
-    definition.putObject(CONFIG, config);
+    this.config = config;
     return (T) this;
+  }
+
+  @JsonGetter("config")
+  protected String getEncodedConfig() {
+    if (config != null) {
+      return config.encode();
+    }
+    return null;
+  }
+
+  @JsonSetter("config")
+  protected void setEncodedConfig(String config) {
+    if (config != null) {
+      this.config = new JsonObject(config);
+    }
   }
 
   /**
@@ -163,7 +155,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The number of component instances.
    */
   public int getInstances() {
-    return definition.getInteger(INSTANCES, 1);
+    return numInstances;
   }
 
   /**
@@ -176,23 +168,10 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public T setInstances(int instances) {
-    definition.putNumber(INSTANCES, instances);
-
-    JsonArray inputs = definition.getArray(INPUTS);
-    JsonArray newInputs = new JsonArray();
-    if (inputs == null) {
-      inputs = new JsonArray();
+    numInstances = instances;
+    for (Input input : inputs) {
+      input.setCount(numInstances);
     }
-
-    for (Object inputInfo : inputs) {
-      try {
-        newInputs.add(Serializer.serialize(Serializer.<Input>deserialize((JsonObject) inputInfo).setCount(instances)));
-      }
-      catch (SerializationException e) {
-        continue;
-      }
-    }
-    definition.putArray(INPUTS, newInputs);
     return (T) this;
   }
 
@@ -203,7 +182,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The component heartbeat interval.
    */
   public long getHeartbeatInterval() {
-    return definition.getLong(HEARTBEAT_INTERVAL, 1000);
+    return heartbeatInterval;
   }
 
   /**
@@ -220,7 +199,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public T setHeartbeatInterval(long interval) {
-    definition.putNumber(HEARTBEAT_INTERVAL, interval);
+    heartbeatInterval = interval;
     return (T) this;
   }
 
@@ -243,28 +222,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public T addHook(ComponentHook hook) {
-    JsonObject hookInfo = definition.getObject(HOOKS);
-    if (hookInfo == null) {
-      hookInfo = new JsonObject();
-      definition.putObject(HOOKS, hookInfo);
-    }
-
-    if (hook instanceof Serializable) {
-      JsonArray serializable = hookInfo.getArray(SERIALIZABLE_HOOKS);
-      if (serializable == null) {
-        serializable = new JsonArray();
-        hookInfo.putArray(SERIALIZABLE_HOOKS, serializable);
-      }
-      serializable.add(Serializer.serialize((Serializable) hook));
-    }
-    else {
-      JsonArray bare = hookInfo.getArray(BARE_HOOKS);
-      if (bare == null) {
-        bare = new JsonArray();
-        hookInfo.putArray(BARE_HOOKS, bare);
-      }
-      bare.add(new JsonObject().putString("type", hook.getClass().getName()));
-    }
+    hooks.add(hook);
     return (T) this;
   }
 
@@ -275,40 +233,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   A list of component hooks.
    */
   public List<ComponentHook> getHooks() {
-    List<ComponentHook> hooks = new ArrayList<>();
-    JsonObject hookInfo = definition.getObject(HOOKS);
-    if (hookInfo == null) {
-      hookInfo = new JsonObject();
-      definition.putObject(HOOKS, hookInfo);
-    }
-
-    JsonArray serializableHooks = hookInfo.getArray(SERIALIZABLE_HOOKS);
-    if (serializableHooks != null) {
-      for (Object serializedHook : serializableHooks) {
-        try {
-          ComponentHook hook = Serializer.deserialize((JsonObject) serializedHook);
-          if (hook != null) {
-            hooks.add(hook);
-          }
-        }
-        catch (SerializationException e) {
-          continue;
-        }
-      }
-    }
-
-    JsonArray bareHooks = hookInfo.getArray(BARE_HOOKS);
-    if (bareHooks != null) {
-      for (Object bareHook : bareHooks) {
-        String className = ((JsonObject) bareHook).getString("type");
-        try {
-          hooks.add((ComponentHook) Class.forName(className).newInstance());
-        }
-        catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-          continue;
-        }
-      }
-    }
     return hooks;
   }
 
@@ -319,21 +243,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   A list of component inputs.
    */
   public List<Input> getInputs() {
-    JsonArray inputsInfo = definition.getArray(INPUTS);
-    if (inputsInfo == null) {
-      inputsInfo = new JsonArray();
-      definition.putArray(INPUTS, inputsInfo);
-    }
-
-    List<Input> inputs = new ArrayList<Input>();
-    for (Object inputInfo : inputsInfo) {
-      try {
-        inputs.add(Serializer.<Input>deserialize((JsonObject) inputInfo));
-      }
-      catch (SerializationException e) {
-        // Do nothing.
-      }
-    }
     return inputs;
   }
 
@@ -346,12 +255,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The new input instance.
    */
   public Input addInput(Input input) {
-    JsonArray inputs = definition.getArray(INPUTS);
-    if (inputs == null) {
-      inputs = new JsonArray();
-      definition.putArray(INPUTS, inputs);
-    }
-    inputs.add(Serializer.serialize(input.setCount(getInstances())));
+    inputs.add(input);
     return input;
   }
 
@@ -382,16 +286,6 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    */
   public Input addInput(String address, Grouping grouping) {
     return addInput(new Input(address).groupBy(grouping));
-  }
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
   }
 
 }

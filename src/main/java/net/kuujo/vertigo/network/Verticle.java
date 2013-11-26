@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A verticle component.
@@ -23,21 +23,14 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class Verticle extends Component<Verticle> {
-  public static final String MAIN = "main";
+  @JsonProperty private String main;
 
   public Verticle() {
     super();
-    definition.putString(TYPE, VERTICLE);
   }
 
   public Verticle(String address) {
     super(address);
-    definition.putString(TYPE, VERTICLE);
-  }
-
-  protected Verticle(JsonObject definition) {
-    super(definition);
-    definition.putString(TYPE, VERTICLE);
   }
 
   @Override
@@ -52,7 +45,7 @@ public class Verticle extends Component<Verticle> {
    *   The verticle main.
    */
   public String getMain() {
-    return definition.getString(MAIN);
+    return main;
   }
 
   /**
@@ -64,7 +57,7 @@ public class Verticle extends Component<Verticle> {
    *   The called verticle component.
    */
   public Verticle setMain(String main) {
-    definition.putString(MAIN, main);
+    this.main = main;
     return this;
   }
 

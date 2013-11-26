@@ -22,7 +22,6 @@ import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -36,7 +35,7 @@ import net.kuujo.vertigo.serializer.Serializer;
  *
  * @author Jordan Halterman
  */
-public class Output implements Serializable {
+public class Output {
   public static final String ID = "id";
   public static final String COUNT = "count";
   public static final String SELECTOR = "selector";

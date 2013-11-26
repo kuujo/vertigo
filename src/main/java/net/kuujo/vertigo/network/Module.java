@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A module component.
@@ -23,21 +23,13 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class Module extends Component<Module> {
-  public static final String MODULE = "module";
+  @JsonProperty("module") private String moduleName;
 
   public Module() {
-    super();
-    definition.putString(TYPE, MODULE);
   }
 
   public Module(String address) {
     super(address);
-    definition.putString(TYPE, MODULE);
-  }
-
-  protected Module(JsonObject definition) {
-    super(definition);
-    definition.putString(TYPE, MODULE);
   }
 
   @Override
@@ -52,7 +44,7 @@ public class Module extends Component<Module> {
    *   The module name.
    */
   public String getModule() {
-    return definition.getString(MODULE);
+    return moduleName;
   }
 
   /**
@@ -64,7 +56,7 @@ public class Module extends Component<Module> {
    *   The called module component.
    */
   public Module setModule(String moduleName) {
-    definition.putString(MODULE, moduleName);
+    this.moduleName = moduleName;
     return this;
   }
 

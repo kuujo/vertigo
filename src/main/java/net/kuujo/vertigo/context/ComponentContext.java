@@ -51,7 +51,7 @@ public abstract class ComponentContext {
   @JsonProperty("heartbeat") protected long heartbeatInterval;
   @JsonProperty              protected List<ComponentHook> hooks = new ArrayList<>();
   @JsonProperty              protected List<Input> inputs = new ArrayList<>();
-  @JsonProperty              protected NetworkContext parent;
+  @JsonProperty              protected NetworkContext network;
 
   protected ComponentContext() {
   }
@@ -78,8 +78,8 @@ public abstract class ComponentContext {
   /**
    * Sets the component parent.
    */
-  ComponentContext setParent(NetworkContext context) {
-    parent = context;
+  ComponentContext setParent(NetworkContext network) {
+    this.network = network;
     return this;
   }
 
@@ -141,7 +141,9 @@ public abstract class ComponentContext {
 
   @JsonSetter("config")
   protected void setConfigEncoded(String encoded) {
-    config = new JsonObject(encoded);
+    if (encoded != null) {
+      config = new JsonObject(encoded);
+    }
   }
 
   /**
@@ -191,7 +193,7 @@ public abstract class ComponentContext {
    *   The parent network context.
    */
   public NetworkContext getNetwork() {
-    return parent;
+    return network;
   }
 
 }

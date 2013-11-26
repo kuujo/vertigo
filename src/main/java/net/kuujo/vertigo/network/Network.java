@@ -26,6 +26,7 @@ import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -91,6 +92,7 @@ public final class Network {
    * @return
    *   The called network instance.
    */
+  @JsonIgnore
   public Network enableAcking() {
     isAcking = true;
     return this;
@@ -105,6 +107,7 @@ public final class Network {
    * @return
    *   The called network instance.
    */
+  @JsonIgnore
   public Network disableAcking() {
     isAcking = false;
     return this;
@@ -116,6 +119,7 @@ public final class Network {
    * @return
    *   Indicates whether acking is enabled for the network.
    */
+  @JsonIgnore
   public boolean isAckingEnabled() {
     return isAcking;
   }
@@ -126,6 +130,7 @@ public final class Network {
    * @return
    *   The number of network auditors.
    */
+  @JsonIgnore
   public int getNumAuditors() {
     return numAuditors;
   }
@@ -142,7 +147,8 @@ public final class Network {
    * @return
    *   The called network instance.
    */
-  public Network setNumAckers(int numAuditors) {
+  @JsonIgnore
+  public Network setNumAuditors(int numAuditors) {
     this.numAuditors = numAuditors;
     return this;
   }
@@ -158,6 +164,7 @@ public final class Network {
    * @return
    *   The called network instance.
    */
+  @JsonIgnore
   public Network setAckTimeout(long timeout) {
     ackTimeout = timeout;
     return this;
@@ -169,6 +176,7 @@ public final class Network {
    * @return
    *   Ack timeout for the network. Defaults to 30000
    */
+  @JsonIgnore
   public long getAckTimeout() {
     return ackTimeout;
   }
@@ -179,6 +187,7 @@ public final class Network {
    * @return
    *   A list of network components.
    */
+  @JsonIgnore
   public List<Component<?>> getComponents() {
     List<Component<?>> components = new ArrayList<Component<?>>();
     for (Component<?> component : this.components.values()) {
@@ -195,6 +204,7 @@ public final class Network {
    * @return
    *   A component instance, or null if the component does not exist in the network.
    */
+  @JsonIgnore
   public Component<?> getComponent(String address) {
     return components.get(address);
   }

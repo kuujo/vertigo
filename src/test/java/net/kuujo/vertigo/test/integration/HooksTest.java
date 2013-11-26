@@ -22,8 +22,6 @@ import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
 import net.kuujo.vertigo.testtools.TestFailingWorker;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
@@ -32,12 +30,13 @@ import net.kuujo.vertigo.testtools.TestTimingOutWorker;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
 import org.vertx.testtools.TestVerticle;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A component hooks test.
@@ -49,8 +48,8 @@ public class HooksTest extends TestVerticle {
   /**
    * A test component hook.
    */
-  public static class TestComponentHook implements ComponentHook, Serializable {
-    private String hook;
+  public static class TestComponentHook implements ComponentHook {
+    @JsonProperty("hook") private String hook;
     public TestComponentHook() {
     }
     public TestComponentHook(String hook) {
@@ -109,14 +108,6 @@ public class HooksTest extends TestVerticle {
       if (hook.equals("timeout")) {
         testComplete();
       }
-    }
-    @Override
-    public JsonObject getState() {
-      return new JsonObject().putString("hook", hook);
-    }
-    @Override
-    public void setState(JsonObject state) throws SerializationException {
-      this.hook = state.getString("hook");
     }
   }
 

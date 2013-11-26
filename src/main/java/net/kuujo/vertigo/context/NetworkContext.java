@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import net.kuujo.vertigo.serializer.SerializationException;
@@ -107,6 +108,7 @@ public class NetworkContext {
    * @return
    *   A list of network component contexts.
    */
+  @JsonIgnore
   public List<ComponentContext> getComponents() {
     List<ComponentContext> components = new ArrayList<>();
     for (ComponentContext component : this.components.values()) {

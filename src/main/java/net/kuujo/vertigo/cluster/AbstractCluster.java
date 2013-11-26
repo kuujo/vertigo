@@ -19,6 +19,7 @@ import net.kuujo.vertigo.context.ContextBuilder;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.AsyncResult;
@@ -38,6 +39,7 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 abstract class AbstractCluster implements Cluster {
+  private final Serializer serializer = Serializer.getInstance();
   private EventBus eventBus;
   private Container container;
   protected String coordinator;
@@ -57,9 +59,9 @@ abstract class AbstractCluster implements Cluster {
   public void deploy(Network network) {
     try {
       final NetworkContext context = ContextBuilder.buildContext(network);
-      container.deployVerticle(coordinator, Serializer.serialize(context));
+      container.deployVerticle(coordinator, serializer.serialize(context));
     }
-    catch (MalformedNetworkException e) {
+    catch (MalformedNetworkException | SerializationException e) {
       container.logger().error(e);
     }
   }
@@ -69,7 +71,7 @@ abstract class AbstractCluster implements Cluster {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {
       final NetworkContext context = ContextBuilder.buildContext(network);
-      container.deployVerticle(coordinator, Serializer.serialize(context), new Handler<AsyncResult<String>>() {
+      container.deployVerticle(coordinator, serializer.serialize(context), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
@@ -81,7 +83,7 @@ abstract class AbstractCluster implements Cluster {
         }
       });
     }
-    catch (MalformedNetworkException e) {
+    catch (MalformedNetworkException | SerializationException e) {
       future.setFailure(e);
     }
   }

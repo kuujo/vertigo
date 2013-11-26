@@ -18,9 +18,13 @@ package net.kuujo.vertigo.hooks;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * An event bus publishing hook.
@@ -34,17 +38,23 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class EventBusHook implements ComponentHook {
-  private InstanceContext context;
-  private EventBus eventBus;
-  private String address;
+  @JsonProperty private InstanceContext context;
+                private EventBus eventBus;
+  @JsonProperty private String address;
+                private Serializer serializer = Serializer.getInstance();
 
   @Override
   public void handleStart(Component<?> component) {
     this.eventBus = component.getVertx().eventBus();
     this.context = component.getContext();
     this.address = component.getContext().getComponent().getAddress();
-    eventBus.publish(String.format("vertigo.hooks.%s", address),
-        new JsonObject().putString("event", "start").putObject("context", context.getState()));
+    try {
+      eventBus.publish(String.format("vertigo.hooks.%s", address),
+          new JsonObject().putString("event", "start").putObject("context", serializer.serialize(context)));
+    }
+    catch (SerializationException e) {
+      // Do nothing.
+    }
   }
 
   @Override
@@ -91,8 +101,13 @@ public class EventBusHook implements ComponentHook {
 
   @Override
   public void handleStop(Component<?> subject) {
-    eventBus.publish(String.format("vertigo.hooks.%s", address),
-        new JsonObject().putString("event", "stop").putObject("context", context.getState()));
+    try {
+      eventBus.publish(String.format("vertigo.hooks.%s", address),
+          new JsonObject().putString("event", "stop").putObject("context", serializer.serialize(context)));
+    }
+    catch (SerializationException e) {
+      // Do nothing.
+    }
   }
 
 }

@@ -19,7 +19,6 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.serializer.Serializable;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -27,14 +26,16 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A deployable (verticle/module) hook.
  *
  * @author Jordan Halterman
  */
-abstract class DeployableHook implements ComponentHook, Serializable {
-  protected String address;
-  protected EventBus eventBus;
+abstract class DeployableHook implements ComponentHook {
+  @JsonProperty protected String address;
+                protected EventBus eventBus;
 
   /**
    * Deploys the deployable.

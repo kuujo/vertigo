@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.hooks;
 
+import java.util.UUID;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
@@ -22,7 +24,9 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import net.kuujo.vertigo.serializer.SerializationException;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * A verticle hook.
@@ -35,11 +39,11 @@ import net.kuujo.vertigo.serializer.SerializationException;
  * @author Jordan Halterman
  */
 public class VerticleHook extends DeployableHook {
-  private String main;
-  private JsonObject config;
-  private int instances = 1;
-  private String deploymentId;
-  private String address;
+  @JsonProperty("main")      private String main;
+  @JsonProperty("config")    private JsonObject config;
+  @JsonProperty("instances") private int instances = 1;
+                             private String deploymentId;
+                             private String address = UUID.randomUUID().toString();
 
   public VerticleHook() {
   }
@@ -60,6 +64,18 @@ public class VerticleHook extends DeployableHook {
     this.main = main;
     this.config = config;
     this.instances = instances;
+  }
+
+  @JsonGetter("config")
+  private String getConfigEncoded() {
+    return config != null ? config.encode() : null;
+  }
+
+  @JsonSetter("config")
+  private void setConfigEncoded(String encoded) {
+    if (encoded != null) {
+      config = new JsonObject(encoded);
+    }
   }
 
   @Override
@@ -97,19 +113,6 @@ public class VerticleHook extends DeployableHook {
   @Override
   protected boolean deployed() {
     return deploymentId != null;
-  }
-
-  @Override
-  public JsonObject getState() {
-    return new JsonObject().putString("main", main)
-        .putNumber("instances", instances).putObject("config", config);
-  }
-
-  @Override
-  public void setState(JsonObject state) throws SerializationException {
-    this.main = state.getString("main");
-    this.config = state.getObject("config", new JsonObject());
-    this.instances = state.getInteger("instances", 1);
   }
 
 }

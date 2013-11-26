@@ -15,15 +15,11 @@
  */
 package net.kuujo.vertigo.output;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.Listener;
-import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
 
 /**
  * A component output.
@@ -36,40 +32,18 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public class Output {
-  public static final String ID = "id";
-  public static final String COUNT = "count";
-  public static final String SELECTOR = "selector";
+  @JsonProperty(required=true) private String id;
+  @JsonProperty(required=true) private int count = 1;
+  @JsonProperty(required=true) private Selector selector;
 
-  /**
-   * Creates an output from input.
-   *
-   * @param input
-   *   The input from which to create an output.
-   * @return
-   *   A new output instance.
-   * @throws MalformedNetworkException 
-   */
-  public static Output fromInput(Input input) throws MalformedNetworkException {
-    JsonObject definition = new JsonObject();
-    definition.putString(ID, input.id());
-    definition.putNumber(COUNT, input.getCount());
-
-    Grouping grouping = input.getGrouping();
-    if (grouping == null) {
-      throw new MalformedNetworkException("Invalid input. No input grouping specified.");
-    }
-
-    definition.putObject(SELECTOR, Serializer.serialize(grouping.createSelector()));
-    return new Output(definition);
+  @SuppressWarnings("unused")
+  private Output() {
   }
 
-  private JsonObject definition;
-
-  public Output() {
-  }
-
-  private Output(JsonObject definition) {
-    this.definition = definition;
+  Output(String id, int count, Selector selector) {
+    this.id = id;
+    this.count = count;
+    this.selector = selector;
   }
 
   /**
@@ -79,7 +53,7 @@ public class Output {
    *   The output id.
    */
   public String id() {
-    return definition.getString(ID);
+    return id;
   }
 
   /**
@@ -89,7 +63,7 @@ public class Output {
    *   The output connection count.
    */
   public int getCount() {
-    return definition.getInteger(COUNT, 1);
+    return count;
   }
 
   /**
@@ -99,23 +73,7 @@ public class Output {
    *   An output selector.
    */
   public Selector getSelector() {
-    JsonObject selectorInfo = definition.getObject(SELECTOR);
-    try {
-      return selectorInfo != null ? Serializer.<Selector>deserialize(selectorInfo) : null;
-    }
-    catch (SerializationException e) {
-      return null;
-    }
-  }
-
-  @Override
-  public JsonObject getState() {
-    return definition;
-  }
-
-  @Override
-  public void setState(JsonObject state) {
-    definition = state;
+    return selector;
   }
 
 }

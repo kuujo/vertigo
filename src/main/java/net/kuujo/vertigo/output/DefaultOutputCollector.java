@@ -25,6 +25,7 @@ import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
+import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.message.MessageId;
@@ -48,6 +49,7 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector {
+  private final Serializer serializer = Serializer.getInstance();
   private final Vertx vertx;
   private final Logger logger;
   private final EventBus eventBus;
@@ -103,7 +105,7 @@ public class DefaultOutputCollector implements OutputCollector {
         String action = body.getString("action");
         switch (action) {
           case "listen":
-            doListen(body);
+            doListen(body.getString("address"), body.getString("status"), body.getObject("input"));
             break;
         }
       }
@@ -113,15 +115,14 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Starts listening to messages from this output collector.
    */
-  private void doListen(JsonObject info) {
-    final String address = info.getString("address");
-    final String statusAddress = info.getString("status");
+  private void doListen(final String address, final String statusAddress, final JsonObject info) {
     if (address == null || statusAddress == null) {
       return;
     }
 
     try {
-      Output output = Serializer.deserialize(info);
+      Input input = serializer.deserialize(info, Input.class);
+      Output output = new Output(input.id(), input.getCount(), input.getGrouping().createSelector());
 
       final Channel channel = findChannel(output);
       if (!channel.containsConnection(address)) {

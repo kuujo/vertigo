@@ -17,13 +17,12 @@ package net.kuujo.vertigo.context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -47,7 +46,7 @@ public abstract class ComponentContext {
   public static final String MODULE = "module";
 
   @JsonProperty              protected String address;
-  @JsonProperty              protected JsonObject config;
+  @JsonProperty              protected Map<String, Object> config;
   @JsonProperty              protected List<InstanceContext> instances = new ArrayList<>();
   @JsonProperty("heartbeat") protected long heartbeatInterval = 5000;
   @JsonProperty              protected List<ComponentHook> hooks = new ArrayList<>();
@@ -129,22 +128,7 @@ public abstract class ComponentContext {
    *   The component configuration.
    */
   public JsonObject getConfig() {
-    if (config == null) {
-      config = new JsonObject();
-    }
-    return config;
-  }
-
-  @JsonGetter("config")
-  protected String getConfigEncoded() {
-    return config != null ? config.encode() : null;
-  }
-
-  @JsonSetter("config")
-  protected void setConfigEncoded(String encoded) {
-    if (encoded != null) {
-      config = new JsonObject(encoded);
-    }
+    return config != null ? new JsonObject(config) : new JsonObject();
   }
 
   /**

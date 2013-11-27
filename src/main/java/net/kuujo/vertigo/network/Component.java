@@ -17,13 +17,12 @@ package net.kuujo.vertigo.network;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -48,7 +47,7 @@ public abstract class Component<T extends Component<T>> {
   public static final String VERTICLE = "verticle";
 
   @JsonProperty(required=true) protected String address;
-  @JsonProperty                protected JsonObject config;
+  @JsonProperty                protected Map<String, Object> config;
   @JsonProperty("instances")   protected int numInstances = 1;
   @JsonProperty("heartbeat")   protected long heartbeatInterval = 5000;
   @JsonProperty                protected List<ComponentHook> hooks = new ArrayList<>();
@@ -110,10 +109,7 @@ public abstract class Component<T extends Component<T>> {
    *   The component configuration.
    */
   public JsonObject getConfig() {
-    if (config == null) {
-      config = new JsonObject();
-    }
-    return config;
+    return config != null ? new JsonObject(config) : new JsonObject();
   }
 
   /**
@@ -129,23 +125,8 @@ public abstract class Component<T extends Component<T>> {
    */
   @SuppressWarnings("unchecked")
   public T setConfig(JsonObject config) {
-    this.config = config;
+    this.config = config.toMap();
     return (T) this;
-  }
-
-  @JsonGetter("config")
-  protected String getEncodedConfig() {
-    if (config != null) {
-      return config.encode();
-    }
-    return null;
-  }
-
-  @JsonSetter("config")
-  protected void setEncodedConfig(String encoded) {
-    if (encoded != null) {
-      config = new JsonObject(encoded);
-    }
   }
 
   /**

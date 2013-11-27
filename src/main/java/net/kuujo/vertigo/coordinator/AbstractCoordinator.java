@@ -31,9 +31,9 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.coordinator.heartbeat.DefaultHeartbeatMonitor;
+import net.kuujo.vertigo.coordinator.heartbeat.HeartbeatMonitor;
 import net.kuujo.vertigo.events.Events;
-import net.kuujo.vertigo.heartbeat.DefaultHeartbeatMonitor;
-import net.kuujo.vertigo.heartbeat.HeartbeatMonitor;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 

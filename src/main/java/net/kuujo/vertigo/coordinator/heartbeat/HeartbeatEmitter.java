@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.heartbeat;
+package net.kuujo.vertigo.coordinator.heartbeat;
 
 /**
  * A heartbeat emitter.

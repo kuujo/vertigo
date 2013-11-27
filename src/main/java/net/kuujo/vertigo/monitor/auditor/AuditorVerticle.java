@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.auditor;
+package net.kuujo.vertigo.monitor.auditor;
 
 import net.kuujo.vertigo.message.DefaultMessageId;
 import net.kuujo.vertigo.message.MessageId;

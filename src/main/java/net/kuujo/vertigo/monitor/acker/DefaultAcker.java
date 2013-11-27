@@ -1,4 +1,4 @@
-package net.kuujo.vertigo.acker;
+package net.kuujo.vertigo.monitor.acker;
 
 import java.util.HashMap;
 import java.util.List;

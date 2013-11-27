@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.schema.JsonValidator;
 import net.kuujo.vertigo.message.schema.MessageSchema;
+import net.kuujo.vertigo.monitor.acker.Acker;
+import net.kuujo.vertigo.monitor.acker.DefaultAcker;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

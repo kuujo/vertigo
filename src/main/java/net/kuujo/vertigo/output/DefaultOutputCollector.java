@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.monitor.acker.Acker;
+import net.kuujo.vertigo.monitor.acker.DefaultAcker;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 

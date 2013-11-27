@@ -39,8 +39,9 @@ public class ContextTest {
 
   @Test
   public void testNetworkContext() {
+    Serializer serializer = Serializer.getInstance();
     Network network = new Network("test");
-    network.setNumAckers(2);
+    network.setNumAuditors(2);
     network.enableAcking();
 
     network.addVerticle("test1", "net.kuujo.vertigo.VertigoVerticle");
@@ -50,16 +51,11 @@ public class ContextTest {
     try {
       context = ContextBuilder.buildContext(network);
       assertEquals(2, context.getAuditors().size());
-      JsonObject serialized = Serializer.serialize(context);
+      JsonObject serialized = serializer.serialize(context);
       assertNotNull(serialized);
-      try {
-        context = Serializer.deserialize(serialized);
-      }
-      catch (SerializationException e) {
-        fail(e.getMessage());
-      }
+      context = serializer.deserialize(serialized, NetworkContext.class);
     }
-    catch (MalformedNetworkException e) {
+    catch (SerializationException | MalformedNetworkException e) {
       fail(e.getMessage());
     }
   }

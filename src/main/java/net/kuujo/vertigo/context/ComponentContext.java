@@ -22,7 +22,6 @@ import java.util.Map;
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -45,13 +44,14 @@ public abstract class ComponentContext {
   public static final String VERTICLE = "verticle";
   public static final String MODULE = "module";
 
-  @JsonProperty              protected String address;
-  @JsonProperty              protected Map<String, Object> config;
-  @JsonProperty              protected List<InstanceContext> instances = new ArrayList<>();
-  @JsonProperty("heartbeat") protected long heartbeatInterval = 5000;
-  @JsonProperty              protected List<ComponentHook> hooks = new ArrayList<>();
-  @JsonProperty              protected List<Input> inputs = new ArrayList<>();
-  @JsonBackReference         protected NetworkContext network;
+  protected String address;
+  protected Map<String, Object> config;
+  protected List<InstanceContext> instances = new ArrayList<>();
+  protected long heartbeat = 5000;
+  protected List<ComponentHook> hooks = new ArrayList<>();
+  protected List<Input> inputs = new ArrayList<>();
+  @JsonBackReference
+  protected NetworkContext network;
 
   protected ComponentContext() {
   }
@@ -168,7 +168,7 @@ public abstract class ComponentContext {
    *   The component heartbeat interval.
    */
   public long getHeartbeatInterval() {
-    return heartbeatInterval;
+    return heartbeat;
   }
 
   /**

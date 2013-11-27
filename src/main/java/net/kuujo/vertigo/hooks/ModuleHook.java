@@ -25,7 +25,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
@@ -39,11 +39,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * @author Jordan Halterman
  */
 public class ModuleHook extends DeployableHook {
-  @JsonProperty("module")        private String moduleName;
-  @JsonProperty("config")        private JsonObject config;
-  @JsonProperty("instances")     private int instances = 1;
-                                 private String deploymentId;
-                                 private String address = UUID.randomUUID().toString();
+  private String module;
+  private JsonObject config;
+  private int instances = 1;
+  @JsonIgnore private String deploymentId;
+  @JsonIgnore private String address = UUID.randomUUID().toString();
 
   public ModuleHook() {
   }
@@ -61,7 +61,7 @@ public class ModuleHook extends DeployableHook {
   }
 
   public ModuleHook(String moduleName, JsonObject config, int instances) {
-    this.moduleName = moduleName;
+    this.module = moduleName;
     this.config = config;
     this.instances = instances;
   }
@@ -81,7 +81,7 @@ public class ModuleHook extends DeployableHook {
   @Override
   protected void deploy(Container container, Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    container.deployModule(moduleName, new JsonObject().putString("address", address)
+    container.deployModule(module, new JsonObject().putString("address", address)
         .putObject("config", config), instances, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {

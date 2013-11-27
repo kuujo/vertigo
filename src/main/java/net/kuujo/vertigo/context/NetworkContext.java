@@ -22,8 +22,6 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 
@@ -33,11 +31,11 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public final class NetworkContext {
-  @JsonProperty            private String address;
-  @JsonProperty            private List<String> auditors = new ArrayList<>();
-  @JsonProperty("acking")  private boolean isAcking = true;
-  @JsonProperty("timeout") private long ackTimeout = 30000;
-  @JsonProperty            private Map<String, ComponentContext> components = new HashMap<>();
+  private String address;
+  private List<String> auditors = new ArrayList<>();
+  private boolean acking = true;
+  private long timeout = 30000;
+  private Map<String, ComponentContext> components = new HashMap<>();
 
   private NetworkContext() {
   }
@@ -88,7 +86,7 @@ public final class NetworkContext {
    *   Indicates whether acking is enabled for the network.
    */
   public boolean isAckingEnabled() {
-    return isAcking;
+    return acking;
   }
 
   /**
@@ -98,7 +96,7 @@ public final class NetworkContext {
    *   Ack timeout for the network.
    */
   public long getAckTimeout() {
-    return ackTimeout;
+    return timeout;
   }
 
   /**

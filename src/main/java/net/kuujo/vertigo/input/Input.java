@@ -17,8 +17,6 @@ package net.kuujo.vertigo.input;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
@@ -33,10 +31,10 @@ import net.kuujo.vertigo.input.grouping.RoundGrouping;
  * @author Jordan Halterman
  */
 public class Input {
-  @JsonProperty(required=true) private String id;
-  @JsonProperty(required=true) private int count = 1;
-  @JsonProperty(required=true) private String address;
-  @JsonProperty(required=true) private Grouping grouping;
+  private String id;
+  private int count = 1;
+  private String address;
+  private Grouping grouping;
 
   @SuppressWarnings("unused")
   private Input() {

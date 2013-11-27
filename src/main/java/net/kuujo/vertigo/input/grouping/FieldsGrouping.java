@@ -21,8 +21,6 @@ import java.util.Set;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A fields selector.
  *
@@ -33,16 +31,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Jordan Halterman
  */
 public class FieldsGrouping implements Grouping {
-  @JsonProperty(required=true) private Set<String> fields;
+  private Set<String> fields;
 
   public FieldsGrouping() {
     fields = new HashSet<>();
   }
 
   public FieldsGrouping(String... fieldNames) {
-    fields = new HashSet<>();
+    this.fields = new HashSet<>();
     for (String fieldName : fieldNames) {
-      fields.add(fieldName);
+      this.fields.add(fieldName);
     }
   }
 
@@ -55,9 +53,9 @@ public class FieldsGrouping implements Grouping {
    *   The called grouping instance.
    */
   public FieldsGrouping setFields(String... fieldNames) {
-    fields = new HashSet<>();
+    this.fields = new HashSet<>();
     for (String fieldName : fieldNames) {
-      fields.add(fieldName);
+      this.fields.add(fieldName);
     }
     return this;
   }
@@ -71,7 +69,7 @@ public class FieldsGrouping implements Grouping {
    *   The called grouping instance.
    */
   public FieldsGrouping setFields(Set<String> fieldNames) {
-    fields = fieldNames;
+    this.fields = fieldNames;
     return this;
   }
 
@@ -84,7 +82,7 @@ public class FieldsGrouping implements Grouping {
    *   The called grouping instance.
    */
   public FieldsGrouping addField(String fieldName) {
-    fields.add(fieldName);
+    this.fields.add(fieldName);
     return this;
   }
 

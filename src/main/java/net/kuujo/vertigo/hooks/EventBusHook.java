@@ -24,6 +24,8 @@ import net.kuujo.vertigo.serializer.Serializer;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * An event bus publishing hook.
  *
@@ -36,10 +38,10 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class EventBusHook implements ComponentHook {
-  private InstanceContext context;
-  private EventBus eventBus;
-  private String address;
-  private Serializer serializer = Serializer.getInstance();
+  @JsonIgnore private InstanceContext context;
+  @JsonIgnore private EventBus eventBus;
+  @JsonIgnore private String address;
+  @JsonIgnore private Serializer serializer = Serializer.getInstance();
 
   @Override
   public void handleStart(Component<?> component) {

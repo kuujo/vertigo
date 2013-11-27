@@ -15,15 +15,13 @@
  */
 package net.kuujo.vertigo.network;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A verticle component.
  *
  * @author Jordan Halterman
  */
 public class Verticle extends Component<Verticle> {
-  @JsonProperty("main") private String main;
+  private String main;
 
   public Verticle() {
     super();

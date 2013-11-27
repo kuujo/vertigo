@@ -15,15 +15,13 @@
  */
 package net.kuujo.vertigo.network;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A module component.
  *
  * @author Jordan Halterman
  */
 public class Module extends Component<Module> {
-  @JsonProperty("module") private String moduleName;
+  private String module;
 
   public Module() {
   }
@@ -44,7 +42,7 @@ public class Module extends Component<Module> {
    *   The module name.
    */
   public String getModule() {
-    return moduleName;
+    return module;
   }
 
   /**
@@ -56,7 +54,7 @@ public class Module extends Component<Module> {
    *   The called module component.
    */
   public Module setModule(String moduleName) {
-    this.moduleName = moduleName;
+    this.module = moduleName;
     return this;
   }
 

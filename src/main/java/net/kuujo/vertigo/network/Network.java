@@ -26,8 +26,6 @@ import net.kuujo.vertigo.serializer.Serializer;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A Vertigo network.
  *
@@ -36,11 +34,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class Network {
   private static final long DEFAULT_ACK_TIMEOUT = 30000;
 
-  @JsonProperty(required=true) private String address;
-  @JsonProperty("auditors")    private int numAuditors = 1;
-  @JsonProperty("acking")      private boolean isAcking = true;
-  @JsonProperty("timeout")     private long ackTimeout = DEFAULT_ACK_TIMEOUT;
-  @JsonProperty                private Map<String, Component<?>> components = new HashMap<String, Component<?>>();
+  private String address;
+  private int auditors = 1;
+  private boolean acking = true;
+  private long timeout = DEFAULT_ACK_TIMEOUT;
+  private Map<String, Component<?>> components = new HashMap<String, Component<?>>();
 
   public Network() {
     address = UUID.randomUUID().toString();
@@ -92,7 +90,7 @@ public final class Network {
    *   The called network instance.
    */
   public Network enableAcking() {
-    isAcking = true;
+    acking = true;
     return this;
   }
 
@@ -106,7 +104,7 @@ public final class Network {
    *   The called network instance.
    */
   public Network disableAcking() {
-    isAcking = false;
+    acking = false;
     return this;
   }
 
@@ -117,7 +115,7 @@ public final class Network {
    *   Indicates whether acking is enabled for the network.
    */
   public boolean isAckingEnabled() {
-    return isAcking;
+    return acking;
   }
 
   /**
@@ -127,7 +125,7 @@ public final class Network {
    *   The number of network auditors.
    */
   public int getNumAuditors() {
-    return numAuditors;
+    return auditors;
   }
 
   /**
@@ -143,7 +141,7 @@ public final class Network {
    *   The called network instance.
    */
   public Network setNumAuditors(int numAuditors) {
-    this.numAuditors = numAuditors;
+    this.auditors = numAuditors;
     return this;
   }
 
@@ -159,7 +157,7 @@ public final class Network {
    *   The called network instance.
    */
   public Network setAckTimeout(long timeout) {
-    ackTimeout = timeout;
+    this.timeout = timeout;
     return this;
   }
 
@@ -170,7 +168,7 @@ public final class Network {
    *   Ack timeout for the network. Defaults to 30000
    */
   public long getAckTimeout() {
-    return ackTimeout;
+    return timeout;
   }
 
   /**

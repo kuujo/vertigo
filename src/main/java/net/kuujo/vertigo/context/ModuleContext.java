@@ -15,15 +15,13 @@
  */
 package net.kuujo.vertigo.context;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A module component context.
  *
  * @author Jordan Halterman
  */
 public final class ModuleContext extends ComponentContext {
-  @JsonProperty("module") private String moduleName;
+  private String module;
 
   private ModuleContext() {
     super();
@@ -41,7 +39,7 @@ public final class ModuleContext extends ComponentContext {
    *   The module name.
    */
   public String getModule() {
-    return moduleName;
+    return module;
   }
 
 }

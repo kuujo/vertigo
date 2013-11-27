@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.output;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.output.selector.Selector;
@@ -32,9 +30,9 @@ import net.kuujo.vertigo.output.selector.Selector;
  * @author Jordan Halterman
  */
 public class Output {
-  @JsonProperty(required=true) private String id;
-  @JsonProperty(required=true) private int count = 1;
-  @JsonProperty(required=true) private Selector selector;
+  private String id;
+  private int count = 1;
+  private Selector selector;
 
   @SuppressWarnings("unused")
   private Output() {

@@ -22,7 +22,6 @@ import java.util.UUID;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -46,12 +45,12 @@ public abstract class Component<T extends Component<T>> {
   public static final String MODULE = "module";
   public static final String VERTICLE = "verticle";
 
-  @JsonProperty(required=true) protected String address;
-  @JsonProperty                protected Map<String, Object> config;
-  @JsonProperty("instances")   protected int numInstances = 1;
-  @JsonProperty("heartbeat")   protected long heartbeatInterval = 5000;
-  @JsonProperty                protected List<ComponentHook> hooks = new ArrayList<>();
-  @JsonProperty                protected List<Input> inputs = new ArrayList<>();
+  protected String address;
+  protected Map<String, Object> config;
+  protected int instances = 1;
+  protected long heartbeat = 5000;
+  protected List<ComponentHook> hooks = new ArrayList<>();
+  protected List<Input> inputs = new ArrayList<>();
 
   public Component() {
     address = UUID.randomUUID().toString();
@@ -136,7 +135,7 @@ public abstract class Component<T extends Component<T>> {
    *   The number of component instances.
    */
   public int getInstances() {
-    return numInstances;
+    return instances;
   }
 
   /**
@@ -149,9 +148,9 @@ public abstract class Component<T extends Component<T>> {
    */
   @SuppressWarnings("unchecked")
   public T setInstances(int instances) {
-    numInstances = instances;
+    this.instances = instances;
     for (Input input : inputs) {
-      input.setCount(numInstances);
+      input.setCount(instances);
     }
     return (T) this;
   }
@@ -163,7 +162,7 @@ public abstract class Component<T extends Component<T>> {
    *   The component heartbeat interval.
    */
   public long getHeartbeatInterval() {
-    return heartbeatInterval;
+    return heartbeat;
   }
 
   /**
@@ -180,7 +179,7 @@ public abstract class Component<T extends Component<T>> {
    */
   @SuppressWarnings("unchecked")
   public T setHeartbeatInterval(long interval) {
-    heartbeatInterval = interval;
+    heartbeat = interval;
     return (T) this;
   }
 

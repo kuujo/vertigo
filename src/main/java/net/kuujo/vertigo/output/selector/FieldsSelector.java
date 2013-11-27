@@ -36,27 +36,27 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class FieldsSelector implements Selector {
-  private Set<String> fieldNames;
+  private Set<String> fields;
 
   public FieldsSelector() {
   }
 
   public FieldsSelector(String... fieldNames) {
-    this.fieldNames = new HashSet<>();
+    this.fields = new HashSet<>();
     for (String fieldName : fieldNames) {
-      this.fieldNames.add(fieldName);
+      this.fields.add(fieldName);
     }
   }
 
   public FieldsSelector(Set<String> fieldNames) {
-    this.fieldNames = fieldNames;
+    this.fields = fieldNames;
   }
 
   @Override
   public List<Connection> select(JsonMessage message, List<Connection> connections) {
     JsonObject body = message.body();
-    Map<String, Object> fields = new HashMap<>(fieldNames.size() + 1);
-    for (String fieldName : fieldNames) {
+    Map<String, Object> fields = new HashMap<>(this.fields.size() + 1);
+    for (String fieldName : this.fields) {
       Object value = body.getValue(fieldName);
       fields.put(fieldName, value);
     }

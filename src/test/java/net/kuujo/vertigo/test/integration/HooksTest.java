@@ -36,8 +36,6 @@ import static org.vertx.testtools.VertxAssert.testComplete;
 
 import org.vertx.testtools.TestVerticle;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * A component hooks test.
  *
@@ -49,7 +47,7 @@ public class HooksTest extends TestVerticle {
    * A test component hook.
    */
   public static class TestComponentHook implements ComponentHook {
-    @JsonProperty("hook") private String hook;
+    private String hook;
     public TestComponentHook() {
     }
     public TestComponentHook(String hook) {

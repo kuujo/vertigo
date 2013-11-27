@@ -29,6 +29,12 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 /**
  * An object serializer.
  *
+ * This serializer uses an internal {@link ObjectMapper} to serialize and
+ * deserialize objects to and from Json. By default, the serializer will automatically
+ * recognize any fields of the class being serialized, but getters, setters,
+ * and creators must be explicitly noted. See the Jackson Json serializer
+ * documentation for more information.
+ *
  * @author Jordan Halterman
  */
 public final class Serializer {
@@ -73,7 +79,9 @@ public final class Serializer {
    * Sets auto-detect visibility to none for the mapper.
    */
   private void configureMapper() {
-    mapper.setVisibilityChecker(mapper.getVisibilityChecker().with(JsonAutoDetect.Visibility.NONE));
+    mapper.setVisibilityChecker(mapper.getVisibilityChecker()
+        .with(JsonAutoDetect.Visibility.NONE)
+        .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
   }
 
   /**

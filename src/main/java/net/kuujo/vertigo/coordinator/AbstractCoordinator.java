@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.coordinator;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -184,7 +185,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    */
   private void doDeploy() {
     if (context.isAckingEnabled()) {
-      recursiveDeployAuditors(context.getAuditors(), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
+      recursiveDeployAuditors(copyList(context.getAuditors()), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
@@ -222,6 +223,17 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         }
       });
     }
+  }
+
+  /**
+   * Copies a list to a new list.
+   */
+  private static <T> List<T> copyList(List<T> list) {
+    List<T> newList = new ArrayList<>();
+    for (T item : list) {
+      newList.add(item);
+    }
+    return newList;
   }
 
   /**
@@ -308,7 +320,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             final InstanceContext context = contextMap.get(id);
             if (context.getComponent().isModule()) {
               try {
-                JsonObject config = new JsonObject();
+                JsonObject config = context.getComponent().getConfig().copy();
                 config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
                 config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
                     .putString("id", context.id()));
@@ -330,7 +342,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             }
             else if (context.getComponent().isVerticle()) {
               try {
-                JsonObject config = new JsonObject();
+                JsonObject config = context.getComponent().getConfig().copy();
                 config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
                 config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
                     .putString("id", context.id()));
@@ -598,10 +610,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         contextMap.put(context.id(), context);
         future.setHandler(resultHandler);
 
-        JsonObject config = context.getComponent().getConfig();
-        if (config == null) {
-          config = new JsonObject();
-        }
+        JsonObject config = context.getComponent().getConfig().copy();
 
         try {
           config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));

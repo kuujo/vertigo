@@ -42,7 +42,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public JsonObject serialize(Object object) throws SerializationException {
+  public JsonObject serialize(Object object) {
     try {
       return new JsonObject(mapper.writeValueAsString(object));
     }
@@ -52,7 +52,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public <T> T deserialize(JsonObject json, Class<T> type) throws SerializationException {
+  public <T> T deserialize(JsonObject json, Class<T> type) {
     try {
       return (T) mapper.readValue(json.encode(), type);
     }

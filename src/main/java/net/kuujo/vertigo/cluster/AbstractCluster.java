@@ -19,7 +19,6 @@ import net.kuujo.vertigo.context.ContextBuilder;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -62,7 +61,7 @@ abstract class AbstractCluster implements Cluster {
       final NetworkContext context = ContextBuilder.buildContext(network);
       container.deployVerticle(coordinator, serializer.serialize(context));
     }
-    catch (MalformedNetworkException | SerializationException e) {
+    catch (MalformedNetworkException e) {
       container.logger().error(e);
     }
   }
@@ -84,7 +83,7 @@ abstract class AbstractCluster implements Cluster {
         }
       });
     }
-    catch (MalformedNetworkException | SerializationException e) {
+    catch (MalformedNetworkException e) {
       future.setFailure(e);
     }
   }

@@ -18,7 +18,6 @@ package net.kuujo.vertigo.hooks;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -49,13 +48,8 @@ public class EventBusHook implements ComponentHook {
     this.eventBus = component.getVertx().eventBus();
     this.context = component.getContext();
     this.address = component.getContext().getComponent().getAddress();
-    try {
-      eventBus.publish(String.format("vertigo.hooks.%s", address),
-          new JsonObject().putString("event", "start").putObject("context", serializer.serialize(context)));
-    }
-    catch (SerializationException e) {
-      // Do nothing.
-    }
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "start").putObject("context", serializer.serialize(context)));
   }
 
   @Override
@@ -102,13 +96,8 @@ public class EventBusHook implements ComponentHook {
 
   @Override
   public void handleStop(Component<?> subject) {
-    try {
-      eventBus.publish(String.format("vertigo.hooks.%s", address),
-          new JsonObject().putString("event", "stop").putObject("context", serializer.serialize(context)));
-    }
-    catch (SerializationException e) {
-      // Do nothing.
-    }
+    eventBus.publish(String.format("vertigo.hooks.%s", address),
+        new JsonObject().putString("event", "stop").putObject("context", serializer.serialize(context)));
   }
 
 }

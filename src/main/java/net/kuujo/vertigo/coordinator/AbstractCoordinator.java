@@ -66,12 +66,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   public void start() {
     super.start();
     events = new Events(eb);
-    try {
-      context = serializer.deserialize(config, NetworkContext.class);
-    }
-    catch (SerializationException e) {
-      logger.error(e);
-    }
+    context = serializer.deserialize(config, NetworkContext.class);
     eb.registerHandler(context.getAddress(), this);
     doDeploy();
   }
@@ -320,48 +315,38 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
           if (contextMap.containsKey(id)) {
             final InstanceContext context = contextMap.get(id);
             if (context.getComponent().isModule()) {
-              try {
-                JsonObject config = context.getComponent().getConfig().copy();
-                config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
-                config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
-                    .putString("id", context.id()));
-                deployModule(((ModuleContext) context.getComponent()).getModule(), config, new Handler<AsyncResult<String>>() {
-                  @Override
-                  public void handle(AsyncResult<String> result) {
-                    if (result.succeeded()) {
-                      deploymentMap.put(context.id(), result.result());
-                    }
-                    else {
-                      container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
-                    }
+              JsonObject config = context.getComponent().getConfig().copy();
+              config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
+              config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
+                  .putString("id", context.id()));
+              deployModule(((ModuleContext) context.getComponent()).getModule(), config, new Handler<AsyncResult<String>>() {
+                @Override
+                public void handle(AsyncResult<String> result) {
+                  if (result.succeeded()) {
+                    deploymentMap.put(context.id(), result.result());
                   }
-                });
-              }
-              catch (SerializationException e) {
-                logger.warn(e);
-              }
+                  else {
+                    container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
+                  }
+                }
+              });
             }
             else if (context.getComponent().isVerticle()) {
-              try {
-                JsonObject config = context.getComponent().getConfig().copy();
-                config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
-                config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
-                    .putString("id", context.id()));
-                deployVerticle(((VerticleContext) context.getComponent()).getMain(), config, new Handler<AsyncResult<String>>() {
-                  @Override
-                  public void handle(AsyncResult<String> result) {
-                    if (result.succeeded()) {
-                      deploymentMap.put(context.id(), result.result());
-                    }
-                    else {
-                      container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
-                    }
+              JsonObject config = context.getComponent().getConfig().copy();
+              config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
+              config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
+                  .putString("id", context.id()));
+              deployVerticle(((VerticleContext) context.getComponent()).getMain(), config, new Handler<AsyncResult<String>>() {
+                @Override
+                public void handle(AsyncResult<String> result) {
+                  if (result.succeeded()) {
+                    deploymentMap.put(context.id(), result.result());
                   }
-                });
-              }
-              catch (SerializationException e) {
-                logger.warn(e);
-              }
+                  else {
+                    container.logger().error(String.format("Failed to deploy %s instance %s.", context.getComponent().getAddress(), context.id()));
+                  }
+                }
+              });
             }
           }
         }

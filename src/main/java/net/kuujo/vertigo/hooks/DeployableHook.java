@@ -26,7 +26,7 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A deployable (verticle/module) hook.
@@ -34,8 +34,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Jordan Halterman
  */
 abstract class DeployableHook implements ComponentHook {
-  @JsonProperty protected String address;
-                protected EventBus eventBus;
+  protected String address;
+  protected @JsonIgnore EventBus eventBus;
 
   /**
    * Deploys the deployable.

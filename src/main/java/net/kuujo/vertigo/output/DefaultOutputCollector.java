@@ -29,7 +29,6 @@ import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.monitor.acker.Acker;
 import net.kuujo.vertigo.monitor.acker.DefaultAcker;
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -41,7 +40,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
 /**
@@ -52,7 +50,6 @@ import org.vertx.java.platform.Container;
 public class DefaultOutputCollector implements OutputCollector {
   private final Serializer serializer = Serializers.getDefault();
   private final Vertx vertx;
-  private final Logger logger;
   private final EventBus eventBus;
   private final InstanceContext context;
   private final Acker acker;
@@ -72,7 +69,6 @@ public class DefaultOutputCollector implements OutputCollector {
 
   public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context) {
     this.vertx = vertx;
-    this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
     acker = new DefaultAcker(context.id(), eventBus);
@@ -88,7 +84,6 @@ public class DefaultOutputCollector implements OutputCollector {
 
   public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context, Acker acker) {
     this.vertx = vertx;
-    this.logger = container.logger();
     this.eventBus = eventBus;
     this.context = context;
     this.acker = acker;
@@ -121,38 +116,33 @@ public class DefaultOutputCollector implements OutputCollector {
       return;
     }
 
-    try {
-      Input input = serializer.deserialize(info, Input.class);
-      Output output = new Output(input.id(), input.getCount(), input.getGrouping().createSelector());
+    Input input = serializer.deserialize(info, Input.class);
+    Output output = new Output(input.id(), input.getCount(), input.getGrouping().createSelector());
 
-      final Channel channel = findChannel(output);
-      if (!channel.containsConnection(address)) {
-        channel.addConnection(new DefaultConnection(address, eventBus));
-      }
-
-      if (connectionTimers.containsKey(address)) {
-        vertx.cancelTimer(connectionTimers.remove(address));
-      }
-
-      // Set a timer that, if triggered, will remove the connection from the channel.
-      // This indicates that we haven't received a keep-alive message in LISTEN_INTERVAL.
-      connectionTimers.put(address, vertx.setTimer(LISTEN_INTERVAL, new Handler<Long>() {
-        @Override
-        public void handle(Long timerID) {
-            Connection connection = channel.getConnection(address);
-            // if null it means the connection doesn't exist or it is already a PseudConnection
-            // so we don't need to remove it again
-            if (connection != null) {
-              channel.removeConnection(connection);
-            }
-          connectionTimers.remove(address);
-        }
-      }));
-      eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
+    final Channel channel = findChannel(output);
+    if (!channel.containsConnection(address)) {
+      channel.addConnection(new DefaultConnection(address, eventBus));
     }
-    catch (SerializationException e) {
-      logger.error(e);
+
+    if (connectionTimers.containsKey(address)) {
+      vertx.cancelTimer(connectionTimers.remove(address));
     }
+
+    // Set a timer that, if triggered, will remove the connection from the channel.
+    // This indicates that we haven't received a keep-alive message in LISTEN_INTERVAL.
+    connectionTimers.put(address, vertx.setTimer(LISTEN_INTERVAL, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+          Connection connection = channel.getConnection(address);
+          // if null it means the connection doesn't exist or it is already a PseudConnection
+          // so we don't need to remove it again
+          if (connection != null) {
+            channel.removeConnection(connection);
+          }
+        connectionTimers.remove(address);
+      }
+    }));
+    eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
   }
 
   /**

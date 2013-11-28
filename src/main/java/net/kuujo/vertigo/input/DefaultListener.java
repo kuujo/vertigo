@@ -20,7 +20,6 @@ import java.util.UUID;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.message.DefaultJsonMessage;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -267,14 +266,9 @@ public class DefaultListener implements Listener {
     pollTimer = vertx.setPeriodic(POLL_INTERVAL, new Handler<Long>() {
       @Override
       public void handle(Long timerId) {
-        try {
-          eventBus.publish(input.getAddress(), new JsonObject().putString("action", "listen")
-              .putString("address", address).putString("status", statusAddress)
-              .putObject("input", serializer.serialize(input)));
-        }
-        catch (SerializationException e) {
-          // Do nothing. The listener will fail.
-        }
+        eventBus.publish(input.getAddress(), new JsonObject().putString("action", "listen")
+            .putString("address", address).putString("status", statusAddress)
+            .putObject("input", serializer.serialize(input)));
       }
     });
   }

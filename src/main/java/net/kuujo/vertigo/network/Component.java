@@ -29,7 +29,7 @@ import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 /**
  * A network component.
@@ -72,7 +72,7 @@ public abstract class Component<T extends Component<T>> {
    */
   public static Component<?> fromJson(JsonObject json) throws MalformedNetworkException {
     try {
-      return Serializer.getInstance().deserialize(json, Component.class);
+      return Serializers.getDefault().deserialize(json, Component.class);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.context;
 
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -47,7 +47,7 @@ public final class InstanceContext {
    */
   public static InstanceContext fromJson(JsonObject context) throws MalformedContextException {
     try {
-      return Serializer.getInstance().deserialize(context, InstanceContext.class);
+      return Serializers.getDefault().deserialize(context, InstanceContext.class);
     }
     catch (SerializationException e) {
       throw new MalformedContextException(e);

@@ -23,7 +23,7 @@ import java.util.Map;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 /**
  * A network context.
@@ -52,7 +52,7 @@ public final class NetworkContext {
    */
   public static NetworkContext fromJson(JsonObject context) throws MalformedContextException {
     try {
-      return Serializer.getInstance().deserialize(context, NetworkContext.class);
+      return Serializers.getDefault().deserialize(context, NetworkContext.class);
     }
     catch (SerializationException e) {
       throw new MalformedContextException(e);

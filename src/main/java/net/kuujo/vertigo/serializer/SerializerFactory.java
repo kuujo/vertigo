@@ -15,39 +15,19 @@
  */
 package net.kuujo.vertigo.serializer;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
- * A data serializer.
+ * A serializer factory.
  *
  * @author Jordan Halterman
  */
-public interface Serializer {
+public interface SerializerFactory {
 
   /**
-   * Serializes an object.
+   * Creates a new serializer instance.
    *
-   * @param object
-   *   The object to serialize.
    * @return
-   *   The serialized object.
-   * @throws SerializationException
-   *   If the serialization fails.
+   *   A new serializer.
    */
-  public JsonObject serialize(Object object) throws SerializationException;
-
-  /**
-   * Deserializes an object.
-   *
-   * @param json
-   *   The serialized object.
-   * @param type
-   *   The serialized type.
-   * @return
-   *   The deserialized object.
-   * @throws SerializationException
-   *   If the deserialization fails.
-   */
-  public <T> T deserialize(JsonObject json, Class<T> type) throws SerializationException;
+  Serializer createSerializer();
 
 }

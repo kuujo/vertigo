@@ -28,6 +28,7 @@ import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;
@@ -52,7 +53,7 @@ public class SerializerTest {
     network.addVerticle("1", "1.py", 2).addHook(new EventBusHook());
     network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
-    Serializer serializer = Serializer.getInstance();
+    Serializer serializer = Serializers.getDefault();
     try {
       JsonObject serialized = serializer.serialize(network);
       Network deserialized = serializer.deserialize(serialized, Network.class);
@@ -95,7 +96,7 @@ public class SerializerTest {
       assertNotNull(instance);
       assertNotNull(instance.id());
 
-      Serializer serializer = Serializer.getInstance();
+      Serializer serializer = Serializers.getDefault();
       JsonObject serialized = serializer.serialize(context);
       serializer.deserialize(serialized, NetworkContext.class);
     }

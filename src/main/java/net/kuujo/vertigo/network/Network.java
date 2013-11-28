@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -60,7 +60,7 @@ public final class Network {
    */
   public static Network fromJson(JsonObject json) throws MalformedNetworkException {
     try {
-      return Serializer.getInstance().deserialize(json, Network.class);
+      return Serializers.getDefault().deserialize(json, Network.class);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

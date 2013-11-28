@@ -36,6 +36,7 @@ import net.kuujo.vertigo.events.Events;
 import net.kuujo.vertigo.monitor.auditor.AuditorVerticle;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
@@ -51,7 +52,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 abstract class AbstractCoordinator extends BusModBase implements Handler<Message<JsonObject>> {
-  protected final Serializer serializer = Serializer.getInstance();
+  protected final Serializer serializer = Serializers.getDefault();
   protected NetworkContext context;
   protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();

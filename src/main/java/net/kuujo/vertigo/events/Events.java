@@ -22,6 +22,7 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -39,7 +40,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public final class Events {
-  private static final Serializer serializer = Serializer.getInstance();
+  private static final Serializer serializer = Serializers.getDefault();
   private final EventBus eventBus;
 
   public Events(EventBus eventBus) {

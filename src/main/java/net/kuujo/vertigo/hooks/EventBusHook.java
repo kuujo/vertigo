@@ -20,6 +20,7 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -41,7 +42,7 @@ public class EventBusHook implements ComponentHook {
   @JsonIgnore private InstanceContext context;
   @JsonIgnore private EventBus eventBus;
   @JsonIgnore private String address;
-  @JsonIgnore private Serializer serializer = Serializer.getInstance();
+  @JsonIgnore private Serializer serializer = Serializers.getDefault();
 
   @Override
   public void handleStart(Component<?> component) {

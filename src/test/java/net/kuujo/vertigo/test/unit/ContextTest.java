@@ -21,6 +21,7 @@ import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonArray;
@@ -39,7 +40,7 @@ public class ContextTest {
 
   @Test
   public void testNetworkContext() {
-    Serializer serializer = Serializer.getInstance();
+    Serializer serializer = Serializers.getDefault();
     Network network = new Network("test");
     network.setNumAuditors(2);
     network.enableAcking();

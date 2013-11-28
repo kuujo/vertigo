@@ -31,6 +31,7 @@ import net.kuujo.vertigo.monitor.acker.Acker;
 import net.kuujo.vertigo.monitor.acker.DefaultAcker;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -49,7 +50,7 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector {
-  private final Serializer serializer = Serializer.getInstance();
+  private final Serializer serializer = Serializers.getDefault();
   private final Vertx vertx;
   private final Logger logger;
   private final EventBus eventBus;

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 /**
  * A component context.
@@ -68,7 +68,7 @@ public abstract class ComponentContext {
    */
   public static ComponentContext fromJson(JsonObject context) throws MalformedContextException {
     try {
-      return Serializer.getInstance().deserialize(context, ComponentContext.class);
+      return Serializers.getDefault().deserialize(context, ComponentContext.class);
     }
     catch (SerializationException e) {
       throw new MalformedContextException(e);

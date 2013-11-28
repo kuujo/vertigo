@@ -21,6 +21,7 @@ import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -39,7 +40,7 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 abstract class AbstractCluster implements Cluster {
-  private final Serializer serializer = Serializer.getInstance();
+  private final Serializer serializer = Serializers.getDefault();
   private EventBus eventBus;
   private Container container;
   protected String coordinator;

@@ -22,6 +22,7 @@ import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
+import net.kuujo.vertigo.serializer.Serializers;
 
 /**
  * A context builder.
@@ -29,7 +30,7 @@ import net.kuujo.vertigo.serializer.Serializer;
  * @author Jordan Halterman
  */
 public final class ContextBuilder {
-  private static final Serializer serializer = Serializer.getInstance();
+  private static final Serializer serializer = Serializers.getDefault();
 
   /**
    * Builds a network context from a network definition.

@@ -35,8 +35,6 @@ import net.kuujo.vertigo.coordinator.heartbeat.HeartbeatMonitor;
 import net.kuujo.vertigo.events.Events;
 import net.kuujo.vertigo.monitor.auditor.AuditorVerticle;
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
@@ -52,7 +50,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 abstract class AbstractCoordinator extends BusModBase implements Handler<Message<JsonObject>> {
-  protected final Serializer serializer = Serializers.getDefault();
   protected NetworkContext context;
   protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();
@@ -66,7 +63,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   public void start() {
     super.start();
     events = new Events(eb);
-    context = serializer.deserialize(config, NetworkContext.class);
+    context = NetworkContext.fromJson(config);
     eb.registerHandler(context.getAddress(), this);
     doDeploy();
   }
@@ -316,9 +313,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             final InstanceContext context = contextMap.get(id);
             if (context.getComponent().isModule()) {
               JsonObject config = context.getComponent().getConfig().copy();
-              config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
-              config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
-                  .putString("id", context.id()));
+              config.putObject("__context__", InstanceContext.toJson(context));
               deployModule(((ModuleContext) context.getComponent()).getModule(), config, new Handler<AsyncResult<String>>() {
                 @Override
                 public void handle(AsyncResult<String> result) {
@@ -333,9 +328,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             }
             else if (context.getComponent().isVerticle()) {
               JsonObject config = context.getComponent().getConfig().copy();
-              config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
-              config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
-                  .putString("id", context.id()));
+              config.putObject("__context__", InstanceContext.toJson(context));
               deployVerticle(((VerticleContext) context.getComponent()).getMain(), config, new Handler<AsyncResult<String>>() {
                 @Override
                 public void handle(AsyncResult<String> result) {
@@ -599,9 +592,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         JsonObject config = context.getComponent().getConfig().copy();
 
         try {
-          config.putObject("__context__", serializer.serialize(context.getComponent().getNetwork()));
-          config.putObject("__instance__", new JsonObject().putString("address", context.getComponent().getAddress())
-              .putString("id", context.id()));
+          config.putObject("__context__", InstanceContext.toJson(context));
         }
         catch (SerializationException e) {
           future.setFailure(e);

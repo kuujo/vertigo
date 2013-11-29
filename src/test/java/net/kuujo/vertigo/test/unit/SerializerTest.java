@@ -46,6 +46,35 @@ import static org.junit.Assert.fail;
 public class SerializerTest {
 
   @Test
+  public void testSerializeNetworkContext() {
+    Network network = new Network("test");
+    network.setNumAuditors(2);
+    network.setAckTimeout(10000);
+    network.addVerticle("1", "1.py", 2).addHook(new EventBusHook());
+    network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
+
+    try {
+      NetworkContext context = ContextBuilder.buildContext(network);
+      JsonObject toJsonNetwork = NetworkContext.toJson(context);
+      NetworkContext fromJsonNetwork = NetworkContext.fromJson(toJsonNetwork);
+      assertEquals("test", fromJsonNetwork.getAddress());
+
+      ComponentContext component = context.getComponent("1");
+      JsonObject toJsonComponent = ComponentContext.toJson(component);
+      ComponentContext fromJsonComponent = ComponentContext.fromJson(toJsonComponent);
+      assertEquals("test", fromJsonComponent.getNetwork().getAddress());
+
+      InstanceContext instance = component.getInstances().get(0);
+      JsonObject toJsonInstance = InstanceContext.toJson(instance);
+      InstanceContext fromJsonInstance = InstanceContext.fromJson(toJsonInstance);
+      assertEquals("test", fromJsonInstance.getComponent().getNetwork().getAddress());
+    }
+    catch (MalformedNetworkException e) {
+      fail(e.getMessage());
+    }
+  }
+
+  @Test
   public void testSerializeNetwork() {
     Network network = new Network("test");
     network.setNumAuditors(2);

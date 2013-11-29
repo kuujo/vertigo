@@ -15,12 +15,12 @@
  */
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A component instance context.
@@ -29,8 +29,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
  */
 public final class InstanceContext {
   private String id;
-  @SuppressWarnings("unused") private String address;
-  @JsonBackReference private ComponentContext component;
+  private @JsonIgnore ComponentContext component;
 
   private InstanceContext() {
   }
@@ -45,13 +44,25 @@ public final class InstanceContext {
    * @throws MalformedContextException
    *   If the JSON context is malformed.
    */
-  public static InstanceContext fromJson(JsonObject context) throws MalformedContextException {
-    try {
-      return Serializers.getDefault().deserialize(context, InstanceContext.class);
-    }
-    catch (SerializationException e) {
-      throw new MalformedContextException(e);
-    }
+  public static InstanceContext fromJson(JsonObject context) {
+    Serializer serializer = Serializers.getDefault();
+    InstanceContext instance = serializer.deserialize(context.getObject("instance"), InstanceContext.class);
+    ComponentContext component = ComponentContext.fromJson(context);
+    return instance.setParent(component);
+  }
+
+  /**
+   * Serializes an instance context to JSON.
+   *
+   * @param context
+   *   The instance context to serialize.
+   * @return
+   *   A Json representation of the instance context.
+   */
+  public static JsonObject toJson(InstanceContext context) {
+    Serializer serializer = Serializers.getDefault();
+    JsonObject json = ComponentContext.toJson(context.getComponent());
+    return json.putObject("instance", serializer.serialize(context));
   }
 
   /**

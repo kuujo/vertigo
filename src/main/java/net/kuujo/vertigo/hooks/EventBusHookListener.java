@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.context.MalformedContextException;
 import net.kuujo.vertigo.message.DefaultMessageId;
 import net.kuujo.vertigo.message.MessageId;
 
@@ -65,12 +64,7 @@ public class EventBusHookListener {
           switch (event) {
             case "start":
               if (startHandler != null) {
-                try {
-                  startHandler.handle(InstanceContext.fromJson(body.getObject("context")));
-                }
-                catch (MalformedContextException e) {
-                  // Do nothing.
-                }
+                startHandler.handle(InstanceContext.fromJson(body.getObject("context")));
               }
               break;
             case "receive":
@@ -110,12 +104,7 @@ public class EventBusHookListener {
               break;
             case "stop":
               if (stopHandler != null) {
-                try {
-                  stopHandler.handle(InstanceContext.fromJson(body.getObject("context")));
-                }
-                catch (MalformedContextException e) {
-                  // Do nothing.
-                }
+                stopHandler.handle(InstanceContext.fromJson(body.getObject("context")));
               }
               break;
           }

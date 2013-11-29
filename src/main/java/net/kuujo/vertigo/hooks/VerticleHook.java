@@ -25,7 +25,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
@@ -39,11 +39,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * @author Jordan Halterman
  */
 public class VerticleHook extends DeployableHook {
-  @JsonProperty("main")      private String main;
-  @JsonProperty("config")    private JsonObject config;
-  @JsonProperty("instances") private int instances = 1;
-                             private String deploymentId;
-                             private String address = UUID.randomUUID().toString();
+  private String main;
+  private JsonObject config;
+  private int instances = 1;
+  private @JsonIgnore String deploymentId;
+  private @JsonIgnore String address = UUID.randomUUID().toString();
 
   public VerticleHook() {
   }

@@ -21,8 +21,6 @@ import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.context.MalformedContextException;
-import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.feeder.BasicFeeder;
 import net.kuujo.vertigo.feeder.DefaultBasicFeeder;
 import net.kuujo.vertigo.feeder.DefaultPollingFeeder;
@@ -56,28 +54,13 @@ public final class Vertigo {
   }
 
   public Vertigo(Vertx vertx, Container container) {
-    NetworkContext context = null;
-    InstanceContext instance = null;
     JsonObject config = container.config();
-    if (config != null && config.getFieldNames().contains("__context__")
-        && config.getFieldNames().contains("__instance__")) {
+    if (config != null && config.getFieldNames().contains("__context__")) {
       JsonObject contextInfo = config.getObject("__context__");
-      try {
-        context = NetworkContext.fromJson(contextInfo);
-      }
-      catch (MalformedContextException e) {
-        container.logger().warn(e);
-      }
-      config.removeField("__context__");
-
-      JsonObject instanceInfo = config.getObject("__instance__");
-      instance = context.getComponent(instanceInfo.getString("address"))
-          .getInstance(instanceInfo.getString("id"));
-      config.removeField("__instance__");
+      context = InstanceContext.fromJson(contextInfo);
     }
     this.vertx = vertx;
     this.container = container;
-    this.context = instance;
   }
 
   /**

@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializers;
 
 /**
@@ -50,13 +49,20 @@ public final class NetworkContext {
    * @throws MalformedContextException
    *   If the network context is malformed.
    */
-  public static NetworkContext fromJson(JsonObject context) throws MalformedContextException {
-    try {
-      return Serializers.getDefault().deserialize(context, NetworkContext.class);
-    }
-    catch (SerializationException e) {
-      throw new MalformedContextException(e);
-    }
+  public static NetworkContext fromJson(JsonObject context) {
+    return Serializers.getDefault().deserialize(context.getObject("network"), NetworkContext.class);
+  }
+
+  /**
+   * Serializes a network context to JSON.
+   *
+   * @param context
+   *   The network context to serialize.
+   * @return
+   *   A serialized network context.
+   */
+  public static JsonObject toJson(NetworkContext context) {
+    return new JsonObject().putObject("network", Serializers.getDefault().serialize(context));
   }
 
   /**

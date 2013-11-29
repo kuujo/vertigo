@@ -49,7 +49,7 @@ public class EventBusHook implements ComponentHook {
     this.context = component.getContext();
     this.address = component.getContext().getComponent().getAddress();
     eventBus.publish(String.format("vertigo.hooks.%s", address),
-        new JsonObject().putString("event", "start").putObject("context", serializer.serialize(context)));
+        new JsonObject().putString("event", "start").putObject("context", InstanceContext.toJson(context)));
   }
 
   @Override
@@ -97,7 +97,7 @@ public class EventBusHook implements ComponentHook {
   @Override
   public void handleStop(Component<?> subject) {
     eventBus.publish(String.format("vertigo.hooks.%s", address),
-        new JsonObject().putString("event", "stop").putObject("context", serializer.serialize(context)));
+        new JsonObject().putString("event", "stop").putObject("context", InstanceContext.toJson(context)));
   }
 
 }

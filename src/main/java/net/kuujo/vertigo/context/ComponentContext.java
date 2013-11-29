@@ -21,13 +21,13 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
-import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
 /**
@@ -50,8 +50,7 @@ public abstract class ComponentContext {
   protected long heartbeat = 5000;
   protected List<ComponentHook> hooks = new ArrayList<>();
   protected List<Input> inputs = new ArrayList<>();
-  @JsonBackReference
-  protected NetworkContext network;
+  protected @JsonIgnore NetworkContext network;
 
   protected ComponentContext() {
   }
@@ -66,13 +65,26 @@ public abstract class ComponentContext {
    * @throws MalformedContextException
    *   If the context is malformed.
    */
-  public static ComponentContext fromJson(JsonObject context) throws MalformedContextException {
-    try {
-      return Serializers.getDefault().deserialize(context, ComponentContext.class);
-    }
-    catch (SerializationException e) {
-      throw new MalformedContextException(e);
-    }
+  public static ComponentContext fromJson(JsonObject context) {
+    Serializer serializer = Serializers.getDefault();
+    ComponentContext component = serializer.deserialize(context.getObject("component"), ComponentContext.class);
+    NetworkContext network = NetworkContext.fromJson(context);
+    return component.setParent(network);
+  }
+
+  /**
+   * Serializes a component context to JSON.
+   *
+   * @param context
+   *   The component context to serialize.
+   * @return
+   *   A Json representation of the component context.
+   */
+  public static JsonObject toJson(ComponentContext context) {
+    Serializer serializer = Serializers.getDefault();
+    JsonObject json = NetworkContext.toJson(context.getNetwork());
+    json.putObject("component", serializer.serialize(context));
+    return json;
   }
 
   /**

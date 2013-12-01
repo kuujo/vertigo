@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
+import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * An output selector.
@@ -41,7 +42,7 @@ import net.kuujo.vertigo.output.Connection;
   @JsonSubTypes.Type(value=FieldsSelector.class, name="fields"),
   @JsonSubTypes.Type(value=AllSelector.class, name="all")
 })
-public interface Selector {
+public interface Selector extends Serializable {
 
   /**
    * Selects a list of connections to which to emit messages.

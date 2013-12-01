@@ -15,14 +15,24 @@
  */
 package net.kuujo.vertigo.message;
 
+import net.kuujo.vertigo.serializer.Serializable;
+
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A message identifier.
  *
  * @author Jordan Halterman
  */
-public interface MessageId {
+@JsonTypeInfo(
+    use=JsonTypeInfo.Id.CLASS,
+    include=JsonTypeInfo.As.PROPERTY,
+    property="type",
+    defaultImpl=DefaultJsonMessage.class
+)
+public interface MessageId extends Serializable {
 
   /**
    * Gets the message correlation ID.

@@ -15,14 +15,24 @@
  */
 package net.kuujo.vertigo.message;
 
+import net.kuujo.vertigo.serializer.Serializable;
+
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A Vertigo message.
  *
  * @author Jordan Halterman
  */
-public interface JsonMessage {
+@JsonTypeInfo(
+    use=JsonTypeInfo.Id.CLASS,
+    include=JsonTypeInfo.As.PROPERTY,
+    property="type",
+    defaultImpl=DefaultJsonMessage.class
+)
+public interface JsonMessage extends Serializable {
 
   /**
    * Returns the message ID.

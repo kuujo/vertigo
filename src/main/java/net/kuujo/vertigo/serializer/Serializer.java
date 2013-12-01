@@ -18,7 +18,7 @@ package net.kuujo.vertigo.serializer;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A data serializer.
+ * A Vertigo object serializer.
  *
  * @author Jordan Halterman
  */
@@ -32,22 +32,22 @@ public interface Serializer {
    * @return
    *   The serialized object.
    * @throws SerializationException
-   *   If the serialization fails.
+   *   If serialization fails.
    */
-  public JsonObject serialize(Object object) throws SerializationException;
+  JsonObject serialize(Serializable object) throws SerializationException;
 
   /**
    * Deserializes an object.
    *
-   * @param json
+   * @param serialized
    *   The serialized object.
    * @param type
-   *   The serialized type.
+   *   The deserialization type.
    * @return
    *   The deserialized object.
    * @throws SerializationException
-   *   If the deserialization fails.
+   *   If deserialization fails.
    */
-  public <T> T deserialize(JsonObject json, Class<T> type) throws SerializationException;
+  <T extends Serializable> T deserialize(JsonObject serialized, Class<T> type) throws SerializationException;
 
 }

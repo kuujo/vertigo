@@ -18,6 +18,7 @@ package net.kuujo.vertigo.output;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.output.selector.Selector;
+import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * A component output.
@@ -29,7 +30,7 @@ import net.kuujo.vertigo.output.selector.Selector;
  *
  * @author Jordan Halterman
  */
-public class Output {
+public final class Output implements Serializable {
   private String id;
   private int count = 1;
   private Selector selector;

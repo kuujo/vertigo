@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.serializer.Serializable;
 
 /**
  * A component input.
@@ -30,7 +31,7 @@ import net.kuujo.vertigo.input.grouping.RoundGrouping;
  *
  * @author Jordan Halterman
  */
-public class Input {
+public final class Input implements Serializable {
   private String id;
   private int count = 1;
   private String address;

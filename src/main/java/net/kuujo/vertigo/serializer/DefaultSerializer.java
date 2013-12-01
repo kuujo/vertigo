@@ -15,19 +15,16 @@
  */
 package net.kuujo.vertigo.serializer;
 
+import java.io.IOException;
+
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A default serializer implementation.
- *
- * This serializer uses an internal {@link ObjectMapper} to serialize and
- * deserialize objects to and from Json. By default, the serializer will automatically
- * recognize any fields of the class being serialized, but getters, setters,
- * and creators must be explicitly noted. See the Jackson Json serializer
- * documentation for more information.
  *
  * @author Jordan Halterman
  */
@@ -35,29 +32,32 @@ public class DefaultSerializer implements Serializer {
   private final ObjectMapper mapper;
 
   public DefaultSerializer() {
+    this(new InclusiveAnnotationIntrospector());
+  }
+
+  public DefaultSerializer(AnnotationIntrospector introspector) {
     mapper = new ObjectMapper();
-    mapper.setVisibilityChecker(mapper.getVisibilityChecker()
-        .with(JsonAutoDetect.Visibility.NONE)
-        .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
+    mapper.setAnnotationIntrospector(introspector);
   }
 
   @Override
-  public JsonObject serialize(Object object) {
+  public JsonObject serialize(Serializable object) throws SerializationException {
     try {
       return new JsonObject(mapper.writeValueAsString(object));
     }
-    catch (Exception e) {
-      throw new SerializationException(e);
+    catch (JsonProcessingException e) {
+      throw new SerializationException(e.getMessage());
     }
   }
 
   @Override
-  public <T> T deserialize(JsonObject json, Class<T> type) {
+  public <T extends Serializable> T deserialize(JsonObject serialized, Class<T> type)
+      throws SerializationException {
     try {
-      return (T) mapper.readValue(json.encode(), type);
+      return mapper.readValue(serialized.encode(), type);
     }
-    catch (Exception e) {
-      throw new SerializationException(e);
+    catch (IOException e) {
+      throw new SerializationException(e.getMessage());
     }
   }
 

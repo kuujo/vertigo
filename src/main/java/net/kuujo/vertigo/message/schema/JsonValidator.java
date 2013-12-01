@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.message.schema;
 
+import net.kuujo.vertigo.serializer.Serializable;
+
 import org.vertx.java.core.json.JsonElement;
 
 /**
@@ -22,7 +24,7 @@ import org.vertx.java.core.json.JsonElement;
  *
  * @author Jordan Halterman
  */
-public interface JsonValidator {
+public interface JsonValidator extends Serializable {
 
   /**
    * Validates the schema of a JSON element.

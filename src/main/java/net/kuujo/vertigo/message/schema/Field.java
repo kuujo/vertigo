@@ -15,12 +15,14 @@
  */
 package net.kuujo.vertigo.message.schema;
 
+import net.kuujo.vertigo.serializer.Serializable;
+
 /**
  * An object field.
  *
  * @author Jordan Halterman
  */
-public final class Field {
+public final class Field implements Serializable {
   private String name;
   private Class<?> type;
   private JsonSchema schema;

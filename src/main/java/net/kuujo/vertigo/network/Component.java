@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -41,7 +42,7 @@ import net.kuujo.vertigo.serializer.Serializers;
   @JsonSubTypes.Type(value=Module.class, name=Component.MODULE),
   @JsonSubTypes.Type(value=Verticle.class, name=Component.VERTICLE)
 })
-public abstract class Component<T extends Component<T>> {
+public abstract class Component<T extends Component<T>> implements Serializable {
   public static final String MODULE = "module";
   public static final String VERTICLE = "verticle";
 
@@ -189,7 +190,7 @@ public abstract class Component<T extends Component<T>> {
    * The output hook can be used to receive notifications on events that occur
    * within the component instance's inputs and outputs. If the hook requires
    * constructor arguments or otherwise contains any state, the hook should
-   * implement the {@link Serializable} interface. Serializable hooks will be
+   * implement the {@link SerializableType} interface. Serializable hooks will be
    * serialized with state, but non-serializable hooks will be reconstructed from
    * the class name only. This means for the hook to be properly started, it must
    * be available on the class path of the deployed component verticle or module.

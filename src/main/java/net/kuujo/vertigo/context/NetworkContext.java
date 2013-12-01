@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializers;
 
 /**
@@ -29,7 +30,7 @@ import net.kuujo.vertigo.serializer.Serializers;
  *
  * @author Jordan Halterman
  */
-public final class NetworkContext {
+public final class NetworkContext implements Serializable {
   private String address;
   private List<String> auditors = new ArrayList<>();
   private boolean acking = true;

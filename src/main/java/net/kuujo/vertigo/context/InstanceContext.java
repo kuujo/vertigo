@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -27,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author Jordan Halterman
  */
-public final class InstanceContext {
+public final class InstanceContext implements Serializable {
   private String id;
   private @JsonIgnore ComponentContext component;
 

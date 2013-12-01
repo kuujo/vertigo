@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -40,7 +41,7 @@ import net.kuujo.vertigo.serializer.Serializers;
   @JsonSubTypes.Type(value=ModuleContext.class, name=ComponentContext.MODULE),
   @JsonSubTypes.Type(value=VerticleContext.class, name=ComponentContext.VERTICLE)
 })
-public abstract class ComponentContext {
+public abstract class ComponentContext implements Serializable {
   public static final String VERTICLE = "verticle";
   public static final String MODULE = "module";
 

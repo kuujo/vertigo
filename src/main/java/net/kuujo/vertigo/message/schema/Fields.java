@@ -20,12 +20,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import net.kuujo.vertigo.serializer.Serializable;
+
 /**
  * A set of object fields.
  *
  * @author Jordan Halterman
  */
-public final class Fields implements Iterable<Field> {
+public final class Fields implements Iterable<Field>, Serializable {
   private final Map<String, Field> fields = new HashMap<>();
 
   public Fields() {

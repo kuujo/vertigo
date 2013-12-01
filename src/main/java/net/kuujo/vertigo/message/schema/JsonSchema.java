@@ -15,12 +15,14 @@
  */
 package net.kuujo.vertigo.message.schema;
 
+import net.kuujo.vertigo.serializer.Serializable;
+
 /**
  * A JSON schema.
  *
  * @author Jordan Halterman
  */
-public interface JsonSchema {
+public interface JsonSchema extends Serializable {
 
   /**
    * Returns a validator for this schema.

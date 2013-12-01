@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializers;
 
@@ -31,7 +32,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public final class Network {
+public final class Network implements Serializable {
   private static final long DEFAULT_ACK_TIMEOUT = 30000;
 
   private String address;

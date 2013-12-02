@@ -22,6 +22,8 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.annotations.Config;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
@@ -63,6 +65,15 @@ public abstract class ExecutorVerticle extends Verticle {
     executor = vertigo.createPollingExecutor()
         .resultHandler(resultHandler).failHandler(failHandler).timeoutHandler(timeoutHandler);
     context = executor.getContext();
+
+    try {
+      checkConfig();
+    }
+    catch (VertigoException e) {
+      future.setFailure(e);
+      return;
+    }
+
     executor.start(new Handler<AsyncResult<PollingExecutor>>() {
       @Override
       public void handle(AsyncResult<PollingExecutor> result) {
@@ -74,6 +85,29 @@ public abstract class ExecutorVerticle extends Verticle {
         }
       }
     });
+  }
+
+  /**
+   * Checks the worker configuration.
+   */
+  private void checkConfig() {
+    JsonObject config = container.config();
+    Config configInfo = getClass().getAnnotation(Config.class);
+    if (configInfo != null) {
+      for (Config.Field field : configInfo.value()) {
+        Object value = config.getValue(field.name());
+        if (value != null) {
+          if (!field.type().isAssignableFrom(value.getClass())) {
+            throw new VertigoException("Invalid component configuration.");
+          }
+        }
+        else {
+          if (field.required()) {
+            throw new VertigoException("Invalid component configuration.");
+          }
+        }
+      }
+    }
   }
 
   /**

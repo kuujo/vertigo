@@ -45,7 +45,7 @@ public class SchemaTest {
     JsonObject json = new JsonObject().putString("foo", "foo").putString("bar", "bar");
     ObjectSchema schema = new ObjectSchema();
     schema.addField("foo").addField("baz");
-    assertTrue(schema.getValidator().validate(json));
+    assertFalse(schema.getValidator().validate(json));
   }
 
   @Test

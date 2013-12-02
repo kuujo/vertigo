@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.feeder;
 
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.annotations.Config;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.MessageId;
 
@@ -62,6 +64,15 @@ public abstract class FeederVerticle extends Verticle {
     feeder = vertigo.createPollingFeeder()
         .ackHandler(ackHandler).failHandler(failHandler).timeoutHandler(timeoutHandler);
     context = feeder.getContext();
+
+    try {
+      checkConfig();
+    }
+    catch (VertigoException e) {
+      future.setFailure(e);
+      return;
+    }
+
     feeder.start(new Handler<AsyncResult<PollingFeeder>>() {
       @Override
       public void handle(AsyncResult<PollingFeeder> result) {
@@ -73,6 +84,29 @@ public abstract class FeederVerticle extends Verticle {
         }
       }
     });
+  }
+
+  /**
+   * Checks the worker configuration.
+   */
+  private void checkConfig() {
+    JsonObject config = container.config();
+    Config configInfo = getClass().getAnnotation(Config.class);
+    if (configInfo != null) {
+      for (Config.Field field : configInfo.value()) {
+        Object value = config.getValue(field.name());
+        if (value != null) {
+          if (!field.type().isAssignableFrom(value.getClass())) {
+            throw new VertigoException("Invalid component configuration.");
+          }
+        }
+        else {
+          if (field.required()) {
+            throw new VertigoException("Invalid component configuration.");
+          }
+        }
+      }
+    }
   }
 
   /**

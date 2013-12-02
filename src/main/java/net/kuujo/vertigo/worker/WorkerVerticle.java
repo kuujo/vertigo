@@ -16,9 +16,13 @@
 package net.kuujo.vertigo.worker;
 
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.annotations.Config;
+import net.kuujo.vertigo.annotations.Schema;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.message.schema.Field;
 import net.kuujo.vertigo.message.schema.MessageSchema;
 
 import org.vertx.java.core.AsyncResult;
@@ -50,9 +54,13 @@ public abstract class WorkerVerticle extends Verticle {
     worker = vertigo.createBasicWorker().messageHandler(messageHandler);
     context = worker.getContext();
 
-    MessageSchema schema = declareSchema();
-    if (schema != null) {
-      worker.declareSchema(schema);
+    try {
+      checkConfig();
+      declareSchema();
+    }
+    catch (VertigoException e) {
+      future.setFailure(e);
+      return;
     }
 
     worker.start(new Handler<AsyncResult<BasicWorker>>() {
@@ -69,15 +77,40 @@ public abstract class WorkerVerticle extends Verticle {
   }
 
   /**
-   * Declares a worker input schema.
-   *
-   * Override this method to provide a required input schema.
-   *
-   * @return
-   *   An input message schema.
+   * Checks the worker configuration.
    */
-  protected MessageSchema declareSchema() {
-    return null;
+  private void checkConfig() {
+    JsonObject config = container.config();
+    Config configInfo = getClass().getAnnotation(Config.class);
+    if (configInfo != null) {
+      for (Config.Field field : configInfo.value()) {
+        Object value = config.getValue(field.name());
+        if (value != null) {
+          if (!field.type().isAssignableFrom(value.getClass())) {
+            throw new VertigoException("Invalid component configuration.");
+          }
+        }
+        else {
+          if (field.required()) {
+            throw new VertigoException("Invalid component configuration.");
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Declares the worker schema according to annotations.
+   */
+  private void declareSchema() {
+    Schema schemaInfo = getClass().getAnnotation(Schema.class);
+    if (schemaInfo != null) {
+      MessageSchema schema = new MessageSchema();
+      for (Schema.Field field : schemaInfo.value()) {
+        schema.addField(new Field(field.name(), field.type()).setRequired(field.required()));
+      }
+      worker.declareSchema(schema);
+    }
   }
 
   /**

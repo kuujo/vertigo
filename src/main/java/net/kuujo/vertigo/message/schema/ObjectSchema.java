@@ -161,7 +161,7 @@ public class ObjectSchema implements JsonSchema {
             return false;
           }
         }
-        else if (field.hasType()) {
+        else if (field.isRequired()) {
           return false;
         }
       }

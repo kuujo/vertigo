@@ -25,6 +25,7 @@ import net.kuujo.vertigo.serializer.Serializable;
 public final class Field implements Serializable {
   private String name;
   private Class<?> type;
+  private boolean required = true;
   private JsonSchema schema;
 
   public Field(String name) {
@@ -101,6 +102,29 @@ public final class Field implements Serializable {
    */
   public boolean hasType() {
     return type != null;
+  }
+
+  /**
+   * Sets the field required setting.
+   *
+   * @param required
+   *   Whether the field is required.
+   * @return
+   *   The called field instance.
+   */
+  public Field setRequired(boolean required) {
+    this.required = required;
+    return this;
+  }
+
+  /**
+   * Checks whether the field is required.
+   *
+   * @return
+   *   Indicates whether the field is required.
+   */
+  public boolean isRequired() {
+    return required;
   }
 
   /**

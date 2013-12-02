@@ -15,13 +15,15 @@
  */
 package net.kuujo.vertigo;
 
+import org.vertx.java.core.VertxException;
+
 /**
  * A base Vert.igo exception.
  *
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class VertigoException extends Exception {
+public class VertigoException extends VertxException {
 
   public VertigoException(String message) {
     super(message);

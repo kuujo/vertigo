@@ -18,7 +18,7 @@ package net.kuujo.vertigo.feeder;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.component.ComponentBase;
+import net.kuujo.vertigo.component.BaseComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.MessageId;
 
@@ -33,7 +33,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public abstract class AbstractFeeder<T extends Feeder<T>> extends ComponentBase<T> implements Feeder<T> {
+public abstract class AbstractFeeder<T extends Feeder<T>> extends BaseComponent<T> implements Feeder<T> {
   protected InternalQueue queue = new InternalQueue();
   protected boolean autoRetry;
   protected int retryAttempts = -1;

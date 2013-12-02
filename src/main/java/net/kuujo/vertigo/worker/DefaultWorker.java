@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.worker;
 
-import net.kuujo.vertigo.component.ComponentBase;
+import net.kuujo.vertigo.component.BaseComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
@@ -30,7 +30,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public class DefaultWorker extends ComponentBase<Worker> implements Worker {
+public class DefaultWorker extends BaseComponent<Worker> implements Worker {
   protected Handler<JsonMessage> messageHandler;
 
   public DefaultWorker(Vertx vertx, Container container, InstanceContext context) {

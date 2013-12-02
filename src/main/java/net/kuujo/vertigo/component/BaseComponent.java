@@ -51,7 +51,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public abstract class ComponentBase<T> implements Component<T> {
+public abstract class BaseComponent<T> implements Component<T> {
   protected final Vertx vertx;
   protected final EventBus eventBus;
   protected final Container container;
@@ -131,7 +131,7 @@ public abstract class ComponentBase<T> implements Component<T> {
     }
   };
 
-  protected ComponentBase(Vertx vertx, Container container, InstanceContext context) {
+  protected BaseComponent(Vertx vertx, Container container, InstanceContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
@@ -336,7 +336,7 @@ public abstract class ComponentBase<T> implements Component<T> {
         }
         else {
           hookStart();
-          future.setResult((T) ComponentBase.this);
+          future.setResult((T) BaseComponent.this);
         }
       }
     });

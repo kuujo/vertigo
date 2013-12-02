@@ -26,7 +26,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import net.kuujo.vertigo.component.ComponentBase;
+import net.kuujo.vertigo.component.BaseComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
@@ -38,7 +38,7 @@ import net.kuujo.vertigo.message.MessageId;
  *
  * @param <T> The executor type
  */
-public abstract class AbstractExecutor<T extends Executor<T>> extends ComponentBase<T> implements Executor<T> {
+public abstract class AbstractExecutor<T extends Executor<T>> extends BaseComponent<T> implements Executor<T> {
   protected InternalQueue queue;
   private boolean autoRetry;
   private int retryAttempts = -1;

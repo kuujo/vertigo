@@ -124,6 +124,21 @@ public interface OutputCollector {
   MessageId emit(JsonObject body, String tag, JsonMessage parent);
 
   /**
+   * Emits a message as a child of itself.
+   *
+   * This is useful when a message is simply passing through a component without
+   * any actual changes to its internal data, such as with message filtering.
+   * A new message will be created as a child of the given message. The new
+   * message will contain a copy of the given message body and tag.
+   *
+   * @param message
+   *   The message to emit.
+   * @return
+   *   The new unique message correlation identifier.
+   */
+  MessageId emit(JsonMessage message);
+
+  /**
    * Sets an ack handler on the output collector.
    *
    * This handler will be called with the correlation identifier of the message

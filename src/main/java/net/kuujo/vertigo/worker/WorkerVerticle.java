@@ -178,6 +178,18 @@ public abstract class WorkerVerticle extends Verticle {
   }
 
   /**
+   * Emits a message as a child of itself.
+   *
+   * @param message
+   *   The message to emit.
+   * @return
+   *   The new child message's unique identifier.
+   */
+  protected MessageId emit(JsonMessage message) {
+    return worker.emit(message);
+  }
+
+  /**
    * Acks a message.
    *
    * @param message

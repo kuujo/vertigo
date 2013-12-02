@@ -326,6 +326,11 @@ public class DefaultOutputCollector implements OutputCollector {
     return messageId;
   }
 
+  @Override
+  public MessageId emit(JsonMessage message) {
+    return emit(message.body(), message.tag(), message);
+  }
+
   /**
    * Returns a random auditor address.
    */

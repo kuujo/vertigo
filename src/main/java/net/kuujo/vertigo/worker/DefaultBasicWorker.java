@@ -65,6 +65,11 @@ public class DefaultBasicWorker extends ComponentBase<BasicWorker> implements Ba
   }
 
   @Override
+  public MessageId emit(JsonMessage message) {
+    return output.emit(message);
+  }
+
+  @Override
   public void ack(JsonMessage message) {
     input.ack(message);
   }

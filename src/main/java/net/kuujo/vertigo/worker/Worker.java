@@ -97,6 +97,16 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
   MessageId emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
+   * Emits a copy of the given message as a child of itself.
+   *
+   * @param message
+   *   The message to emit.
+   * @return
+   *   The new child message identifier.
+   */
+  MessageId emit(JsonMessage message);
+
+  /**
    * Acknowledges processing of a message.
    *
    * @param message

@@ -27,6 +27,10 @@ import net.kuujo.vertigo.feeder.DefaultPollingFeeder;
 import net.kuujo.vertigo.feeder.DefaultStreamFeeder;
 import net.kuujo.vertigo.feeder.PollingFeeder;
 import net.kuujo.vertigo.feeder.StreamFeeder;
+import net.kuujo.vertigo.filter.DefaultFilter;
+import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.function.Function;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
 import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
@@ -156,13 +160,35 @@ public final class Vertigo {
   }
 
   /**
-   * Creates a basic worker.
+   * Creates a worker.
    *
    * @return
    *   A new worker instance.
    */
   public Worker createWorker() {
     return new DefaultWorker(vertx, container, context);
+  }
+
+  /**
+   * Creates a filter.
+   *
+   * @return
+   *   A new filter instance.
+   */
+  public Filter createFilter() {
+    return new DefaultFilter(vertx, container, context);
+  }
+
+  /**
+   * Creates a filter with a function.
+   *
+   * @param function
+   *   The filter function.
+   * @return
+   *   A new filter instance.
+   */
+  public Filter createFilter(Function<JsonMessage, Boolean> function) {
+    return new DefaultFilter(vertx, container, context).setFunction(function);
   }
 
 }

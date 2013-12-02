@@ -1,8 +1,6 @@
 Vert.igo
 ========
 
-#### [The documentation has moved!](https://github.com/kuujo/vertigo/wiki/Vertigo-Documentation)
-
 **[Java User Manual](https://github.com/kuujo/vertigo/wiki/Java-User-Manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
 
 Vertigo is a distributed event processing framework built on the

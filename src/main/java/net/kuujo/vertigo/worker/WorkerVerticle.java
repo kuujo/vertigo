@@ -38,7 +38,7 @@ import org.vertx.java.platform.Verticle;
  */
 public abstract class WorkerVerticle extends Verticle {
   private Vertigo vertigo;
-  protected BasicWorker worker;
+  protected Worker worker;
   protected InstanceContext context;
 
   private Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
@@ -51,7 +51,7 @@ public abstract class WorkerVerticle extends Verticle {
   @Override
   public void start(final Future<Void> future) {
     vertigo = new Vertigo(this);
-    worker = vertigo.createBasicWorker().messageHandler(messageHandler);
+    worker = vertigo.createWorker().messageHandler(messageHandler);
     context = worker.getContext();
 
     try {
@@ -63,9 +63,9 @@ public abstract class WorkerVerticle extends Verticle {
       return;
     }
 
-    worker.start(new Handler<AsyncResult<BasicWorker>>() {
+    worker.start(new Handler<AsyncResult<Worker>>() {
       @Override
-      public void handle(AsyncResult<BasicWorker> result) {
+      public void handle(AsyncResult<Worker> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }

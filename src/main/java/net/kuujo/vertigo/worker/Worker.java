@@ -35,7 +35,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Worker<T extends Worker<T>> extends Component<T> {
+public interface Worker extends Component<Worker> {
 
   /**
    * Sets a worker data handler.
@@ -46,7 +46,7 @@ public interface Worker<T extends Worker<T>> extends Component<T> {
    * @return 
    *   The called worker instance.
    */
-  T messageHandler(Handler<JsonMessage> handler);
+  Worker messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Emits data from the worker.

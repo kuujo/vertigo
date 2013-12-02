@@ -22,7 +22,7 @@ import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.worker.BasicWorker;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that times out messages.
@@ -57,7 +57,7 @@ public class TestTimingOutWorker extends Verticle {
   @Override
   public void start() {
     Vertigo vertigo = new Vertigo(this);
-    final BasicWorker worker = vertigo.createWorker();
+    final Worker worker = vertigo.createWorker();
     worker.messageHandler(new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {

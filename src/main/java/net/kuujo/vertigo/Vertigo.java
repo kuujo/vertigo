@@ -32,8 +32,8 @@ import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
 import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
 import net.kuujo.vertigo.rpc.StreamExecutor;
-import net.kuujo.vertigo.worker.BasicWorker;
-import net.kuujo.vertigo.worker.DefaultBasicWorker;
+import net.kuujo.vertigo.worker.DefaultWorker;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * Primary Vert.igo API.
@@ -161,18 +161,8 @@ public final class Vertigo {
    * @return
    *   A new worker instance.
    */
-  public BasicWorker createWorker() {
-    return createBasicWorker();
-  }
-
-  /**
-   * Creates a basic worker.
-   *
-   * @return
-   *   A new worker instance.
-   */
-  public BasicWorker createBasicWorker() {
-    return new DefaultBasicWorker(vertx, container, context);
+  public Worker createWorker() {
+    return new DefaultWorker(vertx, container, context);
   }
 
 }

@@ -33,7 +33,7 @@ public class Verticle extends Component<Verticle> {
 
   @Override
   public String getType() {
-    return VERTICLE;
+    return Type.VERTICLE;
   }
 
   /**

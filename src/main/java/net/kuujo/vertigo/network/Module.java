@@ -32,7 +32,7 @@ public class Module extends Component<Module> {
 
   @Override
   public String getType() {
-    return MODULE;
+    return Type.MODULE;
   }
 
   /**

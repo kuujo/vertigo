@@ -29,7 +29,7 @@ public final class VerticleContext extends ComponentContext {
 
   @Override
   public String getType() {
-    return VERTICLE;
+    return Type.VERTICLE;
   }
 
   /**

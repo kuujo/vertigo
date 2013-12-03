@@ -29,7 +29,7 @@ public final class ModuleContext extends ComponentContext {
 
   @Override
   public String getType() {
-    return MODULE;
+    return Type.MODULE;
   }
 
   /**

@@ -39,17 +39,34 @@ import net.kuujo.vertigo.serializer.Serializers;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=Module.class, name=Component.MODULE),
-  @JsonSubTypes.Type(value=Verticle.class, name=Component.VERTICLE)
+  @JsonSubTypes.Type(value=Module.class, name=Component.Type.MODULE),
+  @JsonSubTypes.Type(value=Verticle.class, name=Component.Type.VERTICLE)
 })
 public abstract class Component<T extends Component<T>> implements Serializable {
-  public static final String MODULE = "module";
-  public static final String VERTICLE = "verticle";
+
+  /**
+   * Component types.
+   */
+  public static final class Type {
+    public static final String MODULE = "module";
+    public static final String VERTICLE = "verticle";
+  }
+
+  /**
+   * Component groups.
+   */
+  public static final class Group {
+    public static String FEEDER = "feeder";
+    public static String EXECUTOR = "executor";
+    public static String WORKER = "worker";
+    public static String FILTER = "filter";
+  }
 
   protected String address;
   protected Map<String, Object> config;
   protected int instances = 1;
   protected long heartbeat = 5000;
+  protected String group;
   protected List<ComponentHook> hooks = new ArrayList<>();
   protected List<Input> inputs = new ArrayList<>();
 
@@ -101,6 +118,50 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The component type.
    */
   public abstract String getType();
+
+  /**
+   * Returns a boolean indicating whether the component is a module.
+   *
+   * @return
+   *   Indicates whether the component is a module.
+   */
+  public boolean isModule() {
+    return getType().equals(Type.MODULE);
+  }
+
+  /**
+   * Returns a boolean indicating whether the component is a verticle.
+   *
+   * @return
+   *   Indicates whether the component is a verticle.
+   */
+  public boolean isVerticle() {
+    return getType().equals(Type.VERTICLE);
+  }
+
+  /**
+   * Sets the component group.
+   *
+   * @param group
+   *   The component group.
+   * @return
+   *   The called component instance.
+   */
+  @SuppressWarnings("unchecked")
+  public T setGroup(String group) {
+    this.group = group;
+    return (T) this;
+  }
+
+  /**
+   * Gets the component group.
+   *
+   * @return
+   *   The component group.
+   */
+  public String getGroup() {
+    return group;
+  }
 
   /**
    * Returns the component configuration.
@@ -162,6 +223,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The component heartbeat interval.
    */
+  @Deprecated
   public long getHeartbeatInterval() {
     return heartbeat;
   }
@@ -178,6 +240,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The called component instance.
    */
+  @Deprecated
   @SuppressWarnings("unchecked")
   public T setHeartbeatInterval(long interval) {
     heartbeat = interval;

@@ -38,14 +38,31 @@ import net.kuujo.vertigo.serializer.Serializers;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name=ComponentContext.MODULE),
-  @JsonSubTypes.Type(value=VerticleContext.class, name=ComponentContext.VERTICLE)
+  @JsonSubTypes.Type(value=ModuleContext.class, name=ComponentContext.Type.MODULE),
+  @JsonSubTypes.Type(value=VerticleContext.class, name=ComponentContext.Type.VERTICLE)
 })
 public abstract class ComponentContext implements Serializable {
-  public static final String VERTICLE = "verticle";
-  public static final String MODULE = "module";
+
+  /**
+   * Component types.
+   */
+  public static final class Type {
+    public static final String VERTICLE = "verticle";
+    public static final String MODULE = "module";
+  }
+
+  /**
+   * Component groups.
+   */
+  public static final class Group {
+    public static String FEEDER = "feeder";
+    public static String EXECUTOR = "executor";
+    public static String WORKER = "worker";
+    public static String FILTER = "filter";
+  }
 
   protected String address;
+  protected String group;
   protected Map<String, Object> config;
   protected List<InstanceContext> instances = new ArrayList<>();
   protected long heartbeat = 5000;
@@ -121,7 +138,7 @@ public abstract class ComponentContext implements Serializable {
    *   Indicates whether the component is a module.
    */
   public boolean isModule() {
-    return getType().equals(ComponentContext.MODULE);
+    return getType().equals(Type.MODULE);
   }
 
   /**
@@ -131,7 +148,17 @@ public abstract class ComponentContext implements Serializable {
    *   Indicates whether the component is a verticle.
    */
   public boolean isVerticle() {
-    return getType().equals(ComponentContext.VERTICLE);
+    return getType().equals(Type.VERTICLE);
+  }
+
+  /**
+   * Returns the component group.
+   *
+   * @return
+   *   The component group, e.g. "feeder", "worker", "filter", etc.
+   */
+  public String getGroup() {
+    return group;
   }
 
   /**

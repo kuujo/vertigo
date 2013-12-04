@@ -59,6 +59,7 @@ public abstract class ComponentContext implements Serializable {
     public static String EXECUTOR = "executor";
     public static String WORKER = "worker";
     public static String FILTER = "filter";
+    public static String SPLITTER = "splitter";
   }
 
   protected String address;
@@ -159,6 +160,41 @@ public abstract class ComponentContext implements Serializable {
    */
   public String getGroup() {
     return group;
+  }
+
+  /**
+   * Indicates whether the component is a feeder.
+   */
+  public boolean isFeeder() {
+    return getGroup().equals(Group.FEEDER);
+  }
+
+  /**
+   * Indicates whether the component is an executor.
+   */
+  public boolean isExecutor() {
+    return getGroup().equals(Group.EXECUTOR);
+  }
+
+  /**
+   * Indicates whether the component is a worker.
+   */
+  public boolean isWorker() {
+    return getGroup().equals(Group.WORKER);
+  }
+
+  /**
+   * Indicates whether the component is a filter.
+   */
+  public boolean isFilter() {
+    return getGroup().equals(Group.FILTER);
+  }
+
+  /**
+   * Indicates whether the component is a splitter.
+   */
+  public boolean isSplitter() {
+    return getGroup().equals(Group.SPLITTER);
   }
 
   /**

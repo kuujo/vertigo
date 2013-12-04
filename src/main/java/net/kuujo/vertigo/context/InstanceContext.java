@@ -85,6 +85,41 @@ public final class InstanceContext implements Serializable {
   }
 
   /**
+   * Indicates whether the component is a feeder.
+   */
+  public boolean isFeeder() {
+    return component.isFeeder();
+  }
+
+  /**
+   * Indicates whether the component is an executor.
+   */
+  public boolean isExecutor() {
+    return component.isExecutor();
+  }
+
+  /**
+   * Indicates whether the component is a worker.
+   */
+  public boolean isWorker() {
+    return component.isWorker();
+  }
+
+  /**
+   * Indicates whether the component is a filter.
+   */
+  public boolean isFilter() {
+    return component.isFilter();
+  }
+
+  /**
+   * Indicates whether the component is a splitter.
+   */
+  public boolean isSplitter() {
+    return component.isSplitter();
+  }
+
+  /**
    * Returns the parent component context.
    *
    * @return

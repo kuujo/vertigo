@@ -32,7 +32,7 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  * @author Jordan Halterman
  */
 public class FeederVerticle extends VertigoVerticle<Feeder> {
-  private Feeder feeder;
+  protected Feeder feeder;
 
   @Override
   protected Feeder createComponent(InstanceContext context) {

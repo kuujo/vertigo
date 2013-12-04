@@ -15,7 +15,13 @@
  */
 package net.kuujo.vertigo.rpc;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A network executor.
@@ -26,7 +32,7 @@ import net.kuujo.vertigo.component.Component;
  *
  * @author Jordan Halterman
  */
-public interface Executor<T extends Executor<T>> extends Component<T> {
+public interface Executor extends Component<Executor> {
 
   /**
    * Sets the execution reply timeout.
@@ -36,7 +42,7 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @return
    *   The called executor instance.
    */
-  T setReplyTimeout(long timeout);
+  Executor setReplyTimeout(long timeout);
 
   /**
    * Gets the execution reply timeout.
@@ -49,12 +55,36 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
   /**
    * Sets the maximum execution queue size.
    *
+   * Use the {@link setExecuteQueueMaxSize(long) setExecuteQueueMaxSize} method.
+   *
    * @param maxSize
    *   The maximum queue size allowed for the executor.
    * @return
    *   The called executor instance.
    */
-  T setMaxQueueSize(long maxSize);
+  @Deprecated
+  Executor setMaxQueueSize(long maxSize);
+
+  /**
+   * Gets the maximum execution queue size.
+   *
+   * Use the {@link getExecuteQueueMaxSize() getExecuteQueueMaxSize} method.
+   *
+   * @return
+   *   The maximum queue size allowed for the executor.
+   */
+  @Deprecated
+  long getMaxQueueSize();
+
+  /**
+   * Sets the maximum execution queue size.
+   *
+   * @param maxSize
+   *   The maximum queue size allowed for the executor.
+   * @return
+   *   The called executor instance.
+   */
+  Executor setExecuteQueueMaxSize(long maxSize);
 
   /**
    * Gets the maximum execution queue size.
@@ -62,7 +92,18 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @return
    *   The maximum queue size allowed for the executor.
    */
-  long getMaxQueueSize();
+  long getExecuteQueueMaxSize();
+
+  /**
+   * Indicates whether the execution queue is full.
+   *
+   * Use the {@link executeQueueFull() executeQueueFull} method.
+   *
+   * @return
+   *   A boolean indicating whether the execution queue is full.
+   */
+  @Deprecated
+  boolean queueFull();
 
   /**
    * Indicates whether the execution queue is full.
@@ -70,7 +111,7 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @return
    *   A boolean indicating whether the execution queue is full.
    */
-  boolean queueFull();
+  boolean executeQueueFull();
 
   /**
    * Sets the executor auto-retry option.
@@ -83,7 +124,7 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @return
    *   The called executor instance.
    */
-  T setAutoRetry(boolean retry);
+  Executor setAutoRetry(boolean retry);
 
   /**
    * Gets the executor auto-retry option.
@@ -99,13 +140,38 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
   /**
    * Sets the number of automatic retry attempts for a single timed out message.
    *
+   * Use the {@link setAutoRetryAttempts(int) setAutoRetryAttempts} method.
+   *
    * @param attempts
    *   The number of retry attempts allowed. If attempts is -1 then an infinite
    *   number of retry attempts will be allowed.
    * @return
    *   The called executor instance.
    */
-  T setRetryAttempts(int attempts);
+  @Deprecated
+  Executor setRetryAttempts(int attempts);
+
+  /**
+   * Gets the number of automatic retry attempts.
+   *
+   * Use the {@link getAutoRetryAttempts() getAutoRetryAttempts} method.
+   *
+   * @return
+   *   Indicates the number of retry attempts allowed for the executor.
+   */
+  @Deprecated
+  int getRetryAttempts();
+
+  /**
+   * Sets the number of automatic retry attempts for a single timed out message.
+   *
+   * @param attempts
+   *   The number of retry attempts allowed. If attempts is -1 then an infinite
+   *   number of retry attempts will be allowed.
+   * @return
+   *   The called executor instance.
+   */
+  Executor setAutoRetryAttempts(int attempts);
 
   /**
    * Gets the number of automatic retry attempts.
@@ -113,6 +179,109 @@ public interface Executor<T extends Executor<T>> extends Component<T> {
    * @return
    *   Indicates the number of retry attempts allowed for the executor.
    */
-  int getRetryAttempts();
+  int getAutoRetryAttempts();
+
+  /**
+   * Sets the execute delay.
+   *
+   * Use the {@link setExecuteInterval(long) setExecuteInterval} method.
+   *
+   * @param delay
+   *   The empty execute delay.
+   * @return
+   *   The called executor instance.
+   */
+  @Deprecated
+  Executor setExecuteDelay(long delay);
+
+  /**
+   * Gets the execute delay.
+   *
+   * Use the {@link getExecuteInterval() getExecuteInterval} method.
+   *
+   * @return
+   *   The empty executor delay.
+   */
+  @Deprecated
+  long getExecuteDelay();
+
+  /**
+   * Sets the execute delay.
+   *
+   * The execute interval indicates the interval at which the executor will attempt to
+   * poll the execute handler for new data.
+   *
+   * @param interval
+   *   The empty execute interval.
+   * @return
+   *   The called executor instance.
+   */
+  Executor setExecuteInterval(long interval);
+
+  /**
+   * Gets the execute interval.
+   *
+   * The execute delay indicates the interval at which the executor will attempt to
+   * poll the execute handler for new data.
+   *
+   * @return
+   *   The empty execute interval.
+   */
+  long getExecuteInterval();
+
+  /**
+   * Sets an execute handler.
+   *
+   * The execute handler will be periodically polled for new data. Each time the
+   * execute handler is polled only a single message should be emitted. This allows
+   * the executor to maintain control over the flow of data. If the execute handler
+   * is called but fails to emit any new messages to the network, the executor
+   * will reschedule the next call to the handler for a period in the near future.
+   *
+   * @param handler
+   *   A handler to be invoked for executing the network.
+   * @return
+   *   The called executor instance.
+   */
+  Executor executeHandler(Handler<Executor> handler);
+
+  /**
+   * Sets a drain handler on the executor.
+   *
+   * The drain handler will be called when the execute queue is available to
+   * receive new messages.
+   *
+   * @param handler
+   *   A handler to be invoked when a full execute queue is emptied.
+   * @return
+   *   The called executor instance.
+   */
+  Executor drainHandler(Handler<Void> handler);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param resultHandler
+   *   An asynchronous result handler to be invoke with the execution result.
+   * @return
+   *   The emitted message correlation identifier.
+   */
+  MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+
+  /**
+   * Executes the network.
+   *
+   * @param args
+   *   Execution arguments.
+   * @param tag
+   *   A tag to apply to the arguments.
+   * @param resultHandler
+   *   An asynchronous result handler to be invoke with the execution result.
+   * @return
+   *   The emitted message correlation identifier.
+   */
+  MessageId execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
 
 }

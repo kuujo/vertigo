@@ -20,11 +20,10 @@ import java.util.UUID;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.java.ExecutorVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.rpc.StreamExecutor;
+import net.kuujo.vertigo.rpc.Executor;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.testComplete;
@@ -34,7 +33,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  *
  * @author Jordan Halterman
  */
-public class TestResultCheckingExecutor extends Verticle {
+public class TestResultCheckingExecutor extends ExecutorVerticle {
 
   /**
    * Creates an ack checking feeder definition.
@@ -52,29 +51,18 @@ public class TestResultCheckingExecutor extends Verticle {
   }
 
   @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
-    vertigo.createStreamExecutor().start(new Handler<AsyncResult<StreamExecutor>>() {
+  public void start(Executor executor) {
+    super.start(executor);
+    executor.execute(container.config().getObject("input"), new Handler<AsyncResult<JsonMessage>>() {
       @Override
-      public void handle(AsyncResult<StreamExecutor> result) {
-        if (result.failed()) {
-          container.logger().error(result.cause());
+      public void handle(AsyncResult<JsonMessage> result) {
+        assertTrue(result.succeeded());
+        JsonObject body = result.result().body();
+        JsonObject output = container.config().getObject("output");
+        for (String fieldName : output.getFieldNames()) {
+          assertEquals(output.getValue(fieldName), body.getValue(fieldName));
         }
-        else {
-          final StreamExecutor executor = result.result();
-          executor.execute(container.config().getObject("input"), new Handler<AsyncResult<JsonMessage>>() {
-            @Override
-            public void handle(AsyncResult<JsonMessage> result) {
-              assertTrue(result.succeeded());
-              JsonObject body = result.result().body();
-              JsonObject output = container.config().getObject("output");
-              for (String fieldName : output.getFieldNames()) {
-                assertEquals(output.getValue(fieldName), body.getValue(fieldName));
-              }
-              testComplete();
-            }
-          });
-        }
+        testComplete();
       }
     });
   }

@@ -22,11 +22,7 @@ import org.vertx.java.platform.Verticle;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.BasicFeeder;
-import net.kuujo.vertigo.feeder.DefaultBasicFeeder;
-import net.kuujo.vertigo.feeder.DefaultPollingFeeder;
-import net.kuujo.vertigo.feeder.DefaultStreamFeeder;
-import net.kuujo.vertigo.feeder.PollingFeeder;
-import net.kuujo.vertigo.feeder.StreamFeeder;
+import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.filter.BasicFilter;
 import net.kuujo.vertigo.filter.Filter;
 import net.kuujo.vertigo.function.Function;
@@ -107,38 +103,8 @@ public final class Vertigo {
    * @return
    *   A new feeder instance.
    */
-  public BasicFeeder createFeeder() {
-    return createBasicFeeder();
-  }
-
-  /**
-   * Creates a basic feeder.
-   *
-   * @return
-   *   A new basic feeder instance.
-   */
-  public BasicFeeder createBasicFeeder() {
-    return new DefaultBasicFeeder(vertx, container, context);
-  }
-
-  /**
-   * Creates a polling feeder.
-   *
-   * @return
-   *   A new poll feeder instance.
-   */
-  public PollingFeeder createPollingFeeder() {
-    return new DefaultPollingFeeder(vertx, container, context);
-  }
-
-  /**
-   * Creates a stream feeder.
-   *
-   * @return
-   *   A new stream feeder instance.
-   */
-  public StreamFeeder createStreamFeeder() {
-    return new DefaultStreamFeeder(vertx, container, context);
+  public Feeder createFeeder() {
+    return new BasicFeeder(vertx, container, context);
   }
 
   /**

@@ -17,21 +17,19 @@ package net.kuujo.vertigo.testtools;
 
 import java.util.UUID;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.java.FeederVerticle;
 
 /**
  * A feeder that periodically feeds a network with randomly generated field values.
  *
  * @author Jordan Halterman
  */
-public class TestPeriodicFeeder extends Verticle {
+public class TestPeriodicFeeder extends FeederVerticle {
 
   private static final long DEFAULT_INTERVAL = 100;
 
@@ -63,29 +61,18 @@ public class TestPeriodicFeeder extends Verticle {
   }
 
   @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
-    vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
+  public void start(final Feeder feeder) {
+    super.start(feeder);
+    final JsonArray fields = container.config().getArray("fields");
+    final long interval = container.config().getLong("interval");
+    vertx.setPeriodic(interval, new Handler<Long>() {
       @Override
-      public void handle(AsyncResult<BasicFeeder> result) {
-        if (result.failed()) {
-          container.logger().error(result.cause());
+      public void handle(Long timerId) {
+        JsonObject data = new JsonObject();
+        for (Object field : fields) {
+          data.putString((String) field, UUID.randomUUID().toString());
         }
-        else {
-          final BasicFeeder feeder = result.result();
-          final JsonArray fields = container.config().getArray("fields");
-          final long interval = container.config().getLong("interval");
-          vertx.setPeriodic(interval, new Handler<Long>() {
-            @Override
-            public void handle(Long timerId) {
-              JsonObject data = new JsonObject();
-              for (Object field : fields) {
-                data.putString((String) field, UUID.randomUUID().toString());
-              }
-              feeder.emit(data);
-            }
-          });
-        }
+        feeder.emit(data);
       }
     });
   }

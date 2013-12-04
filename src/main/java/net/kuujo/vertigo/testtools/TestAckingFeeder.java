@@ -20,10 +20,10 @@ import java.util.UUID;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.feeder.StreamFeeder;
+import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.java.FeederVerticle;
+import net.kuujo.vertigo.message.MessageId;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -32,7 +32,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  *
  * @author Jordan Halterman
  */
-public class TestAckingFeeder extends Verticle {
+public class TestAckingFeeder extends FeederVerticle {
 
   /**
    * Creates an ack checking feeder definition.
@@ -48,24 +48,13 @@ public class TestAckingFeeder extends Verticle {
   }
 
   @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
-    vertigo.createStreamFeeder().start(new Handler<AsyncResult<StreamFeeder>>() {
+  public void start(Feeder feeder) {
+    super.start(feeder);
+    feeder.emit(container.config(), new Handler<AsyncResult<MessageId>>() {
       @Override
-      public void handle(AsyncResult<StreamFeeder> result) {
-        if (result.failed()) {
-          container.logger().error(result.cause());
-        }
-        else {
-          StreamFeeder feeder = result.result();
-          feeder.emit(container.config(), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              assertTrue(result.succeeded());
-              testComplete();
-            }
-          });
-        }
+      public void handle(AsyncResult<MessageId> result) {
+        assertTrue(result.succeeded());
+        testComplete();
       }
     });
   }

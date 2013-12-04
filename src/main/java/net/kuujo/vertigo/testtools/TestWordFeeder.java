@@ -18,21 +18,19 @@ package net.kuujo.vertigo.testtools;
 import java.util.Random;
 import java.util.UUID;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.feeder.PollingFeeder;
+import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.java.FeederVerticle;
 
 /**
  * A feeder that feeder "random" test words to a network.
  *
  * @author Jordan Halterman
  */
-public class TestWordFeeder extends Verticle {
+public class TestWordFeeder extends FeederVerticle {
 
   /**
    * Creates a test word feeder definition.
@@ -69,27 +67,16 @@ public class TestWordFeeder extends Verticle {
   private Random random = new Random();
 
   @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
+  public void start(final Feeder feeder) {
+    super.start(feeder);
     field = container.config().getString("field");
     words = (String[]) container.config().getArray("words").toArray();
-
-    vertigo.createPollingFeeder().start(new Handler<AsyncResult<PollingFeeder>>() {
+    feeder.feedHandler(new Handler<Feeder>() {
       @Override
-      public void handle(AsyncResult<PollingFeeder> result) {
-        if (result.failed()) {
-          container.logger().error("Failed to start feeder.");
-        }
-        else {
-          result.result().feedHandler(new Handler<PollingFeeder>() {
-            @Override
-            public void handle(PollingFeeder feeder) {
-              String word = words[random.nextInt(words.length)];
-              JsonObject data = new JsonObject().putString(field, word);
-              feeder.emit(data);
-            }
-          });
-        }
+      public void handle(Feeder feeder) {
+        String word = words[random.nextInt(words.length)];
+        JsonObject data = new JsonObject().putString(field, word);
+        feeder.emit(data);
       }
     });
   }

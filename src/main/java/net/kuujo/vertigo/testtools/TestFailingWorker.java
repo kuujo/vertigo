@@ -17,19 +17,15 @@ package net.kuujo.vertigo.testtools;
 
 import java.util.UUID;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.platform.Verticle;
-
-import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that fails all messages.
  *
  * @author Jordan Halterman
  */
-public class TestFailingWorker extends Verticle {
+public class TestFailingWorker extends WorkerVerticle {
 
   /**
    * Creates a failing worker definition.
@@ -55,15 +51,8 @@ public class TestFailingWorker extends Verticle {
   }
 
   @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
-    final Worker worker = vertigo.createWorker();
-    worker.messageHandler(new Handler<JsonMessage>() {
-      @Override
-      public void handle(JsonMessage message) {
-        worker.fail(message);
-      }
-    }).start();
+  protected void handleMessage(JsonMessage message) {
+    fail(message);
   }
 
 }

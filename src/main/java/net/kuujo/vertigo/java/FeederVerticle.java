@@ -31,7 +31,7 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  *
  * @author Jordan Halterman
  */
-public class FeederVerticle extends VertigoVerticle<Feeder> {
+public abstract class FeederVerticle extends VertigoVerticle<Feeder> {
   protected Feeder feeder;
 
   @Override

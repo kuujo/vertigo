@@ -43,7 +43,7 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
   private InternalQueue queue = new InternalQueue();
   private boolean autoRetry;
   private int retryAttempts = -1;
-  private long feedInterval = 100;
+  private long feedInterval = 10;
   private boolean started;
   private boolean paused;
   private boolean fed;
@@ -308,8 +308,9 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
       return complete;
     }
 
-    private void makeComplete() {
+    private void complete(T result) {
       complete = true;
+      setResult(result);
     }
   }
 
@@ -348,7 +349,7 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
      */
     private void enqueue(MessageId id, Handler<AsyncResult<MessageId>> ackHandler) {
       InternalFutureResult<MessageId> future = new InternalFutureResult<MessageId>();
-      future.setHandler(ackHandler).setResult(id);
+      future.setHandler(ackHandler);
       handlers.put(id.correlationId(), future);
     }
 
@@ -358,8 +359,7 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
     private void ack(MessageId id) {
       InternalFutureResult<MessageId> future = handlers.remove(id.correlationId());
       if (future != null) {
-        future.setResult(id);
-        future.makeComplete();
+        future.complete(id);
       }
     }
 
@@ -369,9 +369,8 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
     private void fail(MessageId id) {
       InternalFutureResult<MessageId> future = handlers.remove(id.correlationId());
       if (future != null) {
-        future.setResult(id);
         future.setFailure(FAILURE_EXCEPTION);
-        future.makeComplete();
+        future.complete(id);
       }
     }
 
@@ -381,9 +380,8 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
     private void timeout(MessageId id) {
       InternalFutureResult<MessageId> future = handlers.remove(id.correlationId());
       if (future != null) {
-        future.setResult(id);
         future.setFailure(TIMEOUT_EXCEPTION);
-        future.makeComplete();
+        future.complete(id);
       }
     }
   }

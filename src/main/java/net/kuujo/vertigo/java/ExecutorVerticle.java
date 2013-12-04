@@ -30,7 +30,7 @@ import net.kuujo.vertigo.rpc.Executor;
  *
  * @author Jordan Halterman
  */
-public class ExecutorVerticle extends VertigoVerticle<Executor> {
+public abstract class ExecutorVerticle extends VertigoVerticle<Executor> {
   protected Executor executor;
 
   @Override

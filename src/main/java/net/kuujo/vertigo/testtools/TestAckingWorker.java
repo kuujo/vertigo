@@ -17,19 +17,15 @@ package net.kuujo.vertigo.testtools;
 
 import java.util.UUID;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.platform.Verticle;
-
-import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that acks and emits all messages as children.
  *
  * @author Jordan Halterman
  */
-public class TestAckingWorker extends Verticle {
+public class TestAckingWorker extends WorkerVerticle {
 
   /**
    * Creates an acking worker definition.
@@ -55,16 +51,9 @@ public class TestAckingWorker extends Verticle {
   }
 
   @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
-    final Worker worker = vertigo.createWorker();
-    worker.messageHandler(new Handler<JsonMessage>() {
-      @Override
-      public void handle(JsonMessage message) {
-        worker.emit(message.body(), message);
-        worker.ack(message);
-      }
-    }).start();
+  protected void handleMessage(JsonMessage message) {
+    emit(message);
+    ack(message);
   }
 
 }

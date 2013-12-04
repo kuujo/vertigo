@@ -48,7 +48,7 @@ public class BasicExecutor extends BaseComponent<Executor> implements Executor {
   protected InternalQueue queue;
   private boolean autoRetry;
   private int retryAttempts = -1;
-  private long executeInterval = 100;
+  private long executeInterval = 10;
   private boolean started;
   private boolean paused;
   private boolean executed;

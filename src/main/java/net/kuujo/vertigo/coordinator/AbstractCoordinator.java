@@ -55,7 +55,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   protected Map<String, String> deploymentMap = new HashMap<>();
   protected Map<String, InstanceContext> contextMap = new HashMap<>();
   protected Map<String, HeartbeatMonitor> heartbeats = new HashMap<>();
-  protected Set<String> workers = new HashSet<>();
+  protected Set<String> instances = new HashSet<>();
   protected Map<String, Message<JsonObject>> ready = new HashMap<>();
   protected Set<String> auditorDeploymentIds = new HashSet<>();
 
@@ -389,7 +389,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       ready.put(id, message);
       InstanceContext context = contextMap.get(id);
       events.trigger(Events.Component.Start.class, context.getComponent().getAddress(), context);
-      if (ready.size() == workers.size()) {
+      if (ready.size() == instances.size()) {
         events.trigger(Events.Network.Start.class, this.context.getAddress(), this.context);
         for (Message<JsonObject> replyMessage : ready.values()) {
           replyMessage.reply();
@@ -583,7 +583,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
       @Override
       protected void doDeploy(final InstanceContext context, Handler<AsyncResult<String>> resultHandler) {
-        workers.add(context.id());
+        instances.add(context.id());
 
         final Future<String> future = new DefaultFutureResult<String>();
         contextMap.put(context.id(), context);

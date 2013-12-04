@@ -60,7 +60,7 @@ public final class Network implements Serializable {
    * @throws MalformedNetworkException
    *   If the network definition is malformed.
    */
-  public static Network fromJson(JsonObject json) throws MalformedNetworkException {
+  public static Network fromJson(JsonObject json) {
     try {
       return Serializers.getDefault().deserialize(json, Network.class);
     }

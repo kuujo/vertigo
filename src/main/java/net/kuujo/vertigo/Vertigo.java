@@ -36,6 +36,8 @@ import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
 import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
 import net.kuujo.vertigo.rpc.StreamExecutor;
+import net.kuujo.vertigo.splitter.DefaultSplitter;
+import net.kuujo.vertigo.splitter.Splitter;
 import net.kuujo.vertigo.worker.DefaultWorker;
 import net.kuujo.vertigo.worker.Worker;
 
@@ -188,7 +190,29 @@ public final class Vertigo {
    *   A new filter instance.
    */
   public Filter createFilter(Function<JsonMessage, Boolean> function) {
-    return new DefaultFilter(vertx, container, context).setFunction(function);
+    return new DefaultFilter(vertx, container, context).filterFunction(function);
+  }
+
+  /**
+   * Creates a splitter.
+   *
+   * @return
+   *   A new splitter instance.
+   */
+  public Splitter createSplitter() {
+    return new DefaultSplitter(vertx, container, context);
+  }
+
+  /**
+   * Creates a splitter with a function.
+   *
+   * @param function
+   *   The splitter function.
+   * @return
+   *   A new splitter instance.
+   */
+  public Splitter createSplitter(Function<JsonObject, Iterable<JsonObject>> function) {
+    return new DefaultSplitter(vertx, container, context).splitFunction(function);
   }
 
 }

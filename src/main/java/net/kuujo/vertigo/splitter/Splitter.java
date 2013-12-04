@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.filter;
+package net.kuujo.vertigo.splitter;
 
+import org.vertx.java.core.json.JsonObject;
+
+import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.function.Function;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.operation.Operation;
 
 /**
- * A message filter.
+ * A message splitter.
  *
  * @author Jordan Halterman
  */
-public interface Filter extends Operation<Filter> {
+public interface Splitter extends Component<Splitter> {
 
   /**
-   * Registers a filter function on the filter.
+   * Sets the split function on the splitter.
    *
    * @param function
-   *   The function to register.
+   *   The split function.
    * @return
-   *   The called filter instance.
+   *   The called splitter instance.
    */
-  Filter filterFunction(Function<JsonMessage, Boolean> function);
+  Splitter splitFunction(Function<JsonObject, Iterable<JsonObject>> function);
 
 }

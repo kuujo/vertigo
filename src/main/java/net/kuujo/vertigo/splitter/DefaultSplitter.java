@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.filter;
+package net.kuujo.vertigo.splitter;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.component.BaseComponent;
@@ -25,29 +26,29 @@ import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.message.JsonMessage;
 
 /**
- * A default filter implementation.
+ * A default splitter implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultFilter extends BaseComponent<Filter> implements Filter {
-  private Function<JsonMessage, Boolean> filter;
+public class DefaultSplitter extends BaseComponent<Splitter> implements Splitter {
+  private Function<JsonObject, Iterable<JsonObject>> splitter;
   private final Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
     @Override
     public void handle(JsonMessage message) {
-      if (filter.call(message)) {
-        output.emit(message);
+      for (JsonObject body : splitter.call(message.body())) {
+        output.emit(body, message.tag(), message);
       }
       input.ack(message);
     }
   };
 
-  public DefaultFilter(Vertx vertx, Container container, InstanceContext context) {
+  public DefaultSplitter(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 
   @Override
-  public Filter filterFunction(Function<JsonMessage, Boolean> filter) {
-    this.filter = filter;
+  public Splitter splitFunction(Function<JsonObject, Iterable<JsonObject>> splitter) {
+    this.splitter = splitter;
     input.messageHandler(messageHandler);
     return this;
   }

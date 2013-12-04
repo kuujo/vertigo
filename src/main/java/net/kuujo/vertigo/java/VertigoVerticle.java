@@ -25,7 +25,6 @@ import net.kuujo.vertigo.message.schema.MessageSchema;
 import static net.kuujo.vertigo.util.Context.parseContext;
 
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
@@ -47,8 +46,15 @@ abstract class VertigoVerticle<T extends Component<T>> extends Verticle {
    */
   protected abstract T createComponent(InstanceContext context);
 
+  /**
+   * Because of the method by which Vertigo coordinates starting of
+   * component instances, we do not use the future-based start method
+   * here. Instead, we simply allow the Vertigo coordinator to do its
+   * job and then provide a separate start method for when the component
+   * is actually started (which differs from when the verticle is started).
+   */
   @Override
-  public void start(final Future<Void> future) {
+  public void start() {
     InstanceContext context = parseContext(container.config());
     final T component = createComponent(context);
     try {
@@ -56,18 +62,13 @@ abstract class VertigoVerticle<T extends Component<T>> extends Verticle {
       declareSchema(component);
     }
     catch (Exception e) {
-      future.setFailure(e);
       return;
     }
 
     component.start(new Handler<AsyncResult<T>>() {
       @Override
       public void handle(AsyncResult<T> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
-        }
-        else {
-          VertigoVerticle.super.start(future);
+        if (result.succeeded()) {
           start(component);
         }
       }
@@ -76,6 +77,11 @@ abstract class VertigoVerticle<T extends Component<T>> extends Verticle {
 
   /**
    * Called when the component has been started.
+   *
+   * This method differs from the normal {@link start() start} method in that
+   * this method will be called *after* all other start methods. This is because
+   * this method is actually called once the component has connected to all of
+   * its interested trading partners.
    *
    * @param component
    *   The component that was started.

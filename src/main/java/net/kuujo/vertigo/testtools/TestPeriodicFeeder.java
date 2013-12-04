@@ -62,7 +62,6 @@ public class TestPeriodicFeeder extends FeederVerticle {
 
   @Override
   public void start(final Feeder feeder) {
-    super.start(feeder);
     final JsonArray fields = container.config().getArray("fields");
     final long interval = container.config().getLong("interval");
     vertx.setPeriodic(interval, new Handler<Long>() {

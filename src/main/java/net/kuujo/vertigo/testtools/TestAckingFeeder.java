@@ -49,7 +49,6 @@ public class TestAckingFeeder extends FeederVerticle {
 
   @Override
   public void start(Feeder feeder) {
-    super.start(feeder);
     feeder.emit(container.config(), new Handler<AsyncResult<MessageId>>() {
       @Override
       public void handle(AsyncResult<MessageId> result) {

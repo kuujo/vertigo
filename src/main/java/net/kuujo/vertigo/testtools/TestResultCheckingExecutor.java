@@ -52,7 +52,6 @@ public class TestResultCheckingExecutor extends ExecutorVerticle {
 
   @Override
   public void start(Executor executor) {
-    super.start(executor);
     executor.execute(container.config().getObject("input"), new Handler<AsyncResult<JsonMessage>>() {
       @Override
       public void handle(AsyncResult<JsonMessage> result) {

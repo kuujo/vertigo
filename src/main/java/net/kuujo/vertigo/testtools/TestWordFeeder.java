@@ -68,7 +68,6 @@ public class TestWordFeeder extends FeederVerticle {
 
   @Override
   public void start(final Feeder feeder) {
-    super.start(feeder);
     field = container.config().getString("field");
     words = (String[]) container.config().getArray("words").toArray();
     feeder.feedHandler(new Handler<Feeder>() {

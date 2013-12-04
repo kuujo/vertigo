@@ -30,10 +30,10 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public class DefaultWorker extends BaseComponent<Worker> implements Worker {
+public class BasicWorker extends BaseComponent<Worker> implements Worker {
   protected Handler<JsonMessage> messageHandler;
 
-  public DefaultWorker(Vertx vertx, Container container, InstanceContext context) {
+  public BasicWorker(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

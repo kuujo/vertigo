@@ -26,11 +26,11 @@ import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.message.JsonMessage;
 
 /**
- * A default splitter implementation.
+ * A basic splitter implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultSplitter extends BaseComponent<Splitter> implements Splitter {
+public class BasicSplitter extends BaseComponent<Splitter> implements Splitter {
   private Function<JsonObject, Iterable<JsonObject>> splitter;
   private final Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
     @Override
@@ -42,7 +42,7 @@ public class DefaultSplitter extends BaseComponent<Splitter> implements Splitter
     }
   };
 
-  public DefaultSplitter(Vertx vertx, Container container, InstanceContext context) {
+  public BasicSplitter(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

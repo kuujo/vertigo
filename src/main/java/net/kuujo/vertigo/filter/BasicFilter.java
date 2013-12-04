@@ -25,11 +25,11 @@ import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.message.JsonMessage;
 
 /**
- * A default filter implementation.
+ * A basic filter implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultFilter extends BaseComponent<Filter> implements Filter {
+public class BasicFilter extends BaseComponent<Filter> implements Filter {
   private Function<JsonMessage, Boolean> filter;
   private final Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
     @Override
@@ -41,7 +41,7 @@ public class DefaultFilter extends BaseComponent<Filter> implements Filter {
     }
   };
 
-  public DefaultFilter(Vertx vertx, Container container, InstanceContext context) {
+  public BasicFilter(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

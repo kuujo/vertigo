@@ -27,7 +27,7 @@ import net.kuujo.vertigo.feeder.DefaultPollingFeeder;
 import net.kuujo.vertigo.feeder.DefaultStreamFeeder;
 import net.kuujo.vertigo.feeder.PollingFeeder;
 import net.kuujo.vertigo.feeder.StreamFeeder;
-import net.kuujo.vertigo.filter.DefaultFilter;
+import net.kuujo.vertigo.filter.BasicFilter;
 import net.kuujo.vertigo.filter.Filter;
 import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -36,9 +36,9 @@ import net.kuujo.vertigo.rpc.DefaultPollingExecutor;
 import net.kuujo.vertigo.rpc.DefaultStreamExecutor;
 import net.kuujo.vertigo.rpc.PollingExecutor;
 import net.kuujo.vertigo.rpc.StreamExecutor;
-import net.kuujo.vertigo.splitter.DefaultSplitter;
+import net.kuujo.vertigo.splitter.BasicSplitter;
 import net.kuujo.vertigo.splitter.Splitter;
-import net.kuujo.vertigo.worker.DefaultWorker;
+import net.kuujo.vertigo.worker.BasicWorker;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -168,7 +168,7 @@ public final class Vertigo {
    *   A new worker instance.
    */
   public Worker createWorker() {
-    return new DefaultWorker(vertx, container, context);
+    return new BasicWorker(vertx, container, context);
   }
 
   /**
@@ -178,7 +178,7 @@ public final class Vertigo {
    *   A new filter instance.
    */
   public Filter createFilter() {
-    return new DefaultFilter(vertx, container, context);
+    return new BasicFilter(vertx, container, context);
   }
 
   /**
@@ -190,7 +190,7 @@ public final class Vertigo {
    *   A new filter instance.
    */
   public Filter createFilter(Function<JsonMessage, Boolean> function) {
-    return new DefaultFilter(vertx, container, context).filterFunction(function);
+    return new BasicFilter(vertx, container, context).filterFunction(function);
   }
 
   /**
@@ -200,7 +200,7 @@ public final class Vertigo {
    *   A new splitter instance.
    */
   public Splitter createSplitter() {
-    return new DefaultSplitter(vertx, container, context);
+    return new BasicSplitter(vertx, container, context);
   }
 
   /**
@@ -212,7 +212,7 @@ public final class Vertigo {
    *   A new splitter instance.
    */
   public Splitter createSplitter(Function<JsonObject, Iterable<JsonObject>> function) {
-    return new DefaultSplitter(vertx, container, context).splitFunction(function);
+    return new BasicSplitter(vertx, container, context).splitFunction(function);
   }
 
 }

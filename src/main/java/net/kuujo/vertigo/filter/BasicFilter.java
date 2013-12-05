@@ -41,7 +41,7 @@ public class BasicFilter extends BaseComponent<Filter> implements Filter {
     }
   };
 
-  public BasicFilter(Vertx vertx, Container container, InstanceContext context) {
+  public BasicFilter(Vertx vertx, Container container, InstanceContext<Filter> context) {
     super(vertx, container, context);
   }
 

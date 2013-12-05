@@ -35,7 +35,7 @@ public final class NetworkContext implements Serializable {
   private List<String> auditors = new ArrayList<>();
   private boolean acking = true;
   private long timeout = 30000;
-  private Map<String, ComponentContext> components = new HashMap<>();
+  private Map<String, ComponentContext<?>> components = new HashMap<>();
 
   private NetworkContext() {
   }
@@ -112,9 +112,9 @@ public final class NetworkContext implements Serializable {
    * @return
    *   A list of network component contexts.
    */
-  public List<ComponentContext> getComponents() {
-    List<ComponentContext> components = new ArrayList<>();
-    for (ComponentContext component : this.components.values()) {
+  public List<ComponentContext<?>> getComponents() {
+    List<ComponentContext<?>> components = new ArrayList<>();
+    for (ComponentContext<?> component : this.components.values()) {
       components.add(component.setParent(this));
     }
     return components;
@@ -128,7 +128,8 @@ public final class NetworkContext implements Serializable {
    * @return
    *   A component context, or null if the component does not exist.
    */
-  public ComponentContext getComponent(String address) {
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public <T extends net.kuujo.vertigo.component.Component> ComponentContext<T> getComponent(String address) {
     return components.get(address).setParent(this);
   }
 

@@ -31,7 +31,7 @@ public abstract class FilterVerticle extends ComponentVerticle<Filter> {
   protected Filter filter;
 
   @Override
-  protected Filter createComponent(InstanceContext context) {
+  protected Filter createComponent(InstanceContext<Filter> context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
     return componentFactory.createFilter(context);
   }

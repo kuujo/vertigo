@@ -29,7 +29,7 @@ import net.kuujo.vertigo.message.schema.MessageSchema;
 /**
  * A network component.
  */
-public interface Component<T> {
+public interface Component<T extends Component<T>> {
 
   /**
    * Gets the component Vertx instance.
@@ -74,7 +74,7 @@ public interface Component<T> {
    * @return
    *   The instance context.
    */
-  InstanceContext getContext();
+  InstanceContext<T> getContext();
 
   /**
    * Adds a hook to the component.

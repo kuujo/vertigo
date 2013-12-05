@@ -51,7 +51,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Serializer serializer = Serializers.getDefault();
   private final Vertx vertx;
   private final EventBus eventBus;
-  private final InstanceContext context;
+  private final InstanceContext<?> context;
   private final Acker acker;
   private final boolean ackingEnabled;
   private final String componentAddress;
@@ -63,11 +63,11 @@ public class DefaultOutputCollector implements OutputCollector {
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
-  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext context) {
+  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext<?> context) {
     this(vertx, container, vertx.eventBus(), context);
   }
 
-  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context) {
+  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext<?> context) {
     this.vertx = vertx;
     this.eventBus = eventBus;
     this.context = context;
@@ -78,11 +78,11 @@ public class DefaultOutputCollector implements OutputCollector {
     componentAddress = context.getComponent().getAddress();
   }
 
-  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext context, Acker acker) {
+  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
     this(vertx, container, vertx.eventBus(), context, acker);
   }
 
-  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext context, Acker acker) {
+  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext<?> context, Acker acker) {
     this.vertx = vertx;
     this.eventBus = eventBus;
     this.context = context;

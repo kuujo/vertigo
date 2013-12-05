@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -34,7 +35,7 @@ public class TestAckingWorker extends WorkerVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition() {
+  public static Component<Worker> createDefinition() {
     return createDefinition(1);
   }
 
@@ -46,9 +47,8 @@ public class TestAckingWorker extends WorkerVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition(int instances) {
-    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString())
-        .setMain(TestAckingWorker.class.getName()).setInstances(instances);
+  public static Component<Worker> createDefinition(int instances) {
+    return new Component<Worker>(Worker.class, UUID.randomUUID().toString(), TestAckingWorker.class.getName()).setInstances(instances);
   }
 
   @Override

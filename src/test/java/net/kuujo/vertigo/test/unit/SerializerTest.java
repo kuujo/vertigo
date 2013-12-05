@@ -19,7 +19,7 @@ import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.ContextBuilder;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.VerticleContext;
+import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.hooks.EventBusHook;
 import net.kuujo.vertigo.input.Input;
@@ -29,6 +29,7 @@ import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;
@@ -50,8 +51,8 @@ public class SerializerTest {
     Network network = new Network("test");
     network.setNumAuditors(2);
     network.setAckTimeout(10000);
-    network.addVerticle("1", "1.py", 2).addHook(new EventBusHook());
-    network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
+    network.addFeeder("1", "1.py", 2).addHook(new EventBusHook());
+    network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
     try {
       NetworkContext context = ContextBuilder.buildContext(network);
@@ -59,14 +60,14 @@ public class SerializerTest {
       NetworkContext fromJsonNetwork = NetworkContext.fromJson(toJsonNetwork);
       assertEquals("test", fromJsonNetwork.getAddress());
 
-      ComponentContext component = context.getComponent("1");
+      ComponentContext<Feeder> component = context.getComponent("1");
       JsonObject toJsonComponent = ComponentContext.toJson(component);
-      ComponentContext fromJsonComponent = ComponentContext.fromJson(toJsonComponent);
+      ComponentContext<Feeder> fromJsonComponent = ComponentContext.fromJson(toJsonComponent);
       assertEquals("test", fromJsonComponent.getNetwork().getAddress());
 
-      InstanceContext instance = component.getInstances().get(0);
+      InstanceContext<Feeder> instance = component.getInstances().get(0);
       JsonObject toJsonInstance = InstanceContext.toJson(instance);
-      InstanceContext fromJsonInstance = InstanceContext.fromJson(toJsonInstance);
+      InstanceContext<Feeder> fromJsonInstance = InstanceContext.fromJson(toJsonInstance);
       assertEquals("test", fromJsonInstance.getComponent().getNetwork().getAddress());
     }
     catch (MalformedNetworkException e) {
@@ -79,8 +80,8 @@ public class SerializerTest {
     Network network = new Network("test");
     network.setNumAuditors(2);
     network.setAckTimeout(10000);
-    network.addVerticle("1", "1.py", 2).addHook(new EventBusHook());
-    network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
+    network.addFeeder("1", "1.py", 2).addHook(new EventBusHook());
+    network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
     Serializer serializer = Serializers.getDefault();
     try {
@@ -100,8 +101,8 @@ public class SerializerTest {
     Network network = new Network("test");
     network.setNumAuditors(2);
     network.setAckTimeout(10000);
-    network.addVerticle("1", "1.py", 2).setConfig(new JsonObject().putString("foo", "bar")).addHook(new EventBusHook());
-    network.addVerticle("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
+    network.addFeeder("1", "1.py", 2).setConfig(new JsonObject().putString("foo", "bar")).addHook(new EventBusHook());
+    network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
     try {
       NetworkContext context = ContextBuilder.buildContext(network);
@@ -109,19 +110,19 @@ public class SerializerTest {
       assertEquals(10000, context.getAckTimeout());
       assertEquals("test", context.getAddress());
       assertEquals(2, context.getAuditors().size());
-      ComponentContext component = context.getComponent("2");
-      assertTrue(component instanceof VerticleContext);
+      ComponentContext<Worker> component = context.getComponent("2");
+      assertTrue(component.getType().equals(Worker.class));
       assertNotNull(component);
       assertEquals("2", component.getAddress());
       Input input = component.getInputs().get(0);
       assertNotNull(input);
       assertTrue(input.getGrouping() instanceof RoundGrouping);
-      ComponentContext component2 = context.getComponent("1");
-      assertTrue(component2 instanceof VerticleContext);
+      ComponentContext<Feeder> component2 = context.getComponent("1");
+      assertTrue(component2.getType().equals(Feeder.class));
       ComponentHook hook = component2.getHooks().get(0);
       assertNotNull(hook);
       assertTrue(hook instanceof EventBusHook);
-      InstanceContext instance = component2.getInstances().get(0);
+      InstanceContext<Feeder> instance = component2.getInstances().get(0);
       assertNotNull(instance);
       assertNotNull(instance.id());
 

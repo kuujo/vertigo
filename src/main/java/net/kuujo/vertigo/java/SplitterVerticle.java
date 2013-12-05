@@ -33,7 +33,7 @@ public abstract class SplitterVerticle extends ComponentVerticle<Splitter> {
   protected String aggregationField;
 
   @Override
-  protected Splitter createComponent(InstanceContext context) {
+  protected Splitter createComponent(InstanceContext<Splitter> context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
     return componentFactory.createSplitter(context);
   }

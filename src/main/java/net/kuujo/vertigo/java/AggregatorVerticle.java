@@ -32,7 +32,7 @@ public abstract class AggregatorVerticle<T> extends ComponentVerticle<Aggregator
   protected String aggregationField;
 
   @Override
-  protected Aggregator<T> createComponent(InstanceContext context) {
+  protected Aggregator<T> createComponent(InstanceContext<Aggregator<T>> context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
     return componentFactory.createAggregator(context);
   }

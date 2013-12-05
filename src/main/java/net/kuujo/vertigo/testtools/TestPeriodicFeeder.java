@@ -23,6 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.FeederVerticle;
+import net.kuujo.vertigo.network.Component;
 
 /**
  * A feeder that periodically feeds a network with randomly generated field values.
@@ -41,7 +42,7 @@ public class TestPeriodicFeeder extends FeederVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition(String[] fields) {
+  public static Component<Feeder> createDefinition(String[] fields) {
     return createDefinition(fields, DEFAULT_INTERVAL);
   }
 
@@ -55,8 +56,8 @@ public class TestPeriodicFeeder extends FeederVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition(String[] fields, long interval) {
-    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString()).setMain(TestPeriodicFeeder.class.getName())
+  public static Component<Feeder> createDefinition(String[] fields, long interval) {
+    return new Component<Feeder>(Feeder.class, UUID.randomUUID().toString(), TestPeriodicFeeder.class.getName())
         .setConfig(new JsonObject().putArray("fields", new JsonArray(fields)).putNumber("interval", interval));
   }
 

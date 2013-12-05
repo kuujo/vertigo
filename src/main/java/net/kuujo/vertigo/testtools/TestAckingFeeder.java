@@ -24,6 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.FeederVerticle;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.network.Component;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -42,9 +43,8 @@ public class TestAckingFeeder extends FeederVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition(JsonObject data) {
-    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString())
-        .setMain(TestAckingFeeder.class.getName()).setConfig(data);
+  public static Component<Feeder> createDefinition(JsonObject data) {
+    return new Component<Feeder>(Feeder.class, UUID.randomUUID().toString(), TestAckingFeeder.class.getName()).setConfig(data);
   }
 
   @Override

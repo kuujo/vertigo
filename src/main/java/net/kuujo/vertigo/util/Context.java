@@ -37,7 +37,7 @@ public final class Context {
    * @return
    *   The updated configuration object.
    */
-  public static JsonObject storeContext(InstanceContext context, JsonObject config) {
+  public static JsonObject storeContext(InstanceContext<?> context, JsonObject config) {
     JsonObject serialized = Serializers.getDefault().serialize(context);
     return config.putObject("__context__", serialized);
   }
@@ -50,7 +50,7 @@ public final class Context {
    * @return
    *   An instance context.
    */
-  public static InstanceContext parseContext(JsonObject config) {
+  public static InstanceContext<?> parseContext(JsonObject config) {
     if (config != null && config.getFieldNames().contains("__context__")) {
       JsonObject contextInfo = config.getObject("__context__");
       if (contextInfo != null) {

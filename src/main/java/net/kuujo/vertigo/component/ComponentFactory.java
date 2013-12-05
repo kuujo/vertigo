@@ -61,7 +61,7 @@ public interface ComponentFactory {
    * @return
    *   A new feeder instance.
    */
-  Feeder createFeeder(InstanceContext context);
+  Feeder createFeeder(InstanceContext<Feeder> context);
 
   /**
    * Creates an executor.
@@ -71,7 +71,7 @@ public interface ComponentFactory {
    * @return
    *   A new executor instance.
    */
-  Executor createExecutor(InstanceContext context);
+  Executor createExecutor(InstanceContext<Executor> context);
 
   /**
    * Creates a worker.
@@ -81,7 +81,7 @@ public interface ComponentFactory {
    * @return
    *   A new worker instance.
    */
-  Worker createWorker(InstanceContext context);
+  Worker createWorker(InstanceContext<Worker> context);
 
   /**
    * Creates a filter.
@@ -91,7 +91,7 @@ public interface ComponentFactory {
    * @return
    *   A new filter instance.
    */
-  Filter createFilter(InstanceContext context);
+  Filter createFilter(InstanceContext<Filter> context);
 
   /**
    * Creates a splitter.
@@ -101,7 +101,7 @@ public interface ComponentFactory {
    * @return
    *   A new splitter instance.
    */
-  Splitter createSplitter(InstanceContext context);
+  Splitter createSplitter(InstanceContext<Splitter> context);
 
   /**
    * Creates an aggregator.
@@ -111,6 +111,6 @@ public interface ComponentFactory {
    * @return
    *   A new aggregator instance.
    */
-  <T> Aggregator<T> createAggregator(InstanceContext context);
+  <T> Aggregator<T> createAggregator(InstanceContext<Aggregator<T>> context);
 
 }

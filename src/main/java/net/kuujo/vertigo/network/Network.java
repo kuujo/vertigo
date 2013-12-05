@@ -24,9 +24,14 @@ import java.util.UUID;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.rpc.Executor;
+import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.splitter.Splitter;
+import net.kuujo.vertigo.aggregator.Aggregator;
 
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.impl.ModuleIdentifier;
 
 /**
  * A Vertigo network.
@@ -208,8 +213,9 @@ public final class Network implements Serializable {
    * @return
    *   A component instance, or null if the component does not exist in the network.
    */
-  public Component<?> getComponent(String address) {
-    return components.get(address);
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public <T extends net.kuujo.vertigo.component.Component> Component<T> getComponent(String address) {
+    return (Component<T>) components.get(address);
   }
 
   /**
@@ -220,203 +226,13 @@ public final class Network implements Serializable {
    * @return
    *   The added component instance.
    */
-  public <T extends Component<?>> T addComponent(T component) {
+  @SuppressWarnings("rawtypes")
+  public <T extends net.kuujo.vertigo.component.Component> Component<T> addComponent(Component<T> component) {
     components.put(component.getAddress(), component);
     return component;
   }
 
   /**
-   * Adds a verticle component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @return
-   *   The new verticle component instance.
-   */
-  @Deprecated
-  public Verticle addVerticle(String address) {
-    return addComponent(new Verticle(address));
-  }
-
-  /**
-   * Adds a verticle component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param main
-   *   The verticle main.
-   * @return
-   *   The new verticle component instance.
-   */
-  @Deprecated
-  public Verticle addVerticle(String address, String main) {
-    return addComponent(new Verticle(address).setMain(main));
-  }
-
-  /**
-   * Adds a verticle component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param main
-   *   The verticle main.
-   * @param config
-   *   The verticle component configuration. This configuration will be made
-   *   available as the normal Vert.x container configuration within the verticle.
-   * @return
-   *   The new verticle component instance.
-   */
-  @Deprecated
-  public Verticle addVerticle(String address, String main, JsonObject config) {
-    return addComponent(new Verticle(address).setMain(main).setConfig(config));
-  }
-
-  /**
-   * Adds a verticle component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param main
-   *   The verticle main.
-   * @param instances
-   *   The number of component instances.
-   * @return
-   *   The new verticle component instance.
-   */
-  @Deprecated
-  public Verticle addVerticle(String address, String main, int instances) {
-    return addComponent(new Verticle(address).setMain(main).setInstances(instances));
-  }
-
-  /**
-   * Adds a verticle component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param main
-   *   The verticle main.
-   * @param config
-   *   The verticle component configuration. This configuration will be made
-   *   available as the normal Vert.x container configuration within the verticle.
-   * @param instances
-   *   The number of component instances.
-   * @return
-   *   The new verticle component instance.
-   */
-  @Deprecated
-  public Verticle addVerticle(String address, String main, JsonObject config, int instances) {
-    return addComponent(new Verticle(address).setMain(main).setConfig(config).setInstances(instances));
-  }
-
-  /**
-   * Adds a module component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @return
-   *   The new module component instance.
-   */
-  @Deprecated
-  public Module addModule(String address) {
-    return addComponent(new Module(address));
-  }
-
-  /**
-   * Adds a module component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param moduleName
-   *   The module name.
-   * @return
-   *   The new module component instance.
-   */
-  @Deprecated
-  public Module addModule(String address, String moduleName) {
-    return addComponent(new Module(address).setModule(moduleName));
-  }
-
-  /**
-   * Adds a module component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param moduleName
-   *   The module name.
-   * @param config
-   *   The module component configuration. This configuration will be made
-   *   available as the normal Vert.x container configuration within the module.
-   * @return
-   *   The new module component instance.
-   */
-  @Deprecated
-  public Module addModule(String address, String moduleName, JsonObject config) {
-    return addComponent(new Module(address).setModule(moduleName).setConfig(config));
-  }
-
-  /**
-   * Adds a module component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param moduleName
-   *   The module name.
-   * @param instances
-   *   The number of component instances.
-   * @return
-   *   The new module component instance.
-   */
-  @Deprecated
-  public Module addModule(String address, String moduleName, int instances) {
-    return addComponent(new Module(address).setModule(moduleName).setInstances(instances));
-  }
-
-  /**
-   * Adds a module component to the network.
-   *
-   * @param address
-   *   The component address. This is the address to which other components may
-   *   connect to listen to the component's output.
-   * @param moduleName
-   *   The module name.
-   * @param config
-   *   The module component configuration. This configuration will be made
-   *   available as the normal Vert.x container configuration within the module.
-   * @param instances
-   *   The number of component instances.
-   * @return
-   *   The new module component instance.
-   */
-  @Deprecated
-  public Module addModule(String address, String moduleName, JsonObject config, int instances) {
-    return addComponent(new Module(address).setModule(moduleName).setConfig(config).setInstances(instances));
-  }
-
-  /**
-   * Returns a boolean indicating whether the given string is a module name.
-   * This validation is performed by using the core Vert.x module name validation
-   * contained in the {@link ModuleIdentifier} class.
-   */
-  private boolean isModuleName(String name) {
-    try {
-      new ModuleIdentifier(name);
-    }
-    catch (IllegalArgumentException e) {
-      return false;
-    }
-    return true;
-  }
-
-  /**
    * Adds a feeder component to the network.
    *
    * @param address
@@ -426,13 +242,8 @@ public final class Network implements Serializable {
    * @return
    *   The new feeder component instance.
    */
-  public Component<?> addFeeder(String address, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.FEEDER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.FEEDER));
-    }
+  public Component<Feeder> addFeeder(String address, String moduleOrMain) {
+    return addComponent(new Component<Feeder>(Feeder.class, address, moduleOrMain));
   }
 
   /**
@@ -447,13 +258,8 @@ public final class Network implements Serializable {
    * @return
    *   The new feeder component instance.
    */
-  public Component<?> addFeeder(String address, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.FEEDER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.FEEDER));
-    }
+  public Component<Feeder> addFeeder(String address, String moduleOrMain, JsonObject config) {
+    return addComponent(new Component<Feeder>(Feeder.class, address, moduleOrMain).setConfig(config));
   }
 
   /**
@@ -468,13 +274,8 @@ public final class Network implements Serializable {
    * @return
    *   The new feeder component instance.
    */
-  public Component<?> addFeeder(String address, String moduleOrMain, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.FEEDER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.FEEDER));
-    }
+  public Component<Feeder> addFeeder(String address, String moduleOrMain, int instances) {
+    return addComponent(new Component<Feeder>(Feeder.class, address, moduleOrMain).setInstances(instances));
   }
 
   /**
@@ -491,13 +292,8 @@ public final class Network implements Serializable {
    * @return
    *   The new feeder component instance.
    */
-  public Component<?> addFeeder(String address, String moduleOrMain, JsonObject config, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.FEEDER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.FEEDER));
-    }
+  public Component<Feeder> addFeeder(String address, String moduleOrMain, JsonObject config, int instances) {
+    return addComponent(new Component<Feeder>(Feeder.class, address, moduleOrMain).setConfig(config).setInstances(instances));
   }
 
   /**
@@ -510,13 +306,8 @@ public final class Network implements Serializable {
    * @return
    *   The new executor component instance.
    */
-  public Component<?> addExecutor(String address, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.EXECUTOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.EXECUTOR));
-    }
+  public Component<Executor> addExecutor(String address, String moduleOrMain) {
+    return addComponent(new Component<Executor>(Executor.class, address, moduleOrMain));
   }
 
   /**
@@ -531,13 +322,8 @@ public final class Network implements Serializable {
    * @return
    *   The new executor component instance.
    */
-  public Component<?> addExecutor(String address, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.EXECUTOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.EXECUTOR));
-    }
+  public Component<Executor> addExecutor(String address, String moduleOrMain, JsonObject config) {
+    return addComponent(new Component<Executor>(Executor.class, address, moduleOrMain).setConfig(config));
   }
 
   /**
@@ -552,13 +338,8 @@ public final class Network implements Serializable {
    * @return
    *   The new executor component instance.
    */
-  public Component<?> addExecutor(String address, String moduleOrMain, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.EXECUTOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.EXECUTOR));
-    }
+  public Component<Executor> addExecutor(String address, String moduleOrMain, int instances) {
+    return addComponent(new Component<Executor>(Executor.class, address, moduleOrMain).setInstances(instances));
   }
 
   /**
@@ -575,13 +356,8 @@ public final class Network implements Serializable {
    * @return
    *   The new executor component instance.
    */
-  public Component<?> addExecutor(String address, String moduleOrMain, JsonObject config, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.EXECUTOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.EXECUTOR));
-    }
+  public Component<Executor> addExecutor(String address, String moduleOrMain, JsonObject config, int instances) {
+    return addComponent(new Component<Executor>(Executor.class, address, moduleOrMain).setConfig(config).setInstances(instances));
   }
 
   /**
@@ -594,13 +370,8 @@ public final class Network implements Serializable {
    * @return
    *   The new worker component instance.
    */
-  public Component<?> addWorker(String address, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.WORKER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.WORKER));
-    }
+  public Component<Worker> addWorker(String address, String moduleOrMain) {
+    return addComponent(new Component<Worker>(Worker.class, address, moduleOrMain));
   }
 
   /**
@@ -615,13 +386,8 @@ public final class Network implements Serializable {
    * @return
    *   The new worker component instance.
    */
-  public Component<?> addWorker(String address, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.WORKER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.WORKER));
-    }
+  public Component<Worker> addWorker(String address, String moduleOrMain, JsonObject config) {
+    return addComponent(new Component<Worker>(Worker.class, address, moduleOrMain).setConfig(config));
   }
 
   /**
@@ -636,13 +402,8 @@ public final class Network implements Serializable {
    * @return
    *   The new worker component instance.
    */
-  public Component<?> addWorker(String address, String moduleOrMain, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.WORKER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.WORKER));
-    }
+  public Component<Worker> addWorker(String address, String moduleOrMain, int instances) {
+    return addComponent(new Component<Worker>(Worker.class, address, moduleOrMain).setInstances(instances));
   }
 
   /**
@@ -659,13 +420,8 @@ public final class Network implements Serializable {
    * @return
    *   The new worker component instance.
    */
-  public Component<?> addWorker(String address, String moduleOrMain, JsonObject config, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.WORKER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.WORKER));
-    }
+  public Component<Worker> addWorker(String address, String moduleOrMain, JsonObject config, int instances) {
+    return addComponent(new Component<Worker>(Worker.class, address, moduleOrMain).setConfig(config).setInstances(instances));
   }
 
   /**
@@ -678,13 +434,8 @@ public final class Network implements Serializable {
    * @return
    *   The new filter component instance.
    */
-  public Component<?> addFilter(String address, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.FILTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.FILTER));
-    }
+  public Component<Filter> addFilter(String address, String moduleOrMain) {
+    return addComponent(new Component<Filter>(Filter.class, address, moduleOrMain));
   }
 
   /**
@@ -699,13 +450,8 @@ public final class Network implements Serializable {
    * @return
    *   The new filter component instance.
    */
-  public Component<?> addFilter(String address, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.FILTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.FILTER));
-    }
+  public Component<Filter> addFilter(String address, String moduleOrMain, JsonObject config) {
+    return addComponent(new Component<Filter>(Filter.class, address, moduleOrMain).setConfig(config));
   }
 
   /**
@@ -720,13 +466,8 @@ public final class Network implements Serializable {
    * @return
    *   The new filter component instance.
    */
-  public Component<?> addFilter(String address, String moduleOrMain, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.FILTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.FILTER));
-    }
+  public Component<Filter> addFilter(String address, String moduleOrMain, int instances) {
+    return addComponent(new Component<Filter>(Filter.class, address, moduleOrMain).setInstances(instances));
   }
 
   /**
@@ -743,13 +484,8 @@ public final class Network implements Serializable {
    * @return
    *   The new filter component instance.
    */
-  public Component<?> addFilter(String address, String moduleOrMain, JsonObject config, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.FILTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.FILTER));
-    }
+  public Component<Filter> addFilter(String address, String moduleOrMain, JsonObject config, int instances) {
+    return addComponent(new Component<Filter>(Filter.class, address, moduleOrMain).setConfig(config).setInstances(instances));
   }
 
   /**
@@ -762,13 +498,8 @@ public final class Network implements Serializable {
    * @return
    *   The new splitter component instance.
    */
-  public Component<?> addSplitter(String address, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.SPLITTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.SPLITTER));
-    }
+  public Component<Splitter> addSplitter(String address, String moduleOrMain) {
+    return addComponent(new Component<Splitter>(Splitter.class, address, moduleOrMain));
   }
 
   /**
@@ -783,13 +514,8 @@ public final class Network implements Serializable {
    * @return
    *   The new splitter component instance.
    */
-  public Component<?> addSplitter(String address, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.SPLITTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.SPLITTER));
-    }
+  public Component<Splitter> addSplitter(String address, String moduleOrMain, JsonObject config) {
+    return addComponent(new Component<Splitter>(Splitter.class, address, moduleOrMain).setConfig(config));
   }
 
   /**
@@ -804,13 +530,8 @@ public final class Network implements Serializable {
    * @return
    *   The new splitter component instance.
    */
-  public Component<?> addSplitter(String address, String moduleOrMain, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.SPLITTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.SPLITTER));
-    }
+  public Component<Splitter> addSplitter(String address, String moduleOrMain, int instances) {
+    return addComponent(new Component<Splitter>(Splitter.class, address, moduleOrMain).setInstances(instances));
   }
 
   /**
@@ -827,13 +548,8 @@ public final class Network implements Serializable {
    * @return
    *   The new splitter component instance.
    */
-  public Component<?> addSplitter(String address, String moduleOrMain, JsonObject config, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.SPLITTER));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.SPLITTER));
-    }
+  public Component<Splitter> addSplitter(String address, String moduleOrMain, JsonObject config, int instances) {
+    return addComponent(new Component<Splitter>(Splitter.class, address, moduleOrMain).setConfig(config).setInstances(instances));
   }
 
   /**
@@ -846,13 +562,9 @@ public final class Network implements Serializable {
    * @return
    *   The new aggregator component instance.
    */
-  public Component<?> addAggregator(String address, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.AGGREGATOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.AGGREGATOR));
-    }
+  @SuppressWarnings("rawtypes")
+  public Component<Aggregator> addAggregator(String address, String moduleOrMain) {
+    return addComponent(new Component<Aggregator>(Aggregator.class, address, moduleOrMain));
   }
 
   /**
@@ -867,13 +579,9 @@ public final class Network implements Serializable {
    * @return
    *   The new aggregator component instance.
    */
-  public Component<?> addAggregator(String address, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.AGGREGATOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.AGGREGATOR));
-    }
+  @SuppressWarnings("rawtypes")
+  public Component<Aggregator> addAggregator(String address, String moduleOrMain, JsonObject config) {
+    return addComponent(new Component<Aggregator>(Aggregator.class, address, moduleOrMain).setConfig(config));
   }
 
   /**
@@ -888,13 +596,9 @@ public final class Network implements Serializable {
    * @return
    *   The new aggregator component instance.
    */
-  public Component<?> addAggregator(String address, String moduleOrMain, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
-    }
+  @SuppressWarnings("rawtypes")
+  public Component<Aggregator> addAggregator(String address, String moduleOrMain, int instances) {
+    return addComponent(new Component<Aggregator>(Aggregator.class, address, moduleOrMain).setInstances(instances));
   }
 
   /**
@@ -911,13 +615,9 @@ public final class Network implements Serializable {
    * @return
    *   The new aggregator component instance.
    */
-  public Component<?> addAggregator(String address, String moduleOrMain, JsonObject config, int instances) {
-    if (isModuleName(moduleOrMain)) {
-      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
-    }
-    else {
-      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
-    }
+  @SuppressWarnings("rawtypes")
+  public Component<Aggregator> addAggregator(String address, String moduleOrMain, JsonObject config, int instances) {
+    return addComponent(new Component<Aggregator>(Aggregator.class, address, moduleOrMain).setConfig(config).setInstances(instances));
   }
 
 }

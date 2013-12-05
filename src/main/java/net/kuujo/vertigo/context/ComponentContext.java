@@ -15,16 +15,22 @@
  */
 package net.kuujo.vertigo.context;
 
+import static net.kuujo.vertigo.util.Component.deserializeType;
+import static net.kuujo.vertigo.util.Component.isModuleName;
+import static net.kuujo.vertigo.util.Component.isVerticleMain;
+import static net.kuujo.vertigo.util.Component.serializeType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
+import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.serializer.Serializable;
@@ -36,43 +42,19 @@ import net.kuujo.vertigo.serializer.Serializers;
  *
  * @author Jordan Halterman
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
-@JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name=ComponentContext.Type.MODULE),
-  @JsonSubTypes.Type(value=VerticleContext.class, name=ComponentContext.Type.VERTICLE)
-})
-public abstract class ComponentContext implements Serializable {
+@SuppressWarnings("rawtypes")
+public class ComponentContext<T extends net.kuujo.vertigo.component.Component> implements Serializable {
+  private String address;
+  private Class<T> type;
+  private String main;
+  private Map<String, Object> config;
+  private List<InstanceContext<T>> instances = new ArrayList<>();
+  private long heartbeat = 5000;
+  private List<ComponentHook> hooks = new ArrayList<>();
+  private List<Input> inputs = new ArrayList<>();
+  private @JsonIgnore NetworkContext network;
 
-  /**
-   * Component types.
-   */
-  public static final class Type {
-    public static final String VERTICLE = "verticle";
-    public static final String MODULE = "module";
-  }
-
-  /**
-   * Component groups.
-   */
-  public static final class Group {
-    public static String FEEDER = "feeder";
-    public static String EXECUTOR = "executor";
-    public static String WORKER = "worker";
-    public static String FILTER = "filter";
-    public static String SPLITTER = "splitter";
-    public static String AGGREGATOR = "aggregator";
-  }
-
-  protected String address;
-  protected String group;
-  protected Map<String, Object> config;
-  protected List<InstanceContext> instances = new ArrayList<>();
-  protected long heartbeat = 5000;
-  protected List<ComponentHook> hooks = new ArrayList<>();
-  protected List<Input> inputs = new ArrayList<>();
-  protected @JsonIgnore NetworkContext network;
-
-  protected ComponentContext() {
+  private ComponentContext() {
   }
 
   /**
@@ -85,9 +67,10 @@ public abstract class ComponentContext implements Serializable {
    * @throws MalformedContextException
    *   If the context is malformed.
    */
-  public static ComponentContext fromJson(JsonObject context) {
+  @SuppressWarnings("unchecked")
+  public static <T extends Component<T>> ComponentContext<T> fromJson(JsonObject context) {
     Serializer serializer = Serializers.getDefault();
-    ComponentContext component = serializer.deserialize(context.getObject("component"), ComponentContext.class);
+    ComponentContext<T> component = serializer.deserialize(context.getObject("component"), ComponentContext.class);
     NetworkContext network = NetworkContext.fromJson(context);
     return component.setParent(network);
   }
@@ -131,7 +114,20 @@ public abstract class ComponentContext implements Serializable {
    * @return
    *   The component type.
    */
-  public abstract String getType();
+  public Class<T> getType() {
+    return type;
+  }
+
+  @JsonGetter("type")
+  private String getSerializedType() {
+    return serializeType(type);
+  }
+
+  @JsonSetter("type")
+  @SuppressWarnings("unchecked")
+  private void setSerializedType(String type) {
+    this.type = (Class<T>) deserializeType(type);
+  }
 
   /**
    * Returns a boolean indicating whether the component is a module.
@@ -140,7 +136,17 @@ public abstract class ComponentContext implements Serializable {
    *   Indicates whether the component is a module.
    */
   public boolean isModule() {
-    return getType().equals(Type.MODULE);
+    return main != null && isModuleName(main);
+  }
+
+  /**
+   * Gets the component module name.
+   *
+   * @return
+   *   The component module name.
+   */
+  public String getModule() {
+    return main;
   }
 
   /**
@@ -150,59 +156,17 @@ public abstract class ComponentContext implements Serializable {
    *   Indicates whether the component is a verticle.
    */
   public boolean isVerticle() {
-    return getType().equals(Type.VERTICLE);
+    return main != null && isVerticleMain(main);
   }
 
   /**
-   * Returns the component group.
+   * Gets the component verticle main.
    *
    * @return
-   *   The component group, e.g. "feeder", "worker", "filter", etc.
+   *   The component verticle main.
    */
-  public String getGroup() {
-    return group;
-  }
-
-  /**
-   * Indicates whether the component is a feeder.
-   */
-  public boolean isFeeder() {
-    return getGroup().equals(Group.FEEDER);
-  }
-
-  /**
-   * Indicates whether the component is an executor.
-   */
-  public boolean isExecutor() {
-    return getGroup().equals(Group.EXECUTOR);
-  }
-
-  /**
-   * Indicates whether the component is a worker.
-   */
-  public boolean isWorker() {
-    return getGroup().equals(Group.WORKER);
-  }
-
-  /**
-   * Indicates whether the component is a filter.
-   */
-  public boolean isFilter() {
-    return getGroup().equals(Group.FILTER);
-  }
-
-  /**
-   * Indicates whether the component is a splitter.
-   */
-  public boolean isSplitter() {
-    return getGroup().equals(Group.SPLITTER);
-  }
-
-  /**
-   * Indicates whether the component is an aggregator.
-   */
-  public boolean isAggregator() {
-    return getGroup().equals(Group.AGGREGATOR);
+  public String getMain() {
+    return main;
   }
 
   /**
@@ -221,8 +185,8 @@ public abstract class ComponentContext implements Serializable {
    * @return
    *   A list of component instance contexts.
    */
-  public List<InstanceContext> getInstances() {
-    for (InstanceContext instance : instances) {
+  public List<InstanceContext<T>> getInstances() {
+    for (InstanceContext<T> instance : instances) {
       instance.setParent(this);
     }
     return instances;
@@ -236,8 +200,8 @@ public abstract class ComponentContext implements Serializable {
    * @return
    *   A component instance or null if the instance doesn't exist.
    */
-  public InstanceContext getInstance(String id) {
-    for (InstanceContext instance : instances) {
+  public InstanceContext<T> getInstance(String id) {
+    for (InstanceContext<T> instance : instances) {
       if (instance.id().equals(id)) {
         return instance.setParent(this);
       }

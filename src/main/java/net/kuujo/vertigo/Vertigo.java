@@ -69,7 +69,7 @@ public interface Vertigo<T extends Component<T>> {
    *   The current component instance context.If the current Vertigo instance is
    *   not a component then this value will be null.
    */
-  InstanceContext context();
+  InstanceContext<T> context();
 
   /**
    * Creates a new network.

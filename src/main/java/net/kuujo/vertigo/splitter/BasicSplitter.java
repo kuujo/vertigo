@@ -42,7 +42,7 @@ public class BasicSplitter extends BaseComponent<Splitter> implements Splitter {
     }
   };
 
-  public BasicSplitter(Vertx vertx, Container container, InstanceContext context) {
+  public BasicSplitter(Vertx vertx, Container container, InstanceContext<Splitter> context) {
     super(vertx, container, context);
   }
 

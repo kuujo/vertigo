@@ -32,7 +32,7 @@ public abstract class WorkerVerticle extends ComponentVerticle<Worker> {
   protected Worker worker;
 
   @Override
-  protected Worker createComponent(InstanceContext context) {
+  protected Worker createComponent(InstanceContext<Worker> context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
     return componentFactory.createWorker(context);
   }

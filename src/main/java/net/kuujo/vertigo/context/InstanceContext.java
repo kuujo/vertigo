@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
@@ -28,9 +29,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author Jordan Halterman
  */
-public final class InstanceContext implements Serializable {
+@SuppressWarnings("rawtypes")
+public final class InstanceContext<T extends Component> implements Serializable {
   private String id;
-  private @JsonIgnore ComponentContext component;
+  private @JsonIgnore ComponentContext<T> component;
 
   private InstanceContext() {
   }
@@ -45,10 +47,11 @@ public final class InstanceContext implements Serializable {
    * @throws MalformedContextException
    *   If the JSON context is malformed.
    */
-  public static InstanceContext fromJson(JsonObject context) {
+  @SuppressWarnings("unchecked")
+  public static <T extends Component<T>> InstanceContext<T> fromJson(JsonObject context) {
     Serializer serializer = Serializers.getDefault();
-    InstanceContext instance = serializer.deserialize(context.getObject("instance"), InstanceContext.class);
-    ComponentContext component = ComponentContext.fromJson(context);
+    InstanceContext<T> instance = serializer.deserialize(context.getObject("instance"), InstanceContext.class);
+    ComponentContext<T> component = ComponentContext.fromJson(context);
     return instance.setParent(component);
   }
 
@@ -60,7 +63,7 @@ public final class InstanceContext implements Serializable {
    * @return
    *   A Json representation of the instance context.
    */
-  public static JsonObject toJson(InstanceContext context) {
+  public static JsonObject toJson(InstanceContext<?> context) {
     Serializer serializer = Serializers.getDefault();
     JsonObject json = ComponentContext.toJson(context.getComponent());
     return json.putObject("instance", serializer.serialize(context));
@@ -69,7 +72,7 @@ public final class InstanceContext implements Serializable {
   /**
    * Sets the instance parent.
    */
-  InstanceContext setParent(ComponentContext component) {
+  InstanceContext<T> setParent(ComponentContext<T> component) {
     this.component = component;
     return this;
   }
@@ -85,54 +88,12 @@ public final class InstanceContext implements Serializable {
   }
 
   /**
-   * Indicates whether the component is a feeder.
-   */
-  public boolean isFeeder() {
-    return component.isFeeder();
-  }
-
-  /**
-   * Indicates whether the component is an executor.
-   */
-  public boolean isExecutor() {
-    return component.isExecutor();
-  }
-
-  /**
-   * Indicates whether the component is a worker.
-   */
-  public boolean isWorker() {
-    return component.isWorker();
-  }
-
-  /**
-   * Indicates whether the component is a filter.
-   */
-  public boolean isFilter() {
-    return component.isFilter();
-  }
-
-  /**
-   * Indicates whether the component is a splitter.
-   */
-  public boolean isSplitter() {
-    return component.isSplitter();
-  }
-
-  /**
-   * Indicates whether the component is an aggregator.
-   */
-  public boolean isAggregator() {
-    return component.isAggregator();
-  }
-
-  /**
    * Returns the parent component context.
    *
    * @return
    *   The parent component context.
    */
-  public ComponentContext getComponent() {
+  public ComponentContext<T> getComponent() {
     return component;
   }
 

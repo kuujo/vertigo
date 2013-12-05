@@ -62,32 +62,32 @@ public class DefaultComponentFactory implements ComponentFactory {
   }
 
   @Override
-  public Feeder createFeeder(InstanceContext context) {
+  public Feeder createFeeder(InstanceContext<Feeder> context) {
     return new BasicFeeder(vertx, container, context);
   }
 
   @Override
-  public Executor createExecutor(InstanceContext context) {
+  public Executor createExecutor(InstanceContext<Executor> context) {
     return new BasicExecutor(vertx, container, context);
   }
 
   @Override
-  public Worker createWorker(InstanceContext context) {
+  public Worker createWorker(InstanceContext<Worker> context) {
     return new BasicWorker(vertx, container, context);
   }
 
   @Override
-  public Filter createFilter(InstanceContext context) {
+  public Filter createFilter(InstanceContext<Filter> context) {
     return new BasicFilter(vertx, container, context);
   }
 
   @Override
-  public Splitter createSplitter(InstanceContext context) {
+  public Splitter createSplitter(InstanceContext<Splitter> context) {
     return new BasicSplitter(vertx, container, context);
   }
 
   @Override
-  public <T> Aggregator<T> createAggregator(InstanceContext context) {
+  public <T> Aggregator<T> createAggregator(InstanceContext<Aggregator<T>> context) {
     return new BasicAggregator<T>(vertx, container, context);
   }
 

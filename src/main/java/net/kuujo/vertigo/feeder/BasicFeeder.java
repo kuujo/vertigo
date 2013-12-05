@@ -49,7 +49,7 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
   private boolean fed;
   private long feedTimer;
 
-  public BasicFeeder(Vertx vertx, Container container, InstanceContext context) {
+  public BasicFeeder(Vertx vertx, Container container, InstanceContext<Feeder> context) {
     super(vertx, container, context);
   }
 

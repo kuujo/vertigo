@@ -24,6 +24,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.FeederVerticle;
+import net.kuujo.vertigo.network.Component;
 
 /**
  * A feeder that feeder "random" test words to a network.
@@ -40,7 +41,7 @@ public class TestWordFeeder extends FeederVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition(String field) {
+  public static Component<Feeder> createDefinition(String field) {
     String[] words = new String[]{"apples", "bananas", "oranges", "peaches", "pears", "strawberries"};
     return createDefinition(field, words);
   }
@@ -55,11 +56,9 @@ public class TestWordFeeder extends FeederVerticle {
    * @return
    *   A component definition.
    */
-  public static net.kuujo.vertigo.network.Verticle createDefinition(String field, String[] words) {
-    return new net.kuujo.vertigo.network.Verticle(UUID.randomUUID().toString())
-      .setMain(TestWordFeeder.class.getName())
-      .setConfig(new JsonObject().putString("field", field)
-      .putArray("words", new JsonArray(words)));
+  public static Component<Feeder> createDefinition(String field, String[] words) {
+    return new Component<Feeder>(Feeder.class, UUID.randomUUID().toString(), TestWordFeeder.class.getName()).setConfig(new JsonObject().putString("field", field)
+        .putArray("words", new JsonArray(words)));
   }
 
   private String field;

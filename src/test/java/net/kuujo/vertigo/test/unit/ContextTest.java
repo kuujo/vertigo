@@ -45,8 +45,8 @@ public class ContextTest {
     network.setNumAuditors(2);
     network.enableAcking();
 
-    network.addVerticle("test1", "net.kuujo.vertigo.VertigoVerticle");
-    network.addVerticle("test2", "net.kuujo.vertigo.VertigoVerticle").addInput("test1");
+    network.addFeeder("test1", "net.kuujo.vertigo.TestFeeder");
+    network.addWorker("test2", "net.kuujo.vertigo.TestWorker").addInput("test1");
 
     NetworkContext context;
     try {

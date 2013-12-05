@@ -75,7 +75,7 @@ public class BasicAggregator<T> extends BaseComponent<Aggregator<T>> implements 
     }
   };
 
-  public BasicAggregator(Vertx vertx, Container container, InstanceContext context) {
+  public BasicAggregator(Vertx vertx, Container container, InstanceContext<Aggregator<T>> context) {
     super(vertx, container, context);
   }
 

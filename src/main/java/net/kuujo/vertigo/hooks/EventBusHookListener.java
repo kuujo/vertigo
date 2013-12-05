@@ -35,7 +35,7 @@ import org.vertx.java.core.json.JsonObject;
 public class EventBusHookListener {
   private final String componentAddress;
   private final EventBus eventBus;
-  private Handler<InstanceContext> startHandler;
+  private Handler<InstanceContext<?>> startHandler;
   private Handler<MessageId> receiveHandler;
   private Handler<MessageId> ackHandler;
   private Handler<MessageId> failHandler;
@@ -43,7 +43,7 @@ public class EventBusHookListener {
   private Handler<MessageId> ackedHandler;
   private Handler<MessageId> failedHandler;
   private Handler<MessageId> timeoutHandler;
-  private Handler<InstanceContext> stopHandler;
+  private Handler<InstanceContext<?>> stopHandler;
 
   public EventBusHookListener(String componentAddress, EventBus eventBus) {
     this.componentAddress = componentAddress;
@@ -121,7 +121,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener startHandler(Handler<InstanceContext> startHandler) {
+  public EventBusHookListener startHandler(Handler<InstanceContext<?>> startHandler) {
     this.startHandler = startHandler;
     return this;
   }
@@ -225,7 +225,7 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener stopHandler(Handler<InstanceContext> stopHandler) {
+  public EventBusHookListener stopHandler(Handler<InstanceContext<?>> stopHandler) {
     this.stopHandler = stopHandler;
     return this;
   }

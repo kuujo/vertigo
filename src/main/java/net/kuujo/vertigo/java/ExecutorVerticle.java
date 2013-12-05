@@ -31,7 +31,7 @@ public abstract class ExecutorVerticle extends ComponentVerticle<Executor> {
   protected Executor executor;
 
   @Override
-  protected Executor createComponent(InstanceContext context) {
+  protected Executor createComponent(InstanceContext<Executor> context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
     return componentFactory.createExecutor(context);
   }

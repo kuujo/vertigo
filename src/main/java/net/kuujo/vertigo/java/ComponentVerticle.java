@@ -48,7 +48,7 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
    * @return
    *   The new component instance.
    */
-  protected abstract T createComponent(InstanceContext context);
+  protected abstract T createComponent(InstanceContext<T> context);
 
   /**
    * Because of the method by which Vertigo coordinates starting of
@@ -58,8 +58,9 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
    * is actually started (which differs from when the verticle is started).
    */
   @Override
+  @SuppressWarnings("unchecked")
   public void start() {
-    InstanceContext context = parseContext(container.config());
+    InstanceContext<T> context = (InstanceContext<T>) parseContext(container.config());
     final T component = createComponent(context);
     VertigoFactory factory = new DefaultVertigoFactory(vertx, container);
     vertigo = factory.createVertigo(component);

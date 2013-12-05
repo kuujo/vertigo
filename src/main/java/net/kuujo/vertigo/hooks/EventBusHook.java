@@ -38,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public class EventBusHook implements ComponentHook {
-  @JsonIgnore private InstanceContext context;
+  @JsonIgnore private InstanceContext<?> context;
   @JsonIgnore private EventBus eventBus;
   @JsonIgnore private String address;
   @JsonIgnore private Serializer serializer = Serializers.getDefault();

@@ -54,7 +54,7 @@ public class BasicExecutor extends BaseComponent<Executor> implements Executor {
   private boolean executed;
   private long executeTimer;
 
-  public BasicExecutor(Vertx vertx, Container container, InstanceContext context) {
+  public BasicExecutor(Vertx vertx, Container container, InstanceContext<Executor> context) {
     super(vertx, container, context);
     queue = new InternalQueue(vertx);
   }

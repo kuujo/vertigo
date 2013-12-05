@@ -51,12 +51,12 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public abstract class BaseComponent<T> implements Component<T> {
+public abstract class BaseComponent<T extends Component<T>> implements Component<T> {
   protected final Vertx vertx;
   protected final EventBus eventBus;
   protected final Container container;
   protected final Logger logger;
-  protected final InstanceContext context;
+  protected final InstanceContext<T> context;
   protected final Acker acker;
   protected final String instanceId;
   protected final String address;
@@ -131,7 +131,7 @@ public abstract class BaseComponent<T> implements Component<T> {
     }
   };
 
-  protected BaseComponent(Vertx vertx, Container container, InstanceContext context) {
+  protected BaseComponent(Vertx vertx, Container container, InstanceContext<T> context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
@@ -176,7 +176,7 @@ public abstract class BaseComponent<T> implements Component<T> {
   }
 
   @Override
-  public InstanceContext getContext() {
+  public InstanceContext<T> getContext() {
     return context;
   }
 

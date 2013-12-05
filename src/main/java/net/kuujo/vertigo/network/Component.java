@@ -22,8 +22,8 @@ import java.util.UUID;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
@@ -31,53 +31,35 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializers;
+import static net.kuujo.vertigo.util.Component.isModuleName;
+import static net.kuujo.vertigo.util.Component.isVerticleMain;
+import static net.kuujo.vertigo.util.Component.serializeType;
+import static net.kuujo.vertigo.util.Component.deserializeType;
 
 /**
  * A network component.
  *
  * @author Jordan Haltermam
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
-@JsonSubTypes({
-  @JsonSubTypes.Type(value=Module.class, name=Component.Type.MODULE),
-  @JsonSubTypes.Type(value=Verticle.class, name=Component.Type.VERTICLE)
-})
-public abstract class Component<T extends Component<T>> implements Serializable {
-
-  /**
-   * Component types.
-   */
-  public static final class Type {
-    public static final String MODULE = "module";
-    public static final String VERTICLE = "verticle";
-  }
-
-  /**
-   * Component groups.
-   */
-  public static final class Group {
-    public static String FEEDER = "feeder";
-    public static String EXECUTOR = "executor";
-    public static String WORKER = "worker";
-    public static String FILTER = "filter";
-    public static String SPLITTER = "splitter";
-    public static String AGGREGATOR = "aggregator";
-  }
-
-  protected String address;
-  protected Map<String, Object> config;
-  protected int instances = 1;
-  protected long heartbeat = 5000;
-  protected String group;
-  protected List<ComponentHook> hooks = new ArrayList<>();
-  protected List<Input> inputs = new ArrayList<>();
+@SuppressWarnings("rawtypes")
+public class Component<T extends net.kuujo.vertigo.component.Component> implements Serializable {
+  private String address;
+  private Class<T> type;
+  private String main;
+  private Map<String, Object> config;
+  private int instances = 1;
+  private long heartbeat = 5000;
+  private List<ComponentHook> hooks = new ArrayList<>();
+  private List<Input> inputs = new ArrayList<>();
 
   public Component() {
     address = UUID.randomUUID().toString();
   }
 
-  public Component(String address) {
+  public Component(Class<T> type, String address, String main) {
+    this.type = type;
     this.address = address;
+    this.main = main;
   }
 
   /**
@@ -90,7 +72,8 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @throws MalformedNetworkException
    *   If the component definition is malformed.
    */
-  public static Component<?> fromJson(JsonObject json) throws MalformedNetworkException {
+  @SuppressWarnings("unchecked")
+  public static <T extends net.kuujo.vertigo.component.Component<T>> Component<T> fromJson(JsonObject json) throws MalformedNetworkException {
     try {
       return Serializers.getDefault().deserialize(json, Component.class);
     }
@@ -114,12 +97,90 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   }
 
   /**
-   * Returns the component type, either "module" or "verticle".
+   * Sets the component type.
+   *
+   * @param type
+   *   The component type.
+   * @return
+   *   The called component instance.
+   */
+  public Component<T> setType(Class<T> type) {
+    this.type = type;
+    return this;
+  }
+
+  /**
+   * Gets the component type.
    *
    * @return
    *   The component type.
    */
-  public abstract String getType();
+  public Class<T> getType() {
+    return type;
+  }
+
+  @JsonGetter("type")
+  private String getSerializedType() {
+    return serializeType(type);
+  }
+
+  @JsonSetter("type")
+  @SuppressWarnings("unchecked")
+  private void setSerializedType(String type) {
+    this.type = (Class<T>) deserializeType(type);
+  }
+
+  /**
+   * Sets the component module name.
+   *
+   * @param moduleName
+   *   The component module name.
+   * @return
+   *   The called component instance.
+   */
+  public Component<T> setModule(String moduleName) {
+    if (!isModuleName(moduleName)) {
+      throw new IllegalArgumentException(moduleName + " is not a valid module name.");
+    }
+    main = moduleName;
+    return this;
+  }
+
+  /**
+   * Gets the component module name.
+   *
+   * @return
+   *   The component module name.
+   */
+  public String getModule() {
+    return main;
+  }
+
+  /**
+   * Sets the component verticle main.
+   *
+   * @param main
+   *   The component verticle main.
+   * @return
+   *   The called component instance.
+   */
+  public Component<T> setMain(String main) {
+    if (!isVerticleMain(main)) {
+      throw new IllegalArgumentException(main + " is not a valid main.");
+    }
+    this.main = main;
+    return this;
+  }
+
+  /**
+   * Gets the component verticle main.
+   *
+   * @return
+   *   The component verticle main.
+   */
+  public String getMain() {
+    return main;
+  }
 
   /**
    * Returns a boolean indicating whether the component is a module.
@@ -128,7 +189,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   Indicates whether the component is a module.
    */
   public boolean isModule() {
-    return getType().equals(Type.MODULE);
+    return main != null && isModuleName(main);
   }
 
   /**
@@ -138,31 +199,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   Indicates whether the component is a verticle.
    */
   public boolean isVerticle() {
-    return getType().equals(Type.VERTICLE);
-  }
-
-  /**
-   * Sets the component group.
-   *
-   * @param group
-   *   The component group.
-   * @return
-   *   The called component instance.
-   */
-  @SuppressWarnings("unchecked")
-  public T setGroup(String group) {
-    this.group = group;
-    return (T) this;
-  }
-
-  /**
-   * Gets the component group.
-   *
-   * @return
-   *   The component group.
-   */
-  public String getGroup() {
-    return group;
+    return main != null && isVerticleMain(main);
   }
 
   /**
@@ -186,10 +223,9 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The called component instance.
    */
-  @SuppressWarnings("unchecked")
-  public T setConfig(JsonObject config) {
+  public Component<T> setConfig(JsonObject config) {
     this.config = config.toMap();
-    return (T) this;
+    return this;
   }
 
   /**
@@ -210,13 +246,12 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    * @return
    *   The called component instance.
    */
-  @SuppressWarnings("unchecked")
-  public T setInstances(int instances) {
+  public Component<T> setInstances(int instances) {
     this.instances = instances;
     for (Input input : inputs) {
       input.setCount(instances);
     }
-    return (T) this;
+    return this;
   }
 
   /**
@@ -243,10 +278,9 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The called component instance.
    */
   @Deprecated
-  @SuppressWarnings("unchecked")
-  public T setHeartbeatInterval(long interval) {
+  public Component<T> setHeartbeatInterval(long interval) {
     heartbeat = interval;
-    return (T) this;
+    return this;
   }
 
   /**
@@ -266,10 +300,9 @@ public abstract class Component<T extends Component<T>> implements Serializable 
    *   The called component instance.
    * @see {@link ComponentHook}
    */
-  @SuppressWarnings("unchecked")
-  public T addHook(ComponentHook hook) {
+  public Component<T> addHook(ComponentHook hook) {
     hooks.add(hook);
-    return (T) this;
+    return this;
   }
 
   /**
@@ -303,6 +336,18 @@ public abstract class Component<T extends Component<T>> implements Serializable 
   public Input addInput(Input input) {
     inputs.add(input);
     return input;
+  }
+
+  /**
+   * Adds a component input from another component.
+   *
+   * @param component
+   *   The component from which to receive input.
+   * @return
+   *   The new input instance.
+   */
+  public Input addInput(Component<?> component) {
+    return addInput(new Input(component.getAddress()));
   }
 
   /**

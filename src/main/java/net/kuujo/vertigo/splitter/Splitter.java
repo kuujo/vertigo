@@ -19,6 +19,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.function.Function;
+import net.kuujo.vertigo.message.JsonMessage;
 
 /**
  * A message splitter.
@@ -35,6 +36,6 @@ public interface Splitter extends Component<Splitter> {
    * @return
    *   The called splitter instance.
    */
-  Splitter splitFunction(Function<JsonObject, Iterable<JsonObject>> function);
+  Splitter splitFunction(Function<JsonMessage, Iterable<JsonObject>> function);
 
 }

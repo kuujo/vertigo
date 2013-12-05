@@ -31,11 +31,11 @@ import net.kuujo.vertigo.message.JsonMessage;
  * @author Jordan Halterman
  */
 public class BasicSplitter extends BaseComponent<Splitter> implements Splitter {
-  private Function<JsonObject, Iterable<JsonObject>> splitter;
+  private Function<JsonMessage, Iterable<JsonObject>> splitter;
   private final Handler<JsonMessage> messageHandler = new Handler<JsonMessage>() {
     @Override
     public void handle(JsonMessage message) {
-      for (JsonObject body : splitter.call(message.body())) {
+      for (JsonObject body : splitter.call(message)) {
         output.emit(body, message.tag(), message);
       }
       input.ack(message);
@@ -47,7 +47,7 @@ public class BasicSplitter extends BaseComponent<Splitter> implements Splitter {
   }
 
   @Override
-  public Splitter splitFunction(Function<JsonObject, Iterable<JsonObject>> splitter) {
+  public Splitter splitFunction(Function<JsonMessage, Iterable<JsonObject>> splitter) {
     this.splitter = splitter;
     input.messageHandler(messageHandler);
     return this;

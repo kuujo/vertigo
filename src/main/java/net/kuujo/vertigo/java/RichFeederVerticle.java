@@ -119,6 +119,37 @@ public abstract class RichFeederVerticle extends ComponentVerticle<Feeder> {
   }
 
   /**
+   * Emits data from the feeder.
+   *
+   * @param stream
+   *   The stream to which to emit the data.
+   * @param data
+   *   The data to emit.
+   * @return
+   *   The emitted message identifier.
+   */
+  public MessageId emit(String stream, JsonObject data) {
+    return feeder.emit(stream, data, wrapHandler(null));
+  }
+
+  /**
+   * Emits data from the feeder.
+   *
+   * @param stream
+   *   The stream to which to emit the data.
+   * @param data
+   *   The data to emit.
+   * @param ackHandler
+   *   An asynchronous handler to be called once the message is acked, failed,
+   *   or times out.
+   * @return
+   *   The emitted message identifier.
+   */
+  public MessageId emit(String stream, JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
+    return feeder.emit(stream, data, wrapHandler(ackHandler));
+  }
+
+  /**
    * Called when a message is successfully processed.
    *
    * Override this method to provide custom handling for message acks.

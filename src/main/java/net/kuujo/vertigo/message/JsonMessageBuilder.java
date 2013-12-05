@@ -157,6 +157,19 @@ public final class JsonMessageBuilder {
     }
 
     /**
+     * Sets the message stream.
+     *
+     * @param stream
+     *   The message stream.
+     * @return
+     *   The called structure.
+     */
+    public JsonMessageStruct setStream(String stream) {
+      structure.putString(DefaultJsonMessage.STREAM, stream);
+      return this;
+    }
+
+    /**
      * Sets the message source.
      *
      * @param source

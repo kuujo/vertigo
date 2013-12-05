@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.output;
 
+import java.util.Set;
+
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
@@ -56,7 +58,27 @@ public interface OutputCollector {
   OutputCollector addHook(OutputHook hook);
 
   /**
-   * Emits a new message to all output channels.
+   * Declares output streams.
+   *
+   * @param streams
+   *   An array of output streams.
+   * @return
+   *   The called output collector instance.
+   */
+  OutputCollector declareStreams(String... streams);
+
+  /**
+   * Declares output streams.
+   *
+   * @param streams
+   *   A set of output streams.
+   * @return
+   *   The called output collector instance.
+   */
+  OutputCollector declareStreams(Set<String> streams);
+
+  /**
+   * Emits a new message to the default stream.
    *
    * @param body
    *   The message body.
@@ -67,7 +89,7 @@ public interface OutputCollector {
   MessageId emit(JsonObject body);
 
   /**
-   * Emits a child message to all output channels.
+   * Emits a child message to the default stream.
    *
    * Emitting data as the child of an existing message creates a new node in the
    * parent message's message tree. When the new message is emitted, the auditor
@@ -88,7 +110,7 @@ public interface OutputCollector {
   MessageId emit(JsonObject body, JsonMessage parent);
 
   /**
-   * Emits a message as a child of itself.
+   * Emits a message to the default stream as a child of itself.
    *
    * This is useful when a message is simply passing through a component without
    * any actual changes to its internal data, such as with message filtering.
@@ -101,6 +123,59 @@ public interface OutputCollector {
    *   The new unique message correlation identifier.
    */
   MessageId emit(JsonMessage message);
+
+  /**
+   * Emits a new message to the default stream.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param body
+   *   The message body.
+   * @return
+   *   The unique output message correlation identifier. This identifier can be
+   *   used to correlate new messages with the emitted message.
+   */
+  MessageId emitTo(String stream, JsonObject body);
+
+  /**
+   * Emits a child message to the default stream.
+   *
+   * Emitting data as the child of an existing message creates a new node in the
+   * parent message's message tree. When the new message is emitted, the auditor
+   * assigned to the parent message will be notified of the change, and the new
+   * message will be tracked as a child. This means that the parent message will
+   * not be considered fully processed until all of its children have been acked
+   * and are considered fully processed (their children are acked... etc). It is
+   * strongly recommended that users use this API whenever possible.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param body
+   *   The message body.
+   * @param parent
+   *   The parent message of the data.
+   * @return
+   *   The unique child message correlation identifier. This identifier can be
+   *   used to correlate new messages with the emitted message.
+   */
+  MessageId emitTo(String stream, JsonObject body, JsonMessage parent);
+
+  /**
+   * Emits a message to the default stream as a child of itself.
+   *
+   * This is useful when a message is simply passing through a component without
+   * any actual changes to its internal data, such as with message filtering.
+   * A new message will be created as a child of the given message. The new
+   * message will contain a copy of the given message body.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param message
+   *   The message to emit.
+   * @return
+   *   The new unique message correlation identifier.
+   */
+  MessageId emitTo(String stream, JsonMessage message);
 
   /**
    * Sets an ack handler on the output collector.

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.message.MessageId;
@@ -198,6 +199,20 @@ public abstract class BaseComponent<T extends Component<T>> implements Component
     for (ComponentHook hook : hooks) {
       hook.handleStart(this);
     }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T declareStreams(String... streams) {
+    output.declareStreams(streams);
+    return (T) this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T declareStreams(Set<String> streams) {
+    output.declareStreams(streams);
+    return (T) this;
   }
 
   @Override

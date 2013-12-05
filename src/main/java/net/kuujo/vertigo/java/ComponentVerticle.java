@@ -15,12 +15,16 @@
  */
 package net.kuujo.vertigo.java;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.kuujo.vertigo.DefaultVertigoFactory;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.VertigoFactory;
 import net.kuujo.vertigo.annotations.Config;
-import net.kuujo.vertigo.annotations.Schema;
+import net.kuujo.vertigo.annotations.Input;
+import net.kuujo.vertigo.annotations.Output;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.schema.Field;
@@ -66,7 +70,8 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
     vertigo = factory.createVertigo(component);
     try {
       checkConfig(container.config());
-      declareSchema(component);
+      setupInput(component);
+      setupOutput(component);
     }
     catch (Exception e) {
       return;
@@ -119,17 +124,33 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   }
 
   /**
-   * Declares the worker schema according to annotations.
+   * Sets up the component input collector.
    */
-  private void declareSchema(T component) {
-    Schema schemaInfo = getClass().getAnnotation(Schema.class);
-    if (schemaInfo != null) {
+  private void setupInput(T component) {
+    Input inputInfo = getClass().getAnnotation(Input.class);
+    if (inputInfo != null) {
       MessageSchema schema = new MessageSchema();
-      for (Schema.Field field : schemaInfo.value()) {
+      for (Input.Field field : inputInfo.schema()) {
         schema.addField(new Field(field.name(), field.type()).setRequired(field.required()));
       }
       component.declareSchema(schema);
     }
   }
 
+  /**
+   * Sets up the component output collector.
+   */
+  private void setupOutput(T component) {
+    Output outputInfo = getClass().getAnnotation(Output.class);
+    if (outputInfo != null) {
+      Output.Stream[] streamsInfo = outputInfo.streams();
+      if (streamsInfo.length > 0) {
+        Set<String> streams = new HashSet<>();
+        for (Output.Stream stream : streamsInfo) {
+          streams.add(stream.value());
+        }
+        component.declareStreams(streams);
+      }
+    }
+  }
 }

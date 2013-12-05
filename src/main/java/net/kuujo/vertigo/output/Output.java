@@ -31,7 +31,9 @@ import net.kuujo.vertigo.serializer.Serializable;
  * @author Jordan Halterman
  */
 public final class Output implements Serializable {
+  public static final String DEFAULT_STREAM = "default";
   private String id;
+  private String stream;
   private int count = 1;
   private Selector selector;
 
@@ -39,8 +41,9 @@ public final class Output implements Serializable {
   private Output() {
   }
 
-  Output(String id, int count, Selector selector) {
+  Output(String id, String stream, int count, Selector selector) {
     this.id = id;
+    this.stream = stream;
     this.count = count;
     this.selector = selector;
   }
@@ -63,6 +66,16 @@ public final class Output implements Serializable {
    */
   public int getCount() {
     return count;
+  }
+
+  /**
+   * Returns the output stream.
+   *
+   * @return
+   *   The output stream.
+   */
+  public String getStream() {
+    return stream;
   }
 
   /**

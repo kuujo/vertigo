@@ -27,12 +27,12 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Schema {
+public @interface Input {
 
   /**
    * An array of schema field information.
    */
-  Field[] value();
+  Field[] schema();
 
   @Target(ElementType.ANNOTATION_TYPE)
   @Retention(RetentionPolicy.RUNTIME)
@@ -52,6 +52,7 @@ public @interface Schema {
      * Indicates whether the field is required to be present.
      */
     boolean required() default false;
+
   }
 
 }

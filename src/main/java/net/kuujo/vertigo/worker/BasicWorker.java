@@ -60,6 +60,21 @@ public class BasicWorker extends BaseComponent<Worker> implements Worker {
   }
 
   @Override
+  public MessageId emit(String stream, JsonObject data) {
+    return output.emitTo(stream, data);
+  }
+
+  @Override
+  public MessageId emit(String stream, JsonObject data, JsonMessage parent) {
+    return output.emitTo(stream, data, parent);
+  }
+
+  @Override
+  public MessageId emit(String stream, JsonMessage message) {
+    return output.emitTo(stream, message);
+  }
+
+  @Override
   public void ack(JsonMessage message) {
     input.ack(message);
   }

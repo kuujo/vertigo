@@ -16,10 +16,13 @@
 package net.kuujo.vertigo.output;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -59,7 +62,11 @@ public class DefaultOutputCollector implements OutputCollector {
   private final List<String> auditors;
   private final JsonMessageBuilder messageBuilder;
   private Random random = new Random();
-  private List<Channel> channels = new ArrayList<>();
+  @SuppressWarnings("serial")
+  private Map<String, List<Channel>> channels = new HashMap<String, List<Channel>>() {{
+    put(Output.DEFAULT_STREAM, new ArrayList<Channel>());
+  }};
+  private Set<String> streams;
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
@@ -117,7 +124,7 @@ public class DefaultOutputCollector implements OutputCollector {
     }
 
     Input input = serializer.deserialize(info, Input.class);
-    Output output = new Output(input.id(), input.getCount(), input.getGrouping().createSelector());
+    Output output = new Output(input.id(), input.getStream(), input.getCount(), input.getGrouping().createSelector());
 
     final Channel channel = findChannel(output);
     if (!channel.containsConnection(address)) {
@@ -133,12 +140,12 @@ public class DefaultOutputCollector implements OutputCollector {
     connectionTimers.put(address, vertx.setTimer(LISTEN_INTERVAL, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
-          Connection connection = channel.getConnection(address);
-          // if null it means the connection doesn't exist or it is already a PseudConnection
-          // so we don't need to remove it again
-          if (connection != null) {
-            channel.removeConnection(connection);
-          }
+        Connection connection = channel.getConnection(address);
+        // if null it means the connection doesn't exist or it is already a PseudoConnection
+        // so we don't need to remove it again
+        if (connection != null) {
+          channel.removeConnection(connection);
+        }
         connectionTimers.remove(address);
       }
     }));
@@ -149,15 +156,26 @@ public class DefaultOutputCollector implements OutputCollector {
    * Finds a channel by ID.
    */
   private Channel findChannel(Output output) {
-    for (Channel channel : channels) {
-      if (channel.id().equals(output.id())) {
-        return channel;
-      }
+    List<Channel> streamList = channels.get(output.getStream());
+    if (streamList == null) {
+      streamList = new ArrayList<>();
+      Channel channel = new DefaultChannel(output.id(), output.getSelector(),
+          eventBus, messageBuilder).setConnectionCount(output.getCount());
+      streamList.add(channel);
+      channels.put(output.getStream(), streamList);
+      return channel;
     }
-    Channel channel = new DefaultChannel(output.id(), output.getSelector(),
-        eventBus, messageBuilder).setConnectionCount(output.getCount());
-    channels.add(channel);
-    return channel;
+    else {
+      for (Channel channel : streamList) {
+        if (channel.id().equals(output.id())) {
+          return channel;
+        }
+      }
+      Channel channel = new DefaultChannel(output.id(), output.getSelector(),
+          eventBus, messageBuilder).setConnectionCount(output.getCount());
+      streamList.add(channel);
+      return channel;
+    }
   }
 
   @Override
@@ -168,6 +186,24 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public OutputCollector addHook(OutputHook hook) {
     hooks.add(hook);
+    return this;
+  }
+
+  @Override
+  public OutputCollector declareStreams(String... streams) {
+    return declareStreams(new HashSet<String>(Arrays.asList(streams)));
+  }
+
+  @Override
+  public OutputCollector declareStreams(Set<String> streams) {
+    this.streams = streams;
+    // We automatically set up stream channel lists internally so that we don't
+    // have to perform null checks when emitting data from the collector.
+    for (String stream : streams) {
+      if (!channels.containsKey(stream)) {
+        channels.put(stream, new ArrayList<Channel>());
+      }
+    }
     return this;
   }
 
@@ -275,11 +311,29 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public MessageId emit(JsonObject body) {
+    return emitTo(Output.DEFAULT_STREAM, body);
+  }
+
+  @Override
+  public MessageId emit(JsonObject body, JsonMessage parent) {
+    return emitTo(Output.DEFAULT_STREAM, body, parent);
+  }
+
+  @Override
+  public MessageId emit(JsonMessage message) {
+    return emitTo(Output.DEFAULT_STREAM, message);
+  }
+
+  @Override
+  public MessageId emitTo(String stream, JsonObject body) {
+    if (!validStream(stream)) throw new IllegalArgumentException("Invalid stream " + stream);
+
     JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message).setBody(body)
-        .setSource(componentAddress).toMessage();
-    for (Channel channel : channels) {
+        .setStream(stream).setSource(componentAddress).toMessage();
+    
+    for (Channel channel : channels.get(stream)) {
       acker.fork(messageId, channel.publish(child));
     }
     acker.create(messageId);
@@ -288,10 +342,13 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public MessageId emit(JsonObject body, JsonMessage parent) {
+  public MessageId emitTo(String stream, JsonObject body, JsonMessage parent) {
+    if (!validStream(stream)) throw new IllegalArgumentException("Invalid stream " + stream);
+
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
     MessageId messageId = message.messageId();
-    JsonMessage child = messageBuilder.createChild(message).setBody(body).toMessage();
+    JsonMessage child = messageBuilder.createChild(message).setBody(body).setStream(stream).toMessage();
+    List<Channel> channels = this.channels.get(stream);
     for (Channel channel : channels) {
       acker.fork(parent.messageId(), channel.publish(child));
     }
@@ -300,8 +357,15 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public MessageId emit(JsonMessage message) {
-    return emit(message.body(), message);
+  public MessageId emitTo(String stream, JsonMessage message) {
+    return emitTo(stream, message.body(), message);
+  }
+
+  /**
+   * Indicates whether the stream is a valid output stream.
+   */
+  private boolean validStream(String stream) {
+    return streams == null ? stream.equals(Output.DEFAULT_STREAM) : streams.contains(stream);
   }
 
   /**

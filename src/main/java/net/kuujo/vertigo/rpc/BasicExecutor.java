@@ -248,27 +248,39 @@ public class BasicExecutor extends BaseComponent<Executor> implements Executor {
 
   @Override
   public MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    return doExecute(args, 0, resultHandler);
+    return doExecute(null, args, 0, resultHandler);
+  }
+
+  @Override
+  public MessageId execute(String stream, JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    return doExecute(stream, args, 0, resultHandler);
   }
 
   /**
    * Performs an execution.
    */
   protected MessageId doExecute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    return doExecute(args, 0, resultHandler);
+    return doExecute(null, args, 0, resultHandler);
   }
 
   /**
    * Performs an execution.
    */
-  private MessageId doExecute(final JsonObject args, final int attempts, final Handler<AsyncResult<JsonMessage>> resultHandler) {
-    final MessageId id = output.emit(args);
+  protected MessageId doExecute(String stream, JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    return doExecute(stream, args, 0, resultHandler);
+  }
+
+  /**
+   * Performs an execution.
+   */
+  private MessageId doExecute(final String stream, final JsonObject args, final int attempts, final Handler<AsyncResult<JsonMessage>> resultHandler) {
+    final MessageId id = stream != null ? output.emitTo(stream, args) : output.emit(args);
     queue.enqueue(id, new Handler<AsyncResult<JsonMessage>>() {
       @Override
       public void handle(AsyncResult<JsonMessage> result) {
         if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
-          doExecute(args, attempts+1, resultHandler);
+          doExecute(stream, args, attempts+1, resultHandler);
         }
         else {
           resultHandler.handle(result);

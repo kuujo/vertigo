@@ -97,6 +97,50 @@ public abstract class RichWorkerVerticle extends ComponentVerticle<Worker> {
   }
 
   /**
+   * Emits data from the worker.
+   *
+   * @param stream
+   *   The stream to which to emit the data.
+   * @param data
+   *   The data to emit.
+   * @return
+   *   The emitted message identifier.
+   */
+  public MessageId emit(String stream, JsonObject data) {
+    return worker.emit(stream, data);
+  }
+
+  /**
+   * Emits data as the child of a message.
+   *
+   * @param stream
+   *   The stream to which to emit the data.
+   * @param data
+   *   The data to emit.
+   * @param parent
+   *   The parent message.
+   * @return
+   *   The emitted message identifier.
+   */
+  public MessageId emit(String stream, JsonObject data, JsonMessage parent) {
+    return worker.emit(stream, data, parent);
+  }
+
+  /**
+   * Emits a message as a child of itself.
+   *
+   * @param stream
+   *   The stream to which to emit the data.
+   * @param message
+   *   The message to emit.
+   * @return
+   *   The emitted message identifier.
+   */
+  public MessageId emit(String stream, JsonMessage message) {
+    return worker.emit(stream, message);
+  }
+
+  /**
    * Acks a message.
    *
    * @param message

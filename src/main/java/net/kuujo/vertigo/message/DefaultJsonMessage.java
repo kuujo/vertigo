@@ -26,6 +26,7 @@ public class DefaultJsonMessage implements JsonMessage {
   private JsonObject body;
   public static final String ID = "id";
   public static final String BODY = "body";
+  public static final String STREAM = "stream";
   public static final String SOURCE = "source";
 
   public DefaultJsonMessage() {
@@ -55,6 +56,11 @@ public class DefaultJsonMessage implements JsonMessage {
   @Override
   public JsonObject body() {
     return body.getObject(BODY);
+  }
+
+  @Override
+  public String stream() {
+    return body.getString(STREAM);
   }
 
   @Override

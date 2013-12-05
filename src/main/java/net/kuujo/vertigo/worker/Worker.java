@@ -81,6 +81,44 @@ public interface Worker extends Component<Worker> {
   MessageId emit(JsonMessage message);
 
   /**
+   * Emits data from the worker.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param data
+   *   The data to emit.
+   * @return
+   *   The emitted message identifier.
+   */
+  MessageId emit(String stream, JsonObject data);
+
+  /**
+   * Emits child data from the worker.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param data
+   *   The data to emit.
+   * @param parent
+   *   The parent message.
+   * @return
+   *   The emitted message identifier.
+   */
+  MessageId emit(String stream, JsonObject data, JsonMessage parent);
+
+  /**
+   * Emits a copy of the given message as a child of itself.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param message
+   *   The message to emit.
+   * @return
+   *   The new child message identifier.
+   */
+  MessageId emit(String stream, JsonMessage message);
+
+  /**
    * Acknowledges processing of a message.
    *
    * @param message

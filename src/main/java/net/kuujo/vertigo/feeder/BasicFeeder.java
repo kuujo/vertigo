@@ -234,32 +234,49 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
 
   @Override
   public MessageId emit(JsonObject data) {
-    return doFeed(data, 0, null);
+    return doFeed(null, data, 0, null);
   }
 
   @Override
   public MessageId emit(JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
-    return doFeed(data, 0, ackHandler);
+    return doFeed(null, data, 0, ackHandler);
+  }
+
+  @Override
+  public MessageId emit(String stream, JsonObject data) {
+    return doFeed(stream, data, 0, null);
+  }
+
+  @Override
+  public MessageId emit(String stream, JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
+    return doFeed(stream, data, 0, ackHandler);
+  }
+
+  /**
+   * Executes a feed.
+   */
+  protected final MessageId doFeed(final String stream, final JsonObject data, final Handler<AsyncResult<MessageId>> ackHandler) {
+    return doFeed(stream, data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
   protected final MessageId doFeed(final JsonObject data, final Handler<AsyncResult<MessageId>> ackHandler) {
-    return doFeed(data, 0, ackHandler);
+    return doFeed(null, data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
-  private final MessageId doFeed(final JsonObject data, final int attempts, final Handler<AsyncResult<MessageId>> ackHandler) {
-    final MessageId id = output.emit(data);
+  private final MessageId doFeed(final String stream, final JsonObject data, final int attempts, final Handler<AsyncResult<MessageId>> ackHandler) {
+    final MessageId id = stream != null ? output.emitTo(stream, data) : output.emit(data);
     queue.enqueue(id, new Handler<AsyncResult<MessageId>>() {
       @Override
       public void handle(AsyncResult<MessageId> result) {
         if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
-          doFeed(data, attempts+1, ackHandler);
+          doFeed(stream, data, attempts+1, ackHandler);
         }
         else if (ackHandler != null) {
           ackHandler.handle(result);

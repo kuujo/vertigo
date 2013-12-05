@@ -351,7 +351,21 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
   }
 
   /**
-   * Adds a component input.
+   * Adds a component input from another component on a specific stream.
+   *
+   * @param component
+   *   The component from which to receive input.
+   * @param stream
+   *   The stream on which to receive input.
+   * @return
+   *   The new input instance.
+   */
+  public Input addInput(Component<?> component, String stream) {
+    return addInput(new Input(component.getAddress(), stream));
+  }
+
+  /**
+   * Adds a component input on the default stream.
    *
    * @param address
    *   The input address. This is the event bus address of a component to which
@@ -364,7 +378,22 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
   }
 
   /**
-   * Adds a component input with a grouping.
+   * Adds a component input on a specific stream.
+   *
+   * @param address
+   *   The input address. This is the event bus address of a component to which
+   *   this component will listen for output.
+   * @param stream
+   *   The stream on which to receive input.
+   * @return
+   *   The new input instance.
+   */
+  public Input addInput(String address, String stream) {
+    return addInput(new Input(address, stream));
+  }
+
+  /**
+   * Adds a component input on the default stream with a grouping.
    *
    * @param address
    *   The input address. This is the event bus address of a component to which
@@ -377,6 +406,24 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    */
   public Input addInput(String address, Grouping grouping) {
     return addInput(new Input(address).groupBy(grouping));
+  }
+
+  /**
+   * Adds a component input on a specific stream with a grouping.
+   *
+   * @param address
+   *   The input address. This is the event bus address of a component to which
+   *   this component will listen for output.
+   * @param stream
+   *   The stream on which to receive input.
+   * @param grouping
+   *   An input grouping. This input grouping helps determine how messages will
+   *   be distributed among multiple instances of this component.
+   * @return
+   *   The new input instance.
+   */
+  public Input addInput(String address, String stream, Grouping grouping) {
+    return addInput(new Input(address, stream).groupBy(grouping));
   }
 
 }

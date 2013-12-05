@@ -119,6 +119,20 @@ public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
   /**
    * Executes a message.
    *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param args
+   *   The output message body.
+   * @return
+   *   The output message identifier.
+   */
+  public MessageId execute(String stream, JsonObject args) {
+    return executor.execute(stream, args, wrapHandler(null));
+  }
+
+  /**
+   * Executes a message.
+   *
    * @param args
    *   The output message body.
    * @param resultHandler
@@ -128,6 +142,22 @@ public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
    */
   public MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
     return executor.execute(args, wrapHandler(resultHandler));
+  }
+
+  /**
+   * Executes a message.
+   *
+   * @param stream
+   *   The stream to which to emit the message.
+   * @param args
+   *   The output message body.
+   * @param resultHandler
+   *   An asynchronous handler to be called with the execution result.
+   * @return
+   *   The output message identifier.
+   */
+  public MessageId execute(String stream, JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
+    return executor.execute(stream, args, wrapHandler(resultHandler));
   }
 
   /**

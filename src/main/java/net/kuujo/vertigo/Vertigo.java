@@ -15,73 +15,61 @@
  */
 package net.kuujo.vertigo;
 
-import org.vertx.java.core.Vertx;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
-import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.aggregator.Aggregator;
-import net.kuujo.vertigo.aggregator.BasicAggregator;
+import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.cluster.ViaCluster;
+import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.feeder.BasicFeeder;
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.filter.BasicFilter;
-import net.kuujo.vertigo.filter.Filter;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.rpc.BasicExecutor;
-import net.kuujo.vertigo.rpc.Executor;
-import net.kuujo.vertigo.splitter.BasicSplitter;
-import net.kuujo.vertigo.splitter.Splitter;
-import net.kuujo.vertigo.worker.BasicWorker;
-import net.kuujo.vertigo.worker.Worker;
 
 /**
- * Primary Vert.igo API.
- *
- * This is the primary API for creating Vertigo objects within component
- * implementations. This should be used to instantiate any feeders, workers, or
- * executors that are used by the component implementation.
+ * The primary Vertigo API.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The current component instance type.
  */
-public final class Vertigo {
-  private Vertx vertx;
-  private Container container;
-  private InstanceContext context;
-
-  public Vertigo(Verticle verticle) {
-    this(verticle.getVertx(), verticle.getContainer());
-  }
-
-  public Vertigo(Vertx vertx, Container container) {
-    JsonObject config = container.config();
-    if (config != null && config.getFieldNames().contains("__context__")) {
-      JsonObject contextInfo = config.getObject("__context__");
-      context = InstanceContext.fromJson(contextInfo);
-    }
-    this.vertx = vertx;
-    this.container = container;
-  }
+public interface Vertigo<T extends Component<T>> {
 
   /**
-   * Indicates whether this verticle was deployed as a component instance.
+   * Indicates whether the current Vertigo instance is a component instance.
    *
    * @return
-   *  Indicates whether this verticle is a Vertigo component instance.
+   *   Whether the current instance is a component.
    */
-  public boolean isComponent() {
-    return context != null;
-  }
+  boolean isComponent();
 
   /**
-   * Returns the current Vertigo instance context (if any).
+   * Gets the current component instance.
    *
    * @return
-   *   The current Vertigo instance context.
+   *   The current component instance. If the current Vertigo instance is not
+   *   a component then this value will be null.
    */
-  public InstanceContext getContext() {
-    return context;
-  }
+  T component();
+
+  /**
+   * Gets the component configuration.
+   *
+   * @return
+   *   The component configuration. If the current Vertigo instance is not a
+   *   component then this value will be null.
+   */
+  JsonObject config();
+
+  /**
+   * Gets the current component instance context.
+   *
+   * @return
+   *   The current component instance context.If the current Vertigo instance is
+   *   not a component then this value will be null.
+   */
+  InstanceContext context();
 
   /**
    * Creates a new network.
@@ -91,68 +79,82 @@ public final class Vertigo {
    * @return
    *   A new network instance.
    */
-  public Network createNetwork(String address) {
-    return new Network(address);
-  }
+  public Network createNetwork(String address);
 
   /**
-   * Creates a basic feeder.
+   * Deploys a network within the current Vert.x instance.
    *
+   * This deployment method uses the basic {@link LocalCluster} cluster implementation
+   * to deploy network verticles and modules using the current Vert.x {@link Container}
+   * instance.
+   *
+   * @param network
+   *   The network to deploy.
    * @return
-   *   A new feeder instance.
+   *   The called Vertigo instance.
    */
-  public Feeder createFeeder() {
-    return new BasicFeeder(vertx, container, context);
-  }
+  public Vertigo<T> deployLocalNetwork(Network network);
 
   /**
-   * Creates a basic executor.
+   * Deploys a network within the current Vert.x instance.
    *
+   * This deployment method uses the basic {@link LocalCluster} cluster implementation
+   * to deploy network verticles and modules using the current Vert.x {@link Container}
+   * instance.
+   *
+   * @param network
+   *   The network to deploy.
+   * @param doneHandler
+   *   An asynchronous handler to be called once deployment is complete. The handler
+   *   will be called with the deployed network context which contains information
+   *   about the network's component locations and event bus addresses.
    * @return
-   *   A new executor instance.
+   *   The called Vertigo instance.
    */
-  public Executor createExecutor() {
-    return new BasicExecutor(vertx, container, context);
-  }
+  public Vertigo<T> deployLocalNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Creates a worker.
+   * Deploys a network via the Vert.x event bus.
    *
+   * Deployment is performed using a {@link ViaCluster} instance which communicates
+   * module and verticle deployments over the event bus rather than performing
+   * deployments directly using the Vert.x {@link Container}.C
+   *
+   * @param address
+   *   The address to which to communicate component deployments. This address
+   *   will receive message-based commands which contain information on which
+   *   modules or verticles to deploy. It is up to the handler at this address
+   *   to assign those deployments to specific Vert.x instances or otherwise
+   *   handle deployments via the Vert.x {@link Container}.
+   * @param network
+   *   The network to deploy.
    * @return
-   *   A new worker instance.
+   *   The called Vertigo instance.
    */
-  public Worker createWorker() {
-    return new BasicWorker(vertx, container, context);
-  }
+  public Vertigo<T> deployRemoteNetwork(String address, Network network);
 
   /**
-   * Creates a filter.
+   * Deploys a network via the Vert.x event bus.
    *
-   * @return
-   *   A new filter instance.
-   */
-  public Filter createFilter() {
-    return new BasicFilter(vertx, container, context);
-  }
-
-  /**
-   * Creates a splitter.
+   * Deployment is performed using a {@link ViaCluster} instance which communicates
+   * module and verticle deployments over the event bus rather than performing
+   * deployments directly using the Vert.x {@link Container}.C
    *
+   * @param address
+   *   The address to which to communicate component deployments. This address
+   *   will receive message-based commands which contain information on which
+   *   modules or verticles to deploy. It is up to the handler at this address
+   *   to assign those deployments to specific Vert.x instances or otherwise
+   *   handle deployments via the Vert.x {@link Container}.
+   * @param network
+   *   The network to deploy.
+   * @param doneHandler
+   *   An asynchronous handler to be called once deployment is complete. The handler
+   *   will be called with the deployed network context which contains information
+   *   about the network's component locations and event bus addresses.
    * @return
-   *   A new splitter instance.
+   *   The called Vertigo instance.
    */
-  public Splitter createSplitter() {
-    return new BasicSplitter(vertx, container, context);
-  }
-
-  /**
-   * Creates an aggregator.
-   *
-   * @return
-   *   A new aggregator instance.
-   */
-  public <T> Aggregator<T> createAggregator() {
-    return new BasicAggregator<T>(vertx, container, context);
-  }
+  public Vertigo<T> deployRemoteNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
 }

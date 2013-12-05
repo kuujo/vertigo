@@ -17,10 +17,11 @@ package net.kuujo.vertigo.java;
 
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.component.ComponentFactory;
+import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.splitter.BasicSplitter;
 import net.kuujo.vertigo.splitter.Splitter;
 
 /**
@@ -28,12 +29,13 @@ import net.kuujo.vertigo.splitter.Splitter;
  *
  * @author Jordan Halterman
  */
-public abstract class SplitterVerticle extends VertigoVerticle<Splitter> {
+public abstract class SplitterVerticle extends ComponentVerticle<Splitter> {
   protected String aggregationField;
 
   @Override
   protected Splitter createComponent(InstanceContext context) {
-    return new BasicSplitter(vertx, container, context);
+    ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
+    return componentFactory.createSplitter(context);
   }
 
   @Override

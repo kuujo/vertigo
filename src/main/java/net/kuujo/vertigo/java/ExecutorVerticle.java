@@ -17,8 +17,9 @@ package net.kuujo.vertigo.java;
 
 import org.vertx.java.core.Handler;
 
+import net.kuujo.vertigo.component.ComponentFactory;
+import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.rpc.BasicExecutor;
 import net.kuujo.vertigo.rpc.Executor;
 
 /**
@@ -26,12 +27,13 @@ import net.kuujo.vertigo.rpc.Executor;
  *
  * @author Jordan Halterman
  */
-public abstract class ExecutorVerticle extends VertigoVerticle<Executor> {
+public abstract class ExecutorVerticle extends ComponentVerticle<Executor> {
   protected Executor executor;
 
   @Override
   protected Executor createComponent(InstanceContext context) {
-    return new BasicExecutor(vertx, container, context);
+    ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
+    return componentFactory.createExecutor(context);
   }
 
   @Override

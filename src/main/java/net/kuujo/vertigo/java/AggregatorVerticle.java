@@ -16,7 +16,8 @@
 package net.kuujo.vertigo.java;
 
 import net.kuujo.vertigo.aggregator.Aggregator;
-import net.kuujo.vertigo.aggregator.BasicAggregator;
+import net.kuujo.vertigo.component.ComponentFactory;
+import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.function.Function2;
@@ -27,12 +28,13 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public abstract class AggregatorVerticle<T> extends VertigoVerticle<Aggregator<T>> {
+public abstract class AggregatorVerticle<T> extends ComponentVerticle<Aggregator<T>> {
   protected String aggregationField;
 
   @Override
   protected Aggregator<T> createComponent(InstanceContext context) {
-    return new BasicAggregator<T>(vertx, container, context);
+    ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
+    return componentFactory.createAggregator(context);
   }
 
   @Override

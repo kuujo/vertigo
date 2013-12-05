@@ -17,9 +17,10 @@ package net.kuujo.vertigo.java;
 
 import org.vertx.java.core.Handler;
 
+import net.kuujo.vertigo.component.ComponentFactory;
+import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.worker.BasicWorker;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -27,12 +28,13 @@ import net.kuujo.vertigo.worker.Worker;
  *
  * @author Jordan Halterman
  */
-public abstract class WorkerVerticle extends VertigoVerticle<Worker> {
+public abstract class WorkerVerticle extends ComponentVerticle<Worker> {
   protected Worker worker;
 
   @Override
   protected Worker createComponent(InstanceContext context) {
-    return new BasicWorker(vertx, container, context);
+    ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
+    return componentFactory.createWorker(context);
   }
 
   @Override

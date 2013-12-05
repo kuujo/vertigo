@@ -15,8 +15,9 @@
  */
 package net.kuujo.vertigo.java;
 
+import net.kuujo.vertigo.component.ComponentFactory;
+import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.filter.BasicFilter;
 import net.kuujo.vertigo.filter.Filter;
 import net.kuujo.vertigo.function.Function;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -26,12 +27,13 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public abstract class FilterVerticle extends VertigoVerticle<Filter> {
+public abstract class FilterVerticle extends ComponentVerticle<Filter> {
   protected Filter filter;
 
   @Override
   protected Filter createComponent(InstanceContext context) {
-    return new BasicFilter(vertx, container, context);
+    ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
+    return componentFactory.createFilter(context);
   }
 
   @Override

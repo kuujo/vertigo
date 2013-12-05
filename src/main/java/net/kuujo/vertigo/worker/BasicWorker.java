@@ -50,18 +50,8 @@ public class BasicWorker extends BaseComponent<Worker> implements Worker {
   }
 
   @Override
-  public MessageId emit(JsonObject data, String tag) {
-    return output.emit(data, tag);
-  }
-
-  @Override
   public MessageId emit(JsonObject data, JsonMessage parent) {
     return output.emit(data, parent);
-  }
-
-  @Override
-  public MessageId emit(JsonObject data, String tag, JsonMessage parent) {
-    return output.emit(data, tag, parent);
   }
 
   @Override

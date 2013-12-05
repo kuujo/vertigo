@@ -51,14 +51,6 @@ public interface JsonMessage extends Serializable {
   JsonObject body();
 
   /**
-   * Returns the message tag.
-   *
-   * @return
-   *   A message tag.
-   */
-  String tag();
-
-  /**
    * Returns the message source. This is the event bus address of the
    * component from which this message tree originated.
    *

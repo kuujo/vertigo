@@ -264,18 +264,6 @@ public interface Feeder extends Component<Feeder> {
   MessageId emit(JsonObject data);
 
   /**
-   * Emits data from the feeder.
-   *
-   * @param data
-   *   The data to feed.
-   * @param tag
-   *   A tag to apply to the data.
-   * @return
-   *   The emitted message identifier.
-   */
-  MessageId emit(JsonObject data, String tag);
-
-  /**
    * Emits data to from the feeder with an ack handler.
    *
    * @param data
@@ -286,19 +274,5 @@ public interface Feeder extends Component<Feeder> {
    *   The emitted message identifier.
    */
   MessageId emit(JsonObject data, Handler<AsyncResult<MessageId>> ackHandler);
-
-  /**
-   * Emits data from the feeder with an ack handler.
-   *
-   * @param data
-   *   The data to emit.
-   * @param tag
-   *   A tag to apply to the data.
-   * @param ackHandler
-   *   An asynchronous result handler to be invoke with the ack result.
-   * @return
-   *   The emitted message identifier.
-   */
-  MessageId emit(JsonObject data, String tag, Handler<AsyncResult<MessageId>> ackHandler);
 
 }

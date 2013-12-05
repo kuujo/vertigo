@@ -72,25 +72,4 @@ public abstract class ExecutorVerticle extends VertigoVerticle<Executor> {
     return executor.execute(args, resultHandler);
   }
 
-  /**
-   * Performs an execution.
-   *
-   * The asynchronous result supplied to the result handler is a special
-   * {@link AsyncResult} implementation that *always* provides a {@link JsonMessage}
-   * instance. If the execution fails or times out, the {@link JsonMessage} that is
-   * provided will be the original executing message.
-   *
-   * @param args
-   *   The execution arguments.
-   * @param tag
-   *   A tag to apply to the execution.
-   * @param resultHandler
-   *   An asynchronous handler to be called with the execution result.
-   * @return
-   *   The execution's unique message identifier.
-   */
-  public MessageId execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    return executor.execute(args, tag, resultHandler);
-  }
-
 }

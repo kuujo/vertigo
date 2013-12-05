@@ -59,18 +59,6 @@ public interface Worker extends Component<Worker> {
   MessageId emit(JsonObject data);
 
   /**
-   * Emits data from the worker with a tag.
-   *
-   * @param data
-   *   The data to emit.
-   * @param tag
-   *   A tag to apply to the message.
-   * @return
-   *   The emitted message identifier.
-   */
-  MessageId emit(JsonObject data, String tag);
-
-  /**
    * Emits child data from the worker.
    *
    * @param data
@@ -81,20 +69,6 @@ public interface Worker extends Component<Worker> {
    *   The emitted message identifier.
    */
   MessageId emit(JsonObject data, JsonMessage parent);
-
-  /**
-   * Emits child data from the worker with a tag.
-   *
-   * @param data
-   *   The data to emit.
-   * @param tag
-   *   A tag to apply to the message.
-   * @param parent
-   *   The parent message.
-   * @return
-   *   The emitted message identifier.
-   */
-  MessageId emit(JsonObject data, String tag, JsonMessage parent);
 
   /**
    * Emits a copy of the given message as a child of itself.

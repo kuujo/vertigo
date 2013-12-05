@@ -234,42 +234,32 @@ public class BasicFeeder extends BaseComponent<Feeder> implements Feeder {
 
   @Override
   public MessageId emit(JsonObject data) {
-    return doFeed(data, null, 0, null);
-  }
-
-  @Override
-  public MessageId emit(JsonObject data, String tag) {
-    return doFeed(data, tag, 0, null);
+    return doFeed(data, 0, null);
   }
 
   @Override
   public MessageId emit(JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
-    return doFeed(data, null, 0, ackHandler);
-  }
-
-  @Override
-  public MessageId emit(JsonObject data, String tag, Handler<AsyncResult<MessageId>> ackHandler) {
-    return doFeed(data, tag, 0, ackHandler);
+    return doFeed(data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
-  protected final MessageId doFeed(final JsonObject data, final String tag, final Handler<AsyncResult<MessageId>> ackHandler) {
-    return doFeed(data, tag, 0, ackHandler);
+  protected final MessageId doFeed(final JsonObject data, final Handler<AsyncResult<MessageId>> ackHandler) {
+    return doFeed(data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
-  protected final MessageId doFeed(final JsonObject data, final String tag, final int attempts, final Handler<AsyncResult<MessageId>> ackHandler) {
-    final MessageId id = tag != null ? output.emit(data, tag) : output.emit(data);
+  private final MessageId doFeed(final JsonObject data, final int attempts, final Handler<AsyncResult<MessageId>> ackHandler) {
+    final MessageId id = output.emit(data);
     queue.enqueue(id, new Handler<AsyncResult<MessageId>>() {
       @Override
       public void handle(AsyncResult<MessageId> result) {
         if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
-          doFeed(data, tag, attempts+1, ackHandler);
+          doFeed(data, attempts+1, ackHandler);
         }
         else if (ackHandler != null) {
           ackHandler.handle(result);

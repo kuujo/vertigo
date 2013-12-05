@@ -83,22 +83,6 @@ public abstract class WorkerVerticle extends VertigoVerticle<Worker> {
   }
 
   /**
-   * Emits a child message from the worker.
-   *
-   * @param data
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the message.
-   * @param parent
-   *   The message parent.
-   * @return
-   *   The unique message identifier.
-   */
-  public MessageId emit(JsonObject data, String tag, JsonMessage parent) {
-    return worker.emit(data, tag, parent);
-  }
-
-  /**
    * Emits a message as a child of itself.
    *
    * @param message
@@ -108,20 +92,6 @@ public abstract class WorkerVerticle extends VertigoVerticle<Worker> {
    */
   public MessageId emit(JsonMessage message) {
     return worker.emit(message);
-  }
-
-  /**
-   * Emits a new message.
-   *
-   * @param data
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the emitted message.
-   * @return
-   *   The emitted message identifier.
-   */
-  public MessageId emit(JsonObject data, String tag) {
-    return worker.emit(data, tag);
   }
 
   /**

@@ -36,7 +36,7 @@ public class BasicSplitter extends BaseComponent<Splitter> implements Splitter {
     @Override
     public void handle(JsonMessage message) {
       for (JsonObject body : splitter.call(message)) {
-        output.emit(body, message.tag(), message);
+        output.emit(body, message);
       }
       input.ack(message);
     }

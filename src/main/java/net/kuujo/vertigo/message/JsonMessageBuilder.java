@@ -157,19 +157,6 @@ public final class JsonMessageBuilder {
     }
 
     /**
-     * Sets the message tag.
-     *
-     * @param tag
-     *   The message tag.
-     * @return
-     *   The called structure.
-     */
-    public JsonMessageStruct setTag(String tag) {
-      structure.putString(DefaultJsonMessage.TAG, tag);
-      return this;
-    }
-
-    /**
      * Sets the message source.
      *
      * @param source

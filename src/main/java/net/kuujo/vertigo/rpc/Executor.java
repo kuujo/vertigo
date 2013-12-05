@@ -270,18 +270,4 @@ public interface Executor extends Component<Executor> {
    */
   MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
 
-  /**
-   * Executes the network.
-   *
-   * @param args
-   *   Execution arguments.
-   * @param tag
-   *   A tag to apply to the arguments.
-   * @param resultHandler
-   *   An asynchronous result handler to be invoke with the execution result.
-   * @return
-   *   The emitted message correlation identifier.
-   */
-  MessageId execute(JsonObject args, String tag, Handler<AsyncResult<JsonMessage>> resultHandler);
-
 }

@@ -94,20 +94,6 @@ public abstract class FeederVerticle extends VertigoVerticle<Feeder> {
   }
 
   /**
-   * Emits a new message.
-   *
-   * @param data
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the emitted message.
-   * @return
-   *   The emitted message identifier.
-   */
-  public MessageId emit(JsonObject data, String tag) {
-    return feeder.emit(data, tag, wrapHandler(null));
-  }
-
-  /**
    * Emits a new message with an ack handler.
    *
    * The asynchronous result provided to the ack handler is a special implementation
@@ -128,31 +114,6 @@ public abstract class FeederVerticle extends VertigoVerticle<Feeder> {
    */
   public MessageId emit(JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
     return feeder.emit(data, wrapHandler(ackHandler));
-  }
-
-  /**
-   * Emits a new message with an ack handler.
-   *
-   * The asynchronous result provided to the ack handler is a special implementation
-   * that will *always* contain the emitted message ID regardless of whether
-   * processing succeeded or failed. If the message is successfully processed,
-   * the result will be successful. If the message processing times out then the
-   * cause of the result failure will be a {@link TimeoutException}. If the message
-   * or one of its descendants is explicitly failed by a worker, the cause of the
-   * result failure will be a {@link FailureException}.
-   *
-   * @param data
-   *   The message body.
-   * @param tag
-   *   A tag to apply to the emitted message.
-   * @param ackHandler
-   *   An asynchronous result handler to be called once the message has been
-   *   fully processed, failed, or timed out.
-   * @return
-   *   The emitted message identifier.
-   */
-  public MessageId emit(JsonObject data, String tag, Handler<AsyncResult<MessageId>> ackHandler) {
-    return feeder.emit(data, tag, wrapHandler(ackHandler));
   }
 
   /**

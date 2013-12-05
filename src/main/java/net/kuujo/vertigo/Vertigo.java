@@ -20,14 +20,16 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
+import net.kuujo.vertigo.aggregator.Aggregator;
+import net.kuujo.vertigo.aggregator.BasicAggregator;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.BasicFeeder;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.filter.BasicFilter;
 import net.kuujo.vertigo.filter.Filter;
-import net.kuujo.vertigo.function.Function;
-import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.rpc.BasicExecutor;
+import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.splitter.BasicSplitter;
 import net.kuujo.vertigo.splitter.Splitter;
 import net.kuujo.vertigo.worker.BasicWorker;
@@ -104,6 +106,16 @@ public final class Vertigo {
   }
 
   /**
+   * Creates a basic executor.
+   *
+   * @return
+   *   A new executor instance.
+   */
+  public Executor createExecutor() {
+    return new BasicExecutor(vertx, container, context);
+  }
+
+  /**
    * Creates a worker.
    *
    * @return
@@ -124,18 +136,6 @@ public final class Vertigo {
   }
 
   /**
-   * Creates a filter with a function.
-   *
-   * @param function
-   *   The filter function.
-   * @return
-   *   A new filter instance.
-   */
-  public Filter createFilter(Function<JsonMessage, Boolean> function) {
-    return new BasicFilter(vertx, container, context).filterFunction(function);
-  }
-
-  /**
    * Creates a splitter.
    *
    * @return
@@ -146,15 +146,13 @@ public final class Vertigo {
   }
 
   /**
-   * Creates a splitter with a function.
+   * Creates an aggregator.
    *
-   * @param function
-   *   The splitter function.
    * @return
-   *   A new splitter instance.
+   *   A new aggregator instance.
    */
-  public Splitter createSplitter(Function<JsonObject, Iterable<JsonObject>> function) {
-    return new BasicSplitter(vertx, container, context).splitFunction(function);
+  public <T> Aggregator<T> createAggregator() {
+    return new BasicAggregator<T>(vertx, container, context);
   }
 
 }

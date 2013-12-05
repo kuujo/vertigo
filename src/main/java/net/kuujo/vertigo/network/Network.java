@@ -752,4 +752,172 @@ public final class Network implements Serializable {
     }
   }
 
+  /**
+   * Adds a splitter component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The splitter component main or module name.
+   * @return
+   *   The new splitter component instance.
+   */
+  public Component<?> addSplitter(String address, String moduleOrMain) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.SPLITTER));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.SPLITTER));
+    }
+  }
+
+  /**
+   * Adds a splitter component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The splitter component main or module name.
+   * @param config
+   *   The splitter component configuration.
+   * @return
+   *   The new splitter component instance.
+   */
+  public Component<?> addSplitter(String address, String moduleOrMain, JsonObject config) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.SPLITTER));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.SPLITTER));
+    }
+  }
+
+  /**
+   * Adds a splitter component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The splitter component main or module name.
+   * @param instances
+   *   The number of splitter instances.
+   * @return
+   *   The new splitter component instance.
+   */
+  public Component<?> addSplitter(String address, String moduleOrMain, int instances) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.SPLITTER));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.SPLITTER));
+    }
+  }
+
+  /**
+   * Adds a splitter component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The splitter component main or module name.
+   * @param config
+   *   The splitter component configuration.
+   * @param instances
+   *   The number of splitter instances.
+   * @return
+   *   The new splitter component instance.
+   */
+  public Component<?> addSplitter(String address, String moduleOrMain, JsonObject config, int instances) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.SPLITTER));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.SPLITTER));
+    }
+  }
+
+  /**
+   * Adds an aggregator component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The aggregator component main or module name.
+   * @return
+   *   The new aggregator component instance.
+   */
+  public Component<?> addAggregator(String address, String moduleOrMain) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setGroup(Component.Group.AGGREGATOR));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setGroup(Component.Group.AGGREGATOR));
+    }
+  }
+
+  /**
+   * Adds an aggregator component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The aggregator component main or module name.
+   * @param config
+   *   The aggregator component configuration.
+   * @return
+   *   The new aggregator component instance.
+   */
+  public Component<?> addAggregator(String address, String moduleOrMain, JsonObject config) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setGroup(Component.Group.AGGREGATOR));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setGroup(Component.Group.AGGREGATOR));
+    }
+  }
+
+  /**
+   * Adds an aggregator component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The aggregator component main or module name.
+   * @param instances
+   *   The number of aggregator instances.
+   * @return
+   *   The new aggregator component instance.
+   */
+  public Component<?> addAggregator(String address, String moduleOrMain, int instances) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
+    }
+  }
+
+  /**
+   * Adds an aggregator component to the network.
+   *
+   * @param address
+   *   The component address.
+   * @param moduleOrMain
+   *   The aggregator component main or module name.
+   * @param config
+   *   The aggregator component configuration.
+   * @param instances
+   *   The number of aggregator instances.
+   * @return
+   *   The new aggregator component instance.
+   */
+  public Component<?> addAggregator(String address, String moduleOrMain, JsonObject config, int instances) {
+    if (isModuleName(moduleOrMain)) {
+      return addComponent(new Module(address).setModule(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
+    }
+    else {
+      return addComponent(new Verticle(address).setMain(moduleOrMain).setConfig(config).setInstances(instances).setGroup(Component.Group.AGGREGATOR));
+    }
+  }
+
 }

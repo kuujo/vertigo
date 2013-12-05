@@ -60,6 +60,7 @@ public abstract class ComponentContext implements Serializable {
     public static String WORKER = "worker";
     public static String FILTER = "filter";
     public static String SPLITTER = "splitter";
+    public static String AGGREGATOR = "aggregator";
   }
 
   protected String address;
@@ -195,6 +196,13 @@ public abstract class ComponentContext implements Serializable {
    */
   public boolean isSplitter() {
     return getGroup().equals(Group.SPLITTER);
+  }
+
+  /**
+   * Indicates whether the component is an aggregator.
+   */
+  public boolean isAggregator() {
+    return getGroup().equals(Group.AGGREGATOR);
   }
 
   /**

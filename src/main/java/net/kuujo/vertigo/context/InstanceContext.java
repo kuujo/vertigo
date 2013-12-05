@@ -120,6 +120,13 @@ public final class InstanceContext implements Serializable {
   }
 
   /**
+   * Indicates whether the component is an aggregator.
+   */
+  public boolean isAggregator() {
+    return component.isAggregator();
+  }
+
+  /**
    * Returns the parent component context.
    *
    * @return

@@ -61,6 +61,7 @@ public abstract class Component<T extends Component<T>> implements Serializable 
     public static String WORKER = "worker";
     public static String FILTER = "filter";
     public static String SPLITTER = "splitter";
+    public static String AGGREGATOR = "aggregator";
   }
 
   protected String address;

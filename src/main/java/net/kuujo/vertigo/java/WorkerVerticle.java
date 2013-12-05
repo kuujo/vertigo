@@ -16,11 +16,9 @@
 package net.kuujo.vertigo.java;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.worker.BasicWorker;
 import net.kuujo.vertigo.worker.Worker;
 
@@ -38,12 +36,12 @@ public abstract class WorkerVerticle extends VertigoVerticle<Worker> {
   }
 
   @Override
-  protected void start(Worker worker) {
+  protected void start(final Worker worker) {
     this.worker = worker;
     worker.messageHandler(new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {
-        handleMessage(message);
+        handleMessage(message, worker);
       }
     });
   }
@@ -54,64 +52,6 @@ public abstract class WorkerVerticle extends VertigoVerticle<Worker> {
    * @param message
    *   The message that was received.
    */
-  protected abstract void handleMessage(JsonMessage message);
-
-  /**
-   * Emits a new message.
-   *
-   * @param data
-   *   The message body.
-   * @return
-   *   The emitted message identifier.
-   */
-  public MessageId emit(JsonObject data) {
-    return worker.emit(data);
-  }
-
-  /**
-   * Emits a child message from the worker.
-   *
-   * @param data
-   *   The message body.
-   * @param parent
-   *   The message parent.
-   * @return
-   *   The unique message identifier.
-   */
-  public MessageId emit(JsonObject data, JsonMessage parent) {
-    return worker.emit(data, parent);
-  }
-
-  /**
-   * Emits a message as a child of itself.
-   *
-   * @param message
-   *   The message to emit.
-   * @return
-   *   The new child message's unique identifier.
-   */
-  public MessageId emit(JsonMessage message) {
-    return worker.emit(message);
-  }
-
-  /**
-   * Acks a message.
-   *
-   * @param message
-   *   The message to ack.
-   */
-  protected void ack(JsonMessage message) {
-    worker.ack(message);
-  }
-
-  /**
-   * Fails a message.
-   *
-   * @param message
-   *   The message to fail.
-   */
-  protected void fail(JsonMessage message) {
-    worker.fail(message);
-  }
+  protected abstract void handleMessage(JsonMessage message, Worker worker);
 
 }

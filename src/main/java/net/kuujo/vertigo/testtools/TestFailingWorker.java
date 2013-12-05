@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that fails all messages.
@@ -51,8 +52,8 @@ public class TestFailingWorker extends WorkerVerticle {
   }
 
   @Override
-  protected void handleMessage(JsonMessage message) {
-    fail(message);
+  protected void handleMessage(JsonMessage message, Worker worker) {
+    worker.fail(message);
   }
 
 }

@@ -15,13 +15,9 @@
  */
 package net.kuujo.vertigo.java;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.rpc.BasicExecutor;
 import net.kuujo.vertigo.rpc.Executor;
 
@@ -44,7 +40,7 @@ public abstract class ExecutorVerticle extends VertigoVerticle<Executor> {
     executor.executeHandler(new Handler<Executor>() {
       @Override
       public void handle(Executor executor) {
-        nextMessage();
+        nextMessage(executor);
       }
     });
   }
@@ -55,21 +51,7 @@ public abstract class ExecutorVerticle extends VertigoVerticle<Executor> {
    * Override this method to perform polling-based executions. The executor will automatically
    * call this method any time the execute queue is prepared to accept new messages.
    */
-  protected void nextMessage() {
-  }
-
-  /**
-   * Performs an execution.
-   *
-   * @param args
-   *   The execution arguments.
-   * @param resultHandler
-   *   An asynchronous handler to be called with the execution result.
-   * @return
-   *   The execution's unique message identifier.
-   */
-  public MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler) {
-    return executor.execute(args, resultHandler);
+  protected void nextMessage(Executor executor) {
   }
 
 }

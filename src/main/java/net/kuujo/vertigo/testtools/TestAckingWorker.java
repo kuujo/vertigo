@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that acks and emits all messages as children.
@@ -51,9 +52,9 @@ public class TestAckingWorker extends WorkerVerticle {
   }
 
   @Override
-  protected void handleMessage(JsonMessage message) {
-    emit(message);
-    ack(message);
+  protected void handleMessage(JsonMessage message, Worker worker) {
+    worker.emit(message);
+    worker.ack(message);
   }
 
 }

@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A test worker that times out messages.
@@ -51,7 +52,7 @@ public class TestTimingOutWorker extends WorkerVerticle {
   }
 
   @Override
-  protected void handleMessage(JsonMessage message) {
+  protected void handleMessage(JsonMessage message, Worker worker) {
     // Do nothing useful.
   }
 

@@ -58,7 +58,7 @@ public final class Context {
         return InstanceContext.fromJson(contextInfo);
       }
     }
-    throw new IllegalArgumentException("No context found.");
+    return null;
   }
 
 }

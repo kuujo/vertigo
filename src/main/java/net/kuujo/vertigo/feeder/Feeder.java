@@ -186,6 +186,7 @@ public interface Feeder extends Component<Feeder> {
    * @return
    *   The called feeder instance.
    */
+  @Deprecated
   Feeder setFeedDelay(long delay);
 
   /**
@@ -196,6 +197,7 @@ public interface Feeder extends Component<Feeder> {
    * @return
    *   The empty feed delay.
    */
+  @Deprecated
   long getFeedDelay();
 
   /**

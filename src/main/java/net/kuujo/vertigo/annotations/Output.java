@@ -28,11 +28,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Output {
+
+  /**
+   * An array of output streams.
+   */
   Stream[] streams() default {};
 
   /**
    * An output stream.
    */
+  @Target(ElementType.ANNOTATION_TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
   public @interface Stream {
 
     /**

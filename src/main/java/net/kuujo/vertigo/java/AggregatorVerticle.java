@@ -70,9 +70,7 @@ public abstract class AggregatorVerticle<T> extends ComponentVerticle<Aggregator
    * @return
    *   The initial aggregation value.
    */
-  protected T init(JsonMessage data) {
-    return null;
-  }
+  protected abstract T init(JsonMessage data);
 
   /**
    * Aggregates a message with the current value.

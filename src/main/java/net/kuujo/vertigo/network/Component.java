@@ -365,6 +365,36 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
   }
 
   /**
+   * Adds a component input from another component.
+   *
+   * @param component
+   *   The component from which to receive input.
+   * @param grouping
+   *   The grouping by which to group the input.
+   * @return
+   *   The new input instance.
+   */
+  public Input addInput(Component<?> component, Grouping grouping) {
+    return addInput(new Input(component.getAddress()).groupBy(grouping));
+  }
+
+  /**
+   * Adds a component input from another component on a specific stream.
+   *
+   * @param component
+   *   The component from which to receive input.
+   * @param stream
+   *   The stream on which to receive input.
+   * @param grouping
+   *   The grouping by which to group the input.
+   * @return
+   *   The new input instance.
+   */
+  public Input addInput(Component<?> component, String stream, Grouping grouping) {
+    return addInput(new Input(component.getAddress(), stream).groupBy(grouping));
+  }
+
+  /**
    * Adds a component input on the default stream.
    *
    * @param address

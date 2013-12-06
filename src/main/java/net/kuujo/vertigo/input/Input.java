@@ -17,9 +17,15 @@ package net.kuujo.vertigo.input;
 
 import java.util.UUID;
 
+import org.vertx.java.core.json.JsonObject;
+
+import net.kuujo.vertigo.input.grouping.AllGrouping;
+import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.serializer.Serializers;
 
 /**
  * A component input.
@@ -113,6 +119,19 @@ public final class Input implements Serializable {
   }
 
   /**
+   * Sets the input stream ID.
+   *
+   * @param stream
+   *   The input stream ID.
+   * @return
+   *   The called input instance.
+   */
+  public Input setStream(String stream) {
+    this.stream = stream;
+    return this;
+  }
+
+  /**
    * Sets the input grouping.
    *
    * The input grouping indicates how messages should be distributed between
@@ -125,6 +144,70 @@ public final class Input implements Serializable {
    */
   public Input groupBy(Grouping grouping) {
     this.grouping = grouping;
+    return this;
+  }
+
+  /**
+   * Sets the input grouping as a string.
+   *
+   * @param grouping
+   *   The input grouping type.
+   * @return
+   *   The called input instance.
+   */
+  public Input groupBy(String grouping) {
+    try {
+      this.grouping = Serializers.getDefault().deserialize(new JsonObject().putString("type", grouping), Grouping.class);
+    }
+    catch (Exception e) {
+      throw new IllegalArgumentException("Invalid input grouping type " + grouping);
+    }
+    return this;
+  }
+
+  /**
+   * Sets a random input grouping on the input.
+   *
+   * @return
+   *   The called input instance.
+   */
+  public Input randomGrouping() {
+    this.grouping = new RandomGrouping();
+    return this;
+  }
+
+  /**
+   * Sets a round-robin input grouping on the input.
+   *
+   * @return
+   *   The called input instance.
+   */
+  public Input roundGrouping() {
+    this.grouping = new RoundGrouping();
+    return this;
+  }
+
+  /**
+   * Sets a fields grouping on the input.
+   *
+   * @param fields
+   *   The fields on which to hash.
+   * @return
+   *   The called input instance.
+   */
+  public Input fieldsGrouping(String... fields) {
+    this.grouping = new FieldsGrouping(fields);
+    return this;
+  }
+
+  /**
+   * Sets an all grouping on the input.
+   *
+   * @return
+   *   The called input instance.
+   */
+  public Input allGrouping() {
+    this.grouping = new AllGrouping();
     return this;
   }
 

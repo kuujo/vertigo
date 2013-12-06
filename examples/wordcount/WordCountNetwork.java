@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wordcount;
+package net.kuujo.vertigo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
-import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.annotations.Input;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
-import net.kuujo.vertigo.feeder.BasicFeeder;
-import net.kuujo.vertigo.worker.Worker;
-import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.java.RichFeederVerticle;
+import net.kuujo.vertigo.java.RichWorkerVerticle;
+import net.kuujo.vertigo.java.VertigoVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Verticle;
 
 /**
  * A word count network example.
@@ -42,78 +40,50 @@ import org.vertx.java.platform.Verticle;
  *
  * @author Jordan Halterman
  */
-public class WordCountNetwork extends Verticle {
+public class WordCountNetwork extends VertigoVerticle {
 
-  public static class WordCountWorker extends Verticle {
-
-    private Worker worker;
-
-    private Map<String, Integer> counts = new HashMap<String, Integer>();
+  /**
+   * A random word feeder.
+   */
+  public static class WordFeeder extends RichFeederVerticle {
+    private String[] words = new String[]{
+      "foo", "bar", "baz", "foobar", "foobaz", "barfoo", "barbaz", "bazfoo", "bazbar"
+    };
+    private Random random = new Random();
 
     @Override
-    public void start() {
-      Vertigo vertigo = new Vertigo(this);
-      worker = vertigo.createWorker();
-      worker.messageHandler(new Handler<JsonMessage>() {
-        @Override
-        public void handle(JsonMessage message) {
-          String word = message.body().getString("word");
-          Integer count = counts.get(word);
-          if (count == null) {
-            count = 0;
-          }
-          count++;
-          worker.emit(new JsonObject().putString("word", word).putNumber("count", count));
-          worker.ack(message);
-        }
-      }).start();
+    protected void nextMessage() {
+      String word = words[random.nextInt(words.length-1)];
+      emit(new JsonObject().putString("word", word));
     }
   }
 
-  public static class WordFeeder extends Verticle {
+  /**
+   * A word counting worker.
+   */
+  @Input(schema={@Input.Field(name="word", type=String.class)})
+  public static class WordCountWorker extends RichWorkerVerticle {
+    private Map<String, Integer> counts = new HashMap<>();
 
     @Override
-    public void start() {
-      Vertigo vertigo = new Vertigo(this);
-      vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
-        @Override
-        public void handle(AsyncResult<BasicFeeder> result) {
-          if (result.failed()) {
-            container.logger().error(result.cause());
-          }
-          else {
-            BasicFeeder feeder = result.result();
-            feeder.feed(new JsonObject().putString("word", "foo"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-            feeder.feed(new JsonObject().putString("word", "foobar"));
-            feeder.feed(new JsonObject().putString("word", "barbaz"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-            feeder.feed(new JsonObject().putString("word", "foobar"));
-            feeder.feed(new JsonObject().putString("word", "barbaz"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-            feeder.feed(new JsonObject().putString("word", "foobar"));
-            feeder.feed(new JsonObject().putString("word", "foobar"));
-            feeder.feed(new JsonObject().putString("word", "foo"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-            feeder.feed(new JsonObject().putString("word", "bar"));
-          }
-        }
-      });
+    protected void handleMessage(JsonMessage message) {
+      String word = message.body().getString("word");
+      Integer count = counts.get(word);
+      if (count == null) count = 0;
+      count++;
+      emit(new JsonObject().putString("word", word).putNumber("count", count), message);
+      ack(message);
     }
-
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void start() {
-    Network network = new Network("word_count");
-    Component feeder = network.addVerticle("word_feeder", WordFeeder.class.getName());
-    Component counter = network.addVerticle("word_counter", WordCountWorker.class.getName(), 4);
-    counter.addInput("word_feeder").groupBy(new FieldsGrouping("word"));
+    Network network = vertigo.createNetwork("word_count");
+    network.addFeeder("word_feeder", WordFeeder.class.getName());
+    network.addWorker("word_counter", WordCountWorker.class.getName(), 4).addInput("word_feeder").groupBy(new FieldsGrouping("word"));
 
-    final Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
@@ -124,7 +94,7 @@ public class WordCountNetwork extends Verticle {
           vertx.setTimer(5000, new Handler<Long>() {
             @Override
             public void handle(Long timerID) {
-              cluster.shutdown(context);
+              vertigo.shutdownLocalNetwork(context);
             }
           });
         }

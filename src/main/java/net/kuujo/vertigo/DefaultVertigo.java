@@ -100,6 +100,20 @@ public final class DefaultVertigo<T extends Component<T>> implements Vertigo<T> 
   }
 
   @Override
+  public Vertigo<T> shutdownLocalNetwork(NetworkContext context) {
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.shutdown(context);
+    return this;
+  }
+
+  @Override
+  public Vertigo<T> shutdownLocalNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.shutdown(context, doneHandler);
+    return this;
+  }
+
+  @Override
   public Vertigo<T> deployRemoteNetwork(String address, Network network) {
     Cluster cluster = new ViaCluster(vertx, container, address);
     cluster.deploy(network);
@@ -110,6 +124,20 @@ public final class DefaultVertigo<T extends Component<T>> implements Vertigo<T> 
   public Vertigo<T> deployRemoteNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
     Cluster cluster = new ViaCluster(vertx, container, address);
     cluster.deploy(network, doneHandler);
+    return this;
+  }
+
+  @Override
+  public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context) {
+    Cluster cluster = new ViaCluster(vertx, container, address);
+    cluster.shutdown(context);
+    return this;
+  }
+
+  @Override
+  public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+    Cluster cluster = new ViaCluster(vertx, container, address);
+    cluster.shutdown(context, doneHandler);
     return this;
   }
 

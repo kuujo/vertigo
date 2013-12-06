@@ -34,6 +34,7 @@ import static net.kuujo.vertigo.util.Context.parseContext;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
 /**
@@ -43,6 +44,9 @@ import org.vertx.java.platform.Verticle;
  */
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   protected Vertigo<T> vertigo;
+  protected InstanceContext<T> context;
+  protected JsonObject config;
+  protected Logger logger;
 
   /**
    * Creates a component instance for the verticle.
@@ -64,7 +68,9 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   @Override
   @SuppressWarnings("unchecked")
   public void start() {
-    InstanceContext<T> context = (InstanceContext<T>) parseContext(container.config());
+    logger = container.logger();
+    context = (InstanceContext<T>) parseContext(container.config());
+    config = container.config();
     final T component = createComponent(context);
     VertigoFactory factory = new DefaultVertigoFactory(vertx, container);
     vertigo = factory.createVertigo(component);

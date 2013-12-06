@@ -114,6 +114,28 @@ public interface Vertigo<T extends Component<T>> {
   public Vertigo<T> deployLocalNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
+   * Shuts down a local network.
+   *
+   * @param context
+   *   The context of the network to shutdown.
+   * @return
+   *   The called Vertigo instance.
+   */
+  public Vertigo<T> shutdownLocalNetwork(NetworkContext context);
+
+  /**
+   * Shuts down a local network.
+   *
+   * @param context
+   *   The context of the network to shutdown.
+   * @param doneHandler
+   *   An asynchronous handler to be called once the shutdown is complete.
+   * @return
+   *   The called Vertigo instance.
+   */
+  public Vertigo<T> shutdownLocalNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Deploys a network via the Vert.x event bus.
    *
    * Deployment is performed using a {@link ViaCluster} instance which communicates
@@ -138,7 +160,7 @@ public interface Vertigo<T extends Component<T>> {
    *
    * Deployment is performed using a {@link ViaCluster} instance which communicates
    * module and verticle deployments over the event bus rather than performing
-   * deployments directly using the Vert.x {@link Container}.C
+   * deployments directly using the Vert.x {@link Container}.
    *
    * @param address
    *   The address to which to communicate component deployments. This address
@@ -156,5 +178,39 @@ public interface Vertigo<T extends Component<T>> {
    *   The called Vertigo instance.
    */
   public Vertigo<T> deployRemoteNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
+
+  /**
+   * Shuts down a network via the Vert.x event bus.
+   *
+   * @param address
+   *   The address to which to communicate component undeployments. This address
+   *   will receive message-based commands which contain information on which
+   *   modules or verticles to deploy. It is up to the handler at this address
+   *   to assign those deployments to specific Vert.x instances or otherwise
+   *   handle deployments via the Vert.x {@link Container}.
+   * @param context
+   *   The context of the network to shutdown.
+   * @return
+   *   The called Vertigo instance.
+   */
+  public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context);
+
+  /**
+   * Shuts down a network via the Vert.x event bus.
+   *
+   * @param address
+   *   The address to which to communicate component undeployments. This address
+   *   will receive message-based commands which contain information on which
+   *   modules or verticles to deploy. It is up to the handler at this address
+   *   to assign those deployments to specific Vert.x instances or otherwise
+   *   handle deployments via the Vert.x {@link Container}.
+   * @param context
+   *   The context of the network to shutdown.
+   * @param doneHandler
+   *   An asynchronous handler to be called once the network has been shutdown.
+   * @return
+   *   The called Vertigo instance.
+   */
+  public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
 
 }

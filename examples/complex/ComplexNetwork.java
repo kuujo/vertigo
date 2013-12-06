@@ -15,67 +15,65 @@
  */
 package complex;
 
-import org.vertx.java.platform.Verticle;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.json.JsonObject;
+import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.annotations.Input;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.runtime.FailureException;
+import net.kuujo.vertigo.runtime.TimeoutException;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.AllGrouping;
-import net.kuujo.vertigo.input.filter.TagsFilter;
-import net.kuujo.vertigo.feeder.BasicFeeder;
+import net.kuujo.vertigo.java.RichFeederVerticle;
+import net.kuujo.vertigo.java.RichWorkerVerticle;
+import net.kuujo.vertigo.java.VertigoVerticle;
+import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A complex network implementation.
  *
  * @author Jordan Halterman
  */
-public class ComplexNetworkVerticle extends Verticle {
+public class ComplexNetwork extends VertigoVerticle {
 
   /**
-   * An example feeder verticle.
+   * A simple number feeder.
    */
-  public static class ExampleFeeder extends Verticle {
-
-    private Logger logger;
+  public static class SimpleFeeder extends RichFeederVerticle {
+    @Override
+    protected void start(Feeder feeder) {
+      logger = container.logger();
+      feeder.setAutoRetry(true);
+      super.start(feeder);
+    }
 
     @Override
-    public void start() {
-      Vertigo vertigo = new Vertigo(this);
-      logger = container.logger();
-      vertigo.createBasicFeeder().start(new Handler<AsyncResult<BasicFeeder>>() {
-        @Override
-        public void handle(AsyncResult<BasicFeeder> result) {
-          if (result.failed()) {
-            logger.warn("Failed to start feeder.", result.cause());
-          }
-          else {
-            BasicFeeder feeder = result.result();
-            feeder.feed(new JsonObject().putNumber("count", 0), new Handler<AsyncResult<Void>>() {
-              @Override
-              public void handle(AsyncResult<Void> result) {
-                if (result.failed()) {
-                  logger.warn("Failed to process data.", result.cause());
-                }
-                else {
-                  logger.info("Successfully processed data!");
-                }
-              }
-            });
-          }
-        }
-      });
+    protected void nextMessage() {
+      emit(new JsonObject().putNumber("count", 0));
+    }
+
+    @Override
+    protected void handleAck(MessageId messageId) {
+      logger.info("Successfully processed " + messageId.correlationId());
+    }
+
+    @Override
+    protected void handleFailure(MessageId messageId, FailureException cause) {
+      logger.warn(messageId.correlationId() + " failed: " + cause.getMessage());
+    }
+
+    @Override
+    protected void handleTimeout(MessageId messageId, TimeoutException cause) {
+      logger.warn(messageId.correlationId() + " timed out");
     }
   }
 
@@ -86,77 +84,57 @@ public class ComplexNetworkVerticle extends Verticle {
    * that different network components use different groupings and filters. This
    * is demonstrative of the separation between component definitions and implementations.
    */
-  public static class ExampleWorker extends Verticle {
-
-    private Logger logger;
-
-    private Worker worker;
-
+  @Input(schema={@Input.Field(name="count", type=Number.class)})
+  public static class SimpleWorker extends RichWorkerVerticle {
     @Override
-    public void start() {
-      Vertigo vertigo = new Vertigo(this);
-      worker = vertigo.createWorker();
-      worker.messageHandler(new Handler<JsonMessage>() {
-        @Override
-        public void handle(JsonMessage message) {
-          int count = message.body().getInteger("count");
-          worker.emit(new JsonObject().putNumber("count", count+1), message);
-          worker.ack(message);
-        }
-      });
+    protected void handleMessage(JsonMessage message) {
+      int count = message.body().getInteger("count");
+      emit(new JsonObject().putNumber("count", count+1), message);
+      ack(message);
     }
   }
 
-  private java.util.logging.Logger logger;
+  private Logger logger;
 
   @Override
+  @SuppressWarnings("unchecked")
   public void start() {
     logger = container.logger();
 
-    Network network = new Network("test");
+    // Create a new network from the protected Vertigo instance.
+    Network network = vertigo.createNetwork("test");
 
     // Create feeder A at the event bus address "feeder-a"
-    Component feederA = network.addVerticle("feeder-a", ExampleFeeder.class.getName());
+    network.addFeeder("feeder-a", SimpleFeeder.class.getName());
 
     // Create feeder B at the event bus address "feeder-b"
-    Component feederB = network.addVerticle("feeder-b", ExampleFeeder.class.getName());
+    network.addFeeder("feeder-b", SimpleFeeder.class.getName());
 
-    // Create worker A at the event bus address "worker-a"
-    Component workerA = network.addVerticle("worker-a", ExampleWorker.class.getName(), 4);
-
+    // Create worker A at the event bus address "worker-a" with four instances.
     // Worker A listens for output from feeder A.
-    workerA.addInput("feeder-a").groupBy(new RandomGrouping());
+    network.addWorker("worker-a", SimpleWorker.class.getName(), 4).addInput("feeder-a").groupBy(new RandomGrouping());
 
     // Create worker B and worker C, both of which listen for output from worker A.
-    Component workerB = network.addVerticle("worker-b", ExampleWorker.class.getName(), 2);
-    workerB.addInput("worker-a").groupBy(new RandomGrouping());
-
-    Component workerC = network.addVerticle("worker-b", ExampleWorker.class.getName(), 4);
-    workerC.addInput("worker-a").groupBy(new RandomGrouping());
+    network.addWorker("worker-b", SimpleWorker.class.getName(), 2).addInput("worker-a").groupBy(new RandomGrouping());
+    network.addWorker("worker-c", SimpleWorker.class.getName(), 4).addInput("worker-a").groupBy(new RandomGrouping());
 
     // Feeder A also feeds worker D.
-    Component workerD = network.addVerticle("worker-d", ExampleWorker.class.getName(), 2);
-    workerD.addInput("feeder-a", new RoundGrouping());
+    network.addWorker("worker-d", SimpleWorker.class.getName(), 2).addInput("feeder-a", new RoundGrouping());
 
     // Worker D feeds worker E which feeds worker F.
-    Component workerE = network.addVerticle("worker-e", ExampleWorker.class.getName(), 4);
-    workerE.addInput("worker-d", new AllGrouping());
-
-    Component workerF = network.addVerticle("worker-f", ExampleWorker.class.getName(), 2);
-    workerF.addInput("worker-e", new RandomGrouping());
+    network.addWorker("worker-e", SimpleWorker.class.getName(), 4).addInput("worker-d").groupBy(new AllGrouping());
+    Component<Worker> workerf = network.addWorker("worker-f", SimpleWorker.class.getName(), 4);
+    workerf.addInput("worker-e").groupBy(new RandomGrouping());
 
     // Feeder B feeds worker G which feeds worker H which feeds worker F.
-    Component workerG = network.addVerticle("worker-g", ExampleWorker.class.getName(), 2);
-    workerG.addInput("feeder-b").groupBy(new FieldsGrouping("count"));
+    network.addWorker("worker-g", SimpleWorker.class.getName(), 2).addInput("feeder-b").groupBy(new FieldsGrouping("count"));
 
-    Component workerH = network.addVerticle("worker-h", ExampleWorker.class.getName(), 2);
-    workerH.addInput("worker-g", new RandomGrouping()).filterBy(new TagsFilter("count"));
+    network.addWorker("worker-h", SimpleWorker.class.getName(), 2).addInput("worker-g").groupBy(new RandomGrouping());
 
-    workerF.addInput("worker-h");
+    workerf.addInput("worker-h");
 
-    // Deploy the network usign a local cluster.
-    final Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+    // Deploy the network using a local cluster.
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
@@ -172,7 +150,7 @@ public class ComplexNetworkVerticle extends Verticle {
         vertx.setTimer(10000, new Handler<Long>() {
           @Override
           public void handle(Long timerID) {
-            cluster.shutdown(context);
+            vertigo.shutdownLocalNetwork(context);
           }
         });
       }

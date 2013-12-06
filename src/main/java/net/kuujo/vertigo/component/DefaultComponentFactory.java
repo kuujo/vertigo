@@ -62,6 +62,33 @@ public class DefaultComponentFactory implements ComponentFactory {
   }
 
   @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public <T extends Component<T>> Component<T> createComponent(InstanceContext<T> context) {
+    Class<T> type = context.getComponent().getType();
+    if (Feeder.class.isAssignableFrom(type)) {
+      return (Component<T>) createFeeder((InstanceContext<Feeder>) context);
+    }
+    else if (Executor.class.isAssignableFrom(type)) {
+      return (Component<T>) createExecutor((InstanceContext<Executor>) context);
+    }
+    else if (Worker.class.isAssignableFrom(type)) {
+      return (Component<T>) createWorker((InstanceContext<Worker>) context);
+    }
+    else if (Filter.class.isAssignableFrom(type)) {
+      return (Component<T>) createFilter((InstanceContext<Filter>) context);
+    }
+    else if (Splitter.class.isAssignableFrom(type)) {
+      return (Component<T>) createSplitter((InstanceContext<Splitter>) context);
+    }
+    else if (Aggregator.class.isAssignableFrom(type)) {
+      return (Component<T>) new BasicAggregator(vertx, container, context);
+    }
+    else {
+      throw new IllegalArgumentException("Invalid component type.");
+    }
+  }
+
+  @Override
   public Feeder createFeeder(InstanceContext<Feeder> context) {
     return new BasicFeeder(vertx, container, context);
   }

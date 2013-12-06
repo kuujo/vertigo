@@ -54,6 +54,16 @@ public interface ComponentFactory {
   ComponentFactory setContainer(Container container);
 
   /**
+   * Creates a component.
+   *
+   * @param context
+   *   The component context.
+   * @return
+   *   A new component instance.
+   */
+  <T extends Component<T>> Component<T> createComponent(InstanceContext<T> context);
+
+  /**
    * Creates a feeder.
    *
    * @param context

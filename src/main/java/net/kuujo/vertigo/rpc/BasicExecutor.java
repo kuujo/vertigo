@@ -138,12 +138,22 @@ public class BasicExecutor extends BaseComponent<Executor> implements Executor {
 
   @Override
   public Executor setReplyTimeout(long timeout) {
+    return setResultTimeout(timeout);
+  }
+
+  @Override
+  public long getReplyTimeout() {
+    return getResultTimeout();
+  }
+
+  @Override
+  public Executor setResultTimeout(long timeout) {
     queue.replyTimeout = timeout;
     return this;
   }
 
   @Override
-  public long getReplyTimeout() {
+  public long getResultTimeout() {
     return queue.replyTimeout;
   }
 

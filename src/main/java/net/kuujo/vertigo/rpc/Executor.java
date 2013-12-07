@@ -42,6 +42,7 @@ public interface Executor extends Component<Executor> {
    * @return
    *   The called executor instance.
    */
+  @Deprecated
   Executor setReplyTimeout(long timeout);
 
   /**
@@ -50,7 +51,26 @@ public interface Executor extends Component<Executor> {
    * @return
    *  An execution reply timeout.
    */
+  @Deprecated
   long getReplyTimeout();
+
+  /**
+   * Sets the execution reply timeout.
+   *
+   * @param timeout
+   *   An execution reply timeout.
+   * @return
+   *   The called executor instance.
+   */
+  Executor setResultTimeout(long timeout);
+
+  /**
+   * Gets the execution reply timeout.
+   *
+   * @return
+   *  An execution reply timeout.
+   */
+  long getResultTimeout();
 
   /**
    * Sets the maximum execution queue size.

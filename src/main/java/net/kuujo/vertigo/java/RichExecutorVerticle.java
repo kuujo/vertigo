@@ -35,7 +35,7 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  */
 public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
   protected Executor executor;
-  protected long replyTimeout = 30000;
+  protected long resultTimeout = 30000;
   protected long executeQueueMaxSize = 1000;
   protected boolean autoRetry = false;
   protected int autoRetryAttempts = -1;
@@ -50,7 +50,7 @@ public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
   @Override
   protected void start(Executor executor) {
     this.executor = executor;
-    executor.setReplyTimeout(replyTimeout)
+    executor.setResultTimeout(resultTimeout)
       .setExecuteQueueMaxSize(executeQueueMaxSize)
       .setAutoRetry(autoRetry)
       .setAutoRetryAttempts(autoRetryAttempts)

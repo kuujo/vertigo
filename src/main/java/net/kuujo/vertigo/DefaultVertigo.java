@@ -67,7 +67,7 @@ public final class DefaultVertigo<T extends Component<T>> implements Vertigo<T> 
 
   @Override
   public T component() {
-    return null;
+    return component;
   }
 
   @Override

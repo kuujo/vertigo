@@ -22,12 +22,6 @@ import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.rpc.BasicExecutor;
 import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.vertigo.worker.BasicWorker;
-import net.kuujo.vertigo.filter.Filter;
-import net.kuujo.vertigo.filter.BasicFilter;
-import net.kuujo.vertigo.splitter.Splitter;
-import net.kuujo.vertigo.splitter.BasicSplitter;
-import net.kuujo.vertigo.aggregator.Aggregator;
-import net.kuujo.vertigo.aggregator.BasicAggregator;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
@@ -62,7 +56,7 @@ public class DefaultComponentFactory implements ComponentFactory {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked"})
   public <T extends Component<T>> Component<T> createComponent(InstanceContext<T> context) {
     Class<T> type = context.getComponent().getType();
     if (Feeder.class.isAssignableFrom(type)) {
@@ -73,15 +67,6 @@ public class DefaultComponentFactory implements ComponentFactory {
     }
     else if (Worker.class.isAssignableFrom(type)) {
       return (Component<T>) createWorker((InstanceContext<Worker>) context);
-    }
-    else if (Filter.class.isAssignableFrom(type)) {
-      return (Component<T>) createFilter((InstanceContext<Filter>) context);
-    }
-    else if (Splitter.class.isAssignableFrom(type)) {
-      return (Component<T>) createSplitter((InstanceContext<Splitter>) context);
-    }
-    else if (Aggregator.class.isAssignableFrom(type)) {
-      return (Component<T>) new BasicAggregator(vertx, container, context);
     }
     else {
       throw new IllegalArgumentException("Invalid component type.");
@@ -101,21 +86,6 @@ public class DefaultComponentFactory implements ComponentFactory {
   @Override
   public Worker createWorker(InstanceContext<Worker> context) {
     return new BasicWorker(vertx, container, context);
-  }
-
-  @Override
-  public Filter createFilter(InstanceContext<Filter> context) {
-    return new BasicFilter(vertx, container, context);
-  }
-
-  @Override
-  public Splitter createSplitter(InstanceContext<Splitter> context) {
-    return new BasicSplitter(vertx, container, context);
-  }
-
-  @Override
-  public <T> Aggregator<T> createAggregator(InstanceContext<Aggregator<T>> context) {
-    return new BasicAggregator<T>(vertx, container, context);
   }
 
 }

@@ -18,11 +18,8 @@ package net.kuujo.vertigo.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.aggregator.Aggregator;
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.filter.Filter;
 import net.kuujo.vertigo.rpc.Executor;
-import net.kuujo.vertigo.splitter.Splitter;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.platform.impl.ModuleIdentifier;
@@ -75,9 +72,6 @@ public final class Component {
     put("feeder", Feeder.class);
     put("executor", Executor.class);
     put("worker", Worker.class);
-    put("filter", Filter.class);
-    put("splitter", Splitter.class);
-    put("aggregator", Aggregator.class);
   }};
 
   @SuppressWarnings("serial")
@@ -85,9 +79,6 @@ public final class Component {
     put(Feeder.class, "feeder");
     put(Executor.class, "executor");
     put(Worker.class, "worker");
-    put(Filter.class, "filter");
-    put(Splitter.class, "splitter");
-    put(Aggregator.class, "aggregator");
   }};
 
   /**

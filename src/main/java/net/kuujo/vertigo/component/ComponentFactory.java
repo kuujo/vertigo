@@ -18,12 +18,9 @@ package net.kuujo.vertigo.component;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
-import net.kuujo.vertigo.aggregator.Aggregator;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.filter.Filter;
 import net.kuujo.vertigo.rpc.Executor;
-import net.kuujo.vertigo.splitter.Splitter;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -92,35 +89,5 @@ public interface ComponentFactory {
    *   A new worker instance.
    */
   Worker createWorker(InstanceContext<Worker> context);
-
-  /**
-   * Creates a filter.
-   *
-   * @param context
-   *   The filter instance context.
-   * @return
-   *   A new filter instance.
-   */
-  Filter createFilter(InstanceContext<Filter> context);
-
-  /**
-   * Creates a splitter.
-   *
-   * @param context
-   *   The splitter instance context.
-   * @return
-   *   A new splitter instance.
-   */
-  Splitter createSplitter(InstanceContext<Splitter> context);
-
-  /**
-   * Creates an aggregator.
-   *
-   * @param context
-   *   The aggregator instance context.
-   * @return
-   *   A new aggregator instance.
-   */
-  <T> Aggregator<T> createAggregator(InstanceContext<Aggregator<T>> context);
 
 }

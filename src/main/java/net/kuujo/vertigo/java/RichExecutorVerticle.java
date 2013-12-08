@@ -19,6 +19,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.annotations.ExecutorOptions;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -35,11 +36,6 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  */
 public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
   protected Executor executor;
-  protected long resultTimeout = 30000;
-  protected long executeQueueMaxSize = 1000;
-  protected boolean autoRetry = false;
-  protected int autoRetryAttempts = -1;
-  protected long executeInterval = 10;
 
   @Override
   protected Executor createComponent(InstanceContext<Executor> context) {
@@ -49,18 +45,28 @@ public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
 
   @Override
   protected void start(Executor executor) {
-    this.executor = executor;
-    executor.setResultTimeout(resultTimeout)
-      .setExecuteQueueMaxSize(executeQueueMaxSize)
-      .setAutoRetry(autoRetry)
-      .setAutoRetryAttempts(autoRetryAttempts)
-      .setExecuteInterval(executeInterval);
+    this.executor = setupExecutor(executor);
     executor.executeHandler(new Handler<Executor>() {
       @Override
       public void handle(Executor executor) {
         nextMessage();
       }
     });
+  }
+
+  /**
+   * Sets up the executor according to executor options.
+   */
+  private Executor setupExecutor(Executor executor) {
+    ExecutorOptions options = getClass().getAnnotation(ExecutorOptions.class);
+    if (options != null) {
+      executor.setResultTimeout(options.resultTimeout());
+      executor.setExecuteQueueMaxSize(options.executeQueueMaxSize());
+      executor.setAutoRetry(options.autoRetry());
+      executor.setAutoRetryAttempts(options.autoRetryAttempts());
+      executor.setExecuteInterval(options.executeInterval());
+    }
+    return executor;
   }
 
   private Handler<AsyncResult<JsonMessage>> wrapHandler(final Handler<AsyncResult<JsonMessage>> resultHandler) {

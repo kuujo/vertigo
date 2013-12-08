@@ -17,6 +17,7 @@ package net.kuujo.vertigo.java;
 
 import org.vertx.java.core.Handler;
 
+import net.kuujo.vertigo.annotations.FeederOptions;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -38,13 +39,27 @@ public abstract class FeederVerticle extends ComponentVerticle<Feeder> {
 
   @Override
   protected void start(Feeder feeder) {
-    this.feeder = feeder;
+    this.feeder = setupFeeder(feeder);
     feeder.feedHandler(new Handler<Feeder>() {
       @Override
       public void handle(Feeder feeder) {
         nextMessage(feeder);
       }
     });
+  }
+
+  /**
+   * Sets up the feeder according to feeder options.
+   */
+  private Feeder setupFeeder(Feeder feeder) {
+    FeederOptions options = getClass().getAnnotation(FeederOptions.class);
+    if (options != null) {
+      feeder.setFeedQueueMaxSize(options.feedQueueMaxSize());
+      feeder.setAutoRetry(options.autoRetry());
+      feeder.setAutoRetryAttempts(options.autoRetryAttempts());
+      feeder.setFeedInterval(options.feedInterval());
+    }
+    return feeder;
   }
 
   /**

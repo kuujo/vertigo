@@ -19,6 +19,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
+import net.kuujo.vertigo.annotations.FeederOptions;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -34,10 +35,6 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  */
 public abstract class RichFeederVerticle extends ComponentVerticle<Feeder> {
   protected Feeder feeder;
-  protected long feedQueueMaxSize = 1000;
-  protected boolean autoRetry;
-  protected int autoRetryAttempts = -1;
-  protected long feedInterval = 10;
 
   @Override
   protected Feeder createComponent(InstanceContext<Feeder> context) {
@@ -47,17 +44,27 @@ public abstract class RichFeederVerticle extends ComponentVerticle<Feeder> {
 
   @Override
   protected void start(Feeder feeder) {
-    this.feeder = feeder;
-    feeder.setFeedQueueMaxSize(feedQueueMaxSize)
-      .setAutoRetry(autoRetry)
-      .setAutoRetryAttempts(autoRetryAttempts)
-      .setFeedInterval(feedInterval);
+    this.feeder = setupFeeder(feeder);
     feeder.feedHandler(new Handler<Feeder>() {
       @Override
       public void handle(Feeder feeder) {
         nextMessage();
       }
     });
+  }
+
+  /**
+   * Sets up the feeder according to feeder options.
+   */
+  private Feeder setupFeeder(Feeder feeder) {
+    FeederOptions options = getClass().getAnnotation(FeederOptions.class);
+    if (options != null) {
+      feeder.setFeedQueueMaxSize(options.feedQueueMaxSize());
+      feeder.setAutoRetry(options.autoRetry());
+      feeder.setAutoRetryAttempts(options.autoRetryAttempts());
+      feeder.setFeedInterval(options.feedInterval());
+    }
+    return feeder;
   }
 
   private Handler<AsyncResult<MessageId>> wrapHandler(final Handler<AsyncResult<MessageId>> ackHandler) {

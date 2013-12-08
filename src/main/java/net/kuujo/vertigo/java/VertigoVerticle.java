@@ -23,12 +23,25 @@ import org.vertx.java.core.Future;
 import org.vertx.java.platform.Verticle;
 
 /**
- * A Vertigo verticle implementation.
+ * A Vertigo verticle implementation.<p>
  *
  * This base class makes the primary {@link Vertigo} API available to Java verticle
- * implementations as a protected member of the class. This class should not be
+ * implementations as the <code>vertigo</code> protected member. This class should not be
  * extended within actual component implementations. For components, use the
- * respective component verticle.
+ * respective component verticle implementations.<p>
+ *
+ * <pre>
+ * public class MyVerticle extends VertigoVerticle {
+ *   @Override
+ *   public void start() {
+ *     Network network = vertigo.createNetwork("my_network");
+ *     network.addFeeder("foo.bar", "foobar.py");
+ *     network.addWorker("foo.baz", "foobaz.js", 4);
+ * 
+ *     vertigo.deployLocalNetwork(network);
+ *   }
+ * }
+ * </pre>
  *
  * @author Jordan Halterman
  */

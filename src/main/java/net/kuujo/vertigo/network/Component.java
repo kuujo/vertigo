@@ -289,7 +289,7 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    * The output hook can be used to receive notifications on events that occur
    * within the component instance's inputs and outputs. If the hook requires
    * constructor arguments or otherwise contains any state, the hook should
-   * implement the {@link SerializableType} interface. Serializable hooks will be
+   * implement the {@link Serializable} interface. Serializable hooks will be
    * serialized with state, but non-serializable hooks will be reconstructed from
    * the class name only. This means for the hook to be properly started, it must
    * be available on the class path of the deployed component verticle or module.

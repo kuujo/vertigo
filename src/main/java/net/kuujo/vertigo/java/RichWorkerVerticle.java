@@ -26,7 +26,25 @@ import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
- * A rich worker verticle implementation.
+ * A rich worker verticle implementation.<p>
+ *
+ * This verticle exposes an internal interface similar to that of the {@link Worker}
+ * interface. Just as with the {@link WorkerVerticle}, users should override
+ * the {@link handleMessage(JsonMessage) handleMessage} method and call internal
+ * methods to emit/ack/fail messages.<p>
+ *
+ * <pre>
+ * public class MyWorkerVerticle extends RichWorkerVerticle {
+ *   @Override
+ *   protected void handleMessage(JsonMessage message) {
+ *     int num1 = message.body().getInteger("num1");
+ *     int num2 = message.body().getInteger("num2");
+ *     int total = num1 + num2;
+ *     emit(new JsonObject().putNumber("total", total), message);
+ *     ack(message);
+ *   }
+ * }
+ * </pre>
  *
  * @author Jordan Halterman
  */

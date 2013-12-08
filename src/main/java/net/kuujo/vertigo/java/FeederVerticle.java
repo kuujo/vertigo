@@ -24,7 +24,25 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
 
 /**
- * A feeder verticle implementation.
+ * A feeder verticle implementation.<p>
+ *
+ * This is a basic verticle that makes a Vertigo feeder available via the
+ * {@link start(Feeder) start} method. Users can either operate on the {@link Feeder}
+ * by overriding that method or my overriding the {@link nextMessage(Feeder) nextMessage}
+ * method.<p>
+ *
+ * <pre>
+ * public class MyFeederVerticle extends FeederVerticle {
+ *   @Override
+ *   protected void start(Feeder feeder) {
+ *     feeder.emit(new JsonObject().putString("foo", "bar"), new Handler<AsyncResult<MessageId>>() {
+ *       public void handle(AsyncResult<MessageId> result) {
+ *         ...
+ *       }
+ *     });
+ *   }
+ * }
+ * </pre>
  *
  * @author Jordan Halterman
  */

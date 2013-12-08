@@ -101,8 +101,9 @@ public final class Network implements Serializable {
   /**
    * Disables acking on the network.
    *
-   * When acking is disabled, network auditors will immediately ack any new
-   * messages that are made known to them.
+   * When acking is disabled, messages will not be tracked through networks. This
+   * essentially meands that all messages will be assumed to have been successfully
+   * processed. Disable acking at your own risk.
    *
    * @return
    *   The called network instance.
@@ -149,8 +150,10 @@ public final class Network implements Serializable {
    * Sets the number of network auditors.
    *
    * This is the number of auditor verticle instances that will be used to track
-   * messages throughout a network. If the network is slowing due to acking
-   * overflows, you may need to increase the number of network auditors.
+   * messages throughout a network. The Vertigo message tracking algorithm is
+   * designed to be extremely memory efficient, so it's unlikely that memory will
+   * be an issue. However, if performance of your network is an issue (particularly
+   * in larger networks) you may need to increase the number of network auditors.
    *
    * @param numAuditors
    *   The number of network auditors.
@@ -235,7 +238,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The feeder component main or module name.
+   *   The feeder component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @return
    *   The new feeder component instance.
    */
@@ -249,7 +253,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The feeder component main or module name.
+   *   The feeder component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
    *   The feeder component configuration.
    * @return
@@ -265,7 +270,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The feeder component main or module name.
+   *   The feeder component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param instances
    *   The number of feeder instances.
    * @return
@@ -281,7 +287,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The feeder component main or module name.
+   *   The feeder component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
    *   The feeder component configuration.
    * @param instances
@@ -299,7 +306,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The executor component main or module name.
+   *   The executor component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @return
    *   The new executor component instance.
    */
@@ -313,7 +321,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The executor component main or module name.
+   *   The executor component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
    *   The executor component configuration.
    * @return
@@ -329,7 +338,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The executor component main or module name.
+   *   The executor component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param instances
    *   The number of executor instances.
    * @return
@@ -345,7 +355,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The executor component main or module name.
+   *   The executor component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
    *   The executor component configuration.
    * @param instances
@@ -363,7 +374,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The worker component main or module name.
+   *   The worker component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @return
    *   The new worker component instance.
    */
@@ -377,7 +389,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The worker component main or module name.
+   *   The worker component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
    *   The worker component configuration.
    * @return
@@ -393,7 +406,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The worker component main or module name.
+   *   The worker component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param instances
    *   The number of worker instances.
    * @return
@@ -409,7 +423,8 @@ public final class Network implements Serializable {
    * @param address
    *   The component address.
    * @param moduleOrMain
-   *   The worker component main or module name.
+   *   The worker component main or module name. Vertigo will automatically detect
+   *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
    *   The worker component configuration.
    * @param instances

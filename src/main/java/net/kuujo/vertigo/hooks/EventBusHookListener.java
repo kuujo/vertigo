@@ -35,15 +35,6 @@ import org.vertx.java.core.json.JsonObject;
 public class EventBusHookListener {
   private final String componentAddress;
   private final EventBus eventBus;
-  private Handler<InstanceContext<?>> startHandler;
-  private Handler<MessageId> receiveHandler;
-  private Handler<MessageId> ackHandler;
-  private Handler<MessageId> failHandler;
-  private Handler<MessageId> emitHandler;
-  private Handler<MessageId> ackedHandler;
-  private Handler<MessageId> failedHandler;
-  private Handler<MessageId> timeoutHandler;
-  private Handler<InstanceContext<?>> stopHandler;
 
   public EventBusHookListener(String componentAddress, EventBus eventBus) {
     this.componentAddress = componentAddress;
@@ -55,87 +46,6 @@ public class EventBusHookListener {
    * Registers the event bus handler.
    */
   private void registerHandler() {
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.start", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          startHandler.handle(InstanceContext.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.receive", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          receiveHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.ack", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          ackHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.fail", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          failHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.emit", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          emitHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.acked", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          ackedHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.failed", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          failedHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.timeout", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          timeoutHandler.handle(DefaultMessageId.fromJson(body));
-        }
-      }
-    });
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.stop", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          stopHandler.handle(InstanceContext.fromJson(body));
-        }
-      }
-    });
   }
 
   /**
@@ -146,8 +56,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener startHandler(Handler<InstanceContext<?>> startHandler) {
-    this.startHandler = startHandler;
+  public EventBusHookListener startHandler(final Handler<InstanceContext<?>> startHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.start", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          startHandler.handle(InstanceContext.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -159,8 +77,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener receiveHandler(Handler<MessageId> receiveHandler) {
-    this.receiveHandler = receiveHandler;
+  public EventBusHookListener receiveHandler(final Handler<MessageId> receiveHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.receive", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          receiveHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -172,8 +98,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener ackHandler(Handler<MessageId> ackHandler) {
-    this.ackHandler = ackHandler;
+  public EventBusHookListener ackHandler(final Handler<MessageId> ackHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.ack", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          ackHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -185,8 +119,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener failHandler(Handler<MessageId> failHandler) {
-    this.failHandler = failHandler;
+  public EventBusHookListener failHandler(final Handler<MessageId> failHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.fail", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          failHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -198,8 +140,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener emitHandler(Handler<MessageId> emitHandler) {
-    this.emitHandler = emitHandler;
+  public EventBusHookListener emitHandler(final Handler<MessageId> emitHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.emit", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          emitHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -211,8 +161,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener ackedHandler(Handler<MessageId> ackedHandler) {
-    this.ackedHandler = ackedHandler;
+  public EventBusHookListener ackedHandler(final Handler<MessageId> ackedHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.acked", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          ackedHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -224,8 +182,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener failedHandler(Handler<MessageId> failedHandler) {
-    this.failedHandler = failedHandler;
+  public EventBusHookListener failedHandler(final Handler<MessageId> failedHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.failed", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          failedHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -237,8 +203,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener timeoutHandler(Handler<MessageId> timeoutHandler) {
-    this.timeoutHandler = timeoutHandler;
+  public EventBusHookListener timeoutHandler(final Handler<MessageId> timeoutHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.timeout", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          timeoutHandler.handle(DefaultMessageId.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 
@@ -250,8 +224,16 @@ public class EventBusHookListener {
    * @return
    *   The called listener instance.
    */
-  public EventBusHookListener stopHandler(Handler<InstanceContext<?>> stopHandler) {
-    this.stopHandler = stopHandler;
+  public EventBusHookListener stopHandler(final Handler<InstanceContext<?>> stopHandler) {
+    eventBus.registerHandler(String.format("vertigo.hooks.%s.stop", componentAddress), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        JsonObject body = message.body();
+        if (body != null) {
+          stopHandler.handle(InstanceContext.fromJson(body));
+        }
+      }
+    });
     return this;
   }
 

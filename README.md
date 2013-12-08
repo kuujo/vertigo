@@ -19,24 +19,83 @@ communication between components in a **predictable and reliable** manner.
   data sources with feedback on the status of processing simple or complex
   message trees
 * Supports distribution of messages between multiple verticle instances using
-  **random, round-robin, consistent hashing, or fanout** approaches
+  **random, round-robin, hashing, or fanout** approaches
 * Supports **distribution of verticle/modules instances across a cluster** of Vert.x
   instances
 * **Monitors networks for failures** and automatically reassigns/redeploys failed
   verticles and modules
 * Network components can be written in **any Vert.x supported language**, with
-  APIs being developed for [Javascript](https://github.com/kuujo/vertigo-js)
+  APIs for Vertigo 0.6 in [Javascript](https://github.com/kuujo/vertigo-js)
   and [Python](https://github.com/kuujo/vertigo-python)
 * Integrates seemlessly with existing Vert.x applications
 
-#### New in Vertigo 5.4
+### Vertigo 0.6 is almost here!
+Vertigo 0.6.0 features significant API and performance improvements and will be
+released along with fully functional [Javascript](https://github.com/kuujo/vertigo-js)
+and [Python](https://github.com/kuujo/vertigo-python) APIs. This version will signify
+the solidification of the core Vertigo API and lays the foundation for a higher
+level API and advanced operations in Vertigo.
 
-* New feeder and worker verticle implementations for Java verticles
-* Improved performance, efficiency, and stability in message tracking algorithms
+#### New in Vertigo 0.6
+
+* Smaller, **simpler core APIs** with explicitly typed components - feeder, worker, and executor
+* Consolidated network deployment API in a `Vertx` like object
+
+```java
+Network network = vertigo.createNetwork("test");
+network.addFeeder("test.feeder", "MyFeeder.java", 2);
+network.addWorker("test.worker", "MyWorker.java", 4).addInput("test.feeder").randomGrouping();
+vertigo.deployLocalNetwork(network);
+```
+
+* Automatic construction of component instances within component Vert.x verticles
+* Special Java component verticle implementations
+* Custom annotations for configuring Java components
+
+```java
+@FeederOptions(autoRetry=true)
+public class MyFeeder extends FeederVerticle {
+  @Override
+  public void start(Feeder feeder) {
+    feeder.emit(new JsonObject().putString("hello", "world"));
+  }
+}
+```
+
+* New **stream abstraction**. Emit messages to specific output streams and subscribe
+to messages from specific input streams:
+
+*network*
+
+```java
+Network network = vertigo.createNetwork("the.network");
+network.addFeeder("the.feeder", "OrderProductFeeder.java");
+network.addWorker("the.order_worker", "OrderWorker.java", 2).addInput("test.feeder", "order");
+network.addWorker("the.product_worker", "ProductWorker.java", 4).addInput("test.feeder", "product");
+```
+
+`OrderProductFeeder.java`
+
+```java
+public class OrderProductFeeder extends FeederVerticle {
+  @Override
+  public void start(Feeder feeder) {
+    feeder.emit("product", new JsonObject().putString("productid", "12345"));
+    feeder.emit("order", new JsonObject().putString("orderid", "23456"));
+  }
+}
+```
+
 * Improved ack/fail/timeout feedback mechanisms
 * Network deployment events via the Vert.x event bus
-* Input, Output, and Component hooks, including core hook implementations
-* Solidified feeder, worker, and executor APIs
+* Component event hooks via Java classes or the event bus
+* Automated message schema validation
+* Completely redesigned **Jackson-based serializer** which supports automated serialization
+  of most obejcts (with a possible future in passing objects between components)
+* Improved message tracking algorithm with significantly smaller memory footprint
+  (able to track huge numbers of messages efficiently)
+* [Complete Python API](https://github.com/kuujo/vertigo-python)
+* [Complete Javascript API](https://github.com/kuujo/vertigo-js)
 
 Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
@@ -45,9 +104,9 @@ within larger Vert.x applications.
 For an in-depth look at the concepts underlying Vertigo, check out
 [how it works](https://github.com/kuujo/vertigo/wiki/How-it-works).
 
-**[Javascript API](https://github.com/kuujo/vertigo-js) is under development**
+**[Javascript API](https://github.com/kuujo/vertigo-js)**
 
-**[Python API](https://github.com/kuujo/vertigo-python) is under development**
+**[Python API](https://github.com/kuujo/vertigo-python)**
 
 ### Adding Vertigo as a Maven dependency
 
@@ -66,6 +125,6 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.5.4"
+  "includes": "net.kuujo~vertigo~0.6.0"
 }
 ```

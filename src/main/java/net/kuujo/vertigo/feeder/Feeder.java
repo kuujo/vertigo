@@ -112,7 +112,9 @@ public interface Feeder extends Component<Feeder> {
    * Sets the feeder auto-retry option.
    *
    * If this option is enabled, the feeder will automatically retry sending
-   * timed out messages.
+   * timed out messages. Note that this means that asynchronous ack handlers
+   * will not be called since the feeder will automatically retry sending those
+   * timed out messages. Failed messages will still trigger the ack handler.
    *
    * @param retry
    *   Indicates whether to automatically retry emitting timed out data.
@@ -256,51 +258,67 @@ public interface Feeder extends Component<Feeder> {
   Feeder drainHandler(Handler<Void> handler);
 
   /**
-   * Emits data from the feeder.
+   * Emits a message to the default stream.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject data);
+  MessageId emit(JsonObject body);
 
   /**
-   * Emits data to from the feeder with an ack handler.
+   * Emits a message to the default stream with an ack handler.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param ackHandler
-   *   An asynchronous result handler to be invoke with the ack result.
+   *   An asynchronous result handler to be called once the emitted message
+   *   has been fully processed. This {@link AsyncResult} implementation is a
+   *   special implementation that will *always* contain the {@link MessageId}
+   *   regardless of whether the message was successfully processed or not. If
+   *   the message was not successfully processed, the cause of the failure will
+   *   be either a {@link FailureException} or a {@link TimeoutException}. If
+   *   auto retries are enabled on the feeder then the ack handler will not
+   *   be called for timed out messages (unless the maximum number of automatic
+   *   retries has been reached).
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject data, Handler<AsyncResult<MessageId>> ackHandler);
+  MessageId emit(JsonObject body, Handler<AsyncResult<MessageId>> ackHandler);
 
   /**
-   * Emits data from the feeder.
+   * Emits a message to a non-default stream.
    *
    * @param stream
    *   The stream to which to emit the data.
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject data);
+  MessageId emit(String stream, JsonObject body);
 
   /**
-   * Emits data to from the feeder with an ack handler.
+   * Emits a message to a non-default stream with an ack handler.
    *
    * @param stream
    *   The stream to which to emit the data.
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param ackHandler
-   *   An asynchronous result handler to be invoke with the ack result.
+   *   An asynchronous result handler to be called once the emitted message
+   *   has been fully processed. This {@link AsyncResult} implementation is a
+   *   special implementation that will *always* contain the {@link MessageId}
+   *   regardless of whether the message was successfully processed or not. If
+   *   the message was not successfully processed, the cause of the failure will
+   *   be either a {@link FailureException} or a {@link TimeoutException}. If
+   *   auto retries are enabled on the feeder then the ack handler will not
+   *   be called for timed out messages (unless the maximum number of automatic
+   *   retries has been reached).
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject data, Handler<AsyncResult<MessageId>> ackHandler);
+  MessageId emit(String stream, JsonObject body, Handler<AsyncResult<MessageId>> ackHandler);
 
 }

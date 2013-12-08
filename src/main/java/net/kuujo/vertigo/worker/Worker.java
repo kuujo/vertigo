@@ -38,7 +38,7 @@ import org.vertx.java.core.json.JsonObject;
 public interface Worker extends Component<Worker> {
 
   /**
-   * Sets a worker data handler.
+   * Sets a worker message handler.
    *
    * @param handler
    *   A message handler. This handler will be called for each message received
@@ -49,29 +49,29 @@ public interface Worker extends Component<Worker> {
   Worker messageHandler(Handler<JsonMessage> handler);
 
   /**
-   * Emits data from the worker.
+   * Emits a message to the default stream.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject data);
+  MessageId emit(JsonObject body);
 
   /**
-   * Emits child data from the worker.
+   * Emits child message to the default stream.
    *
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param parent
    *   The parent message.
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject data, JsonMessage parent);
+  MessageId emit(JsonObject body, JsonMessage parent);
 
   /**
-   * Emits a copy of the given message as a child of itself.
+   * Emits a copy of the given message to the default stream as a child of itself.
    *
    * @param message
    *   The message to emit.
@@ -81,33 +81,33 @@ public interface Worker extends Component<Worker> {
   MessageId emit(JsonMessage message);
 
   /**
-   * Emits data from the worker.
+   * Emits data from the worker to a non-default stream.
    *
    * @param stream
    *   The stream to which to emit the message.
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject data);
+  MessageId emit(String stream, JsonObject body);
 
   /**
-   * Emits child data from the worker.
+   * Emits child data from the worker to a non-default stream.
    *
    * @param stream
    *   The stream to which to emit the message.
-   * @param data
-   *   The data to emit.
+   * @param body
+   *   The message body.
    * @param parent
    *   The parent message.
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject data, JsonMessage parent);
+  MessageId emit(String stream, JsonObject body, JsonMessage parent);
 
   /**
-   * Emits a copy of the given message as a child of itself.
+   * Emits a copy of the given message to a non-default stream as a child of itself.
    *
    * @param stream
    *   The stream to which to emit the message.

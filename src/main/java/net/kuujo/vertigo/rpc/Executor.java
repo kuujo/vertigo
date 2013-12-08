@@ -279,29 +279,41 @@ public interface Executor extends Component<Executor> {
   Executor drainHandler(Handler<Void> handler);
 
   /**
-   * Executes the network.
+   * Executes the network via the default stream.
    *
-   * @param args
-   *   Execution arguments.
+   * @param body
+   *   The message body.
    * @param resultHandler
-   *   An asynchronous result handler to be invoke with the execution result.
+   *   An asynchronous result handler to be called with the execution result.
+   *   The result handler will be called only once the source message has been
+   *   fully processed. If multiple results are received for the same execution,
+   *   the result handler will be called once for each result. If the execution
+   *   times out, a {@link TimeoutException} will be the cause of the failure.
+   *   If the emitted message is explicitly failed, a {@link FailureException}
+   *   will be the cause of the failure.
    * @return
    *   The emitted message correlation identifier.
    */
-  MessageId execute(JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+  MessageId execute(JsonObject body, Handler<AsyncResult<JsonMessage>> resultHandler);
 
   /**
-   * Executes the network.
+   * Executes the network via a non-default stream.
    *
    * @param stream
    *   The stream to which to emit the message.
-   * @param args
-   *   Execution arguments.
+   * @param body
+   *   The message body.
    * @param resultHandler
-   *   An asynchronous result handler to be invoke with the execution result.
+   *   An asynchronous result handler to be called with the execution result.
+   *   The result handler will be called only once the source message has been
+   *   fully processed. If multiple results are received for the same execution,
+   *   the result handler will be called once for each result. If the execution
+   *   times out, a {@link TimeoutException} will be the cause of the failure.
+   *   If the emitted message is explicitly failed, a {@link FailureException}
+   *   will be the cause of the failure.
    * @return
    *   The emitted message correlation identifier.
    */
-  MessageId execute(String stream, JsonObject args, Handler<AsyncResult<JsonMessage>> resultHandler);
+  MessageId execute(String stream, JsonObject body, Handler<AsyncResult<JsonMessage>> resultHandler);
 
 }

@@ -236,7 +236,8 @@ public final class Network implements Serializable {
    * Adds a feeder component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The feeder component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
@@ -251,12 +252,14 @@ public final class Network implements Serializable {
    * Adds a feeder component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The feeder component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
-   *   The feeder component configuration.
+   *   The feeder component configuration. This configuration will be made available
+   *   as the verticle configuration within the component implementation.
    * @return
    *   The new feeder component instance.
    */
@@ -268,12 +271,15 @@ public final class Network implements Serializable {
    * Adds a feeder component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The feeder component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param instances
-   *   The number of feeder instances.
+   *   The number of feeder instances. If multiple instances are defined, groupings
+   *   will be used to determine how messages are distributed between multiple
+   *   component instances.
    * @return
    *   The new feeder component instance.
    */
@@ -285,14 +291,18 @@ public final class Network implements Serializable {
    * Adds a feeder component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The feeder component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
-   *   The feeder component configuration.
+   *   The feeder component configuration. This configuration will be made available
+   *   as the verticle configuration within the component implementation.
    * @param instances
-   *   The number of feeder instances.
+   *   The number of feeder instances. If multiple instances are defined, groupings
+   *   will be used to determine how messages are distributed between multiple
+   *   component instances.
    * @return
    *   The new feeder component instance.
    */
@@ -304,7 +314,8 @@ public final class Network implements Serializable {
    * Adds an executor component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The executor component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
@@ -319,12 +330,14 @@ public final class Network implements Serializable {
    * Adds an executor component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The executor component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
-   *   The executor component configuration.
+   *   The executor component configuration. This configuration will be made available
+   *   as the verticle configuration within the component implementation.
    * @return
    *   The new executor component instance.
    */
@@ -336,12 +349,15 @@ public final class Network implements Serializable {
    * Adds an executor component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The executor component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param instances
-   *   The number of executor instances.
+   *   The number of executor instances. If multiple instances are defined, groupings
+   *   will be used to determine how messages are distributed between multiple
+   *   component instances.
    * @return
    *   The new executor component instance.
    */
@@ -353,14 +369,18 @@ public final class Network implements Serializable {
    * Adds an executor component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The executor component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
-   *   The executor component configuration.
+   *   The executor component configuration. This configuration will be made available
+   *   as the verticle configuration within the component implementation.
    * @param instances
-   *   The number of executor instances.
+   *   The number of executor instances. If multiple instances are defined, groupings
+   *   will be used to determine how messages are distributed between multiple
+   *   component instances.
    * @return
    *   The new executor component instance.
    */
@@ -372,7 +392,8 @@ public final class Network implements Serializable {
    * Adds a worker component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The worker component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
@@ -387,12 +408,14 @@ public final class Network implements Serializable {
    * Adds a worker component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The worker component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
-   *   The worker component configuration.
+   *   The worker component configuration. This configuration will be made available
+   *   as the verticle configuration within the component implementation.
    * @return
    *   The new worker component instance.
    */
@@ -404,12 +427,15 @@ public final class Network implements Serializable {
    * Adds a worker component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The worker component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param instances
-   *   The number of worker instances.
+   *   The number of worker instances. If multiple instances are defined, groupings
+   *   will be used to determine how messages are distributed between multiple
+   *   component instances.
    * @return
    *   The new worker component instance.
    */
@@ -421,14 +447,18 @@ public final class Network implements Serializable {
    * Adds a worker component to the network.
    *
    * @param address
-   *   The component address.
+   *   The component address. This should be a globally unique event bus address
+   *   and can be any string.
    * @param moduleOrMain
    *   The worker component main or module name. Vertigo will automatically detect
    *   whether the feeder is a module or a verticle based on module naming conventions.
    * @param config
-   *   The worker component configuration.
+   *   The worker component configuration. This configuration will be made available
+   *   as the verticle configuration within the component implementation.
    * @param instances
-   *   The number of worker instances.
+   *   The number of worker instances. If multiple instances are defined, groupings
+   *   will be used to determine how messages are distributed between multiple
+   *   component instances.
    * @return
    *   The new worker component instance.
    */

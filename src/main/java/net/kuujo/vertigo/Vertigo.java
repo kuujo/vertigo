@@ -28,7 +28,13 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
 
 /**
- * The primary Vertigo API.
+ * The primary Vertigo API.<p>
+ *
+ * This is the primary API for creating Vertigo networks and component instances.
+ * If the current Vert.x verticle is a Vertigo component, the {@link Vertigo}
+ * object will contain the component's {@link InstanceContext} as well as the
+ * concrete component instance. If the current Vert.x verticle is not a Vertigo
+ * component, this API can be used to create and deploy Vertigo networks.
  *
  * @author Jordan Halterman
  *
@@ -38,6 +44,8 @@ public interface Vertigo<T extends Component<T>> {
 
   /**
    * Indicates whether the current Vertigo instance is a component instance.
+   * If this is a component instance then the component will be available via
+   * the {@link component() component} method.
    *
    * @return
    *   Whether the current instance is a component.
@@ -47,6 +55,11 @@ public interface Vertigo<T extends Component<T>> {
   /**
    * Gets the current component instance.
    *
+   * The component instance is automatically constructed by Vertigo. This ensures
+   * type and connection safety in Vertigo component instances. Each Vert.x
+   * verticle may only represent a single Vertigo component instance, and this
+   * is that instance.
+   *
    * @return
    *   The current component instance. If the current Vertigo instance is not
    *   a component then this value will be null.
@@ -54,7 +67,8 @@ public interface Vertigo<T extends Component<T>> {
   T component();
 
   /**
-   * Gets the component configuration.
+   * Gets the component configuration. This configuration is also available
+   * via the Vert.x container.
    *
    * @return
    *   The component configuration. If the current Vertigo instance is not a
@@ -64,6 +78,10 @@ public interface Vertigo<T extends Component<T>> {
 
   /**
    * Gets the current component instance context.
+   *
+   * The instance context contains information about the current component instance,
+   * the defined component configuration, and the overall network structure,
+   * including event bus addresses, connections, and more.
    *
    * @return
    *   The current component instance context.If the current Vertigo instance is
@@ -82,7 +100,7 @@ public interface Vertigo<T extends Component<T>> {
   public Network createNetwork(String address);
 
   /**
-   * Deploys a network within the current Vert.x instance.
+   * Deploys a network within the current Vert.x instance.<p>
    *
    * This deployment method uses the basic {@link LocalCluster} cluster implementation
    * to deploy network verticles and modules using the current Vert.x {@link Container}
@@ -96,7 +114,7 @@ public interface Vertigo<T extends Component<T>> {
   public Vertigo<T> deployLocalNetwork(Network network);
 
   /**
-   * Deploys a network within the current Vert.x instance.
+   * Deploys a network within the current Vert.x instance.<p>
    *
    * This deployment method uses the basic {@link LocalCluster} cluster implementation
    * to deploy network verticles and modules using the current Vert.x {@link Container}

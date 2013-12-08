@@ -18,7 +18,6 @@ package net.kuujo.vertigo.java;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.kuujo.vertigo.DefaultVertigoFactory;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.VertigoFactory;
@@ -27,6 +26,7 @@ import net.kuujo.vertigo.annotations.Input;
 import net.kuujo.vertigo.annotations.Output;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.impl.DefaultVertigoFactory;
 import net.kuujo.vertigo.message.schema.Field;
 import net.kuujo.vertigo.message.schema.MessageSchema;
 import static net.kuujo.vertigo.util.Context.parseContext;

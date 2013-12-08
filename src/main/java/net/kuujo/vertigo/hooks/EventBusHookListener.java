@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.message.DefaultMessageId;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.message.impl.DefaultMessageId;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;

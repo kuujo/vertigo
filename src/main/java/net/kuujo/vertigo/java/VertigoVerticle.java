@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.java;
 
-import net.kuujo.vertigo.DefaultVertigoFactory;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.VertigoFactory;
+import net.kuujo.vertigo.impl.DefaultVertigoFactory;
 
 import org.vertx.java.core.Future;
 import org.vertx.java.platform.Verticle;

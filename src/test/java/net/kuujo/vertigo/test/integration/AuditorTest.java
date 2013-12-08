@@ -18,12 +18,12 @@ package net.kuujo.vertigo.test.integration;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.AuditorVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.JsonMessageBuilder;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.monitor.acker.Acker;
-import net.kuujo.vertigo.monitor.acker.DefaultAcker;
-import net.kuujo.vertigo.monitor.auditor.AuditorVerticle;
+import net.kuujo.vertigo.message.impl.JsonMessageBuilder;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

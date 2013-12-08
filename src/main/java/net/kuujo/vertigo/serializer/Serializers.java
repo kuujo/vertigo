@@ -18,6 +18,8 @@ package net.kuujo.vertigo.serializer;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.kuujo.vertigo.serializer.impl.DefaultSerializerFactory;
+
 /**
  * Static helper methods for serialization.
  *

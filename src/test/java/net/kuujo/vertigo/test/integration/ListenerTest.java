@@ -17,9 +17,9 @@ package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.input.DefaultListener;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
+import net.kuujo.vertigo.input.impl.DefaultListener;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Network;

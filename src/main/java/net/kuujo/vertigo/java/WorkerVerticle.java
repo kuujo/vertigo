@@ -18,7 +18,7 @@ package net.kuujo.vertigo.java;
 import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.component.ComponentFactory;
-import net.kuujo.vertigo.component.DefaultComponentFactory;
+import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.worker.Worker;

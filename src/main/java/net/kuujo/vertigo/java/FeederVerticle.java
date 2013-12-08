@@ -19,7 +19,7 @@ import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.annotations.FeederOptions;
 import net.kuujo.vertigo.component.ComponentFactory;
-import net.kuujo.vertigo.component.DefaultComponentFactory;
+import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
 

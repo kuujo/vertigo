@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.message;
 
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.serializer.Serializable;
 
 import org.vertx.java.core.json.JsonObject;

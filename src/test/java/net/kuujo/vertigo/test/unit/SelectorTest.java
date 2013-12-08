@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.JsonMessageBuilder;
+import net.kuujo.vertigo.message.impl.JsonMessageBuilder;
 import net.kuujo.vertigo.output.Connection;
-import net.kuujo.vertigo.output.DefaultConnection;
-import net.kuujo.vertigo.output.DefaultPseudoConnection;
+import net.kuujo.vertigo.output.impl.DefaultConnection;
+import net.kuujo.vertigo.output.impl.DefaultPseudoConnection;
 import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.RandomSelector;

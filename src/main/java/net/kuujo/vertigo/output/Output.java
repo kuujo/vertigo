@@ -41,7 +41,7 @@ public final class Output implements Serializable {
   private Output() {
   }
 
-  Output(String id, String stream, int count, Selector selector) {
+  public Output(String id, String stream, int count, Selector selector) {
     this.id = id;
     this.stream = stream;
     this.count = count;

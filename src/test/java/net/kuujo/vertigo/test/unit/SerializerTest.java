@@ -16,9 +16,9 @@
 package net.kuujo.vertigo.test.unit;
 
 import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.ContextBuilder;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.hooks.EventBusHook;

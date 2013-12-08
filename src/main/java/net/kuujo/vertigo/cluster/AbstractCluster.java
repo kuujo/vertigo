@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.context.ContextBuilder;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 

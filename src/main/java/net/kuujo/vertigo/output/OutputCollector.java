@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.output;
 
-import java.util.Set;
-
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
@@ -56,26 +54,6 @@ public interface OutputCollector {
    *   The called output collector instance.
    */
   OutputCollector addHook(OutputHook hook);
-
-  /**
-   * Declares output streams.
-   *
-   * @param streams
-   *   An array of output streams.
-   * @return
-   *   The called output collector instance.
-   */
-  OutputCollector declareStreams(String... streams);
-
-  /**
-   * Declares output streams.
-   *
-   * @param streams
-   *   A set of output streams.
-   * @return
-   *   The called output collector instance.
-   */
-  OutputCollector declareStreams(Set<String> streams);
 
   /**
    * Emits a new message to the default stream.

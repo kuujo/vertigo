@@ -16,13 +16,10 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
@@ -70,7 +67,6 @@ public class DefaultOutputCollector implements OutputCollector {
   private Map<String, List<Channel>> channels = new HashMap<String, List<Channel>>() {{
     put(Output.DEFAULT_STREAM, new ArrayList<Channel>());
   }};
-  private Set<String> streams;
   private Map<String, Long> connectionTimers = new HashMap<>();
   private static final long LISTEN_INTERVAL = 15000;
 
@@ -193,24 +189,6 @@ public class DefaultOutputCollector implements OutputCollector {
     return this;
   }
 
-  @Override
-  public OutputCollector declareStreams(String... streams) {
-    return declareStreams(new HashSet<String>(Arrays.asList(streams)));
-  }
-
-  @Override
-  public OutputCollector declareStreams(Set<String> streams) {
-    this.streams = streams;
-    // We automatically set up stream channel lists internally so that we don't
-    // have to perform null checks when emitting data from the collector.
-    for (String stream : streams) {
-      if (!channels.containsKey(stream)) {
-        channels.put(stream, new ArrayList<Channel>());
-      }
-    }
-    return this;
-  }
-
   /**
    * Calls start hooks.
    */
@@ -330,15 +308,16 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public MessageId emitTo(String stream, JsonObject body) {
-    if (!validStream(stream)) throw new IllegalArgumentException("Invalid stream " + stream);
-
     JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message).setBody(body)
         .setStream(stream).setSource(componentAddress).toMessage();
-    
-    for (Channel channel : channels.get(stream)) {
-      acker.fork(messageId, channel.publish(child));
+
+    List<Channel> channels = this.channels.get(stream);
+    if (channels != null) {
+      for (Channel channel : channels) {
+        acker.fork(messageId, channel.publish(child));
+      }
     }
     acker.create(messageId);
     hookEmit(messageId);
@@ -347,14 +326,14 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public MessageId emitTo(String stream, JsonObject body, JsonMessage parent) {
-    if (!validStream(stream)) throw new IllegalArgumentException("Invalid stream " + stream);
-
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
     MessageId messageId = message.messageId();
     JsonMessage child = messageBuilder.createChild(message).setBody(body).setStream(stream).toMessage();
     List<Channel> channels = this.channels.get(stream);
-    for (Channel channel : channels) {
-      acker.fork(parent.messageId(), channel.publish(child));
+    if (channels != null) {
+      for (Channel channel : channels) {
+        acker.fork(parent.messageId(), channel.publish(child));
+      }
     }
     hookEmit(messageId);
     return messageId;
@@ -363,13 +342,6 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public MessageId emitTo(String stream, JsonMessage message) {
     return emitTo(stream, message.body(), message);
-  }
-
-  /**
-   * Indicates whether the stream is a valid output stream.
-   */
-  private boolean validStream(String stream) {
-    return streams == null ? stream.equals(Output.DEFAULT_STREAM) : streams.contains(stream);
   }
 
   /**

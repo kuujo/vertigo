@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.component;
 
-import java.util.Set;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -100,26 +98,6 @@ public interface Component<T extends Component<T>> {
    *   The called component instance.
    */
   T declareSchema(MessageSchema schema);
-
-  /**
-   * Declares output streams.
-   *
-   * @param streams
-   *   An array of output streams.
-   * @return
-   *   The called component instance.
-   */
-  T declareStreams(String... streams);
-
-  /**
-   * Declares output streams.
-   *
-   * @param streams
-   *   A set of output streams.
-   * @return
-   *   The called component instance.
-   */
-  T declareStreams(Set<String> streams);
 
   /**
    * Starts the component.

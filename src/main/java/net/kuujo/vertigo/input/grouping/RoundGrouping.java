@@ -19,10 +19,11 @@ import net.kuujo.vertigo.output.selector.RoundSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
- * A *round* selector.
+ * The round grouping dispatches messages to workers in a round-robin
+ * fashion.<p>
  *
- * The *round* selector dispatches messages to workers in a round-robin
- * fashion.
+ * Note that users should use the <code>roundGrouping</code> {@link Input} method
+ * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman
  */

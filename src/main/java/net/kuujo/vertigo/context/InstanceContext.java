@@ -25,7 +25,8 @@ import org.vertx.java.core.json.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * A component instance context.
+ * A component instance context which contains information regarding
+ * a specific component (module or verticle) instance within a network.
  *
  * @author Jordan Halterman
  */

@@ -22,7 +22,10 @@ import org.vertx.java.platform.Verticle;
 import net.kuujo.vertigo.coordinator.LocalCoordinator;
 
 /**
- * A local cluster implementation.
+ * A local cluster implementation.<p>
+ *
+ * The local cluster deploys Vertigo components (modules and verticles) within
+ * the local Vert.x instance via the Vert.x {@link Container}.
  *
  * @author Jordan Halterman
  */

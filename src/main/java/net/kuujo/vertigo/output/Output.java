@@ -21,7 +21,7 @@ import net.kuujo.vertigo.output.selector.Selector;
 import net.kuujo.vertigo.serializer.Serializable;
 
 /**
- * A component output.
+ * A component output.<p>
  *
  * The output is the polar opposite of the {@link Input}. When a {@link Listener}
  * subscribes to output from a component, its {@link Input} is transformed into

@@ -31,7 +31,11 @@ import net.kuujo.vertigo.worker.Worker;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A Vertigo network.
+ * A Vertigo network definition.<p>
+ *
+ * A network is a collection of <code>components</code> - Vert.x verticles
+ * or modules - that are interconnected in a meaningful and reliable manner.
+ * This class is used to define such structures.
  *
  * @author Jordan Halterman
  */

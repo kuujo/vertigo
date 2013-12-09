@@ -24,7 +24,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * An output collector.
+ * An output collector.<p>
  *
  * The output collector is the primary interface for emitting new messages from
  * a component. When a new component instance is started, the output collector

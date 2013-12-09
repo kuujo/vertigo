@@ -22,7 +22,7 @@ import net.kuujo.vertigo.output.selector.Selector;
 import net.kuujo.vertigo.serializer.Serializable;
 
 /**
- * An input grouping.
+ * An input grouping.<p>
  *
  * Input groupings define how messages are to be distributed among multiple
  * instance of a component. When an input prepares to register with the interesting

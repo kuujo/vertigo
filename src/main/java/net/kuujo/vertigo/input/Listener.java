@@ -21,7 +21,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * A component listener.
+ * An input listener.<p>
  *
  * Listeners are the underlying components of the {@link InputCollector}. Each
  * listener instance has a unique event bus address and represents a single input

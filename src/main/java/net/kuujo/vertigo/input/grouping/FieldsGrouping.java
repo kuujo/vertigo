@@ -22,11 +22,12 @@ import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
- * A fields selector.
+ * The <code>fields</code> grouping is a hashing based grouping. Given a set of
+ * fields on which to hash, this grouping guarantees that workers will always
+ * receive messages with the same field values.<p>
  *
- * The *fields* selector is a consistent-hashing based grouping. Given
- * a field on which to hash, this grouping guarantees that workers will
- * always receive messages with the same field values.
+ * Note that users should use the <code>fieldsGrouping</code> {@link Input} method
+ * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman
  */

@@ -19,7 +19,24 @@ import net.kuujo.vertigo.VertigoException;
 
 
 /**
- * A processing timeout exception.
+ * A processing timeout exception.<p>
+ *
+ * This exception will be the cause of the failure to process a message if
+ * the root message or one of its descendants timed out. This can be checked
+ * in feeder or executor verticles by using <code>instanceof</code> on the
+ * <code>AsyncResult</code> cause.<p>
+ *
+ * <pre>
+ * feeder.emit(new JsonObject().putString("foo", "bar"), new Handler<AsyncResult<MessageId>>() {
+ *   public void handle(AsyncResult<MessageId> result) {
+ *     if (result.failed() && result.cause() instanceof TimeoutException) {
+ *       // The message timed out.
+ *     }
+ *   }
+ * }
+ * </pre>
+ * <p>
+ * For explicit failures, see {@link FailureException}
  *
  * @author Jordan Halterman
  */

@@ -38,7 +38,10 @@ import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.Serializers;
 
 /**
- * A component context.
+ * A component context which contains information regarding each
+ * component instance within a single network component. Contexts
+ * are immutable as they are constructed once a network has been
+ * deployed.
  *
  * @author Jordan Halterman
  */

@@ -19,7 +19,26 @@ import net.kuujo.vertigo.VertigoException;
 
 
 /**
- * A processing failure exception.
+ * A processing failure exception.<p>
+ *
+ * This exception will be the cause of the failure of a message to process
+ * if the root message or any of its descendants was explicitly failed by
+ * a worker verticle. This is usually used to indicate a malformed message
+ * or otherwise invalid message data. The failure can be checked in feeder
+ * or executor verticles by using <code>instanceof</code> on the
+ * <code>AsyncResult</code> cause.<p>
+ *
+ * <pre>
+ * feeder.emit(new JsonObject().putString("foo", "bar"), new Handler<AsyncResult<MessageId>>() {
+ *   public void handle(AsyncResult<MessageId> result) {
+ *     if (result.failed() && result.cause() instanceof FailureException) {
+ *       // The message was explicitly failed.
+ *     }
+ *   }
+ * }
+ * </pre>
+ * <p>
+ * For timeout errors, see {@link TimeoutException}
  *
  * @author Jordan Halterman
  */

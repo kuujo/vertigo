@@ -22,8 +22,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * A Vertigo cluster.
- *
  * The cluster is the primary interface for deploying Vertigo networks. Clusters
  * handle deploying network coordinators which handle deployment and monitoring
  * of network component instances.

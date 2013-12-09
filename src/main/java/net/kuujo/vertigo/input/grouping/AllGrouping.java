@@ -19,11 +19,13 @@ import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
- * An *all* selector.
+ * The <code>all</code> grouping dispatches messages to all instances of each
+ * component to which the component is connected. Thus, if a component has
+ * four instances, all four component workers will receive a copy of every
+ * message emitted to that component.<p>
  *
- * The *all* selector dispatches messages to all instances of a component.
- * Thus, if a component has four instances, all four component workers will
- * receive every message emitted to that component.
+ * Note that users should use the <code>allGrouping</code> {@link Input} method
+ * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman
  */

@@ -28,8 +28,6 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Vertigo event constants.
- *
  * Vertigo publishes events on the default Vert.x event bus when certain events
  * occur. These classes contain constants for event addresses and methods for
  * triggering specific events. Events are triggered by Vertigo. Users should
@@ -92,20 +90,24 @@ public final class Events {
   public static final class Network {
 
     /**
-     * Triggered when a network is deployed.
+     * Triggered when a network is deployed.<p>
      *
-     * Keys:
+     * Keys:<p>
+     * <pre>
      * - address: the network address
      * - network: a JSON representation of the network context
+     * </pre>
      */
     public static final String DEPLOY = "vertigo.network.deploy";
 
     /**
-     * A deploy event.
+     * A deploy event.<p>
      *
-     * Arguments:
+     * Arguments:<p>
+     * <pre>
      * - address: the network address
      * - context: the network context
+     * </pre>
      *
      * @author Jordan Halterman
      */
@@ -128,20 +130,24 @@ public final class Events {
     }
 
     /**
-     * Triggered when a network is started.
+     * Triggered when a network is started.<p>
      *
-     * Keys:
+     * Keys:<p>
+     * <pre>
      * - address: the address of the started network
      * - context: a JSON representation of the network context
+     * </pre>
      */
     public static final String START = "vertigo.network.start";
 
     /**
-     * A start event.
+     * A start event.<p>
      *
-     * Arguments:
+     * Arguments:<p>
+     * <pre>
      * - string: the network address
      * - context: the network context
+     * </pre>
      *
      * @author Jordan Halterman
      */
@@ -164,18 +170,22 @@ public final class Events {
     }
 
     /**
-     * Triggered when a network is shutdown.
+     * Triggered when a network is shutdown.<p>
      *
-     * Keys:
+     * Keys:<p>
+     * <pre>
      * - context: a JSON representation of the network context
+     * </pre>
      */
     public static final String SHUTDOWN = "vertigo.network.shutdown";
 
     /**
-     * A shutdown event.
+     * A shutdown event.<p>
      *
-     * Arguments:
+     * Arguments:<p>
+     * <pre>
      * - NetworkContext: the shutdown network context
+     * </pre>
      *
      * @author Jordan Halterman
      */
@@ -207,20 +217,24 @@ public final class Events {
   public static final class Component {
 
     /**
-     * Triggered when a component instance is deployed.
+     * Triggered when a component instance is deployed.<p>
      *
-     * Keys:
+     * Keys:<p>
+     * <pre>
      * - address: the component address
      * - context: a JSON representation of the component instance context
+     * </pre>
      */
     public static final String DEPLOY = "vertigo.component.deploy";
 
     /**
-     * A component deploy event.
+     * A component deploy event.<p>
      *
-     * Arguments:
+     * Arguments:<p>
+     * <pre>
      * - string: the component address
      * - context: the instance context
+     * </pre>
      *
      * @author Jordan Halterman
      */
@@ -243,20 +257,24 @@ public final class Events {
     }
 
     /**
-     * Triggered when a component instance is started.
+     * Triggered when a component instance is started.<p>
      *
-     * Keys:
+     * Keys:<p>
+     * <pre>
      * - address: the component address
      * - context: a JSON representation of the component instance context
+     * </pre>
      */
     public static final String START = "vertigo.component.start";
 
     /**
-     * A start event.
+     * A start event.<p>
      *
-     * Arguments:
+     * Arguments:<p>
+     * <pre>
      * - string: the component address
      * - context: the instance context
+     * </pre>
      *
      * @author Jordan Halterman
      */
@@ -279,20 +297,24 @@ public final class Events {
     }
 
     /**
-     * Triggered when a component instance is shut down.
+     * Triggered when a component instance is shut down.<p>
      *
-     * Keys:
+     * Keys:<p>
+     * <pre>
      * - address: the component address
      * - context: a JSON representation of the component instance context
+     * </pre>
      */
     public static final String SHUTDOWN = "vertigo.component.shutdown";
 
     /**
-     * A stop event.
+     * A stop event.<p>
      *
-     * Arguments:
+     * Arguments:<p>
+     * <pre>
      * - string: the component address
      * - context: the instance context
+     * </pre>
      *
      * @author Jordan Halterman
      */

@@ -28,7 +28,7 @@ import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializers;
 
 /**
- * A component input.
+ * A component input.<p>
  *
  * Inputs define a relationship between two components. Essentially, each input
  * represents a subscription of the component to another component's output.

@@ -19,9 +19,10 @@ import net.kuujo.vertigo.output.selector.RandomSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
- * A *random* selector.
+ * The <code>random</code> grouping dispatches messages to component workers randomly.<p>
  *
- * The *random* selector dispatches messages to component workers randomly.
+ * Note that users should use the <code>randomGrouping</code> {@link Input} method
+ * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman
  */

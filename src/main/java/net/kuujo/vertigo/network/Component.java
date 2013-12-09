@@ -37,7 +37,15 @@ import static net.kuujo.vertigo.util.Component.serializeType;
 import static net.kuujo.vertigo.util.Component.deserializeType;
 
 /**
- * A network component.
+ * A network component definition.<p>
+ *
+ * Components are the primary elements of processing in Vertigo. They can
+ * be represented as <code>feeders</code>, <code>executors</code>,
+ * <code>workers</code>, or even custom implementations. Each network may
+ * consist of any number of components, each of which may subscribe to the
+ * output of other components inside or outside of the network. Internally,
+ * components are represented as Vert.x modules or verticles. Just as with
+ * Vert.x modules and verticles, components may consist of several instances.<p>
  *
  * @author Jordan Haltermam
  */

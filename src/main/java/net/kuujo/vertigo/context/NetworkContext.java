@@ -26,7 +26,9 @@ import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializers;
 
 /**
- * A network context.
+ * A network context which contains information regarding the complete
+ * structure of a deployed network. Network contexts are immutable as
+ * they are constructed after a network is deployed.
  *
  * @author Jordan Halterman
  */

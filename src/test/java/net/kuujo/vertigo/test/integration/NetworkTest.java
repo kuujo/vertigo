@@ -17,14 +17,16 @@ package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.testtools.TestAckingFeeder;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
+import net.kuujo.vertigo.testtools.TestFailingExecutor;
 import net.kuujo.vertigo.testtools.TestFailingFeeder;
 import net.kuujo.vertigo.testtools.TestFailingWorker;
 import net.kuujo.vertigo.testtools.TestResultCheckingExecutor;
+import net.kuujo.vertigo.testtools.TestTimingOutExecutor;
+import net.kuujo.vertigo.testtools.TestTimingOutFeeder;
 import net.kuujo.vertigo.testtools.TestTimingOutWorker;
 
 import org.junit.Test;
@@ -44,12 +46,10 @@ import org.vertx.testtools.TestVerticle;
 public class NetworkTest extends TestVerticle {
 
   @Test
-  public void testBasicAckFeeder() {
+  public void testAckingFeeder() {
     Network network = new Network("test");
-    Component<?> feeder = TestAckingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!"));
-    network.addComponent(feeder);
-    network.addComponent(TestAckingWorker.createDefinition(2)).addInput(feeder.getAddress());
-
+    network.addFeeder("feeder", TestAckingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addWorker("worker", TestAckingWorker.class.getName()).addInput("feeder");
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
@@ -65,11 +65,10 @@ public class NetworkTest extends TestVerticle {
   }
 
   @Test
-  public void testBasicFailFeeder() {
+  public void testFailingFeeder() {
     Network network = new Network("test");
-    Component<?> feeder = TestFailingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!"));
-    network.addComponent(feeder);
-    network.addComponent(TestFailingWorker.createDefinition(2)).addInput(feeder.getAddress());
+    network.addFeeder("feeder", TestFailingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addWorker("worker", TestFailingWorker.class.getName()).addInput("feeder");
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
@@ -87,10 +86,9 @@ public class NetworkTest extends TestVerticle {
   @Test
   public void testTimingOutFeeder() {
     Network network = new Network("test");
-    Component<?> feeder = TestFailingFeeder.createDefinition(new JsonObject().putString("body", "Hello world!"));
-    network.addComponent(feeder);
-    network.addComponent(TestTimingOutWorker.createDefinition(2)).addInput(feeder.getAddress());
     network.setAckTimeout(1000);
+    network.addFeeder("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addWorker("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
@@ -106,14 +104,52 @@ public class NetworkTest extends TestVerticle {
   }
 
   @Test
-  public void testBasicExecutor() {
+  public void testAckingExecutor() {
     Network network = new Network("test");
     JsonObject data = new JsonObject().putString("body", "Hello world!");
-    Component<?> executor = TestResultCheckingExecutor.createDefinition(data, data);
-    Component<?> worker = TestAckingWorker.createDefinition();
-    network.addComponent(executor);
-    network.addComponent(worker).addInput(executor.getAddress());
-    executor.addInput(worker.getAddress());
+    network.addExecutor("executor", TestResultCheckingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
+    network.addWorker("worker", TestAckingWorker.class.getName()).addInput("executor");
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        }
+        else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testFailingExecutor() {
+    Network network = new Network("test");
+    JsonObject data = new JsonObject().putString("body", "Hello world!");
+    network.addExecutor("executor", TestFailingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
+    network.addWorker("worker", TestFailingWorker.class.getName()).addInput("executor");
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        }
+        else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testTimingOutExecutor() {
+    Network network = new Network("test");
+    network.setAckTimeout(1000);
+    JsonObject data = new JsonObject().putString("body", "Hello world!");
+    network.addExecutor("executor", TestTimingOutExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
+    network.addWorker("worker", TestTimingOutWorker.class.getName()).addInput("executor");
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override

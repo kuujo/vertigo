@@ -15,16 +15,14 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import java.util.UUID;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.FeederVerticle;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.network.Component;
+import net.kuujo.vertigo.runtime.FailureException;
+import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
@@ -35,24 +33,14 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  */
 public class TestFailingFeeder extends FeederVerticle {
 
-  /**
-   * Creates a fail checking feeder definition.
-   *
-   * @param data
-   *   The data to evaluate.
-   * @return
-   *   A component definition.
-   */
-  public static Component<Feeder> createDefinition(JsonObject data) {
-    return new Component<Feeder>(Feeder.class, UUID.randomUUID().toString(), TestFailingFeeder.class.getName()).setConfig(data);
-  }
-
   @Override
   public void start(Feeder feeder) {
     feeder.emit(container.config(), new Handler<AsyncResult<MessageId>>() {
       @Override
       public void handle(AsyncResult<MessageId> result) {
         assertTrue(result.failed());
+        assertTrue(result.cause() instanceof FailureException);
+        assertNotNull(result.result());
         testComplete();
       }
     });

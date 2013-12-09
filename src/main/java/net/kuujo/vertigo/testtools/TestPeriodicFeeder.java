@@ -23,7 +23,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.FeederVerticle;
-import net.kuujo.vertigo.network.Component;
 
 /**
  * A feeder that periodically feeds a network with randomly generated field values.
@@ -31,40 +30,12 @@ import net.kuujo.vertigo.network.Component;
  * @author Jordan Halterman
  */
 public class TestPeriodicFeeder extends FeederVerticle {
-
   private static final long DEFAULT_INTERVAL = 100;
-
-  /**
-   * Creates a periodic feeder definition.
-   *
-   * @param fields
-   *   An array of fields to generate when feeding.
-   * @return
-   *   A component definition.
-   */
-  public static Component<Feeder> createDefinition(String[] fields) {
-    return createDefinition(fields, DEFAULT_INTERVAL);
-  }
-
-  /**
-   * Creates a periodic feeder definition.
-   *
-   * @param fields
-   *   An array of fields to generate when feeding.
-   * @param interval
-   *   A feed interval in milliseconds. Defaults to 100 milliseconds.
-   * @return
-   *   A component definition.
-   */
-  public static Component<Feeder> createDefinition(String[] fields, long interval) {
-    return new Component<Feeder>(Feeder.class, UUID.randomUUID().toString(), TestPeriodicFeeder.class.getName())
-        .setConfig(new JsonObject().putArray("fields", new JsonArray(fields)).putNumber("interval", interval));
-  }
 
   @Override
   public void start(final Feeder feeder) {
     final JsonArray fields = container.config().getArray("fields");
-    final long interval = container.config().getLong("interval");
+    final long interval = container.config().getLong("interval", DEFAULT_INTERVAL);
     vertx.setPeriodic(interval, new Handler<Long>() {
       @Override
       public void handle(Long timerId) {

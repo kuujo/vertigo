@@ -19,7 +19,6 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
@@ -30,6 +29,8 @@ import net.kuujo.vertigo.testtools.TestTimingOutWorker;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
@@ -112,84 +113,56 @@ public class HooksTest extends TestVerticle {
   @Test
   public void testComponentStartHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestComponentHook("start"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network.addWorker("worker", TestAckingWorker.class.getName(), 2).addHook(new TestComponentHook("start")).addInput("feeder");
     deploy(network);
   }
 
   @Test
   public void testComponentEmitHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestComponentHook("emit"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("emit"));
+    network.addWorker("worker", TestAckingWorker.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 
   @Test
   public void testComponentReceivedHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestComponentHook("received"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network.addWorker("worker", TestAckingWorker.class.getName(), 2).addHook(new TestComponentHook("received")).addInput("feeder");
     deploy(network);
   }
 
   @Test
   public void testComponentAckHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestComponentHook("ack"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network.addWorker("worker", TestAckingWorker.class.getName(), 2).addHook(new TestComponentHook("ack")).addInput("feeder");
     deploy(network);
   }
 
   @Test
   public void testComponentFailHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestFailingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    worker1.addHook(new TestComponentHook("fail"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network.addWorker("worker", TestFailingWorker.class.getName(), 2).addHook(new TestComponentHook("fail")).addInput("feeder");
     deploy(network);
   }
 
   @Test
   public void testComponentAckedHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestComponentHook("acked"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("acked"));
+    network.addWorker("worker", TestAckingWorker.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 
   @Test
   public void testComponentFailedHook() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestFailingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestComponentHook("failed"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("failed"));
+    network.addWorker("worker", TestFailingWorker.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 
@@ -197,12 +170,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentTimeoutHook() {
     Network network = new Network("test");
     network.setAckTimeout(1000);
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestTimingOutWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    feeder.addHook(new TestComponentHook("timeout"));
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("timeout"));
+    network.addWorker("worker", TestTimingOutWorker.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 

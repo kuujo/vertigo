@@ -15,15 +15,12 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import java.util.UUID;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.java.ExecutorVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.rpc.Executor;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
@@ -35,21 +32,6 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  * @author Jordan Halterman
  */
 public class TestResultCheckingExecutor extends ExecutorVerticle {
-
-  /**
-   * Creates an ack checking feeder definition.
-   *
-   * @param input
-   *   The input data.
-   * @param output
-   *   The expected output data.
-   * @return
-   *   A component definition.
-   */
-  public static Component<Executor> createDefinition(JsonObject input, JsonObject output) {
-    return new Component<Executor>(Executor.class, UUID.randomUUID().toString(), TestResultCheckingExecutor.class.getName())
-        .setConfig(new JsonObject().putObject("input", input).putObject("output", output));
-  }
 
   @Override
   public void start(Executor executor) {

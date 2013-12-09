@@ -15,34 +15,32 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import java.util.Random;
-
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.java.FeederVerticle;
+import net.kuujo.vertigo.java.ExecutorVerticle;
+import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.rpc.Executor;
+import net.kuujo.vertigo.runtime.TimeoutException;
+import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.testComplete;
 
 /**
- * A feeder that feeder "random" test words to a network.
+ * A test executor that an execution timed out.
  *
  * @author Jordan Halterman
  */
-public class TestWordFeeder extends FeederVerticle {
-  private String field;
-  private String[] words;
-  private Random random = new Random();
+public class TestTimingOutExecutor extends ExecutorVerticle {
 
   @Override
-  public void start(final Feeder feeder) {
-    field = container.config().getString("field");
-    words = (String[]) container.config().getArray("words").toArray();
-    feeder.feedHandler(new Handler<Feeder>() {
+  public void start(Executor executor) {
+    executor.execute(container.config().getObject("input", new JsonObject()), new Handler<AsyncResult<JsonMessage>>() {
       @Override
-      public void handle(Feeder feeder) {
-        String word = words[random.nextInt(words.length)];
-        JsonObject data = new JsonObject().putString(field, word);
-        feeder.emit(data);
+      public void handle(AsyncResult<JsonMessage> result) {
+        assertTrue(result.failed());
+        assertTrue(result.cause() instanceof TimeoutException);
+        testComplete();
       }
     });
   }

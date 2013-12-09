@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import java.util.UUID;
-
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -28,28 +25,6 @@ import net.kuujo.vertigo.worker.Worker;
  * @author Jordan Halterman
  */
 public class TestFailingWorker extends WorkerVerticle {
-
-  /**
-   * Creates a failing worker definition.
-   *
-   * @return
-   *   A component definition.
-   */
-  public static Component<Worker> createDefinition() {
-    return createDefinition(1);
-  }
-
-  /**
-   * Creates a failing worker definition.
-   *
-   * @param instances
-   *   The number of instances.
-   * @return
-   *   A component definition.
-   */
-  public static Component<Worker> createDefinition(int instances) {
-    return new Component<Worker>(Worker.class, UUID.randomUUID().toString(), TestFailingWorker.class.getName()).setInstances(instances);
-  }
 
   @Override
   protected void handleMessage(JsonMessage message, Worker worker) {

@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 package net.kuujo.vertigo.testtools;
-
-import java.util.UUID;
-
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -29,31 +25,9 @@ import net.kuujo.vertigo.worker.Worker;
  */
 public class TestTimingOutWorker extends WorkerVerticle {
 
-  /**
-   * Creates an timeout worker definition.
-   *
-   * @return
-   *   A component definition.
-   */
-  public static Component<Worker> createDefinition() {
-    return createDefinition(1);
-  }
-
-  /**
-   * Creates an timeout worker definition.
-   *
-   * @param instances
-   *   The number of instances.
-   * @return
-   *   A component definition.
-   */
-  public static Component<Worker> createDefinition(int instances) {
-    return new Component<Worker>(Worker.class, UUID.randomUUID().toString(), TestTimingOutWorker.class.getName()).setInstances(instances);
-  }
-
   @Override
   protected void handleMessage(JsonMessage message, Worker worker) {
-    // Do nothing useful.
+    worker.emit(message);
   }
 
 }

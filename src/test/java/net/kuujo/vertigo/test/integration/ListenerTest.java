@@ -18,7 +18,6 @@ package net.kuujo.vertigo.test.integration;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.input.Listener;
-import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.impl.DefaultListener;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Component;
@@ -26,10 +25,13 @@ import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
+import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
@@ -47,21 +49,13 @@ public class ListenerTest extends TestVerticle {
   @Test
   public void testListener() {
     Network network = new Network("test");
-    final Component<?> feeder = TestPeriodicFeeder.createDefinition(new String[]{"body"});
-    final Component<?> worker1 = TestAckingWorker.createDefinition(2);
-    final Component<?> worker2 = TestAckingWorker.createDefinition(2);
-    final Component<?> worker3 = TestAckingWorker.createDefinition(2);
-    final Component<?> worker4 = TestAckingWorker.createDefinition(2);
-
-    network.addComponent(feeder);
-    network.addComponent(worker1).addInput(feeder.getAddress());
-    network.addComponent(worker2).addInput(feeder.getAddress());
-
-    worker3.addInput(worker1.getAddress());
-    worker3.addInput(worker2.getAddress());
-    network.addComponent(worker3);
-
-    network.addComponent(worker4).addInput(worker3.getAddress()).groupBy(new RandomGrouping());
+    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network.addWorker("worker1", TestAckingWorker.class.getName(), 2).addInput("feeder");
+    network.addWorker("worker2", TestAckingWorker.class.getName(), 2).addInput("feeder");
+    Component<Worker> worker3 = network.addWorker("worker3", TestAckingWorker.class.getName(), 2);
+    worker3.addInput("worker1");
+    worker3.addInput("worker2");
+    network.addWorker("worker4", TestAckingWorker.class.getName(), 2).addInput("worker3").randomGrouping();
 
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -72,11 +66,11 @@ public class ListenerTest extends TestVerticle {
         }
         else {
           assertTrue(result.succeeded());
-          Listener listener = new DefaultListener(worker3.getAddress(), vertx);
+          Listener listener = new DefaultListener("worker3", vertx);
           listener.messageHandler(new Handler<JsonMessage>() {
             @Override
             public void handle(JsonMessage message) {
-              assertEquals(feeder.getAddress(), message.source());
+              assertEquals("feeder", message.source());
               testComplete();
             }
           }).start();

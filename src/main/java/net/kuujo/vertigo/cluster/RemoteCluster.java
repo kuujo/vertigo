@@ -22,25 +22,26 @@ import org.vertx.java.platform.Verticle;
 import net.kuujo.vertigo.coordinator.RemoteCoordinator;
 
 /**
- * A Via-based cluster implementation.
+ * A remote cluster implementation.<p>
  *
- * The Via cluster supports deploying networks across a cluster of Vert.x instances
+ * The remote cluster supports deploying networks across a cluster of Vert.x instances
  * using an event bus based deployment mechanism. Rather than deploying modules
  * and verticles using the Vert.x container, Via sends messages to supervisors
  * on different Vert.x instances in a cluster, with each supervisor deploying
  * and monitoring modules and verticles within its own instance. This results in
  * a much more reliable network deployment as Via can reassign deployments to
- * new nodes when an existing node dies.
+ * new nodes when an existing node dies. See the Via documentation for deployment
+ * message structures.
  *
  * @author Jordan Halterman
  */
-public class ViaCluster extends AbstractCluster {
+public class RemoteCluster extends AbstractCluster {
 
-  public ViaCluster(Verticle verticle) {
+  public RemoteCluster(Verticle verticle) {
     super(verticle);
   }
 
-  public ViaCluster(Vertx vertx, Container container, String address) {
+  public RemoteCluster(Vertx vertx, Container container, String address) {
     super(vertx, container);
     coordinator = RemoteCoordinator.class.getName();
     this.master = address;

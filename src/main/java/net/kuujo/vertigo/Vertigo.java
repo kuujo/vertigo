@@ -21,7 +21,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.ViaCluster;
+import net.kuujo.vertigo.cluster.RemoteCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -156,7 +156,7 @@ public interface Vertigo<T extends Component<T>> {
   /**
    * Deploys a network via the Vert.x event bus.
    *
-   * Deployment is performed using a {@link ViaCluster} instance which communicates
+   * Deployment is performed using a {@link RemoteCluster} instance which communicates
    * module and verticle deployments over the event bus rather than performing
    * deployments directly using the Vert.x {@link Container}.C
    *
@@ -176,7 +176,7 @@ public interface Vertigo<T extends Component<T>> {
   /**
    * Deploys a network via the Vert.x event bus.
    *
-   * Deployment is performed using a {@link ViaCluster} instance which communicates
+   * Deployment is performed using a {@link RemoteCluster} instance which communicates
    * module and verticle deployments over the event bus rather than performing
    * deployments directly using the Vert.x {@link Container}.
    *

@@ -25,7 +25,7 @@ import org.vertx.java.platform.Verticle;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.ViaCluster;
+import net.kuujo.vertigo.cluster.RemoteCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -116,28 +116,28 @@ public final class DefaultVertigo<T extends Component<T>> implements Vertigo<T> 
 
   @Override
   public Vertigo<T> deployRemoteNetwork(String address, Network network) {
-    Cluster cluster = new ViaCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(vertx, container, address);
     cluster.deploy(network);
     return this;
   }
 
   @Override
   public Vertigo<T> deployRemoteNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
-    Cluster cluster = new ViaCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(vertx, container, address);
     cluster.deploy(network, doneHandler);
     return this;
   }
 
   @Override
   public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context) {
-    Cluster cluster = new ViaCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(vertx, container, address);
     cluster.shutdown(context);
     return this;
   }
 
   @Override
   public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
-    Cluster cluster = new ViaCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(vertx, container, address);
     cluster.shutdown(context, doneHandler);
     return this;
   }

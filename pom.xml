@@ -9,7 +9,7 @@
 
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>0.6.1-SNAPSHOT</version>
+  <version>0.6.1</version>
   <packaging>jar</packaging>
   <name>Vertigo</name>
   <description>A distributed event processing framework for Vert.x.</description>

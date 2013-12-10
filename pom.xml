@@ -143,19 +143,18 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${maven.assembly.plugin.version}</version>
         <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>src/main/assembly/mod.xml</descriptor>
-          </descriptors>
           <attach>true</attach>
         </configuration>
         <executions>
           <execution>
-            <id>create-distribution</id>
+            <id>mod</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <descriptor>src/main/assembly/mod.xml</descriptor>
+            </configuration>
           </execution>
         </executions>
       </plugin>

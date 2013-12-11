@@ -1,6 +1,8 @@
 Vert.igo
 ========
 
+**Need support? Check out the [Vert.x Google Group](https://groups.google.com/forum/#!forum/vertx-vertigo)**
+
 **[Java User Manual](https://github.com/kuujo/vertigo/wiki/Java-User-Manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
 
 Vertigo is a distributed event processing framework built on the
@@ -29,7 +31,7 @@ communication between components in a **predictable and reliable** manner.
   and [Python](https://github.com/kuujo/vertigo-python)
 * Integrates seemlessly with existing Vert.x applications
 
-### Vertigo 0.6 is almost here!
+### Vertigo 0.6 is here!
 Vertigo 0.6.0 features significant API and performance improvements and will be
 released along with fully functional [Javascript](https://github.com/kuujo/vertigo-js)
 and [Python](https://github.com/kuujo/vertigo-python) APIs. This version will signify
@@ -128,3 +130,5 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
   "includes": "net.kuujo~vertigo~0.6.0"
 }
 ```
+
+**Need support? Check out the [Vert.x Google Group](https://groups.google.com/forum/#!forum/vertx-vertigo)**

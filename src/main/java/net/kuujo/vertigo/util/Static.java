@@ -71,8 +71,9 @@ public final class Static {
    *   The current component type as a string, or null if the current context
    *   is not a Vertigo component.
    */
-  public static String type() {
-    InstanceContext context = context();
+  public static String type(Vertx vertx, Container container) {
+    init(vertx, container);
+    InstanceContext context = context(vertx, container);
     if (context != null) {
       return Component.serializeType(context.getComponent().getType());
     }
@@ -85,7 +86,8 @@ public final class Static {
    * @return
    *   The current instance context or null if the current context is not a component.
    */
-  public static InstanceContext context() {
+  public static InstanceContext context(Vertx vertx, Container container) {
+    init(vertx, container);
     return vertigo.context();
   }
 
@@ -95,7 +97,8 @@ public final class Static {
    * @return
    *   The current verticle component or null if the current context is not a component.
    */
-  public static net.kuujo.vertigo.component.Component component() {
+  public static net.kuujo.vertigo.component.Component component(Vertx vertx, Container container) {
+    init(vertx, container);
     return vertigo.component();
   }
 

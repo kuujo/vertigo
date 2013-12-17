@@ -17,7 +17,6 @@ package net.kuujo.vertigo.input.impl;
 
 import java.util.UUID;
 
-import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -52,8 +51,6 @@ public class DefaultListener implements Listener {
   private Future<Void> startFuture;
   private long pollTimer;
   private static final long POLL_INTERVAL = 1000;
-  private long timeoutTimer;
-  private static final long START_TIMEOUT = 30000;
 
   public DefaultListener(String address, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
@@ -196,13 +193,6 @@ public class DefaultListener implements Listener {
 
   @Override
   public Listener start() {
-    timeoutTimer = vertx.setTimer(START_TIMEOUT, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        stop();
-      }
-    });
-
     eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -227,15 +217,6 @@ public class DefaultListener implements Listener {
   @Override
   public Listener start(Handler<AsyncResult<Void>> doneHandler) {
     startFuture = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    // Set a start timeout timer that will be cancelled once the input is started.
-    timeoutTimer = vertx.setTimer(START_TIMEOUT, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        stop();
-        startFuture.setFailure(new VertigoException("Failed to start listener."));
-      }
-    });
-
     eventBus.registerHandler(address, handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -279,10 +260,6 @@ public class DefaultListener implements Listener {
    * Finishes starting the input.
    */
   private void completeStart(String id) {
-    if (timeoutTimer > 0) {
-      vertx.cancelTimer(timeoutTimer);
-      timeoutTimer = 0;
-    }
     if (startFuture != null) {
       startFuture.setResult(null);
       startFuture = null;

@@ -113,6 +113,10 @@ public class DefaultAcker implements Acker {
       eventBus.send(messageId.auditor(), new JsonObject().putString("action", "create")
           .putObject("id", messageId.toJson()).putArray("children", messageIdsToArray(messageIds)));
     }
+    else {
+      eventBus.send(messageId.auditor(), new JsonObject().putString("action", "create")
+          .putObject("id", messageId.toJson()));
+    }
     return this;
   }
 

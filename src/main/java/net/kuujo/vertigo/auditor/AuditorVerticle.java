@@ -77,13 +77,13 @@ public final class AuditorVerticle extends BusModBase {
         String action = body.getString("action");
         switch (action) {
           case "create":
-            doCreate(message);
+            doCreate(body);
             break;
           case "ack":
-            doAck(message);
+            doAck(body);
             break;
           case "fail":
-            doFail(message);
+            doFail(body);
             break;
           default:
             break;
@@ -95,12 +95,13 @@ public final class AuditorVerticle extends BusModBase {
   /**
    * Creates a message.
    */
-  private void doCreate(Message<JsonObject> message) {
-    JsonObject info = message.body().getObject("id");
+  private void doCreate(JsonObject body) {
+    JsonObject info = body.getObject("id");
     if (info != null) {
       MessageId id = DefaultMessageId.fromJson(info);
-      JsonArray children = message.body().getArray("children");
+      JsonArray children = body.getArray("children");
       if (children == null) {
+        complete(id);
         return;
       }
 
@@ -114,13 +115,13 @@ public final class AuditorVerticle extends BusModBase {
   /**
    * Acks a message.
    */
-  private void doAck(Message<JsonObject> message) {
-    JsonObject info = message.body().getObject("id");
+  private void doAck(JsonObject body) {
+    JsonObject info = body.getObject("id");
     if (info != null) {
       // It's very important that this be done in this order. Child message IDs
       // must be stored by calling fork() *prior* to acking the given message ID.
       MessageId id = DefaultMessageId.fromJson(info);
-      JsonArray children = message.body().getArray("children");
+      JsonArray children = body.getArray("children");
       if (children != null) {
         for (Object child : children) {
           auditor.fork(DefaultMessageId.fromJson((JsonObject) child));
@@ -133,8 +134,8 @@ public final class AuditorVerticle extends BusModBase {
   /**
    * Fails a message.
    */
-  private void doFail(Message<JsonObject> message) {
-    JsonObject info = message.body().getObject("id");
+  private void doFail(JsonObject body) {
+    JsonObject info = body.getObject("id");
     if (info != null) {
       auditor.fail(DefaultMessageId.fromJson(info));
     }

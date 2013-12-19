@@ -91,7 +91,7 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   /**
    * Called when the component has been started.
    *
-   * This method differs from the normal {@link start() start} method in that
+   * This method differs from the normal {@link #start()} method in that
    * this method will be called *after* all other start methods. This is because
    * this method is actually called once the component has connected to all of
    * its interested trading partners.

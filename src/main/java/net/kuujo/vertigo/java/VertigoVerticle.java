@@ -32,7 +32,6 @@ import org.vertx.java.platform.Verticle;
  *
  * <pre>
  * public class MyVerticle extends VertigoVerticle {
- *   @Override
  *   public void start() {
  *     Network network = vertigo.createNetwork("my_network");
  *     network.addFeeder("foo.bar", "foobar.py");

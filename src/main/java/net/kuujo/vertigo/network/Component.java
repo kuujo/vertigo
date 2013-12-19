@@ -306,7 +306,7 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    *   A component hook.
    * @return
    *   The called component instance.
-   * @see {@link ComponentHook}
+   * @see ComponentHook
    */
   public Component<T> addHook(ComponentHook hook) {
     hooks.add(hook);

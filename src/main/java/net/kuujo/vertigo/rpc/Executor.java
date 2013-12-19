@@ -22,6 +22,8 @@ import org.vertx.java.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.runtime.FailureException;
+import net.kuujo.vertigo.runtime.TimeoutException;
 
 /**
  * A network executor.
@@ -75,7 +77,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Sets the maximum execution queue size.
    *
-   * Use the {@link setExecuteQueueMaxSize(long) setExecuteQueueMaxSize} method.
+   * Use the {@link #setExecuteQueueMaxSize(long)} method.
    *
    * @param maxSize
    *   The maximum queue size allowed for the executor.
@@ -88,7 +90,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Gets the maximum execution queue size.
    *
-   * Use the {@link getExecuteQueueMaxSize() getExecuteQueueMaxSize} method.
+   * Use the {@link #getExecuteQueueMaxSize()} method.
    *
    * @return
    *   The maximum queue size allowed for the executor.
@@ -117,7 +119,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Indicates whether the execution queue is full.
    *
-   * Use the {@link executeQueueFull() executeQueueFull} method.
+   * Use the {@link #executeQueueFull()} method.
    *
    * @return
    *   A boolean indicating whether the execution queue is full.
@@ -160,7 +162,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Sets the number of automatic retry attempts for a single timed out message.
    *
-   * Use the {@link setAutoRetryAttempts(int) setAutoRetryAttempts} method.
+   * Use the {@link #setAutoRetryAttempts(int)} method.
    *
    * @param attempts
    *   The number of retry attempts allowed. If attempts is -1 then an infinite
@@ -174,7 +176,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Gets the number of automatic retry attempts.
    *
-   * Use the {@link getAutoRetryAttempts() getAutoRetryAttempts} method.
+   * Use the {@link #getAutoRetryAttempts()} method.
    *
    * @return
    *   Indicates the number of retry attempts allowed for the executor.
@@ -204,7 +206,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Sets the execute delay.
    *
-   * Use the {@link setExecuteInterval(long) setExecuteInterval} method.
+   * Use the {@link #setExecuteInterval(long)} method.
    *
    * @param delay
    *   The empty execute delay.
@@ -217,7 +219,7 @@ public interface Executor extends Component<Executor> {
   /**
    * Gets the execute delay.
    *
-   * Use the {@link getExecuteInterval() getExecuteInterval} method.
+   * Use the {@link #getExecuteInterval()} method.
    *
    * @return
    *   The empty executor delay.

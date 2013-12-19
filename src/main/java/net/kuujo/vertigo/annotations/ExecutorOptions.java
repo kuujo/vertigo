@@ -24,20 +24,7 @@ import java.lang.annotation.RetentionPolicy;
  * Options for Java executor verticles.<p>
  *
  * Use this annotation on any executor verticle implementation. Vertigo will
- * automatically handle setup of the internal executor prior to starting it.<p>
- *
- * <pre>
- * @ExecutorOptions(autoRetry=true)
- * public class MyExecutor extends ExecutorVerticle {
- *   public void start(Executor executor) {
- *     executor.emit(new JsonObject().putString("foo", "bar"), new Handler<AsyncResult<JsonMessage>>() {
- *       public void handle(AsyncResult<JsonMessage> result) {
- *         ...
- *       }
- *     });
- *   }
- * }
- * </pre>
+ * automatically handle setup of the internal executor prior to starting it.
  *
  * @author Jordan Halterman
  */

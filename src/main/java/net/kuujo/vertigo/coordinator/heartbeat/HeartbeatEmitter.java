@@ -28,7 +28,7 @@ public interface HeartbeatEmitter {
    * @param address
    *   The address to which to emit heartbeats.
    * @return
-   *   The called monitor instance.
+   *   The heartbeat emitter instance.
    */
   HeartbeatEmitter setAddress(String address);
 
@@ -47,6 +47,7 @@ public interface HeartbeatEmitter {
    *   The heartbeat interval. This is the interval at which heartbeats will
    *   be emitted.
    * @return
+   *   The heartbeat emitter instance.
    */
   HeartbeatEmitter setInterval(long interval);
 

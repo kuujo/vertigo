@@ -40,8 +40,6 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  * An abstract executor implementation.
  *
  * @author Jordan Halterman
- *
- * @param <T> The executor type
  */
 public class BasicExecutor extends AbstractComponent<Executor> implements Executor {
   private Handler<Executor> executeHandler;

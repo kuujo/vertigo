@@ -21,6 +21,8 @@ import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.runtime.FailureException;
+import net.kuujo.vertigo.runtime.TimeoutException;
 
 /**
  * A message feeder.
@@ -39,7 +41,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Sets the maximum feed queue size.
    *
-   * Use the {@link setFeedQueueMaxSize(long) setFeedQueueMaxSize} method.
+   * Use the {@link #setFeedQueueMaxSize(long)} method.
    *
    * @param maxSize
    *   The maximum queue size allowed for the feeder.
@@ -52,7 +54,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Gets the maximum feed queue size.
    *
-   * Use the {@link getFeedQueueMaxSize() getFeedQueueMaxSize} method.
+   * Use the {@link #getFeedQueueMaxSize()} method.
    *
    * @return
    *   The maximum queue size allowed for the feeder.
@@ -89,7 +91,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Indicates whether the feed queue is full.
    *
-   * Use the {@link feedQueueFull() feedQueueFull} method.
+   * Use the {@link #feedQueueFull()} method.
    *
    * @return
    *   A boolean indicating whether the feed queue is full.
@@ -137,7 +139,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Sets the number of automatic retry attempts for a single timed out message.
    *
-   * Use the {@link setAutoRetryAttempts(int) setAutoRetryAttempts} method.
+   * Use the {@link #setAutoRetryAttempts(int)} method.
    *
    * @param attempts
    *   The number of retry attempts allowed. If attempts is -1 then an infinite
@@ -151,7 +153,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Gets the number of automatic retry attempts.
    *
-   * Use the {@link getAutoRetryAttempts() getAutoRetryAttempts} method.
+   * Use the {@link #getAutoRetryAttempts()} method.
    *
    * @return
    *   Indicates the number of retry attempts allowed for the feeder.
@@ -181,7 +183,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Sets the feed interval.
    *
-   * Use the {@link setFeedInterval(long) setFeedInterval} method.
+   * Use the {@link #setFeedInterval(long)} method.
    *
    * @param delay
    *   The empty feed delay.
@@ -194,7 +196,7 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Gets the feed interval.
    *
-   * Use the {@link getFeedInterval() getFeedInterval} method.
+   * Use the {@link #getFeedInterval()} method.
    *
    * @return
    *   The empty feed delay.
@@ -212,7 +214,7 @@ public interface Feeder extends Component<Feeder> {
    *   The empty feed interval.
    * @return
    *   The called feeder instance.
-   * @see {@link feedHandler(Handler<Feeder>) feedHandler}
+   * @see #feedHandler(Handler)
    */
   Feeder setFeedInterval(long interval);
 
@@ -224,7 +226,7 @@ public interface Feeder extends Component<Feeder> {
    *
    * @return
    *   The empty feed interval.
-   * @see {@link feedHandler(Handler<Feeder>) feedHandler}
+   * @see #feedHandler(Handler)
    */
   long getFeedInterval();
 

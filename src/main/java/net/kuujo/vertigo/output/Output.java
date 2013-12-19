@@ -25,8 +25,8 @@ import net.kuujo.vertigo.serializer.Serializable;
  *
  * The output is the polar opposite of the {@link Input}. When a {@link Listener}
  * subscribes to output from a component, its {@link Input} is transformed into
- * an {@link Output}, which indicates the {@link Selector} and {@link Condition}s
- * that are to be used in emitted messages to that input.
+ * an {@link Output}, which indicates the {@link Selector} that is to be used in
+ * emitted messages to that input.
  *
  * @author Jordan Halterman
  */

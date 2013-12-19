@@ -36,26 +36,6 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  *
  * To configure the internal feeder, use the <code>@FeederOptions</code> annotation.<p>
  *
- * <pre>
- * @FeederOptions(autoRetry=true)
- * public class MyFeederVerticle extends RichFeederVerticle {
- * 
- * }
- * </pre>
- * <p>
- * The feeder can be used in one of two ways, either override the {@link nextMessage() nextMessage}
- * method to emit messages from the feeder or override the {@link start(Feeder) start}
- * method to operate on the feeder directly.<p>
- *
- * <pre>
- * @FeederOptions(autoRetry=true)
- * public class MyFeederVerticle extends RichFeederVerticle {
- *   @Override
- *   public void nextMessage() {
- *     emit(new JsonObject().putString("foo", "bar"));
- *   }
- * }
- * </pre>
  * @author Jordan Halterman
  */
 public abstract class RichFeederVerticle extends ComponentVerticle<Feeder> {

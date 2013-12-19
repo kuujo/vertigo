@@ -61,9 +61,8 @@ public interface VertigoFactory {
    *
    * @param component
    *   The current component instance.
-   * @param context
-   *   The current component context.
    * @return
+   *   A Vertigo instance which contains the current component instance.
    */
   <T extends Component<T>> Vertigo<T> createVertigo(T component);
 

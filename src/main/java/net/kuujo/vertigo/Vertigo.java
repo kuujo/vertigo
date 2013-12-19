@@ -45,7 +45,7 @@ public interface Vertigo<T extends Component<T>> {
   /**
    * Indicates whether the current Vertigo instance is a component instance.
    * If this is a component instance then the component will be available via
-   * the {@link component() component} method.
+   * the {@link #component()} method.
    *
    * @return
    *   Whether the current instance is a component.
@@ -158,7 +158,7 @@ public interface Vertigo<T extends Component<T>> {
    *
    * Deployment is performed using a {@link RemoteCluster} instance which communicates
    * module and verticle deployments over the event bus rather than performing
-   * deployments directly using the Vert.x {@link Container}.C
+   * deployments directly using the Vert.x {@link Container}.
    *
    * @param address
    *   The address to which to communicate component deployments. This address

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.input.grouping;
 
 import net.kuujo.vertigo.output.selector.RoundSelector;
 import net.kuujo.vertigo.output.selector.Selector;
+import net.kuujo.vertigo.input.Input;
 
 /**
  * The round grouping dispatches messages to workers in a round-robin

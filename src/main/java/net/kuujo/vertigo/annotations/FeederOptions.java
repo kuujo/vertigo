@@ -24,16 +24,7 @@ import java.lang.annotation.RetentionPolicy;
  * Options for Java feeder verticles.<p>
  *
  * Use this annotation on any feeder verticle implementation. Vertigo will
- * automatically handle setup of the internal feeder prior to starting it.<p>
- *
- * <pre>
- * @FeederOptions(autoRetry=true, autoRetryAttempts=3)
- * public class MyFeeder extends FeederVerticle {
- *   public void start(Feeder feeder) {
- *     feeder.emit(new JsonObject().putString("foo", "bar"));
- *   }
- * }
- * </pre>
+ * automatically handle setup of the internal feeder prior to starting it.
  *
  * @author Jordan Halterman
  */

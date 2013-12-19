@@ -44,7 +44,7 @@ public final class Factory {
    *   A Vertigo instance. If the current Vert.x verticle is a Vertigo component
    *   then the Vertigo instance will contain the component and context.
    */
-  public static Vertigo getInstance(Vertx vertx, Container container) {
+  public static Vertigo createVertigo(Vertx vertx, Container container) {
     VertigoFactory vertigoFactory = new DefaultVertigoFactory(vertx, container);
     InstanceContext context = Context.parseContext(container.config());
     if (context != null) {

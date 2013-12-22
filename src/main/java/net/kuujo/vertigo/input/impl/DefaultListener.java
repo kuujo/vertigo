@@ -22,7 +22,7 @@ import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -40,7 +40,7 @@ import org.vertx.java.core.logging.Logger;
  * @author Jordan Halterman
  */
 public class DefaultListener implements Listener {
-  private final Serializer serializer = Serializers.getDefault();
+  private final Serializer<Input> serializer = SerializerFactory.getSerializer(Input.class);
   private final String address;
   private final String statusAddress;
   private final Input input;

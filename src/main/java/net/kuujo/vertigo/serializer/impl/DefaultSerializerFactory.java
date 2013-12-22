@@ -15,6 +15,11 @@
  */
 package net.kuujo.vertigo.serializer.impl;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.SerializerFactory;
 
@@ -23,11 +28,62 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
  *
  * @author Jordan Halterman
  */
-public class DefaultSerializerFactory implements SerializerFactory {
+public class DefaultSerializerFactory extends SerializerFactory {
+  private final Map<Class<?>, Class<?>> serializers = new HashMap<>();
+
+  /**
+   * Adds a type-specific serializer.
+   *
+   * The serializer must have a one-argument constructor that accepts the
+   * serializable type, as is provided in the abstract {@link Serializer} class.
+   * By default, this method can be accessed via the singleton factory instance:<p>
+   *
+   * <pre>
+   * SerializerFactory.getInstance().addSerializer(SomeClass.class, SomeClassSerializer.class);
+   * </pre>
+   *
+   * @param type
+   *   The serializable type.
+   * @param serializer
+   *   The serializer class to add.
+   * @return
+   *   The serializer factory.
+   */
+  public <T1 extends Serializable, T2 extends Serializer<T1>> DefaultSerializerFactory addSerializer(Class<T1> type, Class<T2> serializer) {
+    serializers.put(type, serializer);
+    return this;
+  }
+
+  /**
+   * Removes a type-specific serializer.
+   *
+   * @param type
+   *   The serializable type.
+   * @param serializer
+   *   The serializer class to remove.
+   * @return
+   *   The serializer factory.
+   */
+  public <T1 extends Serializable, T2 extends Serializer<T1>> DefaultSerializerFactory removeSerializer(Class<T1> type, Class<T2> serializer) {
+    if (serializers.containsKey(type) && serializers.get(type).equals(serializer)) {
+      serializers.remove(type);
+    }
+    return this;
+  }
 
   @Override
-  public Serializer createSerializer() {
-    return new DefaultSerializer();
+  @SuppressWarnings("unchecked")
+  public <T extends Serializable> Serializer<T> createSerializer(Class<T> type) {
+    if (serializers.containsKey(type)) {
+      try {
+        return (Serializer<T>) serializers.get(type).getDeclaredConstructor(new Class<?>[]{type.getClass()}).newInstance(type);
+      }
+      catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+          | NoSuchMethodException | SecurityException e) {
+        return new DefaultSerializer<T>(type);
+      }
+    }
+    return new DefaultSerializer<T>(type);
   }
 
 }

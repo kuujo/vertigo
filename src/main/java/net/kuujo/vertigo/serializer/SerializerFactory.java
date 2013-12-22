@@ -15,19 +15,91 @@
  */
 package net.kuujo.vertigo.serializer;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import net.kuujo.vertigo.serializer.impl.DefaultSerializerFactory;
+
 /**
- * A serializer factory.
+ * A serializer factory.<p>
+ *
+ * This class is the primary interface to object serialization in Vertigo. Use
+ * this class to load type-specific serializers as follows:<p>
+ *
+ * <pre>
+ * JsonObject json = SerializerFactory.getSerializer(MyClass.class).serialize(myClassObj);
+ * </pre>
+ * <p>
+ *
+ * In order to serialize an object with the default serializer, classes must
+ * implement the {@link Serializable} interface. In most cases, the default serializer
+ * will automatically serialize all primitives, collections, and {@link Serializable}
+ * properties within the serializable object. For more advanced serialization, look
+ * at the Jackson annotations documentation.
  *
  * @author Jordan Halterman
  */
-public interface SerializerFactory {
+public abstract class SerializerFactory {
+  private static final String SERIALIZER_FACTORY_CLASS_NAME = "net.kuujo.vertigo.serializer-factory";
+  private static SerializerFactory instance;
+  @SuppressWarnings("rawtypes")
+  private static Map<Class, Serializer> serializers = new HashMap<>();
 
   /**
-   * Creates a new serializer instance.
+   * Gets a singleton serializer factory instance.
    *
    * @return
-   *   A new serializer.
+   *   The current serializer factory instance.
    */
-  Serializer createSerializer();
+  public static SerializerFactory getInstance() {
+    if (instance == null) {
+      String className = DefaultSerializerFactory.class.getName();
+      try {
+        className = System.getProperty(SERIALIZER_FACTORY_CLASS_NAME);
+      }
+      catch (Exception e) {}
+
+      if (className != null) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try {
+          Class<?> clazz = loader.loadClass(className);
+          instance = (SerializerFactory) clazz.newInstance();
+        }
+        catch (Exception e) {
+          throw new IllegalArgumentException("Error instantiating serializer factory.");
+        }
+      }
+      else {
+        instance = new DefaultSerializerFactory();
+      }
+    }
+    return instance;
+  }
+
+  /**
+   * Gets a serializer instance.
+   *
+   * @param type
+   *   The serializer type.
+   * @return
+   *   A serializer instance.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends Serializable> Serializer<T> getSerializer(Class<T> type) {
+    if (!serializers.containsKey(type)) {
+      serializers.put(type, getInstance().createSerializer(type));
+    }
+    return serializers.get(type);
+  }
+
+  /**
+   * Creates a serializer.
+   *
+   * @param type
+   *   The serializer type.
+   * @return
+   *   A serializer instance.
+   */
+  public abstract <T extends Serializable> Serializer<T> createSerializer(Class<T> type);
 
 }

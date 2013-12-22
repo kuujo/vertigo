@@ -25,7 +25,7 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 
 /**
  * A component input.<p>
@@ -157,7 +157,7 @@ public final class Input implements Serializable {
    */
   public Input groupBy(String grouping) {
     try {
-      this.grouping = Serializers.getDefault().deserialize(new JsonObject().putString("type", grouping), Grouping.class);
+      this.grouping = SerializerFactory.getSerializer(Grouping.class).deserialize(new JsonObject().putString("type", grouping));
     }
     catch (Exception e) {
       throw new IllegalArgumentException("Invalid input grouping type " + grouping);

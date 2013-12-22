@@ -15,39 +15,65 @@
  */
 package net.kuujo.vertigo.serializer;
 
+import net.kuujo.vertigo.serializer.impl.DefaultSerializerFactory;
+
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A Vertigo object serializer.
+ * A base serializer.<p>
+ *
+ * Serializers in Vertigo are type specific. This means that different serializers
+ * may be provided for different types of objects. To register type-specific
+ * serializers see the {@link DefaultSerializerFactory}.
  *
  * @author Jordan Halterman
  */
-public interface Serializer {
+public abstract class Serializer<T extends Serializable> {
+  protected final Class<T> type;
+
+  public Serializer(Class<T> type) {
+    this.type = type;
+  }
 
   /**
-   * Serializes an object.
+   * Gets the serializer type.
+   *
+   * @return
+   *   The serializable type.
+   */
+  public Class<T> type() {
+    return type;
+  }
+
+  /**
+   * Serializes an object to Json. If an error occurs during serialization, a
+   * {@link SerializationException} will be thrown.
    *
    * @param object
    *   The object to serialize.
    * @return
-   *   The serialized object.
+   *   A Json representation of the serializable object.
    * @throws SerializationException
-   *   If serialization fails.
+   *   If an error occurs during serialization.
    */
-  JsonObject serialize(Serializable object) throws SerializationException;
+  public abstract JsonObject serialize(T object);
 
   /**
-   * Deserializes an object.
+   * Deserializes an object from Json. If an error occurs during deserialization, a
+   * {@link DeserializationException} will be thrown.
    *
-   * @param serialized
-   *   The serialized object.
-   * @param type
-   *   The deserialization type.
+   * @param json
+   *   A Json representation of the serializable object.
    * @return
    *   The deserialized object.
-   * @throws SerializationException
-   *   If deserialization fails.
+   * @throws DeserializationException
+   *   If an error occurs during deserialization.
    */
-  <T extends Serializable> T deserialize(JsonObject serialized, Class<T> type) throws SerializationException;
+  public abstract T deserialize(JsonObject json);
+
+  @Deprecated
+  public T deserialize(JsonObject json, Class<T> type) {
+    return deserialize(json);
+  }
 
 }

@@ -30,7 +30,7 @@ import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 import static net.kuujo.vertigo.util.Component.isModuleName;
 import static net.kuujo.vertigo.util.Component.isVerticleMain;
 import static net.kuujo.vertigo.util.Component.serializeType;
@@ -83,7 +83,7 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
   @SuppressWarnings("unchecked")
   public static <T extends net.kuujo.vertigo.component.Component<T>> Component<T> fromJson(JsonObject json) throws MalformedNetworkException {
     try {
-      return Serializers.getDefault().deserialize(json, Component.class);
+      return SerializerFactory.getSerializer(Component.class).deserialize(json);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

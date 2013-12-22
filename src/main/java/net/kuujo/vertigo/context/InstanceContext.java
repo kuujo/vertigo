@@ -18,7 +18,7 @@ package net.kuujo.vertigo.context;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -50,8 +50,8 @@ public final class InstanceContext<T extends Component> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public static <T extends Component<T>> InstanceContext<T> fromJson(JsonObject context) {
-    Serializer serializer = Serializers.getDefault();
-    InstanceContext<T> instance = serializer.deserialize(context.getObject("instance"), InstanceContext.class);
+    Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
+    InstanceContext<T> instance = serializer.deserialize(context.getObject("instance"));
     ComponentContext<T> component = ComponentContext.fromJson(context);
     return instance.setParent(component);
   }
@@ -65,7 +65,7 @@ public final class InstanceContext<T extends Component> implements Serializable 
    *   A Json representation of the instance context.
    */
   public static JsonObject toJson(InstanceContext<?> context) {
-    Serializer serializer = Serializers.getDefault();
+    Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
     JsonObject json = ComponentContext.toJson(context.getComponent());
     return json.putObject("instance", serializer.serialize(context));
   }

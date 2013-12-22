@@ -28,7 +28,7 @@ import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
@@ -83,10 +83,10 @@ public class SerializerTest {
     network.addFeeder("1", "1.py", 2).addHook(new EventBusHook());
     network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
-    Serializer serializer = Serializers.getDefault();
+    Serializer<Network> serializer = SerializerFactory.getSerializer(Network.class);
     try {
       JsonObject serialized = serializer.serialize(network);
-      Network deserialized = serializer.deserialize(serialized, Network.class);
+      Network deserialized = serializer.deserialize(serialized);
       assertTrue(deserialized.isAckingEnabled());
       assertEquals(10000, deserialized.getAckTimeout());
       assertEquals("test", deserialized.getAddress());
@@ -126,9 +126,9 @@ public class SerializerTest {
       assertNotNull(instance);
       assertNotNull(instance.id());
 
-      Serializer serializer = Serializers.getDefault();
+      Serializer<NetworkContext> serializer = SerializerFactory.getSerializer(NetworkContext.class);
       JsonObject serialized = serializer.serialize(context);
-      serializer.deserialize(serialized, NetworkContext.class);
+      serializer.deserialize(serialized);
     }
     catch (MalformedNetworkException | SerializationException e) {
       fail(e.getMessage());

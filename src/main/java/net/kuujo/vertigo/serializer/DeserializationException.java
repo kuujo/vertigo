@@ -16,28 +16,17 @@
 package net.kuujo.vertigo.serializer;
 
 /**
- * Static helper methods for serialization.
+ * A deserialization exception.<p>
+ *
+ * This exception is thrown when an error occurs in deserialization.
  *
  * @author Jordan Halterman
  */
-@Deprecated
-public class Serializers {
+@SuppressWarnings("serial")
+public class DeserializationException extends SerializationException {
 
-  @Deprecated
-  @SuppressWarnings("unchecked")
-  public static <T extends Serializable> Serializer<T> getDefault() {
-    return (Serializer<T>) SerializerFactory.getSerializer(Serializable.class);
-  }
-
-  @Deprecated
-  @SuppressWarnings("unchecked")
-  public static <T extends Serializable> Serializer<T> getSerializer(String name) {
-    try {
-      return (Serializer<T>) SerializerFactory.getSerializer((Class<T>) Class.forName(name));
-    }
-    catch (ClassNotFoundException e) {
-      return null;
-    }
+  public DeserializationException(String message) {
+    super(message);
   }
 
 }

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.util;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 
 /**
  * Context utilities.
@@ -38,7 +38,7 @@ public final class Context {
    *   The updated configuration object.
    */
   public static JsonObject storeContext(InstanceContext<?> context, JsonObject config) {
-    JsonObject serialized = Serializers.getDefault().serialize(context);
+    JsonObject serialized = SerializerFactory.getSerializer(InstanceContext.class).serialize(context);
     return config.putObject("__context__", serialized);
   }
 

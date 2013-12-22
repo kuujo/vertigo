@@ -23,7 +23,7 @@ import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 
 /**
  * A context builder.
@@ -31,7 +31,6 @@ import net.kuujo.vertigo.serializer.Serializers;
  * @author Jordan Halterman
  */
 public final class ContextBuilder {
-  private static final Serializer serializer = Serializers.getDefault();
 
   /**
    * Builds a network context from a network definition.
@@ -45,6 +44,7 @@ public final class ContextBuilder {
    */
   public static NetworkContext buildContext(Network network) throws MalformedNetworkException {
     try {
+      Serializer<Network> serializer = SerializerFactory.getSerializer(Network.class);
       JsonObject serialized = serializer.serialize(network);
       JsonArray auditors = new JsonArray();
       for (int i = 1; i < network.getNumAuditors()+1; i++) {
@@ -62,7 +62,7 @@ public final class ContextBuilder {
         }
         component.putArray("instances", instances);
       }
-      return serializer.deserialize(serialized, NetworkContext.class);
+      return SerializerFactory.getSerializer(NetworkContext.class).deserialize(serialized);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

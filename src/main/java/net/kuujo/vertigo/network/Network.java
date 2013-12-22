@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.worker.Worker;
@@ -68,7 +68,7 @@ public final class Network implements Serializable {
    */
   public static Network fromJson(JsonObject json) {
     try {
-      return Serializers.getDefault().deserialize(json, Network.class);
+      return SerializerFactory.getSerializer(Network.class).deserialize(json);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

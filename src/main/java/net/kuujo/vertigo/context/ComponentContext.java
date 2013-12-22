@@ -35,7 +35,7 @@ import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.Serializers;
+import net.kuujo.vertigo.serializer.SerializerFactory;
 
 /**
  * A component context which contains information regarding each
@@ -72,8 +72,8 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
    */
   @SuppressWarnings("unchecked")
   public static <T extends Component<T>> ComponentContext<T> fromJson(JsonObject context) {
-    Serializer serializer = Serializers.getDefault();
-    ComponentContext<T> component = serializer.deserialize(context.getObject("component"), ComponentContext.class);
+    Serializer<ComponentContext> serializer = SerializerFactory.getSerializer(ComponentContext.class);
+    ComponentContext<T> component = serializer.deserialize(context.getObject("component"));
     NetworkContext network = NetworkContext.fromJson(context);
     return component.setParent(network);
   }
@@ -87,7 +87,7 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
    *   A Json representation of the component context.
    */
   public static JsonObject toJson(ComponentContext context) {
-    Serializer serializer = Serializers.getDefault();
+    Serializer<ComponentContext> serializer = SerializerFactory.getSerializer(ComponentContext.class);
     JsonObject json = NetworkContext.toJson(context.getNetwork());
     json.putObject("component", serializer.serialize(context));
     return json;

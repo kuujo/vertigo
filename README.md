@@ -1,7 +1,7 @@
 Vert.igo
 ========
 
-**Need support? Check out the [Vert.x Google Group](https://groups.google.com/forum/#!forum/vertx-vertigo)**
+**Need support? Check out the [Vert.igo Google Group][google-group]**
 
 **[Java User Manual](https://github.com/kuujo/vertigo/wiki/Java-User-Manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
 
@@ -27,14 +27,14 @@ communication between components in a **predictable and reliable** manner.
 * **Monitors networks for failures** and automatically reassigns/redeploys failed
   verticles and modules
 * Network components can be written in **any Vert.x supported language**, with
-  APIs for Vertigo 0.6 in [Javascript](https://github.com/kuujo/vertigo-js)
-  and [Python](https://github.com/kuujo/vertigo-python)
+  APIs for Vertigo 0.6 in [Javascript][vertigo-js]
+  and [Python][vertigo-python]
 * Integrates seemlessly with existing Vert.x applications
 
 ### Vertigo 0.6 is here!
 Vertigo 0.6.0 features significant API and performance improvements and will be
-released along with fully functional [Javascript](https://github.com/kuujo/vertigo-js)
-and [Python](https://github.com/kuujo/vertigo-python) APIs. This version will signify
+released along with fully functional [Javascript][vertigo-js]
+and [Python][vertigo-python] APIs. This version will signify
 the solidification of the core Vertigo API and lays the foundation for a higher
 level API and advanced operations in Vertigo.
 
@@ -96,8 +96,8 @@ public class OrderProductFeeder extends FeederVerticle {
   of most obejcts (with a possible future in passing objects between components)
 * Improved message tracking algorithm with significantly smaller memory footprint
   (able to track huge numbers of messages efficiently)
-* [Complete Python API](https://github.com/kuujo/vertigo-python)
-* [Complete Javascript API](https://github.com/kuujo/vertigo-js)
+* [Complete Python API][vertigo-python]
+* [Complete Javascript API][vertigo-js]
 
 Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
@@ -106,9 +106,9 @@ within larger Vert.x applications.
 For an in-depth look at the concepts underlying Vertigo, check out
 [how it works](https://github.com/kuujo/vertigo/wiki/How-it-works).
 
-**[Javascript API](https://github.com/kuujo/vertigo-js)**
+**[Javascript API][vertigo-js]**
 
-**[Python API](https://github.com/kuujo/vertigo-python)**
+**[Python API][vertigo-python]**
 
 ### Adding Vertigo as a Maven dependency
 
@@ -131,4 +131,8 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 }
 ```
 
-**Need support? Check out the [Vert.x Google Group](https://groups.google.com/forum/#!forum/vertx-vertigo)**
+**Need support? Check out the [Vert.igo Google Group][google-group]**
+
+[vertigo-python]: https://github.com/kuujo/vertigo-python
+[vertigo-js]: https://github.com/kuujo/vertigo-js
+[google-group]: https://groups.google.com/forum/#!forum/vertx-vertigo

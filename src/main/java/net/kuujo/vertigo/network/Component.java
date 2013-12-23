@@ -51,12 +51,12 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
  */
 @SuppressWarnings("rawtypes")
 public class Component<T extends net.kuujo.vertigo.component.Component> implements Serializable {
+  private static final long FIXED_HEARTBEAT_INTERVAL = 5000;
   private String address;
   private Class<T> type;
   private String main;
   private Map<String, Object> config;
   private int instances = 1;
-  private long heartbeat = 5000;
   private List<ComponentHook> hooks = new ArrayList<>();
   private List<Input> inputs = new ArrayList<>();
 
@@ -270,15 +270,12 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    */
   @Deprecated
   public long getHeartbeatInterval() {
-    return heartbeat;
+    return FIXED_HEARTBEAT_INTERVAL;
   }
 
   /**
-   * Sets the component heartbeat interval.
-   *
-   * This is the interval at which the component will send heartbeat messages to
-   * the network's coordinator. It may be necessary to increase heartbeat frequency
-   * if the component blocks frequently.
+   * Sets the component heartbeat interval. This method no longer has any effect
+   * and will be removed in future versions.
    *
    * @param interval
    *   The component heartbeat interval.
@@ -287,7 +284,6 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    */
   @Deprecated
   public Component<T> setHeartbeatInterval(long interval) {
-    heartbeat = interval;
     return this;
   }
 

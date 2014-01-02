@@ -21,7 +21,7 @@ import java.util.Map;
 import net.kuujo.vertigo.serializer.impl.DefaultSerializerFactory;
 
 /**
- * A serializer factory.<p>
+ * Json serializer factory.<p>
  *
  * This class is the primary interface to object serialization in Vertigo. Use
  * this class to load type-specific serializers as follows:<p>
@@ -42,8 +42,7 @@ import net.kuujo.vertigo.serializer.impl.DefaultSerializerFactory;
 public abstract class SerializerFactory {
   private static final String SERIALIZER_FACTORY_CLASS_NAME = "net.kuujo.vertigo.serializer-factory";
   private static SerializerFactory instance;
-  @SuppressWarnings("rawtypes")
-  private static Map<Class, Serializer> serializers = new HashMap<>();
+  private static Map<String, Serializer> serializers = new HashMap<>();
 
   /**
    * Gets a singleton serializer factory instance.
@@ -84,22 +83,33 @@ public abstract class SerializerFactory {
    * @return
    *   A serializer instance.
    */
-  @SuppressWarnings("unchecked")
-  public static <T extends Serializable> Serializer<T> getSerializer(Class<T> type) {
-    if (!serializers.containsKey(type)) {
-      serializers.put(type, getInstance().createSerializer(type));
-    }
-    return serializers.get(type);
+  public static Serializer getSerializer(Class<?> type) {
+    return getSerializer(type.getCanonicalName());
   }
 
   /**
-   * Creates a serializer.
+   * Gets a serializer instance.
    *
-   * @param type
-   *   The serializer type.
+   * @param name
+   *   The serializer name.
    * @return
    *   A serializer instance.
    */
-  public abstract <T extends Serializable> Serializer<T> createSerializer(Class<T> type);
+  public static Serializer getSerializer(String name) {
+    if (!serializers.containsKey(name)) {
+      serializers.put(name, getInstance().createSerializer(name));
+    }
+    return serializers.get(name);
+  }
+
+  /**
+   * Creates a new serializer instance.
+   *
+   * @param name
+   *   The serializer name.
+   * @return
+   *   A new serializer instance.
+   */
+  public abstract Serializer createSerializer(String name);
 
 }

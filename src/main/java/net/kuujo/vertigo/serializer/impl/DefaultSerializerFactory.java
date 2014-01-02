@@ -15,11 +15,9 @@
  */
 package net.kuujo.vertigo.serializer.impl;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.SerializerFactory;
 
@@ -29,18 +27,10 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
  * @author Jordan Halterman
  */
 public class DefaultSerializerFactory extends SerializerFactory {
-  private final Map<Class<?>, Class<?>> serializers = new HashMap<>();
+  private final Map<String, Class<?>> serializers = new HashMap<>();
 
   /**
    * Adds a type-specific serializer.
-   *
-   * The serializer must have a one-argument constructor that accepts the
-   * serializable type, as is provided in the abstract {@link Serializer} class.
-   * By default, this method can be accessed via the singleton factory instance:<p>
-   *
-   * <pre>
-   * SerializerFactory.getInstance().addSerializer(SomeClass.class, SomeClassSerializer.class);
-   * </pre>
    *
    * @param type
    *   The serializable type.
@@ -49,8 +39,22 @@ public class DefaultSerializerFactory extends SerializerFactory {
    * @return
    *   The serializer factory.
    */
-  public <T1 extends Serializable, T2 extends Serializer<T1>> DefaultSerializerFactory addSerializer(Class<T1> type, Class<T2> serializer) {
-    serializers.put(type, serializer);
+  public <T extends Serializer> DefaultSerializerFactory addSerializer(Class<?> type, Class<T> serializer) {
+    return addSerializer(type.getCanonicalName(), serializer);
+  }
+
+  /**
+   * Adds a named serializer.
+   *
+   * @param name
+   *   The serializer name.
+   * @param serializer
+   *   The serializer class to add.
+   * @return
+   *   The serializer factory.
+   */
+  public <T extends Serializer> DefaultSerializerFactory addSerializer(String name, Class<T> serializer) {
+    serializers.put(name, serializer);
     return this;
   }
 
@@ -64,26 +68,38 @@ public class DefaultSerializerFactory extends SerializerFactory {
    * @return
    *   The serializer factory.
    */
-  public <T1 extends Serializable, T2 extends Serializer<T1>> DefaultSerializerFactory removeSerializer(Class<T1> type, Class<T2> serializer) {
-    if (serializers.containsKey(type) && serializers.get(type).equals(serializer)) {
-      serializers.remove(type);
+  public <T extends Serializer> DefaultSerializerFactory removeSerializer(Class<?> type, Class<T> serializer) {
+    return removeSerializer(type.getCanonicalName(), serializer);
+  }
+
+  /**
+   * Removes a named serializer.
+   *
+   * @param name
+   *   The serializer name.
+   * @param serializer
+   *   The serializer class to remove.
+   * @return
+   *   The serializer factory.
+   */
+  public <T extends Serializer> DefaultSerializerFactory removeSerializer(String name, Class<T> serializer) {
+    if (serializers.containsKey(name) && serializers.get(name).equals(serializer)) {
+      serializers.remove(name);
     }
     return this;
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T extends Serializable> Serializer<T> createSerializer(Class<T> type) {
-    if (serializers.containsKey(type)) {
+  public Serializer createSerializer(String name) {
+    if (serializers.containsKey(name)) {
       try {
-        return (Serializer<T>) serializers.get(type).getDeclaredConstructor(new Class<?>[]{type.getClass()}).newInstance(type);
+        return (Serializer) serializers.get(name).newInstance();
       }
-      catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-          | NoSuchMethodException | SecurityException e) {
-        return new DefaultSerializer<T>(type);
+      catch (InstantiationException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
+        return new DefaultSerializer();
       }
     }
-    return new DefaultSerializer<T>(type);
+    return new DefaultSerializer();
   }
 
 }

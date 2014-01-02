@@ -50,8 +50,8 @@ public final class InstanceContext<T extends Component> implements Serializable 
    */
   @SuppressWarnings("unchecked")
   public static <T extends Component<T>> InstanceContext<T> fromJson(JsonObject context) {
-    Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
-    InstanceContext<T> instance = serializer.deserialize(context.getObject("instance"));
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+    InstanceContext<T> instance = serializer.deserialize(context.getObject("instance"), InstanceContext.class);
     ComponentContext<T> component = ComponentContext.fromJson(context);
     return instance.setParent(component);
   }
@@ -65,7 +65,7 @@ public final class InstanceContext<T extends Component> implements Serializable 
    *   A Json representation of the instance context.
    */
   public static JsonObject toJson(InstanceContext<?> context) {
-    Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
     JsonObject json = ComponentContext.toJson(context.getComponent());
     return json.putObject("instance", serializer.serialize(context));
   }

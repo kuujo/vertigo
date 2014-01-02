@@ -15,35 +15,15 @@
  */
 package net.kuujo.vertigo.serializer;
 
-import net.kuujo.vertigo.serializer.impl.DefaultSerializerFactory;
-
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A base serializer.<p>
- *
- * Serializers in Vertigo are type specific. This means that different serializers
- * may be provided for different types of objects. To register type-specific
- * serializers see the {@link DefaultSerializerFactory}.
+ * A Json serializer.
  *
  * @author Jordan Halterman
  */
-public abstract class Serializer<T extends Serializable> {
-  protected final Class<T> type;
+public interface Serializer {
 
-  public Serializer(Class<T> type) {
-    this.type = type;
-  }
-
-  /**
-   * Gets the serializer type.
-   *
-   * @return
-   *   The serializable type.
-   */
-  public Class<T> type() {
-    return type;
-  }
 
   /**
    * Serializes an object to Json. If an error occurs during serialization, a
@@ -56,7 +36,7 @@ public abstract class Serializer<T extends Serializable> {
    * @throws SerializationException
    *   If an error occurs during serialization.
    */
-  public abstract JsonObject serialize(T object);
+  <T extends Serializable> JsonObject serialize(T object);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a
@@ -64,16 +44,13 @@ public abstract class Serializer<T extends Serializable> {
    *
    * @param json
    *   A Json representation of the serializable object.
+   * @param type
+   *   The type to which to deserialize the object.
    * @return
    *   The deserialized object.
    * @throws DeserializationException
    *   If an error occurs during deserialization.
    */
-  public abstract T deserialize(JsonObject json);
-
-  @Deprecated
-  public T deserialize(JsonObject json, Class<T> type) {
-    return deserialize(json);
-  }
+  <T extends Serializable> T deserialize(JsonObject json, Class<T> type);
 
 }

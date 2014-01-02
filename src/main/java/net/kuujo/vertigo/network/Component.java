@@ -83,7 +83,7 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
   @SuppressWarnings("unchecked")
   public static <T extends net.kuujo.vertigo.component.Component<T>> Component<T> fromJson(JsonObject json) throws MalformedNetworkException {
     try {
-      return SerializerFactory.getSerializer(Component.class).deserialize(json);
+      return SerializerFactory.getSerializer(Network.class).deserialize(json, Component.class);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

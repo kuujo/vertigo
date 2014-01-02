@@ -17,6 +17,7 @@ package net.kuujo.vertigo.events;
 
 import java.lang.reflect.InvocationTargetException;
 
+import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
@@ -119,7 +120,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        Serializer<NetworkContext> serializer = SerializerFactory.getSerializer(NetworkContext.class);
+        Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
         }
@@ -160,7 +161,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        Serializer<NetworkContext> serializer = SerializerFactory.getSerializer(NetworkContext.class);
+        Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
         }
@@ -199,7 +200,7 @@ public final class Events {
       public void trigger(Object... args) {
         String address = (String) args[0];
         NetworkContext context = (NetworkContext) args[1];
-        Serializer<NetworkContext> serializer = SerializerFactory.getSerializer(NetworkContext.class);
+        Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
         }
@@ -246,11 +247,10 @@ public final class Events {
       }
 
       @Override
-      @SuppressWarnings("rawtypes")
       public void trigger(Object... args) {
         String address = (String) args[0];
         InstanceContext<?> context = (InstanceContext<?>) args[1];
-        Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
+        Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
         }
@@ -288,11 +288,10 @@ public final class Events {
       }
 
       @Override
-      @SuppressWarnings("rawtypes")
       public void trigger(Object... args) {
         String address = (String) args[0];
         InstanceContext<?> context = (InstanceContext<?>) args[1];
-        Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
+        Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
         }
@@ -330,11 +329,10 @@ public final class Events {
       }
 
       @Override
-      @SuppressWarnings("rawtypes")
       public void trigger(Object... args) {
         String address = (String) args[0];
         InstanceContext<?> context = (InstanceContext<?>) args[1];
-        Serializer<InstanceContext> serializer = SerializerFactory.getSerializer(InstanceContext.class);
+        Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
         }

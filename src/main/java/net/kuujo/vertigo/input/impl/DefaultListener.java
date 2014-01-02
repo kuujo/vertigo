@@ -17,6 +17,7 @@ package net.kuujo.vertigo.input.impl;
 
 import java.util.UUID;
 
+import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -40,7 +41,7 @@ import org.vertx.java.core.logging.Logger;
  * @author Jordan Halterman
  */
 public class DefaultListener implements Listener {
-  private final Serializer<Input> serializer = SerializerFactory.getSerializer(Input.class);
+  private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final String address;
   private final String statusAddress;
   private final Input input;

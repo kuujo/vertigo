@@ -157,7 +157,7 @@ public final class Input implements Serializable {
    */
   public Input groupBy(String grouping) {
     try {
-      this.grouping = SerializerFactory.getSerializer(Grouping.class).deserialize(new JsonObject().putString("type", grouping));
+      this.grouping = SerializerFactory.getSerializer(Grouping.class).deserialize(new JsonObject().putString("type", grouping), Grouping.class);
     }
     catch (Exception e) {
       throw new IllegalArgumentException("Invalid input grouping type " + grouping);

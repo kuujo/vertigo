@@ -68,7 +68,7 @@ public final class Network implements Serializable {
    */
   public static Network fromJson(JsonObject json) {
     try {
-      return SerializerFactory.getSerializer(Network.class).deserialize(json);
+      return SerializerFactory.getSerializer(Network.class).deserialize(json, Network.class);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

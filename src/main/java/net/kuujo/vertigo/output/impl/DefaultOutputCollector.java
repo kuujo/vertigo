@@ -23,6 +23,7 @@ import java.util.Random;
 
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.Input;
@@ -122,8 +123,8 @@ public class DefaultOutputCollector implements OutputCollector {
       return;
     }
 
-    Serializer<Input> serializer = SerializerFactory.getSerializer(Input.class);
-    Input input = serializer.deserialize(info);
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+    Input input = serializer.deserialize(info, Input.class);
     Output output = new Output(input.id(), input.getStream(), input.getCount(), input.getGrouping().createSelector());
 
     final Channel channel = findChannel(output);

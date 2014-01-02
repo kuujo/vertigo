@@ -72,8 +72,8 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
    */
   @SuppressWarnings("unchecked")
   public static <T extends Component<T>> ComponentContext<T> fromJson(JsonObject context) {
-    Serializer<ComponentContext> serializer = SerializerFactory.getSerializer(ComponentContext.class);
-    ComponentContext<T> component = serializer.deserialize(context.getObject("component"));
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+    ComponentContext<T> component = serializer.deserialize(context.getObject("component"), ComponentContext.class);
     NetworkContext network = NetworkContext.fromJson(context);
     return component.setParent(network);
   }
@@ -87,7 +87,7 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
    *   A Json representation of the component context.
    */
   public static JsonObject toJson(ComponentContext context) {
-    Serializer<ComponentContext> serializer = SerializerFactory.getSerializer(ComponentContext.class);
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
     JsonObject json = NetworkContext.toJson(context.getNetwork());
     json.putObject("component", serializer.serialize(context));
     return json;

@@ -29,24 +29,21 @@ import net.kuujo.vertigo.serializer.Serializer;
  * A default serializer implementation.
  *
  * @author Jordan Halterman
- *
- * @param <T> The serializable type.
  */
-public class DefaultSerializer<T extends Serializable> extends Serializer<T> {
+public class DefaultSerializer implements Serializer {
   private final ObjectMapper mapper;
 
-  public DefaultSerializer(Class<T> type) {
-    this(type, new InclusiveAnnotationIntrospector());
+  public DefaultSerializer() {
+    this(new InclusiveAnnotationIntrospector());
   }
 
-  public DefaultSerializer(Class<T> type, AnnotationIntrospector introspector) {
-    super(type);
+  public DefaultSerializer(AnnotationIntrospector introspector) {
     mapper = new ObjectMapper();
     mapper.setAnnotationIntrospector(introspector);
   }
 
   @Override
-  public JsonObject serialize(T object) {
+  public <T extends Serializable> JsonObject serialize(T object) {
     try {
       return new JsonObject(mapper.writeValueAsString(object));
     }
@@ -56,7 +53,7 @@ public class DefaultSerializer<T extends Serializable> extends Serializer<T> {
   }
 
   @Override
-  public T deserialize(JsonObject json) {
+  public <T extends Serializable> T deserialize(JsonObject json, Class<T> type) {
     try {
       return mapper.readValue(json.encode(), type);
     }

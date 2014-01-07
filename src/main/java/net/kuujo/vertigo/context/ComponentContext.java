@@ -32,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.Input;
-import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.SerializerFactory;
 
@@ -50,14 +49,14 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
   @JsonSubTypes.Type(value=VerticleContext.class, name="verticle")
 })
 @SuppressWarnings("rawtypes")
-public class ComponentContext<T extends net.kuujo.vertigo.component.Component> implements Serializable {
+public class ComponentContext<T extends net.kuujo.vertigo.component.Component> implements Context {
   private String address;
   private Class<T> type;
   private Map<String, Object> config;
   private List<InstanceContext<T>> instances = new ArrayList<>();
   private long heartbeat = 5000;
   private List<ComponentHook> hooks = new ArrayList<>();
-  private List<Input> inputs = new ArrayList<>();
+  private List<InputContext> inputs = new ArrayList<>();
   private @JsonIgnore NetworkContext network;
 
   /**
@@ -283,13 +282,19 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
    * @return
    *   A list of component inputs.
    */
-  public List<Input> inputs() {
+  public List<InputContext> inputs() {
     return inputs;
   }
 
   @Deprecated
   public List<Input> getInputs() {
-    return inputs();
+    // Convert input contexts back to inputs to ensure backwards compatibility.
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+    List<Input> inputs = new ArrayList<>();
+    for (InputContext context : this.inputs) {
+      inputs.add(serializer.deserialize(serializer.serialize(context), Input.class));
+    }
+    return inputs;
   }
 
   /**

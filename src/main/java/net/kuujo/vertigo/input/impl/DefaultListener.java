@@ -18,7 +18,8 @@ package net.kuujo.vertigo.input.impl;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.Context;
-import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.context.InputContext;
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
@@ -40,12 +41,11 @@ import org.vertx.java.core.logging.Logger;
  *
  * @author Jordan Halterman
  */
-@SuppressWarnings("deprecation")
 public class DefaultListener implements Listener {
   private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final String address;
   private final String statusAddress;
-  private final Input input;
+  private final InputContext context;
   private final Vertx vertx;
   private final EventBus eventBus;
   private boolean autoAck = true;
@@ -57,65 +57,94 @@ public class DefaultListener implements Listener {
   public DefaultListener(String address, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
     this.statusAddress = UUID.randomUUID().toString();
-    this.input = new Input(address);
+    this.context = inputToContext(new Input(address));
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
   }
 
-  public DefaultListener(String address, Vertx vertx, Logger logger) {
+  public DefaultListener(InputContext context, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
     this.statusAddress = UUID.randomUUID().toString();
-    this.input = new Input(address);
+    this.context = context;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-  }
-
-  public DefaultListener(String address, Vertx vertx, EventBus eventBus) {
-    this.address = UUID.randomUUID().toString();
-    this.statusAddress = UUID.randomUUID().toString();
-    this.input = new Input(address);
-    this.vertx = vertx;
-    this.eventBus = eventBus;
-  }
-
-  public DefaultListener(String address, Vertx vertx, EventBus eventBus, Logger logger) {
-    this.address = UUID.randomUUID().toString();
-    this.statusAddress = UUID.randomUUID().toString();
-    this.input = new Input(address);
-    this.vertx = vertx;
-    this.eventBus = eventBus;
   }
 
   public DefaultListener(Input input, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
     this.statusAddress = UUID.randomUUID().toString();
-    this.input = input;
+    this.context = inputToContext(input);
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
   }
 
-  public DefaultListener(Input input, Vertx vertx, Logger logger) {
+  @Deprecated
+  public DefaultListener(String address, Vertx vertx, EventBus eventBus) {
     this.address = UUID.randomUUID().toString();
     this.statusAddress = UUID.randomUUID().toString();
-    this.input = input;
+    this.context = inputToContext(new Input(address));
+    this.vertx = vertx;
+    this.eventBus = eventBus;
+  }
+
+  @Deprecated
+  public DefaultListener(String address, Vertx vertx, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.context = inputToContext(new net.kuujo.vertigo.network.Input(address));
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
   }
 
-  public DefaultListener(Input input, Vertx vertx, EventBus eventBus) {
+  @Deprecated
+  public DefaultListener(String address, Vertx vertx, EventBus eventBus, Logger logger) {
     this.address = UUID.randomUUID().toString();
     this.statusAddress = UUID.randomUUID().toString();
-    this.input = input;
+    this.context = inputToContext(new net.kuujo.vertigo.network.Input(address));
     this.vertx = vertx;
     this.eventBus = eventBus;
   }
 
-  public DefaultListener(Input input, Vertx vertx, EventBus eventBus, Logger logger) {
+  @Deprecated
+  public DefaultListener(net.kuujo.vertigo.input.Input input, Vertx vertx) {
     this.address = UUID.randomUUID().toString();
     this.statusAddress = UUID.randomUUID().toString();
-    this.input = input;
+    this.context = inputToContext(input);
+    this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
+  }
+
+  @Deprecated
+  public DefaultListener(net.kuujo.vertigo.input.Input input, Vertx vertx, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.context = inputToContext(input);
+    this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
+  }
+
+  @Deprecated
+  public DefaultListener(net.kuujo.vertigo.input.Input input, Vertx vertx, EventBus eventBus) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.context = inputToContext(input);
     this.vertx = vertx;
     this.eventBus = eventBus;
+  }
+
+  @Deprecated
+  public DefaultListener(net.kuujo.vertigo.input.Input input, Vertx vertx, EventBus eventBus, Logger logger) {
+    this.address = UUID.randomUUID().toString();
+    this.statusAddress = UUID.randomUUID().toString();
+    this.context = inputToContext(input);
+    this.vertx = vertx;
+    this.eventBus = eventBus;
+  }
+
+  @SuppressWarnings("deprecation")
+  private InputContext inputToContext(net.kuujo.vertigo.input.Input input) {
+    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+    return serializer.deserialize(serializer.serialize(input), InputContext.class);
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -251,9 +280,9 @@ public class DefaultListener implements Listener {
     pollTimer = vertx.setPeriodic(POLL_INTERVAL, new Handler<Long>() {
       @Override
       public void handle(Long timerId) {
-        eventBus.publish(input.getAddress(), new JsonObject().putString("action", "listen")
+        eventBus.publish(context.address(), new JsonObject().putString("action", "listen")
             .putString("address", address).putString("status", statusAddress)
-            .putObject("input", serializer.serialize(input)));
+            .putObject("input", serializer.serialize(context)));
       }
     });
   }

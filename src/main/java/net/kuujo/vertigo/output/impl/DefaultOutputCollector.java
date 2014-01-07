@@ -24,9 +24,9 @@ import java.util.Random;
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.Context;
+import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
-import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.JsonMessageBuilder;
@@ -124,8 +124,8 @@ public class DefaultOutputCollector implements OutputCollector {
     }
 
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    Input input = serializer.deserialize(info, Input.class);
-    Output output = new Output(input.id(), input.getStream(), input.getCount(), input.getGrouping().createSelector());
+    InputContext input = serializer.deserialize(info, InputContext.class);
+    Output output = new Output(input.id(), input.stream(), input.count(), input.grouping().createSelector());
 
     final Channel channel = findChannel(output);
     if (!channel.containsConnection(address)) {

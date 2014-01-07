@@ -39,8 +39,8 @@ abstract class ComponentType<T extends ComponentType<T, U>, U extends net.kuujo.
 
   @Override
   @SuppressWarnings("unchecked")
-  public T setType(Class<U> type) {
-    super.setType(type);
+  T setAddress(String address) {
+    super.setAddress(address);
     return (T) this;
   }
 

@@ -49,7 +49,7 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
  *
  * @author Jordan Haltermam
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="deployment")
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="deploy")
 @JsonSubTypes({
   @JsonSubTypes.Type(value=Module.class, name="module"),
   @JsonSubTypes.Type(value=Verticle.class, name="verticle")
@@ -74,11 +74,11 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   public static final String COMPONENT_TYPE = "type";
 
   /**
-   * <code>deployment</code> is a string indicating the deployment method for the
+   * <code>deploy</code> is a string indicating the deployment method for the
    * component. This can be either <code>module</code> or <code>verticle</code>.
    * This field is required.
    */
-  public static final String COMPONENT_DEPLOYMENT_METHOD = "deployment";
+  public static final String COMPONENT_DEPLOYMENT_METHOD = "deploy";
 
   /**
    * <code>config</code> is an object defining the configuration to pass to each
@@ -142,12 +142,12 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Creates a component instance from JSON.
+   * Creates a component configuration from JSON.
    *
    * @param json
-   *   A JSON representation of the component instance.
+   *   A JSON representation of the component configuration.
    * @return
-   *   A constructed component instance.
+   *   A constructed component configuration.
    * @throws MalformedNetworkException
    *   If the component definition is malformed.
    */
@@ -159,6 +159,11 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);
     }
+  }
+
+  Component<T> setAddress(String address) {
+    this.address = address;
+    return this;
   }
 
   /**
@@ -175,14 +180,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
     return address;
   }
 
-  /**
-   * Sets the component type.
-   *
-   * @param type
-   *   The component type.
-   * @return
-   *   The called component configuration.
-   */
+  @Deprecated
   public Component<T> setType(Class<T> type) {
     this.type = type;
     return this;
@@ -282,7 +280,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * @param config
    *   The component configuration.
    * @return
-   *   The called component configuration.
+   *   The component configuration.
    */
   public Component<T> setConfig(JsonObject config) {
     this.config = config.toMap();
@@ -310,7 +308,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * @param numInstances
    *   The number of component instances.
    * @return
-   *   The called component configuration.
+   *   The component configuration.
    */
   public Component<T> setNumInstances(int numInstances) {
     instances = numInstances;
@@ -342,7 +340,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * @param interval
    *   The component heartbeat interval.
    * @return
-   *   The called component configuration.
+   *   The component configuration.
    */
   public Component<T> setHeartbeatInterval(long interval) {
     heartbeat = interval;
@@ -363,7 +361,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * @param hook
    *   A component hook.
    * @return
-   *   The called component instance.
+   *   The component configuration.
    * @see ComponentHook
    */
   public Component<T> addHook(ComponentHook hook) {

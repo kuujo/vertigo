@@ -52,7 +52,7 @@ public class ContextTest {
     NetworkContext context;
     try {
       context = ContextBuilder.buildContext(network);
-      assertEquals(2, context.getAuditors().size());
+      assertEquals(2, context.auditors().size());
       JsonObject serialized = serializer.serialize(context);
       assertNotNull(serialized);
       context = serializer.deserialize(serialized, NetworkContext.class);

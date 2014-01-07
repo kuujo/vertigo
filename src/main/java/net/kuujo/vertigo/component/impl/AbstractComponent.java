@@ -26,6 +26,7 @@ import net.kuujo.vertigo.message.schema.MessageSchema;
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.coordinator.heartbeat.HeartbeatEmitter;
@@ -138,12 +139,12 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.container = container;
     this.logger = container.logger();
     this.context = context;
-    this.acker = new DefaultAcker(context.id(), eventBus);
-    this.instanceId = context.id();
-    this.address = context.getComponent().getAddress();
-    NetworkContext networkContext = context.getComponent().getNetwork();
-    networkAddress = networkContext.getAddress();
-    List<String> auditorAddresses = networkContext.getAuditors();
+    this.acker = new DefaultAcker(context.address(), eventBus);
+    this.instanceId = context.address();
+    this.address = context.componentContext().address();
+    NetworkContext networkContext = context.componentContext().networkContext();
+    networkAddress = networkContext.address();
+    List<String> auditorAddresses = networkContext.auditors();
     auditors = new ArrayList<String>();
     for (String auditorAddress : auditorAddresses) {
       auditors.add(auditorAddress);
@@ -151,7 +152,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     heartbeat = new DefaultHeartbeatEmitter(vertx);
     input = new DefaultInputCollector(vertx, container, context, acker);
     output = new DefaultOutputCollector(vertx, container, context, acker);
-    for (ComponentHook hook : context.getComponent().getHooks()) {
+    for (ComponentHook hook : context.<ComponentContext<?>>componentContext().hooks()) {
       addHook(hook);
     }
   }
@@ -285,7 +286,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
         if (result.succeeded()) {
           String heartbeatAddress = result.result().body();
           heartbeat.setAddress(heartbeatAddress);
-          heartbeat.setInterval(context.getComponent().getHeartbeatInterval());
+          heartbeat.setInterval(context.componentContext().heartbeatInterval());
           heartbeat.start();
           future.setResult(null);
         }

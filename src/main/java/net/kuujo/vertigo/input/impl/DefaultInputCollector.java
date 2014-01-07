@@ -21,6 +21,7 @@ import java.util.List;
 
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.network.Input;
@@ -58,7 +59,7 @@ public class DefaultInputCollector implements InputCollector {
     this.vertx = vertx;
     this.logger = container.logger();
     this.context = context;
-    this.acker = new DefaultAcker(context.id(), vertx.eventBus());
+    this.acker = new DefaultAcker(context.address(), vertx.eventBus());
   }
 
   public DefaultInputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
@@ -174,7 +175,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(AsyncResult<Void> result) {
         listeners = new ArrayList<Listener>();
-        recursiveStart(context.getComponent().getInputs().iterator(), future);
+        recursiveStart(context.<ComponentContext<?>>componentContext().inputs().iterator(), future);
       }
     });
     return this;
@@ -187,7 +188,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(AsyncResult<Void> result) {
         listeners = new ArrayList<Listener>();
-        recursiveStart(context.getComponent().getInputs().iterator(), future);
+        recursiveStart(context.<ComponentContext<?>>componentContext().inputs().iterator(), future);
       }
     });
     return this;

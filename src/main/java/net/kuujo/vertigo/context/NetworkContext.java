@@ -74,8 +74,13 @@ public final class NetworkContext implements Context {
    * @return
    *   The network address.
    */
-  public String getAddress() {
+  public String address() {
     return address;
+  }
+
+  @Deprecated
+  public String getAddress() {
+    return address();
   }
 
   /**
@@ -84,8 +89,13 @@ public final class NetworkContext implements Context {
    * @return
    *   A list of network auditors.
    */
-  public List<String> getAuditors() {
+  public List<String> auditors() {
     return auditors;
+  }
+
+  @Deprecated
+  public List<String> getAuditors() {
+    return auditors();
   }
 
   /**
@@ -99,13 +109,28 @@ public final class NetworkContext implements Context {
   }
 
   /**
-   * Returns network ack timeout.
+   * Returns a boolean indicating whether timeouts are enabled for the network.
    *
    * @return
-   *   Ack timeout for the network.
+   *   Indicates whether timeouts are enabled for the network.
    */
-  public long getAckTimeout() {
+  public boolean isMessageTimeoutsEnabled() {
+    return timeout > 0;
+  }
+
+  /**
+   * Returns network message timeout.
+   *
+   * @return
+   *   The message timeout for the network.
+   */
+  public long messageTimeout() {
     return timeout;
+  }
+
+  @Deprecated
+  public long getAckTimeout() {
+    return messageTimeout();
   }
 
   /**
@@ -114,12 +139,17 @@ public final class NetworkContext implements Context {
    * @return
    *   A list of network component contexts.
    */
-  public List<ComponentContext<?>> getComponents() {
+  public List<ComponentContext<?>> components() {
     List<ComponentContext<?>> components = new ArrayList<>();
     for (ComponentContext<?> component : this.components.values()) {
-      components.add(component.setParent(this));
+      components.add(component.setNetworkContext(this));
     }
     return components;
+  }
+
+  @Deprecated
+  public List<ComponentContext<?>> getComponents() {
+    return components();
   }
 
   /**
@@ -128,11 +158,27 @@ public final class NetworkContext implements Context {
    * @param address
    *   The component address.
    * @return
-   *   A component context, or null if the component does not exist.
+   *   A component context.
+   * @throws IllegalArgumentException
+   *   If a component does not exist at the given address.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
+  public <T extends ComponentContext> T component(String address) {
+    if (components.containsKey(address)) {
+      return (T) components.get(address).setNetworkContext(this);
+    }
+    throw new IllegalArgumentException(address + " is not a valid component in " + address());
+  }
+
+  @Deprecated
+  @SuppressWarnings("rawtypes")
   public <T extends net.kuujo.vertigo.component.Component> ComponentContext<T> getComponent(String address) {
-    return components.get(address).setParent(this);
+    return component(address);
+  }
+
+  @Override
+  public String toString() {
+    return address();
   }
 
 }

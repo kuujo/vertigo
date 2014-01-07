@@ -59,17 +59,17 @@ public class SerializerTest {
       NetworkContext context = ContextBuilder.buildContext(network);
       JsonObject toJsonNetwork = NetworkContext.toJson(context);
       NetworkContext fromJsonNetwork = NetworkContext.fromJson(toJsonNetwork);
-      assertEquals("test", fromJsonNetwork.getAddress());
+      assertEquals("test", fromJsonNetwork.address());
 
-      ComponentContext<Feeder> component = context.getComponent("1");
+      ComponentContext<Feeder> component = context.component("1");
       JsonObject toJsonComponent = ComponentContext.toJson(component);
       ComponentContext<Feeder> fromJsonComponent = ComponentContext.fromJson(toJsonComponent);
-      assertEquals("test", fromJsonComponent.getNetwork().getAddress());
+      assertEquals("test", fromJsonComponent.networkContext().address());
 
-      InstanceContext<Feeder> instance = component.getInstances().get(0);
+      InstanceContext<Feeder> instance = component.instances().get(0);
       JsonObject toJsonInstance = InstanceContext.toJson(instance);
       InstanceContext<Feeder> fromJsonInstance = InstanceContext.fromJson(toJsonInstance);
-      assertEquals("test", fromJsonInstance.getComponent().getNetwork().getAddress());
+      assertEquals("test", fromJsonInstance.componentContext().networkContext().address());
     }
     catch (MalformedNetworkException e) {
       fail(e.getMessage());
@@ -108,24 +108,24 @@ public class SerializerTest {
     try {
       NetworkContext context = ContextBuilder.buildContext(network);
       assertTrue(context.isAckingEnabled());
-      assertEquals(10000, context.getAckTimeout());
-      assertEquals("test", context.getAddress());
-      assertEquals(2, context.getAuditors().size());
-      ComponentContext<Worker> component = context.getComponent("2");
-      assertTrue(component.getType().equals(Worker.class));
+      assertEquals(10000, context.messageTimeout());
+      assertEquals("test", context.address());
+      assertEquals(2, context.auditors().size());
+      ComponentContext<Worker> component = context.component("2");
+      assertTrue(component.type().equals(Worker.class));
       assertNotNull(component);
-      assertEquals("2", component.getAddress());
-      Input input = component.getInputs().get(0);
+      assertEquals("2", component.address());
+      Input input = component.inputs().get(0);
       assertNotNull(input);
       assertTrue(input.getGrouping() instanceof RoundGrouping);
-      ComponentContext<Feeder> component2 = context.getComponent("1");
-      assertTrue(component2.getType().equals(Feeder.class));
-      ComponentHook hook = component2.getHooks().get(0);
+      ComponentContext<Feeder> component2 = context.component("1");
+      assertTrue(component2.type().equals(Feeder.class));
+      ComponentHook hook = component2.hooks().get(0);
       assertNotNull(hook);
       assertTrue(hook instanceof EventBusHook);
-      InstanceContext<Feeder> instance = component2.getInstances().get(0);
+      InstanceContext<Feeder> instance = component2.instances().get(0);
       assertNotNull(instance);
-      assertNotNull(instance.id());
+      assertNotNull(instance.address());
 
       Serializer serializer = SerializerFactory.getSerializer(Context.class);
       JsonObject serialized = serializer.serialize(context);

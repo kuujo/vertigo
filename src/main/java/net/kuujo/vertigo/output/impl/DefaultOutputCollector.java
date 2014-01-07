@@ -78,11 +78,11 @@ public class DefaultOutputCollector implements OutputCollector {
     this.vertx = vertx;
     this.eventBus = eventBus;
     this.context = context;
-    acker = new DefaultAcker(context.id(), eventBus);
-    messageBuilder = new JsonMessageBuilder(context.id());
-    ackingEnabled = context.getComponent().getNetwork().isAckingEnabled();
-    auditors = context.getComponent().getNetwork().getAuditors();
-    componentAddress = context.getComponent().getAddress();
+    acker = new DefaultAcker(context.address(), eventBus);
+    messageBuilder = new JsonMessageBuilder(context.address());
+    ackingEnabled = context.componentContext().networkContext().isAckingEnabled();
+    auditors = context.componentContext().networkContext().auditors();
+    componentAddress = context.componentContext().address();
   }
 
   public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
@@ -94,10 +94,10 @@ public class DefaultOutputCollector implements OutputCollector {
     this.eventBus = eventBus;
     this.context = context;
     this.acker = acker;
-    messageBuilder = new JsonMessageBuilder(context.id());
-    ackingEnabled = context.getComponent().getNetwork().isAckingEnabled();
-    auditors = context.getComponent().getNetwork().getAuditors();
-    componentAddress = context.getComponent().getAddress();
+    messageBuilder = new JsonMessageBuilder(context.address());
+    ackingEnabled = context.componentContext().networkContext().isAckingEnabled();
+    auditors = context.componentContext().networkContext().auditors();
+    componentAddress = context.componentContext().address();
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -150,7 +150,7 @@ public class DefaultOutputCollector implements OutputCollector {
         connectionTimers.remove(address);
       }
     }));
-    eventBus.send(statusAddress, new JsonObject().putString("id", context.id()));
+    eventBus.send(statusAddress, new JsonObject().putString("id", context.address()));
   }
 
   /**
@@ -181,7 +181,7 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String getAddress() {
-    return context.getComponent().getAddress();
+    return context.componentContext().address();
   }
 
   @Override
@@ -358,7 +358,7 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector start() {
-    eventBus.registerHandler(context.getComponent().getAddress(), handler);
+    eventBus.registerHandler(context.componentContext().address(), handler);
     hookStart();
     return this;
   }
@@ -366,7 +366,7 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public OutputCollector start(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.registerHandler(context.getComponent().getAddress(), handler, new Handler<AsyncResult<Void>>() {
+    eventBus.registerHandler(context.componentContext().address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -383,14 +383,14 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public void stop() {
-    eventBus.unregisterHandler(context.getComponent().getAddress(), handler);
+    eventBus.unregisterHandler(context.componentContext().address(), handler);
     hookStop();
   }
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.unregisterHandler(context.getComponent().getAddress(), handler, new Handler<AsyncResult<Void>>() {
+    eventBus.unregisterHandler(context.componentContext().address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {

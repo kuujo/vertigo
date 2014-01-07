@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @SuppressWarnings("rawtypes")
 public final class InstanceContext<T extends Component> implements Serializable {
-  private String id;
+  private String address;
   private @JsonIgnore ComponentContext<T> component;
 
   private InstanceContext() {
@@ -53,7 +53,7 @@ public final class InstanceContext<T extends Component> implements Serializable 
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
     InstanceContext<T> instance = serializer.deserialize(context.getObject("instance"), InstanceContext.class);
     ComponentContext<T> component = ComponentContext.fromJson(context);
-    return instance.setParent(component);
+    return instance.setComponentContext(component);
   }
 
   /**
@@ -66,26 +66,31 @@ public final class InstanceContext<T extends Component> implements Serializable 
    */
   public static JsonObject toJson(InstanceContext<?> context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    JsonObject json = ComponentContext.toJson(context.getComponent());
+    JsonObject json = ComponentContext.toJson(context.componentContext());
     return json.putObject("instance", serializer.serialize(context));
   }
 
   /**
    * Sets the instance parent.
    */
-  InstanceContext<T> setParent(ComponentContext<T> component) {
+  InstanceContext<T> setComponentContext(ComponentContext<T> component) {
     this.component = component;
     return this;
   }
 
   /**
-   * Returns the instance id.
+   * Returns the instance address.
    *
    * @return
-   *   The unique instance id.
+   *   The unique instance address.
    */
+  public String address() {
+    return address;
+  }
+
+  @Deprecated
   public String id() {
-    return id;
+    return address();
   }
 
   /**
@@ -94,8 +99,19 @@ public final class InstanceContext<T extends Component> implements Serializable 
    * @return
    *   The parent component context.
    */
+  @SuppressWarnings({"unchecked", "hiding"})
+  public <T extends ComponentContext> T componentContext() {
+    return (T) component;
+  }
+
+  @Deprecated
   public ComponentContext<T> getComponent() {
-    return component;
+    return componentContext();
+  }
+
+  @Override
+  public String toString() {
+    return address();
   }
 
 }

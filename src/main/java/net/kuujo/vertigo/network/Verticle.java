@@ -24,6 +24,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @SuppressWarnings("rawtypes")
 public class Verticle<T extends net.kuujo.vertigo.component.Component> extends ComponentType<Verticle<T>, T> {
+
+  /**
+   * <code>main</code> is a string indicating the verticle main. This field is
+   * required for all verticle components.
+   */
+  public static final String VERTICLE_MAIN = "main";
+
+  /**
+   * <code>worker</code> is a boolean indicating whether this verticle should be
+   * deployed as a worker verticle. Defaults to <code>false</code>
+   */
+  public static final String VERTICLE_IS_WORKER = "worker";
+
+  /**
+   * <code>multi-threaded</code> is a boolean indicating whether a worker verticle
+   * is multi-threaded. This option only applies to verticles where <code>worker</code>
+   * is <code>true</code>. Defaults to <code>false</code>
+   */
+  public static final String VERTICLE_IS_MULTI_THREADED = "multi-threaded";
+
   private String main;
   private boolean worker;
   @JsonProperty("multi-threaded")

@@ -22,6 +22,13 @@ package net.kuujo.vertigo.network;
  */
 @SuppressWarnings("rawtypes")
 public class Module<T extends net.kuujo.vertigo.component.Component> extends ComponentType<Module<T>, T> {
+
+  /**
+   * <code>module</code> is a string indicating the module name. This field is
+   * required for all module components.
+   */
+  public static final String MODULE_NAME = "module";
+
   private String module;
 
   public Module() {

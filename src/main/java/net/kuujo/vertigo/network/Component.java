@@ -24,6 +24,8 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.Input;
@@ -31,8 +33,6 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;
 import net.kuujo.vertigo.serializer.SerializerFactory;
-import static net.kuujo.vertigo.util.Component.isModuleName;
-import static net.kuujo.vertigo.util.Component.isVerticleMain;
 import static net.kuujo.vertigo.util.Component.serializeType;
 import static net.kuujo.vertigo.util.Component.deserializeType;
 
@@ -49,14 +49,86 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
  *
  * @author Jordan Haltermam
  */
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="deployment")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value=Module.class, name="module"),
+  @JsonSubTypes.Type(value=Verticle.class, name="verticle")
+})
 @SuppressWarnings("rawtypes")
-public class Component<T extends net.kuujo.vertigo.component.Component> implements Serializable {
-  private static final long FIXED_HEARTBEAT_INTERVAL = 5000;
+public abstract class Component<T extends net.kuujo.vertigo.component.Component> implements Serializable {
+
+  /**
+   * <code>address</code> is a string indicating the globally unique component
+   * event bus address. Components will use this address to register a handler
+   * which listens for subscriptions from other components, so this address must
+   * be unique across a Vert.x cluster.
+   */
+  public static final String COMPONENT_ADDRESS = "address";
+
+  /**
+   * <code>type</code> is a string indicating the type of component that will be
+   * deployed. This can be either <code>feeder</code>, <code>worker</code>, or
+   * <code>executor</code>. If the component type does not match the implementation
+   * then an error will occur upon deployment of the component. This field is required.
+   */
+  public static final String COMPONENT_TYPE = "type";
+
+  /**
+   * <code>deployment</code> is a string indicating the deployment method for the
+   * component. This can be either <code>module</code> or <code>verticle</code>.
+   * This field is required.
+   */
+  public static final String COMPONENT_DEPLOYMENT_METHOD = "deployment";
+
+  /**
+   * <code>config</code> is an object defining the configuration to pass to each
+   * instance of the component. If no configuration is provided then an empty
+   * configuration will be passed to component instances.
+   */
+  public static final String COMPONENT_CONFIG = "config";
+
+  /**
+   * <code>instances</code> is a number indicating the number of instances of the
+   * component to deploy. Defaults to <code>1</code>
+   */
+  public static final String COMPONENT_NUM_INSTANCES = "instances";
+
+  /**
+   * <code>heartbeat</code> is a number indicating the interval at which the
+   * component should send heartbeat messages to network monitors (in milliseconds).
+   * Defaults to <code>5000</code> milliseconds.
+   */
+  public static final String COMPONENT_HEARTBEAT_INTERVAL = "heartbeat";
+
+  /**
+   * <code>hooks</code> is an array of hook configurations. Each hook configuration
+   * must contain at least a <code>type</code> key which indicates the fully
+   * qualified name of the hook class. Other configuration options depend on the
+   * specific hook implementation. In most cases, json properties are directly
+   * correlated to fields within the hook class.
+   */
+  public static final String COMPONENT_HOOKS = "hooks";
+
+  /**
+   * <code>inputs</code> is an array of input configurations. Each input configuration
+   * must contain the <code>address</code> to which the input subscribes. Additionally,
+   * each configuration may contain a <code>grouping</code> field indicating the input
+   * grouping method. This must be an object containing at least a <code>type</code>
+   * field. The <code>type</code> field can be one of <code>round</code>, <code>random</code>,
+   * <code>fields</code>, or <code>all</code>. The <code>grouping</code> defaults to
+   * <code>round</code>. Finally, a <code>stream</code> field may be provided to
+   * indicate the stream to which to subscribe. This field defaults to <code>default</code>.
+   */
+  public static final String COMPONENT_INPUTS = "inputs";
+
+  private static final int DEFAULT_NUM_INSTANCES = 1;
+  private static final long DEFAULT_HEARTBEAT_INTERVAL = 5000;
+
   private String address;
   private Class<T> type;
-  private String main;
   private Map<String, Object> config;
-  private int instances = 1;
+  private int instances = DEFAULT_NUM_INSTANCES;
+  private long heartbeat = DEFAULT_HEARTBEAT_INTERVAL;
   private List<ComponentHook> hooks = new ArrayList<>();
   private List<Input> inputs = new ArrayList<>();
 
@@ -64,10 +136,9 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
     address = UUID.randomUUID().toString();
   }
 
-  public Component(Class<T> type, String address, String main) {
+  public Component(Class<T> type, String address) {
     this.type = type;
     this.address = address;
-    this.main = main;
   }
 
   /**
@@ -110,7 +181,7 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    * @param type
    *   The component type.
    * @return
-   *   The called component instance.
+   *   The called component configuration.
    */
   public Component<T> setType(Class<T> type) {
     this.type = type;
@@ -139,65 +210,13 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
   }
 
   /**
-   * Sets the component module name.
-   *
-   * @param moduleName
-   *   The component module name.
-   * @return
-   *   The called component instance.
-   */
-  public Component<T> setModule(String moduleName) {
-    if (!isModuleName(moduleName)) {
-      throw new IllegalArgumentException(moduleName + " is not a valid module name.");
-    }
-    main = moduleName;
-    return this;
-  }
-
-  /**
-   * Gets the component module name.
-   *
-   * @return
-   *   The component module name.
-   */
-  public String getModule() {
-    return main;
-  }
-
-  /**
-   * Sets the component verticle main.
-   *
-   * @param main
-   *   The component verticle main.
-   * @return
-   *   The called component instance.
-   */
-  public Component<T> setMain(String main) {
-    if (!isVerticleMain(main)) {
-      throw new IllegalArgumentException(main + " is not a valid main.");
-    }
-    this.main = main;
-    return this;
-  }
-
-  /**
-   * Gets the component verticle main.
-   *
-   * @return
-   *   The component verticle main.
-   */
-  public String getMain() {
-    return main;
-  }
-
-  /**
    * Returns a boolean indicating whether the component is a module.
    *
    * @return
    *   Indicates whether the component is a module.
    */
   public boolean isModule() {
-    return main != null && isModuleName(main);
+    return false;
   }
 
   /**
@@ -207,7 +226,41 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    *   Indicates whether the component is a verticle.
    */
   public boolean isVerticle() {
-    return main != null && isVerticleMain(main);
+    return false;
+  }
+
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public Component<T> setModule(String moduleName) {
+    if (isModule()) {
+      return ((Module) this).setModule(moduleName);
+    }
+    return this;
+  }
+
+  @Deprecated
+  public String getModule() {
+    if (isModule()) {
+      return ((Module) this).getModule();
+    }
+    return null;
+  }
+
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public Component<T> setMain(String main) {
+    if (isVerticle()) {
+      return ((Verticle) this).setMain(main);
+    }
+    return this;
+  }
+
+  @Deprecated
+  public String getMain() {
+    if (isVerticle()) {
+      return ((Verticle) this).getMain();
+    }
+    return null;
   }
 
   /**
@@ -229,7 +282,7 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    * @param config
    *   The component configuration.
    * @return
-   *   The called component instance.
+   *   The called component configuration.
    */
   public Component<T> setConfig(JsonObject config) {
     this.config = config.toMap();
@@ -242,24 +295,34 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    * @return
    *   The number of component instances.
    */
-  public int getInstances() {
+  public int getNumInstances() {
     return instances;
+  }
+
+  @Deprecated
+  public int getInstances() {
+    return getNumInstances();
   }
 
   /**
    * Sets the number of component instances.
    *
-   * @param instances
+   * @param numInstances
    *   The number of component instances.
    * @return
-   *   The called component instance.
+   *   The called component configuration.
    */
-  public Component<T> setInstances(int instances) {
-    this.instances = instances;
+  public Component<T> setNumInstances(int numInstances) {
+    instances = numInstances;
     for (Input input : inputs) {
       input.setCount(instances);
     }
     return this;
+  }
+
+  @Deprecated
+  public Component<T> setInstances(int instances) {
+    return setNumInstances(instances);
   }
 
   /**
@@ -268,9 +331,8 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    * @return
    *   The component heartbeat interval.
    */
-  @Deprecated
   public long getHeartbeatInterval() {
-    return FIXED_HEARTBEAT_INTERVAL;
+    return heartbeat;
   }
 
   /**
@@ -280,10 +342,10 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    * @param interval
    *   The component heartbeat interval.
    * @return
-   *   The called component instance.
+   *   The called component configuration.
    */
-  @Deprecated
   public Component<T> setHeartbeatInterval(long interval) {
+    heartbeat = interval;
     return this;
   }
 
@@ -458,6 +520,11 @@ public class Component<T extends net.kuujo.vertigo.component.Component> implemen
    */
   public Input addInput(String address, String stream, Grouping grouping) {
     return addInput(new Input(address, stream).groupBy(grouping));
+  }
+
+  @Override
+  public String toString() {
+    return getAddress();
   }
 
 }

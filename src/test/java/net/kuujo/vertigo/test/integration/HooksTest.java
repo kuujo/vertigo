@@ -169,7 +169,7 @@ public class HooksTest extends TestVerticle {
   @Test
   public void testComponentTimeoutHook() {
     Network network = new Network("test");
-    network.setAckTimeout(1000);
+    network.setMessageTimeout(1000);
     network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("timeout"));
     network.addWorker("worker", TestTimingOutWorker.class.getName(), 2).addInput("feeder");
     deploy(network);

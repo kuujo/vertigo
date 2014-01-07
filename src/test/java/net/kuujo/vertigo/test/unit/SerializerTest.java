@@ -51,7 +51,7 @@ public class SerializerTest {
   public void testSerializeNetworkContext() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.setAckTimeout(10000);
+    network.setMessageTimeout(10000);
     network.addFeeder("1", "1.py", 2).addHook(new EventBusHook());
     network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
@@ -80,7 +80,7 @@ public class SerializerTest {
   public void testSerializeNetwork() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.setAckTimeout(10000);
+    network.setMessageTimeout(10000);
     network.addFeeder("1", "1.py", 2).addHook(new EventBusHook());
     network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 
@@ -89,7 +89,7 @@ public class SerializerTest {
       JsonObject serialized = serializer.serialize(network);
       Network deserialized = serializer.deserialize(serialized, Network.class);
       assertTrue(deserialized.isAckingEnabled());
-      assertEquals(10000, deserialized.getAckTimeout());
+      assertEquals(10000, deserialized.getMessageTimeout());
       assertEquals("test", deserialized.getAddress());
     }
     catch (SerializationException e) {
@@ -101,7 +101,7 @@ public class SerializerTest {
   public void testNetworkToContext() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.setAckTimeout(10000);
+    network.setMessageTimeout(10000);
     network.addFeeder("1", "1.py", 2).setConfig(new JsonObject().putString("foo", "bar")).addHook(new EventBusHook());
     network.addWorker("2", "2.py", 2).addInput("1").groupBy(new RoundGrouping());
 

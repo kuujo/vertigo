@@ -73,7 +73,7 @@ public class NetworkTest extends TestVerticle {
   @Test
   public void testTimingOutFeeder() {
     Network network = new Network("test");
-    network.setAckTimeout(1000);
+    network.setMessageTimeout(1000);
     network.addFeeder("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
     network.addWorker("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
@@ -121,7 +121,7 @@ public class NetworkTest extends TestVerticle {
   @Test
   public void testTimingOutExecutor() {
     Network network = new Network("test");
-    network.setAckTimeout(1000);
+    network.setMessageTimeout(1000);
     JsonObject data = new JsonObject().putString("body", "Hello world!");
     network.addExecutor("executor", TestTimingOutExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
     network.addWorker("worker", TestTimingOutWorker.class.getName()).addInput("executor");

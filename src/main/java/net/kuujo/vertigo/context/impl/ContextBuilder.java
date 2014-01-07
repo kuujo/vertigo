@@ -59,7 +59,7 @@ public final class ContextBuilder {
         JsonArray instances = new JsonArray();
         int numInstances = component.getInteger("instances");
         for (int i = 1; i < numInstances+1; i++) {
-          instances.add(new JsonObject().putString("id", String.format("%s.%d", component.getString("address"), i)));
+          instances.add(new JsonObject().putString("address", String.format("%s-%d", component.getString("address"), i)));
         }
         component.putArray("instances", instances);
       }

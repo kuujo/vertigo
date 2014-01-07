@@ -25,6 +25,31 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 @SuppressWarnings("deprecation")
 public class Input extends net.kuujo.vertigo.input.Input {
 
+  /**
+   * <code>address</code> is a string that indicates the address to which this
+   * input subscribes for messages. This can be any component address in any network
+   * within the same Vert.x cluster. This field is required.
+   */
+  public static final String INPUT_ADDRESS = "address";
+
+  /**
+   * <code>stream</code> is a string that indicates the stream to which to subscribe
+   * for messages. If the <code>stream</code> is not provided then the default
+   * <code>default</code> stream will be used.
+   */
+  public static final String INPUT_STREAM = "stream";
+
+  /**
+   * <code>grouping</code> is an object defining the configuration for the input
+   * grouping. The grouping determines how streams are partitioned among multiple
+   * instances of the receiving component. This object must have at least the
+   * <code>type</code> field which indicates the grouping type. Available grouping
+   * types include <code>round</code>, <code>random</code>, <code>fields</code>,
+   * and <code>all</code>. The <code>fields</code> grouping must also include an
+   * array of <code>fields</code> on which to hash messages.
+   */
+  public static final String INPUT_GROUPING = "grouping";
+
   protected Input() {
   }
 

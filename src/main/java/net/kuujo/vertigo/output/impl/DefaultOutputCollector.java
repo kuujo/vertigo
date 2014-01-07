@@ -26,7 +26,7 @@ import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.OutputHook;
-import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.JsonMessageBuilder;

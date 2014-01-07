@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.SerializerFactory;

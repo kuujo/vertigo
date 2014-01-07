@@ -40,6 +40,7 @@ import org.vertx.java.core.logging.Logger;
  *
  * @author Jordan Halterman
  */
+@SuppressWarnings("deprecation")
 public class DefaultListener implements Listener {
   private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final String address;

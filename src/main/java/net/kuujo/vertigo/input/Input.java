@@ -37,7 +37,8 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
  *
  * @author Jordan Halterman
  */
-public final class Input implements Serializable {
+@Deprecated
+public class Input implements Serializable {
   private static final String DEFAULT_STREAM = "default";
   private String id;
   private String stream;
@@ -45,8 +46,7 @@ public final class Input implements Serializable {
   private String address;
   private Grouping grouping;
 
-  @SuppressWarnings("unused")
-  private Input() {
+  protected Input() {
   }
 
   public Input(String address) {
@@ -54,10 +54,18 @@ public final class Input implements Serializable {
   }
 
   public Input(String address, String stream) {
+    this(address, stream, new RoundGrouping());
+  }
+
+  public Input(String address, Grouping grouping) {
+    this(address, DEFAULT_STREAM, grouping);
+  }
+
+  public Input(String address, String stream, Grouping grouping) {
+    id = UUID.randomUUID().toString();
     this.address = address;
     this.stream = stream;
-    id = UUID.randomUUID().toString();
-    groupBy(new RoundGrouping());
+    groupBy(grouping);
   }
 
   /**

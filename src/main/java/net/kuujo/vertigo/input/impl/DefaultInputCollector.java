@@ -23,7 +23,7 @@ import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.InputHook;
-import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;

@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.Input;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.serializer.Serializable;
 import net.kuujo.vertigo.serializer.SerializationException;

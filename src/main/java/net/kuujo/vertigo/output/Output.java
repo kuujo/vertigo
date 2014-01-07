@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.input.Input;
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.output.selector.Selector;
 import net.kuujo.vertigo.serializer.Serializable;

@@ -46,7 +46,7 @@ public class BasicAuditor implements Auditor {
   private Vertx vertx;
   private AuditorVerticle acker;
   private long timeout = 30000;
-  private long cleanupInterval = 500;
+  private long cleanupInterval = 100;
   private long timeoutTimer;
   private final Map<String, Root> roots = new LinkedHashMap<String, Root>();
 
@@ -71,7 +71,8 @@ public class BasicAuditor implements Auditor {
 
   @Override
   public void start() {
-    startTimer();
+    // Only start the timeouts timer if timeouts are enabled (greater than 0).
+    if (timeout > 0) startTimer();
   }
 
   /**
@@ -90,6 +91,9 @@ public class BasicAuditor implements Auditor {
    * Checks messages for timeouts.
    */
   private void checkTimeout() {
+    // If timeout == 0 then timeouts are disabled for the network. Skip the check.
+    if (timeout == 0) return;
+
     // Iterate over nodes and fail any nodes whose expiration time has passed.
     // Nodes are stored in a LinkedHashMap in the order in which they're created,
     // so we can iterate up to the oldest node which has not yet timed out and stop.

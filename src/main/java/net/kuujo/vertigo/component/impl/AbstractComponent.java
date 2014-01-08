@@ -64,7 +64,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   protected final String instanceId;
   protected final String address;
   protected final String networkAddress;
-  protected final List<String> auditors;
   protected final HeartbeatEmitter heartbeat;
   protected final InputCollector input;
   protected final OutputCollector output;
@@ -145,11 +144,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.address = context.componentContext().address();
     NetworkContext networkContext = context.componentContext().networkContext();
     networkAddress = networkContext.address();
-    List<String> auditorAddresses = networkContext.auditors();
-    auditors = new ArrayList<String>();
-    for (String auditorAddress : auditorAddresses) {
-      auditors.add(auditorAddress);
-    }
     heartbeat = new DefaultHeartbeatEmitter(vertx);
     input = new DefaultInputCollector(vertx, container, context, acker);
     output = new DefaultOutputCollector(vertx, container, context, acker);

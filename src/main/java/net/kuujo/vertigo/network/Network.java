@@ -34,7 +34,7 @@ import org.vertx.java.core.json.JsonObject;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
- * A Vertigo network definition.<p>
+ * A Vertigo network configuration.<p>
  *
  * A network is a collection of <code>components</code> - Vert.x verticles
  * or modules - that are interconnected in a meaningful and reliable manner.
@@ -490,6 +490,8 @@ public final class Network implements Serializable {
    *   The feeder module name.
    * @return
    *   The new feeder module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Feeder> addFeederModule(String address, String moduleName) {
     return addModule(new Module<Feeder>(Feeder.class, address, moduleName));
@@ -508,6 +510,8 @@ public final class Network implements Serializable {
    *   as the verticle configuration within deployed module instances.
    * @return
    *   The new feeder module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Feeder> addFeederModule(String address, String moduleName, JsonObject config) {
     return addModule(new Module<Feeder>(Feeder.class, address, moduleName).setConfig(config));
@@ -527,6 +531,8 @@ public final class Network implements Serializable {
    *   component instances.
    * @return
    *   The new feeder module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Feeder> addFeederModule(String address, String moduleName, int numInstances) {
     return addModule(new Module<Feeder>(Feeder.class, address, moduleName).setNumInstances(numInstances));
@@ -549,6 +555,8 @@ public final class Network implements Serializable {
    *   component instances.
    * @return
    *   The new feeder module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Feeder> addFeederModule(String address, String moduleName, JsonObject config, int numInstances) {
     return addModule(new Module<Feeder>(Feeder.class, address, moduleName).setConfig(config).setNumInstances(numInstances));
@@ -736,6 +744,8 @@ public final class Network implements Serializable {
    *   The executor module name.
    * @return
    *   The new executor module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Executor> addExecutorModule(String address, String moduleName) {
     return addModule(new Module<Executor>(Executor.class, address, moduleName));
@@ -754,6 +764,8 @@ public final class Network implements Serializable {
    *   as the verticle configuration within deployed module instances.
    * @return
    *   The new executor module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Executor> addExecutorModule(String address, String moduleName, JsonObject config) {
     return addModule(new Module<Executor>(Executor.class, address, moduleName).setConfig(config));
@@ -773,6 +785,8 @@ public final class Network implements Serializable {
    *   component instances.
    * @return
    *   The new executor module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Executor> addExecutorModule(String address, String moduleName, int numInstances) {
     return addModule(new Module<Executor>(Executor.class, address, moduleName).setNumInstances(numInstances));
@@ -795,6 +809,8 @@ public final class Network implements Serializable {
    *   component instances.
    * @return
    *   The new executor module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Executor> addExecutorModule(String address, String moduleName, JsonObject config, int numInstances) {
     return addModule(new Module<Executor>(Executor.class, address, moduleName).setConfig(config).setNumInstances(numInstances));
@@ -982,6 +998,8 @@ public final class Network implements Serializable {
    *   The worker module name.
    * @return
    *   The new worker module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Worker> addWorkerModule(String address, String moduleName) {
     return addModule(new Module<Worker>(Worker.class, address, moduleName));
@@ -1000,6 +1018,8 @@ public final class Network implements Serializable {
    *   as the verticle configuration within deployed module instances.
    * @return
    *   The new worker module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Worker> addWorkerModule(String address, String moduleName, JsonObject config) {
     return addModule(new Module<Worker>(Worker.class, address, moduleName).setConfig(config));
@@ -1019,6 +1039,8 @@ public final class Network implements Serializable {
    *   component instances.
    * @return
    *   The new worker module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Worker> addWorkerModule(String address, String moduleName, int numInstances) {
     return addModule(new Module<Worker>(Worker.class, address, moduleName).setNumInstances(numInstances));
@@ -1041,6 +1063,8 @@ public final class Network implements Serializable {
    *   component instances.
    * @return
    *   The new worker module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<Worker> addWorkerModule(String address, String moduleName, JsonObject config, int numInstances) {
     return addModule(new Module<Worker>(Worker.class, address, moduleName).setConfig(config).setNumInstances(numInstances));

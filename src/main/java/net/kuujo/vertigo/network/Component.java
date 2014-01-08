@@ -40,11 +40,11 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
  *
  * Components are the primary elements of processing in Vertigo. They can
  * be represented as <code>feeders</code>, <code>executors</code>,
- * <code>workers</code>, or even custom implementations. Each network may
- * consist of any number of components, each of which may subscribe to the
- * output of other components inside or outside of the network. Internally,
- * components are represented as Vert.x modules or verticles. Just as with
- * Vert.x modules and verticles, components may consist of several instances.<p>
+ * or <code>workers</code>. Each network may consist of any number of components,
+ * each of which may subscribe to the output of other components inside or
+ * outside of the network. Internally, components are represented as Vert.x modules
+ * or verticles. Just as with Vert.x modules and verticles, components may consist
+ * of several instances.<p>
  *
  * @author Jordan Haltermam
  */
@@ -203,7 +203,12 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Gets the component type.
+   * Gets the component type.<p>
+   *
+   * The component type is a type that indicates the nature of the component
+   * implementation (module or verticle). For instance, if the component is a
+   * <code>Feeder</code> component, the module or verticle must be a
+   * <code>FeederVerticle</code> instance.
    *
    * @return
    *   The component type.
@@ -288,7 +293,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Sets the component configuration.
+   * Sets the component configuration.<p>
    *
    * This configuration will be passed to component implementations as the verticle
    * or module configuration when the component is started.
@@ -304,7 +309,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Returns the number of component instances.
+   * Returns the number of component instances to deploy within the network.
    *
    * @return
    *   The number of component instances.
@@ -319,7 +324,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Sets the number of component instances.
+   * Sets the number of component instances to deploy within the network.
    *
    * @param numInstances
    *   The number of component instances.
@@ -340,7 +345,8 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Returns the component heartbeat interval.
+   * Returns the component heartbeat interval. This is the interval at which
+   * component instances will send heartbeat messages to network monitors.
    *
    * @return
    *   The component heartbeat interval.
@@ -350,8 +356,8 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   }
 
   /**
-   * Sets the component heartbeat interval. This method no longer has any effect
-   * and will be removed in future versions.
+   * Sets the component heartbeat interval. This is the interval at which
+   * component instances will send heartbeat messages to network monitors.
    *
    * @param interval
    *   The component heartbeat interval.
@@ -367,12 +373,13 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * Adds a component hook to the component.
    *
    * The output hook can be used to receive notifications on events that occur
-   * within the component instance's inputs and outputs. If the hook requires
-   * constructor arguments or otherwise contains any state, the hook should
-   * implement the {@link Serializable} interface. Serializable hooks will be
-   * serialized with state, but non-serializable hooks will be reconstructed from
-   * the class name only. This means for the hook to be properly started, it must
-   * be available on the class path of the deployed component verticle or module.
+   * within the component instance's inputs and outputs. Hooks should implement
+   * the {@link ComponentHook} interface. Hook state will be automatically
+   * serialized to json using an internal <code>Serializer</code>. By default, this means
+   * that any primitives, primitive wrappers, collections, or {@link Serializable}
+   * fields will be serialized. Finer grained control over serialization of hooks
+   * can be provided by either using Jackson annotations within the hook implementation
+   * or by providing a custom serializer for the hook.
    *
    * @param hook
    *   A component hook.

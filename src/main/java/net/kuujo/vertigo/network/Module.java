@@ -62,6 +62,8 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
    *   The module name.
    * @return
    *   The module configuration.
+   * @throws IllegalArgumentException
+   *   If the module name is not a valid module identifier.
    */
   public Module<T> setModule(String moduleName) {
     if (!isModuleName(moduleName)) {

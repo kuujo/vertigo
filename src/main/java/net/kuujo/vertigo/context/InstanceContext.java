@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 @SuppressWarnings("rawtypes")
 public final class InstanceContext<T extends Component> implements Serializable {
-  private String address;
+  private int id;
   private @JsonIgnore ComponentContext<T> component;
 
   private InstanceContext() {
@@ -79,18 +79,23 @@ public final class InstanceContext<T extends Component> implements Serializable 
   }
 
   /**
+   * Returns the instance ID.
+   *
+   * @return
+   *   The instance ID.
+   */
+  public int id() {
+    return id;
+  }
+
+  /**
    * Returns the instance address.
    *
    * @return
    *   The unique instance address.
    */
   public String address() {
-    return address;
-  }
-
-  @Deprecated
-  public String id() {
-    return address();
+    return String.format("%s-%d", componentContext().address(), id());
   }
 
   /**

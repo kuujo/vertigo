@@ -47,6 +47,7 @@ public class Input implements Serializable {
   private Grouping grouping = new RoundGrouping();
 
   protected Input() {
+    id = UUID.randomUUID().toString();
   }
 
   public Input(String address) {

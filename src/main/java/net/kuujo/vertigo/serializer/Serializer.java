@@ -18,12 +18,14 @@ package net.kuujo.vertigo.serializer;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * A Json serializer.
+ * Json serializer.<p>
+ *
+ * Vertigo serializers serialize objects to Vert.x {@link JsonObject} instances
+ * for easy passage over the Vert.x event bus.
  *
  * @author Jordan Halterman
  */
 public interface Serializer {
-
 
   /**
    * Serializes an object to Json. If an error occurs during serialization, a

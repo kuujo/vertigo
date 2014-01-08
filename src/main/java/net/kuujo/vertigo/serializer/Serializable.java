@@ -20,7 +20,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * A serializable object interface.
+ * Interface for serializable objects.<p>
+ *
+ * This interface should be implemented by any classes whose objects should be
+ * serializable by Vertigo's internal serialization. In most cases, classes need
+ * only implement this interface to make objects serializable. Vertigo will automaticaly
+ * detect primitives, primitive wrappers, collections, and other serializable fields
+ * within the class to serialize. To implement more advanced serialization features
+ * see the Jackson annotations documentation or provide a custom serializer.
  *
  * @author Jordan Halterman
  */

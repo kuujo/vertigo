@@ -150,6 +150,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * @throws MalformedNetworkException
    *   If the component definition is malformed.
    */
+  @Deprecated
   @SuppressWarnings("unchecked")
   public static <T extends net.kuujo.vertigo.component.Component<T>> Component<T> fromJson(JsonObject json) throws MalformedNetworkException {
     try {

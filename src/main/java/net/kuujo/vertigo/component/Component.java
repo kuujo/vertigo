@@ -113,10 +113,7 @@ public interface Component<T extends Component<T>> {
   InstanceContext<T> getContext();
 
   /**
-   * Returns the instance logger.<p>
-   *
-   * The instance logger name is the same as the instance address. This will be
-   * the component address followed by a <code>-</code> and the instance ID.
+   * Returns the instance logger.
    *
    * @return
    *   The logger for the component instance.

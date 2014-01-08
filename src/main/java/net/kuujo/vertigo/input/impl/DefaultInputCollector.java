@@ -38,6 +38,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 /**
@@ -57,14 +58,14 @@ public class DefaultInputCollector implements InputCollector {
 
   public DefaultInputCollector(Vertx vertx, Container container, InstanceContext<?> context) {
     this.vertx = vertx;
-    this.logger = container.logger();
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", InputCollector.class.getCanonicalName(), context.address()));
     this.context = context;
     this.acker = new DefaultAcker(context.address(), vertx.eventBus());
   }
 
   public DefaultInputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
     this.vertx = vertx;
-    this.logger = container.logger();
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", InputCollector.class.getCanonicalName(), context.address()));
     this.context = context;
     this.acker = acker;
   }
@@ -149,6 +150,9 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(JsonMessage message) {
         if (hasValidSchema(message)) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Received message %s: %s", message.messageId().correlationId(), message.body().encodePrettily()));
+          }
           handler.handle(message);
           hookReceived(message.messageId());
         }
@@ -291,6 +295,9 @@ public class DefaultInputCollector implements InputCollector {
   public InputCollector ack(JsonMessage message) {
     acker.ack(message.messageId());
     hookAck(message.messageId());
+    if (logger.isDebugEnabled()) {
+      logger.debug(String.format("Acked message %s: %s", message.messageId().correlationId(), message.body().encodePrettily()));
+    }
     return this;
   }
 
@@ -298,6 +305,9 @@ public class DefaultInputCollector implements InputCollector {
   public InputCollector fail(JsonMessage message) {
     acker.fail(message.messageId());
     hookFail(message.messageId());
+    if (logger.isDebugEnabled()) {
+      logger.debug(String.format("Failed message %s: %s", message.messageId().correlationId(), message.body().encodePrettily()));
+    }
     return this;
   }
 

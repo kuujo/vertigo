@@ -45,6 +45,8 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 /**
@@ -56,6 +58,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Vertx vertx;
   private final EventBus eventBus;
   private final InstanceContext<?> context;
+  private final Logger logger;
   private final Acker acker;
   private final boolean ackingEnabled;
   private final String componentAddress;
@@ -78,6 +81,7 @@ public class DefaultOutputCollector implements OutputCollector {
     this.vertx = vertx;
     this.eventBus = eventBus;
     this.context = context;
+    logger = LoggerFactory.getLogger(String.format("%s-%s", OutputCollector.class.getCanonicalName(), context.address()));
     acker = new DefaultAcker(context.address(), eventBus);
     messageBuilder = new JsonMessageBuilder(context.address());
     ackingEnabled = context.componentContext().networkContext().isAckingEnabled();
@@ -94,6 +98,7 @@ public class DefaultOutputCollector implements OutputCollector {
     this.eventBus = eventBus;
     this.context = context;
     this.acker = acker;
+    logger = LoggerFactory.getLogger(String.format("%s-%s", OutputCollector.class.getCanonicalName(), context.address()));
     messageBuilder = new JsonMessageBuilder(context.address());
     ackingEnabled = context.componentContext().networkContext().isAckingEnabled();
     auditors = context.componentContext().networkContext().auditors();
@@ -322,6 +327,9 @@ public class DefaultOutputCollector implements OutputCollector {
     }
     acker.create(messageId);
     hookEmit(messageId);
+    if (logger.isDebugEnabled()) {
+      logger.debug(String.format("Emitted new message to stream:%s %s", stream, body.encodePrettily()));
+    }
     return messageId;
   }
 
@@ -337,6 +345,9 @@ public class DefaultOutputCollector implements OutputCollector {
       }
     }
     hookEmit(messageId);
+    if (logger.isDebugEnabled()) {
+      logger.debug(String.format("Emitted child message to stream:%s %s", stream, body.encodePrettily()));
+    }
     return messageId;
   }
 

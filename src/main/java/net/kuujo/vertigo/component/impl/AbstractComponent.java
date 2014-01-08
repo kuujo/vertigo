@@ -137,7 +137,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = LoggerFactory.getLogger(context.address());
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.componentContext().type().getCanonicalName(), context.address()));
     this.context = context;
     this.acker = new DefaultAcker(context.address(), eventBus);
     this.instanceId = context.address();

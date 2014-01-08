@@ -15,11 +15,15 @@
  */
 package net.kuujo.vertigo.test.unit;
 
+import java.util.List;
+
 import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.network.Module;
@@ -29,11 +33,13 @@ import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Network configuration tests.
@@ -637,7 +643,32 @@ public class NetworkTest {
   }
 
   @Test
-  public void testAddVerticleFromJson() {
+  public void testAddFeederModuleFromJson() {
+    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
+    JsonObject jsonFeeder = new JsonObject()
+        .putString(Module.COMPONENT_ADDRESS, "feeder")
+        .putString(Module.COMPONENT_TYPE, "feeder")
+        .putString(Module.COMPONENT_DEPLOYMENT_METHOD, "module")
+        .putString(Module.MODULE_NAME, "com.test~test-module~1.0")
+        .putObject(Module.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
+        .putNumber(Module.COMPONENT_NUM_INSTANCES, 2);
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
+    Network network = Network.fromJson(json);
+    assertEquals("test", network.getAddress());
+    Module<Feeder> module = network.getComponent("feeder");
+    assertEquals("feeder", module.getAddress());
+    assertEquals(Feeder.class, module.getType());
+    assertEquals("com.test~test-module~1.0", module.getModule());
+    assertEquals("bar", module.getConfig().getString("foo"));
+    assertEquals(2, module.getNumInstances());
+    assertFalse(module.isVerticle());
+    assertTrue(module.isModule());
+    assertEquals(0, module.getHooks().size());
+    assertEquals(0, module.getInputs().size());
+  }
+
+  @Test
+  public void testAddFeederVerticleFromJson() {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(Verticle.COMPONENT_ADDRESS, "feeder")
@@ -661,29 +692,223 @@ public class NetworkTest {
     assertFalse(verticle.isModule());
     assertTrue(verticle.isWorker());
     assertTrue(verticle.isMultiThreaded());
+    assertEquals(0, verticle.getHooks().size());
+    assertEquals(0, verticle.getInputs().size());
   }
 
   @Test
-  public void testAddModuleFromJson() {
+  public void testAddWorkerModuleFromJson() {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
-    JsonObject jsonFeeder = new JsonObject()
-        .putString(Module.COMPONENT_ADDRESS, "feeder")
-        .putString(Module.COMPONENT_TYPE, "feeder")
+    JsonObject jsonWorker = new JsonObject()
+        .putString(Module.COMPONENT_ADDRESS, "worker")
+        .putString(Module.COMPONENT_TYPE, "worker")
         .putString(Module.COMPONENT_DEPLOYMENT_METHOD, "module")
         .putString(Module.MODULE_NAME, "com.test~test-module~1.0")
         .putObject(Module.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(Module.COMPONENT_NUM_INSTANCES, 2);
-    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("worker", jsonWorker));
     Network network = Network.fromJson(json);
     assertEquals("test", network.getAddress());
-    Module<Feeder> module = network.getComponent("feeder");
-    assertEquals("feeder", module.getAddress());
-    assertEquals(Feeder.class, module.getType());
+    Module<Feeder> module = network.getComponent("worker");
+    assertEquals("worker", module.getAddress());
+    assertEquals(Worker.class, module.getType());
     assertEquals("com.test~test-module~1.0", module.getModule());
     assertEquals("bar", module.getConfig().getString("foo"));
     assertEquals(2, module.getNumInstances());
     assertFalse(module.isVerticle());
     assertTrue(module.isModule());
+    assertEquals(0, module.getHooks().size());
+    assertEquals(0, module.getInputs().size());
+  }
+
+  @Test
+  public void testAddWorkerVerticleFromJson() {
+    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
+    JsonObject jsonWorker = new JsonObject()
+        .putString(Verticle.COMPONENT_ADDRESS, "worker")
+        .putString(Verticle.COMPONENT_TYPE, "worker")
+        .putString(Verticle.COMPONENT_DEPLOYMENT_METHOD, "verticle")
+        .putString(Verticle.VERTICLE_MAIN, "test.py")
+        .putObject(Verticle.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
+        .putNumber(Verticle.COMPONENT_NUM_INSTANCES, 2)
+        .putBoolean(Verticle.VERTICLE_IS_WORKER, true)
+        .putBoolean(Verticle.VERTICLE_IS_MULTI_THREADED, true);
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("worker", jsonWorker));
+    Network network = Network.fromJson(json);
+    assertEquals("test", network.getAddress());
+    Verticle<Feeder> verticle = network.getComponent("worker");
+    assertEquals("worker", verticle.getAddress());
+    assertEquals(Worker.class, verticle.getType());
+    assertEquals("test.py", verticle.getMain());
+    assertEquals("bar", verticle.getConfig().getString("foo"));
+    assertEquals(2, verticle.getNumInstances());
+    assertTrue(verticle.isVerticle());
+    assertFalse(verticle.isModule());
+    assertTrue(verticle.isWorker());
+    assertTrue(verticle.isMultiThreaded());
+    assertEquals(0, verticle.getHooks().size());
+    assertEquals(0, verticle.getInputs().size());
+  }
+
+  @Test
+  public void testAddExecutorModuleFromJson() {
+    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
+    JsonObject jsonExecutor = new JsonObject()
+        .putString(Module.COMPONENT_ADDRESS, "executor")
+        .putString(Module.COMPONENT_TYPE, "executor")
+        .putString(Module.COMPONENT_DEPLOYMENT_METHOD, "module")
+        .putString(Module.MODULE_NAME, "com.test~test-module~1.0")
+        .putObject(Module.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
+        .putNumber(Module.COMPONENT_NUM_INSTANCES, 2);
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("executor", jsonExecutor));
+    Network network = Network.fromJson(json);
+    assertEquals("test", network.getAddress());
+    Module<Feeder> module = network.getComponent("executor");
+    assertEquals("executor", module.getAddress());
+    assertEquals(Executor.class, module.getType());
+    assertEquals("com.test~test-module~1.0", module.getModule());
+    assertEquals("bar", module.getConfig().getString("foo"));
+    assertEquals(2, module.getNumInstances());
+    assertFalse(module.isVerticle());
+    assertTrue(module.isModule());
+    assertEquals(0, module.getHooks().size());
+    assertEquals(0, module.getInputs().size());
+  }
+
+  @Test
+  public void testAddExecutorVerticleFromJson() {
+    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
+    JsonObject jsonExecutor = new JsonObject()
+        .putString(Verticle.COMPONENT_ADDRESS, "executor")
+        .putString(Verticle.COMPONENT_TYPE, "executor")
+        .putString(Verticle.COMPONENT_DEPLOYMENT_METHOD, "verticle")
+        .putString(Verticle.VERTICLE_MAIN, "test.py")
+        .putObject(Verticle.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
+        .putNumber(Verticle.COMPONENT_NUM_INSTANCES, 2)
+        .putBoolean(Verticle.VERTICLE_IS_WORKER, true)
+        .putBoolean(Verticle.VERTICLE_IS_MULTI_THREADED, true);
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("executor", jsonExecutor));
+    Network network = Network.fromJson(json);
+    assertEquals("test", network.getAddress());
+    Verticle<Feeder> verticle = network.getComponent("executor");
+    assertEquals("executor", verticle.getAddress());
+    assertEquals(Executor.class, verticle.getType());
+    assertEquals("test.py", verticle.getMain());
+    assertEquals("bar", verticle.getConfig().getString("foo"));
+    assertEquals(2, verticle.getNumInstances());
+    assertTrue(verticle.isVerticle());
+    assertFalse(verticle.isModule());
+    assertTrue(verticle.isWorker());
+    assertTrue(verticle.isMultiThreaded());
+    assertEquals(0, verticle.getHooks().size());
+    assertEquals(0, verticle.getInputs().size());
+  }
+
+  @Test
+  public void testAddHookFromJson() {
+    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
+    JsonObject jsonFeeder = new JsonObject()
+        .putString(Verticle.COMPONENT_ADDRESS, "feeder")
+        .putString(Verticle.COMPONENT_TYPE, "feeder")
+        .putString(Verticle.COMPONENT_DEPLOYMENT_METHOD, "verticle")
+        .putString(Verticle.VERTICLE_MAIN, "test.py");
+    JsonObject jsonHook = new JsonObject().putString("type", TestHook.class.getName());
+    jsonFeeder.putArray(Verticle.COMPONENT_HOOKS, new JsonArray().add(jsonHook));
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
+    Network network = Network.fromJson(json);
+    assertEquals("test", network.getAddress());
+    Verticle<Feeder> feeder = network.getComponent("feeder");
+    assertNotNull(feeder);
+    List<ComponentHook> hooks = feeder.getHooks();
+    assertEquals(1, hooks.size());
+    assertTrue(hooks.get(0) instanceof TestHook);
+  }
+
+  @Test
+  public void testAddInputsFromJson() {
+    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
+    JsonObject jsonFeeder = new JsonObject()
+        .putString(Verticle.COMPONENT_ADDRESS, "feeder")
+        .putString(Verticle.COMPONENT_TYPE, "feeder")
+        .putString(Verticle.COMPONENT_DEPLOYMENT_METHOD, "verticle")
+        .putString(Verticle.VERTICLE_MAIN, "test.py");
+
+    JsonArray jsonInputs = new JsonArray();
+    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input1"));
+    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input2")
+        .putString(Input.INPUT_STREAM, "nondefault"));
+    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input3")
+        .putObject(Input.INPUT_GROUPING, new JsonObject().putString("type", "random")));
+    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input4")
+        .putObject(Input.INPUT_GROUPING, new JsonObject().putString("type", "fields")
+            .putArray("fields", new JsonArray().add("foo").add("bar"))));
+    jsonFeeder.putArray(Verticle.COMPONENT_INPUTS, jsonInputs);
+
+    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
+    Network network = Network.fromJson(json);
+    assertEquals("test", network.getAddress());
+    Verticle<Feeder> feeder = network.getComponent("feeder");
+    assertNotNull(feeder);
+
+    List<Input> inputs = feeder.getInputs();
+    assertEquals(4, inputs.size());
+    Input input1 = inputs.get(0);
+    assertEquals("input1", input1.getAddress());
+    assertEquals("default", input1.getStream());
+    assertTrue(input1.getGrouping() instanceof RoundGrouping);
+    Input input2 = inputs.get(1);
+    assertEquals("input2", input2.getAddress());
+    assertEquals("nondefault", input2.getStream());
+    assertTrue(input2.getGrouping() instanceof RoundGrouping);
+    Input input3 = inputs.get(2);
+    assertEquals("input3", input3.getAddress());
+    assertEquals("default", input3.getStream());
+    assertTrue(input3.getGrouping() instanceof RandomGrouping);
+    Input input4 = inputs.get(3);
+    assertEquals("input4", input4.getAddress());
+    assertEquals("default", input4.getStream());
+    assertTrue(input4.getGrouping() instanceof FieldsGrouping);
+    assertTrue(((FieldsGrouping) input4.getGrouping()).getFields().contains("foo"));
+    assertTrue(((FieldsGrouping) input4.getGrouping()).getFields().contains("bar"));
+  }
+
+  public static class TestHook implements ComponentHook {
+    @Override
+    public void handleStart(net.kuujo.vertigo.component.Component<?> subject) {
+      
+    }
+    @Override
+    public void handleStop(net.kuujo.vertigo.component.Component<?> subject) {
+      
+    }
+    @Override
+    public void handleReceive(MessageId messageId) {
+      
+    }
+    @Override
+    public void handleAck(MessageId messageId) {
+      
+    }
+    @Override
+    public void handleFail(MessageId messageId) {
+      
+    }
+    @Override
+    public void handleEmit(MessageId messageId) {
+      
+    }
+    @Override
+    public void handleAcked(MessageId messageId) {
+      
+    }
+    @Override
+    public void handleFailed(MessageId messageId) {
+      
+    }
+    @Override
+    public void handleTimeout(MessageId messageId) {
+      
+    }
   }
 
 }

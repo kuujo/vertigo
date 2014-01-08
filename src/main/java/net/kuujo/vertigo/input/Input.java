@@ -41,10 +41,10 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
 public class Input implements Serializable {
   private static final String DEFAULT_STREAM = "default";
   private String id;
-  private String stream;
+  private String stream = DEFAULT_STREAM;
   private int count = 1;
   private String address;
-  private Grouping grouping;
+  private Grouping grouping = new RoundGrouping();
 
   protected Input() {
   }

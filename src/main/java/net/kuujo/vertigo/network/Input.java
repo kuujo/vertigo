@@ -50,6 +50,11 @@ public class Input extends net.kuujo.vertigo.input.Input {
    */
   public static final String INPUT_GROUPING = "grouping";
 
+  /**
+   * The default input stream: <code>default</code>
+   */
+  public static final String DEFAULT_STREAM = "default";
+
   protected Input() {
   }
 

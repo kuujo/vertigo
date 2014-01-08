@@ -42,12 +42,19 @@ import net.kuujo.vertigo.runtime.TimeoutException;
  * @author Jordan Halterman
  */
 public class BasicExecutor extends AbstractComponent<Executor> implements Executor {
+
+  /**
+   * Constant indicating unlimited automatic retry attempts.
+   */
+  public static final int AUTO_RETRY_ATTEMPTS_UNLIMITED = -1;
+
+  private static final long DEFAULT_FEED_INTERVAL = 10;
   private Handler<Executor> executeHandler;
   private Handler<Void> drainHandler;
   protected InternalQueue queue;
   private boolean autoRetry;
-  private int retryAttempts = -1;
-  private long executeInterval = 10;
+  private int retryAttempts = AUTO_RETRY_ATTEMPTS_UNLIMITED;
+  private long executeInterval = DEFAULT_FEED_INTERVAL;
   private boolean started;
   private boolean paused;
   private boolean executed;
@@ -287,7 +294,7 @@ public class BasicExecutor extends AbstractComponent<Executor> implements Execut
     queue.enqueue(id, new Handler<AsyncResult<JsonMessage>>() {
       @Override
       public void handle(AsyncResult<JsonMessage> result) {
-        if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)
+        if (autoRetry && (retryAttempts == AUTO_RETRY_ATTEMPTS_UNLIMITED || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
           doExecute(stream, args, attempts+1, resultHandler);
         }

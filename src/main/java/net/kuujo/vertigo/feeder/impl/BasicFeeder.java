@@ -39,12 +39,19 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
+
+  /**
+   * Constant indicating unlimited automatic retry attempts.
+   */
+  public static final int AUTO_RETRY_ATTEMPTS_UNLIMITED = -1;
+
+  private static final long DEFAULT_FEED_INTERVAL = 10;
   private Handler<Feeder> feedHandler;
   private Handler<Void> drainHandler;
   private InternalQueue queue = new InternalQueue();
   private boolean autoRetry;
-  private int retryAttempts = -1;
-  private long feedInterval = 10;
+  private int retryAttempts = AUTO_RETRY_ATTEMPTS_UNLIMITED;
+  private long feedInterval = DEFAULT_FEED_INTERVAL;
   private boolean started;
   private boolean paused;
   private boolean fed;
@@ -275,7 +282,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     queue.enqueue(id, new Handler<AsyncResult<MessageId>>() {
       @Override
       public void handle(AsyncResult<MessageId> result) {
-        if (autoRetry && (retryAttempts == -1 || attempts < retryAttempts)
+        if (autoRetry && (retryAttempts == AUTO_RETRY_ATTEMPTS_UNLIMITED || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
           doFeed(stream, data, attempts+1, ackHandler);
         }

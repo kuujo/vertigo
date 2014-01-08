@@ -237,11 +237,28 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @param id
    *   The instance ID.
    * @return
-   *   A component instance or null if the instance doesn't exist.
+   *   A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext<T> instanceContext(String id) {
+  public InstanceContext<T> instanceContext(int id) {
     for (InstanceContext<T> instance : instances) {
-      if (instance.address().equals(id)) {
+      if (instance.id() == id) {
+        return instance.setComponentContext(this);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Gets a component instance context by instance address.
+   *
+   * @param address
+   *   The instance address.
+   * @return
+   *   A component instance or <code>null</code> if the instance doesn't exist.
+   */
+  public InstanceContext<T> instanceContext(String address) {
+    for (InstanceContext<T> instance : instances) {
+      if (instance.address().equals(address)) {
         return instance.setComponentContext(this);
       }
     }
@@ -249,8 +266,8 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   }
 
   @Deprecated
-  public InstanceContext<T> getInstance(String id) {
-    return instanceContext(id);
+  public InstanceContext<T> getInstance(String address) {
+    return instanceContext(address);
   }
 
   /**

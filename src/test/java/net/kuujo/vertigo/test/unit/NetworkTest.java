@@ -40,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Network configuration tests.
@@ -124,6 +125,17 @@ public class NetworkTest {
     assertTrue(verticle.isMultiThreaded());
     verticle.setWorker(false);
     assertFalse(verticle.isMultiThreaded());
+  }
+
+  @Test
+  public void testAddInvalidModule() {
+    Network network = new Network("test");
+    try {
+      network.addFeederModule("feeder", "feeder.py");
+      fail();
+    }
+    catch (IllegalArgumentException e) {
+    }
   }
 
   @Test

@@ -52,8 +52,12 @@ public class Verticle<T extends net.kuujo.vertigo.component.Component> extends C
   public Verticle() {
   }
 
-  public Verticle(Class<T> type, String address, String main) {
+  public Verticle(Class<T> type, String address) {
     super(type, address);
+  }
+
+  public Verticle(Class<T> type, String address, String main) {
+    this(type, address);
     setMain(main);
   }
 

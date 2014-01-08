@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.network;
 
+import static net.kuujo.vertigo.util.Component.isModuleName;
+
 /**
  * A module component.
  *
@@ -34,8 +36,12 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
   public Module() {
   }
 
-  public Module(Class<T> type, String address, String moduleName) {
+  public Module(Class<T> type, String address) {
     super(type, address);
+  }
+
+  public Module(Class<T> type, String address, String moduleName) {
+    this(type, address);
     setModule(moduleName);
   }
 
@@ -58,6 +64,9 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
    *   The module configuration.
    */
   public Module<T> setModule(String moduleName) {
+    if (!isModuleName(moduleName)) {
+      throw new IllegalArgumentException(moduleName + " is not a valid module name.");
+    }
     module = moduleName;
     return this;
   }

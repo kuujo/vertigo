@@ -43,6 +43,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * An abstract network coordinator.
@@ -52,6 +54,7 @@ import org.vertx.java.core.json.JsonObject;
 @SuppressWarnings({"unchecked", "rawtypes"})
 abstract class AbstractCoordinator extends BusModBase implements Handler<Message<JsonObject>> {
   protected NetworkContext context;
+  protected Logger logger;
   protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();
   protected Map<String, InstanceContext<?>> contextMap = new HashMap<>();
@@ -65,6 +68,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     super.start();
     events = new Events(eb);
     context = NetworkContext.fromJson(config);
+    logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getName(), context.address()));
     eb.registerHandler(context.address(), this);
     doDeploy();
   }
@@ -262,6 +266,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   private void recursiveDeployAuditors(final List<String> auditors, final Future<Void> future) {
     if (auditors.size() > 0) {
       final String address = auditors.iterator().next();
+      if (logger.isDebugEnabled()) {
+        logger.debug(String.format("Deploying network auditor: %s", address));
+      }
       JsonObject auditorConfig = new JsonObject()
         .putString(AuditorVerticle.ADDRESS, address)
         .putNumber(AuditorVerticle.TIMEOUT, context.messageTimeout());
@@ -298,6 +305,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    */
   private void doRegister(Message<JsonObject> message) {
     final String address = getMandatoryString("address", message);
+    if (logger.isDebugEnabled()) {
+      logger.debug(String.format("Registering heartbeat: %s", address));
+    }
     String heartbeatAddress = createHeartbeatAddress();
     HeartbeatMonitor monitor = new DefaultHeartbeatMonitor(heartbeatAddress, vertx);
     monitor.listen(new Handler<String>() {
@@ -318,6 +328,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    */
   private void doUnregister(Message<JsonObject> message) {
     final String address = getMandatoryString("address", message);
+    if (logger.isDebugEnabled()) {
+      logger.debug(String.format("Unregistering heartbeat: %s", address));
+    }
     if (heartbeats.containsKey(address)) {
       HeartbeatMonitor monitor = heartbeats.get(address);
       monitor.unlisten();
@@ -331,6 +344,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    */
   private void doRedeploy(final String id) {
     if (deploymentMap.containsKey(id)) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(String.format("Redeploying %s", id));
+      }
       String deploymentID = deploymentMap.get(id);
       undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
@@ -429,9 +445,15 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     String id = getMandatoryString("id", message);
     if (id != null) {
       ready.put(id, message);
+      if (logger.isDebugEnabled()) {
+        logger.debug(String.format("%s is ready", id));
+      }
       InstanceContext<?> context = contextMap.get(id);
       events.trigger(Events.Component.Start.class, context.componentContext().address(), context);
       if (ready.size() == instances.size()) {
+        if (logger.isInfoEnabled()) {
+          logger.info("Starting components");
+        }
         events.trigger(Events.Network.Start.class, this.context.address(), this.context);
         for (Message<JsonObject> replyMessage : ready.values()) {
           replyMessage.reply();
@@ -587,6 +609,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
       @Override
       protected void doDeploy(ComponentContext context, Handler<AsyncResult<String>> resultHandler) {
+        if (logger.isInfoEnabled()) {
+          logger.info(String.format("Deploying component %s", context.address()));
+        }
         final Future<String> future = new DefaultFutureResult<String>().setHandler(resultHandler);
         RecursiveInstanceDeployer deployer = new RecursiveInstanceDeployer(context.instanceContexts());
         deployer.deploy(new Handler<AsyncResult<Void>>() {
@@ -604,6 +629,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
       @Override
       protected void doUndeploy(ComponentContext context, Handler<AsyncResult<Void>> doneHandler) {
+        if (logger.isInfoEnabled()) {
+          logger.info(String.format("Undeploying component %s", context.address()));
+        }
         final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
         RecursiveInstanceDeployer executor = new RecursiveInstanceDeployer(context.instanceContexts());
         executor.undeploy(new Handler<AsyncResult<Void>>() {
@@ -631,6 +659,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
       @Override
       protected void doDeploy(final InstanceContext<?> context, Handler<AsyncResult<String>> resultHandler) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(String.format("Deploying instance %s", context.address()));
+        }
         instances.add(context.address());
 
         final Future<String> future = new DefaultFutureResult<String>();
@@ -698,6 +729,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
 
       @Override
       protected void doUndeploy(final InstanceContext<?> context, Handler<AsyncResult<Void>> resultHandler) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(String.format("Undeploying instance %s", context.address()));
+        }
         final Future<Void> future = new DefaultFutureResult<Void>();
         future.setHandler(resultHandler);
         String id = context.address();

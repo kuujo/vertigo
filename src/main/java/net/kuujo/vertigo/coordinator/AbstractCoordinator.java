@@ -92,6 +92,32 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   protected abstract void deployVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
 
   /**
+   * Deploys a worker verticle.
+   *
+   * @param main
+   *   The verticle main.
+   * @param config
+   *   The verticle configuration.
+   * @param multiThreaded
+   *   Whether the verticle is multi-threaded.
+   */
+  protected abstract void deployWorkerVerticle(String main, JsonObject config, boolean multiThreaded);
+
+  /**
+   * Deploys a worker verticle.
+   *
+   * @param main
+   *   The verticle main.
+   * @param config
+   *   The verticle configuration.
+   * @param multiThreaded
+   *   Whether the verticle is multi-threaded.
+   * @param doneHandler
+   *   An async handler to be called once complete.
+   */
+  protected abstract void deployWorkerVerticle(String main, JsonObject config, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler);
+
+  /**
    * Deploys a module.
    *
    * @param moduleName
@@ -330,17 +356,32 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
             else if (context.componentContext().isVerticle()) {
               JsonObject config = context.componentContext().config().copy();
               config.putObject("__context__", InstanceContext.toJson(context));
-              deployVerticle(context.<VerticleContext>componentContext().main(), config, new Handler<AsyncResult<String>>() {
-                @Override
-                public void handle(AsyncResult<String> result) {
-                  if (result.succeeded()) {
-                    deploymentMap.put(context.address(), result.result());
+              if (context.<VerticleContext>componentContext().isWorker()) {
+                deployWorkerVerticle(context.<VerticleContext>componentContext().main(), config, context.<VerticleContext>componentContext().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    if (result.succeeded()) {
+                      deploymentMap.put(context.address(), result.result());
+                    }
+                    else {
+                      container.logger().error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
+                    }
                   }
-                  else {
-                    container.logger().error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
+                });
+              }
+              else {
+                deployVerticle(context.<VerticleContext>componentContext().main(), config, new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    if (result.succeeded()) {
+                      deploymentMap.put(context.address(), result.result());
+                    }
+                    else {
+                      container.logger().error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
+                    }
                   }
-                }
-              });
+                });
+              }
             }
           }
         }
@@ -607,19 +648,36 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         }
 
         if (context.componentContext().isVerticle()) {
-          deployVerticle(context.<VerticleContext>componentContext().main(), config, new Handler<AsyncResult<String>>() {
-            @Override
-            public void handle(AsyncResult<String> result) {
-              if (result.succeeded()) {
-                deploymentMap.put(context.address(), result.result());
-                future.setResult(result.result());
+          if (context.<VerticleContext>componentContext().isWorker()) {
+            deployWorkerVerticle(context.<VerticleContext>componentContext().main(), config, context.<VerticleContext>componentContext().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                if (result.succeeded()) {
+                  deploymentMap.put(context.address(), result.result());
+                  future.setResult(result.result());
+                }
+                else {
+                  events.trigger(Events.Component.Deploy.class, context.componentContext().address(), context);
+                  future.setFailure(result.cause());
+                }
               }
-              else {
-                events.trigger(Events.Component.Deploy.class, context.componentContext().address(), context);
-                future.setFailure(result.cause());
+            });
+          }
+          else {
+            deployVerticle(context.<VerticleContext>componentContext().main(), config, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                if (result.succeeded()) {
+                  deploymentMap.put(context.address(), result.result());
+                  future.setResult(result.result());
+                }
+                else {
+                  events.trigger(Events.Component.Deploy.class, context.componentContext().address(), context);
+                  future.setFailure(result.cause());
+                }
               }
-            }
-          });
+            });
+          }
         }
         else if (context.componentContext().isModule()) {
           deployModule(context.<ModuleContext>componentContext().module(), config, new Handler<AsyncResult<String>>() {

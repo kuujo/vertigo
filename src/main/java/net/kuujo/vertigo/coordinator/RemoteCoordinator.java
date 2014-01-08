@@ -54,6 +54,20 @@ public class RemoteCoordinator extends AbstractCoordinator {
   }
 
   @Override
+  protected void deployWorkerVerticle(String main, JsonObject config, boolean multiThreaded) {
+    eventBus.send(address, createAction("deploy").putString("type", "verticle")
+        .putString("main", main).putObject("config", config).putBoolean("worker", true));
+  }
+
+  @Override
+  protected void deployWorkerVerticle(String main, JsonObject config, boolean multiThreaded,
+      Handler<AsyncResult<String>> doneHandler) {
+    eventBus.send(address, createAction("deploy").putString("type", "verticle")
+        .putString("main", main).putObject("config", config).putBoolean("worker", true),
+        createDeployHandler(new DefaultFutureResult<String>().setHandler(doneHandler)));
+  }
+
+  @Override
   protected void deployModule(String moduleName, JsonObject config) {
     eventBus.send(address, createAction("deploy").putString("type", "module")
         .putString("module", moduleName).putObject("config", config));

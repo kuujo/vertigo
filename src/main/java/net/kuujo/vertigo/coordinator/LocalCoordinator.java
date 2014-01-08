@@ -38,6 +38,17 @@ public class LocalCoordinator extends AbstractCoordinator {
   }
 
   @Override
+  protected void deployWorkerVerticle(String main, JsonObject config, boolean multiThreaded) {
+    container.deployWorkerVerticle(main, config, 1, multiThreaded);
+  }
+
+  @Override
+  protected void deployWorkerVerticle(String main, JsonObject config, boolean multiThreaded,
+      Handler<AsyncResult<String>> doneHandler) {
+    container.deployWorkerVerticle(main, config, 1, multiThreaded, doneHandler);
+  }
+
+  @Override
   protected void deployModule(String moduleName, JsonObject config) {
     container.deployModule(moduleName, config);
   }

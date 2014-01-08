@@ -49,13 +49,13 @@ public class ListenerTest extends TestVerticle {
   @Test
   public void testListener() {
     Network network = new Network("test");
-    network.addFeeder("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addWorker("worker1", TestAckingWorker.class.getName(), 2).addInput("feeder");
-    network.addWorker("worker2", TestAckingWorker.class.getName(), 2).addInput("feeder");
+    network.addFeederVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network.addWorkerVerticle("worker1", TestAckingWorker.class.getName(), 2).addInput("feeder");
+    network.addWorkerVerticle("worker2", TestAckingWorker.class.getName(), 2).addInput("feeder");
     Component<Worker> worker3 = network.addWorker("worker3", TestAckingWorker.class.getName(), 2);
     worker3.addInput("worker1");
     worker3.addInput("worker2");
-    network.addWorker("worker4", TestAckingWorker.class.getName(), 2).addInput("worker3").randomGrouping();
+    network.addWorkerVerticle("worker4", TestAckingWorker.class.getName(), 2).addInput("worker3").randomGrouping();
 
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {

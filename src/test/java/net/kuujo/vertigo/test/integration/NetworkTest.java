@@ -57,16 +57,16 @@ public class NetworkTest extends TestVerticle {
   @Test
   public void testAckingFeeder() {
     Network network = new Network("test");
-    network.addFeeder("feeder", TestAckingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorker("worker", TestAckingWorker.class.getName()).addInput("feeder");
+    network.addFeederVerticle("feeder", TestAckingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
   }
 
   @Test
   public void testFailingFeeder() {
     Network network = new Network("test");
-    network.addFeeder("feeder", TestFailingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorker("worker", TestFailingWorker.class.getName()).addInput("feeder");
+    network.addFeederVerticle("feeder", TestFailingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addWorkerVerticle("worker", TestFailingWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
   }
 
@@ -74,8 +74,8 @@ public class NetworkTest extends TestVerticle {
   public void testTimingOutFeeder() {
     Network network = new Network("test");
     network.setMessageTimeout(1000);
-    network.addFeeder("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorker("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
+    network.addFeederVerticle("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addWorkerVerticle("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
   }
 
@@ -95,8 +95,8 @@ public class NetworkTest extends TestVerticle {
   @Test
   public void testStreamFeeder() {
     Network network = new Network("test");
-    network.addFeeder("feeder", StreamFeeder.class.getName());
-    network.addWorker("worker", TestAckingWorker.class.getName()).addInput("feeder", "stream");
+    network.addFeederVerticle("feeder", StreamFeeder.class.getName());
+    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder", "stream");
     deployNetwork(network);
   }
 
@@ -104,8 +104,8 @@ public class NetworkTest extends TestVerticle {
   public void testAckingExecutor() {
     Network network = new Network("test");
     JsonObject data = new JsonObject().putString("body", "Hello world!");
-    network.addExecutor("executor", TestResultCheckingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
-    network.addWorker("worker", TestAckingWorker.class.getName()).addInput("executor");
+    network.addExecutorVerticle("executor", TestResultCheckingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
+    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("executor");
     deployNetwork(network);
   }
 
@@ -113,8 +113,8 @@ public class NetworkTest extends TestVerticle {
   public void testFailingExecutor() {
     Network network = new Network("test");
     JsonObject data = new JsonObject().putString("body", "Hello world!");
-    network.addExecutor("executor", TestFailingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
-    network.addWorker("worker", TestFailingWorker.class.getName()).addInput("executor");
+    network.addExecutorVerticle("executor", TestFailingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
+    network.addWorkerVerticle("worker", TestFailingWorker.class.getName()).addInput("executor");
     deployNetwork(network);
   }
 
@@ -123,8 +123,8 @@ public class NetworkTest extends TestVerticle {
     Network network = new Network("test");
     network.setMessageTimeout(1000);
     JsonObject data = new JsonObject().putString("body", "Hello world!");
-    network.addExecutor("executor", TestTimingOutExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
-    network.addWorker("worker", TestTimingOutWorker.class.getName()).addInput("executor");
+    network.addExecutorVerticle("executor", TestTimingOutExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
+    network.addWorkerVerticle("worker", TestTimingOutWorker.class.getName()).addInput("executor");
     deployNetwork(network);
   }
 
@@ -138,9 +138,9 @@ public class NetworkTest extends TestVerticle {
   @Test
   public void testNestedNetwork() {
     Network network1 = new Network("network1");
-    network1.addFeeder("network1.feeder1", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network1.addWorker("network1.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.feeder1").randomGrouping();
-    network1.addWorker("network1.worker2", TestAckingWorker.class.getName(), 2).addInput("network1.worker1").roundGrouping();
+    network1.addFeederVerticle("network1.feeder1", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
+    network1.addWorkerVerticle("network1.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.feeder1").randomGrouping();
+    network1.addWorkerVerticle("network1.worker2", TestAckingWorker.class.getName(), 2).addInput("network1.worker1").roundGrouping();
 
     final Cluster cluster = new LocalCluster(vertx, container);
     cluster.deploy(network1, new Handler<AsyncResult<NetworkContext>>() {
@@ -153,8 +153,8 @@ public class NetworkTest extends TestVerticle {
           assertTrue(result.succeeded());
 
           Network network2 = new Network("network2");
-          network2.addWorker("network2.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.worker2").randomGrouping();
-          network2.addWorker("network2.worker2", NestedWorker.class.getName(), 2).addInput("network2.worker1").roundGrouping();
+          network2.addWorkerVerticle("network2.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.worker2").randomGrouping();
+          network2.addWorkerVerticle("network2.worker2", NestedWorker.class.getName(), 2).addInput("network2.worker1").roundGrouping();
           deployNetwork(network2);
         }
       }

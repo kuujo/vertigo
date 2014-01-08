@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.network.Component;
+
 /**
  * Module component context.
  *
@@ -25,6 +27,16 @@ package net.kuujo.vertigo.context;
 @SuppressWarnings("rawtypes")
 public class ModuleContext<T extends net.kuujo.vertigo.component.Component> extends ComponentContext<T> {
   private String module;
+
+  @Override
+  protected String getDeploymentType() {
+    return Component.COMPONENT_DEPLOYMENT_MODULE;
+  }
+
+  @Override
+  public boolean isModule() {
+    return true;
+  }
 
   /**
    * Returns the module name.

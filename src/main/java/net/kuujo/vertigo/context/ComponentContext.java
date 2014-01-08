@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.serializer.Serializer;
 import net.kuujo.vertigo.serializer.SerializerFactory;
@@ -45,11 +46,11 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="deploy")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name="module"),
-  @JsonSubTypes.Type(value=VerticleContext.class, name="verticle")
+  @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_DEPLOYMENT_MODULE),
+  @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_DEPLOYMENT_VERTICLE)
 })
 @SuppressWarnings("rawtypes")
-public class ComponentContext<T extends net.kuujo.vertigo.component.Component> implements Context {
+public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Component> implements Context {
   private String address;
   private Class<T> type;
   private Map<String, Object> config;
@@ -91,6 +92,12 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
     json.putObject("component", serializer.serialize(context));
     return json;
   }
+
+  /**
+   * Returns the component deployment type.
+   */
+  @JsonGetter("deploy")
+  protected abstract String getDeploymentType();
 
   /**
    * Sets the component parent.
@@ -283,6 +290,9 @@ public class ComponentContext<T extends net.kuujo.vertigo.component.Component> i
    *   A list of component inputs.
    */
   public List<InputContext> inputs() {
+    for (InputContext input : inputs) {
+      input.setComponentContext(this);
+    }
     return inputs;
   }
 

@@ -32,7 +32,6 @@ public class InputContext implements Context {
   private static final String DEFAULT_STREAM = "default";
   private String id;
   private String stream = DEFAULT_STREAM;
-  private int count = 1;
   private String address;
   private Grouping grouping;
   private @JsonIgnore ComponentContext<?> component;
@@ -126,7 +125,7 @@ public class InputContext implements Context {
    *   The input count.
    */
   public int count() {
-    return count;
+    return component.numInstances();
   }
 
   /**

@@ -40,6 +40,11 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
   }
 
   @Override
+  protected String getDeploymentType() {
+    return Component.COMPONENT_DEPLOYMENT_MODULE;
+  }
+
+  @Override
   public boolean isModule() {
     return true;
   }

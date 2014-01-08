@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.network.Component;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -30,6 +32,16 @@ public class VerticleContext<T extends net.kuujo.vertigo.component.Component> ex
   private boolean worker;
   @JsonProperty("multi-threaded")
   private boolean multiThreaded;
+
+  @Override
+  protected String getDeploymentType() {
+    return Component.COMPONENT_DEPLOYMENT_VERTICLE;
+  }
+
+  @Override
+  public boolean isVerticle() {
+    return true;
+  }
 
   /**
    * Returns the verticle main.

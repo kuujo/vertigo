@@ -50,8 +50,8 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="deploy")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=Module.class, name="module"),
-  @JsonSubTypes.Type(value=Verticle.class, name="verticle")
+  @JsonSubTypes.Type(value=Module.class, name=Component.COMPONENT_DEPLOYMENT_MODULE),
+  @JsonSubTypes.Type(value=Verticle.class, name=Component.COMPONENT_DEPLOYMENT_VERTICLE)
 })
 @SuppressWarnings("rawtypes")
 public abstract class Component<T extends net.kuujo.vertigo.component.Component> implements Serializable {
@@ -78,6 +78,16 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * This field is required.
    */
   public static final String COMPONENT_DEPLOYMENT_METHOD = "deploy";
+
+  /**
+   * <code>module</code> is the module deployment method.
+   */
+  public static final String COMPONENT_DEPLOYMENT_MODULE = "module";
+
+  /**
+   * <code>verticle</code> is the verticle deployment method.
+   */
+  public static final String COMPONENT_DEPLOYMENT_VERTICLE = "verticle";
 
   /**
    * <code>config</code> is an object defining the configuration to pass to each
@@ -165,6 +175,12 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
     this.address = address;
     return this;
   }
+
+  /**
+   * Returns the component deployment type.
+   */
+  @JsonGetter("deploy")
+  protected abstract String getDeploymentType();
 
   /**
    * Returns the component address.

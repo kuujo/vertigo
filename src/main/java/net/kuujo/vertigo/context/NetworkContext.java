@@ -84,6 +84,16 @@ public final class NetworkContext implements Context {
   }
 
   /**
+   * Returns the number of network auditors.
+   *
+   * @return
+   *   The number of auditors in the network.
+   */
+  public int numAuditors() {
+    return auditors().size();
+  }
+
+  /**
    * Returns a list of network auditor addresses.
    *
    * @return

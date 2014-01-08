@@ -58,6 +58,11 @@ public class Verticle<T extends net.kuujo.vertigo.component.Component> extends C
   }
 
   @Override
+  protected String getDeploymentType() {
+    return Component.COMPONENT_DEPLOYMENT_VERTICLE;
+  }
+
+  @Override
   public boolean isVerticle() {
     return true;
   }

@@ -55,8 +55,8 @@ abstract class DeployableHook implements ComponentHook {
   @Override
   public void handleStart(Component<?> component) {
     address = UUID.randomUUID().toString();
-    eventBus = component.getVertx().eventBus();
-    deploy(component.getContainer(), new Handler<AsyncResult<Void>>() {
+    eventBus = component.vertx().eventBus();
+    deploy(component.container(), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
@@ -119,7 +119,7 @@ abstract class DeployableHook implements ComponentHook {
   public void handleStop(Component<?> component) {
     if (deployed()) {
       eventBus.send(address, new JsonObject().putString("event", "stop"));
-      undeploy(component.getContainer(), new Handler<AsyncResult<Void>>() {
+      undeploy(component.container(), new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           // Do nothing.

@@ -18,6 +18,7 @@ package net.kuujo.vertigo.component;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.context.InstanceContext;
@@ -37,6 +38,13 @@ public interface Component<T extends Component<T>> {
    * @return
    *   The component Vertx instance.
    */
+  Vertx vertx();
+
+  /**
+   * Returns the component Vertx instance. This method is deprecated.
+   * Use the {@link #vertx()} method instead.
+   */
+  @Deprecated
   Vertx getVertx();
 
   /**
@@ -45,6 +53,13 @@ public interface Component<T extends Component<T>> {
    * @return
    *   The component container instance.
    */
+  Container container();
+
+  /**
+   * Returns the component container instance. This method is deprecated.
+   * Use the {@link #container()} method instead.
+   */
+  @Deprecated
   Container getContainer();
 
   /**
@@ -54,6 +69,13 @@ public interface Component<T extends Component<T>> {
    * @return
    *   The components {@link InputCollector}.
    */
+  InputCollector input();
+
+  /**
+   * Returns the component's input. This method is deprecated.
+   * Use the {@link #input()} method instead.
+   */
+  @Deprecated
   InputCollector getInput();
 
   /**
@@ -63,6 +85,13 @@ public interface Component<T extends Component<T>> {
    * @return
    *   The component's {@link OutputCollector}.
    */
+  OutputCollector output();
+
+  /**
+   * Returns the component's output. This method is deprecated.
+   * Use the {@link #output()} method instead.
+   */
+  @Deprecated
   OutputCollector getOutput();
 
   /**
@@ -74,7 +103,25 @@ public interface Component<T extends Component<T>> {
    * @return
    *   The instance context.
    */
+  InstanceContext<T> context();
+
+  /**
+   * Returns the component instance context. This method is deprecated.
+   * Use the {@link #context()} method instead.
+   */
+  @Deprecated
   InstanceContext<T> getContext();
+
+  /**
+   * Returns the instance logger.<p>
+   *
+   * The instance logger name is the same as the instance address. This will be
+   * the component address followed by a <code>-</code> and the instance ID.
+   *
+   * @return
+   *   The logger for the component instance.
+   */
+  Logger logger();
 
   /**
    * Adds a hook to the component.

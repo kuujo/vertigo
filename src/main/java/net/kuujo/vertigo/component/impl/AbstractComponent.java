@@ -46,6 +46,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 /**
@@ -137,7 +138,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = container.logger();
+    this.logger = LoggerFactory.getLogger(context.address());
     this.context = context;
     this.acker = new DefaultAcker(context.address(), eventBus);
     this.instanceId = context.address();
@@ -158,28 +159,58 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   }
 
   @Override
-  public Vertx getVertx() {
+  public Vertx vertx() {
     return vertx;
   }
 
   @Override
-  public Container getContainer() {
+  public Vertx getVertx() {
+    return vertx();
+  }
+
+  @Override
+  public Container container() {
     return container;
   }
 
   @Override
-  public InputCollector getInput() {
+  public Container getContainer() {
+    return container();
+  }
+
+  @Override
+  public InputCollector input() {
     return input;
   }
 
   @Override
-  public OutputCollector getOutput() {
+  public InputCollector getInput() {
+    return input();
+  }
+
+  @Override
+  public OutputCollector output() {
     return output;
   }
 
   @Override
-  public InstanceContext<T> getContext() {
+  public OutputCollector getOutput() {
+    return output();
+  }
+
+  @Override
+  public InstanceContext<T> context() {
     return context;
+  }
+
+  @Override
+  public InstanceContext<T> getContext() {
+    return context();
+  }
+
+  @Override
+  public Logger logger() {
+    return logger;
   }
 
   @Override

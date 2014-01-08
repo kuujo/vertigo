@@ -42,9 +42,9 @@ public class EventBusHook implements ComponentHook {
 
   @Override
   public void handleStart(Component<?> component) {
-    this.eventBus = component.getVertx().eventBus();
-    this.context = component.getContext();
-    this.address = component.getContext().componentContext().address();
+    this.eventBus = component.vertx().eventBus();
+    this.context = component.context();
+    this.address = component.context().componentContext().address();
     eventBus.publish(String.format("vertigo.hooks.%s.start", address), InstanceContext.toJson(context));
   }
 

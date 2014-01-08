@@ -108,7 +108,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   }
 
   /**
-   * Gets the component address.
+   * Gets the unique component address.
    *
    * @return
    *   The component address.
@@ -204,12 +204,12 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   }
 
   /**
-   * Gets a list of all component instances.
+   * Gets a list of all component instance contexts.
    *
    * @return
    *   A list of component instance contexts.
    */
-  public List<InstanceContext<T>> instances() {
+  public List<InstanceContext<T>> instanceContexts() {
     for (InstanceContext<T> instance : instances) {
       instance.setComponentContext(this);
     }
@@ -218,7 +218,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   @Deprecated
   public List<InstanceContext<T>> getInstances() {
-    return instances();
+    return instanceContexts();
   }
 
   /**
@@ -232,14 +232,14 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   }
 
   /**
-   * Gets a component instance by ID.
+   * Gets a component instance context by instance ID.
    *
    * @param id
    *   The instance ID.
    * @return
    *   A component instance or null if the instance doesn't exist.
    */
-  public InstanceContext<T> instance(String id) {
+  public InstanceContext<T> instanceContext(String id) {
     for (InstanceContext<T> instance : instances) {
       if (instance.address().equals(id)) {
         return instance.setComponentContext(this);
@@ -250,7 +250,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   @Deprecated
   public InstanceContext<T> getInstance(String id) {
-    return instance(id);
+    return instanceContext(id);
   }
 
   /**
@@ -284,12 +284,12 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   }
 
   /**
-   * Returns a list of component inputs.
+   * Returns a list of component input contexts.
    *
    * @return
-   *   A list of component inputs.
+   *   A list of component input contexts.
    */
-  public List<InputContext> inputs() {
+  public List<InputContext> inputContexts() {
     for (InputContext input : inputs) {
       input.setComponentContext(this);
     }

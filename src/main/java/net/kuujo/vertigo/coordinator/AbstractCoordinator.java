@@ -461,7 +461,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      */
     public void deploy(Handler<AsyncResult<Void>> doneHandler) {
       List<ComponentContext> components = new ArrayList<>();
-      for (ComponentContext<?> component : context.components()) {
+      for (ComponentContext<?> component : context.componentContexts()) {
         components.add(component);
       }
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
@@ -476,7 +476,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
      */
     public void undeploy(Handler<AsyncResult<Void>> doneHandler) {
       List<ComponentContext> components = new ArrayList<>();
-      for (ComponentContext<?> component : context.components()) {
+      for (ComponentContext<?> component : context.componentContexts()) {
         components.add(component);
       }
       RecursiveComponentDeployer deployer = new RecursiveComponentDeployer(components);
@@ -588,7 +588,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       @Override
       protected void doDeploy(ComponentContext context, Handler<AsyncResult<String>> resultHandler) {
         final Future<String> future = new DefaultFutureResult<String>().setHandler(resultHandler);
-        RecursiveInstanceDeployer deployer = new RecursiveInstanceDeployer(context.instances());
+        RecursiveInstanceDeployer deployer = new RecursiveInstanceDeployer(context.instanceContexts());
         deployer.deploy(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
@@ -605,7 +605,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       @Override
       protected void doUndeploy(ComponentContext context, Handler<AsyncResult<Void>> doneHandler) {
         final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-        RecursiveInstanceDeployer executor = new RecursiveInstanceDeployer(context.instances());
+        RecursiveInstanceDeployer executor = new RecursiveInstanceDeployer(context.instanceContexts());
         executor.undeploy(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {

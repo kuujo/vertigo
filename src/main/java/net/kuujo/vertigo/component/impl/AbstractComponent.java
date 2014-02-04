@@ -17,8 +17,9 @@ package net.kuujo.vertigo.component.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
@@ -29,8 +30,6 @@ import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.coordinator.heartbeat.HeartbeatEmitter;
-import net.kuujo.vertigo.coordinator.heartbeat.impl.DefaultHeartbeatEmitter;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -44,6 +43,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -64,10 +64,10 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   protected final String instanceId;
   protected final String address;
   protected final String networkAddress;
-  protected final HeartbeatEmitter heartbeat;
   protected final InputCollector input;
   protected final OutputCollector output;
   protected final List<ComponentHook> hooks = new ArrayList<>();
+  private boolean started;
 
   private InputHook inputHook = new InputHook() {
     @Override
@@ -144,7 +144,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.address = context.componentContext().address();
     NetworkContext networkContext = context.componentContext().networkContext();
     networkAddress = networkContext.address();
-    heartbeat = new DefaultHeartbeatEmitter(vertx);
     input = new DefaultInputCollector(vertx, container, context, acker);
     output = new DefaultOutputCollector(vertx, container, context, acker);
     for (ComponentHook hook : context.<ComponentContext<?>>componentContext().hooks()) {
@@ -227,6 +226,15 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     }
   }
 
+  /**
+   * Calls stop hooks
+   */
+  private void hookStop() {
+    for (ComponentHook hook : hooks) {
+      hook.handleStop(this);
+    }
+  }
+
   @Override
   @SuppressWarnings("unchecked")
   public T declareSchema(MessageSchema schema) {
@@ -243,45 +251,35 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
       future.setHandler(doneHandler);
     }
 
-    setupHeartbeat(new Handler<AsyncResult<Void>>() {
+    acker.start(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
         }
         else {
-          acker.start(new Handler<AsyncResult<Void>>() {
+          output.start(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 future.setFailure(result.cause());
               }
               else {
-                output.start(new Handler<AsyncResult<Void>>() {
+                input.start(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       future.setFailure(result.cause());
                     }
                     else {
-                      input.start(new Handler<AsyncResult<Void>>() {
+                      ready(new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
                             future.setFailure(result.cause());
                           }
                           else {
-                            ready(new Handler<AsyncResult<Void>>() {
-                              @Override
-                              public void handle(AsyncResult<Void> result) {
-                                if (result.failed()) {
-                                  future.setFailure(result.cause());
-                                }
-                                else {
-                                  future.setResult(null);
-                                }
-                              }
-                            });
+                            future.setResult((Void) null);
                           }
                         }
                       });
@@ -297,44 +295,89 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   }
 
   /**
-   * Sets up the heartbeat.
-   */
-  private void setupHeartbeat(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    if (doneHandler != null) {
-      future.setHandler(doneHandler);
-    }
-
-    eventBus.sendWithTimeout(networkAddress, new JsonObject().putString("action", "register").putString("address", address), 10000, new Handler<AsyncResult<Message<String>>>() {
-      @Override
-      public void handle(AsyncResult<Message<String>> result) {
-        if (result.succeeded()) {
-          String heartbeatAddress = result.result().body();
-          heartbeat.setAddress(heartbeatAddress);
-          heartbeat.setInterval(context.componentContext().heartbeatInterval());
-          heartbeat.start();
-          future.setResult(null);
-        }
-        else {
-          future.setFailure(new VertigoException("Failed to fetch heartbeat address from network."));
-        }
-      }
-    });
-  }
-
-  /**
    * Indicates to the network that the component is ready.
    */
   private void ready(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    if (doneHandler != null) {
-      future.setHandler(doneHandler);
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
+
+    // Register an event bus handler for this component. Once the handler is
+    // registered, send a message to a random component instance to check if
+    // it's ready. The first complete list of components to be received indicates
+    // that the network has started.
+    final Set<String> instances = new HashSet<>();
+    for (ComponentContext<?> component : context.componentContext().networkContext().componentContexts()) {
+      for (InstanceContext<?> instance : component.instanceContexts()) {
+        instances.add(instance.id());
+      }
     }
 
-    eventBus.send(networkAddress, new JsonObject().putString("action", "ready").putString("id", instanceId), new Handler<Message<Void>>() {
+    vertx.eventBus().registerHandler(context.id(), new Handler<Message<JsonObject>>() {
       @Override
-      public void handle(Message<Void> message) {
-        future.setResult(null);
+      public void handle(Message<JsonObject> message) {
+        final String action = message.body().getString("action");
+        if (action == null) return;
+        switch (action) {
+          case "ready":
+            // If the ready action has touched all component instances, start
+            // the network.
+            JsonArray touched = message.body().getArray("instances");
+            if (touched.size() == instances.size()) {
+              for (String instanceID : instances) {
+                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.id()));
+              }
+            }
+            // Otherwise, add this instance to the touched list and pass it to the next instance.
+            else {
+              for (String instanceID : instances) {
+                if (!touched.contains(instanceID)) {
+                  touched.add(instanceID);
+                  eventBus.send(instanceID, new JsonObject().putString("action", "ready").putArray("instances", touched));
+                }
+              }
+            }
+            break;
+          case "start":
+            // All the component instances in the network have been started.
+            // Forward the start on to all visible components.
+            if (!started && !message.body().getString("source").equals(context.id())) {
+              for (String instanceID : instances) {
+                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.id()));
+              }
+              started = true;
+              future.setResult((Void) null);
+            }
+            break;
+          case "shutdown":
+            message.reply(new JsonObject().putString("status", "ok"));
+            hookStop();
+            container.exit();
+            break;
+          default:
+            message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid action " + action));
+            break;
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        vertx.setPeriodic(2000, new Handler<Long>() {
+          @Override
+          public void handle(Long timerID) {
+            if (started) {
+              vertx.cancelTimer(timerID);
+            }
+            else {
+              eventBus.send(instances.iterator().next(), new JsonObject().putString("action", "ready")
+                  .putArray("instances", new JsonArray().add(context.id())));
+            }
+          }
+        });
+      }
+    });
+    vertx.setPeriodic(5000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+        vertx.eventBus().publish(context.componentContext().networkContext().address(), new JsonObject().putString("id", context.id()));
       }
     });
   }

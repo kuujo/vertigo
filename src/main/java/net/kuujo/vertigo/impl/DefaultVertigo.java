@@ -116,28 +116,28 @@ public final class DefaultVertigo<T extends Component<T>> implements Vertigo<T> 
 
   @Override
   public Vertigo<T> deployRemoteNetwork(String address, Network network) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(address, vertx);
     cluster.deployNetwork(network);
     return this;
   }
 
   @Override
   public Vertigo<T> deployRemoteNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(address, vertx);
     cluster.deployNetwork(network, doneHandler);
     return this;
   }
 
   @Override
   public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(address, vertx);
     cluster.shutdownNetwork(context);
     return this;
   }
 
   @Override
   public Vertigo<T> shutdownRemoteNetwork(String address, NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+    Cluster cluster = new RemoteCluster(address, vertx);
     cluster.shutdownNetwork(context, doneHandler);
     return this;
   }

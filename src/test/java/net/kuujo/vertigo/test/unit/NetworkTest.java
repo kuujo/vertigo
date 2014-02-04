@@ -96,6 +96,7 @@ public class NetworkTest {
     assertFalse(verticle.isMultiThreaded());
     assertEquals(0, verticle.getHooks().size());
     assertEquals(0, verticle.getInputs().size());
+    assertEquals(0, verticle.getDeploymentTargets().size());
   }
 
   @Test
@@ -125,6 +126,10 @@ public class NetworkTest {
     assertTrue(verticle.isMultiThreaded());
     verticle.setWorker(false);
     assertFalse(verticle.isMultiThreaded());
+    assertEquals(0, verticle.getDeploymentTargets().size());
+    verticle.setDeploymentTargets("foo", "bar");
+    assertTrue(verticle.getDeploymentTargets().contains("foo"));
+    assertTrue(verticle.getDeploymentTargets().contains("bar"));
   }
 
   @Test
@@ -151,27 +156,32 @@ public class NetworkTest {
     assertEquals(5000, verticle.getHeartbeatInterval());
     assertEquals(0, verticle.getHooks().size());
     assertEquals(0, verticle.getInputs().size());
+    assertEquals(0, verticle.getDeploymentTargets().size());
   }
 
   @Test
   public void testModuleConfig() {
-    Module<Feeder> verticle = new Module<Feeder>(Feeder.class, "test", "com.test~test-module~1.0");
-    assertEquals("test", verticle.getAddress());
-    assertEquals(Feeder.class, verticle.getType());
-    assertTrue(verticle.isModule());
-    assertFalse(verticle.isVerticle());
-    assertEquals("com.test~test-module~1.0", verticle.getModule());
-    verticle.setModule("com.foo~foo~1.0");
-    assertEquals("com.foo~foo~1.0", verticle.getModule());
-    assertEquals(new JsonObject(), verticle.getConfig());
-    verticle.setConfig(new JsonObject().putString("foo", "bar"));
-    assertEquals("bar", verticle.getConfig().getString("foo"));
-    assertEquals(1, verticle.getNumInstances());
-    verticle.setNumInstances(4);
-    assertEquals(4, verticle.getNumInstances());
-    assertEquals(5000, verticle.getHeartbeatInterval());
-    verticle.setHeartbeatInterval(1000);
-    assertEquals(1000, verticle.getHeartbeatInterval());
+    Module<Feeder> module = new Module<Feeder>(Feeder.class, "test", "com.test~test-module~1.0");
+    assertEquals("test", module.getAddress());
+    assertEquals(Feeder.class, module.getType());
+    assertTrue(module.isModule());
+    assertFalse(module.isVerticle());
+    assertEquals("com.test~test-module~1.0", module.getModule());
+    module.setModule("com.foo~foo~1.0");
+    assertEquals("com.foo~foo~1.0", module.getModule());
+    assertEquals(new JsonObject(), module.getConfig());
+    module.setConfig(new JsonObject().putString("foo", "bar"));
+    assertEquals("bar", module.getConfig().getString("foo"));
+    assertEquals(1, module.getNumInstances());
+    module.setNumInstances(4);
+    assertEquals(4, module.getNumInstances());
+    assertEquals(5000, module.getHeartbeatInterval());
+    module.setHeartbeatInterval(1000);
+    assertEquals(1000, module.getHeartbeatInterval());
+    assertEquals(0, module.getDeploymentTargets().size());
+    module.setDeploymentTargets("foo", "bar");
+    assertTrue(module.getDeploymentTargets().contains("foo"));
+    assertTrue(module.getDeploymentTargets().contains("bar"));
   }
 
   @Test

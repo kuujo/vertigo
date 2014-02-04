@@ -98,8 +98,7 @@ public class BasicAuditor implements Auditor {
     // Nodes are stored in a LinkedHashMap in the order in which they're created,
     // so we can iterate up to the oldest node which has not yet timed out and stop.
     long currentTime = System.currentTimeMillis();
-    Iterator<Map.Entry<String, Root>> iterator = roots.entrySet().iterator();
-    while (iterator.hasNext()) {
+    for (Iterator<Map.Entry<String, Root>> iterator = roots.entrySet().iterator(); iterator.hasNext();) {
       Root root = iterator.next().getValue();
       if (root.timeout <= currentTime) {
         iterator.remove();

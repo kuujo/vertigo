@@ -18,7 +18,6 @@ package net.kuujo.vertigo.util;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.serializer.SerializerFactory;
 
 /**
  * Context utilities.
@@ -26,21 +25,6 @@ import net.kuujo.vertigo.serializer.SerializerFactory;
  * @author Jordan Halterman
  */
 public final class Context {
-
-  /**
-   * Stores a context in a configuration object.
-   *
-   * @param context
-   *   The context to store.
-   * @param config
-   *   The configuration in which to store the context.
-   * @return
-   *   The updated configuration object.
-   */
-  public static JsonObject storeContext(InstanceContext<?> context, JsonObject config) {
-    JsonObject serialized = SerializerFactory.getSerializer(InstanceContext.class).serialize(context);
-    return config.putObject("__context__", serialized);
-  }
 
   /**
    * Parses an instance context from a configuration object.
@@ -51,12 +35,16 @@ public final class Context {
    *   An instance context.
    */
   public static InstanceContext<?> parseContext(JsonObject config) {
-    if (config != null && config.getFieldNames().contains("__context__")) {
-      JsonObject contextInfo = config.getObject("__context__");
-      if (contextInfo != null) {
-        config.removeField("__context__");
-        return InstanceContext.fromJson(contextInfo);
+    if (config != null) {
+      InstanceContext<?> context = InstanceContext.fromJson(config);
+      for (String fieldName : config.getFieldNames()) {
+        config.removeField(fieldName);
       }
+      JsonObject realConfig = context.componentContext().config();
+      for (String fieldName : realConfig.getFieldNames()) {
+        config.putValue(fieldName, realConfig.getValue(fieldName));
+      }
+      return context;
     }
     return null;
   }

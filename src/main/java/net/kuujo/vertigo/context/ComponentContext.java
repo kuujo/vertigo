@@ -19,8 +19,10 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
 import static net.kuujo.vertigo.util.Component.serializeType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -56,6 +58,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   private Map<String, Object> config;
   private List<InstanceContext<T>> instances = new ArrayList<>();
   private long heartbeat = 5000;
+  private Set<String> targets = new HashSet<>();
   private List<ComponentHook> hooks = new ArrayList<>();
   private List<InputContext> inputs = new ArrayList<>();
   private @JsonIgnore NetworkContext network;
@@ -239,9 +242,9 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @return
    *   A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext<T> instanceContext(int id) {
+  public InstanceContext<T> instanceContext(int instanceNumber) {
     for (InstanceContext<T> instance : instances) {
-      if (instance.id() == id) {
+      if (instance.number() == instanceNumber) {
         return instance.setComponentContext(this);
       }
     }
@@ -283,6 +286,31 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   @Deprecated
   public long getHeartbeatInterval() {
     return heartbeatInterval();
+  }
+
+  /**
+   * Returns a set of deployment targets for the component.
+   *
+   * @return
+   *   A set of event bus addresses indicating nodes to which the
+   *   component can be deployed.
+   */
+  public Set<String> getDeploymenTargets() {
+    return targets;
+  }
+
+  /**
+   * Returns a boolean indicating whether the component can be
+   * deployed to a specific node.
+   *
+   * @param address
+   *   The address of the node to check.
+   * @return
+   *   Indicates whether instances of the component can be deployed
+   *   to the given node.
+   */
+  public boolean hasDeploymentTarget(String address) {
+    return targets.contains(address);
   }
 
   /**

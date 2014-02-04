@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.context.impl;
 
+import java.util.UUID;
+
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -59,7 +61,7 @@ public final class ContextBuilder {
         JsonArray instances = new JsonArray();
         int numInstances = component.getInteger("instances");
         for (int i = 1; i < numInstances+1; i++) {
-          instances.add(new JsonObject().putNumber("id", i));
+          instances.add(new JsonObject().putString("id", UUID.randomUUID().toString()).putNumber("number", i));
         }
         component.putArray("instances", instances);
       }

@@ -15,29 +15,69 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import java.util.Set;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
-
-import net.kuujo.vertigo.coordinator.LocalCoordinator;
 
 /**
  * A local cluster implementation.<p>
  *
- * The local cluster deploys Vertigo components (modules and verticles) within
- * the local Vert.x instance via the Vert.x {@link Container}.
+ * The local cluster deploys networks to the local Vert.x instance using the
+ * Vert.x container.
  *
  * @author Jordan Halterman
  */
 public class LocalCluster extends AbstractCluster {
+  private final Container container;
 
   public LocalCluster(Verticle verticle) {
-    super(verticle);
+    super(verticle.getVertx().eventBus(), LoggerFactory.getLogger(LocalCluster.class));
+    this.container = verticle.getContainer();
   }
 
   public LocalCluster(Vertx vertx, Container container) {
-    super(vertx, container);
-    coordinator = LocalCoordinator.class.getName();
+    super(vertx.eventBus(), LoggerFactory.getLogger(LocalCluster.class));
+    this.container = container;
+  }
+
+  @Override
+  protected void deployVerticle(String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    container.deployVerticle(main, config, instances, doneHandler);
+  }
+
+  @Override
+  protected void deployVerticleTo(Set<String> nodes, String main, JsonObject config, int instances,
+      Handler<AsyncResult<String>> doneHandler) {
+    deployVerticle(main, config, instances, doneHandler);
+  }
+
+  @Override
+  protected void deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded,
+      Handler<AsyncResult<String>> doneHandler) {
+    container.deployWorkerVerticle(main, config, instances, multiThreaded, doneHandler);
+  }
+
+  @Override
+  protected void deployWorkerVerticleTo(Set<String> nodes, String main, JsonObject config, int instances,
+      boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
+    deployWorkerVerticle(main, config, instances, multiThreaded, doneHandler);
+  }
+
+  @Override
+  protected void deployModule(String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    container.deployModule(main, config, instances, doneHandler);
+  }
+
+  @Override
+  protected void deployModuleTo(Set<String> nodes, String main, JsonObject config, int instances,
+      Handler<AsyncResult<String>> doneHandler) {
+    deployModule(main, config, instances, doneHandler);
   }
 
 }

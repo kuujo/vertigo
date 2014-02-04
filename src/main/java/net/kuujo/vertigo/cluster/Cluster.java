@@ -15,11 +15,11 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.network.Network;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.network.Network;
 
 /**
  * The cluster is the primary interface for deploying Vertigo networks. Clusters
@@ -31,10 +31,10 @@ import org.vertx.java.core.Handler;
 public interface Cluster {
 
   /**
-   * Deploys a network.
+   * Deploys a network to the cluster.
    *
    * @param network
-   *   The network definition.
+   *   The network configuration.
    */
   void deployNetwork(Network network);
 
@@ -42,12 +42,14 @@ public interface Cluster {
   void deploy(Network network);
 
   /**
-   * Deploys a network.
+   * Deploys a network to the cluster.
    *
    * @param network
-   *   The network definition.
+   *   The network configuration.
    * @param doneHandler
-   *   An asynchronous result handler to be invoked with a network context.
+   *   A handler to be called once the deployment is complete. This handler will
+   *   be passed the deployed network context containing information about the
+   *   deployed components.
    */
   void deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
@@ -55,10 +57,10 @@ public interface Cluster {
   void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Shuts down a network.
+   * Shuts down a network in the cluster.
    *
    * @param context
-   *   The network context.
+   *   The context of the network to shutdown.
    */
   void shutdownNetwork(NetworkContext context);
 
@@ -66,12 +68,12 @@ public interface Cluster {
   void shutdown(NetworkContext context);
 
   /**
-   * Shuts down a network, awaiting a result.
+   * Shuts down a network in the cluster.
    *
    * @param context
-   *   The network context.
+   *   The context of the network to shutdown.
    * @param doneHandler
-   *   An asynchronous result handler to be invoked once the shutdown is complete.
+   *   A handler to be called once the shutdown is complete.
    */
   void shutdownNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
 

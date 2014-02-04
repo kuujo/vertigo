@@ -85,7 +85,12 @@ public final class AuditorVerticle extends BusModBase {
           case "fail":
             doFail(body);
             break;
+          case "shutdown":
+            sendOK(message);
+            container.exit();
+            break;
           default:
+            sendError(message, "Invalid action.");
             break;
         }
       }

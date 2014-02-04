@@ -54,6 +54,11 @@ abstract class AbstractCluster implements Cluster {
 
   @Override
   public void deploy(Network network) {
+    deployNetwork(network);
+  }
+
+  @Override
+  public void deployNetwork(Network network) {
     try {
       final NetworkContext context = ContextBuilder.buildContext(network);
       container.deployVerticle(coordinator, NetworkContext.toJson(context));
@@ -65,6 +70,11 @@ abstract class AbstractCluster implements Cluster {
 
   @Override
   public void deploy(final Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+    deployNetwork(network, doneHandler);
+  }
+
+  @Override
+  public void deployNetwork(final Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
     final Future<NetworkContext> future = new DefaultFutureResult<NetworkContext>().setHandler(doneHandler);
     try {
       final NetworkContext context = ContextBuilder.buildContext(network);
@@ -87,11 +97,21 @@ abstract class AbstractCluster implements Cluster {
 
   @Override
   public void shutdown(NetworkContext context) {
+    shutdownNetwork(context);
+  }
+
+  @Override
+  public void shutdownNetwork(NetworkContext context) {
     eventBus.send(context.address(), new JsonObject().putString("action", "shutdown"));
   }
 
   @Override
   public void shutdown(final NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+    shutdownNetwork(context, doneHandler);
+  }
+
+  @Override
+  public void shutdownNetwork(final NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     eventBus.sendWithTimeout(context.address(), new JsonObject().putString("action", "shutdown"), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override

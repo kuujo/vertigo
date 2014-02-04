@@ -177,7 +177,7 @@ public class HooksTest extends TestVerticle {
 
   private void deploy(Network network) {
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {

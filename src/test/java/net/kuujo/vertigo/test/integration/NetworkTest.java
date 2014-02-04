@@ -143,7 +143,7 @@ public class NetworkTest extends TestVerticle {
     network1.addWorkerVerticle("network1.worker2", TestAckingWorker.class.getName(), 2).addInput("network1.worker1").roundGrouping();
 
     final Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deploy(network1, new Handler<AsyncResult<NetworkContext>>() {
+    cluster.deployNetwork(network1, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
@@ -163,7 +163,7 @@ public class NetworkTest extends TestVerticle {
 
   private void deployNetwork(Network network) {
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {

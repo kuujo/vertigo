@@ -58,7 +58,7 @@ public class ListenerTest extends TestVerticle {
     network.addWorkerVerticle("worker4", TestAckingWorker.class.getName(), 2).addInput("worker3").randomGrouping();
 
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deploy(network, new Handler<AsyncResult<NetworkContext>>() {
+    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {

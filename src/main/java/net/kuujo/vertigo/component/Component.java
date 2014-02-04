@@ -130,17 +130,7 @@ public interface Component<T extends Component<T>> {
    */
   T addHook(ComponentHook hook);
 
-  /**
-   * Declares an input message schema for the component.
-   *
-   * Any messages that fail to comply with the required component input schema
-   * will be automatically failed.
-   *
-   * @param schema
-   *   The input schema required by the component.
-   * @return
-   *   The called component instance.
-   */
+  @Deprecated
   T declareSchema(MessageSchema schema);
 
   /**

@@ -19,12 +19,9 @@ import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.VertigoFactory;
 import net.kuujo.vertigo.annotations.Config;
-import net.kuujo.vertigo.annotations.Input;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.impl.DefaultVertigoFactory;
-import net.kuujo.vertigo.message.schema.Field;
-import net.kuujo.vertigo.message.schema.MessageSchema;
 import static net.kuujo.vertigo.util.Context.parseContext;
 
 import org.vertx.java.core.AsyncResult;
@@ -72,7 +69,6 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
     vertigo = factory.createVertigo(component);
     try {
       checkConfig(container.config());
-      setupInput(component);
     }
     catch (Exception e) {
       return;
@@ -124,17 +120,4 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
     }
   }
 
-  /**
-   * Sets up the component input collector.
-   */
-  private void setupInput(T component) {
-    Input inputInfo = getClass().getAnnotation(Input.class);
-    if (inputInfo != null) {
-      MessageSchema schema = new MessageSchema();
-      for (Input.Field field : inputInfo.schema()) {
-        schema.addField(new Field(field.name(), field.type()).setRequired(field.required()));
-      }
-      component.declareSchema(schema);
-    }
-  }
 }

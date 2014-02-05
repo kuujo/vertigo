@@ -109,7 +109,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
    * deployed. If this array is empty or null, the component can be deployed
    * to any node within a cluster.
    */
-  public static final String COMPONENT_NODES = "targets";
+  public static final String COMPONENT_TARGETS = "targets";
 
   /**
    * <code>heartbeat</code> is a number indicating the interval at which the

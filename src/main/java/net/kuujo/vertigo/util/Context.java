@@ -35,7 +35,7 @@ public final class Context {
    *   An instance context.
    */
   public static InstanceContext<?> parseContext(JsonObject config) {
-    if (config != null) {
+    if (config != null && !config.getFieldNames().isEmpty()) {
       InstanceContext<?> context = InstanceContext.fromJson(config);
       for (String fieldName : config.getFieldNames()) {
         config.removeField(fieldName);

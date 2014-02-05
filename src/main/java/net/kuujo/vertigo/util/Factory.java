@@ -24,6 +24,7 @@ import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.impl.DefaultVertigoFactory;
+import net.kuujo.vertigo.serializer.DeserializationException;
 
 /**
  * Static {@link Vertigo} factory methods intended for use in language bindings.
@@ -46,7 +47,12 @@ public final class Factory {
    */
   public static Vertigo createVertigo(Vertx vertx, Container container) {
     VertigoFactory vertigoFactory = new DefaultVertigoFactory(vertx, container);
-    InstanceContext context = Context.parseContext(container.config());
+    InstanceContext context = null;
+    try {
+      context = Context.parseContext(container.config());
+    }
+    catch (DeserializationException e) {
+    }
     if (context != null) {
       ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
       net.kuujo.vertigo.component.Component component = componentFactory.createComponent(context);

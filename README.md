@@ -1,7 +1,7 @@
 Vert.igo
 ========
 
-**Need support? Check out the [Vert.igo Google Group][google-group]**
+**Need support? Check out the [Vertigo Google Group][google-group]**
 
 **[Java User Manual](https://github.com/kuujo/vertigo/wiki/Java-User-Manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
 
@@ -31,14 +31,7 @@ communication between components in a **predictable and reliable** manner.
   and [Python][vertigo-python]
 * Integrates seemlessly with existing Vert.x applications
 
-### Vertigo 0.6 is here!
-Vertigo 0.6.0 features significant API and performance improvements and has been
-released along with fully functional [Javascript][vertigo-js]
-and [Python][vertigo-python] APIs. This version will signify
-the solidification of the core Vertigo API and lays the foundation for a higher
-level API and advanced operations in Vertigo.
-
-#### New in Vertigo 0.6
+### New in Vertigo 0.6
 
 * Smaller, **simpler core APIs** with explicitly typed components - feeder, worker, and executor
 * Consolidated network deployment API in a `Vertx` like object
@@ -56,7 +49,7 @@ to messages from specific input streams:
 * [Complete Python API][vertigo-python]
 * [Complete Javascript API][vertigo-js]
 
-#### Upcoming in Vertigo 0.6.3
+### Upcoming in Vertigo 0.6.3
 * Improved component logging
 * Support for worker verticle components and related options
 * Network Json configuration bug fixes
@@ -113,6 +106,8 @@ deploy Vertigo networks. Vertigo will build upon its deserialization features
 to support deployment of Vertigo networks from the command line using json
 configuration files.
 
+---
+
 Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
 Rather, Vertigo is a lightweight alternative that is intended to be embedded
 within larger Vert.x applications.
@@ -130,7 +125,7 @@ For an in-depth look at the concepts underlying Vertigo, check out
 <dependency>
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>${vertigo.version}</version>
+  <version>0.6.2</version>
 </dependency>
 ```
 
@@ -141,11 +136,11 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.6.0"
+  "includes": "net.kuujo~vertigo~0.6.2"
 }
 ```
 
-**Need support? Check out the [Vert.igo Google Group][google-group]**
+**Need support? Check out the [Vertigo Google Group][google-group]**
 
 [vertigo-python]: https://github.com/kuujo/vertigo-python
 [vertigo-js]: https://github.com/kuujo/vertigo-js

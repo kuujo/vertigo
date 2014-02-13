@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,12 @@ package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.java.FeederVerticle;
 import net.kuujo.vertigo.java.WorkerVerticle;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.testtools.TestAckingFeeder;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
-import net.kuujo.vertigo.testtools.TestFailingExecutor;
-import net.kuujo.vertigo.testtools.TestFailingFeeder;
-import net.kuujo.vertigo.testtools.TestFailingWorker;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
-import net.kuujo.vertigo.testtools.TestResultCheckingExecutor;
-import net.kuujo.vertigo.testtools.TestTimingOutExecutor;
-import net.kuujo.vertigo.testtools.TestTimingOutFeeder;
-import net.kuujo.vertigo.testtools.TestTimingOutWorker;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
@@ -53,80 +42,6 @@ import org.vertx.testtools.TestVerticle;
  * @author Jordan Halterman
  */
 public class NetworkTest extends TestVerticle {
-
-  @Test
-  public void testAckingFeeder() {
-    Network network = new Network("test");
-    network.addFeederVerticle("feeder", TestAckingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder");
-    deployNetwork(network);
-  }
-
-  @Test
-  public void testFailingFeeder() {
-    Network network = new Network("test");
-    network.addFeederVerticle("feeder", TestFailingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorkerVerticle("worker", TestFailingWorker.class.getName()).addInput("feeder");
-    deployNetwork(network);
-  }
-
-  @Test
-  public void testTimingOutFeeder() {
-    Network network = new Network("test");
-    network.setMessageTimeout(1000);
-    network.addFeederVerticle("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorkerVerticle("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
-    deployNetwork(network);
-  }
-
-  public static class StreamFeeder extends FeederVerticle {
-    @Override
-    public void start(Feeder feeder) {
-      feeder.emit("stream", new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<MessageId>>() {
-        @Override
-        public void handle(AsyncResult<MessageId> result) {
-          assertTrue(result.succeeded());
-          testComplete();
-        }
-      });
-    }
-  }
-
-  @Test
-  public void testStreamFeeder() {
-    Network network = new Network("test");
-    network.addFeederVerticle("feeder", StreamFeeder.class.getName());
-    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder", "stream");
-    deployNetwork(network);
-  }
-
-  @Test
-  public void testAckingExecutor() {
-    Network network = new Network("test");
-    JsonObject data = new JsonObject().putString("body", "Hello world!");
-    network.addExecutorVerticle("executor", TestResultCheckingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
-    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("executor");
-    deployNetwork(network);
-  }
-
-  @Test
-  public void testFailingExecutor() {
-    Network network = new Network("test");
-    JsonObject data = new JsonObject().putString("body", "Hello world!");
-    network.addExecutorVerticle("executor", TestFailingExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
-    network.addWorkerVerticle("worker", TestFailingWorker.class.getName()).addInput("executor");
-    deployNetwork(network);
-  }
-
-  @Test
-  public void testTimingOutExecutor() {
-    Network network = new Network("test");
-    network.setMessageTimeout(1000);
-    JsonObject data = new JsonObject().putString("body", "Hello world!");
-    network.addExecutorVerticle("executor", TestTimingOutExecutor.class.getName(), new JsonObject().putObject("input", data).putObject("output", data)).addInput("worker");
-    network.addWorkerVerticle("worker", TestTimingOutWorker.class.getName()).addInput("executor");
-    deployNetwork(network);
-  }
 
   public static class NestedWorker extends WorkerVerticle {
     @Override
@@ -155,22 +70,18 @@ public class NetworkTest extends TestVerticle {
           Network network2 = new Network("network2");
           network2.addWorkerVerticle("network2.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.worker2").randomGrouping();
           network2.addWorkerVerticle("network2.worker2", NestedWorker.class.getName(), 2).addInput("network2.worker1").roundGrouping();
-          deployNetwork(network2);
-        }
-      }
-    });
-  }
-
-  private void deployNetwork(Network network) {
-    Cluster cluster = new LocalCluster(vertx, container);
-    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
-      @Override
-      public void handle(AsyncResult<NetworkContext> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        }
-        else {
-          assertTrue(result.succeeded());
+          Cluster cluster = new LocalCluster(vertx, container);
+          cluster.deployNetwork(network2, new Handler<AsyncResult<NetworkContext>>() {
+            @Override
+            public void handle(AsyncResult<NetworkContext> result) {
+              if (result.failed()) {
+                assertTrue(result.cause().getMessage(), result.succeeded());
+              }
+              else {
+                assertTrue(result.succeeded());
+              }
+            }
+          });
         }
       }
     });

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.context;
 
 import org.vertx.java.core.json.JsonObject;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import net.kuujo.vertigo.input.grouping.Grouping;
@@ -125,6 +126,7 @@ public class InputContext implements Context {
    * @return
    *   The input count.
    */
+  @JsonGetter("count")
   public int count() {
     return component != null ? component.numInstances() : count;
   }

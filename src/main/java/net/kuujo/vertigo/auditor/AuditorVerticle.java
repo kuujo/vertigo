@@ -75,23 +75,25 @@ public final class AuditorVerticle extends BusModBase {
       JsonObject body = message.body();
       if (body != null) {
         String action = body.getString("action");
-        switch (action) {
-          case "create":
-            doCreate(body);
-            break;
-          case "ack":
-            doAck(body);
-            break;
-          case "fail":
-            doFail(body);
-            break;
-          case "shutdown":
-            sendOK(message);
-            container.exit();
-            break;
-          default:
-            sendError(message, "Invalid action.");
-            break;
+        if (action != null) {
+          switch (action) {
+            case "create":
+              doCreate(body);
+              break;
+            case "ack":
+              doAck(body);
+              break;
+            case "fail":
+              doFail(body);
+              break;
+            case "shutdown":
+              sendOK(message);
+              container.exit();
+              break;
+            default:
+              sendError(message, "Invalid action.");
+              break;
+          }
         }
       }
     }

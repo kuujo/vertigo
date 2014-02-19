@@ -374,12 +374,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
         });
       }
     });
-    vertx.setPeriodic(5000, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        vertx.eventBus().publish(context.componentContext().networkContext().address(), new JsonObject().putString("id", context.id()));
-      }
-    });
   }
 
   @Override

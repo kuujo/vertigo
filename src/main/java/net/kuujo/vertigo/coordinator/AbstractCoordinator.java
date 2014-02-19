@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.kuujo.vertigo.auditor.AuditorVerticle;
 import net.kuujo.vertigo.context.ComponentContext;
@@ -31,8 +30,6 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.VerticleContext;
-import net.kuujo.vertigo.coordinator.heartbeat.HeartbeatMonitor;
-import net.kuujo.vertigo.coordinator.heartbeat.impl.DefaultHeartbeatMonitor;
 import net.kuujo.vertigo.events.Events;
 import net.kuujo.vertigo.serializer.SerializationException;
 
@@ -58,9 +55,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();
   protected Map<String, InstanceContext<?>> contextMap = new HashMap<>();
-  protected Map<String, HeartbeatMonitor> heartbeats = new HashMap<>();
   protected Set<String> instances = new HashSet<>();
-  protected Map<String, Message<JsonObject>> ready = new HashMap<>();
   protected Set<String> auditorDeploymentIds = new HashSet<>();
 
   @Override
@@ -184,20 +179,8 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     String action = getMandatoryString("action", message);
     if (action != null) {
       switch (action) {
-        case "register":
-          doRegister(message);
-          break;
-        case "unregister":
-          doUnregister(message);
-          break;
         case "shutdown":
           doShutdown(message);
-          break;
-        case "redeploy":
-          doRedeployAll(message);
-          break;
-        case "ready":
-          doReady(message);
           break;
         default:
           sendError(message, String.format("Invalid action %s.", action));
@@ -296,124 +279,6 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   }
 
   /**
-   * Creates a unique heartbeat address.
-   */
-  private String createHeartbeatAddress() {
-    return UUID.randomUUID().toString();
-  }
-
-  /**
-   * Registers a heartbeat.
-   */
-  private void doRegister(Message<JsonObject> message) {
-    final String address = getMandatoryString("address", message);
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Registering heartbeat: %s", address));
-    }
-    String heartbeatAddress = createHeartbeatAddress();
-    HeartbeatMonitor monitor = new DefaultHeartbeatMonitor(heartbeatAddress, vertx);
-    monitor.listen(new Handler<String>() {
-      @Override
-      public void handle(String heartbeatAddress) {
-        if (heartbeats.containsKey(address)) {
-          heartbeats.remove(address);
-          doRedeploy(address);
-        }
-      }
-    });
-    heartbeats.put(address, monitor);
-    message.reply(heartbeatAddress);
-  }
-
-  /**
-   * Unregisters a heartbeat.
-   */
-  private void doUnregister(Message<JsonObject> message) {
-    final String address = getMandatoryString("address", message);
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Unregistering heartbeat: %s", address));
-    }
-    if (heartbeats.containsKey(address)) {
-      HeartbeatMonitor monitor = heartbeats.get(address);
-      monitor.unlisten();
-      heartbeats.remove(address);
-    }
-    doRedeploy(address);
-  }
-
-  /**
-   * Redeploys a worker.
-   */
-  private void doRedeploy(final String id) {
-    if (deploymentMap.containsKey(id)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(String.format("Redeploying %s", id));
-      }
-      String deploymentID = deploymentMap.get(id);
-      undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          deploymentMap.remove(id);
-          if (contextMap.containsKey(id)) {
-            final InstanceContext<?> context = contextMap.get(id);
-
-            JsonObject config;
-            try {
-              config = InstanceContext.toJson(context);
-            }
-            catch (SerializationException e) {
-              logger.error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
-              return;
-            }
-
-            if (context.componentContext().isModule()) {
-              deployModule(context.<ModuleContext>componentContext().module(), config, new Handler<AsyncResult<String>>() {
-                @Override
-                public void handle(AsyncResult<String> result) {
-                  if (result.succeeded()) {
-                    deploymentMap.put(context.address(), result.result());
-                  }
-                  else {
-                    logger.error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
-                  }
-                }
-              });
-            }
-            else if (context.componentContext().isVerticle()) {
-              if (context.<VerticleContext>componentContext().isWorker()) {
-                deployWorkerVerticle(context.<VerticleContext>componentContext().main(), config, context.<VerticleContext>componentContext().isMultiThreaded(), new Handler<AsyncResult<String>>() {
-                  @Override
-                  public void handle(AsyncResult<String> result) {
-                    if (result.succeeded()) {
-                      deploymentMap.put(context.address(), result.result());
-                    }
-                    else {
-                      logger.error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
-                    }
-                  }
-                });
-              }
-              else {
-                deployVerticle(context.<VerticleContext>componentContext().main(), config, new Handler<AsyncResult<String>>() {
-                  @Override
-                  public void handle(AsyncResult<String> result) {
-                    if (result.succeeded()) {
-                      deploymentMap.put(context.address(), result.result());
-                    }
-                    else {
-                      logger.error(String.format("Failed to deploy %s instance %s.", context.componentContext().address(), context.address()));
-                    }
-                  }
-                });
-              }
-            }
-          }
-        }
-      });
-    }
-  }
-
-  /**
    * Shuts down the network.
    */
   private void doShutdown(final Message<JsonObject> message) {
@@ -427,47 +292,6 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
         message.reply(result.succeeded());
       }
     });
-  }
-
-  /**
-   * Redeploys the entire network.
-   */
-  private void doRedeployAll(final Message<JsonObject> message) {
-    new RecursiveDeployer(context).undeploy(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        new RecursiveDeployer(context).deploy(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            message.reply(result.succeeded());
-          }
-        });
-      }
-    });
-  }
-
-  /**
-   * Indicates that a component instance is ready.
-   */
-  private void doReady(Message<JsonObject> message) {
-    String id = getMandatoryString("id", message);
-    if (id != null) {
-      ready.put(id, message);
-      if (logger.isDebugEnabled()) {
-        logger.debug(String.format("%s is ready", id));
-      }
-      InstanceContext<?> context = contextMap.get(id);
-      events.trigger(Events.Component.Start.class, context.componentContext().address(), context);
-      if (ready.size() == instances.size()) {
-        if (logger.isInfoEnabled()) {
-          logger.info("Starting components");
-        }
-        events.trigger(Events.Network.Start.class, this.context.address(), this.context);
-        for (Message<JsonObject> replyMessage : ready.values()) {
-          replyMessage.reply();
-        }
-      }
-    }
   }
 
   /**

@@ -40,7 +40,7 @@ public final class Context {
       for (String fieldName : config.getFieldNames()) {
         config.removeField(fieldName);
       }
-      JsonObject realConfig = context.componentContext().config();
+      JsonObject realConfig = context.component().config();
       for (String fieldName : realConfig.getFieldNames()) {
         config.putValue(fieldName, realConfig.getValue(fieldName));
       }

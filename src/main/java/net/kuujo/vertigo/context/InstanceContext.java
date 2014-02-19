@@ -67,7 +67,7 @@ public final class InstanceContext<T extends Component> implements Serializable 
    */
   public static JsonObject toJson(InstanceContext<?> context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    JsonObject json = ComponentContext.toJson(context.componentContext());
+    JsonObject json = ComponentContext.toJson(context.component());
     return json.putObject("instance", serializer.serialize(context));
   }
 
@@ -106,7 +106,7 @@ public final class InstanceContext<T extends Component> implements Serializable 
    *   The unique instance address.
    */
   public String address() {
-    return String.format("%s-%d", componentContext().address(), number());
+    return String.format("%s-%d", component().address(), number());
   }
 
   /**
@@ -116,13 +116,13 @@ public final class InstanceContext<T extends Component> implements Serializable 
    *   The parent component context.
    */
   @SuppressWarnings({"unchecked", "hiding"})
-  public <T extends ComponentContext> T componentContext() {
+  public <T extends ComponentContext> T component() {
     return (T) component;
   }
 
   @Deprecated
   public ComponentContext<T> getComponent() {
-    return componentContext();
+    return component();
   }
 
   @Override

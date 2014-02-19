@@ -84,9 +84,9 @@ public class DefaultOutputCollector implements OutputCollector {
     logger = LoggerFactory.getLogger(String.format("%s-%s", OutputCollector.class.getCanonicalName(), context.address()));
     acker = new DefaultAcker(context.address(), eventBus);
     messageBuilder = new JsonMessageBuilder(context.address());
-    ackingEnabled = context.componentContext().networkContext().isAckingEnabled();
-    auditors = context.componentContext().networkContext().auditors();
-    componentAddress = context.componentContext().address();
+    ackingEnabled = context.component().network().isAckingEnabled();
+    auditors = context.component().network().auditors();
+    componentAddress = context.component().address();
   }
 
   public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
@@ -100,9 +100,9 @@ public class DefaultOutputCollector implements OutputCollector {
     this.acker = acker;
     logger = LoggerFactory.getLogger(String.format("%s-%s", OutputCollector.class.getCanonicalName(), context.address()));
     messageBuilder = new JsonMessageBuilder(context.address());
-    ackingEnabled = context.componentContext().networkContext().isAckingEnabled();
-    auditors = context.componentContext().networkContext().auditors();
-    componentAddress = context.componentContext().address();
+    ackingEnabled = context.component().network().isAckingEnabled();
+    auditors = context.component().network().auditors();
+    componentAddress = context.component().address();
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -186,7 +186,7 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public String getAddress() {
-    return context.componentContext().address();
+    return context.component().address();
   }
 
   @Override
@@ -369,7 +369,7 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector start() {
-    eventBus.registerHandler(context.componentContext().address(), handler);
+    eventBus.registerHandler(context.component().address(), handler);
     hookStart();
     return this;
   }
@@ -377,7 +377,7 @@ public class DefaultOutputCollector implements OutputCollector {
   @Override
   public OutputCollector start(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.registerHandler(context.componentContext().address(), handler, new Handler<AsyncResult<Void>>() {
+    eventBus.registerHandler(context.component().address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -394,14 +394,14 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public void stop() {
-    eventBus.unregisterHandler(context.componentContext().address(), handler);
+    eventBus.unregisterHandler(context.component().address(), handler);
     hookStop();
   }
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.unregisterHandler(context.componentContext().address(), handler, new Handler<AsyncResult<Void>>() {
+    eventBus.unregisterHandler(context.component().address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {

@@ -60,7 +60,7 @@ public class DefaultComponentFactory implements ComponentFactory {
   @Override
   @SuppressWarnings({"unchecked"})
   public <T extends Component<T>> Component<T> createComponent(InstanceContext<T> context) {
-    Class<T> type = context.componentContext().type();
+    Class<T> type = context.component().type();
     if (Feeder.class.isAssignableFrom(type)) {
       return (Component<T>) createFeeder((InstanceContext<Feeder>) context);
     }

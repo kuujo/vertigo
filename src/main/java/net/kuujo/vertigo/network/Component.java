@@ -16,10 +16,8 @@
 package net.kuujo.vertigo.network;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.vertx.java.core.json.JsonObject;
@@ -105,13 +103,6 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   public static final String COMPONENT_NUM_INSTANCES = "instances";
 
   /**
-   * <code>targets</code> is an array of target nodes to which this component can be
-   * deployed. If this array is empty or null, the component can be deployed
-   * to any node within a cluster.
-   */
-  public static final String COMPONENT_TARGETS = "targets";
-
-  /**
    * <code>heartbeat</code> is a number indicating the interval at which the
    * component should send heartbeat messages to network monitors (in milliseconds).
    * Defaults to <code>5000</code> milliseconds.
@@ -146,7 +137,6 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   private Class<T> type;
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
-  private Set<String> targets = new HashSet<>();
   private long heartbeat = DEFAULT_HEARTBEAT_INTERVAL;
   private List<ComponentHook> hooks = new ArrayList<>();
   private List<Input> inputs = new ArrayList<>();
@@ -352,46 +342,6 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   @Deprecated
   public Component<T> setInstances(int instances) {
     return setNumInstances(instances);
-  }
-
-  /**
-   * Adds a deployment target to the component.
-   *
-   * @param node
-   *   The node to add to the component.
-   * @return
-   *   The component configuration.
-   */
-  public Component<T> addDeploymentTarget(String node) {
-    targets.add(node);
-    return this;
-  }
-
-  /**
-   * Adds a set of deployment targets to the component.
-   *
-   * @param nodes
-   *   A list of nodes to which the component may deploy.
-   * @return
-   *   The component configuration.
-   */
-  public Component<T> setDeploymentTargets(String... nodes) {
-    this.targets = new HashSet<>();
-    for (String node : nodes) {
-      targets.add(node);
-    }
-    return this;
-  }
-
-  /**
-   * Returns a set of deployment targets for the component.
-   *
-   * @return
-   *   A set of event bus addresses indicating nodes to which the
-   *   component can be deployed.
-   */
-  public Set<String> getDeploymentTargets() {
-    return targets;
   }
 
   /**

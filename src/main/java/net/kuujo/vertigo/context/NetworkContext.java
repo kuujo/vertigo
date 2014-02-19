@@ -149,7 +149,7 @@ public final class NetworkContext implements Context {
    * @return
    *   A list of network component contexts.
    */
-  public List<ComponentContext<?>> componentContexts() {
+  public List<ComponentContext<?>> components() {
     List<ComponentContext<?>> components = new ArrayList<>();
     for (ComponentContext<?> component : this.components.values()) {
       components.add(component.setNetworkContext(this));
@@ -159,7 +159,7 @@ public final class NetworkContext implements Context {
 
   @Deprecated
   public List<ComponentContext<?>> getComponents() {
-    return componentContexts();
+    return components();
   }
 
   /**
@@ -173,7 +173,7 @@ public final class NetworkContext implements Context {
    *   If a component does not exist at the given address.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public <T extends ComponentContext> T componentContext(String address) {
+  public <T extends ComponentContext> T component(String address) {
     if (components.containsKey(address)) {
       return (T) components.get(address).setNetworkContext(this);
     }
@@ -183,7 +183,7 @@ public final class NetworkContext implements Context {
   @Deprecated
   @SuppressWarnings("rawtypes")
   public <T extends net.kuujo.vertigo.component.Component> ComponentContext<T> getComponent(String address) {
-    return componentContext(address);
+    return component(address);
   }
 
   @Override

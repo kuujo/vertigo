@@ -19,10 +19,8 @@ import static net.kuujo.vertigo.util.Component.deserializeType;
 import static net.kuujo.vertigo.util.Component.serializeType;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -58,7 +56,6 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   private Map<String, Object> config;
   private List<InstanceContext<T>> instances = new ArrayList<>();
   private long heartbeat = 5000;
-  private Set<String> targets = new HashSet<>();
   private List<ComponentHook> hooks = new ArrayList<>();
   private List<InputContext> inputs = new ArrayList<>();
   private @JsonIgnore NetworkContext network;
@@ -91,7 +88,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    */
   public static JsonObject toJson(ComponentContext context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    JsonObject json = NetworkContext.toJson(context.networkContext());
+    JsonObject json = NetworkContext.toJson(context.network());
     json.putObject("component", serializer.serialize(context));
     return json;
   }
@@ -212,7 +209,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @return
    *   A list of component instance contexts.
    */
-  public List<InstanceContext<T>> instanceContexts() {
+  public List<InstanceContext<T>> instances() {
     for (InstanceContext<T> instance : instances) {
       instance.setComponentContext(this);
     }
@@ -221,7 +218,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   @Deprecated
   public List<InstanceContext<T>> getInstances() {
-    return instanceContexts();
+    return instances();
   }
 
   /**
@@ -242,7 +239,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @return
    *   A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext<T> instanceContext(int instanceNumber) {
+  public InstanceContext<T> instance(int instanceNumber) {
     for (InstanceContext<T> instance : instances) {
       if (instance.number() == instanceNumber) {
         return instance.setComponentContext(this);
@@ -259,7 +256,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @return
    *   A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext<T> instanceContext(String address) {
+  public InstanceContext<T> instance(String address) {
     for (InstanceContext<T> instance : instances) {
       if (instance.address().equals(address)) {
         return instance.setComponentContext(this);
@@ -270,7 +267,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   @Deprecated
   public InstanceContext<T> getInstance(String address) {
-    return instanceContext(address);
+    return instance(address);
   }
 
   /**
@@ -286,31 +283,6 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   @Deprecated
   public long getHeartbeatInterval() {
     return heartbeatInterval();
-  }
-
-  /**
-   * Returns a set of deployment targets for the component.
-   *
-   * @return
-   *   A set of event bus addresses indicating nodes to which the
-   *   component can be deployed.
-   */
-  public Set<String> getDeploymenTargets() {
-    return targets;
-  }
-
-  /**
-   * Returns a boolean indicating whether the component can be
-   * deployed to a specific node.
-   *
-   * @param address
-   *   The address of the node to check.
-   * @return
-   *   Indicates whether instances of the component can be deployed
-   *   to the given node.
-   */
-  public boolean hasDeploymentTarget(String address) {
-    return targets.contains(address);
   }
 
   /**
@@ -334,7 +306,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @return
    *   A list of component input contexts.
    */
-  public List<InputContext> inputContexts() {
+  public List<InputContext> inputs() {
     for (InputContext input : inputs) {
       input.setComponentContext(this);
     }
@@ -358,13 +330,13 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
    * @return
    *   The parent network context.
    */
-  public NetworkContext networkContext() {
+  public NetworkContext network() {
     return network;
   }
 
   @Deprecated
   public NetworkContext getNetwork() {
-    return networkContext();
+    return network();
   }
 
   @Override

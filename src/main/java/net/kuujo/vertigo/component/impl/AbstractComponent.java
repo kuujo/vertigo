@@ -137,16 +137,16 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.componentContext().type().getCanonicalName(), context.address()));
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.component().type().getCanonicalName(), context.address()));
     this.context = context;
     this.acker = new DefaultAcker(context.address(), eventBus);
     this.instanceId = context.address();
-    this.address = context.componentContext().address();
-    NetworkContext networkContext = context.componentContext().networkContext();
+    this.address = context.component().address();
+    NetworkContext networkContext = context.component().network();
     networkAddress = networkContext.address();
     input = new DefaultInputCollector(vertx, container, context, acker);
     output = new DefaultOutputCollector(vertx, container, context, acker);
-    for (ComponentHook hook : context.<ComponentContext<?>>componentContext().hooks()) {
+    for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
       addHook(hook);
     }
   }
@@ -305,8 +305,8 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     // it's ready. The first complete list of components to be received indicates
     // that the network has started.
     final Set<String> instances = new HashSet<>();
-    for (ComponentContext<?> component : context.componentContext().networkContext().componentContexts()) {
-      for (InstanceContext<?> instance : component.instanceContexts()) {
+    for (ComponentContext<?> component : context.component().network().components()) {
+      for (InstanceContext<?> instance : component.instances()) {
         instances.add(instance.id());
       }
     }

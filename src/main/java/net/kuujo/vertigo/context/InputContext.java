@@ -68,7 +68,7 @@ public class InputContext implements Context {
    */
   public static JsonObject toJson(InputContext context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    JsonObject json = ComponentContext.toJson(context.componentContext());
+    JsonObject json = ComponentContext.toJson(context.component());
     return json.putObject("input", serializer.serialize(context));
   }
 
@@ -138,7 +138,7 @@ public class InputContext implements Context {
    *   The parent component context.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public <T extends ComponentContext> T componentContext() {
+  public <T extends ComponentContext> T component() {
     return (T) component;
   }
 

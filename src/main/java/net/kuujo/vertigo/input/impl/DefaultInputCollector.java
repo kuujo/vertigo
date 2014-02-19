@@ -179,7 +179,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(AsyncResult<Void> result) {
         listeners = new ArrayList<Listener>();
-        recursiveStart(context.<ComponentContext<?>>componentContext().inputContexts().iterator(), future);
+        recursiveStart(context.<ComponentContext<?>>component().inputs().iterator(), future);
       }
     });
     return this;
@@ -192,7 +192,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(AsyncResult<Void> result) {
         listeners = new ArrayList<Listener>();
-        recursiveStart(context.<ComponentContext<?>>componentContext().inputContexts().iterator(), future);
+        recursiveStart(context.<ComponentContext<?>>component().inputs().iterator(), future);
       }
     });
     return this;

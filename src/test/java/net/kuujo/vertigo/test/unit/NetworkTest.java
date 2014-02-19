@@ -96,7 +96,6 @@ public class NetworkTest {
     assertFalse(verticle.isMultiThreaded());
     assertEquals(0, verticle.getHooks().size());
     assertEquals(0, verticle.getInputs().size());
-    assertEquals(0, verticle.getDeploymentTargets().size());
   }
 
   @Test
@@ -126,10 +125,6 @@ public class NetworkTest {
     assertTrue(verticle.isMultiThreaded());
     verticle.setWorker(false);
     assertFalse(verticle.isMultiThreaded());
-    assertEquals(0, verticle.getDeploymentTargets().size());
-    verticle.setDeploymentTargets("foo", "bar");
-    assertTrue(verticle.getDeploymentTargets().contains("foo"));
-    assertTrue(verticle.getDeploymentTargets().contains("bar"));
   }
 
   @Test
@@ -156,7 +151,6 @@ public class NetworkTest {
     assertEquals(5000, verticle.getHeartbeatInterval());
     assertEquals(0, verticle.getHooks().size());
     assertEquals(0, verticle.getInputs().size());
-    assertEquals(0, verticle.getDeploymentTargets().size());
   }
 
   @Test
@@ -178,10 +172,6 @@ public class NetworkTest {
     assertEquals(5000, module.getHeartbeatInterval());
     module.setHeartbeatInterval(1000);
     assertEquals(1000, module.getHeartbeatInterval());
-    assertEquals(0, module.getDeploymentTargets().size());
-    module.setDeploymentTargets("foo", "bar");
-    assertTrue(module.getDeploymentTargets().contains("foo"));
-    assertTrue(module.getDeploymentTargets().contains("bar"));
   }
 
   @Test

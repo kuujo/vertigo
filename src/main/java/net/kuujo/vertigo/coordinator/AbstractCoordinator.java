@@ -182,25 +182,27 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   @Override
   public void handle(Message<JsonObject> message) {
     String action = getMandatoryString("action", message);
-    switch (action) {
-      case "register":
-        doRegister(message);
-        break;
-      case "unregister":
-        doUnregister(message);
-        break;
-      case "shutdown":
-        doShutdown(message);
-        break;
-      case "redeploy":
-        doRedeployAll(message);
-        break;
-      case "ready":
-        doReady(message);
-        break;
-      default:
-        sendError(message, String.format("Invalid action %s.", action));
-        break;
+    if (action != null) {
+      switch (action) {
+        case "register":
+          doRegister(message);
+          break;
+        case "unregister":
+          doUnregister(message);
+          break;
+        case "shutdown":
+          doShutdown(message);
+          break;
+        case "redeploy":
+          doRedeployAll(message);
+          break;
+        case "ready":
+          doReady(message);
+          break;
+        default:
+          sendError(message, String.format("Invalid action %s.", action));
+          break;
+      }
     }
   }
 

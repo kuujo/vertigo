@@ -82,6 +82,14 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     }
   };
 
+  private final Handler<Void> feedRunner = new Handler<Void>() {
+    @Override
+    public void handle(Void _) {
+      feedHandler.handle(BasicFeeder.this);
+      recursiveFeed();
+    }
+  };
+
   @Override
   public Feeder start() {
     return super.start(new Handler<AsyncResult<Feeder>>() {
@@ -123,21 +131,26 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   private void recursiveFeed() {
     if (feedHandler != null) {
       fed = true;
-      while (fed && !feedQueueFull()) {
-        fed = false;
-        feedHandler.handle(this);
-      }
+      doRecursiveFeed();
+    }
+    else if (feedTimer > 0) {
+      vertx.cancelTimer(feedTimer);
+      feedTimer = 0;
+    }
+  }
 
+  private void doRecursiveFeed() {
+    if (fed && !feedQueueFull()) {
+      fed = false;
+      vertx.runOnContext(feedRunner);
+    }
+    else {
       feedTimer = vertx.setTimer(feedInterval, new Handler<Long>() {
         @Override
         public void handle(Long timerID) {
           recursiveFeed();
         }
       });
-    }
-    else if (feedTimer > 0) {
-      vertx.cancelTimer(feedTimer);
-      feedTimer = 0;
     }
   }
 

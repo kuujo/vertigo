@@ -57,49 +57,49 @@ public class MetricsHook implements ComponentHook {
   public void handleReceive(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.receive", address)));
+      .putString("name", String.format("%s.receive", context.address())));
   }
 
   @Override
   public void handleAck(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.ack", address)));
+      .putString("name", String.format("%s.ack", context.address())));
   }
 
   @Override
   public void handleFail(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.fail", address)));
+      .putString("name", String.format("%s.fail", context.address())));
   }
 
   @Override
   public void handleEmit(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.emit", address)));
+      .putString("name", String.format("%s.emit", context.address())));
   }
 
   @Override
   public void handleAcked(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.acked", address)));
+      .putString("name", String.format("%s.acked", context.address())));
   }
 
   @Override
   public void handleFailed(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.failed", address)));
+      .putString("name", String.format("%s.failed", context.address())));
   }
 
   @Override
   public void handleTimeout(MessageId messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.timeout", address)));
+      .putString("name", String.format("%s.timeout", context.address())));
   }
 
   @Override

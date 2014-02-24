@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,6 +94,14 @@ public class BasicExecutor extends AbstractComponent<Executor> implements Execut
     }
   };
 
+  private final Handler<Void> executeRunner = new Handler<Void>() {
+    @Override
+    public void handle(Void _) {
+      executeHandler.handle(BasicExecutor.this);
+      recursiveExecute();
+    }
+  };
+
   @Override
   public Executor start(Handler<AsyncResult<Executor>> doneHandler) {
     output.ackHandler(ackHandler);
@@ -124,21 +132,26 @@ public class BasicExecutor extends AbstractComponent<Executor> implements Execut
   private void recursiveExecute() {
     if (executeHandler != null) {
       executed = true;
-      while (executed && !executeQueueFull()) {
-        executed = false;
-        executeHandler.handle(this);
-      }
+      doRecursiveExecute();
+    }
+    else if (executeTimer > 0) {
+      vertx.cancelTimer(executeTimer);
+      executeTimer = 0;
+    }
+  }
 
+  private void doRecursiveExecute() {
+    if (executed && !executeQueueFull()) {
+      executed = false;
+      vertx.runOnContext(executeRunner);
+    }
+    else {
       executeTimer = vertx.setTimer(executeInterval, new Handler<Long>() {
         @Override
         public void handle(Long timerID) {
           recursiveExecute();
         }
       });
-    }
-    else if (executeTimer > 0) {
-      vertx.cancelTimer(executeTimer);
-      executeTimer = 0;
     }
   }
 

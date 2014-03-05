@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.message.schema;
 
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
  * An object field.

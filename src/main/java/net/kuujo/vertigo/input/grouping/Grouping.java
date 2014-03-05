@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
  * An input grouping.<p>

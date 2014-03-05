@@ -24,7 +24,7 @@ import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.impl.DefaultVertigoFactory;
-import net.kuujo.vertigo.serializer.DeserializationException;
+import net.kuujo.vertigo.util.serializer.DeserializationException;
 
 /**
  * Static {@link Vertigo} factory methods intended for use in language bindings.

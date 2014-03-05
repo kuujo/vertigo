@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.Connection;
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
  * An output selector.

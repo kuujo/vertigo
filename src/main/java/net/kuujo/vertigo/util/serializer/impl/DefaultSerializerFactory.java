@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.serializer;
+package net.kuujo.vertigo.util.serializer.impl;
+
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
- * Static helper methods for serialization.<p>
- *
- * This class is deprecated. Users should use {@link SerializerFactory} to
- * access serializer instances.
+ * A default serializer factory implementation.
  *
  * @author Jordan Halterman
  */
-@Deprecated
-public abstract class Serializers {
-  private static final String DEFAULT_SERIALIZER = "default";
+public class DefaultSerializerFactory extends SerializerFactory {
 
-  @Deprecated
-  public static Serializer getDefault() {
-    return SerializerFactory.getSerializer(DEFAULT_SERIALIZER);
-  }
-
-  @Deprecated
-  public static Serializer getSerializer(String name) {
-    return SerializerFactory.getSerializer(name);
+  @Override
+  public Serializer createSerializer(Class<?> type) {
+    return new DefaultSerializer();
   }
 
 }

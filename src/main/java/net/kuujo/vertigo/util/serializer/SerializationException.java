@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.serializer;
+package net.kuujo.vertigo.util.serializer;
 
 /**
- * A deserialization exception.<p>
- *
- * This exception is thrown when an error occurs in deserialization.
- *
+ * A serialization exception.
+ * 
  * @author Jordan Halterman
  */
 @SuppressWarnings("serial")
-public class DeserializationException extends SerializationException {
+public class SerializationException extends RuntimeException {
 
-  public DeserializationException(String message) {
+  public SerializationException(String message) {
     super(message);
   }
 

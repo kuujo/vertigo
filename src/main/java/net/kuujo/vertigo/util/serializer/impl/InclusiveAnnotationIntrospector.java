@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.serializer.impl;
+package net.kuujo.vertigo.util.serializer.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.Serializable;
 
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
@@ -98,6 +98,10 @@ public class InclusiveAnnotationIntrospector extends JacksonAnnotationIntrospect
     Boolean serializable = cache.get(type);
     if (serializable != null) {
       return serializable;
+    }
+
+    if (type == Object.class) {
+      return true;
     }
 
     if (primitiveTypes.contains(type)) {

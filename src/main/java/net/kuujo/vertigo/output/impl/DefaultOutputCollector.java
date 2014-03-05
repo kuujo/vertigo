@@ -34,8 +34,8 @@ import net.kuujo.vertigo.output.Channel;
 import net.kuujo.vertigo.output.Connection;
 import net.kuujo.vertigo.output.Output;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -129,7 +129,7 @@ public class DefaultOutputCollector implements OutputCollector {
     }
 
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    InputContext input = serializer.deserialize(info, InputContext.class);
+    InputContext input = serializer.deserializeObject(info, InputContext.class);
     Output output = new Output(input.id(), input.stream(), input.count(), input.grouping().createSelector());
 
     final Channel channel = findChannel(output);

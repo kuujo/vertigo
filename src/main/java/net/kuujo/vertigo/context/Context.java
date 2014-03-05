@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
  * Base context.

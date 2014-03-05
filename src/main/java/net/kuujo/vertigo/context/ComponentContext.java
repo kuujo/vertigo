@@ -33,8 +33,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Input;
-import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
  * A component context which contains information regarding each
@@ -73,7 +73,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   @SuppressWarnings("unchecked")
   public static <T extends ComponentContext> T fromJson(JsonObject context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    T component = (T) serializer.deserialize(context.getObject("component"), ComponentContext.class);
+    T component = (T) serializer.deserializeObject(context.getObject("component"), ComponentContext.class);
     NetworkContext network = NetworkContext.fromJson(context);
     return (T) component.setNetworkContext(network);
   }
@@ -89,7 +89,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   public static JsonObject toJson(ComponentContext context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
     JsonObject json = NetworkContext.toJson(context.network());
-    json.putObject("component", serializer.serialize(context));
+    json.putObject("component", serializer.serializeToObject(context));
     return json;
   }
 
@@ -319,7 +319,7 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
     List<Input> inputs = new ArrayList<>();
     for (InputContext context : this.inputs) {
-      inputs.add(serializer.deserialize(serializer.serialize(context), Input.class));
+      inputs.add(serializer.deserializeString(serializer.serializeToString(context), Input.class));
     }
     return inputs;
   }

@@ -23,8 +23,8 @@ import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
-import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -144,7 +144,7 @@ public class DefaultListener implements Listener {
   @SuppressWarnings("deprecation")
   private InputContext inputToContext(net.kuujo.vertigo.input.Input input) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    return serializer.deserialize(serializer.serialize(input), InputContext.class);
+    return serializer.deserializeString(serializer.serializeToString(input), InputContext.class);
   }
 
   private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
@@ -282,7 +282,7 @@ public class DefaultListener implements Listener {
       public void handle(Long timerId) {
         eventBus.publish(context.address(), new JsonObject().putString("action", "listen")
             .putString("address", address).putString("status", statusAddress)
-            .putObject("input", serializer.serialize(context)));
+            .putObject("input", serializer.serializeToObject(context)));
       }
     });
   }

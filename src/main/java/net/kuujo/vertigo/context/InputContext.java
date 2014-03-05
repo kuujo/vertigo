@@ -21,8 +21,8 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
  * Component input context.
@@ -53,7 +53,7 @@ public class InputContext implements Context {
    */
   public static InputContext fromJson(JsonObject context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    InputContext input = serializer.deserialize(context.getObject("input"), InputContext.class);
+    InputContext input = serializer.deserializeObject(context.getObject("input"), InputContext.class);
     ComponentContext<?> component = ComponentContext.fromJson(context);
     return input.setComponentContext(component);
   }
@@ -69,7 +69,7 @@ public class InputContext implements Context {
   public static JsonObject toJson(InputContext context) {
     Serializer serializer = SerializerFactory.getSerializer(Context.class);
     JsonObject json = ComponentContext.toJson(context.component());
-    return json.putObject("input", serializer.serialize(context));
+    return json.putObject("input", serializer.serializeToObject(context));
   }
 
   /**

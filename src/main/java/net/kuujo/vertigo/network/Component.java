@@ -29,9 +29,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.serializer.Serializable;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.SerializationException;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 import static net.kuujo.vertigo.util.Component.serializeType;
 import static net.kuujo.vertigo.util.Component.deserializeType;
 
@@ -164,7 +164,7 @@ public abstract class Component<T extends net.kuujo.vertigo.component.Component>
   @SuppressWarnings("unchecked")
   public static <T extends net.kuujo.vertigo.component.Component<T>> Component<T> fromJson(JsonObject json) throws MalformedNetworkException {
     try {
-      return SerializerFactory.getSerializer(Network.class).deserialize(json, Component.class);
+      return SerializerFactory.getSerializer(Network.class).deserializeObject(json, Component.class);
     }
     catch (SerializationException e) {
       throw new MalformedNetworkException(e);

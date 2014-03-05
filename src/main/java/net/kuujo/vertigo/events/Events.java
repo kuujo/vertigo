@@ -21,9 +21,9 @@ import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.serializer.SerializationException;
-import net.kuujo.vertigo.serializer.Serializer;
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.SerializationException;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -122,7 +122,7 @@ public final class Events {
         NetworkContext context = (NetworkContext) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
-          eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+          eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
         }
         catch (SerializationException e) {
           // Do nothing.
@@ -163,7 +163,7 @@ public final class Events {
         NetworkContext context = (NetworkContext) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
-          eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+          eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
         }
         catch (SerializationException e) {
           // Do nothing.
@@ -202,7 +202,7 @@ public final class Events {
         NetworkContext context = (NetworkContext) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
-          eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+          eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
         }
         catch (SerializationException e) {
           // Do nothing.
@@ -252,7 +252,7 @@ public final class Events {
         InstanceContext<?> context = (InstanceContext<?>) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
-          eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+          eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
         }
         catch (SerializationException e) {
           // Do nothing.
@@ -293,7 +293,7 @@ public final class Events {
         InstanceContext<?> context = (InstanceContext<?>) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
-          eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+          eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
         }
         catch (SerializationException e) {
           // Do nothing.
@@ -334,7 +334,7 @@ public final class Events {
         InstanceContext<?> context = (InstanceContext<?>) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
-          eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serialize(context)));
+          eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
         }
         catch (SerializationException e) {
           // Do nothing.

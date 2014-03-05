@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.Serializable;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.network.Network;
 

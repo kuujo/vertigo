@@ -31,7 +31,7 @@ import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.events.Events;
-import net.kuujo.vertigo.serializer.SerializationException;
+import net.kuujo.vertigo.util.serializer.SerializationException;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;

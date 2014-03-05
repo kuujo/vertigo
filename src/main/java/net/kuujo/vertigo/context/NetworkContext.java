@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
  * A network context which contains information regarding the complete
@@ -53,7 +53,7 @@ public final class NetworkContext implements Context {
    */
   public static NetworkContext fromJson(JsonObject context) {
     return SerializerFactory.getSerializer(Context.class)
-        .deserialize(context.getObject("network"), NetworkContext.class);
+        .deserializeObject(context.getObject("network"), NetworkContext.class);
   }
 
   /**
@@ -65,7 +65,7 @@ public final class NetworkContext implements Context {
    *   A serialized network context.
    */
   public static JsonObject toJson(NetworkContext context) {
-    return new JsonObject().putObject("network", SerializerFactory.getSerializer(Context.class).serialize(context));
+    return new JsonObject().putObject("network", SerializerFactory.getSerializer(Context.class).serializeToObject(context));
   }
 
   /**

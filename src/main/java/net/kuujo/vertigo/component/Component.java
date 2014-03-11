@@ -40,26 +40,12 @@ public interface Component<T extends Component<T>> {
   Vertx vertx();
 
   /**
-   * Returns the component Vertx instance. This method is deprecated.
-   * Use the {@link #vertx()} method instead.
-   */
-  @Deprecated
-  Vertx getVertx();
-
-  /**
    * Gets the component container instance.
    *
    * @return
    *   The component container instance.
    */
   Container container();
-
-  /**
-   * Returns the component container instance. This method is deprecated.
-   * Use the {@link #container()} method instead.
-   */
-  @Deprecated
-  Container getContainer();
 
   /**
    * Returns the component's {@link InputCollector}. This is the element of the
@@ -71,13 +57,6 @@ public interface Component<T extends Component<T>> {
   InputCollector input();
 
   /**
-   * Returns the component's input. This method is deprecated.
-   * Use the {@link #input()} method instead.
-   */
-  @Deprecated
-  InputCollector getInput();
-
-  /**
    * Returns the component's {@link OutputCollector}. This is the element of the
    * component which receives subscriptions and emits messages to other components.
    *
@@ -85,13 +64,6 @@ public interface Component<T extends Component<T>> {
    *   The component's {@link OutputCollector}.
    */
   OutputCollector output();
-
-  /**
-   * Returns the component's output. This method is deprecated.
-   * Use the {@link #output()} method instead.
-   */
-  @Deprecated
-  OutputCollector getOutput();
 
   /**
    * Returns the component instance context.
@@ -103,13 +75,6 @@ public interface Component<T extends Component<T>> {
    *   The instance context.
    */
   InstanceContext<T> context();
-
-  /**
-   * Returns the component instance context. This method is deprecated.
-   * Use the {@link #context()} method instead.
-   */
-  @Deprecated
-  InstanceContext<T> getContext();
 
   /**
    * Returns the instance logger.

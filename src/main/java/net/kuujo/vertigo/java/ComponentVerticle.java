@@ -16,10 +16,8 @@
 package net.kuujo.vertigo.java;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.VertigoFactory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.impl.DefaultVertigoFactory;
 import static net.kuujo.vertigo.util.Context.parseContext;
 
 import org.vertx.java.core.AsyncResult;
@@ -34,7 +32,7 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
-  protected Vertigo<T> vertigo;
+  protected Vertigo vertigo;
   protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
@@ -62,8 +60,7 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
     context = parseContext(container.config());
     config = container.config();
     final T component = createComponent(context);
-    VertigoFactory factory = new DefaultVertigoFactory(vertx, container);
-    vertigo = factory.createVertigo(component);
+    vertigo = new Vertigo(this);
 
     component.start(new Handler<AsyncResult<T>>() {
       @Override

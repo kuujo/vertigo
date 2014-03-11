@@ -16,8 +16,6 @@
 package net.kuujo.vertigo.java;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.VertigoFactory;
-import net.kuujo.vertigo.impl.DefaultVertigoFactory;
 
 import org.vertx.java.core.Future;
 import org.vertx.java.platform.Verticle;
@@ -45,13 +43,11 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 public abstract class VertigoVerticle extends Verticle {
-  @SuppressWarnings("rawtypes")
   protected Vertigo vertigo;
 
   @Override
   public void start(Future<Void> future) {
-    VertigoFactory factory = new DefaultVertigoFactory(vertx, container);
-    vertigo = factory.createVertigo();
+    vertigo = new Vertigo(this);
     super.start(future);
   }
 

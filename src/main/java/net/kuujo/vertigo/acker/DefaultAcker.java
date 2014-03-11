@@ -71,9 +71,9 @@ public class DefaultAcker implements Acker {
 
   private void doAck(Message<JsonObject> message) {
     if (ackHandler != null) {
-      JsonObject id = message.body().getObject("id");
+      String id = message.body().getString("id");
       if (id != null) {
-        ackHandler.handle(serializer.deserializeObject(id, MessageId.class));
+        ackHandler.handle(serializer.deserializeString(id, MessageId.class));
       }
     }
   }
@@ -86,9 +86,9 @@ public class DefaultAcker implements Acker {
 
   private void doFail(Message<JsonObject> message) {
     if (failHandler != null) {
-      JsonObject id = message.body().getObject("id");
+      String id = message.body().getString("id");
       if (id != null) {
-        failHandler.handle(serializer.deserializeObject(id, MessageId.class));
+        failHandler.handle(serializer.deserializeString(id, MessageId.class));
       }
     }
   }
@@ -101,9 +101,9 @@ public class DefaultAcker implements Acker {
 
   private void doTimeout(Message<JsonObject> message) {
     if (timeoutHandler != null) {
-      JsonObject id = message.body().getObject("id");
+      String id = message.body().getString("id");
       if (id != null) {
-        timeoutHandler.handle(serializer.deserializeObject(id, MessageId.class));
+        timeoutHandler.handle(serializer.deserializeString(id, MessageId.class));
       }
     }
   }
@@ -113,11 +113,11 @@ public class DefaultAcker implements Acker {
     List<MessageId> messageIds = children.remove(messageId.correlationId());
     if (messageIds != null && !messageIds.isEmpty()) {
       eventBus.send(messageId.auditor(), new JsonObject().putString("action", "create")
-          .putObject("id", serializer.serializeToObject(messageId)).putArray("children", messageIdsToArray(messageIds)));
+          .putString("id", serializer.serializeToString(messageId)).putArray("children", messageIdsToArray(messageIds)));
     }
     else {
       eventBus.send(messageId.auditor(), new JsonObject().putString("action", "create")
-          .putObject("id", serializer.serializeToObject(messageId)));
+          .putString("id", serializer.serializeToString(messageId)));
     }
     return this;
   }
@@ -139,11 +139,11 @@ public class DefaultAcker implements Acker {
     List<MessageId> messageIds = children.remove(messageId.correlationId());
     if (messageIds != null) {
       eventBus.send(messageId.auditor(), new JsonObject().putString("action", "ack")
-          .putObject("id", serializer.serializeToObject(messageId)).putArray("children", messageIdsToArray(messageIds)));
+          .putString("id", serializer.serializeToString(messageId)).putArray("children", messageIdsToArray(messageIds)));
     }
     else {
       eventBus.send(messageId.auditor(), new JsonObject().putString("action", "ack")
-          .putObject("id", serializer.serializeToObject(messageId)));
+          .putString("id", serializer.serializeToString(messageId)));
     }
     return this;
   }
@@ -152,7 +152,7 @@ public class DefaultAcker implements Acker {
   public Acker fail(MessageId messageId) {
     children.remove(messageId.correlationId());
     eventBus.send(messageId.auditor(), new JsonObject().putString("action", "fail")
-        .putObject("id", serializer.serializeToObject(messageId)));
+        .putString("id", serializer.serializeToString(messageId)));
     return this;
   }
 
@@ -162,7 +162,7 @@ public class DefaultAcker implements Acker {
   private static JsonArray messageIdsToArray(List<MessageId> messageIds) {
     JsonArray ids = new JsonArray();
     for (MessageId id : messageIds) {
-      ids.add(serializer.serializeToObject(id));
+      ids.add(serializer.serializeToString(id));
     }
     return ids;
   }

@@ -24,6 +24,7 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.worker.impl.BasicWorker;
 
 /**
  * A rich worker verticle implementation.<p>
@@ -53,7 +54,7 @@ public abstract class RichWorkerVerticle extends ComponentVerticle<Worker> {
   @Override
   protected Worker createComponent(InstanceContext context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.<Worker>createComponent(context);
+    return componentFactory.<BasicWorker>createComponent(BasicWorker.class, context);
   }
 
   @Override

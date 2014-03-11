@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,31 +30,25 @@ public interface ComponentFactory {
   /**
    * Sets the factory Vertx instance.
    *
-   * @param vertx
-   *   A Vertx instance.
-   * @return
-   *   The called factory instance.
+   * @param vertx A Vertx instance.
+   * @return The called factory instance.
    */
   ComponentFactory setVertx(Vertx vertx);
 
   /**
    * Sets the factory Container instance.
    *
-   * @param container
-   *   A Vert.x container.
-   * @return
-   *   The called factory instance.
+   * @param container A Vert.x container.
+   * @return The called factory instance.
    */
   ComponentFactory setContainer(Container container);
 
   /**
    * Creates a component.
-   *
-   * @param context
-   *   The component context.
-   * @return
-   *   A new component instance.
+   * 
+   * @param context The component context.
+   * @return A new component instance.
    */
-  <T extends Component<T>> T createComponent(InstanceContext context);
+  <T extends Component<?>> T createComponent(Class<T> type, InstanceContext context);
 
 }

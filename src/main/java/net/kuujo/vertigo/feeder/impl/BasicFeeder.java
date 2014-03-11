@@ -18,6 +18,7 @@ package net.kuujo.vertigo.feeder.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
@@ -44,6 +45,11 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
    * Constant indicating unlimited automatic retry attempts.
    */
   public static final int AUTO_RETRY_ATTEMPTS_UNLIMITED = -1;
+
+  @Factory
+  public static BasicFeeder factory(Vertx vertx, Container container, InstanceContext context) {
+    return new BasicFeeder(vertx, container, context);
+  }
 
   private static final long DEFAULT_FEED_INTERVAL = 10;
   private Handler<Feeder> feedHandler;

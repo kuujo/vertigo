@@ -33,51 +33,48 @@ public interface Cluster {
   /**
    * Deploys a network to the cluster.
    *
-   * @param network
-   *   The network configuration.
+   * @param network The network configuration.
    */
   void deployNetwork(Network network);
-
-  @Deprecated
-  void deploy(Network network);
 
   /**
    * Deploys a network to the cluster.
    *
-   * @param network
-   *   The network configuration.
-   * @param doneHandler
-   *   A handler to be called once the deployment is complete. This handler will
-   *   be passed the deployed network context containing information about the
-   *   deployed components.
+   * @param network The network configuration.
+   * @param doneHandler A handler to be called once the deployment is complete. This handler will
+   *                    be passed the deployed network context containing information about the
+   *                    deployed components.
    */
   void deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
-  @Deprecated
-  void deploy(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
+  /**
+   * Shuts down a network in the cluster.
+   *
+   * @param address The address of the network to shutdown.
+   */
+  void shutdownNetwork(String address);
 
   /**
    * Shuts down a network in the cluster.
    *
-   * @param context
-   *   The context of the network to shutdown.
+   * @param address The address of the network to shutdown.
+   * @param doneHandler A handler to be called once the shutdown is complete.
+   */
+  void shutdownNetwork(String address, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Shuts down a network in the cluster.
+   *
+   * @param context The context of the network to shutdown.
    */
   void shutdownNetwork(NetworkContext context);
 
-  @Deprecated
-  void shutdown(NetworkContext context);
-
   /**
    * Shuts down a network in the cluster.
    *
-   * @param context
-   *   The context of the network to shutdown.
-   * @param doneHandler
-   *   A handler to be called once the shutdown is complete.
+   * @param context The context of the network to shutdown.
+   * @param doneHandler A handler to be called once the shutdown is complete.
    */
   void shutdownNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
-
-  @Deprecated
-  void shutdown(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
 
 }

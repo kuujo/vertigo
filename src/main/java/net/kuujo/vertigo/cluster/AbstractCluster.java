@@ -40,7 +40,6 @@ abstract class AbstractCluster implements Cluster {
   private EventBus eventBus;
   private Container container;
   protected String coordinator;
-  protected String master;
 
   public AbstractCluster(Verticle verticle) {
     this.eventBus = verticle.getVertx().eventBus();
@@ -53,11 +52,6 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public void deploy(Network network) {
-    deployNetwork(network);
-  }
-
-  @Override
   public void deployNetwork(Network network) {
     try {
       final NetworkContext context = ContextBuilder.buildContext(network);
@@ -66,11 +60,6 @@ abstract class AbstractCluster implements Cluster {
     catch (MalformedNetworkException e) {
       container.logger().error(e);
     }
-  }
-
-  @Override
-  public void deploy(final Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
-    deployNetwork(network, doneHandler);
   }
 
   @Override
@@ -96,24 +85,14 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public void shutdown(NetworkContext context) {
-    shutdownNetwork(context);
+  public void shutdownNetwork(String address) {
+    eventBus.send(address, new JsonObject().putString("action", "shutdown"));
   }
 
   @Override
-  public void shutdownNetwork(NetworkContext context) {
-    eventBus.send(context.address(), new JsonObject().putString("action", "shutdown"));
-  }
-
-  @Override
-  public void shutdown(final NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
-    shutdownNetwork(context, doneHandler);
-  }
-
-  @Override
-  public void shutdownNetwork(final NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+  public void shutdownNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
     final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.sendWithTimeout(context.address(), new JsonObject().putString("action", "shutdown"), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
+    eventBus.sendWithTimeout(address, new JsonObject().putString("action", "shutdown"), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {
@@ -124,6 +103,16 @@ abstract class AbstractCluster implements Cluster {
         }
       }
     });
+  }
+
+  @Override
+  public void shutdownNetwork(NetworkContext context) {
+    shutdownNetwork(context.address());
+  }
+
+  @Override
+  public void shutdownNetwork(final NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+    shutdownNetwork(context.address(), doneHandler);
   }
 
 }

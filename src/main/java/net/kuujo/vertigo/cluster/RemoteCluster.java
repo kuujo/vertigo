@@ -41,10 +41,9 @@ public class RemoteCluster extends AbstractCluster {
     super(verticle);
   }
 
-  public RemoteCluster(Vertx vertx, Container container, String address) {
+  public RemoteCluster(Vertx vertx, Container container) {
     super(vertx, container);
     coordinator = RemoteCoordinator.class.getName();
-    this.master = address;
   }
 
 }

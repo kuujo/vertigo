@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,11 +71,10 @@ public final class Vertigo {
    * deploy network verticles and modules using the current Vert.x {@link Container}
    * instance.
    * 
-   * @param address The cluster to which to deploy the network.
    * @param network The network to deploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployLocalNetwork(String address, Network network) {
+  public Vertigo deployLocalNetwork(Network network) {
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deployNetwork(network);
     return this;
@@ -89,14 +88,13 @@ public final class Vertigo {
    * deploy network verticles and modules using the current Vert.x {@link Container}
    * instance.
    * 
-   * @param address The cluster to which to deploy the network.
    * @param network The network to deploy.
    * @param doneHandler An asynchronous handler to be called once deployment is complete.
    *          The handler will be called with the deployed network context which contains
    *          information about the network's component locations and event bus addresses.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployLocalNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+  public Vertigo deployLocalNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.deployNetwork(network, doneHandler);
     return this;
@@ -104,12 +102,36 @@ public final class Vertigo {
 
   /**
    * Shuts down a local network.
+   *
+   * @param address The network address.
+   * @return The Vertigo instance.
+   */
+  public Vertigo shutdownLocalNetwork(String address) {
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.shutdownNetwork(address);
+    return this;
+  }
+
+  /**
+   * Shuts down a local network.
+   *
+   * @param address The network address.
+   * @param doneHandler An asynchronous handler to be called once the shutdown is complete.
+   * @return The Vertigo instance.
+   */
+  public Vertigo shutdownLocalNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+    Cluster cluster = new LocalCluster(vertx, container);
+    cluster.shutdownNetwork(address, doneHandler);
+    return this;
+  }
+
+  /**
+   * Shuts down a local network.
    * 
-   * @param address The cluster from which to shutdown the network.
    * @param context The context of the network to shutdown.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownLocalNetwork(String address, NetworkContext context) {
+  public Vertigo shutdownLocalNetwork(NetworkContext context) {
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.shutdownNetwork(context);
     return this;
@@ -118,13 +140,11 @@ public final class Vertigo {
   /**
    * Shuts down a local network.
    * 
-   * @param address The cluster from which to shutdown the network.
    * @param context The context of the network to shutdown.
-   * @param doneHandler An asynchronous handler to be called once the shutdown is
-   *          complete.
+   * @param doneHandler An asynchronous handler to be called once the shutdown is complete.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownLocalNetwork(String address, NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo shutdownLocalNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
     Cluster cluster = new LocalCluster(vertx, container);
     cluster.shutdownNetwork(context, doneHandler);
     return this;
@@ -137,16 +157,11 @@ public final class Vertigo {
    * module and verticle deployments over the event bus rather than performing deployments
    * directly using the Vert.x {@link Container}.
    * 
-   * @param address The address to which to communicate component deployments. This
-   *          address will receive message-based commands which contain information on
-   *          which modules or verticles to deploy. It is up to the handler at this
-   *          address to assign those deployments to specific Vert.x instances or
-   *          otherwise handle deployments via the Vert.x {@link Container}.
    * @param network The network to deploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployRemoteNetwork(String address, Network network) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+  public Vertigo deployRemoteNetwork(Network network) {
+    Cluster cluster = new RemoteCluster(vertx, container);
     cluster.deployNetwork(network);
     return this;
   }
@@ -158,19 +173,14 @@ public final class Vertigo {
    * module and verticle deployments over the event bus rather than performing deployments
    * directly using the Vert.x {@link Container}.
    * 
-   * @param address The address to which to communicate component deployments. This
-   *          address will receive message-based commands which contain information on
-   *          which modules or verticles to deploy. It is up to the handler at this
-   *          address to assign those deployments to specific Vert.x instances or
-   *          otherwise handle deployments via the Vert.x {@link Container}.
    * @param network The network to deploy.
    * @param doneHandler An asynchronous handler to be called once deployment is complete.
    *          The handler will be called with the deployed network context which contains
    *          information about the network's component locations and event bus addresses.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployRemoteNetwork(String address, Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+  public Vertigo deployRemoteNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+    Cluster cluster = new RemoteCluster(vertx, container);
     cluster.deployNetwork(network, doneHandler);
     return this;
   }
@@ -178,16 +188,37 @@ public final class Vertigo {
   /**
    * Shuts down a network via the Vert.x event bus.
    * 
-   * @param address The address to which to communicate component undeployments. This
-   *          address will receive message-based commands which contain information on
-   *          which modules or verticles to deploy. It is up to the handler at this
-   *          address to assign those deployments to specific Vert.x instances or
-   *          otherwise handle deployments via the Vert.x {@link Container}.
+   * @param address The address of the network to shutdown.
+   * @return The called Vertigo instance.
+   */
+  public Vertigo shutdownRemoteNetwork(String address) {
+    Cluster cluster = new RemoteCluster(vertx, container);
+    cluster.shutdownNetwork(address);
+    return this;
+  }
+
+  /**
+   * Shuts down a network via the Vert.x event bus.
+   * 
+   * @param address The address of the network to shutdown.
+   * @param doneHandler An asynchronous handler to be called once the network has been
+   *          shutdown.
+   * @return The called Vertigo instance.
+   */
+  public Vertigo shutdownRemoteNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+    Cluster cluster = new RemoteCluster(vertx, container);
+    cluster.shutdownNetwork(address, doneHandler);
+    return this;
+  }
+
+  /**
+   * Shuts down a network via the Vert.x event bus.
+   * 
    * @param context The context of the network to shutdown.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownRemoteNetwork(String address, NetworkContext context) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+  public Vertigo shutdownRemoteNetwork(NetworkContext context) {
+    Cluster cluster = new RemoteCluster(vertx, container);
     cluster.shutdownNetwork(context);
     return this;
   }
@@ -195,18 +226,13 @@ public final class Vertigo {
   /**
    * Shuts down a network via the Vert.x event bus.
    * 
-   * @param address The address to which to communicate component undeployments. This
-   *          address will receive message-based commands which contain information on
-   *          which modules or verticles to deploy. It is up to the handler at this
-   *          address to assign those deployments to specific Vert.x instances or
-   *          otherwise handle deployments via the Vert.x {@link Container}.
    * @param context The context of the network to shutdown.
    * @param doneHandler An asynchronous handler to be called once the network has been
    *          shutdown.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownRemoteNetwork(String address, NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
-    Cluster cluster = new RemoteCluster(vertx, container, address);
+  public Vertigo shutdownRemoteNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+    Cluster cluster = new RemoteCluster(vertx, container);
     cluster.shutdownNetwork(context, doneHandler);
     return this;
   }

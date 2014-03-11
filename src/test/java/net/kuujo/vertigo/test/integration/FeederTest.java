@@ -21,8 +21,8 @@ import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.java.FeederVerticle;
-import net.kuujo.vertigo.java.WorkerVerticle;
+import net.kuujo.vertigo.java.BasicFeeder;
+import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
@@ -79,7 +79,7 @@ public class FeederTest extends TestVerticle {
     deployNetwork(network);
   }
 
-  public static class StreamFeeder extends FeederVerticle {
+  public static class StreamFeeder extends BasicFeeder {
     @Override
     public void start(Feeder feeder) {
       feeder.emit("stream", new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<MessageId>>() {
@@ -124,7 +124,7 @@ public class FeederTest extends TestVerticle {
     });
   }
 
-  public static class TestOneToManyFeeder extends FeederVerticle {
+  public static class TestOneToManyFeeder extends BasicFeeder {
     @Override
     public void start(final Feeder feeder) {
       feeder.emit(new JsonObject().putString("body", "Hello world!"));
@@ -134,7 +134,7 @@ public class FeederTest extends TestVerticle {
     }
   }
 
-  public static class TestOneToManyWorker extends WorkerVerticle {
+  public static class TestOneToManyWorker extends BasicWorker {
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {
       vertx.eventBus().send("test", context.address());
@@ -165,7 +165,7 @@ public class FeederTest extends TestVerticle {
     });
   }
 
-  public static class TestManyToManyFeeder extends FeederVerticle {
+  public static class TestManyToManyFeeder extends BasicFeeder {
     @Override
     public void start(final Feeder feeder) {
       feeder.emit(new JsonObject().putString("address", context.address()));
@@ -175,7 +175,7 @@ public class FeederTest extends TestVerticle {
     }
   }
 
-  public static class TestManyToManyWorker extends WorkerVerticle {
+  public static class TestManyToManyWorker extends BasicWorker {
     private Set<String> received = new HashSet<>();
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {
@@ -206,7 +206,7 @@ public class FeederTest extends TestVerticle {
     });
   }
 
-  public static class TestManyToOneFeeder extends FeederVerticle {
+  public static class TestManyToOneFeeder extends BasicFeeder {
     @Override
     public void start(final Feeder feeder) {
       feeder.emit(new JsonObject().putString("address", context.address()));
@@ -216,7 +216,7 @@ public class FeederTest extends TestVerticle {
     }
   }
 
-  public static class TestManyToOneWorker extends WorkerVerticle {
+  public static class TestManyToOneWorker extends BasicWorker {
     private Set<String> received = new HashSet<>();
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {

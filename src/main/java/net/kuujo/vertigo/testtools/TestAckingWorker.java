@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import net.kuujo.vertigo.java.WorkerVerticle;
+import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.worker.Worker;
 
@@ -24,7 +24,7 @@ import net.kuujo.vertigo.worker.Worker;
  *
  * @author Jordan Halterman
  */
-public class TestAckingWorker extends WorkerVerticle {
+public class TestAckingWorker extends BasicWorker {
 
   @Override
   protected void handleMessage(JsonMessage message, Worker worker) {

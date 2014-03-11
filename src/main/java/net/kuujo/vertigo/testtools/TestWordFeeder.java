@@ -21,14 +21,14 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.java.FeederVerticle;
+import net.kuujo.vertigo.java.BasicFeeder;
 
 /**
  * A feeder that feeder "random" test words to a network.
  *
  * @author Jordan Halterman
  */
-public class TestWordFeeder extends FeederVerticle {
+public class TestWordFeeder extends BasicFeeder {
   private String field;
   private String[] words;
   private Random random = new Random();

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.java.WorkerVerticle;
+import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -43,7 +43,7 @@ import org.vertx.testtools.TestVerticle;
  */
 public class NetworkTest extends TestVerticle {
 
-  public static class NestedWorker extends WorkerVerticle {
+  public static class NestedWorker extends BasicWorker {
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {
       testComplete();

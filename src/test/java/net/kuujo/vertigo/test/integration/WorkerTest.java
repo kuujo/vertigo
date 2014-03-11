@@ -21,8 +21,8 @@ import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.java.FeederVerticle;
-import net.kuujo.vertigo.java.WorkerVerticle;
+import net.kuujo.vertigo.java.BasicFeeder;
+import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -47,7 +47,7 @@ import org.vertx.testtools.TestVerticle;
  */
 public class WorkerTest extends TestVerticle {
 
-  public static class TestFeeder extends FeederVerticle {
+  public static class TestFeeder extends BasicFeeder {
     @Override
     public void start(final Feeder feeder) {
       feeder.emit(new JsonObject().putString("body", "Hello world!"));
@@ -63,7 +63,7 @@ public class WorkerTest extends TestVerticle {
     deployNetwork(network);
   }
 
-  public static class TestOneToManyWorker1 extends WorkerVerticle {
+  public static class TestOneToManyWorker1 extends BasicWorker {
     private final Set<String> inputs = new HashSet<>(Arrays.asList(new String[]{"test.worker2-1", "test.worker2-2", "test.worker2-3", "test.worker2-4"}));
     private final Set<String> received = new HashSet<>();
     @Override
@@ -90,7 +90,7 @@ public class WorkerTest extends TestVerticle {
     }
   }
 
-  public static class TestOneToManyWorker2 extends WorkerVerticle {
+  public static class TestOneToManyWorker2 extends BasicWorker {
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {
       vertx.eventBus().send("test", context.address());
@@ -107,7 +107,7 @@ public class WorkerTest extends TestVerticle {
     deployNetwork(network);
   }
 
-  public static class TestManyToManyWorker1 extends WorkerVerticle {
+  public static class TestManyToManyWorker1 extends BasicWorker {
     private final Set<String> inputs = new HashSet<>(Arrays.asList(new String[]{"test.worker2-1", "test.worker2-2", "test.worker2-3", "test.worker2-4"}));
     private final Set<String> received = new HashSet<>();
     @Override
@@ -134,7 +134,7 @@ public class WorkerTest extends TestVerticle {
     }
   }
 
-  public static class TestManyToManyWorker2 extends WorkerVerticle {
+  public static class TestManyToManyWorker2 extends BasicWorker {
     private Set<String> received = new HashSet<>();
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {
@@ -155,7 +155,7 @@ public class WorkerTest extends TestVerticle {
     deployNetwork(network);
   }
 
-  public static class TestManyToOneWorker1 extends WorkerVerticle {
+  public static class TestManyToOneWorker1 extends BasicWorker {
     @Override
     protected void handleMessage(final JsonMessage message, final Worker worker) {
       vertx.eventBus().registerHandler("test", new Handler<Message<String>>() {
@@ -177,7 +177,7 @@ public class WorkerTest extends TestVerticle {
     }
   }
 
-  public static class TestManyToOneWorker2 extends WorkerVerticle {
+  public static class TestManyToOneWorker2 extends BasicWorker {
     private Set<String> received = new HashSet<>();
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {

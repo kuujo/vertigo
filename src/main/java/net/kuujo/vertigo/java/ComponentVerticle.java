@@ -28,7 +28,7 @@ import org.vertx.java.platform.Verticle;
 
 /**
  * Base class for Java vertigo component verticle implementations.
- *
+ * 
  * @author Jordan Halterman
  */
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
@@ -39,25 +39,22 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
 
   /**
    * Creates a component instance for the verticle.
-   *
-   * @param context
-   *   The component instance context.
-   * @return
-   *   The new component instance.
+   * 
+   * @param context The component instance context.
+   * @return The new component instance.
    */
   protected abstract T createComponent(InstanceContext context);
 
   /**
-   * Because of the method by which Vertigo coordinates starting of
-   * component instances, we do not use the future-based start method
-   * here. Instead, we simply allow the Vertigo coordinator to do its
-   * job and then provide a separate start method for when the component
-   * is actually started (which differs from when the verticle is started).
+   * Because of the method by which Vertigo coordinates starting of component instances,
+   * we do not use the future-based start method here. Instead, we simply allow the
+   * Vertigo coordinator to do its job and then provide a separate start method for when
+   * the component is actually started (which differs from when the verticle is started).
    */
   @Override
   public void start() {
     logger = container.logger();
-    context = parseContext(container.config());
+    context = (InstanceContext) parseContext(container.config());
     config = container.config();
     final T component = createComponent(context);
     vertigo = new Vertigo(this);
@@ -74,14 +71,12 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
 
   /**
    * Called when the component has been started.
-   *
-   * This method differs from the normal {@link #start()} method in that
-   * this method will be called *after* all other start methods. This is because
-   * this method is actually called once the component has connected to all of
-   * its interested trading partners.
-   *
-   * @param component
-   *   The component that was started.
+   * 
+   * This method differs from the normal {@link #start()} method in that this method will
+   * be called *after* all other start methods. This is because this method is actually
+   * called once the component has connected to all of its interested trading partners.
+   * 
+   * @param component The component that was started.
    */
   protected void start(T component) {
   }

@@ -19,7 +19,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.java.FeederVerticle;
+import net.kuujo.vertigo.java.BasicFeeder;
 import net.kuujo.vertigo.message.MessageId;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertNotNull;
@@ -30,7 +30,7 @@ import static org.vertx.testtools.VertxAssert.testComplete;
  *
  * @author Jordan Halterman
  */
-public class TestAckingFeeder extends FeederVerticle {
+public class TestAckingFeeder extends BasicFeeder {
 
   @Override
   public void start(Feeder feeder) {

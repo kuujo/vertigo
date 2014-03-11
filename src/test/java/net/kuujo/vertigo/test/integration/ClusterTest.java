@@ -18,8 +18,8 @@ package net.kuujo.vertigo.test.integration;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.java.FeederVerticle;
-import net.kuujo.vertigo.java.WorkerVerticle;
+import net.kuujo.vertigo.java.BasicFeeder;
+import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.worker.Worker;
@@ -88,11 +88,11 @@ public class ClusterTest extends TestVerticle {
     });
   }
 
-  public static class TestFeeder extends FeederVerticle {
+  public static class TestFeeder extends BasicFeeder {
     
   }
 
-  public static class TestWorker extends WorkerVerticle {
+  public static class TestWorker extends BasicWorker {
     @Override
     protected void handleMessage(JsonMessage message, Worker worker) {
       worker.ack(message);

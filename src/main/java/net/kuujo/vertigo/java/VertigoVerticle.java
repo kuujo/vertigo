@@ -21,25 +21,27 @@ import org.vertx.java.core.Future;
 import org.vertx.java.platform.Verticle;
 
 /**
- * A Vertigo verticle implementation.<p>
- *
+ * A Vertigo verticle implementation.
+ * <p>
+ * 
  * This base class makes the primary {@link Vertigo} API available to Java verticle
  * implementations as the <code>vertigo</code> protected member. This class should not be
- * extended within actual component implementations. For components, use the
- * respective component verticle implementations.<p>
- *
+ * extended within actual component implementations. For components, use the respective
+ * component verticle implementations.
+ * <p>
+ * 
  * <pre>
  * public class MyVerticle extends VertigoVerticle {
  *   public void start() {
- *     Network network = vertigo.createNetwork("my_network");
- *     network.addFeeder("foo.bar", "foobar.py");
- *     network.addWorker("foo.baz", "foobaz.js", 4);
+ *     Network network = vertigo.createNetwork(&quot;my_network&quot;);
+ *     network.addFeeder(&quot;foo.bar&quot;, &quot;foobar.py&quot;);
+ *     network.addWorker(&quot;foo.baz&quot;, &quot;foobaz.js&quot;, 4);
  * 
  *     vertigo.deployLocalNetwork(network);
  *   }
  * }
  * </pre>
- *
+ * 
  * @author Jordan Halterman
  */
 public abstract class VertigoVerticle extends Verticle {

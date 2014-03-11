@@ -51,7 +51,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   private InternalQueue queue = new InternalQueue();
   private boolean autoRetry;
   private int retryAttempts = AUTO_RETRY_ATTEMPTS_UNLIMITED;
-  private long feedInterval = DEFAULT_FEED_INTERVAL;
+  private long feedDelay = DEFAULT_FEED_INTERVAL;
   private boolean started;
   private boolean paused;
   private boolean fed;
@@ -145,23 +145,13 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
       vertx.runOnContext(feedRunner);
     }
     else {
-      feedTimer = vertx.setTimer(feedInterval, new Handler<Long>() {
+      feedTimer = vertx.setTimer(feedDelay, new Handler<Long>() {
         @Override
         public void handle(Long timerID) {
           recursiveFeed();
         }
       });
     }
-  }
-
-  @Override
-  public Feeder setMaxQueueSize(long maxSize) {
-    return setFeedQueueMaxSize(maxSize);
-  }
-
-  @Override
-  public long getMaxQueueSize() {
-    return getFeedQueueMaxSize();
   }
 
   @Override
@@ -173,11 +163,6 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   @Override
   public long getFeedQueueMaxSize() {
     return queue.maxSize;
-  }
-
-  @Override
-  public boolean queueFull() {
-    return feedQueueFull();
   }
 
   @Override
@@ -197,16 +182,6 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   }
 
   @Override
-  public Feeder setRetryAttempts(int attempts) {
-    return setAutoRetryAttempts(attempts);
-  }
-
-  @Override
-  public int getRetryAttempts() {
-    return getAutoRetryAttempts();
-  }
-
-  @Override
   public Feeder setAutoRetryAttempts(int attempts) {
     retryAttempts = attempts;
     return this;
@@ -219,23 +194,13 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
 
   @Override
   public Feeder setFeedDelay(long delay) {
-    return setFeedInterval(delay);
-  }
-
-  @Override
-  public long getFeedDelay() {
-    return getFeedInterval();
-  }
-
-  @Override
-  public Feeder setFeedInterval(long interval) {
-    feedInterval = interval;
+    feedDelay = delay;
     return this;
   }
 
   @Override
-  public long getFeedInterval() {
-    return feedInterval;
+  public long getFeedDelay() {
+    return feedDelay;
   }
 
   @Override

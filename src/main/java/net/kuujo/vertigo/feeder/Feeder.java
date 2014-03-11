@@ -41,30 +41,6 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Sets the maximum feed queue size.
    *
-   * Use the {@link #setFeedQueueMaxSize(long)} method.
-   *
-   * @param maxSize
-   *   The maximum queue size allowed for the feeder.
-   * @return
-   *   The called feeder instance.
-   */
-  @Deprecated
-  Feeder setMaxQueueSize(long maxSize);
-
-  /**
-   * Gets the maximum feed queue size.
-   *
-   * Use the {@link #getFeedQueueMaxSize()} method.
-   *
-   * @return
-   *   The maximum queue size allowed for the feeder.
-   */
-  @Deprecated
-  long getMaxQueueSize();
-
-  /**
-   * Sets the maximum feed queue size.
-   *
    * The feeder uses an underlying queue to track which messages have been emitted
    * from the component but not yet acked. This indicates how many messages may
    * reside in the queue (in memory) at any given time.
@@ -87,17 +63,6 @@ public interface Feeder extends Component<Feeder> {
    *   The maximum queue size allowed for the feeder.
    */
   long getFeedQueueMaxSize();
-
-  /**
-   * Indicates whether the feed queue is full.
-   *
-   * Use the {@link #feedQueueFull()} method.
-   *
-   * @return
-   *   A boolean indicating whether the feed queue is full.
-   */
-  @Deprecated
-  boolean queueFull();
 
   /**
    * Indicates whether the feed queue is full.
@@ -139,31 +104,6 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Sets the number of automatic retry attempts for a single timed out message.
    *
-   * Use the {@link #setAutoRetryAttempts(int)} method.
-   *
-   * @param attempts
-   *   The number of retry attempts allowed. If attempts is -1 then an infinite
-   *   number of retry attempts will be allowed.
-   * @return
-   *   The called feeder instance.
-   */
-  @Deprecated
-  Feeder setRetryAttempts(int attempts);
-
-  /**
-   * Gets the number of automatic retry attempts.
-   *
-   * Use the {@link #getAutoRetryAttempts()} method.
-   *
-   * @return
-   *   Indicates the number of retry attempts allowed for the feeder.
-   */
-  @Deprecated
-  int getRetryAttempts();
-
-  /**
-   * Sets the number of automatic retry attempts for a single timed out message.
-   *
    * @param attempts
    *   The number of retry attempts allowed. If attempts is -1 then an infinite
    *   number of retry attempts will be allowed.
@@ -183,52 +123,26 @@ public interface Feeder extends Component<Feeder> {
   /**
    * Sets the feed interval.
    *
-   * Use the {@link #setFeedInterval(long)} method.
+   * The feed delay indicates the interval at which the feeder will attempt to
+   * poll the feed handler for new data.
    *
    * @param delay
    *   The empty feed delay.
    * @return
    *   The called feeder instance.
    */
-  @Deprecated
   Feeder setFeedDelay(long delay);
 
   /**
    * Gets the feed interval.
    *
-   * Use the {@link #getFeedInterval()} method.
+   * The feed delay indicates the interval at which the feeder will attempt to
+   * poll the feed handler for new data.
    *
    * @return
    *   The empty feed delay.
    */
-  @Deprecated
   long getFeedDelay();
-
-  /**
-   * Sets the feed interval.
-   *
-   * The feed interval indicates the interval at which the feeder will attempt to
-   * poll the feed handler for new data.
-   *
-   * @param interval
-   *   The empty feed interval.
-   * @return
-   *   The called feeder instance.
-   * @see #feedHandler(Handler)
-   */
-  Feeder setFeedInterval(long interval);
-
-  /**
-   * Gets the feed interval.
-   *
-   * The feed interval indicates the interval at which the feeder will attempt to
-   * poll the feed handler for new data.
-   *
-   * @return
-   *   The empty feed interval.
-   * @see #feedHandler(Handler)
-   */
-  long getFeedInterval();
 
   /**
    * Sets a feed handler.

@@ -74,7 +74,7 @@ public abstract class FeederVerticle extends ComponentVerticle<Feeder> {
       feeder.setFeedQueueMaxSize(options.feedQueueMaxSize());
       feeder.setAutoRetry(options.autoRetry());
       feeder.setAutoRetryAttempts(options.autoRetryAttempts());
-      feeder.setFeedInterval(options.feedInterval());
+      feeder.setFeedDelay(options.feedInterval());
     }
     return feeder;
   }

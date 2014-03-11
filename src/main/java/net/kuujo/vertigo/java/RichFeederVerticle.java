@@ -67,7 +67,7 @@ public abstract class RichFeederVerticle extends ComponentVerticle<Feeder> {
       feeder.setFeedQueueMaxSize(options.feedQueueMaxSize());
       feeder.setAutoRetry(options.autoRetry());
       feeder.setAutoRetryAttempts(options.autoRetryAttempts());
-      feeder.setFeedInterval(options.feedInterval());
+      feeder.setFeedDelay(options.feedInterval());
     }
     return feeder;
   }

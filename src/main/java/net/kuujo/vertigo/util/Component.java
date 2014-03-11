@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.platform.impl.ModuleIdentifier;
@@ -70,14 +69,12 @@ public final class Component {
   @SuppressWarnings("serial")
   private static Map<String, Class<?>> typeMap = new HashMap<String, Class<?>>() {{
     put("feeder", Feeder.class);
-    put("executor", Executor.class);
     put("worker", Worker.class);
   }};
 
   @SuppressWarnings("serial")
   private static Map<Class<?>, String> reverseTypeMap = new HashMap<Class<?>, String>() {{
     put(Feeder.class, "feeder");
-    put(Executor.class, "executor");
     put(Worker.class, "worker");
   }};
 

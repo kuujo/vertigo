@@ -20,8 +20,6 @@ import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.feeder.impl.BasicFeeder;
-import net.kuujo.vertigo.rpc.Executor;
-import net.kuujo.vertigo.rpc.impl.BasicExecutor;
 import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.vertigo.worker.impl.BasicWorker;
 
@@ -64,9 +62,6 @@ public class DefaultComponentFactory implements ComponentFactory {
     if (Feeder.class.isAssignableFrom(type)) {
       return (Component<T>) createFeeder((InstanceContext<Feeder>) context);
     }
-    else if (Executor.class.isAssignableFrom(type)) {
-      return (Component<T>) createExecutor((InstanceContext<Executor>) context);
-    }
     else if (Worker.class.isAssignableFrom(type)) {
       return (Component<T>) createWorker((InstanceContext<Worker>) context);
     }
@@ -78,11 +73,6 @@ public class DefaultComponentFactory implements ComponentFactory {
   @Override
   public Feeder createFeeder(InstanceContext<Feeder> context) {
     return new BasicFeeder(vertx, container, context);
-  }
-
-  @Override
-  public Executor createExecutor(InstanceContext<Executor> context) {
-    return new BasicExecutor(vertx, container, context);
   }
 
   @Override

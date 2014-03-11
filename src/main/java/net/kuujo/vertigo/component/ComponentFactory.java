@@ -20,7 +20,6 @@ import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.worker.Worker;
 
 /**
@@ -69,16 +68,6 @@ public interface ComponentFactory {
    *   A new feeder instance.
    */
   Feeder createFeeder(InstanceContext<Feeder> context);
-
-  /**
-   * Creates an executor.
-   *
-   * @param context
-   *   The executor instance context.
-   * @return
-   *   A new executor instance.
-   */
-  Executor createExecutor(InstanceContext<Executor> context);
 
   /**
    * Creates a worker.

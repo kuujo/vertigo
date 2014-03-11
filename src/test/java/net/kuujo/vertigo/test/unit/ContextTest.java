@@ -28,7 +28,6 @@ import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Module;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Verticle;
-import net.kuujo.vertigo.rpc.Executor;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
@@ -269,102 +268,6 @@ public class ContextTest {
     assertEquals("worker", moduleContext.address());
     assertEquals("com.test~test-module~1.0", moduleContext.module());
     assertEquals(Worker.class, moduleContext.type());
-    assertFalse(moduleContext.isVerticle());
-    assertTrue(moduleContext.isModule());
-    assertEquals("bar", moduleContext.config().getString("foo"));
-    assertEquals(2, moduleContext.numInstances());
-    assertEquals(2, moduleContext.instances().size());
-    assertEquals(1000, moduleContext.heartbeatInterval());
-    assertEquals(0, moduleContext.hooks().size());
-    assertEquals(0, moduleContext.inputs().size());
-    assertNotNull(moduleContext.network());
-  }
-
-  @Test
-  public void testDefaultExecutorVerticleContext() {
-    Network network = new Network("test");
-    network.addExecutorVerticle("executor", "executor.py");
-    NetworkContext context = ContextBuilder.buildContext(network);
-    assertEquals("test", context.address());
-    VerticleContext<Executor> verticleContext = context.component("executor");
-    assertEquals("executor", verticleContext.address());
-    assertEquals("executor.py", verticleContext.main());
-    assertEquals(Executor.class, verticleContext.type());
-    assertTrue(verticleContext.isVerticle());
-    assertFalse(verticleContext.isModule());
-    assertEquals(new JsonObject(), verticleContext.config());
-    assertEquals(1, verticleContext.numInstances());
-    assertEquals(5000, verticleContext.heartbeatInterval());
-    assertFalse(verticleContext.isWorker());
-    assertFalse(verticleContext.isMultiThreaded());
-    assertEquals(0, verticleContext.hooks().size());
-    assertEquals(0, verticleContext.inputs().size());
-    assertNotNull(verticleContext.network());
-  }
-
-  @Test
-  public void testConfiguredExecutorVerticleContext() {
-    Network network = new Network("test");
-    Verticle<Executor> verticle = network.addExecutorVerticle("executor", "executor.py");
-    verticle.setMain("executor.py");
-    verticle.setConfig(new JsonObject().putString("foo", "bar"));
-    verticle.setNumInstances(2);
-    verticle.setHeartbeatInterval(1000);
-    verticle.setWorker(true);
-    verticle.setMultiThreaded(true);
-    NetworkContext context = ContextBuilder.buildContext(network);
-    assertEquals("test", context.address());
-    VerticleContext<Executor> verticleContext = context.component("executor");
-    assertEquals("executor", verticleContext.address());
-    assertEquals("executor.py", verticleContext.main());
-    assertEquals(Executor.class, verticleContext.type());
-    assertTrue(verticleContext.isVerticle());
-    assertFalse(verticleContext.isModule());
-    assertEquals("bar", verticleContext.config().getString("foo"));
-    assertEquals(2, verticleContext.numInstances());
-    assertEquals(2, verticleContext.instances().size());
-    assertEquals(1000, verticleContext.heartbeatInterval());
-    assertTrue(verticleContext.isWorker());
-    assertTrue(verticleContext.isMultiThreaded());
-    assertEquals(0, verticleContext.hooks().size());
-    assertEquals(0, verticleContext.inputs().size());
-    assertNotNull(verticleContext.network());
-  }
-
-  @Test
-  public void testDefaultExecutorModuleContext() {
-    Network network = new Network("test");
-    network.addExecutorModule("executor", "com.test~test-module~1.0");
-    NetworkContext context = ContextBuilder.buildContext(network);
-    assertEquals("test", context.address());
-    ModuleContext<Executor> moduleContext = context.component("executor");
-    assertEquals("executor", moduleContext.address());
-    assertEquals("com.test~test-module~1.0", moduleContext.module());
-    assertEquals(Executor.class, moduleContext.type());
-    assertFalse(moduleContext.isVerticle());
-    assertTrue(moduleContext.isModule());
-    assertEquals(new JsonObject(), moduleContext.config());
-    assertEquals(1, moduleContext.numInstances());
-    assertEquals(5000, moduleContext.heartbeatInterval());
-    assertEquals(0, moduleContext.hooks().size());
-    assertEquals(0, moduleContext.inputs().size());
-    assertNotNull(moduleContext.network());
-  }
-
-  @Test
-  public void testConfiguredExecutorModuleContext() {
-    Network network = new Network("test");
-    Module<Executor> verticle = network.addExecutorModule("executor", "com.test~test-module~1.0");
-    verticle.setModule("com.test~test-module~1.0");
-    verticle.setConfig(new JsonObject().putString("foo", "bar"));
-    verticle.setNumInstances(2);
-    verticle.setHeartbeatInterval(1000);
-    NetworkContext context = ContextBuilder.buildContext(network);
-    assertEquals("test", context.address());
-    ModuleContext<Executor> moduleContext = context.component("executor");
-    assertEquals("executor", moduleContext.address());
-    assertEquals("com.test~test-module~1.0", moduleContext.module());
-    assertEquals(Executor.class, moduleContext.type());
     assertFalse(moduleContext.isVerticle());
     assertTrue(moduleContext.isModule());
     assertEquals("bar", moduleContext.config().getString("foo"));

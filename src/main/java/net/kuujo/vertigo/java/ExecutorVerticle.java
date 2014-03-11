@@ -17,7 +17,6 @@ package net.kuujo.vertigo.java;
 
 import org.vertx.java.core.Handler;
 
-import net.kuujo.vertigo.annotations.ExecutorOptions;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -39,28 +38,13 @@ public abstract class ExecutorVerticle extends ComponentVerticle<Executor> {
 
   @Override
   protected void start(Executor executor) {
-    this.executor = setupExecutor(executor);
+    this.executor = executor;
     executor.executeHandler(new Handler<Executor>() {
       @Override
       public void handle(Executor executor) {
         nextMessage(executor);
       }
     });
-  }
-
-  /**
-   * Sets up the executor according to executor options.
-   */
-  private Executor setupExecutor(Executor executor) {
-    ExecutorOptions options = getClass().getAnnotation(ExecutorOptions.class);
-    if (options != null) {
-      executor.setResultTimeout(options.resultTimeout());
-      executor.setExecuteQueueMaxSize(options.executeQueueMaxSize());
-      executor.setAutoRetry(options.autoRetry());
-      executor.setAutoRetryAttempts(options.autoRetryAttempts());
-      executor.setExecuteInterval(options.executeInterval());
-    }
-    return executor;
   }
 
   /**

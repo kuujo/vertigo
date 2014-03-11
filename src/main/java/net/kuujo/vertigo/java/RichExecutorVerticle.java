@@ -19,7 +19,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.annotations.ExecutorOptions;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -45,28 +44,13 @@ public abstract class RichExecutorVerticle extends ComponentVerticle<Executor> {
 
   @Override
   protected void start(Executor executor) {
-    this.executor = setupExecutor(executor);
+    this.executor = executor;
     executor.executeHandler(new Handler<Executor>() {
       @Override
       public void handle(Executor executor) {
         nextMessage();
       }
     });
-  }
-
-  /**
-   * Sets up the executor according to executor options.
-   */
-  private Executor setupExecutor(Executor executor) {
-    ExecutorOptions options = getClass().getAnnotation(ExecutorOptions.class);
-    if (options != null) {
-      executor.setResultTimeout(options.resultTimeout());
-      executor.setExecuteQueueMaxSize(options.executeQueueMaxSize());
-      executor.setAutoRetry(options.autoRetry());
-      executor.setAutoRetryAttempts(options.autoRetryAttempts());
-      executor.setExecuteInterval(options.executeInterval());
-    }
-    return executor;
   }
 
   private Handler<AsyncResult<JsonMessage>> wrapHandler(final Handler<AsyncResult<JsonMessage>> resultHandler) {

@@ -19,28 +19,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A verticle component.
- *
+ * 
  * @author Jordan Halterman
  */
-@SuppressWarnings("rawtypes")
-public class Verticle<T extends net.kuujo.vertigo.component.Component> extends ComponentType<Verticle<T>, T> {
+public class Verticle extends Component<Verticle> {
 
   /**
-   * <code>main</code> is a string indicating the verticle main. This field is
-   * required for all verticle components.
+   * <code>main</code> is a string indicating the verticle main. This field is required
+   * for all verticle components.
    */
   public static final String VERTICLE_MAIN = "main";
 
   /**
-   * <code>worker</code> is a boolean indicating whether this verticle should be
-   * deployed as a worker verticle. Defaults to <code>false</code>
+   * <code>worker</code> is a boolean indicating whether this verticle should be deployed
+   * as a worker verticle. Defaults to <code>false</code>
    */
   public static final String VERTICLE_IS_WORKER = "worker";
 
   /**
-   * <code>multi-threaded</code> is a boolean indicating whether a worker verticle
-   * is multi-threaded. This option only applies to verticles where <code>worker</code>
-   * is <code>true</code>. Defaults to <code>false</code>
+   * <code>multi-threaded</code> is a boolean indicating whether a worker verticle is
+   * multi-threaded. This option only applies to verticles where <code>worker</code> is
+   * <code>true</code>. Defaults to <code>false</code>
    */
   public static final String VERTICLE_IS_MULTI_THREADED = "multi-threaded";
 
@@ -52,18 +51,18 @@ public class Verticle<T extends net.kuujo.vertigo.component.Component> extends C
   public Verticle() {
   }
 
-  public Verticle(Class<T> type, String address) {
+  public Verticle(Type type, String address) {
     super(type, address);
   }
 
-  public Verticle(Class<T> type, String address, String main) {
+  public Verticle(Type type, String address, String main) {
     this(type, address);
     setMain(main);
   }
 
   @Override
   protected String getDeploymentType() {
-    return Component.COMPONENT_DEPLOYMENT_VERTICLE;
+    return Component.COMPONENT_VERTICLE;
   }
 
   @Override
@@ -73,22 +72,19 @@ public class Verticle<T extends net.kuujo.vertigo.component.Component> extends C
 
   /**
    * Sets the verticle main.
-   *
-   * @param main
-   *   The verticle main.
-   * @return
-   *   The verticle configuration.
+   * 
+   * @param main The verticle main.
+   * @return The verticle configuration.
    */
-  public Verticle<T> setMain(String main) {
+  public Verticle setMain(String main) {
     this.main = main;
     return this;
   }
 
   /**
    * Gets the verticle main.
-   *
-   * @return
-   *   The verticle main.
+   * 
+   * @return The verticle main.
    */
   public String getMain() {
     return main;
@@ -96,22 +92,19 @@ public class Verticle<T extends net.kuujo.vertigo.component.Component> extends C
 
   /**
    * Sets the verticle worker option.
-   *
-   * @param isWorker
-   *   Indicates whether the verticle should be deployed as a worker.
-   * @return
-   *   The verticle configuration.
+   * 
+   * @param isWorker Indicates whether the verticle should be deployed as a worker.
+   * @return The verticle configuration.
    */
-  public Verticle<T> setWorker(boolean isWorker) {
+  public Verticle setWorker(boolean isWorker) {
     worker = isWorker;
     return this;
   }
 
   /**
    * Returns a boolean indicating whether the verticle is a worker.
-   *
-   * @return
-   *   Indicates whether the verticle is a worker.
+   * 
+   * @return Indicates whether the verticle is a worker.
    */
   public boolean isWorker() {
     return worker;
@@ -120,23 +113,20 @@ public class Verticle<T extends net.kuujo.vertigo.component.Component> extends C
   /**
    * Sets the verticle multi-threaded option. This option only applies to worker
    * verticles.
-   *
-   * @param isMultiThreaded
-   *   Indicates whether the worker verticle is multi-threaded.
-   * @return
-   *   The verticle configuration.
+   * 
+   * @param isMultiThreaded Indicates whether the worker verticle is multi-threaded.
+   * @return The verticle configuration.
    */
-  public Verticle<T> setMultiThreaded(boolean isMultiThreaded) {
+  public Verticle setMultiThreaded(boolean isMultiThreaded) {
     multiThreaded = isMultiThreaded;
     return this;
   }
 
   /**
    * Returns a boolean indicating whether the verticle is a worker and is multi-threaded.
-   *
-   * @return
-   *   Indicates whether the verticle is a worker and is multi-threaded. If the
-   *   verticle is not a worker verticle then <code>false</code> will be returned.
+   * 
+   * @return Indicates whether the verticle is a worker and is multi-threaded. If the
+   *         verticle is not a worker verticle then <code>false</code> will be returned.
    */
   public boolean isMultiThreaded() {
     return worker && multiThreaded;

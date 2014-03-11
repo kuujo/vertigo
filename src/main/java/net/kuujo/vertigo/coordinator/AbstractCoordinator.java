@@ -54,7 +54,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   protected Logger logger;
   protected Events events;
   protected Map<String, String> deploymentMap = new HashMap<>();
-  protected Map<String, InstanceContext<?>> contextMap = new HashMap<>();
+  protected Map<String, InstanceContext> contextMap = new HashMap<>();
   protected Set<String> instances = new HashSet<>();
   protected Set<String> auditorDeploymentIds = new HashSet<>();
 
@@ -194,7 +194,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    */
   private void doDeploy() {
     if (context.isAckingEnabled()) {
-      recursiveDeployAuditors(copyList(context.auditors()), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
+      recursiveDeployAuditors(new HashSet<String>(context.auditors()), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
@@ -235,20 +235,9 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   }
 
   /**
-   * Copies a list to a new list.
-   */
-  private static <T> List<T> copyList(List<T> list) {
-    List<T> newList = new ArrayList<>();
-    for (T item : list) {
-      newList.add(item);
-    }
-    return newList;
-  }
-
-  /**
    * Recursively deploys network auditors.
    */
-  private void recursiveDeployAuditors(final List<String> auditors, final Future<Void> future) {
+  private void recursiveDeployAuditors(final Set<String> auditors, final Future<Void> future) {
     if (auditors.size() > 0) {
       final String address = auditors.iterator().next();
       if (logger.isDebugEnabled()) {
@@ -483,14 +472,14 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
     /**
      * A network component instance deployer.
      */
-    private class RecursiveInstanceDeployer extends RecursiveContextDeployer<InstanceContext<?>> {
+    private class RecursiveInstanceDeployer extends RecursiveContextDeployer<InstanceContext> {
 
-      public RecursiveInstanceDeployer(Collection<InstanceContext<?>> contexts) {
+      public RecursiveInstanceDeployer(Collection<InstanceContext> contexts) {
         super(contexts);
       }
 
       @Override
-      protected void doDeploy(final InstanceContext<?> context, Handler<AsyncResult<String>> resultHandler) {
+      protected void doDeploy(final InstanceContext context, Handler<AsyncResult<String>> resultHandler) {
         if (logger.isDebugEnabled()) {
           logger.debug(String.format("Deploying instance %s", context.address()));
         }
@@ -559,7 +548,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
       }
 
       @Override
-      protected void doUndeploy(final InstanceContext<?> context, Handler<AsyncResult<Void>> resultHandler) {
+      protected void doUndeploy(final InstanceContext context, Handler<AsyncResult<Void>> resultHandler) {
         if (logger.isDebugEnabled()) {
           logger.debug(String.format("Undeploying instance %s", context.address()));
         }

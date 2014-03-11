@@ -48,9 +48,9 @@ public abstract class WorkerVerticle extends ComponentVerticle<Worker> {
   protected Worker worker;
 
   @Override
-  protected Worker createComponent(InstanceContext<Worker> context) {
+  protected Worker createComponent(InstanceContext context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.createWorker(context);
+    return componentFactory.<Worker>createComponent(context);
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,12 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
- * A malformed definition exception.
+ * A base network configuration type.
  * 
  * @author Jordan Halterman
  */
-@SuppressWarnings("serial")
-public class MalformedNetworkException extends VertigoException {
-
-  public MalformedNetworkException(String message) {
-    super(message);
-  }
-
-  public MalformedNetworkException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public MalformedNetworkException(Throwable cause) {
-    super(cause);
-  }
-
+public interface Config extends Serializable {
 }

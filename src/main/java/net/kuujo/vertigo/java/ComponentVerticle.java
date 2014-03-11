@@ -35,7 +35,7 @@ import org.vertx.java.platform.Verticle;
  */
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   protected Vertigo<T> vertigo;
-  protected InstanceContext<T> context;
+  protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
 
@@ -47,7 +47,7 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
    * @return
    *   The new component instance.
    */
-  protected abstract T createComponent(InstanceContext<T> context);
+  protected abstract T createComponent(InstanceContext context);
 
   /**
    * Because of the method by which Vertigo coordinates starting of
@@ -57,10 +57,9 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
    * is actually started (which differs from when the verticle is started).
    */
   @Override
-  @SuppressWarnings("unchecked")
   public void start() {
     logger = container.logger();
-    context = (InstanceContext<T>) parseContext(container.config());
+    context = parseContext(container.config());
     config = container.config();
     final T component = createComponent(context);
     VertigoFactory factory = new DefaultVertigoFactory(vertx, container);

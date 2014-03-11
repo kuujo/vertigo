@@ -18,13 +18,11 @@ package net.kuujo.vertigo.message;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.util.serializer.Serializable;
 
-import org.vertx.java.core.json.JsonObject;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A message identifier.
- *
+ * 
  * @author Jordan Halterman
  */
 @JsonTypeInfo(
@@ -37,93 +35,83 @@ public interface MessageId extends Serializable {
 
   /**
    * Gets the message correlation ID.
-   *
-   * @return
-   *   A globally unique correlation identifier.
+   * 
+   * @return A globally unique correlation identifier.
    */
   String correlationId();
 
   /**
    * Indicates whether the message has a parent.
-   *
-   * @return
-   *   Whether the message has a parent.
+   * 
+   * @return Whether the message has a parent.
    */
   boolean hasParent();
 
   /**
    * The parent correlation ID.
-   *
-   * @return
-   *   The message parent correlation ID.
+   * 
+   * @return The message parent correlation ID.
    */
   String parent();
 
   /**
    * Indicates whether the message has a root.
-   *
-   * @return
-   *   Whether the message has a root.
+   * 
+   * @return Whether the message has a root.
    */
   boolean hasRoot();
 
   /**
    * Indicates whether the message is a root message.
-   *
-   * @return
-   *   Whether the message is a root message.
+   * 
+   * @return Whether the message is a root message.
    */
   boolean isRoot();
 
   /**
    * Gets the root message correlation ID.
-   *
-   * @return
-   *   The root message correlationID.
+   * 
+   * @return The root message correlationID.
    */
   String root();
 
   /**
    * Gets the random message code.
-   *
-   * @return
-   *   A random message code.
+   * 
+   * @return A random message code.
    */
   long ackCode();
 
   /**
    * Gets the message owner's address.
-   *
-   * The owner address is the event bus address to which ack notifications should
-   * be sent. When the message is successfully acked, this is the address at
-   * which components can receive that notification. The owner should be unique
-   * to messages emitted from each component.
-   *
-   * @return
-   *   The message owner's address.
+   * 
+   * The owner address is the event bus address to which ack notifications should be sent.
+   * When the message is successfully acked, this is the address at which components can
+   * receive that notification. The owner should be unique to messages emitted from each
+   * component.
+   * 
+   * @return The message owner's address.
    */
   String owner();
 
   /**
    * Gets the message auditor address.
-   *
-   * The auditor address is the event bus address to the auditor that tracks
-   * messages within this message's tree. Thus, messages always inherit the
-   * auditor address of their parent so that all messages within a tree are always
-   * tracked by the same auditor. Once the auditor considers a message tree fully
-   * processed, it will notify the message source via the acker address.
-   *
-   * @return
-   *   The message auditor.
+   * 
+   * The auditor address is the event bus address to the auditor that tracks messages
+   * within this message's tree. Thus, messages always inherit the auditor address of
+   * their parent so that all messages within a tree are always tracked by the same
+   * auditor. Once the auditor considers a message tree fully processed, it will notify
+   * the message source via the acker address.
+   * 
+   * @return The message auditor.
    */
   String auditor();
 
   /**
-   * Gets a JSON representation of the message.
+   * Copies the message ID.
    *
-   * @return
-   *   A JSON representation of the message.
+   * @return A copy of the message ID.
    */
-  JsonObject toJson();
+  MessageId copy();
 
 }

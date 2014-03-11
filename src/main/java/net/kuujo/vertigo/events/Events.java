@@ -249,7 +249,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         String address = (String) args[0];
-        InstanceContext<?> context = (InstanceContext<?>) args[1];
+        InstanceContext context = (InstanceContext) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
@@ -290,7 +290,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         String address = (String) args[0];
-        InstanceContext<?> context = (InstanceContext<?>) args[1];
+        InstanceContext context = (InstanceContext) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
@@ -331,7 +331,7 @@ public final class Events {
       @Override
       public void trigger(Object... args) {
         String address = (String) args[0];
-        InstanceContext<?> context = (InstanceContext<?>) args[1];
+        InstanceContext context = (InstanceContext) args[1];
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));

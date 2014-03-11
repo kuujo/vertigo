@@ -77,7 +77,7 @@ public final class DefaultVertigo<T extends Component<T>> implements Vertigo<T> 
   }
 
   @Override
-  public InstanceContext<T> context() {
+  public InstanceContext context() {
     return isComponent() ? component.context() : null;
   }
 

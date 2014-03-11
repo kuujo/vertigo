@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A Vertigo message.
- *
+ * 
  * @author Jordan Halterman
  */
 @JsonTypeInfo(
@@ -37,43 +37,38 @@ public interface JsonMessage extends Serializable {
 
   /**
    * Returns the message ID.
-   *
-   * @return
-   *   The message ID.
+   * 
+   * @return The message ID.
    */
   MessageId messageId();
 
   /**
    * Returns the message body.
-   *
-   * @return
-   *   The message body.
+   * 
+   * @return The message body.
    */
   JsonObject body();
 
   /**
    * Returns the message stream.
-   *
-   * @return
-   *   The stream on which the message was emitted from a component.
+   * 
+   * @return The stream on which the message was emitted from a component.
    */
   String stream();
 
   /**
-   * Returns the message source. This is the event bus address of the
-   * component from which this message tree originated.
-   *
-   * @return
-   *   The source address.
+   * Returns the message source. This is the event bus address of the component from which
+   * this message tree originated.
+   * 
+   * @return The source address.
    */
   String source();
 
   /**
-   * Returns a JSON representation of the message.
+   * Copies the message.
    *
-   * @return
-   *   A JSON representation of the message.
+   * @return A new copy of the message.
    */
-  JsonObject toJson();
+  JsonMessage copy();
 
 }

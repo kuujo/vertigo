@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,60 +16,83 @@
 package net.kuujo.vertigo.input.impl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
-import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.InputContext;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.hooks.InputHook;
-import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.input.Listener;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
-
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.platform.Container;
+
+import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.context.InputContext;
+import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.input.InputStream;
+import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**
- * A default input collector implementation.
+ * Default input collector implementation.
  *
  * @author Jordan Halterman
  */
 public class DefaultInputCollector implements InputCollector {
   private final Vertx vertx;
-  private final Logger logger;
-  private final InstanceContext<?> context;
-  private final List<InputHook> hooks = new ArrayList<InputHook>();
+  private final InputContext context;
   private final Acker acker;
+  private final List<InputHook> hooks = new ArrayList<InputHook>();
+  private final List<InputStream> streams = new ArrayList<>();
   private Handler<JsonMessage> messageHandler;
-  private List<Listener> listeners;
 
-  public DefaultInputCollector(Vertx vertx, Container container, InstanceContext<?> context) {
+  public DefaultInputCollector(Vertx vertx, InputContext context, Acker acker) {
     this.vertx = vertx;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", InputCollector.class.getCanonicalName(), context.address()));
-    this.context = context;
-    this.acker = new DefaultAcker(context.address(), vertx.eventBus());
-  }
-
-  public DefaultInputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
-    this.vertx = vertx;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", InputCollector.class.getCanonicalName(), context.address()));
     this.context = context;
     this.acker = acker;
   }
 
   @Override
+  public InputContext context() {
+    return context;
+  }
+
+  @Override
   public InputCollector addHook(InputHook hook) {
     hooks.add(hook);
+    return this;
+  }
+
+  @Override
+  public InputCollector messageHandler(Handler<JsonMessage> handler) {
+    messageHandler = handler != null ? wrapMessageHandler(handler) : null;
+    for (InputStream stream : streams) {
+      stream.messageHandler(messageHandler);
+    }
+    return this;
+  }
+
+  private Handler<JsonMessage> wrapMessageHandler(final Handler<JsonMessage> handler) {
+    return new Handler<JsonMessage>() {
+      @Override
+      public void handle(JsonMessage message) {
+        handler.handle(message);
+        hookReceived(message.messageId());
+      }
+    };
+  }
+
+  @Override
+  public InputCollector ack(JsonMessage message) {
+    acker.ack(message.messageId());
+    hookAck(message.messageId());
+    return this;
+  }
+
+  @Override
+  public InputCollector fail(JsonMessage message) {
+    acker.fail(message.messageId());
+    hookFail(message.messageId());
     return this;
   }
 
@@ -119,175 +142,79 @@ public class DefaultInputCollector implements InputCollector {
   }
 
   @Override
-  public InputCollector messageHandler(Handler<JsonMessage> handler) {
-    this.messageHandler = wrapMessageHandler(handler);
-    if (listeners != null) {
-      for (Listener listener : listeners) {
-        listener.messageHandler(messageHandler);
-      }
-    }
-    return this;
-  }
-
-  private Handler<JsonMessage> wrapMessageHandler(final Handler<JsonMessage> handler) {
-    return new Handler<JsonMessage>() {
-      @Override
-      public void handle(JsonMessage message) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(String.format("Received message %s: %s", message.messageId().correlationId(), message.body().encodePrettily()));
-        }
-        handler.handle(message);
-        hookReceived(message.messageId());
-      }
-    };
-  }
-
-  @Override
   public InputCollector start() {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    future.setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          logger.error(result.cause());
-        }
-      }
-    });
-
-    stop(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        listeners = new ArrayList<Listener>();
-        recursiveStart(context.<ComponentContext<?>>component().inputs().iterator(), future);
-      }
-    });
-    return this;
+    return start(null);
   }
 
   @Override
-  public InputCollector start(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    stop(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        listeners = new ArrayList<Listener>();
-        recursiveStart(context.<ComponentContext<?>>component().inputs().iterator(), future);
-      }
-    });
-    return this;
-  }
-
-  /**
-   * Recursively starts inputs.
-   */
-  private void recursiveStart(final Iterator<InputContext> inputs, final Future<Void> future) {
-    if (inputs.hasNext()) {
-      InputContext input = inputs.next();
-      Listener listener = new DefaultListener(input, vertx).setAutoAck(false).messageHandler(messageHandler);
-      listeners.add(listener);
-      listener.start(new Handler<AsyncResult<Void>>() {
+  public InputCollector start(final Handler<AsyncResult<Void>> doneHandler) {
+    if (streams.isEmpty()) {
+      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.streams().size());
+      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
-            future.setFailure(result.cause());
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           }
           else {
-            recursiveStart(inputs, future);
+            hookStart();
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
       });
+
+      for (InputStreamContext stream : context.streams()) {
+        streams.add(new DefaultInputStream(vertx, stream).start(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              startCounter.fail(result.cause());
+            }
+            else {
+              startCounter.succeed();
+            }
+          }
+        }).messageHandler(messageHandler));
+      }
     }
-    else {
-      future.setResult(null);
-      hookStart();
-    }
+    return this;
   }
 
   @Override
   public void stop() {
-    if (listeners != null) {
-      final Future<Void> future = new DefaultFutureResult<Void>();
-      future.setHandler(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            logger.error(result.cause());
-          }
-          listeners = null;
-          for (InputHook hook : hooks) {
-            hook.handleStop(DefaultInputCollector.this);
-          }
-        }
-      });
-      recursiveStop(listeners.iterator(), future);
-    }
+    stop(null);
   }
 
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>();
-    future.setHandler(new Handler<AsyncResult<Void>>() {
+    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(streams.size());
+    stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
-        listeners = null;
         if (result.failed()) {
-          new DefaultFutureResult<Void>().setHandler(doneHandler).setFailure(result.cause());
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         }
         else {
-          new DefaultFutureResult<Void>().setHandler(doneHandler).setResult(null);
+          hookStop();
+          streams.clear();
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
     });
-    if (listeners != null) {
-      recursiveStop(listeners.iterator(), future);
-    }
-    else {
-      future.setResult(null);
-    }
-  }
 
-  /**
-   * Recursively stops listeners.
-   */
-  private void recursiveStop(final Iterator<Listener> listeners, final Future<Void> future) {
-    if (listeners.hasNext()) {
-      Listener listener = listeners.next();
-      listener.stop(new Handler<AsyncResult<Void>>() {
+    for (InputStream stream : streams) {
+      stream.stop(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
-            future.setFailure(result.cause());
+            stopCounter.fail(result.cause());
           }
           else {
-            recursiveStop(listeners, future);
+            stopCounter.succeed();
           }
         }
       });
     }
-    else {
-      future.setResult(null);
-      hookStop();
-    }
-  }
-
-  @Override
-  public InputCollector ack(JsonMessage message) {
-    acker.ack(message.messageId());
-    hookAck(message.messageId());
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Acked message %s: %s", message.messageId().correlationId(), message.body().encodePrettily()));
-    }
-    return this;
-  }
-
-  @Override
-  public InputCollector fail(JsonMessage message) {
-    acker.fail(message.messageId());
-    hookFail(message.messageId());
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Failed message %s: %s", message.messageId().correlationId(), message.body().encodePrettily()));
-    }
-    return this;
   }
 
 }

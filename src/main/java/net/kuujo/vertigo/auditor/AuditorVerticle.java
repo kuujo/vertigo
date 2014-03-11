@@ -16,7 +16,8 @@
 package net.kuujo.vertigo.auditor;
 
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.message.impl.DefaultMessageId;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
@@ -32,6 +33,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public final class AuditorVerticle extends BusModBase {
+  private static final Serializer serializer = SerializerFactory.getSerializer(MessageId.class);
   private String address;
   private static final String DEFAULT_AUDITOR = BasicAuditor.class.getName();
   private Auditor auditor;
@@ -105,7 +107,7 @@ public final class AuditorVerticle extends BusModBase {
   private void doCreate(JsonObject body) {
     JsonObject info = body.getObject("id");
     if (info != null) {
-      MessageId id = DefaultMessageId.fromJson(info);
+      MessageId id = serializer.deserializeObject(info, MessageId.class);
       JsonArray children = body.getArray("children");
       if (children == null) {
         complete(id);
@@ -114,7 +116,7 @@ public final class AuditorVerticle extends BusModBase {
 
       auditor.create(id);
       for (Object child : children) {
-        auditor.fork(DefaultMessageId.fromJson((JsonObject) child));
+        auditor.fork(serializer.deserializeObject((JsonObject) child, MessageId.class));
       }
     }
   }
@@ -127,11 +129,11 @@ public final class AuditorVerticle extends BusModBase {
     if (info != null) {
       // It's very important that this be done in this order. Child message IDs
       // must be stored by calling fork() *prior* to acking the given message ID.
-      MessageId id = DefaultMessageId.fromJson(info);
+      MessageId id = serializer.deserializeObject(info, MessageId.class);
       JsonArray children = body.getArray("children");
       if (children != null) {
         for (Object child : children) {
-          auditor.fork(DefaultMessageId.fromJson((JsonObject) child));
+          auditor.fork(serializer.deserializeObject((JsonObject) child, MessageId.class));
         }
       }
       auditor.ack(id);
@@ -144,7 +146,7 @@ public final class AuditorVerticle extends BusModBase {
   private void doFail(JsonObject body) {
     JsonObject info = body.getObject("id");
     if (info != null) {
-      auditor.fail(DefaultMessageId.fromJson(info));
+      auditor.fail(serializer.deserializeObject(info, MessageId.class));
     }
   }
 
@@ -156,7 +158,7 @@ public final class AuditorVerticle extends BusModBase {
    */
   public void complete(MessageId messageId) {
     eb.send(messageId.owner(), new JsonObject().putString("action", "ack")
-        .putObject("id", messageId.toJson()));
+        .putObject("id", serializer.serializeToObject(messageId)));
   }
 
   /**
@@ -167,7 +169,7 @@ public final class AuditorVerticle extends BusModBase {
    */
   public void fail(MessageId messageId) {
     eb.send(messageId.owner(), new JsonObject().putString("action", "fail")
-        .putObject("id", messageId.toJson()));
+        .putObject("id", serializer.serializeToObject(messageId)));
   }
 
   /**
@@ -178,7 +180,7 @@ public final class AuditorVerticle extends BusModBase {
    */
   public void timeout(MessageId messageId) {
     eb.send(messageId.owner(), new JsonObject().putString("action", "timeout")
-        .putObject("id", messageId.toJson()));
+        .putObject("id", serializer.serializeToObject(messageId)));
   }
 
   @Override

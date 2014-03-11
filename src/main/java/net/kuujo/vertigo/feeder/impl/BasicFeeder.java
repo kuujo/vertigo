@@ -57,7 +57,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   private boolean fed;
   private long feedTimer;
 
-  public BasicFeeder(Vertx vertx, Container container, InstanceContext<Feeder> context) {
+  public BasicFeeder(Vertx vertx, Container container, InstanceContext context) {
     super(vertx, container, context);
   }
 

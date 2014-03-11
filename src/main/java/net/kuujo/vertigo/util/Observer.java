@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network;
-
-import net.kuujo.vertigo.VertigoException;
+package net.kuujo.vertigo.util;
 
 /**
- * A malformed definition exception.
- * 
+ * An object observer. This is the counter-part to the {@link Observable}.
+ *
  * @author Jordan Halterman
  */
-@SuppressWarnings("serial")
-public class MalformedNetworkException extends VertigoException {
+public interface Observer<T extends Observable<T>> {
 
-  public MalformedNetworkException(String message) {
-    super(message);
-  }
-
-  public MalformedNetworkException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public MalformedNetworkException(Throwable cause) {
-    super(cause);
-  }
+  /**
+   * Notifies the observer of an update.
+   *
+   * @param object The updated object.
+   */
+  void update(T object);
 
 }

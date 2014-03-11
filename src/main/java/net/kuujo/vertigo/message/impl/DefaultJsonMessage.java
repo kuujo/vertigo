@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.message.impl;
 
+import java.util.Map;
+
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 
@@ -26,54 +28,125 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultJsonMessage implements JsonMessage {
-  private JsonObject body;
-  public static final String ID = "id";
-  public static final String BODY = "body";
-  public static final String STREAM = "stream";
-  public static final String SOURCE = "source";
+  private MessageId id;
+  private Map<String, Object> body;
+  private String stream;
+  private String source;
 
-  public DefaultJsonMessage() {
-  }
-
-  DefaultJsonMessage(JsonObject body) {
-    this.body = body;
-  }
-
-  /**
-   * Returns a Json message from JSON.
-   *
-   * @param json
-   *   A JSON representation of the message.
-   * @return
-   *   A new Json message object.
-   */
-  public static JsonMessage fromJson(JsonObject json) {
-    return new DefaultJsonMessage(json);
+  private DefaultJsonMessage() {
   }
 
   @Override
   public MessageId messageId() {
-    return DefaultMessageId.fromJson(body.getObject(ID));
+    return id;
   }
 
   @Override
   public JsonObject body() {
-    return body.getObject(BODY);
+    return new JsonObject(body);
   }
 
   @Override
   public String stream() {
-    return body.getString(STREAM);
+    return stream;
   }
 
   @Override
   public String source() {
-    return body.getString(SOURCE);
+    return source;
   }
 
   @Override
-  public JsonObject toJson() {
-    return body;
+  public JsonMessage copy() {
+    return Builder.newBuilder()
+        .setMessageId(id.copy())
+        .setBody(body)
+        .setSource(source)
+        .setStream(stream)
+        .build();
+  }
+
+  /**
+   * Json message builder.
+   *
+   * @author Jordan Halterman
+   */
+  public static class Builder {
+    private DefaultJsonMessage message = new DefaultJsonMessage();
+
+    /**
+     * Creates a new message builder.
+     *
+     * @return A new message builder.
+     */
+    public static Builder newBuilder() {
+      return new Builder();
+    }
+
+    /**
+     * Sets the message iD.
+     *
+     * @param messageId The message ID.
+     * @return The message builder.
+     */
+    public Builder setMessageId(MessageId messageId) {
+      message.id = messageId;
+      return this;
+    }
+
+    /**
+     * Sets the message body.
+     *
+     * @param body The message body.
+     * @return The message builder.
+     */
+    public Builder setBody(JsonObject body) {
+      message.body = body.toMap();
+      return this;
+    }
+
+    /**
+     * Sets the message body.
+     *
+     * @param body The message body.
+     * @return The message builder.
+     */
+    public Builder setBody(Map<String, Object> body) {
+      message.body = body;
+      return this;
+    }
+
+    /**
+     * Sets the message stream.
+     *
+     * @param stream The message stream.
+     * @return The message builder.
+     */
+    public Builder setStream(String stream) {
+      message.stream = stream;
+      return this;
+    }
+
+    /**
+     * Sets the message source.
+     *
+     * @param source The message source.
+     * @return The message builder.
+     */
+    public Builder setSource(String source) {
+      message.source = source;
+      return this;
+    }
+
+    /**
+     * Builds the message.
+     *
+     * @return A new message.
+     */
+    public DefaultJsonMessage build() {
+      return message;
+    }
+
   }
 
 }

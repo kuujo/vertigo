@@ -58,7 +58,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   protected final EventBus eventBus;
   protected final Container container;
   protected final Logger logger;
-  protected final InstanceContext<T> context;
+  protected final InstanceContext context;
   protected final Acker acker;
   protected final String instanceId;
   protected final String address;
@@ -132,19 +132,19 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     }
   };
 
-  protected AbstractComponent(Vertx vertx, Container container, InstanceContext<T> context) {
+  protected AbstractComponent(Vertx vertx, Container container, InstanceContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.component().type().getCanonicalName(), context.address()));
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.component().type().getName(), context.address()));
     this.context = context;
     this.acker = new DefaultAcker(context.address(), eventBus);
     this.instanceId = context.address();
     this.address = context.component().address();
     NetworkContext networkContext = context.component().network();
     networkAddress = networkContext.address();
-    input = new DefaultInputCollector(vertx, container, context, acker);
-    output = new DefaultOutputCollector(vertx, container, context, acker);
+    input = new DefaultInputCollector(vertx, context.input(), acker);
+    output = new DefaultOutputCollector(vertx, context.output(), acker);
     for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
       addHook(hook);
     }
@@ -171,7 +171,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   }
 
   @Override
-  public InstanceContext<T> context() {
+  public InstanceContext context() {
     return context;
   }
 
@@ -273,7 +273,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     // that the network has started.
     final Set<String> instances = new HashSet<>();
     for (ComponentContext<?> component : context.component().network().components()) {
-      for (InstanceContext<?> instance : component.instances()) {
+      for (InstanceContext instance : component.instances()) {
         instances.add(instance.id());
       }
     }

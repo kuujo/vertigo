@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package net.kuujo.vertigo.component.impl;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.feeder.impl.BasicFeeder;
-import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.vertigo.worker.impl.BasicWorker;
 
 import org.vertx.java.core.Vertx;
@@ -57,27 +55,17 @@ public class DefaultComponentFactory implements ComponentFactory {
 
   @Override
   @SuppressWarnings({"unchecked"})
-  public <T extends Component<T>> Component<T> createComponent(InstanceContext<T> context) {
-    Class<T> type = context.component().type();
-    if (Feeder.class.isAssignableFrom(type)) {
-      return (Component<T>) createFeeder((InstanceContext<Feeder>) context);
+  public <T extends Component<T>> T createComponent(InstanceContext context) {
+    net.kuujo.vertigo.network.Component.Type type = context.component().type();
+    if (type.equals(net.kuujo.vertigo.network.Component.Type.FEEDER)) {
+      return (T) new BasicFeeder(vertx, container, context);
     }
-    else if (Worker.class.isAssignableFrom(type)) {
-      return (Component<T>) createWorker((InstanceContext<Worker>) context);
+    else if (type.equals(net.kuujo.vertigo.network.Component.Type.WORKER)) {
+      return (T) new BasicWorker(vertx, container, context);
     }
     else {
       throw new IllegalArgumentException("Invalid component type.");
     }
-  }
-
-  @Override
-  public Feeder createFeeder(InstanceContext<Feeder> context) {
-    return new BasicFeeder(vertx, container, context);
-  }
-
-  @Override
-  public Worker createWorker(InstanceContext<Worker> context) {
-    return new BasicWorker(vertx, container, context);
   }
 
 }

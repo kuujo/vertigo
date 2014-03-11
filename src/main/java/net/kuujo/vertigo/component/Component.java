@@ -74,7 +74,7 @@ public interface Component<T extends Component<T>> {
    * @return
    *   The instance context.
    */
-  InstanceContext<T> context();
+  InstanceContext context();
 
   /**
    * Returns the instance logger.

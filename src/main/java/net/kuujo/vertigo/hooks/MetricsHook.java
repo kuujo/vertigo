@@ -36,7 +36,7 @@ import net.kuujo.vertigo.message.MessageId;
  * @author Jordan Halterman
  */
 public class MetricsHook implements ComponentHook {
-  @JsonIgnore private InstanceContext<?> context;
+  @JsonIgnore private InstanceContext context;
   @JsonIgnore private EventBus eventBus;
   private String address;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package net.kuujo.vertigo.message.impl;
 
-import net.kuujo.vertigo.message.MessageId;
+import java.util.Random;
+import java.util.UUID;
 
-import org.vertx.java.core.json.JsonObject;
+import net.kuujo.vertigo.message.MessageId;
 
 /**
  * A default message identifier implementation.
@@ -25,58 +26,45 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultMessageId implements MessageId {
-  private JsonObject data;
-  public static final String CODE = "code";
-  public static final String ID = "id";
-  public static final String PARENT = "parent";
-  public static final String ROOT = "root";
-  public static final String OWNER = "owner";
-  public static final String AUDITOR = "auditor";
+  private static final Random random = new Random();
+  private String owner;
+  private long code;
+  private String id;
+  private String parent;
+  private String root;
+  private String auditor;
 
-  DefaultMessageId(JsonObject messageId) {
-    this.data = messageId;
-  }
-
-  /**
-   * Creates a message ID from JSON.
-   *
-   * @param messageId
-   *   A JSON representation of the message ID.
-   * @return
-   *   A new MessageId instance.
-   */
-  public static MessageId fromJson(JsonObject messageId) {
-    return new DefaultMessageId(messageId);
+  private DefaultMessageId() {
   }
 
   @Override
   public String owner() {
-    return data.getString(OWNER);
+    return owner;
   }
 
   @Override
   public long ackCode() {
-    return data.getLong(CODE);
+    return code;
   }
 
   @Override
   public String correlationId() {
-    return data.getString(ID);
+    return id;
   }
 
   @Override
   public boolean hasParent() {
-    return data.getFieldNames().contains(PARENT);
+    return parent != null;
   }
 
   @Override
   public String parent() {
-    return data.getString(PARENT);
+    return parent;
   }
 
   @Override
   public boolean hasRoot() {
-    return data.getFieldNames().contains(ROOT);
+    return root != null;
   }
 
   @Override
@@ -86,22 +74,125 @@ public class DefaultMessageId implements MessageId {
 
   @Override
   public String root() {
-    return data.getString(ROOT);
+    return root;
   }
 
   @Override
   public String auditor() {
-    return data.getString(AUDITOR);
+    return auditor;
   }
 
   @Override
-  public JsonObject toJson() {
-    return data;
+  public MessageId copy() {
+    return Builder.newBuilder()
+        .setAuditor(auditor)
+        .setCode(random.nextInt())
+        .setCorrelationId(UUID.randomUUID().toString())
+        .setOwner(owner)
+        .setParent(parent)
+        .setRoot(root)
+        .build();
   }
 
   @Override
   public boolean equals(Object object) {
-    return object instanceof MessageId && ((MessageId) object).correlationId().equals(correlationId());
+    return object instanceof MessageId && ((MessageId) object).correlationId().equals(id);
+  }
+
+  /**
+   * Message ID builder.
+   *
+   * @author Jordan Halterman
+   */
+  public static class Builder {
+    private DefaultMessageId messageId = new DefaultMessageId();
+
+    private Builder() {
+    }
+
+    /**
+     * Creates a new message ID builder.
+     *
+     * @return A new message ID builder.
+     */
+    public static Builder newBuilder() {
+      return new Builder();
+    }
+
+    /**
+     * Sets the message owner.
+     *
+     * @param owner The message owner.
+     * @return The message builder.
+     */
+    public Builder setOwner(String owner) {
+      messageId.owner = owner;
+      return this;
+    }
+
+    /**
+     * Sets the message ack code.
+     *
+     * @param code The message ack code.
+     * @return The message builder.
+     */
+    public Builder setCode(int code) {
+      messageId.code = code;
+      return this;
+    }
+
+    /**
+     * Sets the correlation ID.
+     *
+     * @param correlationId The message correlation ID.
+     * @return The message builder.
+     */
+    public Builder setCorrelationId(String correlationId) {
+      messageId.id = correlationId;
+      return this;
+    }
+
+    /**
+     * Sets the message parent.
+     *
+     * @param parent The message parent.
+     * @return The message builder.
+     */
+    public Builder setParent(String parent) {
+      messageId.parent = parent;
+      return this;
+    }
+
+    /**
+     * Sets the message root.
+     *
+     * @param root The message root.
+     * @return The message builder.
+     */
+    public Builder setRoot(String root) {
+      messageId.root = root;
+      return this;
+    }
+
+    /**
+     * Sets the message auditor.
+     *
+     * @param auditor The message auditor.
+     * @return The message builder.
+     */
+    public Builder setAuditor(String auditor) {
+      messageId.auditor = auditor;
+      return this;
+    }
+
+    /**
+     * Builds the message ID.
+     *
+     * @return A new message ID.
+     */
+    public DefaultMessageId build() {
+      return messageId;
+    }
   }
 
 }

@@ -15,9 +15,6 @@
  */
 package net.kuujo.vertigo.context;
 
-import static net.kuujo.vertigo.util.Component.deserializeType;
-import static net.kuujo.vertigo.util.Component.serializeType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,47 +29,46 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.Component;
-import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
- * A component context which contains information regarding each
- * component instance within a single network component. Contexts
- * are immutable as they are constructed once a network has been
- * deployed.
- *
+ * A component context which contains information regarding each component instance within
+ * a single network component. Contexts are immutable as they are constructed once a
+ * network has been deployed.
+ * 
  * @author Jordan Halterman
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="deploy")
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.NAME,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="deploy"
+)
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_DEPLOYMENT_MODULE),
-  @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_DEPLOYMENT_VERTICLE)
+  @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_MODULE),
+  @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_VERTICLE)
 })
-@SuppressWarnings("rawtypes")
-public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Component> implements Context {
-  private String address;
-  private Class<T> type;
-  private Map<String, Object> config;
-  private List<InstanceContext<T>> instances = new ArrayList<>();
-  private long heartbeat = 5000;
-  private List<ComponentHook> hooks = new ArrayList<>();
-  private List<InputContext> inputs = new ArrayList<>();
-  private @JsonIgnore NetworkContext network;
+public abstract class ComponentContext<T extends ComponentContext<T>> extends Context<ComponentContext<?>> {
+  private static final String DEFAULT_GROUP = "__DEFAULT__";
+  protected String address;
+  protected Component.Type type;
+  protected String group = DEFAULT_GROUP;
+  protected Map<String, Object> config;
+  protected List<InstanceContext> instances = new ArrayList<>();
+  protected List<ComponentHook> hooks = new ArrayList<>();
+  private @JsonIgnore
+  NetworkContext network;
 
   /**
    * Creates a component context from JSON.
-   *
-   * @param context
-   *   A JSON representation of the component context.
-   * @return
-   *   A component context instance.
-   * @throws MalformedContextException
-   *   If the context is malformed.
+   * 
+   * @param context A JSON representation of the component context.
+   * @return A component context instance.
+   * @throws MalformedContextException If the context is malformed.
    */
   @SuppressWarnings("unchecked")
-  public static <T extends ComponentContext> T fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+  public static <T extends ComponentContext<T>> T fromJson(JsonObject context) {
+    Serializer serializer = SerializerFactory.getSerializer(ComponentContext.class);
     T component = (T) serializer.deserializeObject(context.getObject("component"), ComponentContext.class);
     NetworkContext network = NetworkContext.fromJson(context);
     return (T) component.setNetworkContext(network);
@@ -80,14 +76,12 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   /**
    * Serializes a component context to JSON.
-   *
-   * @param context
-   *   The component context to serialize.
-   * @return
-   *   A Json representation of the component context.
+   * 
+   * @param context The component context to serialize.
+   * @return A Json representation of the component context.
    */
-  public static JsonObject toJson(ComponentContext context) {
-    Serializer serializer = SerializerFactory.getSerializer(Context.class);
+  public static <T extends ComponentContext<T>> JsonObject toJson(ComponentContext<T> context) {
+    Serializer serializer = SerializerFactory.getSerializer(ComponentContext.class);
     JsonObject json = NetworkContext.toJson(context.network());
     json.putObject("component", serializer.serializeToObject(context));
     return json;
@@ -102,130 +96,83 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
   /**
    * Sets the component parent.
    */
-  ComponentContext setNetworkContext(NetworkContext network) {
+  @SuppressWarnings("unchecked")
+  T setNetworkContext(NetworkContext network) {
     this.network = network;
-    return this;
+    return (T) this;
   }
 
   /**
    * Gets the unique component address.
-   *
-   * @return
-   *   The component address.
+   * 
+   * @return The component address.
    */
   public String address() {
     return address;
   }
 
-  @Deprecated
-  public String getAddress() {
-    return address();
-  }
-
   /**
    * Gets the component type.
-   *
-   * @return
-   *   The component type.
+   * 
+   * @return The component type.
    */
-  public Class<T> type() {
+  public Component.Type type() {
     return type;
-  }
-
-  @Deprecated
-  public Class<T> getType() {
-    return type();
   }
 
   @JsonGetter("type")
   private String getSerializedType() {
-    return serializeType(type);
+    return type.getName();
   }
 
   @JsonSetter("type")
-  @SuppressWarnings("unchecked")
   private void setSerializedType(String type) {
-    this.type = (Class<T>) deserializeType(type);
+    this.type = Component.Type.parse(type);
   }
 
   /**
    * Returns a boolean indicating whether the component is a module.
-   *
-   * @return
-   *   Indicates whether the component is a module.
+   * 
+   * @return Indicates whether the component is a module.
    */
   public boolean isModule() {
     return false;
   }
 
-  @Deprecated
-  public String module() {
-    return isModule() ? ((ModuleContext) this).module() : null;
-  }
-
-  @Deprecated
-  public String getModule() {
-    return module();
-  }
-
   /**
    * Returns a boolean indicating whether the component is a verticle.
-   *
-   * @return
-   *   Indicates whether the component is a verticle.
+   * 
+   * @return Indicates whether the component is a verticle.
    */
   public boolean isVerticle() {
     return false;
   }
 
-  @Deprecated
-  public String main() {
-    return isVerticle() ? ((VerticleContext) this).main() : null;
-  }
-
-  @Deprecated
-  public String getMain() {
-    return main();
-  }
-
   /**
    * Gets the component configuration.
-   *
-   * @return
-   *   The component configuration.
+   * 
+   * @return The component configuration.
    */
   public JsonObject config() {
     return config != null ? new JsonObject(config) : new JsonObject();
   }
 
-  @Deprecated
-  public JsonObject getConfig() {
-    return config();
-  }
-
   /**
    * Gets a list of all component instance contexts.
-   *
-   * @return
-   *   A list of component instance contexts.
+   * 
+   * @return A list of component instance contexts.
    */
-  public List<InstanceContext<T>> instances() {
-    for (InstanceContext<T> instance : instances) {
+  public List<InstanceContext> instances() {
+    for (InstanceContext instance : instances) {
       instance.setComponentContext(this);
     }
     return instances;
   }
 
-  @Deprecated
-  public List<InstanceContext<T>> getInstances() {
-    return instances();
-  }
-
   /**
    * Returns the number of component instances.
-   *
-   * @return
-   *   The number of component instances.
+   * 
+   * @return The number of component instances.
    */
   public int numInstances() {
     return instances.size();
@@ -233,14 +180,12 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   /**
    * Gets a component instance context by instance ID.
-   *
-   * @param id
-   *   The instance ID.
-   * @return
-   *   A component instance or <code>null</code> if the instance doesn't exist.
+   * 
+   * @param id The instance ID.
+   * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext<T> instance(int instanceNumber) {
-    for (InstanceContext<T> instance : instances) {
+  public InstanceContext instance(int instanceNumber) {
+    for (InstanceContext instance : instances) {
       if (instance.number() == instanceNumber) {
         return instance.setComponentContext(this);
       }
@@ -250,14 +195,12 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
 
   /**
    * Gets a component instance context by instance address.
-   *
-   * @param address
-   *   The instance address.
-   * @return
-   *   A component instance or <code>null</code> if the instance doesn't exist.
+   * 
+   * @param address The instance address.
+   * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext<T> instance(String address) {
-    for (InstanceContext<T> instance : instances) {
+  public InstanceContext instance(String address) {
+    for (InstanceContext instance : instances) {
       if (instance.address().equals(address)) {
         return instance.setComponentContext(this);
       }
@@ -265,78 +208,49 @@ public abstract class ComponentContext<T extends net.kuujo.vertigo.component.Com
     return null;
   }
 
-  @Deprecated
-  public InstanceContext<T> getInstance(String address) {
-    return instance(address);
-  }
-
   /**
-   * Gets the component heartbeat interval.
-   *
-   * @return
-   *   The component heartbeat interval.
+   * Returns the component deployment group.
+   * 
+   * @return The component HA group.
    */
-  public long heartbeatInterval() {
-    return heartbeat;
-  }
-
-  @Deprecated
-  public long getHeartbeatInterval() {
-    return heartbeatInterval();
+  public String deploymentGroup() {
+    return group;
   }
 
   /**
    * Gets a list of component hooks.
-   *
-   * @return
-   *   A list of component hooks.
+   * 
+   * @return A list of component hooks.
    */
   public List<ComponentHook> hooks() {
     return hooks;
   }
 
-  @Deprecated
-  public List<ComponentHook> getHooks() {
-    return hooks();
-  }
-
-  /**
-   * Returns a list of component input contexts.
-   *
-   * @return
-   *   A list of component input contexts.
-   */
-  public List<InputContext> inputs() {
-    for (InputContext input : inputs) {
-      input.setComponentContext(this);
-    }
-    return inputs;
-  }
-
-  @Deprecated
-  public List<Input> getInputs() {
-    // Convert input contexts back to inputs to ensure backwards compatibility.
-    Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    List<Input> inputs = new ArrayList<>();
-    for (InputContext context : this.inputs) {
-      inputs.add(serializer.deserializeString(serializer.serializeToString(context), Input.class));
-    }
-    return inputs;
-  }
-
   /**
    * Returns the parent network context.
-   *
-   * @return
-   *   The parent network context.
+   * 
+   * @return The parent network context.
    */
   public NetworkContext network() {
     return network;
   }
 
-  @Deprecated
-  public NetworkContext getNetwork() {
-    return network();
+  @Override
+  public void notify(ComponentContext<?> update) {
+    super.notify(update);
+    for (InstanceContext instance : instances) {
+      boolean updated = false;
+      for (InstanceContext i : update.instances()) {
+        if (instance.equals(i)) {
+          instance.notify(i);
+          updated = true;
+          break;
+        }
+      }
+      if (!updated) {
+        instance.notify(null);
+      }
+    }
   }
 
   @Override

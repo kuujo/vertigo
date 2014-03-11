@@ -19,15 +19,14 @@ import static net.kuujo.vertigo.util.Component.isModuleName;
 
 /**
  * A module component.
- *
+ * 
  * @author Jordan Halterman
  */
-@SuppressWarnings("rawtypes")
-public class Module<T extends net.kuujo.vertigo.component.Component> extends ComponentType<Module<T>, T> {
+public class Module extends Component<Module> {
 
   /**
-   * <code>module</code> is a string indicating the module name. This field is
-   * required for all module components.
+   * <code>module</code> is a string indicating the module name. This field is required
+   * for all module components.
    */
   public static final String MODULE_NAME = "module";
 
@@ -36,18 +35,18 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
   public Module() {
   }
 
-  public Module(Class<T> type, String address) {
+  public Module(Type type, String address) {
     super(type, address);
   }
 
-  public Module(Class<T> type, String address, String moduleName) {
+  public Module(Type type, String address, String moduleName) {
     this(type, address);
     setModule(moduleName);
   }
 
   @Override
   protected String getDeploymentType() {
-    return Component.COMPONENT_DEPLOYMENT_MODULE;
+    return Component.COMPONENT_MODULE;
   }
 
   @Override
@@ -57,15 +56,12 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
 
   /**
    * Sets the module name.
-   *
-   * @param moduleName
-   *   The module name.
-   * @return
-   *   The module configuration.
-   * @throws IllegalArgumentException
-   *   If the module name is not a valid module identifier.
+   * 
+   * @param moduleName The module name.
+   * @return The module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module<T> setModule(String moduleName) {
+  public Module setModule(String moduleName) {
     if (!isModuleName(moduleName)) {
       throw new IllegalArgumentException(moduleName + " is not a valid module name.");
     }
@@ -75,9 +71,8 @@ public class Module<T extends net.kuujo.vertigo.component.Component> extends Com
 
   /**
    * Gets the module name.
-   *
-   * @return
-   *   The module name.
+   * 
+   * @return The module name.
    */
   public String getModule() {
     return module;

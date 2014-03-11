@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,177 +16,56 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
-import net.kuujo.vertigo.context.Context;
-import net.kuujo.vertigo.context.InputContext;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.OutputContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.message.impl.JsonMessageBuilder;
-import net.kuujo.vertigo.output.Channel;
-import net.kuujo.vertigo.output.Connection;
-import net.kuujo.vertigo.output.Output;
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
+import net.kuujo.vertigo.message.impl.DefaultMessageId;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Future;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.platform.Container;
+import net.kuujo.vertigo.output.OutputStream;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**
- * A default output collector implementation.
+ * Default output collector implementation.
  *
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector {
+  private static final String DEFAULT_STREAM = "default";
   private final Vertx vertx;
-  private final EventBus eventBus;
-  private final InstanceContext<?> context;
-  private final Logger logger;
-  private final Acker acker;
-  private final boolean ackingEnabled;
-  private final String componentAddress;
+  private final OutputContext context;
   private final List<OutputHook> hooks = new ArrayList<>();
-  private final List<String> auditors;
-  private final JsonMessageBuilder messageBuilder;
-  private Random random = new Random();
-  @SuppressWarnings("serial")
-  private Map<String, List<Channel>> channels = new HashMap<String, List<Channel>>() {{
-    put(Output.DEFAULT_STREAM, new ArrayList<Channel>());
-  }};
-  private Map<String, Long> connectionTimers = new HashMap<>();
-  private static final long LISTEN_INTERVAL = 15000;
+  private final List<OutputStream> streams = new ArrayList<>();
+  private final Acker acker;
+  private final Random random = new Random();
+  private List<String> auditors;
 
-  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext<?> context) {
-    this(vertx, container, vertx.eventBus(), context);
-  }
-
-  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext<?> context) {
+  public DefaultOutputCollector(Vertx vertx, OutputContext context, Acker acker) {
     this.vertx = vertx;
-    this.eventBus = eventBus;
-    this.context = context;
-    logger = LoggerFactory.getLogger(String.format("%s-%s", OutputCollector.class.getCanonicalName(), context.address()));
-    acker = new DefaultAcker(context.address(), eventBus);
-    messageBuilder = new JsonMessageBuilder(context.address());
-    ackingEnabled = context.component().network().isAckingEnabled();
-    auditors = context.component().network().auditors();
-    componentAddress = context.component().address();
-  }
-
-  public DefaultOutputCollector(Vertx vertx, Container container, InstanceContext<?> context, Acker acker) {
-    this(vertx, container, vertx.eventBus(), context, acker);
-  }
-
-  public DefaultOutputCollector(Vertx vertx, Container container, EventBus eventBus, InstanceContext<?> context, Acker acker) {
-    this.vertx = vertx;
-    this.eventBus = eventBus;
     this.context = context;
     this.acker = acker;
-    logger = LoggerFactory.getLogger(String.format("%s-%s", OutputCollector.class.getCanonicalName(), context.address()));
-    messageBuilder = new JsonMessageBuilder(context.address());
-    ackingEnabled = context.component().network().isAckingEnabled();
-    auditors = context.component().network().auditors();
-    componentAddress = context.component().address();
-  }
-
-  private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
-    @Override
-    public void handle(Message<JsonObject> message) {
-      JsonObject body = message.body();
-      if (body != null) {
-        String action = body.getString("action");
-        switch (action) {
-          case "listen":
-            doListen(body.getString("address"), body.getString("status"), body.getObject("input"));
-            break;
-        }
-      }
-    }
-  };
-
-  /**
-   * Starts listening to messages from this output collector.
-   */
-  private void doListen(final String address, final String statusAddress, final JsonObject info) {
-    if (address == null || statusAddress == null) {
-      return;
-    }
-
-    Serializer serializer = SerializerFactory.getSerializer(Context.class);
-    InputContext input = serializer.deserializeObject(info, InputContext.class);
-    Output output = new Output(input.id(), input.stream(), input.count(), input.grouping().createSelector());
-
-    final Channel channel = findChannel(output);
-    if (!channel.containsConnection(address)) {
-      channel.addConnection(new DefaultConnection(address, eventBus));
-    }
-
-    if (connectionTimers.containsKey(address)) {
-      vertx.cancelTimer(connectionTimers.remove(address));
-    }
-
-    // Set a timer that, if triggered, will remove the connection from the channel.
-    // This indicates that we haven't received a keep-alive message in LISTEN_INTERVAL.
-    connectionTimers.put(address, vertx.setTimer(LISTEN_INTERVAL, new Handler<Long>() {
-      @Override
-      public void handle(Long timerID) {
-        Connection connection = channel.getConnection(address);
-        // if null it means the connection doesn't exist or it is already a PseudoConnection
-        // so we don't need to remove it again
-        if (connection != null) {
-          channel.removeConnection(connection);
-        }
-        connectionTimers.remove(address);
-      }
-    }));
-    eventBus.send(statusAddress, new JsonObject().putString("id", context.address()));
-  }
-
-  /**
-   * Finds a channel by ID.
-   */
-  private Channel findChannel(Output output) {
-    List<Channel> streamList = channels.get(output.getStream());
-    if (streamList == null) {
-      streamList = new ArrayList<>();
-      Channel channel = new DefaultChannel(output.id(), output.getSelector(),
-          eventBus, messageBuilder).setConnectionCount(output.getCount());
-      streamList.add(channel);
-      channels.put(output.getStream(), streamList);
-      return channel;
-    }
-    else {
-      for (Channel channel : streamList) {
-        if (channel.id().equals(output.id())) {
-          return channel;
-        }
-      }
-      Channel channel = new DefaultChannel(output.id(), output.getSelector(),
-          eventBus, messageBuilder).setConnectionCount(output.getCount());
-      streamList.add(channel);
-      return channel;
+    auditors = new ArrayList<>();
+    for (String auditor : context.instance().component().network().auditors()) {
+      auditors.add(auditor);
     }
   }
 
   @Override
-  public String getAddress() {
-    return context.component().address();
+  public OutputContext output() {
+    return context;
   }
 
   @Override
@@ -299,120 +178,161 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public MessageId emit(JsonObject body) {
-    return emitTo(Output.DEFAULT_STREAM, body);
+    return emitTo(DEFAULT_STREAM, body);
   }
 
   @Override
   public MessageId emit(JsonObject body, JsonMessage parent) {
-    return emitTo(Output.DEFAULT_STREAM, body, parent);
+    return emitTo(DEFAULT_STREAM, body, parent);
   }
 
   @Override
   public MessageId emit(JsonMessage message) {
-    return emitTo(Output.DEFAULT_STREAM, message);
+    return emitTo(DEFAULT_STREAM, message);
   }
 
   @Override
   public MessageId emitTo(String stream, JsonObject body) {
-    JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
-    MessageId messageId = message.messageId();
-    JsonMessage child = messageBuilder.createChild(message).setBody(body)
-        .setStream(stream).setSource(componentAddress).toMessage();
-
-    List<Channel> channels = this.channels.get(stream);
-    if (channels != null) {
-      for (Channel channel : channels) {
-        acker.fork(messageId, channel.publish(child));
-      }
-    }
-    acker.create(messageId);
-    hookEmit(messageId);
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Emitted new message to stream:%s %s", stream, body.encodePrettily()));
-    }
-    return messageId;
+    return doEmitTo(stream, createNewMessage(stream, body));
   }
 
   @Override
   public MessageId emitTo(String stream, JsonObject body, JsonMessage parent) {
-    JsonMessage message = messageBuilder.createChild(parent).toMessage();
-    MessageId messageId = message.messageId();
-    JsonMessage child = messageBuilder.createChild(message).setBody(body).setStream(stream).toMessage();
-    List<Channel> channels = this.channels.get(stream);
-    if (channels != null) {
-      for (Channel channel : channels) {
-        acker.fork(parent.messageId(), channel.publish(child));
-      }
-    }
-    hookEmit(messageId);
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Emitted child message to stream:%s %s", stream, body.encodePrettily()));
-    }
-    return messageId;
+    return doEmitTo(stream, createChildMessage(stream, body, parent));
   }
 
   @Override
   public MessageId emitTo(String stream, JsonMessage message) {
-    return emitTo(stream, message.body(), message);
+    return doEmitTo(stream, createChildMessage(stream, message.body(), message));
+  }
+
+  private MessageId doEmitTo(String stream, JsonMessage message) {
+    JsonMessage child = createChildMessage(stream, message.body(), message);
+    for (OutputStream output : streams) {
+      if (output.context().stream().equals(stream)) {
+        acker.fork(message.messageId(), output.emit(child));
+      }
+    }
+    acker.create(message.messageId());
+    hookEmit(message.messageId());
+    return message.messageId();
   }
 
   /**
-   * Returns a random auditor address.
+   * Creates a new message.
    */
-  private String selectRandomAuditor() {
-    // If acking is not enabled then don't assign any acker to the message.
-    if (ackingEnabled) {
-      return auditors.get(random.nextInt(auditors.size()));
-    }
-    return null;
+  private JsonMessage createNewMessage(String stream, JsonObject body) {
+    String auditor = auditors.get(random.nextInt(auditors.size()));
+    MessageId messageId = DefaultMessageId.Builder.newBuilder()
+        .setCorrelationId(UUID.randomUUID().toString())
+        .setAuditor(auditor)
+        .setCode(random.nextInt())
+        .setOwner(context.instance().address())
+        .build();
+    JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
+        .setMessageId(messageId)
+        .setBody(body)
+        .setSource(context.instance().component().address())
+        .setStream(stream)
+        .build();
+    return message;
+  }
+
+  /**
+   * Creates a child message.
+   */
+  private JsonMessage createChildMessage(String stream, JsonObject body, JsonMessage parent) {
+    MessageId messageId = DefaultMessageId.Builder.newBuilder()
+        .setCorrelationId(UUID.randomUUID().toString())
+        .setAuditor(parent.messageId().auditor())
+        .setCode(random.nextInt())
+        .setOwner(parent.messageId().owner())
+        .setParent(parent.messageId().correlationId())
+        .setRoot(parent.messageId().hasRoot() ? parent.messageId().root() : parent.messageId().correlationId())
+        .build();
+    JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
+        .setMessageId(messageId)
+        .setBody(body)
+        .setSource(context.instance().component().address())
+        .setStream(stream)
+        .build();
+    return message;
   }
 
   @Override
   public OutputCollector start() {
-    eventBus.registerHandler(context.component().address(), handler);
-    hookStart();
-    return this;
+    return start(null);
   }
 
   @Override
-  public OutputCollector start(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.registerHandler(context.component().address(), handler, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
+  public OutputCollector start(final Handler<AsyncResult<Void>> doneHandler) {
+    if (streams.isEmpty()) {
+      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.streams().size());
+      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          }
+          else {
+            hookStart();
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          }
         }
-        else {
-          future.setResult(null);
-          hookStart();
-        }
+      });
+
+      for (OutputStreamContext stream : context.streams()) {
+        streams.add(new DefaultOutputStream(vertx, stream).start(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              startCounter.fail(result.cause());
+            }
+            else {
+              startCounter.succeed();
+            }
+          }
+        }));
       }
-    });
+    }
     return this;
   }
 
   @Override
   public void stop() {
-    eventBus.unregisterHandler(context.component().address(), handler);
-    hookStop();
+    stop(null);
   }
 
   @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    eventBus.unregisterHandler(context.component().address(), handler, new Handler<AsyncResult<Void>>() {
+  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(streams.size());
+    stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
-          future.setFailure(result.cause());
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         }
         else {
-          future.setResult(null);
           hookStop();
+          streams.clear();
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
     });
+
+    for (OutputStream stream : streams) {
+      stream.stop(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            stopCounter.fail(result.cause());
+          }
+          else {
+            stopCounter.succeed();
+          }
+        }
+      });
+    }
   }
 
 }

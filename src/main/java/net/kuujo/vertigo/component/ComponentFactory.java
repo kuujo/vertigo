@@ -19,8 +19,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.worker.Worker;
 
 /**
  * A component instance factory.
@@ -57,26 +55,6 @@ public interface ComponentFactory {
    * @return
    *   A new component instance.
    */
-  <T extends Component<T>> Component<T> createComponent(InstanceContext<T> context);
-
-  /**
-   * Creates a feeder.
-   *
-   * @param context
-   *   The feeder instance context.
-   * @return
-   *   A new feeder instance.
-   */
-  Feeder createFeeder(InstanceContext<Feeder> context);
-
-  /**
-   * Creates a worker.
-   *
-   * @param context
-   *   The worker instance context.
-   * @return
-   *   A new worker instance.
-   */
-  Worker createWorker(InstanceContext<Worker> context);
+  <T extends Component<T>> T createComponent(InstanceContext context);
 
 }

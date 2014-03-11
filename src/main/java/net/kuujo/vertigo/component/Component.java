@@ -25,7 +25,6 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.message.schema.MessageSchema;
 
 /**
  * A network component.
@@ -129,9 +128,6 @@ public interface Component<T extends Component<T>> {
    *   The called component instance.
    */
   T addHook(ComponentHook hook);
-
-  @Deprecated
-  T declareSchema(MessageSchema schema);
 
   /**
    * Starts the component.

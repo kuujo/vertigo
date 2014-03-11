@@ -23,7 +23,6 @@ import java.util.Set;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
-import net.kuujo.vertigo.message.schema.MessageSchema;
 import net.kuujo.vertigo.acker.Acker;
 import net.kuujo.vertigo.acker.DefaultAcker;
 import net.kuujo.vertigo.component.Component;
@@ -233,13 +232,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     for (ComponentHook hook : hooks) {
       hook.handleStop(this);
     }
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T declareSchema(MessageSchema schema) {
-    input.declareSchema(schema);
-    return (T) this;
   }
 
   /**

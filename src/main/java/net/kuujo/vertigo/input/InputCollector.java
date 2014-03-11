@@ -17,7 +17,6 @@ package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.schema.MessageSchema;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -44,16 +43,6 @@ public interface InputCollector {
    *   The called input collector instance.
    */
   InputCollector addHook(InputHook hook);
-
-  /**
-   * Declares a required input schema.
-   *
-   * @param schema
-   *   An input message schema.
-   * @return
-   *   The called input collector instance.
-   */
-  InputCollector declareSchema(MessageSchema schema);
 
   /**
    * Sets a message handler on the collector.

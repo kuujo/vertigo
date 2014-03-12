@@ -20,7 +20,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.runtime.FailureException;
 import net.kuujo.vertigo.runtime.TimeoutException;
 
@@ -181,7 +180,7 @@ public interface Feeder extends Component<Feeder> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject body);
+  String emit(JsonObject body);
 
   /**
    * Emits a message to the default stream with an ack handler.
@@ -191,7 +190,7 @@ public interface Feeder extends Component<Feeder> {
    * @param ackHandler
    *   An asynchronous result handler to be called once the emitted message
    *   has been fully processed. This {@link AsyncResult} implementation is a
-   *   special implementation that will *always* contain the {@link MessageId}
+   *   special implementation that will *always* contain the message ID
    *   regardless of whether the message was successfully processed or not. If
    *   the message was not successfully processed, the cause of the failure will
    *   be either a {@link FailureException} or a {@link TimeoutException}. If
@@ -201,7 +200,7 @@ public interface Feeder extends Component<Feeder> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject body, Handler<AsyncResult<MessageId>> ackHandler);
+  String emit(JsonObject body, Handler<AsyncResult<String>> ackHandler);
 
   /**
    * Emits a message to a non-default stream.
@@ -213,7 +212,7 @@ public interface Feeder extends Component<Feeder> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject body);
+  String emit(String stream, JsonObject body);
 
   /**
    * Emits a message to a non-default stream with an ack handler.
@@ -225,7 +224,7 @@ public interface Feeder extends Component<Feeder> {
    * @param ackHandler
    *   An asynchronous result handler to be called once the emitted message
    *   has been fully processed. This {@link AsyncResult} implementation is a
-   *   special implementation that will *always* contain the {@link MessageId}
+   *   special implementation that will *always* contain the message ID
    *   regardless of whether the message was successfully processed or not. If
    *   the message was not successfully processed, the cause of the failure will
    *   be either a {@link FailureException} or a {@link TimeoutException}. If
@@ -235,6 +234,6 @@ public interface Feeder extends Component<Feeder> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject body, Handler<AsyncResult<MessageId>> ackHandler);
+  String emit(String stream, JsonObject body, Handler<AsyncResult<String>> ackHandler);
 
 }

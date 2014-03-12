@@ -27,23 +27,16 @@ import net.kuujo.vertigo.message.MessageId;
  */
 public class DefaultMessageId implements MessageId {
   private static final Random random = new Random();
-  private String owner;
-  private long code;
+  private int code;
   private String id;
-  private String parent;
-  private String root;
+  private String tree;
   private String auditor;
 
   private DefaultMessageId() {
   }
 
   @Override
-  public String owner() {
-    return owner;
-  }
-
-  @Override
-  public long ackCode() {
+  public int ackCode() {
     return code;
   }
 
@@ -53,28 +46,8 @@ public class DefaultMessageId implements MessageId {
   }
 
   @Override
-  public boolean hasParent() {
-    return parent != null;
-  }
-
-  @Override
-  public String parent() {
-    return parent;
-  }
-
-  @Override
-  public boolean hasRoot() {
-    return root != null;
-  }
-
-  @Override
-  public boolean isRoot() {
-    return !hasRoot();
-  }
-
-  @Override
-  public String root() {
-    return root;
+  public String tree() {
+    return tree != null ? tree : id;
   }
 
   @Override
@@ -88,9 +61,7 @@ public class DefaultMessageId implements MessageId {
         .setAuditor(auditor)
         .setCode(random.nextInt())
         .setCorrelationId(UUID.randomUUID().toString())
-        .setOwner(owner)
-        .setParent(parent)
-        .setRoot(root)
+        .setTree(tree())
         .build();
   }
 
@@ -120,17 +91,6 @@ public class DefaultMessageId implements MessageId {
     }
 
     /**
-     * Sets the message owner.
-     *
-     * @param owner The message owner.
-     * @return The message builder.
-     */
-    public Builder setOwner(String owner) {
-      messageId.owner = owner;
-      return this;
-    }
-
-    /**
      * Sets the message ack code.
      *
      * @param code The message ack code.
@@ -153,24 +113,13 @@ public class DefaultMessageId implements MessageId {
     }
 
     /**
-     * Sets the message parent.
-     *
-     * @param parent The message parent.
-     * @return The message builder.
-     */
-    public Builder setParent(String parent) {
-      messageId.parent = parent;
-      return this;
-    }
-
-    /**
      * Sets the message root.
      *
      * @param root The message root.
      * @return The message builder.
      */
-    public Builder setRoot(String root) {
-      messageId.root = root;
+    public Builder setTree(String root) {
+      messageId.tree = root;
       return this;
     }
 

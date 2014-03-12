@@ -15,15 +15,14 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.auditor.AuditorVerticle;
+import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
@@ -61,14 +60,14 @@ public class MessagingTest extends TestVerticle {
     });
   }
 
-  private final Handler<MessageId> emptyHandler = new Handler<MessageId>() {
-    public void handle(MessageId messageId) {
+  private final Handler<String> emptyHandler = new Handler<String>() {
+    public void handle(String messageId) {
     }
   };
 
-  private final Handler<MessageId> completeHandler = new Handler<MessageId>() {
+  private final Handler<String> completeHandler = new Handler<String>() {
     @Override
-    public void handle(MessageId messageId) {
+    public void handle(String messageId) {
       testComplete();
     }
   };
@@ -79,9 +78,9 @@ public class MessagingTest extends TestVerticle {
     network.addFeederVerticle("feeder", "feeder.py", 2);
     network.addWorkerVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network);
-    final Acker acker1 = new DefaultAcker(context.component("feeder").instance(1).address(), vertx.eventBus());
+    final Acker acker1 = new DefaultAcker(vertx.eventBus());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
-    final Acker acker2 = new DefaultAcker(context.component("worker").instance(1).address(), vertx.eventBus());
+    final Acker acker2 = new DefaultAcker(vertx.eventBus());
     final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
 
     deployAuditor(context.auditors().iterator().next(), 30000, new Handler<AsyncResult<Void>>() {
@@ -133,9 +132,9 @@ public class MessagingTest extends TestVerticle {
     network.addFeederVerticle("feeder", "feeder.py", 2);
     network.addWorkerVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network);
-    final Acker acker1 = new DefaultAcker(context.component("feeder").instance(1).address(), vertx.eventBus());
+    final Acker acker1 = new DefaultAcker(vertx.eventBus());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
-    final Acker acker2 = new DefaultAcker(context.component("worker").instance(1).address(), vertx.eventBus());
+    final Acker acker2 = new DefaultAcker(vertx.eventBus());
     final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
 
     deployAuditor(context.auditors().iterator().next(), 30000, new Handler<AsyncResult<Void>>() {
@@ -187,9 +186,9 @@ public class MessagingTest extends TestVerticle {
     network.addFeederVerticle("feeder", "feeder.py", 2);
     network.addWorkerVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network);
-    final Acker acker1 = new DefaultAcker(context.component("feeder").instance(1).address(), vertx.eventBus());
+    final Acker acker1 = new DefaultAcker(vertx.eventBus());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
-    final Acker acker2 = new DefaultAcker(context.component("worker").instance(1).address(), vertx.eventBus());
+    final Acker acker2 = new DefaultAcker(vertx.eventBus());
     final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
 
     deployAuditor(context.auditors().iterator().next(), 1000, new Handler<AsyncResult<Void>>() {

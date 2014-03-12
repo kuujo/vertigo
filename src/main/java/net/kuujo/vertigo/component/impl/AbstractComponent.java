@@ -20,11 +20,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.Acker;
+import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -74,19 +73,19 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
       // Do nothing. This hook is called elsewhere.
     }
     @Override
-    public void handleReceive(MessageId id) {
+    public void handleReceive(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleReceive(id);
       }
     }
     @Override
-    public void handleAck(MessageId id) {
+    public void handleAck(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleAck(id);
       }
     }
     @Override
-    public void handleFail(MessageId id) {
+    public void handleFail(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleFail(id);
       }
@@ -103,25 +102,25 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
       // Do nothing. This hook is called elsewhere.
     }
     @Override
-    public void handleEmit(MessageId id) {
+    public void handleEmit(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleEmit(id);
       }
     }
     @Override
-    public void handleAcked(MessageId id) {
+    public void handleAcked(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleAcked(id);
       }
     }
     @Override
-    public void handleFailed(MessageId id) {
+    public void handleFailed(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleFailed(id);
       }
     }
     @Override
-    public void handleTimeout(MessageId id) {
+    public void handleTimeout(String id) {
       for (ComponentHook hook : hooks) {
         hook.handleTimeout(id);
       }
@@ -138,7 +137,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.container = container;
     this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.component().type().getName(), context.address()));
     this.context = context;
-    this.acker = new DefaultAcker(context.address(), eventBus);
+    this.acker = new DefaultAcker(eventBus);
     this.instanceId = context.address();
     this.address = context.component().address();
     NetworkContext networkContext = context.component().network();

@@ -194,7 +194,7 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
    */
   private void doDeploy() {
     if (context.isAckingEnabled()) {
-      recursiveDeployAuditors(new HashSet<String>(context.auditors()), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
+      recursiveDeployAuditors(new HashSet<String>(context.auditors()).iterator(), new DefaultFutureResult<Void>().setHandler(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
@@ -237,15 +237,15 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
   /**
    * Recursively deploys network auditors.
    */
-  private void recursiveDeployAuditors(final Set<String> auditors, final Future<Void> future) {
-    if (auditors.size() > 0) {
-      final String address = auditors.iterator().next();
+  private void recursiveDeployAuditors(final Iterator<String> auditors, final Future<Void> future) {
+    if (auditors.hasNext()) {
+      final String address = auditors.next();
       if (logger.isDebugEnabled()) {
         logger.debug(String.format("Deploying network auditor: %s", address));
       }
       JsonObject auditorConfig = new JsonObject()
-        .putString(AuditorVerticle.ADDRESS, address)
-        .putNumber(AuditorVerticle.TIMEOUT, context.messageTimeout());
+        .putString("address", address)
+        .putNumber("timeout", context.messageTimeout());
       deployVerticle(AuditorVerticle.class.getName(), auditorConfig, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -254,16 +254,14 @@ abstract class AbstractCoordinator extends BusModBase implements Handler<Message
           }
           else {
             auditorDeploymentIds.add(result.result());
-            auditors.remove(address);
-            if (auditors.size() > 0) {
-              recursiveDeployAuditors(auditors, future);
-            }
-            else {
-              future.setResult(null);
-            }
+            auditors.remove();
+            recursiveDeployAuditors(auditors, future);
           }
         }
       });
+    }
+    else {
+      future.setResult((Void) null);
     }
   }
 

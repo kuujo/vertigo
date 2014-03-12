@@ -22,7 +22,6 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.runtime.FailureException;
 import net.kuujo.vertigo.runtime.TimeoutException;
 
@@ -67,23 +66,23 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     super(vertx, container, context);
   }
 
-  private final Handler<MessageId> internalAckHandler = new Handler<MessageId>() {
+  private final Handler<String> internalAckHandler = new Handler<String>() {
     @Override
-    public void handle(MessageId id) {
+    public void handle(String id) {
       queue.ack(id);
     }
   };
 
-  private final Handler<MessageId> internalFailHandler = new Handler<MessageId>() {
+  private final Handler<String> internalFailHandler = new Handler<String>() {
     @Override
-    public void handle(MessageId id) {
+    public void handle(String id) {
       queue.fail(id);
     }
   };
 
-  private final Handler<MessageId> internalTimeoutHandler = new Handler<MessageId>() {
+  private final Handler<String> internalTimeoutHandler = new Handler<String>() {
     @Override
-    public void handle(MessageId id) {
+    public void handle(String id) {
       queue.timeout(id);
     }
   };
@@ -225,47 +224,47 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   }
 
   @Override
-  public MessageId emit(JsonObject data) {
+  public String emit(JsonObject data) {
     return doFeed(null, data, 0, null);
   }
 
   @Override
-  public MessageId emit(JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
+  public String emit(JsonObject data, Handler<AsyncResult<String>> ackHandler) {
     return doFeed(null, data, 0, ackHandler);
   }
 
   @Override
-  public MessageId emit(String stream, JsonObject data) {
+  public String emit(String stream, JsonObject data) {
     return doFeed(stream, data, 0, null);
   }
 
   @Override
-  public MessageId emit(String stream, JsonObject data, Handler<AsyncResult<MessageId>> ackHandler) {
+  public String emit(String stream, JsonObject data, Handler<AsyncResult<String>> ackHandler) {
     return doFeed(stream, data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
-  protected final MessageId doFeed(final String stream, final JsonObject data, final Handler<AsyncResult<MessageId>> ackHandler) {
+  protected final String doFeed(final String stream, final JsonObject data, final Handler<AsyncResult<String>> ackHandler) {
     return doFeed(stream, data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
-  protected final MessageId doFeed(final JsonObject data, final Handler<AsyncResult<MessageId>> ackHandler) {
+  protected final String doFeed(final JsonObject data, final Handler<AsyncResult<String>> ackHandler) {
     return doFeed(null, data, 0, ackHandler);
   }
 
   /**
    * Executes a feed.
    */
-  private final MessageId doFeed(final String stream, final JsonObject data, final int attempts, final Handler<AsyncResult<MessageId>> ackHandler) {
-    final MessageId id = stream != null ? output.emitTo(stream, data) : output.emit(data);
-    queue.enqueue(id, new Handler<AsyncResult<MessageId>>() {
+  private final String doFeed(final String stream, final JsonObject data, final int attempts, final Handler<AsyncResult<String>> ackHandler) {
+    final String id = stream != null ? output.emitTo(stream, data) : output.emit(data);
+    queue.enqueue(id, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<MessageId> result) {
+      public void handle(AsyncResult<String> result) {
         if (autoRetry && (retryAttempts == AUTO_RETRY_ATTEMPTS_UNLIMITED || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
           doFeed(stream, data, attempts+1, ackHandler);
@@ -326,7 +325,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     private static final TimeoutException TIMEOUT_EXCEPTION = new TimeoutException("Processing timed out.");
     static { TIMEOUT_EXCEPTION.setStackTrace(new StackTraceElement[0]); }
 
-    private final Map<String, InternalFutureResult<MessageId>> handlers = new HashMap<String, InternalFutureResult<MessageId>>();
+    private final Map<String, InternalFutureResult<String>> handlers = new HashMap<String, InternalFutureResult<String>>();
     private long maxSize = 1000;
 
     /**
@@ -346,17 +345,17 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     /**
      * Enqueues a new item.
      */
-    private void enqueue(MessageId id, Handler<AsyncResult<MessageId>> ackHandler) {
-      InternalFutureResult<MessageId> future = new InternalFutureResult<MessageId>();
+    private void enqueue(String id, Handler<AsyncResult<String>> ackHandler) {
+      InternalFutureResult<String> future = new InternalFutureResult<String>();
       future.setHandler(ackHandler);
-      handlers.put(id.correlationId(), future);
+      handlers.put(id, future);
     }
 
     /**
      * Acks an item in the queue. The item will be removed and its ack handler called.
      */
-    private void ack(MessageId id) {
-      InternalFutureResult<MessageId> future = handlers.remove(id.correlationId());
+    private void ack(String id) {
+      InternalFutureResult<String> future = handlers.remove(id);
       if (future != null) {
         future.complete(id);
       }
@@ -365,8 +364,8 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     /**
      * Fails an item in the queue. The item will be removed and its fail handler called.
      */
-    private void fail(MessageId id) {
-      InternalFutureResult<MessageId> future = handlers.remove(id.correlationId());
+    private void fail(String id) {
+      InternalFutureResult<String> future = handlers.remove(id);
       if (future != null) {
         future.setFailure(FAILURE_EXCEPTION);
         future.complete(id);
@@ -376,8 +375,8 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     /**
      * Times out an item in the queue. The item will be removed and its timeout handler called.
      */
-    private void timeout(MessageId id) {
-      InternalFutureResult<MessageId> future = handlers.remove(id.correlationId());
+    private void timeout(String id) {
+      InternalFutureResult<String> future = handlers.remove(id);
       if (future != null) {
         future.setFailure(TIMEOUT_EXCEPTION);
         future.complete(id);

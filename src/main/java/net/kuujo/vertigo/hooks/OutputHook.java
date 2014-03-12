@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
 
 /**
@@ -36,7 +35,7 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleEmit(MessageId messageId);
+  void handleEmit(String messageId);
 
   /**
    * Called when the output receives an ack for an emitted message.
@@ -44,7 +43,7 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleAcked(MessageId messageId);
+  void handleAcked(String messageId);
 
   /**
    * Called when the output receives a failure for an emitted message.
@@ -52,7 +51,7 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleFailed(MessageId messageId);
+  void handleFailed(String messageId);
 
   /**
    * Called when the output receives a timeout for an emitted message.
@@ -60,6 +59,6 @@ public interface OutputHook extends Hook<OutputCollector> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleTimeout(MessageId messageId);
+  void handleTimeout(String messageId);
 
 }

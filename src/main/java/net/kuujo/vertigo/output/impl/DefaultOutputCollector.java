@@ -16,17 +16,14 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonObject;
-
-import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -37,6 +34,13 @@ import net.kuujo.vertigo.message.impl.DefaultMessageId;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.OutputStream;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.RoundRobin;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Default output collector implementation.
@@ -48,19 +52,20 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Vertx vertx;
   private final OutputContext context;
   private final List<OutputHook> hooks = new ArrayList<>();
-  private final List<OutputStream> streams = new ArrayList<>();
+  private final Map<String, List<OutputStream>> streams = new HashMap<>();
   private final Acker acker;
+  private final Iterator<String> auditors;
   private final Random random = new Random();
-  private List<String> auditors;
 
   public DefaultOutputCollector(Vertx vertx, OutputContext context, Acker acker) {
     this.vertx = vertx;
     this.context = context;
     this.acker = acker;
-    auditors = new ArrayList<>();
+    List<String> auditors = new ArrayList<>();
     for (String auditor : context.instance().component().network().auditors()) {
       auditors.add(auditor);
     }
+    this.auditors = new RoundRobin<>(auditors).iterator();
   }
 
   @Override
@@ -86,7 +91,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls acked hooks.
    */
-  private void hookAcked(final MessageId messageId) {
+  private void hookAcked(final String messageId) {
     for (OutputHook hook : hooks) {
       hook.handleAcked(messageId);
     }
@@ -95,7 +100,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls failed hooks.
    */
-  private void hookFailed(final MessageId messageId) {
+  private void hookFailed(final String messageId) {
     for (OutputHook hook : hooks) {
       hook.handleFailed(messageId);
     }
@@ -104,7 +109,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls timed-out hooks.
    */
-  private void hookTimeout(final MessageId messageId) {
+  private void hookTimeout(final String messageId) {
     for (OutputHook hook : hooks) {
       hook.handleTimeout(messageId);
     }
@@ -113,7 +118,7 @@ public class DefaultOutputCollector implements OutputCollector {
   /**
    * Calls emit hooks.
    */
-  private void hookEmit(final MessageId messageId) {
+  private void hookEmit(final String messageId) {
     for (OutputHook hook : hooks) {
       hook.handleEmit(messageId);
     }
@@ -129,15 +134,15 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector ackHandler(Handler<MessageId> handler) {
+  public OutputCollector ackHandler(Handler<String> handler) {
     acker.ackHandler(createAckHandler(handler));
     return this;
   }
 
-  private Handler<MessageId> createAckHandler(final Handler<MessageId> handler) {
-    return new Handler<MessageId>() {
+  private Handler<String> createAckHandler(final Handler<String> handler) {
+    return new Handler<String>() {
       @Override
-      public void handle(MessageId messageId) {
+      public void handle(String messageId) {
         handler.handle(messageId);
         hookAcked(messageId);
       }
@@ -145,15 +150,15 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector failHandler(Handler<MessageId> handler) {
+  public OutputCollector failHandler(Handler<String> handler) {
     acker.failHandler(createFailHandler(handler));
     return this;
   }
 
-  private Handler<MessageId> createFailHandler(final Handler<MessageId> handler) {
-    return new Handler<MessageId>() {
+  private Handler<String> createFailHandler(final Handler<String> handler) {
+    return new Handler<String>() {
       @Override
-      public void handle(MessageId messageId) {
+      public void handle(String messageId) {
         handler.handle(messageId);
         hookFailed(messageId);
       }
@@ -161,15 +166,15 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputCollector timeoutHandler(Handler<MessageId> handler) {
+  public OutputCollector timeoutHandler(Handler<String> handler) {
     acker.timeoutHandler(createTimeoutHandler(handler));
     return this;
   }
 
-  private Handler<MessageId> createTimeoutHandler(final Handler<MessageId> handler) {
-    return new Handler<MessageId>() {
+  private Handler<String> createTimeoutHandler(final Handler<String> handler) {
+    return new Handler<String>() {
       @Override
-      public void handle(MessageId messageId) {
+      public void handle(String messageId) {
         handler.handle(messageId);
         hookTimeout(messageId);
       }
@@ -177,57 +182,91 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public MessageId emit(JsonObject body) {
-    return emitTo(DEFAULT_STREAM, body);
+  public String emit(JsonObject body) {
+    return doEmitNew(DEFAULT_STREAM, body);
   }
 
   @Override
-  public MessageId emit(JsonObject body, JsonMessage parent) {
-    return emitTo(DEFAULT_STREAM, body, parent);
+  public String emit(JsonObject body, JsonMessage parent) {
+    return doEmitChild(DEFAULT_STREAM, body, parent);
   }
 
   @Override
-  public MessageId emit(JsonMessage message) {
-    return emitTo(DEFAULT_STREAM, message);
+  public String emit(JsonMessage message) {
+    return doEmitChild(DEFAULT_STREAM, message.body(), message);
   }
 
   @Override
-  public MessageId emitTo(String stream, JsonObject body) {
-    return doEmitTo(stream, createNewMessage(stream, body));
+  public String emitTo(String stream, JsonObject body) {
+    return doEmitNew(stream, body);
   }
 
   @Override
-  public MessageId emitTo(String stream, JsonObject body, JsonMessage parent) {
-    return doEmitTo(stream, createChildMessage(stream, body, parent));
+  public String emitTo(String stream, JsonObject body, JsonMessage parent) {
+    return doEmitChild(stream, body, parent);
   }
 
   @Override
-  public MessageId emitTo(String stream, JsonMessage message) {
-    return doEmitTo(stream, createChildMessage(stream, message.body(), message));
+  public String emitTo(String stream, JsonMessage message) {
+    return doEmitChild(stream, message.body(), message);
   }
 
-  private MessageId doEmitTo(String stream, JsonMessage message) {
-    JsonMessage child = createChildMessage(stream, message.body(), message);
-    for (OutputStream output : streams) {
-      if (output.context().stream().equals(stream)) {
-        acker.fork(message.messageId(), output.emit(child));
-      }
+  /**
+   * Emits a new message to an output stream.
+   * New messages are tracked by calling fork() and create() on the local acker.
+   * This will cause the acker to send a single message indicating the total
+   * ack count for all emitted messages.
+   */
+  private String doEmitNew(String stream, JsonObject body) {
+    final List<OutputStream> outputs = streams.get(stream);
+    if (outputs != null) {
+      final JsonMessage message = createNewMessage(stream, body);
+      final MessageId messageId = message.messageId();
+      acker.create(messageId, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.succeeded()) {
+            for (OutputStream output : outputs) {
+              acker.fork(messageId, output.emit(message));
+            }
+            acker.commit(messageId);
+            hookEmit(messageId.correlationId());
+          }
+        }
+      });
+      return messageId.correlationId();
     }
-    acker.create(message.messageId());
-    hookEmit(message.messageId());
-    return message.messageId();
+    return null;
+  }
+
+  /**
+   * Emits a child message to an output stream.
+   * Child messages are tracked by only calling fork() on the local acker.
+   * Once the input collector calls ack() on the acker, the acker will notify
+   * the auditor of the update on the ack count for the message tree.
+   */
+  private String doEmitChild(String stream, JsonObject body, JsonMessage parent) {
+    List<OutputStream> outputs = streams.get(stream);
+    if (outputs != null) {
+      JsonMessage message = createChildMessage(stream, body, parent);
+      MessageId messageId = message.messageId();
+      for (OutputStream output : outputs) {
+        acker.fork(messageId, output.emit(message));
+      }
+      hookEmit(messageId.correlationId());
+      return messageId.correlationId();
+    }
+    return null;
   }
 
   /**
    * Creates a new message.
    */
   private JsonMessage createNewMessage(String stream, JsonObject body) {
-    String auditor = auditors.get(random.nextInt(auditors.size()));
     MessageId messageId = DefaultMessageId.Builder.newBuilder()
         .setCorrelationId(UUID.randomUUID().toString())
-        .setAuditor(auditor)
+        .setAuditor(auditors.next())
         .setCode(random.nextInt())
-        .setOwner(context.instance().address())
         .build();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(messageId)
@@ -246,9 +285,7 @@ public class DefaultOutputCollector implements OutputCollector {
         .setCorrelationId(UUID.randomUUID().toString())
         .setAuditor(parent.messageId().auditor())
         .setCode(random.nextInt())
-        .setOwner(parent.messageId().owner())
-        .setParent(parent.messageId().correlationId())
-        .setRoot(parent.messageId().hasRoot() ? parent.messageId().root() : parent.messageId().correlationId())
+        .setTree(parent.messageId().tree())
         .build();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(messageId)
@@ -282,7 +319,7 @@ public class DefaultOutputCollector implements OutputCollector {
       });
 
       for (OutputStreamContext stream : context.streams()) {
-        streams.add(new DefaultOutputStream(vertx, stream).start(new Handler<AsyncResult<Void>>() {
+        OutputStream output = new DefaultOutputStream(vertx, stream).start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
@@ -292,7 +329,12 @@ public class DefaultOutputCollector implements OutputCollector {
               startCounter.succeed();
             }
           }
-        }));
+        });
+
+        if (!streams.containsKey(stream.stream())) {
+          streams.put(stream.stream(), new ArrayList<OutputStream>());
+        }
+        streams.get(stream.stream()).add(output);
       }
     }
     return this;
@@ -305,7 +347,12 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(streams.size());
+    int size = 0;
+    for (List<OutputStream> outputs : streams.values()) {
+      size += outputs.size();
+    }
+
+    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(size);
     stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -320,18 +367,20 @@ public class DefaultOutputCollector implements OutputCollector {
       }
     });
 
-    for (OutputStream stream : streams) {
-      stream.stop(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            stopCounter.fail(result.cause());
+    for (List<OutputStream> outputs : streams.values()) {
+      for (OutputStream output : outputs) {
+        output.stop(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              stopCounter.fail(result.cause());
+            }
+            else {
+              stopCounter.succeed();
+            }
           }
-          else {
-            stopCounter.succeed();
-          }
-        }
-      });
+        });
+      }
     }
   }
 

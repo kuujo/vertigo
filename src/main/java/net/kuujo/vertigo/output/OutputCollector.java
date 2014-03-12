@@ -18,7 +18,6 @@ package net.kuujo.vertigo.output;
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -61,7 +60,7 @@ public interface OutputCollector {
    * @return The unique output message correlation identifier. This identifier can be used
    *         to correlate new messages with the emitted message.
    */
-  MessageId emit(JsonObject body);
+  String emit(JsonObject body);
 
   /**
    * Emits a child message to the default stream.
@@ -79,7 +78,7 @@ public interface OutputCollector {
    * @return The unique child message correlation identifier. This identifier can be used
    *         to correlate new messages with the emitted message.
    */
-  MessageId emit(JsonObject body, JsonMessage parent);
+  String emit(JsonObject body, JsonMessage parent);
 
   /**
    * Emits a message to the default stream as a child of itself.
@@ -92,7 +91,7 @@ public interface OutputCollector {
    * @param message The message to emit.
    * @return The new unique message correlation identifier.
    */
-  MessageId emit(JsonMessage message);
+  String emit(JsonMessage message);
 
   /**
    * Emits a new message to the default stream.
@@ -102,7 +101,7 @@ public interface OutputCollector {
    * @return The unique output message correlation identifier. This identifier can be used
    *         to correlate new messages with the emitted message.
    */
-  MessageId emitTo(String stream, JsonObject body);
+  String emitTo(String stream, JsonObject body);
 
   /**
    * Emits a child message to the default stream.
@@ -121,7 +120,7 @@ public interface OutputCollector {
    * @return The unique child message correlation identifier. This identifier can be used
    *         to correlate new messages with the emitted message.
    */
-  MessageId emitTo(String stream, JsonObject body, JsonMessage parent);
+  String emitTo(String stream, JsonObject body, JsonMessage parent);
 
   /**
    * Emits a message to the default stream as a child of itself.
@@ -135,7 +134,7 @@ public interface OutputCollector {
    * @param message The message to emit.
    * @return The new unique message correlation identifier.
    */
-  MessageId emitTo(String stream, JsonMessage message);
+  String emitTo(String stream, JsonMessage message);
 
   /**
    * Sets an ack handler on the output collector.
@@ -146,7 +145,7 @@ public interface OutputCollector {
    * @param handler A handler to be invoked when an ack message is received.
    * @return The called output collector instance.
    */
-  OutputCollector ackHandler(Handler<MessageId> handler);
+  OutputCollector ackHandler(Handler<String> handler);
 
   /**
    * Sets a fail handler on the output collector.
@@ -158,7 +157,7 @@ public interface OutputCollector {
    * @param handler A handler to be invoked when a fail message is received.
    * @return The called output collector instance.
    */
-  OutputCollector failHandler(Handler<MessageId> handler);
+  OutputCollector failHandler(Handler<String> handler);
 
   /**
    * Sets a timeout handler on the output collector.
@@ -169,7 +168,7 @@ public interface OutputCollector {
    * @param handler A handler to be invoked when a message has timed out.
    * @return The called output collector instance.
    */
-  OutputCollector timeoutHandler(Handler<MessageId> handler);
+  OutputCollector timeoutHandler(Handler<String> handler);
 
   /**
    * Starts the output collector.

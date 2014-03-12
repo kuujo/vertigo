@@ -20,7 +20,6 @@ import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.BasicFeeder;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.runtime.FailureException;
 import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
@@ -35,9 +34,9 @@ public class TestFailingFeeder extends BasicFeeder {
 
   @Override
   public void start(Feeder feeder) {
-    feeder.emit(container.config(), new Handler<AsyncResult<MessageId>>() {
+    feeder.emit(container.config(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<MessageId> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.failed());
         assertTrue(result.cause() instanceof FailureException);
         assertNotNull(result.result());

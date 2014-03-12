@@ -19,7 +19,6 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.core.Handler;
@@ -53,32 +52,32 @@ public class BasicWorker extends AbstractComponent<Worker> implements Worker {
   }
 
   @Override
-  public MessageId emit(JsonObject data) {
+  public String emit(JsonObject data) {
     return output.emit(data);
   }
 
   @Override
-  public MessageId emit(JsonObject data, JsonMessage parent) {
+  public String emit(JsonObject data, JsonMessage parent) {
     return output.emit(data, parent);
   }
 
   @Override
-  public MessageId emit(JsonMessage message) {
+  public String emit(JsonMessage message) {
     return output.emit(message);
   }
 
   @Override
-  public MessageId emit(String stream, JsonObject data) {
+  public String emit(String stream, JsonObject data) {
     return output.emitTo(stream, data);
   }
 
   @Override
-  public MessageId emit(String stream, JsonObject data, JsonMessage parent) {
+  public String emit(String stream, JsonObject data, JsonMessage parent) {
     return output.emitTo(stream, data, parent);
   }
 
   @Override
-  public MessageId emit(String stream, JsonMessage message) {
+  public String emit(String stream, JsonMessage message) {
     return output.emitTo(stream, message);
   }
 

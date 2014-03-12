@@ -41,58 +41,18 @@ public interface MessageId extends Serializable {
   String correlationId();
 
   /**
-   * Indicates whether the message has a parent.
-   * 
-   * @return Whether the message has a parent.
-   */
-  boolean hasParent();
-
-  /**
-   * The parent correlation ID.
-   * 
-   * @return The message parent correlation ID.
-   */
-  String parent();
-
-  /**
-   * Indicates whether the message has a root.
-   * 
-   * @return Whether the message has a root.
-   */
-  boolean hasRoot();
-
-  /**
-   * Indicates whether the message is a root message.
-   * 
-   * @return Whether the message is a root message.
-   */
-  boolean isRoot();
-
-  /**
-   * Gets the root message correlation ID.
+   * Gets the root message ID.
    * 
    * @return The root message correlationID.
    */
-  String root();
+  String tree();
 
   /**
    * Gets the random message code.
    * 
    * @return A random message code.
    */
-  long ackCode();
-
-  /**
-   * Gets the message owner's address.
-   * 
-   * The owner address is the event bus address to which ack notifications should be sent.
-   * When the message is successfully acked, this is the address at which components can
-   * receive that notification. The owner should be unique to messages emitted from each
-   * component.
-   * 
-   * @return The message owner's address.
-   */
-  String owner();
+  int ackCode();
 
   /**
    * Gets the message auditor address.

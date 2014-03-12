@@ -17,7 +17,6 @@ package net.kuujo.vertigo.worker;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
@@ -56,7 +55,7 @@ public interface Worker extends Component<Worker> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject body);
+  String emit(JsonObject body);
 
   /**
    * Emits child message to the default stream.
@@ -68,7 +67,7 @@ public interface Worker extends Component<Worker> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(JsonObject body, JsonMessage parent);
+  String emit(JsonObject body, JsonMessage parent);
 
   /**
    * Emits a copy of the given message to the default stream as a child of itself.
@@ -78,7 +77,7 @@ public interface Worker extends Component<Worker> {
    * @return
    *   The new child message identifier.
    */
-  MessageId emit(JsonMessage message);
+  String emit(JsonMessage message);
 
   /**
    * Emits data from the worker to a non-default stream.
@@ -90,7 +89,7 @@ public interface Worker extends Component<Worker> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject body);
+  String emit(String stream, JsonObject body);
 
   /**
    * Emits child data from the worker to a non-default stream.
@@ -104,7 +103,7 @@ public interface Worker extends Component<Worker> {
    * @return
    *   The emitted message identifier.
    */
-  MessageId emit(String stream, JsonObject body, JsonMessage parent);
+  String emit(String stream, JsonObject body, JsonMessage parent);
 
   /**
    * Emits a copy of the given message to a non-default stream as a child of itself.
@@ -116,7 +115,7 @@ public interface Worker extends Component<Worker> {
    * @return
    *   The new child message identifier.
    */
-  MessageId emit(String stream, JsonMessage message);
+  String emit(String stream, JsonMessage message);
 
   /**
    * Acknowledges processing of a message.

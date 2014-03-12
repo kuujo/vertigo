@@ -17,12 +17,8 @@ package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -38,7 +34,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public class EventBusHook implements ComponentHook {
-  private static final Serializer serializer = SerializerFactory.getSerializer(MessageId.class);
   @JsonIgnore private InstanceContext context;
   @JsonIgnore private EventBus eventBus;
   @JsonIgnore private String address;
@@ -52,39 +47,38 @@ public class EventBusHook implements ComponentHook {
   }
 
   @Override
-  public void handleReceive(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.receive", address), serializer.serializeToObject(messageId));
+  public void handleReceive(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.receive", address), messageId);
   }
 
   @Override
-  public void handleAck(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.ack", address), serializer.serializeToObject(messageId));
+  public void handleAck(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.ack", address), messageId);
   }
 
   @Override
-  public void handleFail(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.fail", address), serializer.serializeToObject(messageId));
+  public void handleFail(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.fail", address), messageId);
   }
 
   @Override
-  public void handleEmit(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.emit", address), serializer.serializeToObject(messageId));
+  public void handleEmit(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.emit", address), messageId);
   }
 
   @Override
-  public void handleAcked(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.acked", address), serializer.serializeToObject(messageId));
+  public void handleAcked(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.acked", address), messageId);
   }
 
   @Override
-  public void handleFailed(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.failed", address), serializer.serializeToObject(messageId));
+  public void handleFailed(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.failed", address), messageId);
   }
 
   @Override
-  public void handleTimeout(MessageId messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s", address),
-        new JsonObject().putString("event", "timeout").putObject("id", serializer.serializeToObject(messageId)));
+  public void handleTimeout(String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.timeout", address), messageId);
   }
 
   @Override

@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
 
 /**
@@ -36,7 +35,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleReceive(MessageId messageId);
+  void handleReceive(String messageId);
 
   /**
    * Called when the component acks a received message.
@@ -44,7 +43,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleAck(MessageId messageId);
+  void handleAck(String messageId);
 
   /**
    * Called when the component fails a received message.
@@ -52,7 +51,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleFail(MessageId messageId);
+  void handleFail(String messageId);
 
   /**
    * Called when the component emits a message.
@@ -60,7 +59,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleEmit(MessageId messageId);
+  void handleEmit(String messageId);
 
   /**
    * Called when the component receives an ack for an emitted message.
@@ -68,7 +67,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleAcked(MessageId messageId);
+  void handleAcked(String messageId);
 
   /**
    * Called when the component receives a failure for an emitted message.
@@ -76,7 +75,7 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleFailed(MessageId messageId);
+  void handleFailed(String messageId);
 
   /**
    * Called when the component receives a timeout for an emitted message.
@@ -84,6 +83,6 @@ public interface ComponentHook extends Hook<Component<?>> {
    * @param messageId
    *   The unique message identifier.
    */
-  void handleTimeout(MessageId messageId);
+  void handleTimeout(String messageId);
 
 }

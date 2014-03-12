@@ -24,7 +24,6 @@ import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.java.BasicFeeder;
 import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.feeder.Feeder;
@@ -82,9 +81,9 @@ public class FeederTest extends TestVerticle {
   public static class StreamFeeder extends BasicFeeder {
     @Override
     public void start(Feeder feeder) {
-      feeder.emit("stream", new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<MessageId>>() {
+      feeder.emit("stream", new JsonObject().putString("body", "Hello world!"), new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<MessageId> result) {
+        public void handle(AsyncResult<String> result) {
           assertTrue(result.succeeded());
           testComplete();
         }

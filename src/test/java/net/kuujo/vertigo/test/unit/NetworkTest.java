@@ -22,7 +22,6 @@ import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.network.Module;
@@ -711,31 +710,31 @@ public class NetworkTest {
       
     }
     @Override
-    public void handleReceive(MessageId messageId) {
+    public void handleReceive(String String) {
       
     }
     @Override
-    public void handleAck(MessageId messageId) {
+    public void handleAck(String String) {
       
     }
     @Override
-    public void handleFail(MessageId messageId) {
+    public void handleFail(String String) {
       
     }
     @Override
-    public void handleEmit(MessageId messageId) {
+    public void handleEmit(String String) {
       
     }
     @Override
-    public void handleAcked(MessageId messageId) {
+    public void handleAcked(String String) {
       
     }
     @Override
-    public void handleFailed(MessageId messageId) {
+    public void handleFailed(String String) {
       
     }
     @Override
-    public void handleTimeout(MessageId messageId) {
+    public void handleTimeout(String String) {
       
     }
   }

@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.auditor.AuditorVerticle;
+import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
@@ -64,31 +64,31 @@ public class AuditorTest extends TestVerticle {
     });
   }
 
-  private Handler<MessageId> ackHandler(final MessageId id) {
-    return new Handler<MessageId>() {
+  private Handler<String> ackHandler(final MessageId id) {
+    return new Handler<String>() {
       @Override
-      public void handle(MessageId messageId) {
-        assertEquals(id.correlationId(), messageId.correlationId());
+      public void handle(String messageId) {
+        assertEquals(id.correlationId(), messageId);
         testComplete();
       }
     };
   }
 
-  private Handler<MessageId> failHandler(final MessageId id) {
-    return new Handler<MessageId>() {
+  private Handler<String> failHandler(final MessageId id) {
+    return new Handler<String>() {
       @Override
-      public void handle(MessageId messageId) {
-        assertEquals(id.correlationId(), messageId.correlationId());
+      public void handle(String messageId) {
+        assertEquals(id.correlationId(), messageId);
         testComplete();
       }
     };
   }
 
-  private Handler<MessageId> timeoutHandler(final MessageId id) {
-    return new Handler<MessageId>() {
+  private Handler<String> timeoutHandler(final MessageId id) {
+    return new Handler<String>() {
       @Override
-      public void handle(MessageId messageId) {
-        assertEquals(id.correlationId(), messageId.correlationId());
+      public void handle(String messageId) {
+        assertEquals(id.correlationId(), messageId);
         testComplete();
       }
     };
@@ -101,25 +101,33 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker("test", vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus());
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
-            MessageId source = message.messageId();
+            final JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
+            final MessageId source = message.messageId();
             acker.ackHandler(ackHandler(source));
-            List<MessageId> children = new ArrayList<MessageId>();
-            for (int i = 0; i < 5; i++) {
-              children.add(createChildMessage("default", new JsonObject().putString("foo", "bar"), message).messageId());
-            }
-            acker.fork(source, children);
-            acker.create(source);
 
-            for (MessageId child : children) {
-              acker.ack(child);
-            }
+            acker.create(source, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.succeeded()) {
+                  List<MessageId> children = new ArrayList<MessageId>();
+                  for (int i = 0; i < 5; i++) {
+                    children.add(createChildMessage("default", new JsonObject().putString("foo", "bar"), message).messageId());
+                  }
+                  acker.fork(source, children);
+                  acker.commit(source);
+
+                  for (MessageId child : children) {
+                    acker.ack(child);
+                  }
+                }
+              }
+            });
           }
         });
       }
@@ -133,38 +141,44 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker("test", vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus());
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
-            MessageId sourceId = message.messageId();
+            final JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
+            final MessageId sourceId = message.messageId();
             acker.ackHandler(ackHandler(sourceId));
 
-            List<JsonMessage> children = new ArrayList<>();
-            List<MessageId> childIds = new ArrayList<>();
-            for (int i = 0; i < 5; i++) {
-              JsonMessage child = createChildMessage("default", new JsonObject().putString("foo", "bar"), message);
-              children.add(child);
-              childIds.add(child.messageId());
-            }
-            acker.fork(sourceId, childIds);
-            acker.create(sourceId);
+            acker.create(sourceId, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.succeeded()) {
+                  List<JsonMessage> children = new ArrayList<>();
+                  List<MessageId> childIds = new ArrayList<>();
+                  for (int i = 0; i < 5; i++) {
+                    JsonMessage child = createChildMessage("default", new JsonObject().putString("foo", "bar"), message);
+                    children.add(child);
+                    childIds.add(child.messageId());
+                  }
+                  acker.fork(sourceId, childIds);
+                  acker.commit(sourceId);
 
-            List<MessageId> descendantIds = new ArrayList<>();
-            for (JsonMessage child : children) {
-              JsonMessage descendant = createChildMessage("default", new JsonObject().putString("foo", "bar"), child);
-              acker.fork(child.messageId(), Arrays.asList(new MessageId[]{descendant.messageId()}));
-              acker.create(child.messageId());
-              descendantIds.add(descendant.messageId());
-              acker.ack(child.messageId());
-            }
+                  List<MessageId> descendantIds = new ArrayList<>();
+                  for (JsonMessage child : children) {
+                    JsonMessage descendant = createChildMessage("default", new JsonObject().putString("foo", "bar"), child);
+                    acker.fork(child.messageId(), Arrays.asList(new MessageId[]{descendant.messageId()}));
+                    acker.ack(child.messageId());
+                    descendantIds.add(descendant.messageId());
+                  }
 
-            for (MessageId id : descendantIds) {
-              acker.ack(id);
-            }
+                  for (MessageId id : descendantIds) {
+                    acker.ack(id);
+                  }
+                }
+              }
+            });
           }
         });
       }
@@ -178,26 +192,34 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker("test", vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus());
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
-            MessageId source = message.messageId();
+            final JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
+            final MessageId source = message.messageId();
             acker.failHandler(failHandler(source));
-            List<MessageId> children = new ArrayList<MessageId>();
-            for (int i = 0; i < 5; i++) {
-              children.add(createChildMessage("default", new JsonObject().putString("foo", "bar"), message).messageId());
-            }
-            acker.fork(source, children);
-            acker.create(source);
-            acker.ack(children.get(0));
-            acker.ack(children.get(1));
-            acker.fail(children.get(2));
-            acker.ack(children.get(3));
-            acker.ack(children.get(4));
+
+            acker.create(source, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.succeeded()) {
+                  List<MessageId> children = new ArrayList<MessageId>();
+                  for (int i = 0; i < 5; i++) {
+                    children.add(createChildMessage("default", new JsonObject().putString("foo", "bar"), message).messageId());
+                  }
+                  acker.fork(source, children);
+                  acker.commit(source);
+                  acker.ack(children.get(0));
+                  acker.ack(children.get(1));
+                  acker.fail(children.get(2));
+                  acker.ack(children.get(3));
+                  acker.ack(children.get(4));
+                }
+              }
+            });
           }
         });
       }
@@ -211,20 +233,28 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker("test", vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus());
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
-            JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
-            MessageId source = message.messageId();
+            final JsonMessage message = createNewMessage("default", new JsonObject().putString("foo", "bar"));
+            final MessageId source = message.messageId();
             acker.timeoutHandler(timeoutHandler(source));
-            List<MessageId> children = new ArrayList<MessageId>();
-            for (int i = 0; i < 5; i++) {
-              children.add(createChildMessage("default", new JsonObject().putString("foo", "bar"), message).messageId());
-            }
-            acker.fork(source, children);
-            acker.create(source);
+
+            acker.create(source, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.succeeded()) {
+                  List<MessageId> children = new ArrayList<MessageId>();
+                  for (int i = 0; i < 5; i++) {
+                    children.add(createChildMessage("default", new JsonObject().putString("foo", "bar"), message).messageId());
+                  }
+                  acker.fork(source, children);
+                  acker.commit(source);
+                }
+              }
+            });
           }
         });
       }
@@ -239,7 +269,6 @@ public class AuditorTest extends TestVerticle {
         .setCorrelationId(UUID.randomUUID().toString())
         .setAuditor("auditor")
         .setCode(random.nextInt())
-        .setOwner("test")
         .build();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(messageId)
@@ -257,9 +286,7 @@ public class AuditorTest extends TestVerticle {
     MessageId messageId = DefaultMessageId.Builder.newBuilder()
         .setAuditor(parent.messageId().auditor())
         .setCode(random.nextInt())
-        .setOwner("test")
-        .setParent(parent.messageId().correlationId())
-        .setRoot(parent.messageId().hasRoot() ? parent.messageId().root() : parent.messageId().correlationId())
+        .setTree(parent.messageId().tree())
         .build();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(messageId)

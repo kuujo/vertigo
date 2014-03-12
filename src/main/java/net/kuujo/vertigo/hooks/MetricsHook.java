@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.message.MessageId;
 
 /**
  * This hook integrates directly with the mod-metrics module by
@@ -54,49 +53,49 @@ public class MetricsHook implements ComponentHook {
   }
 
   @Override
-  public void handleReceive(MessageId messageId) {
+  public void handleReceive(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.receive", context.address())));
   }
 
   @Override
-  public void handleAck(MessageId messageId) {
+  public void handleAck(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.ack", context.address())));
   }
 
   @Override
-  public void handleFail(MessageId messageId) {
+  public void handleFail(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.fail", context.address())));
   }
 
   @Override
-  public void handleEmit(MessageId messageId) {
+  public void handleEmit(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.emit", context.address())));
   }
 
   @Override
-  public void handleAcked(MessageId messageId) {
+  public void handleAcked(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.acked", context.address())));
   }
 
   @Override
-  public void handleFailed(MessageId messageId) {
+  public void handleFailed(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.failed", context.address())));
   }
 
   @Override
-  public void handleTimeout(MessageId messageId) {
+  public void handleTimeout(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.timeout", context.address())));

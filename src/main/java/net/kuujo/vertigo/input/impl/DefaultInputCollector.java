@@ -23,14 +23,13 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
-import net.kuujo.vertigo.acker.Acker;
+import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputStreamContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputStream;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**
@@ -77,7 +76,7 @@ public class DefaultInputCollector implements InputCollector {
       @Override
       public void handle(JsonMessage message) {
         handler.handle(message);
-        hookReceived(message.messageId());
+        hookReceived(message.messageId().correlationId());
       }
     };
   }
@@ -85,14 +84,14 @@ public class DefaultInputCollector implements InputCollector {
   @Override
   public InputCollector ack(JsonMessage message) {
     acker.ack(message.messageId());
-    hookAck(message.messageId());
+    hookAck(message.messageId().correlationId());
     return this;
   }
 
   @Override
   public InputCollector fail(JsonMessage message) {
     acker.fail(message.messageId());
-    hookFail(message.messageId());
+    hookFail(message.messageId().correlationId());
     return this;
   }
 
@@ -108,7 +107,7 @@ public class DefaultInputCollector implements InputCollector {
   /**
    * Calls receive hooks.
    */
-  private void hookReceived(final MessageId messageId) {
+  private void hookReceived(final String messageId) {
     for (InputHook hook : hooks) {
       hook.handleReceive(messageId);
     }
@@ -117,7 +116,7 @@ public class DefaultInputCollector implements InputCollector {
   /**
    * Calls ack hooks.
    */
-  private void hookAck(final MessageId messageId) {
+  private void hookAck(final String messageId) {
     for (InputHook hook : hooks) {
       hook.handleAck(messageId);
     }
@@ -126,7 +125,7 @@ public class DefaultInputCollector implements InputCollector {
   /**
    * Calls fail hooks.
    */
-  private void hookFail(final MessageId messageId) {
+  private void hookFail(final String messageId) {
     for (InputHook hook : hooks) {
       hook.handleFail(messageId);
     }

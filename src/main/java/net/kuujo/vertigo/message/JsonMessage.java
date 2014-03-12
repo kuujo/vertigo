@@ -28,10 +28,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @author Jordan Halterman
  */
 @JsonTypeInfo(
-    use=JsonTypeInfo.Id.CLASS,
-    include=JsonTypeInfo.As.PROPERTY,
-    property="type",
-    defaultImpl=DefaultJsonMessage.class
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="type",
+  defaultImpl=DefaultJsonMessage.class
 )
 public interface JsonMessage extends Serializable {
 

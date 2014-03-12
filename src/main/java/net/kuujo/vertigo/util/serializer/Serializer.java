@@ -39,6 +39,38 @@ public interface Serializer {
    * @return A Json representation of the serializable object.
    * @throws SerializationException If an error occurs during serialization.
    */
+  <T extends Serializable> byte[] serializeToBytes(T object);
+
+  /**
+   * Deserializes an object from Json. If an error occurs during deserialization, a
+   * {@link DeserializationException} will be thrown.
+   * 
+   * @param json A Json representation of the serializable object.
+   * @param type The type to which to deserialize the object.
+   * @return The deserialized object.
+   * @throws DeserializationException If an error occurs during deserialization.
+   */
+  <T extends Serializable> T deserializeBytes(byte[] json, Class<T> type);
+
+  /**
+   * Deserializes an object from Json. If an error occurs during deserialization, a
+   * {@link DeserializationException} will be thrown.
+   * 
+   * @param json A Json representation of the serializable object.
+   * @param type The type to which to deserialize the object.
+   * @return The deserialized object.
+   * @throws DeserializationException If an error occurs during deserialization.
+   */
+  <T> T deserializeBytes(byte[] json, TypeReference<T> type);
+
+  /**
+   * Serializes an object to Json. If an error occurs during serialization, a
+   * {@link SerializationException} will be thrown.
+   * 
+   * @param object The object to serialize.
+   * @return A Json representation of the serializable object.
+   * @throws SerializationException If an error occurs during serialization.
+   */
   <T extends Serializable> String serializeToString(T object);
 
   /**

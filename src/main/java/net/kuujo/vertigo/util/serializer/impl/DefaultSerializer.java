@@ -45,6 +45,36 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
+  public <T extends Serializable> byte[] serializeToBytes(T object) {
+    try {
+      return mapper.writeValueAsBytes(object);
+    }
+    catch (Exception e) {
+      throw new SerializationException(e.getMessage());
+    }
+  }
+
+  @Override
+  public <T extends Serializable> T deserializeBytes(byte[] json, Class<T> type) {
+    try {
+      return mapper.readValue(json, type);
+    }
+    catch (Exception e) {
+      throw new SerializationException(e.getMessage());
+    }
+  }
+
+  @Override
+  public <T> T deserializeBytes(byte[] json, TypeReference<T> type) {
+    try {
+      return mapper.readValue(json, type);
+    }
+    catch (Exception e) {
+      throw new SerializationException(e.getMessage());
+    }
+  }
+
+  @Override
   public <T extends Serializable> String serializeToString(T object) {
     try {
       return mapper.writeValueAsString(object);

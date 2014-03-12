@@ -67,7 +67,6 @@ public class Input implements Config {
   private String address;
   private String stream;
   private Grouping grouping;
-  private int count = 1;
 
   protected Input() {
   }
@@ -99,28 +98,6 @@ public class Input implements Config {
    */
   public String id() {
     return id;
-  }
-
-  /**
-   * Returns the input count.
-   * 
-   * @return The input count.
-   */
-  public int getCount() {
-    return count;
-  }
-
-  /**
-   * Sets the input count. This indicates the total number of expected subscriptions from
-   * the input component and helps ensure consistency in message distribution between
-   * multiple component instances.
-   * 
-   * @param count The input count.
-   * @return The called input instance.
-   */
-  public Input setCount(int count) {
-    this.count = count;
-    return this;
   }
 
   /**

@@ -317,9 +317,6 @@ public abstract class Component<T extends Component<T>> implements Config {
   @SuppressWarnings("unchecked")
   public T setNumInstances(int numInstances) {
     instances = numInstances;
-    for (Input input : inputs) {
-      input.setCount(instances);
-    }
     return (T) this;
   }
 

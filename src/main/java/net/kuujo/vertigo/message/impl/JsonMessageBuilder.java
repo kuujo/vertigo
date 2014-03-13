@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.message.impl;
 
+import java.util.Map;
 import java.util.Random;
 
 import net.kuujo.vertigo.message.JsonMessage;
@@ -48,12 +49,13 @@ public final class JsonMessageBuilder {
   /**
    * Creates a new message ID.
    */
-  private MessageId createNewId(String auditor) {
-    return new DefaultMessageId(new JsonObject()
-        .putNumber(DefaultMessageId.CODE, generateCode())
-        .putString(DefaultMessageId.ID, nextId())
-        .putString(DefaultMessageId.OWNER, address)
-        .putString(DefaultMessageId.AUDITOR, auditor));
+  private DefaultMessageId createNewId(String auditor) {
+    DefaultMessageId messageId = new DefaultMessageId();
+    messageId.code = generateCode();
+    messageId.id = nextId();
+    messageId.owner = address;
+    messageId.auditor = auditor;
+    return messageId;
   }
 
   /**
@@ -67,31 +69,41 @@ public final class JsonMessageBuilder {
   /**
    * Creates a child message ID.
    */
-  private MessageId createChildId(MessageId parentId) {
-    return new DefaultMessageId(new JsonObject()
-        .putNumber(DefaultMessageId.CODE, generateCode())
-        .putString(DefaultMessageId.ID, nextId())
-        .putString(DefaultMessageId.PARENT, parentId.correlationId())
-        .putString(DefaultMessageId.ROOT, parentId.root())
-        .putString(DefaultMessageId.OWNER, address)
-        .putString(DefaultMessageId.AUDITOR, parentId.auditor()));
+  private DefaultMessageId createChildId(MessageId parentId) {
+    DefaultMessageId messageId = new DefaultMessageId();
+    messageId.code = generateCode();
+    messageId.id = nextId();
+    messageId.parent = parentId.correlationId();
+    messageId.root = parentId.root();
+    messageId.owner = address;
+    messageId.auditor = parentId.auditor();
+    return messageId;
   }
 
   /**
    * Creates a copy of the message with a new ID.
    */
   public JsonMessageStruct createCopy(JsonMessage sibling) {
-    return new JsonMessageStruct(sibling.toJson().copy())
-        .setMessageId(createSiblingId(sibling.messageId()));
+    DefaultJsonMessage message = (DefaultJsonMessage) sibling;
+    return new JsonMessageStruct()
+        .setMessageId(createSiblingId(sibling.messageId()))
+        .setBody(message.body)
+        .setStream(message.stream)
+        .setSource(message.source);
   }
 
   /**
    * Creates a sibling message ID.
    */
-  private MessageId createSiblingId(MessageId siblingId) {
-    return new DefaultMessageId(siblingId.toJson().copy()
-        .putNumber(DefaultMessageId.CODE, generateCode())
-        .putString(DefaultMessageId.ID, nextId()));
+  private DefaultMessageId createSiblingId(MessageId siblingId) {
+    DefaultMessageId messageId = new DefaultMessageId();
+    messageId.code = generateCode();
+    messageId.id = nextId();
+    messageId.parent = siblingId.parent();
+    messageId.root = siblingId.root();
+    messageId.owner = address;
+    messageId.auditor = siblingId.auditor();
+    return messageId;
   }
 
   /**
@@ -112,14 +124,14 @@ public final class JsonMessageBuilder {
    * A Json message structure.
    */
   public static final class JsonMessageStruct {
-    private final JsonObject structure;
+    private final DefaultJsonMessage message;
 
     public JsonMessageStruct() {
-      this.structure = new JsonObject();
+      this.message = new DefaultJsonMessage();
     }
 
-    public JsonMessageStruct(JsonObject structure) {
-      this.structure = structure;
+    public JsonMessageStruct(DefaultJsonMessage message) {
+      this.message = message;
     }
 
     /**
@@ -130,8 +142,8 @@ public final class JsonMessageBuilder {
      * @return
      *   The called structure.
      */
-    public JsonMessageStruct setMessageId(MessageId messageId) {
-      structure.putObject(DefaultJsonMessage.ID, messageId.toJson());
+    public JsonMessageStruct setMessageId(DefaultMessageId messageId) {
+      message.id = messageId;
       return this;
     }
 
@@ -144,7 +156,20 @@ public final class JsonMessageBuilder {
      *   The called structure.
      */
     public JsonMessageStruct setBody(JsonObject body) {
-      structure.putObject(DefaultJsonMessage.BODY, body);
+      message.body = body.toMap();
+      return this;
+    }
+
+    /**
+     * Sets the message body.
+     *
+     * @param body
+     *   The message body.
+     * @return
+     *   The called structure.
+     */
+    public JsonMessageStruct setBody(Map<String, Object> body) {
+      message.body = body;
       return this;
     }
 
@@ -157,7 +182,7 @@ public final class JsonMessageBuilder {
      *   The called structure.
      */
     public JsonMessageStruct setStream(String stream) {
-      structure.putString(DefaultJsonMessage.STREAM, stream);
+      message.stream = stream;
       return this;
     }
 
@@ -170,7 +195,7 @@ public final class JsonMessageBuilder {
      *   The called structure.
      */
     public JsonMessageStruct setSource(String source) {
-      structure.putString(DefaultJsonMessage.SOURCE, source);
+      message.source = source;
       return this;
     }
 
@@ -181,7 +206,7 @@ public final class JsonMessageBuilder {
      *   A new {@link JsonMessage} instance.
      */
     public JsonMessage toMessage() {
-      return DefaultJsonMessage.fromJson(structure);
+      return message;
     }
   }
 

@@ -18,6 +18,8 @@ package net.kuujo.vertigo.output.impl;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.Connection;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.eventbus.EventBus;
 
@@ -27,6 +29,7 @@ import org.vertx.java.core.eventbus.EventBus;
  * @author Jordan Halterman
  */
 public class DefaultConnection implements Connection {
+  private static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
   protected String address;
   protected EventBus eventBus;
 
@@ -42,7 +45,7 @@ public class DefaultConnection implements Connection {
 
   @Override
   public MessageId write(JsonMessage message) {
-    eventBus.send(address, message.toJson());
+    eventBus.send(address, serializer.serializeToString(message));
     return message.messageId();
   }
 

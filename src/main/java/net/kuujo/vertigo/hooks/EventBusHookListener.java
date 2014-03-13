@@ -17,7 +17,8 @@ package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.message.impl.DefaultMessageId;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -33,6 +34,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class EventBusHookListener {
+  private static final Serializer serializer = SerializerFactory.getSerializer(MessageId.class);
   private final String componentAddress;
   private final EventBus eventBus;
 
@@ -83,7 +85,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          receiveHandler.handle(DefaultMessageId.fromJson(body));
+          receiveHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });
@@ -104,7 +106,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          ackHandler.handle(DefaultMessageId.fromJson(body));
+          ackHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });
@@ -125,7 +127,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          failHandler.handle(DefaultMessageId.fromJson(body));
+          failHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });
@@ -146,7 +148,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          emitHandler.handle(DefaultMessageId.fromJson(body));
+          emitHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });
@@ -167,7 +169,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          ackedHandler.handle(DefaultMessageId.fromJson(body));
+          ackedHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });
@@ -188,7 +190,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          failedHandler.handle(DefaultMessageId.fromJson(body));
+          failedHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });
@@ -209,7 +211,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          timeoutHandler.handle(DefaultMessageId.fromJson(body));
+          timeoutHandler.handle(serializer.deserializeObject(body, MessageId.class));
         }
       }
     });

@@ -101,20 +101,27 @@ public class AuditorTest extends TestVerticle {
           @Override
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
-            JsonMessageBuilder builder = new JsonMessageBuilder("test");
-            JsonMessage message = builder.createNew(auditor).toMessage();
-            MessageId source = message.messageId();
+            final JsonMessageBuilder builder = new JsonMessageBuilder("test");
+            final JsonMessage message = builder.createNew(auditor).toMessage();
+            final MessageId source = message.messageId();
             acker.ackHandler(ackHandler(source));
-            List<MessageId> children = new ArrayList<MessageId>();
-            for (int i = 0; i < 5; i++) {
-              children.add(builder.createChild(message).toMessage().messageId());
-            }
-            acker.fork(source, children);
-            acker.create(source);
 
-            for (MessageId child : children) {
-              acker.ack(child);
-            }
+            acker.create(source, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                assertTrue(result.succeeded());
+                List<MessageId> children = new ArrayList<MessageId>();
+                for (int i = 0; i < 5; i++) {
+                  children.add(builder.createChild(message).toMessage().messageId());
+                }
+                acker.fork(source, children);
+                acker.commit(source);
+
+                for (MessageId child : children) {
+                  acker.ack(child);
+                }
+              }
+            });
           }
         });
       }
@@ -134,21 +141,28 @@ public class AuditorTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            JsonMessageBuilder builder = new JsonMessageBuilder("test");
-            JsonMessage message = builder.createNew(auditor).toMessage();
-            MessageId source = message.messageId();
-            acker.failHandler(failHandler(source));
-            List<MessageId> children = new ArrayList<MessageId>();
-            for (int i = 0; i < 5; i++) {
-              children.add(builder.createChild(message).toMessage().messageId());
-            }
-            acker.fork(source, children);
-            acker.create(source);
-            acker.ack(children.get(0));
-            acker.ack(children.get(1));
-            acker.fail(children.get(2));
-            acker.ack(children.get(3));
-            acker.ack(children.get(4));
+            final JsonMessageBuilder builder = new JsonMessageBuilder("test");
+            final JsonMessage message = builder.createNew(auditor).toMessage();
+            final MessageId source = message.messageId();
+
+            acker.create(source, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                assertTrue(result.succeeded());
+                acker.failHandler(failHandler(source));
+                List<MessageId> children = new ArrayList<MessageId>();
+                for (int i = 0; i < 5; i++) {
+                  children.add(builder.createChild(message).toMessage().messageId());
+                }
+                acker.fork(source, children);
+                acker.commit(source);
+                acker.ack(children.get(0));
+                acker.ack(children.get(1));
+                acker.fail(children.get(2));
+                acker.ack(children.get(3));
+                acker.ack(children.get(4));
+              }
+            });
           }
         });
       }
@@ -167,16 +181,23 @@ public class AuditorTest extends TestVerticle {
           @Override
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
-            JsonMessageBuilder builder = new JsonMessageBuilder("test");
-            JsonMessage message = builder.createNew(auditor).toMessage();
-            MessageId source = message.messageId();
-            acker.timeoutHandler(timeoutHandler(source));
-            List<MessageId> children = new ArrayList<MessageId>();
-            for (int i = 0; i < 5; i++) {
-              children.add(builder.createChild(message).toMessage().messageId());
-            }
-            acker.fork(source, children);
-            acker.create(source);
+            final JsonMessageBuilder builder = new JsonMessageBuilder("test");
+            final JsonMessage message = builder.createNew(auditor).toMessage();
+            final MessageId source = message.messageId();
+
+            acker.create(source, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                assertTrue(result.succeeded());
+                acker.timeoutHandler(timeoutHandler(source));
+                List<MessageId> children = new ArrayList<MessageId>();
+                for (int i = 0; i < 5; i++) {
+                  children.add(builder.createChild(message).toMessage().messageId());
+                }
+                acker.fork(source, children);
+                acker.commit(source);
+              }
+            });
           }
         });
       }

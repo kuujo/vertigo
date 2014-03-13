@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.message.impl;
 
+import java.util.Map;
+
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 
@@ -26,54 +28,41 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultJsonMessage implements JsonMessage {
-  private JsonObject body;
-  public static final String ID = "id";
-  public static final String BODY = "body";
-  public static final String STREAM = "stream";
-  public static final String SOURCE = "source";
+  DefaultMessageId id;
+  Map<String, Object> body;
+  String stream;
+  String source;
 
-  public DefaultJsonMessage() {
-  }
-
-  DefaultJsonMessage(JsonObject body) {
-    this.body = body;
-  }
-
-  /**
-   * Returns a Json message from JSON.
-   *
-   * @param json
-   *   A JSON representation of the message.
-   * @return
-   *   A new Json message object.
-   */
-  public static JsonMessage fromJson(JsonObject json) {
-    return new DefaultJsonMessage(json);
+  DefaultJsonMessage() {
   }
 
   @Override
   public MessageId messageId() {
-    return DefaultMessageId.fromJson(body.getObject(ID));
+    return id;
   }
 
   @Override
   public JsonObject body() {
-    return body.getObject(BODY);
+    return new JsonObject(body);
   }
 
   @Override
   public String stream() {
-    return body.getString(STREAM);
+    return stream;
   }
 
   @Override
   public String source() {
-    return body.getString(SOURCE);
+    return source;
   }
 
   @Override
   public JsonObject toJson() {
-    return body;
+    return new JsonObject()
+        .putObject("id", id.toJson())
+        .putObject("body", body())
+        .putString("stream", stream)
+        .putString("source", source);
   }
 
 }

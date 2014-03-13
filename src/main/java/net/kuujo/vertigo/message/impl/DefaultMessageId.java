@@ -25,78 +25,70 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultMessageId implements MessageId {
-  private JsonObject data;
-  public static final String CODE = "code";
-  public static final String ID = "id";
-  public static final String PARENT = "parent";
-  public static final String ROOT = "root";
-  public static final String OWNER = "owner";
-  public static final String AUDITOR = "auditor";
+  int code;
+  String id;
+  String parent;
+  String root;
+  String owner;
+  String auditor;
 
-  DefaultMessageId(JsonObject messageId) {
-    this.data = messageId;
-  }
-
-  /**
-   * Creates a message ID from JSON.
-   *
-   * @param messageId
-   *   A JSON representation of the message ID.
-   * @return
-   *   A new MessageId instance.
-   */
-  public static MessageId fromJson(JsonObject messageId) {
-    return new DefaultMessageId(messageId);
+  DefaultMessageId() {
   }
 
   @Override
   public String owner() {
-    return data.getString(OWNER);
+    return owner;
   }
 
   @Override
   public long ackCode() {
-    return data.getLong(CODE);
+    return code;
   }
 
   @Override
   public String correlationId() {
-    return data.getString(ID);
+    return id;
   }
 
   @Override
   public boolean hasParent() {
-    return data.getFieldNames().contains(PARENT);
+    return parent != null;
   }
 
   @Override
   public String parent() {
-    return data.getString(PARENT);
+    return parent;
   }
 
   @Override
   public boolean hasRoot() {
-    return data.getFieldNames().contains(ROOT);
+    return root != null;
   }
 
   @Override
   public boolean isRoot() {
-    return !hasRoot();
+    return root == null;
   }
 
   @Override
   public String root() {
-    return data.containsField(ROOT) ? data.getString(ROOT) : correlationId();
+    return root != null ? root : id;
   }
 
   @Override
   public String auditor() {
-    return data.getString(AUDITOR);
+    return auditor;
   }
 
   @Override
   public JsonObject toJson() {
-    return data;
+    return new JsonObject()
+        .putString("id", id)
+        .putNumber("code", code)
+        .putString("owner", owner)
+        .putString("parent", parent)
+        .putString("root", root)
+        .putString("auditor", auditor);
   }
 
   @Override

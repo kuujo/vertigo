@@ -22,7 +22,6 @@ import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -42,6 +41,7 @@ import org.vertx.java.core.logging.Logger;
  * @author Jordan Halterman
  */
 public class DefaultListener implements Listener {
+  private static final Serializer messageSerializer = SerializerFactory.getSerializer(JsonMessage.class);
   private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final String address;
   private final String statusAddress;
@@ -147,10 +147,10 @@ public class DefaultListener implements Listener {
     return serializer.deserializeString(serializer.serializeToString(input), InputContext.class);
   }
 
-  private Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
+  private Handler<Message<String>> handler = new Handler<Message<String>>() {
     @Override
-    public void handle(Message<JsonObject> message) {
-      JsonObject body = message.body();
+    public void handle(Message<String> message) {
+      String body = message.body();
       if (body != null) {
         doReceive(body);
       }
@@ -173,8 +173,8 @@ public class DefaultListener implements Listener {
   /**
    * Receives message data.
    */
-  private void doReceive(JsonObject messageData) {
-    JsonMessage message = DefaultJsonMessage.fromJson(messageData);
+  private void doReceive(String messageData) {
+    JsonMessage message = messageSerializer.deserializeString(messageData, JsonMessage.class);
 
     // Call the message handler.
     if (messageHandler != null) {

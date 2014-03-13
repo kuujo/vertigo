@@ -5,7 +5,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.message.impl.DefaultMessageId;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -27,6 +28,7 @@ public class AuditorVerticle extends Verticle {
   public static final String ADDRESS = "address";
   public static final String TIMEOUT = "timeout";
 
+  private static final Serializer serializer = SerializerFactory.getSerializer(MessageId.class);
   private static final Logger log = LoggerFactory.getLogger(AuditorVerticle.class);
   private String address;
   private EventBus eventBus;
@@ -130,9 +132,9 @@ public class AuditorVerticle extends Verticle {
    */
   private void doCreate(final Message<JsonObject> message) {
     JsonObject body = message.body();
-    JsonObject id = body.getObject("id");
+    String id = body.getString("id");
     if (id != null) {
-      MessageId messageId = DefaultMessageId.fromJson(id);
+      MessageId messageId = serializer.deserializeString(id, MessageId.class);
       MessageTree tree = new MessageTree(messageId, System.currentTimeMillis() + timeout);
       trees.put(messageId.correlationId(), tree);
       message.reply();
@@ -143,15 +145,15 @@ public class AuditorVerticle extends Verticle {
    * Commits an initial fork to a message tree.
    */
   private void doCommit(final JsonObject message) {
-    JsonObject id = message.getObject("id");
+    String id = message.getString("id");
     if (id != null) {
-      MessageId messageId = DefaultMessageId.fromJson(id);
+      MessageId messageId = serializer.deserializeString(id, MessageId.class);
       MessageTree tree = trees.get(messageId.correlationId());
       if (tree != null) {
         JsonArray children = message.getArray("children");
         if (children != null) {
           for (Object child : children) {
-            tree.fork(DefaultMessageId.fromJson((JsonObject) child));
+            tree.fork(serializer.deserializeString((String) child, MessageId.class));
           }
           if (tree.complete()) {
             ack(trees.remove(messageId.correlationId()));
@@ -168,19 +170,21 @@ public class AuditorVerticle extends Verticle {
    * Acks a message in a tree and creates children.
    */
   private void doAck(final JsonObject message) {
-    JsonObject id = message.getObject("id");
+    String id = message.getString("id");
     if (id != null) {
-      MessageId messageId = DefaultMessageId.fromJson(id);
+      MessageId messageId = serializer.deserializeString(id, MessageId.class);
       MessageTree tree = trees.get(messageId.root());
-      JsonArray children = message.getArray("children");
-      if (children != null) {
-        for (Object child : children) {
-          tree.fork(DefaultMessageId.fromJson((JsonObject) child));
+      if (tree != null) {
+        JsonArray children = message.getArray("children");
+        if (children != null) {
+          for (Object child : children) {
+            tree.fork(serializer.deserializeString((String) child, MessageId.class));
+          }
         }
-      }
-      tree.ack(messageId);
-      if (tree.complete()) {
-        ack(trees.remove(messageId.root()));
+        tree.ack(messageId);
+        if (tree.complete()) {
+          ack(trees.remove(messageId.root()));
+        }
       }
     }
   }
@@ -189,9 +193,9 @@ public class AuditorVerticle extends Verticle {
    * Fails a message tree.
    */
   private void doFail(final JsonObject message) {
-    JsonObject id = message.getObject("id");
+    String id = message.getString("id");
     if (id != null) {
-      MessageId messageId = DefaultMessageId.fromJson(id);
+      MessageId messageId = serializer.deserializeString(id, MessageId.class);
       MessageTree tree = trees.remove(messageId.root());
       if (tree != null) {
         fail(tree);
@@ -203,21 +207,21 @@ public class AuditorVerticle extends Verticle {
    * Notifies a message tree owner of an acked message tree.
    */
   private void ack(MessageTree tree) {
-    eventBus.send(tree.id.owner(), new JsonObject().putString("action", "ack").putObject("id", tree.id.toJson()));
+    eventBus.send(tree.id.owner(), new JsonObject().putString("action", "ack").putString("id", serializer.serializeToString(tree.id)));
   }
 
   /**
    * Notifies a message tree owner of a failed message tree.
    */
   private void fail(MessageTree tree) {
-    eventBus.send(tree.id.owner(), new JsonObject().putString("action", "fail").putObject("id", tree.id.toJson()));
+    eventBus.send(tree.id.owner(), new JsonObject().putString("action", "fail").putString("id", serializer.serializeToString(tree.id)));
   }
 
   /**
    * Notifies a message tree owner of a timed out message tree.
    */
   private void timeout(MessageTree tree) {
-    eventBus.send(tree.id.owner(), new JsonObject().putString("action", "timeout").putObject("id", tree.id.toJson()));
+    eventBus.send(tree.id.owner(), new JsonObject().putString("action", "timeout").putString("id", serializer.serializeToString(tree.id)));
   }
 
   /**

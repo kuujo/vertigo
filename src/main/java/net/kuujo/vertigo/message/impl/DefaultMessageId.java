@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.message.impl;
 
 import java.util.Random;
-import java.util.UUID;
 
 import net.kuujo.vertigo.message.MessageId;
 
@@ -56,11 +55,11 @@ public class DefaultMessageId implements MessageId {
   }
 
   @Override
-  public MessageId copy() {
+  public MessageId copy(String id) {
     return Builder.newBuilder()
         .setAuditor(auditor)
         .setCode(random.nextInt())
-        .setCorrelationId(UUID.randomUUID().toString())
+        .setCorrelationId(id)
         .setTree(tree())
         .build();
   }

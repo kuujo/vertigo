@@ -57,9 +57,9 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonMessage copy() {
+  public JsonMessage copy(String correlationId) {
     return Builder.newBuilder()
-        .setMessageId(id.copy())
+        .setMessageId(id.copy(correlationId))
         .setBody(body)
         .setSource(source)
         .setStream(stream)

@@ -39,12 +39,14 @@ import net.kuujo.vertigo.output.selector.Selector;
 public class DefaultOutputStream implements OutputStream {
   private final Vertx vertx;
   private final OutputStreamContext context;
+  private final String instanceAddress;
   private List<OutputConnection> connections;
   private Selector selector;
 
-  public DefaultOutputStream(Vertx vertx, OutputStreamContext context) {
+  public DefaultOutputStream(Vertx vertx, OutputStreamContext context, String instanceAddress) {
     this.vertx = vertx;
     this.context = context;
+    this.instanceAddress = instanceAddress;
   }
 
   @Override
@@ -56,7 +58,11 @@ public class DefaultOutputStream implements OutputStream {
   public List<MessageId> emit(JsonMessage message) {
     List<MessageId> messageIds = new ArrayList<>();
     for (OutputConnection connection : selector.select(message, connections)) {
-      messageIds.add(connection.write(message.copy()));
+      messageIds.add(connection.write(message.copy(new StringBuilder()
+          .append(instanceAddress)
+          .append(":")
+          .append(OutputCounter.incrementAndGet())
+          .toString())));
     }
     return messageIds;
   }

@@ -72,6 +72,6 @@ public interface MessageId extends Serializable {
    *
    * @return A copy of the message ID.
    */
-  MessageId copy();
+  MessageId copy(String id);
 
 }

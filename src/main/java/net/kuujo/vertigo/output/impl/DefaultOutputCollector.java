@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
 import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.context.OutputContext;
@@ -56,6 +55,8 @@ public class DefaultOutputCollector implements OutputCollector {
   private final Acker acker;
   private final Iterator<String> auditors;
   private final Random random = new Random();
+  private final String componentAddress;
+  private final String instanceAddress;
 
   public DefaultOutputCollector(Vertx vertx, OutputContext context, Acker acker) {
     this.vertx = vertx;
@@ -66,6 +67,8 @@ public class DefaultOutputCollector implements OutputCollector {
       auditors.add(auditor);
     }
     this.auditors = new RoundRobin<>(auditors).iterator();
+    this.componentAddress = context.instance().component().address();
+    this.instanceAddress = context.instance().address();
   }
 
   @Override
@@ -263,15 +266,18 @@ public class DefaultOutputCollector implements OutputCollector {
    * Creates a new message.
    */
   private JsonMessage createNewMessage(String stream, JsonObject body) {
-    MessageId messageId = DefaultMessageId.Builder.newBuilder()
-        .setCorrelationId(UUID.randomUUID().toString())
-        .setAuditor(auditors.next())
-        .setCode(random.nextInt())
-        .build();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
-        .setMessageId(messageId)
+        .setMessageId(DefaultMessageId.Builder.newBuilder()
+            .setCorrelationId(new StringBuilder()
+                .append(instanceAddress)
+                .append(":")
+                .append(OutputCounter.incrementAndGet())
+                .toString())
+            .setAuditor(auditors.next())
+            .setCode(random.nextInt())
+            .build())
         .setBody(body)
-        .setSource(context.instance().component().address())
+        .setSource(componentAddress)
         .setStream(stream)
         .build();
     return message;
@@ -281,16 +287,20 @@ public class DefaultOutputCollector implements OutputCollector {
    * Creates a child message.
    */
   private JsonMessage createChildMessage(String stream, JsonObject body, JsonMessage parent) {
-    MessageId messageId = DefaultMessageId.Builder.newBuilder()
-        .setCorrelationId(UUID.randomUUID().toString())
-        .setAuditor(parent.messageId().auditor())
-        .setCode(random.nextInt())
-        .setTree(parent.messageId().tree())
-        .build();
+    MessageId parentId = parent.messageId();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
-        .setMessageId(messageId)
+        .setMessageId(DefaultMessageId.Builder.newBuilder()
+            .setCorrelationId(new StringBuilder()
+                .append(instanceAddress)
+                .append(":")
+                .append(OutputCounter.incrementAndGet())
+                .toString())
+            .setAuditor(parentId.auditor())
+            .setCode(random.nextInt())
+            .setTree(parentId.tree())
+            .build())
         .setBody(body)
-        .setSource(context.instance().component().address())
+        .setSource(componentAddress)
         .setStream(stream)
         .build();
     return message;
@@ -319,7 +329,7 @@ public class DefaultOutputCollector implements OutputCollector {
       });
 
       for (OutputStreamContext stream : context.streams()) {
-        OutputStream output = new DefaultOutputStream(vertx, stream).start(new Handler<AsyncResult<Void>>() {
+        OutputStream output = new DefaultOutputStream(vertx, stream, context.instance().address()).start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {

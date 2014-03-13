@@ -69,6 +69,6 @@ public interface JsonMessage extends Serializable {
    *
    * @return A new copy of the message.
    */
-  JsonMessage copy();
+  JsonMessage copy(String id);
 
 }

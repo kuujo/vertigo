@@ -18,9 +18,9 @@ package net.kuujo.vertigo.test.integration;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.auditor.AuditorVerticle;
+import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.JsonMessageBuilder;

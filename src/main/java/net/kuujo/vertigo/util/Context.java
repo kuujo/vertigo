@@ -15,9 +15,11 @@
  */
 package net.kuujo.vertigo.util;
 
-import org.vertx.java.core.json.JsonObject;
+import java.util.HashSet;
 
 import net.kuujo.vertigo.context.InstanceContext;
+
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Context utilities.
@@ -37,7 +39,7 @@ public final class Context {
   public static InstanceContext<?> parseContext(JsonObject config) {
     if (config != null && !config.getFieldNames().isEmpty()) {
       InstanceContext<?> context = InstanceContext.fromJson(config);
-      for (String fieldName : config.getFieldNames()) {
+      for (String fieldName : new HashSet<String>(config.getFieldNames())) {
         config.removeField(fieldName);
       }
       JsonObject realConfig = context.component().config();

@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.Acker;
+import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InstanceContext;

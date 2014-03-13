@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import net.kuujo.vertigo.acker.Acker;
-import net.kuujo.vertigo.acker.DefaultAcker;
+import net.kuujo.vertigo.auditor.Acker;
+import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -313,31 +313,38 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public MessageId emitTo(String stream, JsonObject body) {
+  public MessageId emitTo(final String stream, final JsonObject body) {
     JsonMessage message = messageBuilder.createNew(selectRandomAuditor()).toMessage();
-    MessageId messageId = message.messageId();
-    JsonMessage child = messageBuilder.createChild(message).setBody(body)
+    final MessageId messageId = message.messageId();
+    final JsonMessage child = messageBuilder.createChild(message).setBody(body)
         .setStream(stream).setSource(componentAddress).toMessage();
 
-    List<Channel> channels = this.channels.get(stream);
-    if (channels != null) {
-      for (Channel channel : channels) {
-        acker.fork(messageId, channel.publish(child));
+    acker.create(messageId, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.succeeded()) {
+          List<Channel> channels = DefaultOutputCollector.this.channels.get(stream);
+          if (channels != null) {
+            for (Channel channel : channels) {
+              acker.fork(messageId, channel.publish(child));
+            }
+          }
+          acker.commit(messageId);
+          hookEmit(messageId);
+          if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Emitted new message to stream:%s %s", stream, body.encodePrettily()));
+          }
+        }
       }
-    }
-    acker.create(messageId);
-    hookEmit(messageId);
-    if (logger.isDebugEnabled()) {
-      logger.debug(String.format("Emitted new message to stream:%s %s", stream, body.encodePrettily()));
-    }
+    });
     return messageId;
   }
 
   @Override
-  public MessageId emitTo(String stream, JsonObject body, JsonMessage parent) {
+  public MessageId emitTo(final String stream, final JsonObject body, JsonMessage parent) {
     JsonMessage message = messageBuilder.createChild(parent).toMessage();
-    MessageId messageId = message.messageId();
-    JsonMessage child = messageBuilder.createChild(message).setBody(body).setStream(stream).toMessage();
+    final MessageId messageId = message.messageId();
+    final JsonMessage child = messageBuilder.createChild(message).setBody(body).setStream(stream).toMessage();
     List<Channel> channels = this.channels.get(stream);
     if (channels != null) {
       for (Channel channel : channels) {

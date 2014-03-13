@@ -68,24 +68,13 @@ public final class JsonMessageBuilder {
    * Creates a child message ID.
    */
   private MessageId createChildId(MessageId parentId) {
-    if (parentId.isRoot()) {
-      return new DefaultMessageId(new JsonObject()
-          .putNumber(DefaultMessageId.CODE, generateCode())
-          .putString(DefaultMessageId.ID, nextId())
-          .putString(DefaultMessageId.PARENT, parentId.correlationId())
-          .putString(DefaultMessageId.ROOT, parentId.correlationId())
-          .putString(DefaultMessageId.OWNER, address)
-          .putString(DefaultMessageId.AUDITOR, parentId.auditor()));
-    }
-    else {
-      return new DefaultMessageId(new JsonObject()
-          .putNumber(DefaultMessageId.CODE, generateCode())
-          .putString(DefaultMessageId.ID, nextId())
-          .putString(DefaultMessageId.PARENT, parentId.correlationId())
-          .putString(DefaultMessageId.ROOT, parentId.root())
-          .putString(DefaultMessageId.OWNER, address)
-          .putString(DefaultMessageId.AUDITOR, parentId.auditor()));
-    }
+    return new DefaultMessageId(new JsonObject()
+        .putNumber(DefaultMessageId.CODE, generateCode())
+        .putString(DefaultMessageId.ID, nextId())
+        .putString(DefaultMessageId.PARENT, parentId.correlationId())
+        .putString(DefaultMessageId.ROOT, parentId.root())
+        .putString(DefaultMessageId.OWNER, address)
+        .putString(DefaultMessageId.AUDITOR, parentId.auditor()));
   }
 
   /**

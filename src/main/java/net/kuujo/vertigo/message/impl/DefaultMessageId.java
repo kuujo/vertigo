@@ -86,7 +86,7 @@ public class DefaultMessageId implements MessageId {
 
   @Override
   public String root() {
-    return data.getString(ROOT);
+    return data.containsField(ROOT) ? data.getString(ROOT) : correlationId();
   }
 
   @Override

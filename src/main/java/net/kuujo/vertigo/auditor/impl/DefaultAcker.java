@@ -1,9 +1,10 @@
-package net.kuujo.vertigo.acker;
+package net.kuujo.vertigo.auditor.impl;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.auditor.Acker;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.DefaultMessageId;
 
@@ -11,6 +12,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -107,14 +109,35 @@ public class DefaultAcker implements Acker {
   }
 
   @Override
-  public Acker create(MessageId messageId) {
+  public Acker create(MessageId messageId, final Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.sendWithTimeout(messageId.auditor(), new JsonObject()
+        .putString("action", "create")
+        .putObject("id", messageId.toJson()), 30000, new Handler<AsyncResult<Message<Void>>>() {
+          @Override
+          public void handle(AsyncResult<Message<Void>> result) {
+            if (result.failed()) {
+              new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+            }
+            else {
+              new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+            }
+          }
+    });
+    return this;
+  }
+
+  @Override
+  public Acker commit(MessageId messageId) {
     List<MessageId> messageIds = children.remove(messageId.correlationId());
     if (messageIds != null && !messageIds.isEmpty()) {
-      eventBus.send(messageId.auditor(), new JsonObject().putString("action", "create")
-          .putObject("id", messageId.toJson()).putArray("children", messageIdsToArray(messageIds)));
+      eventBus.send(messageId.auditor(), new JsonObject()
+          .putString("action", "commit")
+          .putObject("id", messageId.toJson())
+          .putArray("children", messageIdsToArray(messageIds)));
     }
     else {
-      eventBus.send(messageId.auditor(), new JsonObject().putString("action", "create")
+      eventBus.send(messageId.auditor(), new JsonObject()
+          .putString("action", "commit")
           .putObject("id", messageId.toJson()));
     }
     return this;
@@ -136,11 +159,14 @@ public class DefaultAcker implements Acker {
   public Acker ack(MessageId messageId) {
     List<MessageId> messageIds = children.remove(messageId.correlationId());
     if (messageIds != null) {
-      eventBus.send(messageId.auditor(), new JsonObject().putString("action", "ack")
-          .putObject("id", messageId.toJson()).putArray("children", messageIdsToArray(messageIds)));
+      eventBus.send(messageId.auditor(), new JsonObject()
+          .putString("action", "ack")
+          .putObject("id", messageId.toJson())
+          .putArray("children", messageIdsToArray(messageIds)));
     }
     else {
-      eventBus.send(messageId.auditor(), new JsonObject().putString("action", "ack")
+      eventBus.send(messageId.auditor(), new JsonObject()
+          .putString("action", "ack")
           .putObject("id", messageId.toJson()));
     }
     return this;
@@ -149,7 +175,8 @@ public class DefaultAcker implements Acker {
   @Override
   public Acker fail(MessageId messageId) {
     children.remove(messageId.correlationId());
-    eventBus.send(messageId.auditor(), new JsonObject().putString("action", "fail")
+    eventBus.send(messageId.auditor(), new JsonObject()
+        .putString("action", "fail")
         .putObject("id", messageId.toJson()));
     return this;
   }

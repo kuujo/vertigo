@@ -1,4 +1,4 @@
-package net.kuujo.vertigo.acker;
+package net.kuujo.vertigo.auditor;
 
 import java.util.List;
 
@@ -59,10 +59,20 @@ public interface Acker {
    *
    * @param messageId
    *   The message ID.
+   * @param doneHandler
+   *   An asynchronous handler to be called once the tree has been created.
    * @return
    *   The called acker instance.
    */
-  public Acker create(MessageId messageId);
+  public Acker create(MessageId messageId, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Commits a new message tree to the auditor.
+   *
+   * @param messageId The root message ID.
+   * @return The acker instance.
+   */
+  public Acker commit(MessageId messageId);
 
   /**
    * Forks a message, creating children.

@@ -22,6 +22,7 @@ import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.input.Listener;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -42,6 +43,7 @@ import org.vertx.java.core.logging.Logger;
  */
 public class DefaultListener implements Listener {
   private static final Serializer messageSerializer = SerializerFactory.getSerializer(JsonMessage.class);
+  private static final Serializer idSerializer = SerializerFactory.getSerializer(MessageId.class);
   private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final String address;
   private final String statusAddress;
@@ -208,7 +210,7 @@ public class DefaultListener implements Listener {
   public Listener ack(JsonMessage message) {
     String auditor = message.messageId().auditor();
     if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "ack").putObject("id", message.messageId().toJson()));
+      eventBus.send(auditor, new JsonObject().putString("action", "ack").putString("id", idSerializer.serializeToString(message.messageId())));
     }
     return this;
   }
@@ -217,7 +219,7 @@ public class DefaultListener implements Listener {
   public Listener fail(JsonMessage message) {
     String auditor = message.messageId().auditor();
     if (auditor != null) {
-      eventBus.send(auditor, new JsonObject().putString("action", "fail").putObject("id", message.messageId().toJson()));
+      eventBus.send(auditor, new JsonObject().putString("action", "fail").putString("id", idSerializer.serializeToString(message.messageId())));
     }
     return this;
   }

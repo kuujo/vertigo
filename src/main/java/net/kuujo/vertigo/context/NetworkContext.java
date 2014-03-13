@@ -136,26 +136,26 @@ public final class NetworkContext extends Context<NetworkContext> {
   /**
    * Returns a boolean indicating whether the component exists.
    *
-   * @param address The address of the component to check.
-   * @return Indicates whether a component with that address exists.
+   * @param name The name of the component to check.
+   * @return Indicates whether a component with that name exists.
    */
-  public boolean hasComponent(String address) {
-    return components.containsKey(address);
+  public boolean hasComponent(String name) {
+    return components.containsKey(name);
   }
 
   /**
-   * Returns a component context by address.
+   * Returns a component context by name.
    * 
-   * @param address The component address.
+   * @param name The component name.
    * @return A component context.
-   * @throws IllegalArgumentException If a component does not exist at the given address.
+   * @throws IllegalArgumentException If a component does not exist at the given name.
    */
   @SuppressWarnings("unchecked")
-  public <T extends ComponentContext<T>> T component(String address) {
-    if (components.containsKey(address)) {
-      return (T) components.get(address).setNetworkContext(this);
+  public <T extends ComponentContext<T>> T component(String name) {
+    if (components.containsKey(name)) {
+      return (T) components.get(name).setNetworkContext(this);
     }
-    throw new IllegalArgumentException(address + " is not a valid component in " + address());
+    throw new IllegalArgumentException(name + " is not a valid component in " + address());
   }
 
   @Override
@@ -318,7 +318,7 @@ public final class NetworkContext extends Context<NetworkContext> {
     public Builder setComponents(Collection<ComponentContext<?>> components) {
       context.components = new HashMap<>();
       for (ComponentContext<?> component : components) {
-        context.components.put(component.address(), component);
+        context.components.put(component.name(), component);
       }
       return this;
     }
@@ -333,7 +333,7 @@ public final class NetworkContext extends Context<NetworkContext> {
       if (context.components == null) {
         context.components = new HashMap<>();
       }
-      context.components.put(component.address(), component);
+      context.components.put(component.name(), component);
       return this;
     }
 
@@ -347,7 +347,7 @@ public final class NetworkContext extends Context<NetworkContext> {
       if (context.components == null) {
         context.components = new HashMap<>();
       }
-      context.components.remove(component.address());
+      context.components.remove(component.name());
       return this;
     }
 

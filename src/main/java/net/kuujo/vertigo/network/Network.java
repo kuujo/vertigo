@@ -282,25 +282,25 @@ public final class Network implements Config {
   public List<Component<?>> getComponents() {
     List<Component<?>> components = new ArrayList<Component<?>>();
     for (Map.Entry<String, Component<?>> entry : this.components.entrySet()) {
-      components.add(entry.getValue().setAddress(entry.getKey()));
+      components.add(entry.getValue().setName(entry.getKey()));
     }
     return components;
   }
 
   /**
-   * Gets a component by address.
+   * Gets a component by name.
    * 
-   * @param address The component address.
+   * @param name The component name.
    * @return The component configuration.
    * @throws IllegalArgumentException If the given component address does not exist within
    *           the network.
    */
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  public <T extends Component> T getComponent(String address) {
-    if (components.containsKey(address)) {
-      return (T) components.get(address).setAddress(address);
+  public <T extends Component> T getComponent(String name) {
+    if (components.containsKey(name)) {
+      return (T) components.get(name);
     }
-    throw new IllegalArgumentException(address + " is not a valid component address in " + getAddress());
+    throw new IllegalArgumentException(name + " is not a valid component name in " + getAddress());
   }
 
   /**
@@ -310,7 +310,7 @@ public final class Network implements Config {
    * @return The added component configuration.
    */
   public <T extends Component<T>> T addComponent(T component) {
-    components.put(component.getAddress(), component);
+    components.put(component.getName(), component);
     return component;
   }
 
@@ -321,7 +321,7 @@ public final class Network implements Config {
    * @return The added module component configuration.
    */
   public Module addModule(Module module) {
-    components.put(module.getAddress(), module);
+    components.put(module.getName(), module);
     return module;
   }
 
@@ -332,35 +332,35 @@ public final class Network implements Config {
    * @return The added verticle component configuration.
    */
   public Verticle addVerticle(Verticle verticle) {
-    components.put(verticle.getAddress(), verticle);
+    components.put(verticle.getName(), verticle);
     return verticle;
   }
 
   /**
    * Adds a feeder component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The feeder component main or module name. Vertigo will
    *          automatically detect whether the feeder is a module or a verticle based on
    *          module naming conventions.
    * @return The new feeder component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String address, String moduleOrMain) {
+  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(address, moduleOrMain);
+      return (T) addFeederModule(name, moduleOrMain);
     }
     else {
-      return (T) addFeederVerticle(address, moduleOrMain);
+      return (T) addFeederVerticle(name, moduleOrMain);
     }
   }
 
   /**
    * Adds a feeder component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The feeder component main or module name. Vertigo will
    *          automatically detect whether the feeder is a module or a verticle based on
    *          module naming conventions.
@@ -369,20 +369,20 @@ public final class Network implements Config {
    * @return The new feeder component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String address, String moduleOrMain, JsonObject config) {
+  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain, JsonObject config) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(address, moduleOrMain, config);
+      return (T) addFeederModule(name, moduleOrMain, config);
     }
     else {
-      return (T) addFeederVerticle(address, moduleOrMain, config);
+      return (T) addFeederVerticle(name, moduleOrMain, config);
     }
   }
 
   /**
    * Adds a feeder component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The feeder component main or module name. Vertigo will
    *          automatically detect whether the feeder is a module or a verticle based on
    *          module naming conventions.
@@ -392,20 +392,20 @@ public final class Network implements Config {
    * @return The new feeder component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String address, String moduleOrMain, int numInstances) {
+  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain, int numInstances) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(address, moduleOrMain, numInstances);
+      return (T) addFeederModule(name, moduleOrMain, numInstances);
     }
     else {
-      return (T) addFeederVerticle(address, moduleOrMain, numInstances);
+      return (T) addFeederVerticle(name, moduleOrMain, numInstances);
     }
   }
 
   /**
    * Adds a feeder component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The feeder component main or module name. Vertigo will
    *          automatically detect whether the feeder is a module or a verticle based on
    *          module naming conventions.
@@ -417,48 +417,48 @@ public final class Network implements Config {
    * @return The new feeder component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String address, String moduleOrMain, JsonObject config, int numInstances) {
+  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain, JsonObject config, int numInstances) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(address, moduleOrMain, config, numInstances);
+      return (T) addFeederModule(name, moduleOrMain, config, numInstances);
     }
     else {
-      return (T) addFeederVerticle(address, moduleOrMain, config, numInstances);
+      return (T) addFeederVerticle(name, moduleOrMain, config, numInstances);
     }
   }
 
   /**
    * Adds a feeder module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The feeder module name.
    * @return The new feeder module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addFeederModule(String address, String moduleName) {
-    return addModule(new Module(Component.Type.FEEDER, address, moduleName));
+  public Module addFeederModule(String name, String moduleName) {
+    return addModule(new Module(Component.Type.FEEDER, name, moduleName));
   }
 
   /**
    * Adds a feeder module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The feeder module name.
    * @param config The feeder module configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
    * @return The new feeder module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addFeederModule(String address, String moduleName, JsonObject config) {
-    return addModule(new Module(Component.Type.FEEDER, address, moduleName).setConfig(config));
+  public Module addFeederModule(String name, String moduleName, JsonObject config) {
+    return addModule(new Module(Component.Type.FEEDER, name, moduleName).setConfig(config));
   }
 
   /**
    * Adds a feeder module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The feeder module name.
    * @param numInstances The number of module instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
@@ -466,15 +466,15 @@ public final class Network implements Config {
    * @return The new feeder module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addFeederModule(String address, String moduleName, int numInstances) {
-    return addModule(new Module(Component.Type.FEEDER, address, moduleName).setNumInstances(numInstances));
+  public Module addFeederModule(String name, String moduleName, int numInstances) {
+    return addModule(new Module(Component.Type.FEEDER, name, moduleName).setNumInstances(numInstances));
   }
 
   /**
    * Adds a feeder module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The feeder module name.
    * @param config The feeder module configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
@@ -484,56 +484,56 @@ public final class Network implements Config {
    * @return The new feeder module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addFeederModule(String address, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new Module(Component.Type.FEEDER, address, moduleName).setConfig(config).setNumInstances(numInstances));
+  public Module addFeederModule(String name, String moduleName, JsonObject config, int numInstances) {
+    return addModule(new Module(Component.Type.FEEDER, name, moduleName).setConfig(config).setNumInstances(numInstances));
   }
 
   /**
    * Adds a feeder verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The feeder verticle main.
    * @return The new feeder verticle configuration.
    */
-  public Verticle addFeederVerticle(String address, String main) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, address, main));
+  public Verticle addFeederVerticle(String name, String main) {
+    return addVerticle(new Verticle(Component.Type.FEEDER, name, main));
   }
 
   /**
    * Adds a feeder verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The feeder verticle main.
    * @param config The feeder verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
    * @return The new feeder verticle configuration.
    */
-  public Verticle addFeederVerticle(String address, String main, JsonObject config) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, address, main).setConfig(config));
+  public Verticle addFeederVerticle(String name, String main, JsonObject config) {
+    return addVerticle(new Verticle(Component.Type.FEEDER, name, main).setConfig(config));
   }
 
   /**
    * Adds a feeder verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The feeder verticle main.
    * @param numInstances The number of verticle instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new feeder verticle configuration.
    */
-  public Verticle addFeederVerticle(String address, String main, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, address, main).setNumInstances(numInstances));
+  public Verticle addFeederVerticle(String name, String main, int numInstances) {
+    return addVerticle(new Verticle(Component.Type.FEEDER, name, main).setNumInstances(numInstances));
   }
 
   /**
    * Adds a feeder verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The feeder verticle main.
    * @param config The feeder verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
@@ -542,35 +542,35 @@ public final class Network implements Config {
    *          between multiple component instances.
    * @return The new feeder verticle configuration.
    */
-  public Verticle addFeederVerticle(String address, String main, JsonObject config, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, address, main).setConfig(config).setNumInstances(numInstances));
+  public Verticle addFeederVerticle(String name, String main, JsonObject config, int numInstances) {
+    return addVerticle(new Verticle(Component.Type.FEEDER, name, main).setConfig(config).setNumInstances(numInstances));
   }
 
   /**
    * Adds a worker component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The worker component main or module name. Vertigo will
    *          automatically detect whether the worker is a module or a verticle based on
    *          module naming conventions.
    * @return The new worker component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String address, String moduleOrMain) {
+  public <T extends Component<T>> T addWorker(String name, String moduleOrMain) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(address, moduleOrMain);
+      return (T) addWorkerModule(name, moduleOrMain);
     }
     else {
-      return (T) addWorkerVerticle(address, moduleOrMain);
+      return (T) addWorkerVerticle(name, moduleOrMain);
     }
   }
 
   /**
    * Adds a worker component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The worker component main or module name. Vertigo will
    *          automatically detect whether the worker is a module or a verticle based on
    *          module naming conventions.
@@ -579,20 +579,20 @@ public final class Network implements Config {
    * @return The new worker component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String address, String moduleOrMain, JsonObject config) {
+  public <T extends Component<T>> T addWorker(String name, String moduleOrMain, JsonObject config) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(address, moduleOrMain, config);
+      return (T) addWorkerModule(name, moduleOrMain, config);
     }
     else {
-      return (T) addWorkerVerticle(address, moduleOrMain, config);
+      return (T) addWorkerVerticle(name, moduleOrMain, config);
     }
   }
 
   /**
    * Adds a worker component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The worker component main or module name. Vertigo will
    *          automatically detect whether the worker is a module or a verticle based on
    *          module naming conventions.
@@ -602,20 +602,20 @@ public final class Network implements Config {
    * @return The new worker component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String address, String moduleOrMain, int numInstances) {
+  public <T extends Component<T>> T addWorker(String name, String moduleOrMain, int numInstances) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(address, moduleOrMain, numInstances);
+      return (T) addWorkerModule(name, moduleOrMain, numInstances);
     }
     else {
-      return (T) addWorkerVerticle(address, moduleOrMain, numInstances);
+      return (T) addWorkerVerticle(name, moduleOrMain, numInstances);
     }
   }
 
   /**
    * Adds a worker component to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleOrMain The worker component main or module name. Vertigo will
    *          automatically detect whether the worker is a module or a verticle based on
    *          module naming conventions.
@@ -627,48 +627,48 @@ public final class Network implements Config {
    * @return The new worker component configuration.
    */
   @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String address, String moduleOrMain, JsonObject config, int numInstances) {
+  public <T extends Component<T>> T addWorker(String name, String moduleOrMain, JsonObject config, int numInstances) {
     if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(address, moduleOrMain, config, numInstances);
+      return (T) addWorkerModule(name, moduleOrMain, config, numInstances);
     }
     else {
-      return (T) addWorkerVerticle(address, moduleOrMain, config, numInstances);
+      return (T) addWorkerVerticle(name, moduleOrMain, config, numInstances);
     }
   }
 
   /**
    * Adds a worker module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The worker module name.
    * @return The new worker module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addWorkerModule(String address, String moduleName) {
-    return addModule(new Module(Component.Type.WORKER, address, moduleName));
+  public Module addWorkerModule(String name, String moduleName) {
+    return addModule(new Module(Component.Type.WORKER, name, moduleName));
   }
 
   /**
    * Adds a worker module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The worker module name.
    * @param config The worker module configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
    * @return The new worker module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addWorkerModule(String address, String moduleName, JsonObject config) {
-    return addModule(new Module(Component.Type.WORKER, address, moduleName).setConfig(config));
+  public Module addWorkerModule(String name, String moduleName, JsonObject config) {
+    return addModule(new Module(Component.Type.WORKER, name, moduleName).setConfig(config));
   }
 
   /**
    * Adds a worker module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The worker module name.
    * @param numInstances The number of module instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
@@ -676,15 +676,15 @@ public final class Network implements Config {
    * @return The new worker module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addWorkerModule(String address, String moduleName, int numInstances) {
-    return addModule(new Module(Component.Type.WORKER, address, moduleName).setNumInstances(numInstances));
+  public Module addWorkerModule(String name, String moduleName, int numInstances) {
+    return addModule(new Module(Component.Type.WORKER, name, moduleName).setNumInstances(numInstances));
   }
 
   /**
    * Adds a worker module to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param moduleName The worker module name.
    * @param config The worker module configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
@@ -694,56 +694,56 @@ public final class Network implements Config {
    * @return The new worker module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addWorkerModule(String address, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new Module(Component.Type.WORKER, address, moduleName).setConfig(config).setNumInstances(numInstances));
+  public Module addWorkerModule(String name, String moduleName, JsonObject config, int numInstances) {
+    return addModule(new Module(Component.Type.WORKER, name, moduleName).setConfig(config).setNumInstances(numInstances));
   }
 
   /**
    * Adds a worker verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The worker verticle main.
    * @return The new worker verticle configuration.
    */
-  public Verticle addWorkerVerticle(String address, String main) {
-    return addVerticle(new Verticle(Component.Type.WORKER, address, main));
+  public Verticle addWorkerVerticle(String name, String main) {
+    return addVerticle(new Verticle(Component.Type.WORKER, name, main));
   }
 
   /**
    * Adds a worker verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The worker verticle main.
    * @param config The worker verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
    * @return The new worker verticle configuration.
    */
-  public Verticle addWorkerVerticle(String address, String main, JsonObject config) {
-    return addVerticle(new Verticle(Component.Type.WORKER, address, main).setConfig(config));
+  public Verticle addWorkerVerticle(String name, String main, JsonObject config) {
+    return addVerticle(new Verticle(Component.Type.WORKER, name, main).setConfig(config));
   }
 
   /**
    * Adds a worker verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The worker verticle main.
    * @param numInstances The number of verticle instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new worker verticle configuration.
    */
-  public Verticle addWorkerVerticle(String address, String main, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.WORKER, address, main).setNumInstances(numInstances));
+  public Verticle addWorkerVerticle(String name, String main, int numInstances) {
+    return addVerticle(new Verticle(Component.Type.WORKER, name, main).setNumInstances(numInstances));
   }
 
   /**
    * Adds a worker verticle to the network.
    * 
-   * @param address The component address. This should be a globally unique event bus
-   *          address and can be any string.
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
    * @param main The worker verticle main.
    * @param config The worker verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
@@ -752,8 +752,8 @@ public final class Network implements Config {
    *          between multiple component instances.
    * @return The new worker verticle configuration.
    */
-  public Verticle addWorkerVerticle(String address, String main, JsonObject config, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.WORKER, address, main).setConfig(config).setNumInstances(numInstances));
+  public Verticle addWorkerVerticle(String name, String main, JsonObject config, int numInstances) {
+    return addVerticle(new Verticle(Component.Type.WORKER, name, main).setConfig(config).setNumInstances(numInstances));
   }
 
   @Override

@@ -46,6 +46,7 @@ import net.kuujo.vertigo.network.Verticle;
  * @author Jordan Halterman
  */
 public final class ContextBuilder {
+  private static final String COMPONENT_ADDRESS_PATTERN = System.getProperty("vertigo.component.address", "%1$s.%2$s");
 
   /**
    * Builds a network context from a network definition.
@@ -78,12 +79,17 @@ public final class ContextBuilder {
     Map<String, List<Input>> inputs = new HashMap<>();
     for (Component<?> component : network.getComponents()) {
       // Store the component inputs for later setup.
-      inputs.put(component.getAddress(), component.getInputs());
+      inputs.put(component.getName(), component.getInputs());
 
       if (component.isModule()) {
         // Set up basic module configuratin options.
         ModuleContext.Builder module = ModuleContext.Builder.newBuilder();
-        module.setAddress(component.getAddress());
+        module.setName(component.getName());
+        String address = component.getAddress();
+        if (address == null) {
+          address = String.format(COMPONENT_ADDRESS_PATTERN, network.getAddress(), component.getName());
+        }
+        module.setAddress(address);
         module.setType(component.getType());
         module.setModule(((Module) component).getModule());
         module.setConfig(component.getConfig());
@@ -94,7 +100,7 @@ public final class ContextBuilder {
         List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getNumInstances(); i++) {
           InstanceContext.Builder instance = InstanceContext.Builder.newBuilder();
-          instance.setId(String.format("%s-%d", component.getAddress(), i));
+          instance.setId(String.format("%s-%d", address, i));
           instance.setNumber(i);
           instance.setInput(InputContext.Builder.newBuilder().build());
           instance.setOutput(OutputContext.Builder.newBuilder().build());
@@ -102,12 +108,17 @@ public final class ContextBuilder {
         }
         module.setInstances(instances);
 
-        components.put(component.getAddress(), module.build());
+        components.put(component.getName(), module.build());
       }
       else {
         // Set up basic verticle configuration options.
         VerticleContext.Builder verticle = VerticleContext.Builder.newBuilder();
-        verticle.setAddress(component.getAddress());
+        verticle.setName(component.getName());
+        String address = component.getAddress();
+        if (address == null) {
+          address = String.format(COMPONENT_ADDRESS_PATTERN, network.getAddress(), component.getName());
+        }
+        verticle.setAddress(address);
         verticle.setType(component.getType());
         verticle.setMain(((Verticle) component).getMain());
         verticle.setWorker(((Verticle) component).isWorker());
@@ -120,7 +131,7 @@ public final class ContextBuilder {
         List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getNumInstances(); i++) {
           InstanceContext.Builder instance = InstanceContext.Builder.newBuilder();
-          instance.setId(String.format("%s-%d", component.getAddress(), i));
+          instance.setId(String.format("%s-%d", address, i));
           instance.setNumber(i);
           instance.setInput(InputContext.Builder.newBuilder().build());
           instance.setOutput(OutputContext.Builder.newBuilder().build());
@@ -128,7 +139,7 @@ public final class ContextBuilder {
         }
         verticle.setInstances(instances);
 
-        components.put(component.getAddress(), verticle.build());
+        components.put(component.getName(), verticle.build());
       }
     }
 

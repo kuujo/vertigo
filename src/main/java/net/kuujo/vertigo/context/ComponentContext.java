@@ -50,6 +50,7 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
 })
 public abstract class ComponentContext<T extends ComponentContext<T>> extends Context<ComponentContext<?>> {
   private static final String DEFAULT_GROUP = "__DEFAULT__";
+  protected String name;
   protected String address;
   protected Component.Type type;
   protected String group = DEFAULT_GROUP;
@@ -100,6 +101,15 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
   T setNetworkContext(NetworkContext network) {
     this.network = network;
     return (T) this;
+  }
+
+  /**
+   * Reurns the component name.
+   *
+   * @return The component name.
+   */
+  public String name() {
+    return name;
   }
 
   /**

@@ -93,6 +93,17 @@ public class ModuleContext extends ComponentContext<ModuleContext> {
     }
 
     /**
+     * Sets the component name.
+     *
+     * @param name The component name.
+     * @return The context builder.
+     */
+    public Builder setName(String name) {
+      context.name = name;
+      return this;
+    }
+
+    /**
      * Sets the component address.
      *
      * @param address The component event bus address.

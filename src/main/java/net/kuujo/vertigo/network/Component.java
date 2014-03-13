@@ -57,10 +57,17 @@ import net.kuujo.vertigo.util.serializer.Serializable;
 public abstract class Component<T extends Component<T>> implements Config {
 
   /**
+   * <code>name</code> is a string indicating the network unique component name. This
+   * name is used as the basis for generating unique event bus addresses.
+   */
+  public static final String COMPONENT_NAME = "name";
+
+  /**
    * <code>address</code> is a string indicating the globally unique component event bus
    * address. Components will use this address to register a handler which listens for
    * subscriptions from other components, so this address must be unique across a Vert.x
-   * cluster.
+   * cluster. If no address is provided then a unique address will be automatically generated
+   * by the network.
    */
   public static final String COMPONENT_ADDRESS = "address";
 
@@ -190,6 +197,7 @@ public abstract class Component<T extends Component<T>> implements Config {
   private static final int DEFAULT_NUM_INSTANCES = 1;
   private static final String DEFAULT_GROUP = "__DEFAULT__";
 
+  private String name;
   private String address;
   private Type type;
   private Map<String, Object> config;
@@ -202,15 +210,9 @@ public abstract class Component<T extends Component<T>> implements Config {
     address = UUID.randomUUID().toString();
   }
 
-  public Component(Type type, String address) {
+  public Component(Type type, String name) {
     this.type = type;
-    this.address = address;
-  }
-
-  @SuppressWarnings("unchecked")
-  T setAddress(String address) {
-    this.address = address;
-    return (T) this;
+    this.name = name;
   }
 
   /**
@@ -218,6 +220,21 @@ public abstract class Component<T extends Component<T>> implements Config {
    */
   @JsonGetter("deploy")
   protected abstract String getDeploymentType();
+
+  @SuppressWarnings("unchecked")
+  T setName(String name) {
+    this.name = name;
+    return (T) this;
+  }
+
+  /**
+   * Returns the component name.
+   *
+   * @return The component name.
+   */
+  public String getName() {
+    return name != null ? name : address; // for backwards compatibility
+  }
 
   /**
    * Returns the component address.
@@ -229,6 +246,18 @@ public abstract class Component<T extends Component<T>> implements Config {
    */
   public String getAddress() {
     return address;
+  }
+
+  /**
+   * Sets the component address.
+   *
+   * @param address The component event bus address.
+   * @return The component configuration.
+   */
+  @SuppressWarnings("unchecked")
+  public T setAddress(String address) {
+    this.address = address;
+    return (T) this;
   }
 
   /**

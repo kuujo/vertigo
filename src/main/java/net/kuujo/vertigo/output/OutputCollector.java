@@ -43,7 +43,7 @@ public interface OutputCollector {
    *
    * @return The current component output context.
    */
-  OutputContext output();
+  OutputContext context();
 
   /**
    * Adds an output hook to the output collector.

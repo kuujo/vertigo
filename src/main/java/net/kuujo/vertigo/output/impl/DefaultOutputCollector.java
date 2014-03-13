@@ -69,7 +69,7 @@ public class DefaultOutputCollector implements OutputCollector {
   }
 
   @Override
-  public OutputContext output() {
+  public OutputContext context() {
     return context;
   }
 

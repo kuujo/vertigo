@@ -141,10 +141,13 @@ public class AuditorVerticle extends Verticle {
         long children = message.getLong("children", 0);
         if (children != 0) {
           tree.fork(children);
+          if (tree.complete()) {
+            trees.remove(treeId);
+            ack(tree);
+          }
         }
         else {
-          trees.remove(treeId);
-          eventBus.send(tree.source, new JsonObject().putString("action", "ack").putString("id", treeId));
+          ack(trees.remove(treeId));
         }
       }
     }

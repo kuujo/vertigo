@@ -237,6 +237,24 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
   }
 
   /**
+   * Returns the component context as a module context.
+   *
+   * @return A module context.
+   */
+  public ModuleContext toModule() {
+    return (ModuleContext) this;
+  }
+
+  /**
+   * Returns the component context as a verticle context.
+   *
+   * @return A verticle context.
+   */
+  public VerticleContext toVerticle() {
+    return (VerticleContext) this;
+  }
+
+  /**
    * Returns the parent network context.
    * 
    * @return The parent network context.

@@ -101,52 +101,52 @@ public final class Vertigo {
   }
 
   /**
-   * Shuts down a local network.
+   * Undeploys a local network.
    *
-   * @param address The network address.
+   * @param address The address of the network to undeploy.
    * @return The Vertigo instance.
    */
-  public Vertigo shutdownLocalNetwork(String address) {
+  public Vertigo undeployLocalNetwork(String address) {
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.shutdownNetwork(address);
+    cluster.undeployNetwork(address);
     return this;
   }
 
   /**
-   * Shuts down a local network.
+   * Undeploys a local network.
    *
-   * @param address The network address.
-   * @param doneHandler An asynchronous handler to be called once the shutdown is complete.
+   * @param address The address of the network to undeploy.
+   * @param doneHandler An asynchronous handler to be called once the network has been undeployed.
    * @return The Vertigo instance.
    */
-  public Vertigo shutdownLocalNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployLocalNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.shutdownNetwork(address, doneHandler);
+    cluster.undeployNetwork(address, doneHandler);
     return this;
   }
 
   /**
-   * Shuts down a local network.
+   * Undeploys a local network.
    * 
-   * @param context The context of the network to shutdown.
+   * @param network The network to undeploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownLocalNetwork(NetworkContext context) {
+  public Vertigo undeployLocalNetwork(Network network) {
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.shutdownNetwork(context);
+    cluster.undeployNetwork(network);
     return this;
   }
 
   /**
-   * Shuts down a local network.
+   * Undeploys a local network.
    * 
-   * @param context The context of the network to shutdown.
-   * @param doneHandler An asynchronous handler to be called once the shutdown is complete.
+   * @param network The network to undeploy.
+   * @param doneHandler An asynchronous handler to be called once the network has been undeployed.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownLocalNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployLocalNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
     Cluster cluster = new LocalCluster(vertx, container);
-    cluster.shutdownNetwork(context, doneHandler);
+    cluster.undeployNetwork(network, doneHandler);
     return this;
   }
 
@@ -186,54 +186,54 @@ public final class Vertigo {
   }
 
   /**
-   * Shuts down a network via the Vert.x event bus.
+   * Undeploys a network via the Vert.x event bus.
    * 
-   * @param address The address of the network to shutdown.
+   * @param address The address of the network to undeploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownRemoteNetwork(String address) {
+  public Vertigo undeployRemoteNetwork(String address) {
     Cluster cluster = new RemoteCluster(vertx, container);
-    cluster.shutdownNetwork(address);
+    cluster.undeployNetwork(address);
     return this;
   }
 
   /**
-   * Shuts down a network via the Vert.x event bus.
+   * Undeploys a network via the Vert.x event bus.
    * 
-   * @param address The address of the network to shutdown.
+   * @param address The address of the network to undeploy.
    * @param doneHandler An asynchronous handler to be called once the network has been
-   *          shutdown.
+   *          undeployed.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownRemoteNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployRemoteNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
     Cluster cluster = new RemoteCluster(vertx, container);
-    cluster.shutdownNetwork(address, doneHandler);
+    cluster.undeployNetwork(address, doneHandler);
     return this;
   }
 
   /**
-   * Shuts down a network via the Vert.x event bus.
+   * Undeploys a network via the Vert.x event bus.
    * 
-   * @param context The context of the network to shutdown.
+   * @param network The network configuration to undeploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownRemoteNetwork(NetworkContext context) {
+  public Vertigo undeployRemoteNetwork(Network network) {
     Cluster cluster = new RemoteCluster(vertx, container);
-    cluster.shutdownNetwork(context);
+    cluster.undeployNetwork(network);
     return this;
   }
 
   /**
-   * Shuts down a network via the Vert.x event bus.
+   * Undeploys a network via the Vert.x event bus.
    * 
-   * @param context The context of the network to shutdown.
+   * @param network The network configuration to undeploy.
    * @param doneHandler An asynchronous handler to be called once the network has been
-   *          shutdown.
+   *          undeployed.
    * @return The called Vertigo instance.
    */
-  public Vertigo shutdownRemoteNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployRemoteNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
     Cluster cluster = new RemoteCluster(vertx, container);
-    cluster.shutdownNetwork(context, doneHandler);
+    cluster.undeployNetwork(network, doneHandler);
     return this;
   }
 

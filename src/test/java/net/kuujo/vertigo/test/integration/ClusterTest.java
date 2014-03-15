@@ -71,11 +71,10 @@ public class ClusterTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         assertTrue(result.succeeded());
-        final NetworkContext context = result.result();
         vertx.setTimer(2000, new Handler<Long>() {
           @Override
           public void handle(Long timerID) {
-            cluster.shutdownNetwork(context, new Handler<AsyncResult<Void>>() {
+            cluster.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,66 +15,77 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 /**
- * The cluster is the primary interface for deploying Vertigo networks. Clusters
- * handle deploying network coordinators which handle deployment and monitoring
- * of network component instances.
+ * Vertigo cluster.
  *
  * @author Jordan Halterman
  */
 public interface Cluster {
 
   /**
-   * Deploys a network to the cluster.
+   * Gets a network context for a deployed network.
    *
-   * @param network The network configuration.
+   * @param address The address of the network to get.
+   * @param resultHandler An asynchronous handler to be called with the result.
+   * @return The cluster.
    */
-  void deployNetwork(Network network);
+  Cluster getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler);
 
   /**
    * Deploys a network to the cluster.
    *
    * @param network The network configuration.
-   * @param doneHandler A handler to be called once the deployment is complete. This handler will
-   *                    be passed the deployed network context containing information about the
-   *                    deployed components.
+   * @return The cluster.
    */
-  void deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
+  Cluster deployNetwork(Network network);
 
   /**
-   * Shuts down a network in the cluster.
+   * Deploys a network to the cluster.
    *
-   * @param address The address of the network to shutdown.
+   * @param network The network configuration.
+   * @param doneHandler An asynchronous handler to be called once the deployment is complete.
+   * @return The cluster.
    */
-  void shutdownNetwork(String address);
+  Cluster deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Shuts down a network in the cluster.
+   * Undeploys a network from the cluster.
    *
-   * @param address The address of the network to shutdown.
-   * @param doneHandler A handler to be called once the shutdown is complete.
+   * @param address The address of the network to undeploy.
+   * @return The cluster.
    */
-  void shutdownNetwork(String address, Handler<AsyncResult<Void>> doneHandler);
+  Cluster undeployNetwork(String address);
 
   /**
-   * Shuts down a network in the cluster.
+   * Undeploys a network from the cluster.
    *
-   * @param context The context of the network to shutdown.
+   * @param address The address of the network to undeploy.
+   * @param doneHandler An asynchronous handler to be called once the network is undeployed.
+   * @return The cluster.
    */
-  void shutdownNetwork(NetworkContext context);
+  Cluster undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Shuts down a network in the cluster.
+   * Undeploys a network from the cluster.
    *
-   * @param context The context of the network to shutdown.
-   * @param doneHandler A handler to be called once the shutdown is complete.
+   * @param network The network configuration to undeploy.
+   * @return The cluster.
    */
-  void shutdownNetwork(NetworkContext context, Handler<AsyncResult<Void>> doneHandler);
+  Cluster undeployNetwork(Network network);
+
+  /**
+   * Undeploys a network from the cluster.
+   *
+   * @param network The network configuration to undeploy.
+   * @param doneHandler An asynchronous handler to be called once the network is undeployed.
+   * @return The cluster.
+   */
+  Cluster undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler);
 
 }

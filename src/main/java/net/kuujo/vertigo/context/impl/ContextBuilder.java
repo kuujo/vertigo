@@ -187,4 +187,31 @@ public final class ContextBuilder {
     return context.build();
   }
 
+  /**
+   * Merges two network contexts together.
+   *
+   * @param base The base network context.
+   * @param merge The context to merge.
+   * @return The merged network context.
+   */
+  public static NetworkContext mergeContexts(NetworkContext base, NetworkContext merge) {
+    if (!base.address().equals(merge.address())) {
+      throw new IllegalArgumentException("Network addresses must match for merge.");
+    }
+
+    
+    return base;
+  }
+
+  /**
+   * Unmerges two network contexts.
+   *
+   * @param base The base network context.
+   * @param merge The context to unmerge.
+   * @return The unmerged network context.
+   */
+  public static NetworkContext unmergeContexts(NetworkContext base, NetworkContext merge) {
+    return base;
+  }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,25 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.coordinator.impl.LocalClusterCoordinator;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.coordinator.LocalCoordinator;
-
 /**
- * A local cluster implementation.<p>
- *
- * The local cluster deploys Vertigo components (modules and verticles) within
- * the local Vert.x instance via the Vert.x {@link Container}.
+ * Local cluster implementation.
  *
  * @author Jordan Halterman
  */
 public class LocalCluster extends AbstractCluster {
 
   public LocalCluster(Verticle verticle) {
-    super(verticle);
-    coordinator = LocalCoordinator.class.getName();
+    this(verticle.getVertx(), verticle.getContainer());
   }
 
   public LocalCluster(Vertx vertx, Container container) {
-    super(vertx, container);
-    coordinator = LocalCoordinator.class.getName();
+    super(vertx, container, new LocalClusterCoordinator(vertx, container));
   }
 
 }

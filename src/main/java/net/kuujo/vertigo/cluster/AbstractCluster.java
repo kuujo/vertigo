@@ -77,7 +77,7 @@ abstract class AbstractCluster implements VertigoCluster {
           JsonObject config = new JsonObject()
               .putString("address", network.getAddress())
               .putString("cluster", cluster.getClass().getName());
-          container.deployVerticle(NetworkManager.class.getName(), config, new Handler<AsyncResult<String>>() {
+          cluster.deployVerticle(network.getAddress(), NetworkManager.class.getName(), config, 1, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
@@ -94,6 +94,9 @@ abstract class AbstractCluster implements VertigoCluster {
     return this;
   }
 
+  /**
+   * Handles deployment of a network.
+   */
   private void doDeployNetwork(Network network, final Handler<AsyncResult<NetworkContext>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
@@ -120,7 +123,47 @@ abstract class AbstractCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+  public VertigoCluster undeployNetwork(final String address, final Handler<AsyncResult<Void>> doneHandler) {
+    cluster.isDeployed(address, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        }
+        else if (!result.result()) {
+          new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
+        }
+        else {
+          JsonObject message = new JsonObject()
+              .putString("action", "undeploy")
+              .putString("address", address);
+          vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+            @Override
+            public void handle(AsyncResult<Message<JsonObject>> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+              else if (result.result().body().getString("status").equals("error")) {
+                new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
+              }
+              else {
+                cluster.undeployVerticle(address, new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                    }
+                    else {
+                      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    });
     return this;
   }
 
@@ -130,7 +173,52 @@ abstract class AbstractCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
+  public VertigoCluster undeployNetwork(final Network network, final Handler<AsyncResult<Void>> doneHandler) {
+    cluster.isDeployed(network.getAddress(), new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        }
+        else if (!result.result()) {
+          new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
+        }
+        else {
+          JsonObject message = new JsonObject()
+              .putString("action", "undeploy")
+              .putObject("network", networkSerializer.serializeToObject(network));
+          vertx.eventBus().sendWithTimeout(network.getAddress(), message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+            @Override
+            public void handle(AsyncResult<Message<JsonObject>> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+              else if (result.result().body().getString("status").equals("error")) {
+                new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
+              }
+              // If a non-null context was returned then some portion of the network is still running.
+              else if (result.result().body().getObject("result") != null) {
+                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+              }
+              // If a null context was returned then the network was completely undeployed.
+              else {
+                cluster.undeployVerticle(network.getAddress(), new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                    }
+                    else {
+                      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      }
+    });
     return this;
   }
 

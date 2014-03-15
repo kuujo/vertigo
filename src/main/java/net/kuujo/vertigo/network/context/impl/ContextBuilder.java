@@ -198,8 +198,6 @@ public final class ContextBuilder {
     if (!base.address().equals(merge.address())) {
       throw new IllegalArgumentException("Network addresses must match for merge.");
     }
-
-    
     return base;
   }
 

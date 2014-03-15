@@ -53,6 +53,7 @@ public class DefaultOutputCollector implements OutputCollector {
   private final List<OutputHook> hooks = new ArrayList<>();
   private final Map<String, List<OutputStream>> streams = new HashMap<>();
   private final Acker acker;
+  private Handler<String> timeoutHandler;
   private final Iterator<String> auditors;
   private final Random random = new Random();
   private final String componentAddress;
@@ -170,7 +171,8 @@ public class DefaultOutputCollector implements OutputCollector {
 
   @Override
   public OutputCollector timeoutHandler(Handler<String> handler) {
-    acker.timeoutHandler(createTimeoutHandler(handler));
+    timeoutHandler = createTimeoutHandler(handler);
+    acker.timeoutHandler(timeoutHandler);
     return this;
   }
 
@@ -182,6 +184,15 @@ public class DefaultOutputCollector implements OutputCollector {
         hookTimeout(messageId);
       }
     };
+  }
+
+  /**
+   * Explicitly times out a message.
+   */
+  private void timeout(String messageId) {
+    if (timeoutHandler != null) {
+      timeoutHandler.handle(messageId);
+    }
   }
 
   @Override
@@ -228,7 +239,10 @@ public class DefaultOutputCollector implements OutputCollector {
       acker.create(messageId, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.succeeded()) {
+          if (result.failed()) {
+            timeout(messageId.correlationId());
+          }
+          else {
             for (OutputStream output : outputs) {
               acker.fork(messageId, output.emit(message));
             }

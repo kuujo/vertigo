@@ -51,7 +51,31 @@ abstract class AbstractCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler) {
+  public VertigoCluster getNetwork(final String address, final Handler<AsyncResult<NetworkContext>> resultHandler) {
+    cluster.isDeployed(address, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(resultHandler);
+        }
+        else if (!result.result()) {
+          new DefaultFutureResult<NetworkContext>(new DeploymentException("Network is not deployed.")).setHandler(resultHandler);
+        }
+        else {
+          cluster.get(address, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(resultHandler);
+              }
+              else {
+                new DefaultFutureResult<NetworkContext>(contextSerializer.deserializeString(result.result(), NetworkContext.class));
+              }
+            }
+          });
+        }
+      }
+    });
     return this;
   }
 

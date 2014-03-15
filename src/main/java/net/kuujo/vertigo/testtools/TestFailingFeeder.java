@@ -18,9 +18,9 @@ package net.kuujo.vertigo.testtools;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
-import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.component.feeder.Feeder;
 import net.kuujo.vertigo.java.BasicFeeder;
-import net.kuujo.vertigo.runtime.FailureException;
+import net.kuujo.vertigo.network.FailureException;
 import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;

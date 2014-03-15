@@ -21,13 +21,13 @@ import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.component.feeder.Feeder;
+import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.java.BasicFeeder;
 import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.network.context.NetworkContext;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

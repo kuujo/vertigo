@@ -17,9 +17,9 @@ package net.kuujo.vertigo.output;
 
 import java.util.List;
 
-import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.network.context.OutputStreamContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

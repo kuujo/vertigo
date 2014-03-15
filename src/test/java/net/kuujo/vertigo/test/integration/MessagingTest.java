@@ -15,15 +15,15 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.auditor.Acker;
-import net.kuujo.vertigo.auditor.AuditorVerticle;
-import net.kuujo.vertigo.auditor.impl.DefaultAcker;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.network.auditor.AuditorVerticle;
+import net.kuujo.vertigo.network.auditor.impl.DefaultAcker;
+import net.kuujo.vertigo.network.context.NetworkContext;
+import net.kuujo.vertigo.network.context.impl.ContextBuilder;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
 

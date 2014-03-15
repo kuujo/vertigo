@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import net.kuujo.vertigo.auditor.Acker;
-import net.kuujo.vertigo.auditor.AuditorVerticle;
-import net.kuujo.vertigo.auditor.impl.DefaultAcker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.message.impl.DefaultMessageId;
+import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.network.auditor.AuditorVerticle;
+import net.kuujo.vertigo.network.auditor.impl.DefaultAcker;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

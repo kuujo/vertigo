@@ -21,7 +21,7 @@ import org.vertx.java.core.json.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.network.context.InstanceContext;
 
 /**
  * This hook integrates directly with the mod-metrics module by

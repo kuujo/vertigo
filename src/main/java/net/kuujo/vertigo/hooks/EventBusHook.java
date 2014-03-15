@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.network.context.InstanceContext;
 
 import org.vertx.java.core.eventbus.EventBus;
 

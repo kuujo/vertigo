@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.coordinator.impl.LocalClusterCoordinator;
+import net.kuujo.vertigo.network.coordinator.impl.LocalClusterCoordinator;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;

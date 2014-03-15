@@ -21,19 +21,19 @@ import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.component.feeder.Feeder;
+import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.java.BasicFeeder;
 import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.network.context.NetworkContext;
 import net.kuujo.vertigo.testtools.TestAckingFeeder;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
 import net.kuujo.vertigo.testtools.TestFailingFeeder;
 import net.kuujo.vertigo.testtools.TestFailingWorker;
 import net.kuujo.vertigo.testtools.TestTimingOutFeeder;
 import net.kuujo.vertigo.testtools.TestTimingOutWorker;
-import net.kuujo.vertigo.worker.Worker;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

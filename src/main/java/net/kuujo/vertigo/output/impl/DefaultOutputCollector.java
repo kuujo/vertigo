@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import net.kuujo.vertigo.auditor.Acker;
-import net.kuujo.vertigo.context.OutputContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.message.impl.DefaultMessageId;
+import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.network.context.OutputContext;
+import net.kuujo.vertigo.network.context.OutputStreamContext;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.OutputStream;
 import net.kuujo.vertigo.util.CountingCompletionHandler;

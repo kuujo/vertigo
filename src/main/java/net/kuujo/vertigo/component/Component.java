@@ -21,9 +21,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.network.context.InstanceContext;
 import net.kuujo.vertigo.output.OutputCollector;
 
 /**

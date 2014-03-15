@@ -23,13 +23,13 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
-import net.kuujo.vertigo.auditor.Acker;
-import net.kuujo.vertigo.context.InputContext;
-import net.kuujo.vertigo.context.InputStreamContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputStream;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.network.context.InputContext;
+import net.kuujo.vertigo.network.context.InputStreamContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**

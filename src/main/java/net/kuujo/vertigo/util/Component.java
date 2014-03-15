@@ -18,8 +18,8 @@ package net.kuujo.vertigo.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.component.feeder.Feeder;
+import net.kuujo.vertigo.component.worker.Worker;
 
 import org.vertx.java.platform.impl.ModuleIdentifier;
 

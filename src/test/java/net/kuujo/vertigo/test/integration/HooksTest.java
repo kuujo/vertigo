@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.Network;
@@ -175,7 +175,7 @@ public class HooksTest extends TestVerticle {
   }
 
   private void deploy(Network network) {
-    Cluster cluster = new LocalCluster(vertx, container);
+    VertigoCluster cluster = new LocalCluster(vertx, container);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {

@@ -37,7 +37,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-abstract class AbstractCluster implements Cluster {
+abstract class AbstractCluster implements VertigoCluster {
   private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
   private static final Serializer contextSerializer = SerializerFactory.getSerializer(NetworkContext.class);
   protected final Vertx vertx;
@@ -53,17 +53,17 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public Cluster getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler) {
+  public VertigoCluster getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler) {
     return this;
   }
 
   @Override
-  public Cluster deployNetwork(Network network) {
+  public VertigoCluster deployNetwork(Network network) {
     return deployNetwork(network, null);
   }
 
   @Override
-  public Cluster deployNetwork(final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler) {
+  public VertigoCluster deployNetwork(final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler) {
     cluster.isDeployed(network.getAddress(), new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
@@ -115,22 +115,22 @@ abstract class AbstractCluster implements Cluster {
   }
 
   @Override
-  public Cluster undeployNetwork(String address) {
+  public VertigoCluster undeployNetwork(String address) {
     return undeployNetwork(address, null);
   }
 
   @Override
-  public Cluster undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+  public VertigoCluster undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
     return this;
   }
 
   @Override
-  public Cluster undeployNetwork(Network network) {
+  public VertigoCluster undeployNetwork(Network network) {
     return undeployNetwork(network, null);
   }
 
   @Override
-  public Cluster undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
+  public VertigoCluster undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
     return this;
   }
 

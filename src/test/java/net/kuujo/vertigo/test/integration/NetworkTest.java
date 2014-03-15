@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.java.BasicWorker;
@@ -57,7 +57,7 @@ public class NetworkTest extends TestVerticle {
     network1.addWorkerVerticle("network1.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.feeder1").randomGrouping();
     network1.addWorkerVerticle("network1.worker2", TestAckingWorker.class.getName(), 2).addInput("network1.worker1").roundGrouping();
 
-    final Cluster cluster = new LocalCluster(vertx, container);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     cluster.deployNetwork(network1, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
@@ -70,7 +70,7 @@ public class NetworkTest extends TestVerticle {
           Network network2 = new Network("network2");
           network2.addWorkerVerticle("network2.worker1", TestAckingWorker.class.getName(), 2).addInput("network1.worker2").randomGrouping();
           network2.addWorkerVerticle("network2.worker2", NestedWorker.class.getName(), 2).addInput("network2.worker1").roundGrouping();
-          Cluster cluster = new LocalCluster(vertx, container);
+          VertigoCluster cluster = new LocalCluster(vertx, container);
           cluster.deployNetwork(network2, new Handler<AsyncResult<NetworkContext>>() {
             @Override
             public void handle(AsyncResult<NetworkContext> result) {

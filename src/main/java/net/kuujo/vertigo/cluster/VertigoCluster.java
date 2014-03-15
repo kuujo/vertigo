@@ -26,7 +26,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface Cluster {
+public interface VertigoCluster {
 
   /**
    * Gets a network context for a deployed network.
@@ -35,7 +35,7 @@ public interface Cluster {
    * @param resultHandler An asynchronous handler to be called with the result.
    * @return The cluster.
    */
-  Cluster getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler);
+  VertigoCluster getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler);
 
   /**
    * Deploys a network to the cluster.
@@ -43,7 +43,7 @@ public interface Cluster {
    * @param network The network configuration.
    * @return The cluster.
    */
-  Cluster deployNetwork(Network network);
+  VertigoCluster deployNetwork(Network network);
 
   /**
    * Deploys a network to the cluster.
@@ -52,7 +52,7 @@ public interface Cluster {
    * @param doneHandler An asynchronous handler to be called once the deployment is complete.
    * @return The cluster.
    */
-  Cluster deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
+  VertigoCluster deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Undeploys a network from the cluster.
@@ -60,7 +60,7 @@ public interface Cluster {
    * @param address The address of the network to undeploy.
    * @return The cluster.
    */
-  Cluster undeployNetwork(String address);
+  VertigoCluster undeployNetwork(String address);
 
   /**
    * Undeploys a network from the cluster.
@@ -69,7 +69,7 @@ public interface Cluster {
    * @param doneHandler An asynchronous handler to be called once the network is undeployed.
    * @return The cluster.
    */
-  Cluster undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler);
+  VertigoCluster undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Undeploys a network from the cluster.
@@ -77,7 +77,7 @@ public interface Cluster {
    * @param network The network configuration to undeploy.
    * @return The cluster.
    */
-  Cluster undeployNetwork(Network network);
+  VertigoCluster undeployNetwork(Network network);
 
   /**
    * Undeploys a network from the cluster.
@@ -86,6 +86,6 @@ public interface Cluster {
    * @param doneHandler An asynchronous handler to be called once the network is undeployed.
    * @return The cluster.
    */
-  Cluster undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler);
+  VertigoCluster undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler);
 
 }

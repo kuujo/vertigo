@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.component.feeder.Feeder;
 import net.kuujo.vertigo.component.worker.Worker;
@@ -228,7 +228,7 @@ public class FeederTest extends TestVerticle {
   }
 
   private void deployNetwork(Network network) {
-    Cluster cluster = new LocalCluster(vertx, container);
+    VertigoCluster cluster = new LocalCluster(vertx, container);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {

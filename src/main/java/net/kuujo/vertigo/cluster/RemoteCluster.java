@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.network.coordinator.impl.RemoteClusterCoordinator;
-
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
@@ -33,7 +31,7 @@ public class RemoteCluster extends AbstractCluster {
   }
 
   public RemoteCluster(Vertx vertx, Container container) {
-    super(vertx, container, new RemoteClusterCoordinator(vertx));
+    super(vertx, container, new RemoteClusterClient(vertx));
   }
 
 }

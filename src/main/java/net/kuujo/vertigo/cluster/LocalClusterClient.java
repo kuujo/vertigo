@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network.coordinator.impl;
+package net.kuujo.vertigo.cluster;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,10 +22,6 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.network.coordinator.ClusterCoordinator;
-import net.kuujo.vertigo.network.coordinator.ClusterEvent;
-import net.kuujo.vertigo.network.coordinator.DeploymentException;
-import net.kuujo.vertigo.network.coordinator.ClusterEvent.Type;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -37,11 +33,11 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 
 /**
- * Local cluster coordinator implementation.
+ * Local cluster client implementation.
  *
  * @author Jordan Halterman
  */
-public class LocalClusterCoordinator implements ClusterCoordinator {
+public class LocalClusterClient implements ClusterClient {
   private final Vertx vertx;
   private final Container container;
   private final ConcurrentSharedMap<String, JsonObject> deployments;
@@ -51,11 +47,11 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   private final Map<Handler<ClusterEvent>, String> handlerMap = new HashMap<>();
 
   @Factory
-  public static ClusterCoordinator factory(Vertx vertx, Container container) {
-    return new LocalClusterCoordinator(vertx, container);
+  public static ClusterClient factory(Vertx vertx, Container container) {
+    return new LocalClusterClient(vertx, container);
   }
 
-  public LocalClusterCoordinator(Vertx vertx, Container container) {
+  public LocalClusterClient(Vertx vertx, Container container) {
     this.vertx = vertx;
     this.container = container;
     this.deployments = vertx.sharedData().getMap("__deployments__");
@@ -64,7 +60,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator isDeployed(final String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterClient isDeployed(final String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
@@ -75,7 +71,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator deployModule(final String deploymentID, String moduleName, JsonObject config,
+  public ClusterClient deployModule(final String deploymentID, String moduleName, JsonObject config,
       int instances, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -108,7 +104,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator deployVerticle(final String deploymentID, String main,
+  public ClusterClient deployVerticle(final String deploymentID, String main,
       JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -141,7 +137,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator deployWorkerVerticle(final String deploymentID, String main,
+  public ClusterClient deployWorkerVerticle(final String deploymentID, String main,
       JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -176,7 +172,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     if (!deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override
@@ -196,7 +192,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     if (!deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override
@@ -216,12 +212,12 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator set(String key, Object value) {
+  public ClusterClient set(String key, Object value) {
     return set(key, value, null);
   }
 
   @Override
-  public ClusterCoordinator set(final String key, final Object value, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient set(final String key, final Object value, final Handler<AsyncResult<Void>> doneHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
@@ -233,12 +229,12 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public <T> ClusterCoordinator get(String key, Handler<AsyncResult<T>> resultHandler) {
+  public <T> ClusterClient get(String key, Handler<AsyncResult<T>> resultHandler) {
     return get(key, null, resultHandler);
   }
 
   @Override
-  public <T> ClusterCoordinator get(final String key, final Object def, final Handler<AsyncResult<T>> resultHandler) {
+  public <T> ClusterClient get(final String key, final Object def, final Handler<AsyncResult<T>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @SuppressWarnings("unchecked")
       @Override
@@ -254,12 +250,12 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator delete(String key) {
+  public ClusterClient delete(String key) {
     return delete(key, null);
   }
 
   @Override
-  public ClusterCoordinator delete(final String key, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient delete(final String key, final Handler<AsyncResult<Void>> doneHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
@@ -271,7 +267,7 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator exists(final String key, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterClient exists(final String key, final Handler<AsyncResult<Boolean>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
@@ -282,26 +278,26 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator watch(String key, Handler<ClusterEvent> handler) {
+  public ClusterClient watch(String key, Handler<ClusterEvent> handler) {
     return watch(key, null, handler, null);
   }
 
   @Override
-  public ClusterCoordinator watch(String key, Type event, Handler<ClusterEvent> handler) {
+  public ClusterClient watch(String key, ClusterEvent.Type event, Handler<ClusterEvent> handler) {
     return watch(key, event, handler, null);
   }
 
   @Override
-  public ClusterCoordinator watch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient watch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
     return watch(key, null, handler, doneHandler);
   }
 
   @Override
-  public ClusterCoordinator watch(final String key, final Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient watch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        JsonObject watchers = LocalClusterCoordinator.this.watchers.get(key);
+        JsonObject watchers = LocalClusterClient.this.watchers.get(key);
         if (watchers == null) {
           watchers = new JsonObject();
         }
@@ -336,28 +332,28 @@ public class LocalClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator unwatch(String key, Handler<ClusterEvent> handler) {
+  public ClusterClient unwatch(String key, Handler<ClusterEvent> handler) {
     return unwatch(key, null, handler, null);
   }
 
   @Override
-  public ClusterCoordinator unwatch(String key, ClusterEvent.Type event, Handler<ClusterEvent> handler) {
+  public ClusterClient unwatch(String key, ClusterEvent.Type event, Handler<ClusterEvent> handler) {
     return unwatch(key, event, handler, null);
   }
 
   @Override
-  public ClusterCoordinator unwatch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient unwatch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
     return unwatch(key, null, handler, doneHandler);
   }
 
   @Override
-  public ClusterCoordinator unwatch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient unwatch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
         if (handlerMap.containsKey(handler)) {
           String address = handlerMap.remove(handler);
-          JsonObject watchers = LocalClusterCoordinator.this.watchers.get(key);
+          JsonObject watchers = LocalClusterClient.this.watchers.get(key);
           if (watchers == null) {
             watchers = new JsonObject();
           }

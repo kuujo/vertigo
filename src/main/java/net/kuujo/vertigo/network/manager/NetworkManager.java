@@ -19,12 +19,12 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.context.ComponentContext;
 import net.kuujo.vertigo.network.context.InstanceContext;
 import net.kuujo.vertigo.network.context.NetworkContext;
 import net.kuujo.vertigo.network.context.impl.ContextBuilder;
-import net.kuujo.vertigo.network.coordinator.ClusterCoordinator;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Factories;
 import net.kuujo.vertigo.util.serializer.Serializer;
@@ -47,7 +47,7 @@ public abstract class NetworkManager extends BusModBase {
   private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
   private static final Serializer contextSerializer = SerializerFactory.getSerializer(NetworkContext.class);
   private String address;
-  private ClusterCoordinator cluster;
+  private ClusterClient cluster;
   private Queue<Message<JsonObject>> queue = new ArrayDeque<>();
   private boolean locked;
 
@@ -103,10 +103,10 @@ public abstract class NetworkManager extends BusModBase {
   public void start(final Future<Void> startResult) {
     address = getMandatoryStringConfig("address");
     String clusterType = getMandatoryStringConfig("cluster");
-    Class<? extends ClusterCoordinator> clusterClass;
+    Class<? extends ClusterClient> clusterClass;
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     try {
-      clusterClass = (Class<? extends ClusterCoordinator>) loader.loadClass(clusterType);
+      clusterClass = (Class<? extends ClusterClient>) loader.loadClass(clusterType);
     }
     catch (Exception e) {
       startResult.setFailure(new IllegalArgumentException("Error instantiating serializer factory."));

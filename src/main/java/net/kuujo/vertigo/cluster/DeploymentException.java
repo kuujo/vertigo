@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network.coordinator;
+package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.VertigoException;
 

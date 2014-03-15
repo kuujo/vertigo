@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network.coordinator.impl;
+package net.kuujo.vertigo.cluster;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.network.coordinator.ClusterCoordinator;
-import net.kuujo.vertigo.network.coordinator.ClusterEvent;
-import net.kuujo.vertigo.network.coordinator.DeploymentException;
-import net.kuujo.vertigo.network.coordinator.ClusterEvent.Type;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,11 +32,11 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * Remote cluster coordinator implementation.
+ * Remote cluster client implementation.
  *
  * @author Jordan Halterman
  */
-public class RemoteClusterCoordinator implements ClusterCoordinator {
+public class RemoteClusterClient implements ClusterClient {
   private final String CLUSTER_ADDRESS = "cluster";
   private final EventBus eventBus;
   private final Map<String, Map<Handler<ClusterEvent>, HandlerWrapper>> watchHandlers = new HashMap<>();
@@ -56,16 +52,16 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Factory
-  public static ClusterCoordinator factory(Vertx vertx, Container container) {
-    return new RemoteClusterCoordinator(vertx);
+  public static ClusterClient factory(Vertx vertx, Container container) {
+    return new RemoteClusterClient(vertx);
   }
 
-  public RemoteClusterCoordinator(Vertx vertx) {
+  public RemoteClusterClient(Vertx vertx) {
     this.eventBus = vertx.eventBus();
   }
 
   @Override
-  public ClusterCoordinator isDeployed(String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterClient isDeployed(String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "check")
         .putString("id", deploymentID);
@@ -87,7 +83,7 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator deployModule(String deploymentID, String moduleName, JsonObject config,
+  public ClusterClient deployModule(String deploymentID, String moduleName, JsonObject config,
       int instances, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
@@ -114,7 +110,7 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator deployVerticle(String deploymentID, String main, JsonObject config,
+  public ClusterClient deployVerticle(String deploymentID, String main, JsonObject config,
       int instances, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
@@ -141,7 +137,7 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator deployWorkerVerticle(String deploymentID, String main,
+  public ClusterClient deployWorkerVerticle(String deploymentID, String main,
       JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
@@ -170,7 +166,7 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "undeploy")
         .putString("id", deploymentID)
@@ -193,7 +189,7 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "undeploy")
         .putString("id", deploymentID)
@@ -216,12 +212,12 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator set(String key, Object value) {
+  public ClusterClient set(String key, Object value) {
     return set(key, value, null);
   }
 
   @Override
-  public ClusterCoordinator set(String key, Object value, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient set(String key, Object value, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "set")
         .putString("key", key)
@@ -247,12 +243,12 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public <T> ClusterCoordinator get(String key, Handler<AsyncResult<T>> resultHandler) {
+  public <T> ClusterClient get(String key, Handler<AsyncResult<T>> resultHandler) {
     return get(key, null, resultHandler);
   }
 
   @Override
-  public <T> ClusterCoordinator get(String key, Object def, final Handler<AsyncResult<T>> resultHandler) {
+  public <T> ClusterClient get(String key, Object def, final Handler<AsyncResult<T>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "get")
         .putString("key", key)
@@ -279,12 +275,12 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator delete(String key) {
+  public ClusterClient delete(String key) {
     return delete(key, null);
   }
 
   @Override
-  public ClusterCoordinator delete(String key, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient delete(String key, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "delete")
         .putString("key", key);
@@ -309,7 +305,7 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator exists(String key, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterClient exists(String key, final Handler<AsyncResult<Boolean>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "exists")
         .putString("key", key);
@@ -334,25 +330,22 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator watch(String key, Handler<ClusterEvent> handler) {
-    // TODO Auto-generated method stub
-    return null;
+  public ClusterClient watch(String key, Handler<ClusterEvent> handler) {
+    return watch(key, null, handler, null);
   }
 
   @Override
-  public ClusterCoordinator watch(String key, Type event, Handler<ClusterEvent> handler) {
-    // TODO Auto-generated method stub
-    return null;
+  public ClusterClient watch(String key, ClusterEvent.Type event, Handler<ClusterEvent> handler) {
+    return watch(key, event, handler, null);
   }
 
   @Override
-  public ClusterCoordinator watch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
-    // TODO Auto-generated method stub
-    return null;
+  public ClusterClient watch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
+    return watch(key, null, handler, doneHandler);
   }
 
   @Override
-  public ClusterCoordinator watch(final String key, final Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient watch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
     final String id = UUID.randomUUID().toString();
     final Handler<Message<JsonObject>> watchHandler = new Handler<Message<JsonObject>>() {
       @Override
@@ -409,25 +402,22 @@ public class RemoteClusterCoordinator implements ClusterCoordinator {
   }
 
   @Override
-  public ClusterCoordinator unwatch(String key, Handler<ClusterEvent> handler) {
-    // TODO Auto-generated method stub
-    return null;
+  public ClusterClient unwatch(String key, Handler<ClusterEvent> handler) {
+    return unwatch(key, null, handler, null);
   }
 
   @Override
-  public ClusterCoordinator unwatch(String key, Type event, Handler<ClusterEvent> handler) {
-    // TODO Auto-generated method stub
-    return null;
+  public ClusterClient unwatch(String key, ClusterEvent.Type event, Handler<ClusterEvent> handler) {
+    return unwatch(key, event, handler, null);
   }
 
   @Override
-  public ClusterCoordinator unwatch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
-    // TODO Auto-generated method stub
-    return null;
+  public ClusterClient unwatch(String key, Handler<ClusterEvent> handler, Handler<AsyncResult<Void>> doneHandler) {
+    return unwatch(key, null, handler, doneHandler);
   }
 
   @Override
-  public ClusterCoordinator unwatch(final String key, final Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterClient unwatch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
     final Map<Handler<ClusterEvent>, HandlerWrapper> handlers = watchHandlers.get(key);
     if (!handlers.containsKey(handler)) {
       new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);

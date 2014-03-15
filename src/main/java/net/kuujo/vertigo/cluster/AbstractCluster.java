@@ -17,8 +17,6 @@ package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.context.NetworkContext;
-import net.kuujo.vertigo.network.coordinator.ClusterCoordinator;
-import net.kuujo.vertigo.network.coordinator.DeploymentException;
 import net.kuujo.vertigo.network.manager.NetworkManager;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
@@ -43,9 +41,9 @@ abstract class AbstractCluster implements VertigoCluster {
   protected final Vertx vertx;
   protected final Container container;
   protected final EventBus eventBus;
-  protected final ClusterCoordinator cluster;
+  protected final ClusterClient cluster;
 
-  protected AbstractCluster(Vertx vertx, Container container, ClusterCoordinator cluster) {
+  protected AbstractCluster(Vertx vertx, Container container, ClusterClient cluster) {
     this.vertx = vertx;
     this.container = container;
     this.eventBus = vertx.eventBus();

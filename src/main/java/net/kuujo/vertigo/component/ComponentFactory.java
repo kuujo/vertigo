@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo.component;
 
+import net.kuujo.vertigo.context.InstanceContext;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
-
-import net.kuujo.vertigo.network.context.InstanceContext;
 
 /**
  * A component instance factory.

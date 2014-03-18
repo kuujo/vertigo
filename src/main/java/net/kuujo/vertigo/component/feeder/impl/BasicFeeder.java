@@ -21,9 +21,9 @@ import java.util.Map;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.feeder.Feeder;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.network.FailureException;
 import net.kuujo.vertigo.network.TimeoutException;
-import net.kuujo.vertigo.network.context.InstanceContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

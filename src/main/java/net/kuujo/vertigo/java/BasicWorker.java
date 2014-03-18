@@ -20,8 +20,8 @@ import org.vertx.java.core.Handler;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.component.worker.Worker;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.context.InstanceContext;
 
 /**
  * A Java worker verticle.

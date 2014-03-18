@@ -19,10 +19,10 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
+import net.kuujo.vertigo.context.InputStreamContext;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.input.InputStream;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.context.InputStreamContext;
 
 /**
  * Default input stream implementation.

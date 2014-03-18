@@ -1,4 +1,4 @@
-package net.kuujo.vertigo.network.context;
+package net.kuujo.vertigo.context;
 
 /**
  * Stream context.

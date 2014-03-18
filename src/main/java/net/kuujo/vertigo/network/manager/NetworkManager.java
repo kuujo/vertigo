@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.Queue;
 
 import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.context.ComponentContext;
-import net.kuujo.vertigo.network.context.InstanceContext;
-import net.kuujo.vertigo.network.context.NetworkContext;
-import net.kuujo.vertigo.network.context.impl.ContextBuilder;
+import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Factories;
 import net.kuujo.vertigo.util.serializer.Serializer;

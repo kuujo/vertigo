@@ -17,9 +17,9 @@ package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.context.NetworkContext;
 import net.kuujo.vertigo.testtools.TestAckingWorker;
 import net.kuujo.vertigo.testtools.TestFailingWorker;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;

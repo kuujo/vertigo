@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.context.NetworkContext;
 import net.kuujo.vertigo.network.manager.NetworkManager;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;

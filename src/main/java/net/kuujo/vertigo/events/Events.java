@@ -17,10 +17,10 @@ package net.kuujo.vertigo.events;
 
 import java.lang.reflect.InvocationTargetException;
 
+import net.kuujo.vertigo.context.Context;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.network.context.Context;
-import net.kuujo.vertigo.network.context.InstanceContext;
-import net.kuujo.vertigo.network.context.NetworkContext;
 import net.kuujo.vertigo.util.serializer.SerializationException;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;

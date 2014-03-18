@@ -23,10 +23,10 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
+import net.kuujo.vertigo.context.ConnectionContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.network.context.ConnectionContext;
-import net.kuujo.vertigo.network.context.OutputStreamContext;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputStream;
 import net.kuujo.vertigo.output.selector.Selector;

@@ -20,7 +20,7 @@ import org.vertx.java.core.Handler;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.feeder.Feeder;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
-import net.kuujo.vertigo.network.context.InstanceContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 /**
  * A feeder verticle implementation.

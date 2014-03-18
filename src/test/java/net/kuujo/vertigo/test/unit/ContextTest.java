@@ -15,19 +15,19 @@
  */
 package net.kuujo.vertigo.test.unit;
 
+import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ModuleContext;
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Module;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Verticle;
-import net.kuujo.vertigo.network.context.InputStreamContext;
-import net.kuujo.vertigo.network.context.InstanceContext;
-import net.kuujo.vertigo.network.context.ModuleContext;
-import net.kuujo.vertigo.network.context.NetworkContext;
-import net.kuujo.vertigo.network.context.OutputStreamContext;
-import net.kuujo.vertigo.network.context.VerticleContext;
-import net.kuujo.vertigo.network.context.impl.ContextBuilder;
+import net.kuujo.vertigo.context.impl.ContextBuilder;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;

@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network.context;
+package net.kuujo.vertigo.context;
+
 
 /**
  * Input stream context.

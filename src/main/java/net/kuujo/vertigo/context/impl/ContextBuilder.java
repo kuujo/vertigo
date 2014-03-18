@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network.context.impl;
+package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,22 +23,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.ConnectionContext;
+import net.kuujo.vertigo.context.InputContext;
+import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.ModuleContext;
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.OutputContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.Module;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Verticle;
-import net.kuujo.vertigo.network.context.ComponentContext;
-import net.kuujo.vertigo.network.context.ConnectionContext;
-import net.kuujo.vertigo.network.context.InputContext;
-import net.kuujo.vertigo.network.context.InputStreamContext;
-import net.kuujo.vertigo.network.context.InstanceContext;
-import net.kuujo.vertigo.network.context.ModuleContext;
-import net.kuujo.vertigo.network.context.NetworkContext;
-import net.kuujo.vertigo.network.context.OutputContext;
-import net.kuujo.vertigo.network.context.OutputStreamContext;
-import net.kuujo.vertigo.network.context.VerticleContext;
 
 /**
  * A context builder.

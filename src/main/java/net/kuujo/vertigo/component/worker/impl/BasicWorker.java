@@ -18,8 +18,8 @@ package net.kuujo.vertigo.component.worker.impl;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.component.worker.Worker;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.context.InstanceContext;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;

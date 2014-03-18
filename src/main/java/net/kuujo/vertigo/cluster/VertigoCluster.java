@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.context.NetworkContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

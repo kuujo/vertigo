@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network.context.impl;
+package net.kuujo.vertigo.context.impl;
 
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.cluster.ClusterEvent;
-import net.kuujo.vertigo.network.context.ComponentContext;
-import net.kuujo.vertigo.network.context.Context;
-import net.kuujo.vertigo.network.context.ContextRegistry;
-import net.kuujo.vertigo.network.context.InstanceContext;
-import net.kuujo.vertigo.network.context.NetworkContext;
+import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.Context;
+import net.kuujo.vertigo.context.ContextRegistry;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;

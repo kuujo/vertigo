@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.input;
 
+import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.context.InputContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

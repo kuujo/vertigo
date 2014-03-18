@@ -24,9 +24,9 @@ import org.vertx.java.platform.Verticle;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.RemoteCluster;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.context.InstanceContext;
-import net.kuujo.vertigo.network.context.NetworkContext;
 
 /**
  * The primary Vertigo API.

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.util;
 
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.network.context.InstanceContext;
+import net.kuujo.vertigo.context.InstanceContext;
 
 /**
  * Context utilities.

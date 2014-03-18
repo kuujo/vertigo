@@ -35,6 +35,15 @@ public interface ContextRegistry {
   ContextRegistry registerContext(NetworkContext network, Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
+   * Unregisters a network context.
+   *
+   * @param network The network context to unregister.
+   * @param doneHandler An asynchronous handler to be called once the context has been unregistered.
+   * @return The context registry.
+   */
+  ContextRegistry unregisterContext(NetworkContext network, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Registers a component context.
    *
    * @param component The component context to register.
@@ -44,6 +53,15 @@ public interface ContextRegistry {
   <T extends ComponentContext<T>> ContextRegistry registerContext(T component, Handler<AsyncResult<T>> doneHandler);
 
   /**
+   * Unregisters a component context.
+   *
+   * @param component The component context to unregister.
+   * @param doneHandler An asynchronous handler to be called once the context has been unregistered.
+   * @return The context registry.
+   */
+  <T extends ComponentContext<T>> ContextRegistry unregisterContext(T component, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Registers an instance context.
    *
    * @param instance The instance context to register.
@@ -51,5 +69,14 @@ public interface ContextRegistry {
    * @return The context registry.
    */
   ContextRegistry registerContext(InstanceContext instance, Handler<AsyncResult<InstanceContext>> doneHandler);
+
+  /**
+   * Unregisters an instance context.
+   *
+   * @param instance The instance context to unregister.
+   * @param doneHandler An asynchronous handler to be called once the context has been unregistered.
+   * @return The context registry.
+   */
+  ContextRegistry unregisterContext(InstanceContext instance, Handler<AsyncResult<Void>> doneHandler);
 
 }

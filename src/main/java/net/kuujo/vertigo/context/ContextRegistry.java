@@ -41,7 +41,7 @@ public interface ContextRegistry {
    * @param doneHandler An asynchronous handler to be called once the context has been registered.
    * @return The context registry.
    */
-  ContextRegistry registerContext(ComponentContext<?> component, Handler<AsyncResult<ComponentContext<?>>> doneHandler);
+  <T extends ComponentContext<T>> ContextRegistry registerContext(T component, Handler<AsyncResult<T>> doneHandler);
 
   /**
    * Registers an instance context.

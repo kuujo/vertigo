@@ -31,14 +31,18 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Remote cluster client implementation.
  *
  * @author Jordan Halterman
  */
 public class RemoteClusterClient implements ClusterClient {
-  private final String CLUSTER_ADDRESS = "cluster";
+  private static final String CLUSTER_ADDRESS = "cluster";
+  @JsonIgnore
   private final EventBus eventBus;
+  @JsonIgnore
   private final Map<String, Map<Handler<ClusterEvent>, HandlerWrapper>> watchHandlers = new HashMap<>();
 
   private static class HandlerWrapper {

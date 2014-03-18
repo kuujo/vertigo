@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputContext;
@@ -53,13 +54,18 @@ public final class ContextBuilder {
    *
    * @param network
    *   The network definition.
+   * @param cluster
+   *   The cluster in which the network is being deployed.
    * @return
    *   A new network context.
    * @throws MalformedNetworkException 
    *   If the network is malformed.
    */
-  public static NetworkContext buildContext(Network network) {
+  public static NetworkContext buildContext(Network network, ClusterClient cluster) {
     NetworkContext.Builder context = NetworkContext.Builder.newBuilder();
+
+    // Set the network cluster.
+    context.setCluster(cluster);
 
     // Set basic network configuration options.
     context.setAddress(network.getAddress());
@@ -84,6 +90,7 @@ public final class ContextBuilder {
       if (component.isModule()) {
         // Set up basic module configuratin options.
         ModuleContext.Builder module = ModuleContext.Builder.newBuilder();
+        module.setCluster(cluster);
         module.setName(component.getName());
         String address = component.getAddress();
         if (address == null) {
@@ -113,6 +120,7 @@ public final class ContextBuilder {
       else {
         // Set up basic verticle configuration options.
         VerticleContext.Builder verticle = VerticleContext.Builder.newBuilder();
+        verticle.setCluster(cluster);
         verticle.setName(component.getName());
         String address = component.getAddress();
         if (address == null) {
@@ -131,6 +139,7 @@ public final class ContextBuilder {
         List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getNumInstances(); i++) {
           InstanceContext.Builder instance = InstanceContext.Builder.newBuilder();
+          instance.setCluster(cluster);
           instance.setId(String.format("%s-%d", address, i));
           instance.setNumber(i);
           instance.setInput(InputContext.Builder.newBuilder().build());
@@ -154,6 +163,7 @@ public final class ContextBuilder {
         // to each instance to which the stream feeds. The InputStreamContext will
         // contain a single connection on which the instance listens for messages.
         OutputStreamContext.Builder outputStream = OutputStreamContext.Builder.newBuilder();
+        outputStream.setCluster(cluster);
         outputStream.setStream(info.getStream());
         outputStream.setGrouping(info.getGrouping());
 
@@ -167,6 +177,7 @@ public final class ContextBuilder {
           // Iterate through input instances and add unique addresses to the output stream.
           for (InstanceContext inputInstanceContext : inputComponentContext.instances()) {
             InputStreamContext.Builder inputStream = InputStreamContext.Builder.newBuilder();
+            inputStream.setCluster(cluster);
             inputStream.setStream(info.getStream());
             ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(UUID.randomUUID().toString()).build();
             inputStream.setConnection(connection); // Set the input stream connection.

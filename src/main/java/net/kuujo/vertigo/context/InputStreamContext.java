@@ -54,15 +54,14 @@ public class InputStreamContext extends Context<InputStreamContext> {
    *
    * @author Jordan Halterman
    */
-  public static class Builder {
-    private InputStreamContext context;
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<InputStreamContext> {
 
     private Builder() {
-      context = new InputStreamContext();
+      super(new InputStreamContext());
     }
 
     private Builder(InputStreamContext context) {
-      this.context = context;
+      super(context);
     }
 
     /**
@@ -105,16 +104,6 @@ public class InputStreamContext extends Context<InputStreamContext> {
       context.connection = connection;
       return this;
     }
-
-    /**
-     * Builds the input stream context.
-     *
-     * @return A new input stream context.
-     */
-    public InputStreamContext build() {
-      return context;
-    }
-
   }
 
 }

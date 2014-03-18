@@ -93,15 +93,14 @@ public class InputContext extends IOContext<InputContext> {
    *
    * @author Jordan Halterman
    */
-  public static class Builder {
-    private InputContext context;
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<InputContext> {
 
     private Builder() {
-      context = new InputContext();
+      super(new InputContext());
     }
 
     private Builder(InputContext context) {
-      this.context = context;
+      super(context);
     }
 
     /**
@@ -165,15 +164,6 @@ public class InputContext extends IOContext<InputContext> {
     public Builder removeStream(InputStreamContext stream) {
       context.streams.remove(stream);
       return this;
-    }
-
-    /**
-     * Builds the input context.
-     *
-     * @return A new input context.
-     */
-    public InputContext build() {
-      return context;
     }
   }
 

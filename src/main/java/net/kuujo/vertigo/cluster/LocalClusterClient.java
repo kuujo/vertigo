@@ -32,18 +32,27 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Local cluster client implementation.
  *
  * @author Jordan Halterman
  */
 public class LocalClusterClient implements ClusterClient {
+  @JsonIgnore
   private final Vertx vertx;
+  @JsonIgnore
   private final Container container;
+  @JsonIgnore
   private final ConcurrentSharedMap<String, JsonObject> deployments;
+  @JsonIgnore
   private final ConcurrentSharedMap<String, Object> data;
+  @JsonIgnore
   private final ConcurrentSharedMap<String, JsonObject> watchers;
+  @JsonIgnore
   private final Map<String, Handler<ClusterEvent>> watchHandlers = new HashMap<>();
+  @JsonIgnore
   private final Map<Handler<ClusterEvent>, String> handlerMap = new HashMap<>();
 
   @Factory

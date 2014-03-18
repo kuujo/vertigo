@@ -84,15 +84,14 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
    *
    * @author Jordan Halterman
    */
-  public static class Builder {
-    private OutputStreamContext context;
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<OutputStreamContext> {
 
     private Builder() {
-      context = new OutputStreamContext();
+      super(new OutputStreamContext());
     }
 
     private Builder(OutputStreamContext context) {
-      this.context = context;
+      super(context);
     }
 
     /**
@@ -178,15 +177,6 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
     public Builder removeConnection(ConnectionContext connection) {
       context.connections.remove(connection);
       return this;
-    }
-
-    /**
-     * Builds the stream context.
-     *
-     * @return A new stream context.
-     */
-    public OutputStreamContext build() {
-      return context;
     }
   }
 

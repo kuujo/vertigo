@@ -159,11 +159,12 @@ public final class NetworkContext extends Context<NetworkContext> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void notify(NetworkContext update) {
     super.notify(update);
-    for (ComponentContext<?> component : components.values()) {
+    for (@SuppressWarnings("rawtypes") ComponentContext component : components.values()) {
       boolean updated = false;
-      for (ComponentContext<?> c : update.components()) {
+      for (@SuppressWarnings("rawtypes") ComponentContext c : update.components()) {
         if (component.equals(c)) {
           component.notify(c);
           updated = true;
@@ -186,15 +187,14 @@ public final class NetworkContext extends Context<NetworkContext> {
    *
    * @author Jordan Halterman
    */
-  public static class Builder {
-    private NetworkContext context;
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<NetworkContext> {
 
     private Builder() {
-      context = new NetworkContext();
+      super(new NetworkContext());
     }
 
     private Builder(NetworkContext context) {
-      this.context = context;
+      super(context);
     }
 
     /**
@@ -350,16 +350,6 @@ public final class NetworkContext extends Context<NetworkContext> {
       context.components.remove(component.name());
       return this;
     }
-
-    /**
-     * Builds the network context.
-     *
-     * @return A new network context.
-     */
-    public NetworkContext build() {
-      return context;
-    }
-
   }
 
 }

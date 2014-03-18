@@ -52,6 +52,7 @@ public class DefaultContextRegistry implements ContextRegistry {
       }
     }, new Handler<AsyncResult<Void>>() {
       @Override
+      @SuppressWarnings({"unchecked", "rawtypes"})
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
@@ -70,10 +71,10 @@ public class DefaultContextRegistry implements ContextRegistry {
             }
           });
 
-          for (ComponentContext<?> component : network.components()) {
-            registerContext(component, new Handler<AsyncResult<ComponentContext<?>>>() {
+          for (ComponentContext component : network.components()) {
+            registerContext(component, new Handler<AsyncResult<ComponentContext>>() {
               @Override
-              public void handle(AsyncResult<ComponentContext<?>> result) {
+              public void handle(AsyncResult<ComponentContext> result) {
                 if (result.failed()) {
                   counter.fail(result.cause());
                 }
@@ -90,17 +91,18 @@ public class DefaultContextRegistry implements ContextRegistry {
   }
 
   @Override
-  public ContextRegistry registerContext(final ComponentContext<?> component, final Handler<AsyncResult<ComponentContext<?>>> doneHandler) {
+  public <T extends ComponentContext<T>> ContextRegistry registerContext(final T component, final Handler<AsyncResult<T>> doneHandler) {
     cluster.watch(component.address(), new Handler<ClusterEvent>() {
       @Override
+      @SuppressWarnings("unchecked")
       public void handle(ClusterEvent event) {
-        component.notify(serializer.deserializeString(event.<String>value(), ComponentContext.class));
+        component.notify((T) serializer.deserializeString(event.<String>value(), ComponentContext.class));
       }
     }, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ComponentContext<?>>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<T>(result.cause()).setHandler(doneHandler);
         }
         else {
           final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(component.instances().size());
@@ -108,10 +110,10 @@ public class DefaultContextRegistry implements ContextRegistry {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
-                new DefaultFutureResult<ComponentContext<?>>(result.cause()).setHandler(doneHandler);
+                new DefaultFutureResult<T>(result.cause()).setHandler(doneHandler);
               }
               else {
-                new DefaultFutureResult<ComponentContext<?>>(component).setHandler(doneHandler);
+                new DefaultFutureResult<T>(component).setHandler(doneHandler);
               }
             }
           });

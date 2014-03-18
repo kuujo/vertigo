@@ -39,15 +39,14 @@ public class ConnectionContext extends Context<ConnectionContext> {
    *
    * @author Jordan Halterman
    */
-  public static class Builder {
-    private ConnectionContext context;
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<ConnectionContext> {
 
     private Builder() {
-      context = new ConnectionContext();
+      super(new ConnectionContext());
     }
 
     private Builder(ConnectionContext context) {
-      this.context = context;
+      super(context);
     }
 
     /**
@@ -78,15 +77,6 @@ public class ConnectionContext extends Context<ConnectionContext> {
     public Builder setAddress(String address) {
       context.address = address;
       return this;
-    }
-
-    /**
-     * Builds the connection context.
-     *
-     * @return A new connection context.
-     */
-    public ConnectionContext build() {
-      return context;
     }
   }
 

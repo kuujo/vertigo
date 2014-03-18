@@ -19,13 +19,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.util.Observable;
+import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.serializer.Serializable;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
-import net.kuujo.vertigo.util.Observable;
-import net.kuujo.vertigo.util.Observer;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Base context.
@@ -35,6 +36,7 @@ import net.kuujo.vertigo.util.Observer;
 public abstract class Context<T extends Context<T>> implements Observable<T>, Serializable {
   private static final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   protected String id = UUID.randomUUID().toString();
+  protected ClusterClient cluster;
   @JsonIgnore
   protected final Set<Observer<T>> observers = new HashSet<>();
 
@@ -69,6 +71,15 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
     return id;
   }
 
+  /**
+   * Returns the context cluster.
+   *
+   * @return The cluster to which the context belongs.
+   */
+  public ClusterClient cluster() {
+    return cluster;
+  }
+
   @Override
   public String toString() {
     return id;
@@ -87,6 +98,40 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
   @SuppressWarnings("unchecked")
   public T copy() {
     return (T) serializer.deserializeString(serializer.serializeToString(this), getClass());
+  }
+
+  /**
+   * Base context builder.
+   *
+   * @author Jordan Halterman
+   */
+  public static class Builder<T extends Context<T>> {
+    protected final T context;
+
+    protected Builder(T context) {
+      this.context = context;
+    }
+
+    /**
+     * Sets the context cluster.
+     *
+     * @param cluster The context cluster.
+     * @return The builder instance.
+     */
+    public Builder<T> setCluster(ClusterClient cluster) {
+      context.cluster = cluster;
+      return this;
+    }
+
+    /**
+     * Builds the context.
+     *
+     * @return The context.
+     */
+    public T build() {
+      return context;
+    }
+
   }
 
 }

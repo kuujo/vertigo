@@ -48,7 +48,7 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
   @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_MODULE),
   @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_VERTICLE)
 })
-public abstract class ComponentContext<T extends ComponentContext<T>> extends Context<ComponentContext<?>> {
+public abstract class ComponentContext<T extends ComponentContext<T>> extends Context<T> {
   private static final String DEFAULT_GROUP = "__DEFAULT__";
   protected String name;
   protected String address;
@@ -264,7 +264,7 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
   }
 
   @Override
-  public void notify(ComponentContext<?> update) {
+  public void notify(T update) {
     super.notify(update);
     for (InstanceContext instance : instances) {
       boolean updated = false;

@@ -62,15 +62,15 @@ public class ModuleContext extends ComponentContext<ModuleContext> {
    *
    * @author Jordan Halterman
    */
-  public static class Builder {
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<ModuleContext> {
     private ModuleContext context;
 
     private Builder() {
-      context = new ModuleContext();
+      super(new ModuleContext());
     }
 
     private Builder(ModuleContext context) {
-      this.context = context;
+      super(context);
     }
 
     /**

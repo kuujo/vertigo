@@ -138,7 +138,7 @@ public abstract class NetworkManager extends BusModBase {
 
     lock();
     Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
-    deployNetwork(ContextBuilder.buildContext(network), new Handler<AsyncResult<NetworkContext>>() {
+    deployNetwork(ContextBuilder.buildContext(network, cluster), new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
@@ -313,7 +313,7 @@ public abstract class NetworkManager extends BusModBase {
 
     lock();
     final Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
-    undeployNetwork(ContextBuilder.buildContext(network), new Handler<AsyncResult<Void>>() {
+    undeployNetwork(ContextBuilder.buildContext(network, cluster), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {

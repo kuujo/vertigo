@@ -15,30 +15,29 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.cluster.RemoteCluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.java.BasicFeeder;
 import net.kuujo.vertigo.java.BasicWorker;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;
-
-import static org.vertx.testtools.VertxAssert.assertTrue;
-import static org.vertx.testtools.VertxAssert.testComplete;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.testtools.TestVerticle;
 
 /**
- * A network cluster test.
+ * A remote cluster test.
  *
  * @author Jordan Halterman
  */
-public class ClusterTest extends TestVerticle {
+public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testLocalDeploy() {
@@ -48,7 +47,7 @@ public class ClusterTest extends TestVerticle {
     network.addWorker("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
     network.addWorker("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
 
-    VertigoCluster cluster = new LocalCluster(this);
+    VertigoCluster cluster = new RemoteCluster(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {

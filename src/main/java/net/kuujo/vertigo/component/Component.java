@@ -15,16 +15,17 @@
  */
 package net.kuujo.vertigo.component;
 
+import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.output.OutputCollector;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
-
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.output.OutputCollector;
 
 /**
  * A network component.
@@ -75,6 +76,13 @@ public interface Component<T extends Component<T>> {
    *   The instance context.
    */
   InstanceContext context();
+
+  /**
+   * Returns the component cluster client.
+   *
+   * @return The component cluster client.
+   */
+  ClusterClient cluster();
 
   /**
    * Returns the instance logger.

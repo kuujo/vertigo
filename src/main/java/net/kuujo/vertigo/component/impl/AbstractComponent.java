@@ -20,11 +20,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.kuujo.vertigo.network.auditor.Acker;
-import net.kuujo.vertigo.network.auditor.impl.DefaultAcker;
-import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.component.Coordinator;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -33,6 +31,10 @@ import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
+import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.network.auditor.impl.DefaultAcker;
+import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -58,6 +60,8 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   protected final Container container;
   protected final Logger logger;
   protected final InstanceContext context;
+  protected final ClusterClient cluster;
+  protected final Coordinator coordinator;
   protected final Acker acker;
   protected final String instanceId;
   protected final String address;
@@ -137,6 +141,8 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.container = container;
     this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.component().type().getName(), context.address()));
     this.context = context;
+    this.cluster = context.cluster();
+    this.coordinator = new DefaultCoordinator(context);
     this.acker = new DefaultAcker(eventBus);
     this.instanceId = context.address();
     this.address = context.component().address();
@@ -172,6 +178,11 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   @Override
   public InstanceContext context() {
     return context;
+  }
+
+  @Override
+  public ClusterClient cluster() {
+    return cluster;
   }
 
   @Override

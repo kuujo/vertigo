@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.component.feeder.impl;
+package net.kuujo.vertigo.feeder.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.component.feeder.Feeder;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.network.FailureException;
 import net.kuujo.vertigo.network.TimeoutException;
 

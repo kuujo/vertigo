@@ -20,7 +20,7 @@ import java.util.Random;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
-import net.kuujo.vertigo.component.feeder.Feeder;
+import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.java.BasicFeeder;
 
 /**

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.component.worker.impl;
+package net.kuujo.vertigo.worker.impl;
 
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
-import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;

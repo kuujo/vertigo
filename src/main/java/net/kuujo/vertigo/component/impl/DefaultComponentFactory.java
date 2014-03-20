@@ -22,9 +22,9 @@ import java.lang.reflect.Modifier;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
-import net.kuujo.vertigo.component.feeder.Feeder;
-import net.kuujo.vertigo.component.worker.Worker;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.feeder.Feeder;
+import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;

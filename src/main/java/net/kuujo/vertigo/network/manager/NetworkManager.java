@@ -15,16 +15,21 @@
  */
 package net.kuujo.vertigo.network.manager;
 
+import static net.kuujo.vertigo.util.Config.buildConfig;
+import static net.kuujo.vertigo.util.Config.parseCluster;
+
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
+import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.auditor.AuditorVerticle;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
@@ -36,9 +41,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-
-import static net.kuujo.vertigo.util.Config.parseCluster;
-import static net.kuujo.vertigo.util.Config.buildConfig;
 
 /**
  * Vertigo network manager.
@@ -166,7 +168,7 @@ public class NetworkManager extends BusModBase {
   }
 
   private void deployNetwork(final NetworkContext context, final Handler<AsyncResult<NetworkContext>> doneHandler) {
-    final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
+    final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.auditors().size());
     complete.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -174,21 +176,49 @@ public class NetworkManager extends BusModBase {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
         }
         else {
-          cluster.set(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<Void>>() {
+          final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
+          complete.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
               }
               else {
-                new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
+                cluster.set(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
+                    }
+                    else {
+                      new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
+                    }
+                  }
+                });
               }
             }
           });
+          deployComponents(context.components(), complete);
         }
       }
     });
-    deployComponents(context.components(), complete);
+    deployAuditors(context.auditors(), context.messageTimeout(), complete);
+  }
+
+  private void deployAuditors(Set<String> auditors, long timeout, final CountingCompletionHandler<Void> complete) {
+    for (String address : auditors) {
+      cluster.deployVerticle(address, AuditorVerticle.class.getName(), new JsonObject().putString("address", address).putNumber("timeout", timeout), 1, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            complete.fail(result.cause());
+          }
+          else {
+            complete.succeed();
+          }
+        }
+      });
+    }
   }
 
   private void deployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
@@ -410,11 +440,39 @@ public class NetworkManager extends BusModBase {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         }
         else {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
+          complete.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+              else {
+                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+              }
+            }
+          });
+          undeployComponents(context.components(), complete);
         }
       }
     });
-    undeployComponents(context.components(), complete);
+    undeployAuditors(context.auditors(), complete);
+  }
+
+  private void undeployAuditors(Set<String> auditors, final CountingCompletionHandler<Void> complete) {
+    for (String address : auditors) {
+      cluster.undeployVerticle(address, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            complete.fail(result.cause());
+          }
+          else {
+            complete.succeed();
+          }
+        }
+      });
+    }
   }
 
   private void undeployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {

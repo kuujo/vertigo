@@ -284,11 +284,11 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     final Set<String> instances = new HashSet<>();
     for (ComponentContext<?> component : context.component().network().components()) {
       for (InstanceContext instance : component.instances()) {
-        instances.add(instance.id());
+        instances.add(instance.address());
       }
     }
 
-    vertx.eventBus().registerHandler(context.id(), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().registerHandler(context.address(), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         final String action = message.body().getString("action");
@@ -300,7 +300,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
             JsonArray touched = message.body().getArray("instances");
             if (touched.size() == instances.size()) {
               for (String instanceID : instances) {
-                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.id()));
+                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.address()));
               }
             }
             // Otherwise, add this instance to the touched list and pass it to the next instance.
@@ -316,9 +316,9 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
           case "start":
             // All the component instances in the network have been started.
             // Forward the start on to all visible components.
-            if (!started && !message.body().getString("source").equals(context.id())) {
+            if (!started && !message.body().getString("source").equals(context.address())) {
               for (String instanceID : instances) {
-                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.id()));
+                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.address()));
               }
               started = true;
               future.setResult((Void) null);
@@ -345,7 +345,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
             }
             else {
               eventBus.send(instances.iterator().next(), new JsonObject().putString("action", "ready")
-                  .putArray("instances", new JsonArray().add(context.id())));
+                  .putArray("instances", new JsonArray().add(context.address())));
             }
           }
         });

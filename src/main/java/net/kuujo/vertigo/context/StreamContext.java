@@ -7,5 +7,5 @@ package net.kuujo.vertigo.context;
  *
  * @param <T>
  */
-public class StreamContext<T extends StreamContext<T>> extends Context<T> {
+public abstract class StreamContext<T extends StreamContext<T>> extends Context<T> {
 }

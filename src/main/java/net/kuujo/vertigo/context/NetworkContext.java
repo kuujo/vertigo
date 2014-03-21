@@ -66,11 +66,7 @@ public final class NetworkContext extends Context<NetworkContext> {
     return new JsonObject().putObject("network", SerializerFactory.getSerializer(NetworkContext.class).serializeToObject(context));
   }
 
-  /**
-   * Returns the network address.
-   * 
-   * @return The network address.
-   */
+  @Override
   public String address() {
     return address;
   }

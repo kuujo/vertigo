@@ -71,6 +71,11 @@ public class InputContext extends IOContext<InputContext> {
   }
 
   @Override
+  public String address() {
+    return null;
+  }
+
+  @Override
   public void notify(InputContext update) {
     super.notify(update);
     for (InputStreamContext stream : streams) {

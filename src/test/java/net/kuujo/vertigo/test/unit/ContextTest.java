@@ -318,7 +318,7 @@ public class ContextTest {
     for (InstanceContext instanceContext : feederContext.instances()) {
       OutputStreamContext outputContext = instanceContext.output().streams().iterator().next();
       assertTrue(outputContext.connections().size() == 2);
-      assertTrue(outputContext.stream().equals("stream"));
+      assertTrue(outputContext.name().equals("stream"));
       assertTrue(outputContext.grouping() instanceof RandomGrouping);
     }
 
@@ -327,7 +327,7 @@ public class ContextTest {
     assertEquals("test.worker", workerContext.address());
     for (InstanceContext instanceContext : workerContext.instances()) {
       InputStreamContext inputContext = instanceContext.input().streams().iterator().next();
-      inputContext.stream().equals("stream");
+      inputContext.name().equals("stream");
     }
   }
 

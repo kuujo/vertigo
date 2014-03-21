@@ -17,7 +17,6 @@ package net.kuujo.vertigo.context;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.util.Observable;
@@ -35,7 +34,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public abstract class Context<T extends Context<T>> implements Observable<T>, Serializable {
   private static final Serializer serializer = SerializerFactory.getSerializer(Context.class);
-  protected String id = UUID.randomUUID().toString();
   protected ClusterClient cluster;
   @JsonIgnore
   protected final Set<Observer<T>> observers = new HashSet<>();
@@ -63,15 +61,6 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
   }
 
   /**
-   * Returns the unique context ID.
-   *
-   * @return The globally unique context ID;
-   */
-  public String id() {
-    return id;
-  }
-
-  /**
    * Returns the context cluster.
    *
    * @return The cluster to which the context belongs.
@@ -80,14 +69,26 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
     return cluster;
   }
 
+  /**
+   * Returns the context address.
+   *
+   * @return The context address.
+   */
+  public abstract String address();
+
   @Override
   public String toString() {
-    return id;
+    return address();
   }
 
   @Override
   public boolean equals(Object other) {
-    return other instanceof Context && ((Context<?>) other).id().equals(id);
+    return other instanceof Context && ((Context<?>) other).address().equals(address());
+  }
+
+  @Override
+  public int hashCode() {
+    return address().hashCode();
   }
 
   /**

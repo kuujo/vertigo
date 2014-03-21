@@ -37,7 +37,6 @@ import org.vertx.java.platform.Container;
  */
 abstract class AbstractCluster implements VertigoCluster {
   private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
-  private static final Serializer contextSerializer = SerializerFactory.getSerializer(NetworkContext.class);
   protected final Vertx vertx;
   protected final Container container;
   protected final EventBus eventBus;
@@ -69,7 +68,7 @@ abstract class AbstractCluster implements VertigoCluster {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(resultHandler);
               }
               else {
-                new DefaultFutureResult<NetworkContext>(contextSerializer.deserializeString(result.result(), NetworkContext.class));
+                new DefaultFutureResult<NetworkContext>(NetworkContext.fromJson(new JsonObject(result.result())));
               }
             }
           });
@@ -130,7 +129,7 @@ abstract class AbstractCluster implements VertigoCluster {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
         }
         else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<NetworkContext>(contextSerializer.deserializeObject(result.result().body().getObject("context"), NetworkContext.class));
+          new DefaultFutureResult<NetworkContext>(NetworkContext.fromJson(result.result().body().getObject("context")));
         }
         else {
           new DefaultFutureResult<NetworkContext>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);

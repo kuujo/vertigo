@@ -22,7 +22,9 @@ package net.kuujo.vertigo.context;
  * @author Jordan Halterman
  */
 public class InputStreamContext extends Context<InputStreamContext> {
+  private String address;
   private String stream;
+  private String source;
   private ConnectionContext connection;
 
   /**
@@ -30,8 +32,22 @@ public class InputStreamContext extends Context<InputStreamContext> {
    *
    * @return The input stream name.
    */
-  public String stream() {
+  public String name() {
     return stream;
+  }
+
+  @Override
+  public String address() {
+    return address;
+  }
+
+  /**
+   * Returns the stream source.
+   *
+   * @return The stream source.
+   */
+  public String source() {
+    return source;
   }
 
   /**
@@ -89,8 +105,30 @@ public class InputStreamContext extends Context<InputStreamContext> {
      * @param stream The stream name.
      * @return The context builder.
      */
-    public Builder setStream(String stream) {
+    public Builder setName(String stream) {
       context.stream = stream;
+      return this;
+    }
+
+    /**
+     * Sets the input stream address.
+     *
+     * @param address The input stream address.
+     * @return The context builder.
+     */
+    public Builder setAddress(String address) {
+      context.address = address;
+      return this;
+    }
+
+    /**
+     * Sets the input stream source.
+     *
+     * @param source The stream source.
+     * @return The context builder.
+     */
+    public Builder setSource(String source) {
+      context.source = source;
       return this;
     }
 

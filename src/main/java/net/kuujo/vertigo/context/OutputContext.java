@@ -60,6 +60,11 @@ public class OutputContext extends IOContext<OutputContext> {
     return json.putObject("output", serializer.serializeToObject(context));
   }
 
+  @Override
+  public String address() {
+    return null;
+  }
+
   /**
    * Returns the output's stream contexts.
    *

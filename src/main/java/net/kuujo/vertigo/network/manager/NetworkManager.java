@@ -45,7 +45,6 @@ import org.vertx.java.core.json.JsonObject;
  */
 public abstract class NetworkManager extends BusModBase {
   private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
-  private static final Serializer contextSerializer = SerializerFactory.getSerializer(NetworkContext.class);
   private String address;
   private ClusterClient cluster;
   private Queue<Message<JsonObject>> queue = new ArrayDeque<>();
@@ -139,11 +138,16 @@ public abstract class NetworkManager extends BusModBase {
 
     lock();
     Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
-    NetworkContext context = ContextBuilder.buildContext(network, cluster);
+    NetworkContext context;
     if (currentContext != null) {
-      context = ContextBuilder.mergeContexts(currentContext, context);
+      context = ContextBuilder.mergeContexts(currentContext, network);
+    }
+    else {
+      context = ContextBuilder.buildContext(network, cluster);
     }
 
+    // Simply attempt to deploy the entire network. This will result in contexts
+    // being automatically updated during deployment.
     deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
@@ -151,8 +155,7 @@ public abstract class NetworkManager extends BusModBase {
           sendError(message, result.cause().getMessage());
         }
         else {
-          currentContext = result.result();
-          sendOK(message, new JsonObject().putObject("context", contextSerializer.serializeToObject(result.result())));
+          sendOK(message, new JsonObject().putObject("context", NetworkContext.toJson(result.result())));
         }
         unlock();
       }
@@ -168,7 +171,17 @@ public abstract class NetworkManager extends BusModBase {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
         }
         else {
-          new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
+          cluster.set(context.address(), NetworkContext.toJson(context), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
+              }
+              else {
+                new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
+              }
+            }
+          });
         }
       }
     });
@@ -185,7 +198,17 @@ public abstract class NetworkManager extends BusModBase {
             complete.fail(result.cause());
           }
           else {
-            complete.succeed();
+            cluster.set(component.address(), ComponentContext.toJson(component), new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  complete.fail(result.cause());
+                }
+                else {
+                  complete.succeed();
+                }
+              }
+            });
           }
         }
       });
@@ -202,6 +225,8 @@ public abstract class NetworkManager extends BusModBase {
             counter.fail(result.cause());
           }
           else if (result.result()) {
+            // Even if the instance is already deployed, update its context in the cluster.
+            // It's possible that the instance's connections could have changed with the update.
             cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -215,19 +240,33 @@ public abstract class NetworkManager extends BusModBase {
             });
           }
           else {
-            if (instance.component().isModule()) {
-              deployModule(instance, counter);
-            }
-            else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
-              deployVerticle(instance, counter);
-            }
-            else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
-              deployWorkerVerticle(instance, counter);
-            }
+            deployInstance(instance, counter);
           }
         }
       });
     }
+  }
+
+  private void deployInstance(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
+    cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          counter.fail(result.cause());
+        }
+        else {
+          if (instance.component().isModule()) {
+            deployModule(instance, counter);
+          }
+          else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
+            deployVerticle(instance, counter);
+          }
+          else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
+            deployWorkerVerticle(instance, counter);
+          }
+        }
+      }
+    });
   }
 
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
@@ -238,17 +277,7 @@ public abstract class NetworkManager extends BusModBase {
           counter.fail(result.cause());
         }
         else {
-          cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                counter.fail(result.cause());
-              }
-              else {
-                counter.succeed();
-              }
-            }
-          });
+          counter.succeed();
         }
       }
     });
@@ -262,17 +291,7 @@ public abstract class NetworkManager extends BusModBase {
           counter.fail(result.cause());
         }
         else {
-          cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                counter.fail(result.cause());
-              }
-              else {
-                counter.succeed();
-              }
-            }
-          });
+          counter.succeed();
         }
       }
     });
@@ -286,17 +305,7 @@ public abstract class NetworkManager extends BusModBase {
           counter.fail(result.cause());
         }
         else {
-          cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                counter.fail(result.cause());
-              }
-              else {
-                counter.succeed();
-              }
-            }
-          });
+          counter.succeed();
         }
       }
     });
@@ -321,25 +330,49 @@ public abstract class NetworkManager extends BusModBase {
     lock();
 
     final Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
-    NetworkContext context = ContextBuilder.buildContext(network, cluster);
-    if (ContextBuilder.completeContexts(currentContext, context)) {
-      undeployNetwork(currentContext, new Handler<AsyncResult<Void>>() {
+    if (ContextBuilder.isCompleteUnmerge(currentContext, network)) {
+      cluster.get(this.address, new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<Void> result) {
+        public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             sendError(message, result.cause().getMessage());
           }
-          else {
+          else if (result.result() == null) {
             sendOK(message);
           }
-          unlock();
-          container.exit();
+          else {
+            final NetworkContext context = NetworkContext.fromJson(new JsonObject(result.result()));
+            undeployNetwork(context, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  sendError(message, result.cause().getMessage());
+                }
+                else {
+                  cluster.delete(context.address(), new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> result) {
+                      if (result.failed()) {
+                        sendError(message, result.cause().getMessage());
+                      }
+                      else {
+                        sendOK(message);
+                      }
+                      unlock();
+                      container.exit();
+                    }
+                  });
+                }
+              }
+            });
+          }
         }
       });
     }
     else {
-      final NetworkContext unmergedContext = ContextBuilder.unmergeContexts(currentContext, context);
-      undeployNetwork(context, new Handler<AsyncResult<Void>>() {
+      // Undeploy the given network and then update the context of the remaining components.
+      final NetworkContext unmergedContext = ContextBuilder.unmergeContexts(currentContext, network);
+      undeployNetwork(ContextBuilder.buildContext(network, cluster), new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
@@ -347,9 +380,19 @@ public abstract class NetworkManager extends BusModBase {
           }
           else {
             currentContext = unmergedContext;
-            sendOK(message);
+            updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  sendError(message, result.cause().getMessage());
+                }
+                else {
+                  sendOK(message);
+                }
+                unlock();
+              }
+            });
           }
-          unlock();
         }
       });
     }
@@ -381,7 +424,17 @@ public abstract class NetworkManager extends BusModBase {
             complete.fail(result.cause());
           }
           else {
-            complete.succeed();
+            cluster.delete(component.address(), new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  complete.fail(result.cause());
+                }
+                else {
+                  complete.succeed();
+                }
+              }
+            });
           }
         }
       });
@@ -471,6 +524,56 @@ public abstract class NetworkManager extends BusModBase {
     });
   }
 
+  private void updateNetwork(final NetworkContext context, final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
+    complete.setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        }
+        else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
+    updateComponents(context.components(), complete);
+  }
+
+  private void updateComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
+    for (final ComponentContext<?> component : components) {
+      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(component.instances().size());
+      counter.setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            complete.fail(result.cause());
+          }
+          else {
+            complete.succeed();
+          }
+        }
+      });
+      updateInstances(component.instances(), counter);
+    }
+  }
+
+  private void updateInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
+    for (final InstanceContext instance : instances) {
+      cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          }
+          else {
+            counter.succeed();
+          }
+        }
+      });
+    }
+  }
+
   /**
    * Undeploys the entire network.
    */
@@ -479,6 +582,8 @@ public abstract class NetworkManager extends BusModBase {
     if (address == null) {
       return;
     }
+
+    lock();
 
     cluster.get(address, new Handler<AsyncResult<String>>() {
       @Override
@@ -490,14 +595,27 @@ public abstract class NetworkManager extends BusModBase {
           sendOK(message);
         }
         else {
-          undeployNetwork(contextSerializer.deserializeString(result.result(), NetworkContext.class), new Handler<AsyncResult<Void>>() {
+          final NetworkContext context = NetworkContext.fromJson(new JsonObject(result.result()));
+          undeployNetwork(context, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 sendError(message, result.cause().getMessage());
               }
               else {
-                sendOK(message);
+                cluster.delete(context.address(), new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    if (result.failed()) {
+                      sendError(message, result.cause().getMessage());
+                    }
+                    else {
+                      sendOK(message);
+                    }
+                    unlock();
+                    container.exit();
+                  }
+                });
               }
             }
           });

@@ -355,10 +355,10 @@ public class DefaultOutputCollector implements OutputCollector {
           }
         });
 
-        if (!streams.containsKey(stream.stream())) {
-          streams.put(stream.stream(), new ArrayList<OutputStream>());
+        if (!streams.containsKey(stream.name())) {
+          streams.put(stream.name(), new ArrayList<OutputStream>());
         }
-        streams.get(stream.stream()).add(output);
+        streams.get(stream.name()).add(output);
       }
     }
     return this;

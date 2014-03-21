@@ -31,6 +31,8 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 public class OutputStreamContext extends Context<OutputStreamContext> {
   private static final String DEFAULT_STREAM = "default";
   private String stream = DEFAULT_STREAM;
+  private String address;
+  private String target;
   private Grouping grouping;
   private List<ConnectionContext> connections = new ArrayList<>();
 
@@ -39,8 +41,22 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
    *
    * @return The stream name.
    */
-  public String stream() {
+  public String name() {
     return stream;
+  }
+
+  @Override
+  public String address() {
+    return address;
+  }
+
+  /**
+   * Returns the stream target.
+   *
+   * @return The stream target.
+   */
+  public String target() {
+    return target;
   }
 
   /**
@@ -119,8 +135,30 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
      * @param stream The stream name.
      * @return The context builder.
      */
-    public Builder setStream(String stream) {
+    public Builder setName(String stream) {
       context.stream = stream;
+      return this;
+    }
+
+    /**
+     * Sets the stream address.
+     *
+     * @param address The stream address.
+     * @return The context builder.
+     */
+    public Builder setAddress(String address) {
+      context.address = address;
+      return this;
+    }
+
+    /**
+     * Sets the stream target.
+     *
+     * @param target The stream target.
+     * @return The context builder
+     */
+    public Builder setTarget(String target) {
+      context.target = target;
       return this;
     }
 

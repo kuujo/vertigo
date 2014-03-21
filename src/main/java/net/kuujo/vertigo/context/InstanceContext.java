@@ -29,8 +29,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public final class InstanceContext extends Context<InstanceContext> {
-  private String id;
   private int number;
+  private String address;
   private InputContext input;
   private OutputContext output;
   @JsonIgnore
@@ -75,15 +75,6 @@ public final class InstanceContext extends Context<InstanceContext> {
   }
 
   /**
-   * Returns the instance ID.
-   * 
-   * @return The instance ID.
-   */
-  public String id() {
-    return id;
-  }
-
-  /**
    * Returns the instance number.
    * 
    * @return The instance number.
@@ -94,11 +85,11 @@ public final class InstanceContext extends Context<InstanceContext> {
 
   /**
    * Returns the instance address.
-   * 
-   * @return The unique instance address.
+   *
+   * @return The instance address.
    */
   public String address() {
-    return String.format("%s-%d", component().address(), number());
+    return address;
   }
 
   /**
@@ -177,13 +168,13 @@ public final class InstanceContext extends Context<InstanceContext> {
     }
 
     /**
-     * Sets the unique instance ID.
+     * Sets the unique instance address.
      *
-     * @param id A unique ID.
+     * @param address A unique address.
      * @return The context builder.
      */
-    public Builder setId(String id) {
-      context.id = id;
+    public Builder setAddress(String address) {
+      context.address = address;
       return this;
     }
 

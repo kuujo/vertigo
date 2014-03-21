@@ -16,12 +16,8 @@
 package net.kuujo.vertigo.input.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
 
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputStreamContext;
@@ -31,13 +27,19 @@ import net.kuujo.vertigo.input.InputStream;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Observer;
+
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
 
 /**
  * Default input collector implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultInputCollector implements InputCollector {
+public class DefaultInputCollector implements InputCollector, Observer<InputContext> {
   private final Vertx vertx;
   private final InputContext context;
   private final Acker acker;
@@ -49,6 +51,7 @@ public class DefaultInputCollector implements InputCollector {
     this.vertx = vertx;
     this.context = context;
     this.acker = acker;
+    context.registerObserver(this);
   }
 
   @Override
@@ -143,6 +146,38 @@ public class DefaultInputCollector implements InputCollector {
   @Override
   public InputCollector start() {
     return start(null);
+  }
+
+  @Override
+  public void update(InputContext update) {
+    Iterator<InputStream> iter = streams.iterator();
+    while (iter.hasNext()) {
+      InputStream stream = iter.next();
+      boolean exists = false;
+      for (InputStreamContext input : update.streams()) {
+        if (input.equals(stream.context())) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        stream.stop();
+        iter.remove();
+      }
+    }
+
+    for (InputStreamContext input : update.streams()) {
+      boolean exists = false;
+      for (InputStream stream : streams) {
+        if (stream.context().equals(input)) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        streams.add(new DefaultInputStream(vertx, input).start());
+      }
+    }
   }
 
   @Override

@@ -33,6 +33,7 @@ import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.OutputStream;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.RoundRobin;
 
 import org.vertx.java.core.AsyncResult;
@@ -46,7 +47,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class DefaultOutputCollector implements OutputCollector {
+public class DefaultOutputCollector implements OutputCollector, Observer<OutputContext> {
   private static final String DEFAULT_STREAM = "default";
   private final Vertx vertx;
   private final OutputContext context;
@@ -70,6 +71,7 @@ public class DefaultOutputCollector implements OutputCollector {
     this.auditors = new RoundRobin<>(auditors).iterator();
     this.componentAddress = context.instance().component().address();
     this.instanceAddress = context.instance().address();
+    context.registerObserver(this);
   }
 
   @Override
@@ -318,6 +320,53 @@ public class DefaultOutputCollector implements OutputCollector {
         .setStream(stream)
         .build();
     return message;
+  }
+
+  @Override
+  public void update(OutputContext update) {
+    Iterator<Map.Entry<String, List<OutputStream>>> iter1 = streams.entrySet().iterator();
+    while (iter1.hasNext()) {
+      List<OutputStream> streams = iter1.next().getValue();
+      Iterator<OutputStream> iter2 = streams.iterator();
+      while (iter2.hasNext()) {
+        OutputStream stream = iter2.next();
+        boolean exists = false;
+        for (OutputStreamContext output : update.streams()) {
+          if (output.equals(stream.context())) {
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          stream.stop();
+          iter2.remove();
+        }
+        if (streams.isEmpty()) {
+          iter1.remove();
+        }
+      }
+    }
+
+    for (OutputStreamContext output : update.streams()) {
+      List<OutputStream> streams = this.streams.get(output.name());
+      if (streams != null) {
+        boolean exists = false;
+        for (OutputStream stream : streams) {
+          if (stream.context().equals(output)) {
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          streams.add(new DefaultOutputStream(vertx, output, context.instance().address()).start());
+        }
+      }
+      else {
+        streams = new ArrayList<>();
+        streams.add(new DefaultOutputStream(vertx, output, context.instance().address()).start());
+        this.streams.put(output.name(), streams);
+      }
+    }
   }
 
   @Override

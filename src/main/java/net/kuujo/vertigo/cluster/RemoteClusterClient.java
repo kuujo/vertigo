@@ -89,9 +89,16 @@ public class RemoteClusterClient implements ClusterClient {
   @Override
   public ClusterClient deployModule(String deploymentID, String moduleName, JsonObject config,
       int instances, final Handler<AsyncResult<String>> doneHandler) {
+    return deployModuleTo(deploymentID, null, moduleName, config, instances, doneHandler);
+  }
+
+  @Override
+  public ClusterClient deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances,
+      final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("id", deploymentID)
+        .putString("group", groupID)
         .putString("type", "module")
         .putString("module", moduleName)
         .putObject("config", config)
@@ -114,11 +121,18 @@ public class RemoteClusterClient implements ClusterClient {
   }
 
   @Override
-  public ClusterClient deployVerticle(String deploymentID, String main, JsonObject config,
+  public ClusterClient deployVerticle(String deploymentID, String main, JsonObject config, int instances,
+      Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticleTo(deploymentID, null, main, config, instances, doneHandler);
+  }
+
+  @Override
+  public ClusterClient deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config,
       int instances, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("id", deploymentID)
+        .putString("group", groupID)
         .putString("type", "verticle")
         .putString("main", main)
         .putObject("config", config)
@@ -141,11 +155,18 @@ public class RemoteClusterClient implements ClusterClient {
   }
 
   @Override
-  public ClusterClient deployWorkerVerticle(String deploymentID, String main,
+  public ClusterClient deployWorkerVerticle(String deploymentID, String main, JsonObject config,
+      int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticleTo(deploymentID, null, main, config, instances, multiThreaded, doneHandler);
+  }
+
+  @Override
+  public ClusterClient deployWorkerVerticleTo(String deploymentID, String groupID, String main,
       JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("id", deploymentID)
+        .putString("group", groupID)
         .putString("type", "verticle")
         .putString("main", main)
         .putObject("config", config)

@@ -119,6 +119,11 @@ public class LocalClusterClient implements ClusterClient {
   }
 
   @Override
+  public ClusterClient deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(deploymentID, moduleName, config, instances, doneHandler);
+  }
+
+  @Override
   public ClusterClient deployVerticle(final String deploymentID, String main,
       JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
@@ -155,6 +160,11 @@ public class LocalClusterClient implements ClusterClient {
       });
     }
     return this;
+  }
+
+  @Override
+  public ClusterClient deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(deploymentID, main, config, instances, doneHandler);
   }
 
   @Override
@@ -196,6 +206,11 @@ public class LocalClusterClient implements ClusterClient {
       });
     }
     return this;
+  }
+
+  @Override
+  public ClusterClient deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, doneHandler);
   }
 
   @Override

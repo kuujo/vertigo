@@ -53,6 +53,19 @@ public interface ClusterClient extends Serializable {
   ClusterClient deployModule(String deploymentID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
 
   /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  ClusterClient deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
    * Deploys a verticle to the cluster.
    *
    * @param deploymentID The unique verticle deployment ID.
@@ -63,6 +76,19 @@ public interface ClusterClient extends Serializable {
    * @return The cluster client.
    */
   ClusterClient deployVerticle(String deploymentID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  ClusterClient deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Deploys a worker verticle to the cluster.
@@ -76,6 +102,20 @@ public interface ClusterClient extends Serializable {
    * @return The cluster client.
    */
   ClusterClient deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param multiThreaded Indicates whether the verticle is multi-threaded.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  ClusterClient deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Undeploys a module from the cluster.

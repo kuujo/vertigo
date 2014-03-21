@@ -45,11 +45,11 @@ public class LocalClusterClient implements ClusterClient {
   @JsonIgnore
   private final Container container;
   @JsonIgnore
-  private final ConcurrentSharedMap<String, JsonObject> deployments;
+  private final ConcurrentSharedMap<String, String> deployments;
   @JsonIgnore
   private final ConcurrentSharedMap<String, Object> data;
   @JsonIgnore
-  private final ConcurrentSharedMap<String, JsonObject> watchers;
+  private final ConcurrentSharedMap<String, String> watchers;
   @JsonIgnore
   private final Map<String, Handler<ClusterEvent>> watchHandlers = new HashMap<>();
   @JsonIgnore
@@ -95,15 +95,21 @@ public class LocalClusterClient implements ClusterClient {
           .putString("type", "module")
           .putString("module", moduleName)
           .putObject("config", config)
-          .putNumber("instances", instances));
+          .putNumber("instances", instances).encode());
       container.deployModule(moduleName, config, instances, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             deployments.remove(deploymentID);
+            new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
           }
           else {
-            deployments.get(deploymentID).putString("id", result.result());
+            String sdeployment = deployments.get(deploymentID);
+            if (sdeployment != null) {
+              JsonObject deployment = new JsonObject(sdeployment);
+              deployment.putString("id", result.result());
+              deployments.put(deploymentID, deployment.encode());
+            }
             new DefaultFutureResult<String>(deploymentID).setHandler(doneHandler);
           }
         }
@@ -128,15 +134,21 @@ public class LocalClusterClient implements ClusterClient {
           .putString("type", "verticle")
           .putString("main", main)
           .putObject("config", config)
-          .putNumber("instances", instances));
+          .putNumber("instances", instances).encode());
       container.deployVerticle(main, config, instances, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             deployments.remove(deploymentID);
+            new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
           }
           else {
-            deployments.get(deploymentID).putString("id", result.result());
+            String sdeployment = deployments.get(deploymentID);
+            if (sdeployment != null) {
+              JsonObject deployment = new JsonObject(sdeployment);
+              deployment.putString("id", result.result());
+              deployments.put(deploymentID, deployment.encode());
+            }
             new DefaultFutureResult<String>(deploymentID).setHandler(doneHandler);
           }
         }
@@ -163,15 +175,21 @@ public class LocalClusterClient implements ClusterClient {
           .putObject("config", config)
           .putNumber("instances", instances)
           .putBoolean("worker", true)
-          .putBoolean("multi-threaded", multiThreaded));
+          .putBoolean("multi-threaded", multiThreaded).encode());
       container.deployWorkerVerticle(main, config, instances, multiThreaded, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             deployments.remove(deploymentID);
+            new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
           }
           else {
-            deployments.get(deploymentID).putString("id", result.result());
+            String sdeployment = deployments.get(deploymentID);
+            if (sdeployment != null) {
+              JsonObject deployment = new JsonObject(sdeployment);
+              deployment.putString("id", result.result());
+              deployments.put(deploymentID, deployment.encode());
+            }
             new DefaultFutureResult<String>(deploymentID).setHandler(doneHandler);
           }
         }
@@ -191,7 +209,8 @@ public class LocalClusterClient implements ClusterClient {
       });
     }
     else {
-      JsonObject deploymentInfo = deployments.remove(deploymentID);
+      String sdeploymentInfo = deployments.remove(deploymentID);
+      JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
       String id = deploymentInfo.getString("id");
       if (id != null) {
         container.undeployModule(id, doneHandler);
@@ -211,7 +230,8 @@ public class LocalClusterClient implements ClusterClient {
       });
     }
     else {
-      JsonObject deploymentInfo = deployments.remove(deploymentID);
+      String sdeploymentInfo = deployments.remove(deploymentID);
+      JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
       String id = deploymentInfo.getString("id");
       if (id != null) {
         container.undeployVerticle(id, doneHandler);
@@ -306,8 +326,9 @@ public class LocalClusterClient implements ClusterClient {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        JsonObject watchers = LocalClusterClient.this.watchers.get(key);
-        if (watchers == null) {
+        String swatchers = LocalClusterClient.this.watchers.get(key);
+        JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
+        if (swatchers == null) {
           watchers = new JsonObject();
         }
 
@@ -362,8 +383,9 @@ public class LocalClusterClient implements ClusterClient {
       public void handle(Void _) {
         if (handlerMap.containsKey(handler)) {
           String address = handlerMap.remove(handler);
-          JsonObject watchers = LocalClusterClient.this.watchers.get(key);
-          if (watchers == null) {
+          String swatchers = LocalClusterClient.this.watchers.get(key);
+          JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
+          if (swatchers == null) {
             watchers = new JsonObject();
           }
           if (event == null) {

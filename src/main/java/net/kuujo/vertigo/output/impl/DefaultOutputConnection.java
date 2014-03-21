@@ -35,6 +35,11 @@ public class DefaultOutputConnection implements OutputConnection {
   private final String address;
   private final EventBus eventBus;
 
+  public DefaultOutputConnection(String address, Vertx vertx) {
+    this.address = address;
+    this.eventBus = vertx.eventBus();
+  }
+
   public DefaultOutputConnection(Vertx vertx, ConnectionContext context) {
     this.eventBus = vertx.eventBus();
     this.address = context.address();

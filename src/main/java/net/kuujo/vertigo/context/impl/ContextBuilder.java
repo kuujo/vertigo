@@ -78,11 +78,7 @@ public final class ContextBuilder {
     // Set up network components without inputs. Inputs are stored in a map so
     // that they can be set up after all component instances have been set up.
     Map<String, ComponentContext<?>> components = new HashMap<>();
-    Map<String, List<Input>> inputs = new HashMap<>();
     for (Component<?> component : network.getComponents()) {
-      // Store the component inputs for later setup.
-      inputs.put(component.getName(), component.getInputs());
-
       if (component.isModule()) {
         // Set up basic module configuratin options.
         ModuleContext.Builder module = ModuleContext.Builder.newBuilder();
@@ -157,7 +153,7 @@ public final class ContextBuilder {
         outputStream.setGrouping(info.getGrouping());
 
         // The input component is the entry key.
-        ComponentContext<?> inputComponentContext = components.get(component.getAddress());
+        ComponentContext<?> inputComponentContext = components.get(component.getName());
 
         // The output component is referenced by the Input instance.
         ComponentContext<?> outputComponentContext = components.get(info.getAddress());

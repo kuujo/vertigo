@@ -15,6 +15,10 @@
  */
 package net.kuujo.vertigo.context.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.cluster.ClusterEvent;
 import net.kuujo.vertigo.context.ComponentContext;
@@ -38,6 +42,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 public class DefaultContextRegistry implements ContextRegistry {
   private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final ClusterClient cluster;
+  private final Map<Context<?>, Handler<ClusterEvent>> handlerMap = new HashMap<>();
 
   public DefaultContextRegistry(ClusterClient cluster) {
     this.cluster = cluster;
@@ -45,12 +50,18 @@ public class DefaultContextRegistry implements ContextRegistry {
 
   @Override
   public ContextRegistry registerContext(final NetworkContext network, final Handler<AsyncResult<NetworkContext>> doneHandler) {
-    cluster.watch(network.address(), new Handler<ClusterEvent>() {
+    if (handlerMap.containsKey(network)) {
+      new DefaultFutureResult<NetworkContext>(new VertigoException("Context already registered.")).setHandler(doneHandler);
+      return this;
+    }
+
+    Handler<ClusterEvent> handler = new Handler<ClusterEvent>() {
       @Override
       public void handle(ClusterEvent event) {
         network.notify(serializer.deserializeString(event.<String>value(), NetworkContext.class));
       }
-    }, new Handler<AsyncResult<Void>>() {
+    };
+    cluster.watch(network.address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       @SuppressWarnings({"unchecked", "rawtypes"})
       public void handle(AsyncResult<Void> result) {
@@ -87,65 +98,72 @@ public class DefaultContextRegistry implements ContextRegistry {
         }
       }
     });
+    handlerMap.put(network, handler);
     return this;
   }
 
   @Override
   public ContextRegistry unregisterContext(final NetworkContext network, final Handler<AsyncResult<Void>> doneHandler) {
-    cluster.unwatch(network.address(), new Handler<ClusterEvent>() {
-      @Override
-      public void handle(ClusterEvent event) {
-        network.notify(serializer.deserializeString(event.<String>value(), NetworkContext.class));
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      @SuppressWarnings({"unchecked", "rawtypes"})
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
-          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(network.components().size());
-          counter.setHandler(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else {
-                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-              }
-            }
-          });
-
-          for (ComponentContext component : network.components()) {
-            unregisterContext(component, new Handler<AsyncResult<Void>>() {
+    if (handlerMap.containsKey(network)) {
+      cluster.unwatch(network.address(), handlerMap.remove(network), new Handler<AsyncResult<Void>>() {
+        @Override
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          }
+          else {
+            final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(network.components().size());
+            counter.setHandler(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  counter.fail(result.cause());
+                  new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                 }
                 else {
-                  counter.succeed();
+                  new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                 }
               }
             });
+  
+            for (ComponentContext component : network.components()) {
+              unregisterContext(component, new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  if (result.failed()) {
+                    counter.fail(result.cause());
+                  }
+                  else {
+                    counter.succeed();
+                  }
+                }
+              });
+            }
           }
         }
-      }
-    });
+      });
+    }
+    else {
+      new DefaultFutureResult<Void>(new VertigoException("Context not registered.")).setHandler(doneHandler);
+    }
     return this;
   }
 
   @Override
   public <T extends ComponentContext<T>> ContextRegistry registerContext(final T component, final Handler<AsyncResult<T>> doneHandler) {
-    cluster.watch(component.address(), new Handler<ClusterEvent>() {
+    if (handlerMap.containsKey(component)) {
+      new DefaultFutureResult<T>(new VertigoException("Context already registered.")).setHandler(doneHandler);
+      return this;
+    }
+
+    Handler<ClusterEvent> handler = new Handler<ClusterEvent>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(ClusterEvent event) {
         component.notify((T) serializer.deserializeString(event.<String>value(), ComponentContext.class));
       }
-    }, new Handler<AsyncResult<Void>>() {
+    };
+    cluster.watch(component.address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -181,64 +199,70 @@ public class DefaultContextRegistry implements ContextRegistry {
         }
       }
     });
+    handlerMap.put(component, handler);
     return this;
   }
 
   @Override
   public <T extends ComponentContext<T>> ContextRegistry unregisterContext(final T component, final Handler<AsyncResult<Void>> doneHandler) {
-    cluster.unwatch(component.address(), new Handler<ClusterEvent>() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public void handle(ClusterEvent event) {
-        component.notify((T) serializer.deserializeString(event.<String>value(), ComponentContext.class));
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
-          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(component.instances().size());
-          counter.setHandler(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else {
-                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-              }
-            }
-          });
-
-          for (InstanceContext instance : component.instances()) {
-            registerContext(instance, new Handler<AsyncResult<InstanceContext>>() {
+    if (handlerMap.containsKey(component)) {
+      cluster.unwatch(component.address(), handlerMap.remove(component), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          }
+          else {
+            final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(component.instances().size());
+            counter.setHandler(new Handler<AsyncResult<Void>>() {
               @Override
-              public void handle(AsyncResult<InstanceContext> result) {
+              public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  counter.fail(result.cause());
+                  new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                 }
                 else {
-                  counter.succeed();
+                  new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                 }
               }
             });
+  
+            for (InstanceContext instance : component.instances()) {
+              unregisterContext(instance, new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  if (result.failed()) {
+                    counter.fail(result.cause());
+                  }
+                  else {
+                    counter.succeed();
+                  }
+                }
+              });
+            }
           }
         }
-      }
-    });
+      });
+    }
+    else {
+      new DefaultFutureResult<Void>(new VertigoException("Context not registered.")).setHandler(doneHandler);
+    }
     return this;
   }
 
   @Override
   public ContextRegistry registerContext(final InstanceContext instance, final Handler<AsyncResult<InstanceContext>> doneHandler) {
-    cluster.watch(instance.address(), new Handler<ClusterEvent>() {
+    if (handlerMap.containsKey(instance)) {
+      new DefaultFutureResult<InstanceContext>(new VertigoException("Context already registered.")).setHandler(doneHandler);
+      return this;
+    }
+
+    Handler<ClusterEvent> handler = new Handler<ClusterEvent>() {
       @Override
       public void handle(ClusterEvent event) {
-        
+        instance.notify(serializer.deserializeString(event.<String>value(), InstanceContext.class));
       }
-    }, new Handler<AsyncResult<Void>>() {
+    };
+    cluster.watch(instance.address(), handler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -249,27 +273,28 @@ public class DefaultContextRegistry implements ContextRegistry {
         }
       }
     });
+    handlerMap.put(instance, handler);
     return this;
   }
 
   @Override
   public ContextRegistry unregisterContext(final InstanceContext instance, final Handler<AsyncResult<Void>> doneHandler) {
-    cluster.watch(instance.address(), new Handler<ClusterEvent>() {
-      @Override
-      public void handle(ClusterEvent event) {
-        
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+    if (handlerMap.containsKey(instance)) {
+      cluster.unwatch(instance.address(), handlerMap.remove(instance), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          }
+          else {
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          }
         }
-        else {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-      }
-    });
+      });
+    }
+    else {
+      new DefaultFutureResult<Void>(new VertigoException("Context not registered.")).setHandler(doneHandler);
+    }
     return this;
   }
 

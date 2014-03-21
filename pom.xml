@@ -304,7 +304,7 @@
             <version>${maven.javadoc.plugin.version}</version>
             <configuration>
               <show>public</show>
-              <excludePackageNames>net.kuujo.vertigo.acker:net.kuujo.vertigo.auditor:net.kuujo.vertigo.coordinator:net.kuujo.vertigo.output.*:net.kuujo.vertigo.util:*.impl.*</excludePackageNames>
+              <excludePackageNames>net.kuujo.vertigo.network.auditor:net.kuujo.vertigo.network.manager:net.kuujo.vertigo.output.*:net.kuujo.vertigo.util:*.impl.*</excludePackageNames>
               <reportOutputDirectory>docs</reportOutputDirectory>
               <destDir>java</destDir>
             </configuration>

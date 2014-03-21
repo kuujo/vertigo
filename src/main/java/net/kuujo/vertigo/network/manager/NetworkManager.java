@@ -50,6 +50,7 @@ public abstract class NetworkManager extends BusModBase {
   private ClusterClient cluster;
   private Queue<Message<JsonObject>> queue = new ArrayDeque<>();
   private boolean locked;
+  private NetworkContext currentContext;
 
   private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
     @Override
@@ -138,13 +139,19 @@ public abstract class NetworkManager extends BusModBase {
 
     lock();
     Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
-    deployNetwork(ContextBuilder.buildContext(network, cluster), new Handler<AsyncResult<NetworkContext>>() {
+    NetworkContext context = ContextBuilder.buildContext(network, cluster);
+    if (currentContext != null) {
+      context = ContextBuilder.mergeContexts(currentContext, context);
+    }
+
+    deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
           sendError(message, result.cause().getMessage());
         }
         else {
+          currentContext = result.result();
           sendOK(message, new JsonObject().putObject("context", contextSerializer.serializeToObject(result.result())));
         }
         unlock();
@@ -312,19 +319,40 @@ public abstract class NetworkManager extends BusModBase {
     }
 
     lock();
+
     final Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
-    undeployNetwork(ContextBuilder.buildContext(network, cluster), new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          sendError(message, result.cause().getMessage());
+    NetworkContext context = ContextBuilder.buildContext(network, cluster);
+    if (ContextBuilder.completeContexts(currentContext, context)) {
+      undeployNetwork(currentContext, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            sendError(message, result.cause().getMessage());
+          }
+          else {
+            sendOK(message);
+          }
+          unlock();
+          container.exit();
         }
-        else {
-          sendOK(message);
+      });
+    }
+    else {
+      final NetworkContext unmergedContext = ContextBuilder.unmergeContexts(currentContext, context);
+      undeployNetwork(context, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            sendError(message, result.cause().getMessage());
+          }
+          else {
+            currentContext = unmergedContext;
+            sendOK(message);
+          }
+          unlock();
         }
-        unlock();
-      }
-    });
+      });
+    }
   }
 
   private void undeployNetwork(final NetworkContext context, final Handler<AsyncResult<Void>> doneHandler) {

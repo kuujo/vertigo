@@ -26,6 +26,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.eventbus.ReplyException;
+import org.vertx.java.core.eventbus.ReplyFailure;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
@@ -36,7 +38,7 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 abstract class AbstractCluster implements VertigoCluster {
-  private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
+  private static final Serializer serializer = SerializerFactory.getSerializer(Network.class);
   protected final Vertx vertx;
   protected final Container container;
   protected final EventBus eventBus;
@@ -118,18 +120,33 @@ abstract class AbstractCluster implements VertigoCluster {
   /**
    * Handles deployment of a network.
    */
-  private void doDeployNetwork(Network network, final Handler<AsyncResult<NetworkContext>> doneHandler) {
+  private void doDeployNetwork(final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
-        .putObject("network", networkSerializer.serializeToObject(network));
+        .putObject("network", serializer.serializeToObject(network));
     vertx.eventBus().sendWithTimeout(network.getAddress(), message, 60000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
+          if (result.cause() instanceof ReplyException) {
+            if (((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
+              cluster.undeployVerticle(network.getAddress(), new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  deployNetwork(network, doneHandler);
+                }
+              });
+            }
+            else {
+              new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
+            }
+          }
+          else {
+            new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
+          }
         }
         else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<NetworkContext>(NetworkContext.fromJson(result.result().body().getObject("context")));
+          new DefaultFutureResult<NetworkContext>(NetworkContext.fromJson(result.result().body().getObject("context"))).setHandler(doneHandler);
         }
         else {
           new DefaultFutureResult<NetworkContext>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
@@ -207,7 +224,7 @@ abstract class AbstractCluster implements VertigoCluster {
         else {
           JsonObject message = new JsonObject()
               .putString("action", "undeploy")
-              .putObject("network", networkSerializer.serializeToObject(network));
+              .putObject("network", serializer.serializeToObject(network));
           vertx.eventBus().sendWithTimeout(network.getAddress(), message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result) {

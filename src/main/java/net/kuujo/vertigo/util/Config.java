@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.util;
 
+import java.util.HashSet;
+
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.context.InstanceContext;
 
@@ -87,7 +89,7 @@ public final class Config {
    * @return The updated configuration.
    */
   public static JsonObject populateConfig(JsonObject config, InstanceContext context) {
-    for (String fieldName : config.getFieldNames()) {
+    for (String fieldName : new HashSet<String>(config.getFieldNames())) {
       config.removeField(fieldName);
     }
     JsonObject realConfig = context.component().config();

@@ -46,7 +46,7 @@ import static net.kuujo.vertigo.util.Config.buildConfig;
  * @author Jordan Halterman
  */
 public class NetworkManager extends BusModBase {
-  private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
+  private static final Serializer serializer = SerializerFactory.getSerializer(Network.class);
   private String address;
   private ClusterClient cluster;
   private Queue<Message<JsonObject>> queue = new ArrayDeque<>();
@@ -140,7 +140,7 @@ public class NetworkManager extends BusModBase {
     }
 
     lock();
-    Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
+    Network network = serializer.deserializeObject(jnetwork, Network.class);
     NetworkContext context;
     if (currentContext != null) {
       context = ContextBuilder.mergeContexts(currentContext, network);
@@ -332,7 +332,7 @@ public class NetworkManager extends BusModBase {
 
     lock();
 
-    final Network network = networkSerializer.deserializeObject(jnetwork, Network.class);
+    final Network network = serializer.deserializeObject(jnetwork, Network.class);
     if (ContextBuilder.isCompleteUnmerge(currentContext, network)) {
       cluster.get(this.address, new Handler<AsyncResult<String>>() {
         @Override

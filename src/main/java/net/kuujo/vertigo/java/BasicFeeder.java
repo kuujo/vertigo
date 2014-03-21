@@ -19,7 +19,6 @@ import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
 
 /**
@@ -49,9 +48,9 @@ public abstract class BasicFeeder extends ComponentVerticle<Feeder> {
   protected Feeder feeder;
 
   @Override
-  protected Feeder createComponent(InstanceContext context) {
+  protected Feeder createComponent(String address) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.createComponent(net.kuujo.vertigo.feeder.impl.BasicFeeder.class, context, cluster);
+    return componentFactory.createComponent(net.kuujo.vertigo.feeder.impl.BasicFeeder.class, address, cluster);
   }
 
   @Override

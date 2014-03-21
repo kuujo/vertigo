@@ -19,7 +19,6 @@ import org.vertx.java.core.Handler;
 
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.worker.Worker;
 
@@ -50,9 +49,9 @@ public abstract class BasicWorker extends ComponentVerticle<Worker> {
   protected Worker worker;
 
   @Override
-  protected Worker createComponent(InstanceContext context) {
+  protected Worker createComponent(String address) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.createComponent(net.kuujo.vertigo.worker.impl.BasicWorker.class, context, cluster);
+    return componentFactory.createComponent(net.kuujo.vertigo.worker.impl.BasicWorker.class, address, cluster);
   }
 
   @Override

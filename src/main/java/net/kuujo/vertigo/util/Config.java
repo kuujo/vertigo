@@ -40,8 +40,9 @@ public final class Config {
    */
   public static JsonObject buildConfig(InstanceContext context, ClusterClient cluster) {
     JsonObject config = new JsonObject();
-    config.putObject("context", InstanceContext.toJson(context));
+    config.putString("address", context.address());
     config.putString("cluster", cluster.getClass().getName());
+    config.putObject("config", context.component().config());
     return config;
   }
 
@@ -69,14 +70,14 @@ public final class Config {
   }
 
   /**
-   * Parses an instance context from a configuration object.
+   * Parses an instance address.
    *
    * @param config The Json configuration object.
-   * @return An instance context.
+   * @return An instance address.
    */
-  public static InstanceContext parseContext(JsonObject config) {
-    if (config != null && config.containsField("context")) {
-      return InstanceContext.fromJson(config.getObject("context"));
+  public static String parseAddress(JsonObject config) {
+    if (config != null && config.containsField("address")) {
+      return config.getString("address");
     }
     return null;
   }
@@ -88,13 +89,17 @@ public final class Config {
    * @param context The component instance context.
    * @return The updated configuration.
    */
-  public static JsonObject populateConfig(JsonObject config, InstanceContext context) {
-    for (String fieldName : new HashSet<String>(config.getFieldNames())) {
-      config.removeField(fieldName);
-    }
-    JsonObject realConfig = context.component().config();
-    for (String fieldName : realConfig.getFieldNames()) {
-      config.putValue(fieldName, realConfig.getValue(fieldName));
+  public static JsonObject populateConfig(JsonObject config) {
+    if (config != null && config.containsField("config")) {
+      JsonObject realConfig = config.getObject("config");
+      for (String fieldName : new HashSet<String>(config.getFieldNames())) {
+        config.removeField(fieldName);
+      }
+      if (realConfig != null) {
+        for (String fieldName : realConfig.getFieldNames()) {
+          config.putValue(fieldName, realConfig.getValue(fieldName));
+        }
+      }
     }
     return config;
   }

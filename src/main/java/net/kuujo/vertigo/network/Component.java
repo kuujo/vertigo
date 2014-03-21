@@ -336,7 +336,7 @@ public abstract class Component<T extends Component<T>> implements Config {
    * @return The new input instance.
    */
   public Input addInput(Component<?> component) {
-    return addInput(new Input(component.getAddress()));
+    return addInput(new Input(component.getName()));
   }
 
   /**
@@ -347,7 +347,7 @@ public abstract class Component<T extends Component<T>> implements Config {
    * @return The new input instance.
    */
   public Input addInput(Component<?> component, String stream) {
-    return addInput(new Input(component.getAddress(), stream));
+    return addInput(new Input(component.getName(), stream));
   }
 
   /**
@@ -358,7 +358,7 @@ public abstract class Component<T extends Component<T>> implements Config {
    * @return The new input instance.
    */
   public Input addInput(Component<?> component, Grouping grouping) {
-    return addInput(new Input(component.getAddress()).groupBy(grouping));
+    return addInput(new Input(component.getName()).groupBy(grouping));
   }
 
   /**
@@ -370,7 +370,7 @@ public abstract class Component<T extends Component<T>> implements Config {
    * @return The new input instance.
    */
   public Input addInput(Component<?> component, String stream, Grouping grouping) {
-    return addInput(new Input(component.getAddress(), stream).groupBy(grouping));
+    return addInput(new Input(component.getName(), stream).groupBy(grouping));
   }
 
   /**

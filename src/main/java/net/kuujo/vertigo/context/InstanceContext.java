@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public final class InstanceContext extends Context<InstanceContext> {
   private int number;
   private String address;
+  private String status;
   private InputContext input;
   private OutputContext output;
   @JsonIgnore
@@ -90,6 +91,15 @@ public final class InstanceContext extends Context<InstanceContext> {
    */
   public String address() {
     return address;
+  }
+
+  /**
+   * Returns the instance status address.
+   *
+   * @return The instance status address.
+   */
+  public String status() {
+    return status;
   }
 
   /**
@@ -174,6 +184,17 @@ public final class InstanceContext extends Context<InstanceContext> {
      */
     public Builder setAddress(String address) {
       context.address = address;
+      return this;
+    }
+
+    /**
+     * Sets the instance status address.
+     *
+     * @param address The instance status address.
+     * @return The context builder.
+     */
+    public Builder setStatusAddress(String address) {
+      context.status = address;
       return this;
     }
 

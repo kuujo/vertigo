@@ -114,6 +114,17 @@ public class ModuleContext extends ComponentContext<ModuleContext> {
     }
 
     /**
+     * Sets the component status address.
+     *
+     * @param address The component status address.
+     * @return The context builder.
+     */
+    public Builder setStatusAddress(String address) {
+      context.status = address;
+      return this;
+    }
+
+    /**
      * Sets the module name.
      *
      * @param moduleName The component module name.

@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.network;
 
-import java.util.UUID;
-
 import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.input.grouping.AllGrouping;
@@ -63,12 +61,12 @@ public class Input implements Config {
    */
   public static final String DEFAULT_STREAM = "default";
 
-  private String id;
   private String address;
-  private String stream;
+  private String stream = DEFAULT_STREAM;
   private Grouping grouping;
 
   protected Input() {
+    this(null, DEFAULT_STREAM, new RoundGrouping());
   }
 
   public Input(String address) {
@@ -84,20 +82,9 @@ public class Input implements Config {
   }
 
   public Input(String address, String stream, Grouping grouping) {
-    id = UUID.randomUUID().toString();
     this.address = address;
     this.stream = stream;
     groupBy(grouping);
-  }
-
-  /**
-   * Returns the input id. This is a unique value used to identify identical inputs
-   * between multiple component instances.
-   * 
-   * @return The input id.
-   */
-  public String id() {
-    return id;
   }
 
   /**

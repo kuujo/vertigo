@@ -51,6 +51,7 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
   private static final String DEFAULT_GROUP = "__DEFAULT__";
   protected String name;
   protected String address;
+  protected String status;
   protected String group = DEFAULT_GROUP;
   protected Map<String, Object> config;
   protected List<InstanceContext> instances = new ArrayList<>();
@@ -117,6 +118,15 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
    */
   public String address() {
     return address;
+  }
+
+  /**
+   * Returns the component status address.
+   *
+   * @return The component status address.
+   */
+  public String status() {
+    return status;
   }
 
   /**

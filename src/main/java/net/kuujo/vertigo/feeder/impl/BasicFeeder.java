@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Map;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.network.FailureException;
 import net.kuujo.vertigo.network.TimeoutException;
@@ -47,8 +46,8 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   public static final int AUTO_RETRY_ATTEMPTS_UNLIMITED = -1;
 
   @Factory
-  public static BasicFeeder factory(Vertx vertx, Container container, InstanceContext context, ClusterClient cluster) {
-    return new BasicFeeder(vertx, container, context, cluster);
+  public static BasicFeeder factory(String address, Vertx vertx, Container container, ClusterClient cluster) {
+    return new BasicFeeder(address, vertx, container, cluster);
   }
 
   private static final long DEFAULT_FEED_INTERVAL = 10;
@@ -63,8 +62,8 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   private boolean fed;
   private long feedTimer;
 
-  public BasicFeeder(Vertx vertx, Container container, InstanceContext context, ClusterClient cluster) {
-    super(vertx, container, context, cluster);
+  public BasicFeeder(String address, Vertx vertx, Container container, ClusterClient cluster) {
+    super(address, vertx, container, cluster);
   }
 
   private final Handler<String> internalAckHandler = new Handler<String>() {
@@ -98,21 +97,11 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
 
   @Override
   public Feeder start() {
-    return super.start(new Handler<AsyncResult<Feeder>>() {
-      @Override
-      public void handle(AsyncResult<Feeder> result) {
-        if (result.succeeded()) {
-          recursiveFeed();
-        }
-      }
-    });
+    return start(null);
   }
 
   @Override
   public Feeder start(Handler<AsyncResult<Feeder>> doneHandler) {
-    output.ackHandler(internalAckHandler);
-    output.failHandler(internalFailHandler);
-    output.timeoutHandler(internalTimeoutHandler);
     final Future<Feeder> future = new DefaultFutureResult<Feeder>().setHandler(doneHandler);
     return super.start(new Handler<AsyncResult<Feeder>>() {
       @Override
@@ -121,6 +110,9 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
           future.setFailure(result.cause());
         }
         else {
+          output.ackHandler(internalAckHandler);
+          output.failHandler(internalFailHandler);
+          output.timeoutHandler(internalTimeoutHandler);
           future.setResult(result.result());
           started = true;
           recursiveFeed();

@@ -134,6 +134,17 @@ public class VerticleContext extends ComponentContext<VerticleContext> {
     }
 
     /**
+     * Sets the component status address.
+     *
+     * @param address The component status address.
+     * @return The context builder.
+     */
+    public Builder setStatusAddress(String address) {
+      context.status = address;
+      return this;
+    }
+
+    /**
      * Sets the verticle main.
      *
      * @param main The verticle component main.

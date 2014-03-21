@@ -95,7 +95,7 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
    *
    * @author Jordan Halterman
    */
-  public static class Builder<T extends Context<T>> {
+  public static abstract class Builder<T extends Context<T>> {
     protected final T context;
 
     protected Builder(T context) {

@@ -37,6 +37,7 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
  */
 public final class NetworkContext extends Context<NetworkContext> {
   private String address;
+  private String status;
   private Set<String> auditors = new HashSet<>();
   private boolean acking = true;
   private long timeout = 30000;
@@ -69,6 +70,15 @@ public final class NetworkContext extends Context<NetworkContext> {
   @Override
   public String address() {
     return address;
+  }
+
+  /**
+   * Returns the network status address.
+   *
+   * @return The network status address.
+   */
+  public String status() {
+    return status;
   }
 
   /**
@@ -220,6 +230,17 @@ public final class NetworkContext extends Context<NetworkContext> {
      */
     public Builder setAddress(String address) {
       context.address = address;
+      return this;
+    }
+
+    /**
+     * Sets the network status address.
+     *
+     * @param address The network status address.
+     * @return The context builder.
+     */
+    public Builder setStatusAddress(String address) {
+      context.status = address;
       return this;
     }
 

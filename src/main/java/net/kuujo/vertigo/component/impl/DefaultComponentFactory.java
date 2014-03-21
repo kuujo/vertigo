@@ -23,7 +23,6 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
-import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
@@ -59,7 +58,7 @@ public class DefaultComponentFactory implements ComponentFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Component<?>> T createComponent(Class<T> type, InstanceContext context, ClusterClient cluster) {
+  public <T extends Component<?>> T createComponent(Class<T> type, String address, ClusterClient cluster) {
     // Search the class for a factory method.
     for (Method method : type.getDeclaredMethods()) {
       if (method.isAnnotationPresent(Factory.class)) {
@@ -77,14 +76,14 @@ public class DefaultComponentFactory implements ComponentFactory {
         Object[] args = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
           args[i] = null;
-          if (Vertx.class.isAssignableFrom(params[i])) {
+          if (String.class.isAssignableFrom(params[i])) {
+            args[i] = address;
+          }
+          else if (Vertx.class.isAssignableFrom(params[i])) {
             args[i] = vertx;
           }
           else if (Container.class.isAssignableFrom(params[i])) {
             args[i] = container;
-          }
-          else if (InstanceContext.class.isAssignableFrom(params[i])) {
-            args[i] = context;
           }
           else if (ClusterClient.class.isAssignableFrom(params[i])) {
             args[i] = cluster;

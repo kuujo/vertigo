@@ -27,7 +27,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
 import static net.kuujo.vertigo.util.Config.parseCluster;
-import static net.kuujo.vertigo.util.Config.parseContext;
+import static net.kuujo.vertigo.util.Config.parseAddress;
 import static net.kuujo.vertigo.util.Config.populateConfig;
 
 /**
@@ -38,6 +38,7 @@ import static net.kuujo.vertigo.util.Config.populateConfig;
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   protected Vertigo vertigo;
   protected ClusterClient cluster;
+  protected String address;
   protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
@@ -45,10 +46,10 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   /**
    * Creates a component instance for the verticle.
    * 
-   * @param context The component instance context.
+   * @param context The component instance address.
    * @return The new component instance.
    */
-  protected abstract T createComponent(InstanceContext context);
+  protected abstract T createComponent(String address);
 
   /**
    * Because of the method by which Vertigo coordinates starting of component instances,
@@ -60,10 +61,10 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   public void start() {
     logger = container.logger();
     cluster = parseCluster(container.config(), vertx, container);
-    context = (InstanceContext) parseContext(container.config());
-    populateConfig(container.config(), context);
+    address = parseAddress(container.config());
+    populateConfig(container.config());
     config = container.config();
-    final T component = createComponent(context);
+    final T component = createComponent(address);
     vertigo = new Vertigo(this);
 
     component.start(new Handler<AsyncResult<T>>() {

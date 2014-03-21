@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,13 @@
 package net.kuujo.vertigo.component.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.component.Coordinator;
+import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -41,10 +38,7 @@ import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
@@ -59,16 +53,14 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   protected final EventBus eventBus;
   protected final Container container;
   protected final Logger logger;
-  protected final InstanceContext context;
   protected final ClusterClient cluster;
-  protected final Coordinator coordinator;
-  protected final Acker acker;
-  protected final String instanceId;
+  private final ComponentCoordinator coordinator;
+  private final Acker acker;
   protected final String address;
-  protected final String networkAddress;
-  protected final InputCollector input;
-  protected final OutputCollector output;
-  protected final List<ComponentHook> hooks = new ArrayList<>();
+  protected InstanceContext context;
+  protected InputCollector input;
+  protected OutputCollector output;
+  protected List<ComponentHook> hooks = new ArrayList<>();
   private boolean started;
 
   private InputHook inputHook = new InputHook() {
@@ -135,24 +127,15 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     }
   };
 
-  protected AbstractComponent(Vertx vertx, Container container, InstanceContext context, ClusterClient cluster) {
+  protected AbstractComponent(String address, Vertx vertx, Container container, ClusterClient cluster) {
+    this.address = address;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), context.address()));
-    this.context = context;
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address));
     this.cluster = cluster;
-    this.coordinator = new DefaultCoordinator(context, cluster);
     this.acker = new DefaultAcker(eventBus);
-    this.instanceId = context.address();
-    this.address = context.component().address();
-    NetworkContext networkContext = context.component().network();
-    networkAddress = networkContext.address();
-    input = new DefaultInputCollector(vertx, context.input(), acker);
-    output = new DefaultOutputCollector(vertx, context.output(), acker);
-    for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
-      addHook(hook);
-    }
+    this.coordinator = new DefaultComponentCoordinator(address, cluster);
   }
 
   @Override
@@ -213,6 +196,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   /**
    * Calls stop hooks
    */
+  @SuppressWarnings("unused")
   private void hookStop() {
     for (ComponentHook hook : hooks) {
       hook.handleStop(this);
@@ -222,41 +206,49 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   /**
    * Sets up the component.
    */
-  private void setup(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-    if (doneHandler != null) {
-      future.setHandler(doneHandler);
-    }
-
-    acker.start(new Handler<AsyncResult<Void>>() {
+  private void setup(final Handler<AsyncResult<Void>> doneHandler) {
+    coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
+      public void handle(AsyncResult<InstanceContext> result) {
         if (result.failed()) {
-          future.setFailure(result.cause());
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         }
         else {
-          output.start(new Handler<AsyncResult<Void>>() {
+          context = result.result();
+          input = new DefaultInputCollector(vertx, context.input(), acker);
+          output = new DefaultOutputCollector(vertx, context.output(), acker);
+          for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
+            addHook(hook);
+          }
+          acker.start(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
-                future.setFailure(result.cause());
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
               }
               else {
-                input.start(new Handler<AsyncResult<Void>>() {
+                output.start(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      future.setFailure(result.cause());
+                      new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                     }
                     else {
-                      ready(new Handler<AsyncResult<Void>>() {
+                      input.start(new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
-                            future.setFailure(result.cause());
+                            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                           }
                           else {
-                            future.setResult((Void) null);
+                            coordinator.resumeHandler(new Handler<Void>() {
+                              @Override
+                              public void handle(Void _) {
+                                started = true;
+                                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                              }
+                            });
+                            coordinator.resume();
                           }
                         }
                       });
@@ -271,116 +263,37 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     });
   }
 
-  /**
-   * Indicates to the network that the component is ready.
-   */
-  private void ready(Handler<AsyncResult<Void>> doneHandler) {
-    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
-
-    // Register an event bus handler for this component. Once the handler is
-    // registered, send a message to a random component instance to check if
-    // it's ready. The first complete list of components to be received indicates
-    // that the network has started.
-    final Set<String> instances = new HashSet<>();
-    for (ComponentContext<?> component : context.component().network().components()) {
-      for (InstanceContext instance : component.instances()) {
-        instances.add(instance.address());
-      }
-    }
-
-    vertx.eventBus().registerHandler(context.address(), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        final String action = message.body().getString("action");
-        if (action == null) return;
-        switch (action) {
-          case "ready":
-            // If the ready action has touched all component instances, start
-            // the network.
-            JsonArray touched = message.body().getArray("instances");
-            if (touched.size() == instances.size()) {
-              for (String instanceID : instances) {
-                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.address()));
-              }
-            }
-            // Otherwise, add this instance to the touched list and pass it to the next instance.
-            else {
-              for (String instanceID : instances) {
-                if (!touched.contains(instanceID)) {
-                  touched.add(instanceID);
-                  eventBus.send(instanceID, new JsonObject().putString("action", "ready").putArray("instances", touched));
-                }
-              }
-            }
-            break;
-          case "start":
-            // All the component instances in the network have been started.
-            // Forward the start on to all visible components.
-            if (!started && !message.body().getString("source").equals(context.address())) {
-              for (String instanceID : instances) {
-                eventBus.send(instanceID, new JsonObject().putString("action", "start").putString("source", context.address()));
-              }
-              started = true;
-              future.setResult((Void) null);
-            }
-            break;
-          case "shutdown":
-            message.reply(new JsonObject().putString("status", "ok"));
-            hookStop();
-            container.exit();
-            break;
-          default:
-            message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid action " + action));
-            break;
-        }
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        vertx.setPeriodic(2000, new Handler<Long>() {
-          @Override
-          public void handle(Long timerID) {
-            if (started) {
-              vertx.cancelTimer(timerID);
-            }
-            else {
-              eventBus.send(instances.iterator().next(), new JsonObject().putString("action", "ready")
-                  .putArray("instances", new JsonArray().add(context.address())));
-            }
-          }
-        });
-      }
-    });
-  }
-
   @Override
-  @SuppressWarnings("unchecked")
   public T start() {
-    start(new Handler<AsyncResult<T>>() {
-      @Override
-      public void handle(AsyncResult<T> result) {
-        // Do nothing.
-      }
-    });
-    return (T) this;
+    return start(null);
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public T start(Handler<AsyncResult<T>> doneHandler) {
     final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
-    setup(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          future.setFailure(result.cause());
+    if (!started) {
+      setup(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            future.setFailure(result.cause());
+          }
+          else {
+            hookStart();
+            future.setResult((T) AbstractComponent.this);
+          }
         }
-        else {
-          hookStart();
+      });
+    }
+    else {
+      vertx.runOnContext(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
           future.setResult((T) AbstractComponent.this);
         }
-      }
-    });
+      });
+    }
     return (T) this;
   }
 

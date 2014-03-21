@@ -22,7 +22,7 @@ import org.vertx.java.platform.impl.ModuleIdentifier;
  *
  * @author Jordan Halterman
  */
-public final class Component {
+public final class Components {
 
   /**
    * Indicates whether the given name is a module name.

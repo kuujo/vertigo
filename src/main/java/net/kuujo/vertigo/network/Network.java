@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.util.serializer.SerializationException;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
-import static net.kuujo.vertigo.util.Component.isModuleName;
+import static net.kuujo.vertigo.util.Components.isModuleName;
 
 import org.vertx.java.core.json.JsonObject;
 

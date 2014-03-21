@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import static net.kuujo.vertigo.util.Component.isModuleName;
+import static net.kuujo.vertigo.util.Components.isModuleName;
 
 /**
  * A module component.

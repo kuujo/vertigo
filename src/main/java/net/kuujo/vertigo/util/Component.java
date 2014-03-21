@@ -15,12 +15,6 @@
  */
 package net.kuujo.vertigo.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.worker.Worker;
-
 import org.vertx.java.platform.impl.ModuleIdentifier;
 
 /**
@@ -64,42 +58,6 @@ public final class Component {
    */
   public static boolean isVerticleMain(String verticleMain) {
     return !isModuleName(verticleMain);
-  }
-
-  @SuppressWarnings("serial")
-  private static Map<String, Class<?>> typeMap = new HashMap<String, Class<?>>() {{
-    put("feeder", Feeder.class);
-    put("worker", Worker.class);
-  }};
-
-  @SuppressWarnings("serial")
-  private static Map<Class<?>, String> reverseTypeMap = new HashMap<Class<?>, String>() {{
-    put(Feeder.class, "feeder");
-    put(Worker.class, "worker");
-  }};
-
-  /**
-   * Serializes a component type to a string.
-   *
-   * @param type
-   *   The component type.
-   * @return
-   *   A string representation of the component type.
-   */
-  public static String serializeType(Class<?> type) {
-    return reverseTypeMap.get(type);
-  }
-
-  /**
-   * Deserializes a component type from a string.
-   *
-   * @param type
-   *   The string representation of the component type.
-   * @return
-   *   The component type.
-   */
-  public static Class<?> deserializeType(String type) {
-    return typeMap.get(type);
   }
 
 }

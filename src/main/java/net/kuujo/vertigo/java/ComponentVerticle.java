@@ -18,7 +18,7 @@ package net.kuujo.vertigo.java;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import static net.kuujo.vertigo.util.Context.parseContext;
+import static net.kuujo.vertigo.util.Contexts.parseContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

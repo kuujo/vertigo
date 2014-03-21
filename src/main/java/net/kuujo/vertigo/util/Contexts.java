@@ -24,7 +24,7 @@ import net.kuujo.vertigo.context.InstanceContext;
  *
  * @author Jordan Halterman
  */
-public final class Context {
+public final class Contexts {
 
   /**
    * Parses an instance context from a configuration object.

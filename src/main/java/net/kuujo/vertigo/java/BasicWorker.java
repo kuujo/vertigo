@@ -52,7 +52,7 @@ public abstract class BasicWorker extends ComponentVerticle<Worker> {
   @Override
   protected Worker createComponent(InstanceContext context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.createComponent(net.kuujo.vertigo.worker.impl.BasicWorker.class, context);
+    return componentFactory.createComponent(net.kuujo.vertigo.worker.impl.BasicWorker.class, context, cluster);
   }
 
   @Override

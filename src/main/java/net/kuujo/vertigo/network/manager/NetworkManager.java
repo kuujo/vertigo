@@ -26,7 +26,6 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
-import net.kuujo.vertigo.util.Factories;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -38,12 +37,15 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
+import static net.kuujo.vertigo.util.Config.parseCluster;
+import static net.kuujo.vertigo.util.Config.buildConfig;
+
 /**
  * Vertigo network manager.
  *
  * @author Jordan Halterman
  */
-public abstract class NetworkManager extends BusModBase {
+public class NetworkManager extends BusModBase {
   private static final Serializer networkSerializer = SerializerFactory.getSerializer(Network.class);
   private String address;
   private ClusterClient cluster;
@@ -99,20 +101,21 @@ public abstract class NetworkManager extends BusModBase {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void start(final Future<Void> startResult) {
-    address = getMandatoryStringConfig("address");
-    String clusterType = getMandatoryStringConfig("cluster");
-    Class<? extends ClusterClient> clusterClass;
-    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-    try {
-      clusterClass = (Class<? extends ClusterClient>) loader.loadClass(clusterType);
-    }
-    catch (Exception e) {
-      startResult.setFailure(new IllegalArgumentException("Error instantiating serializer factory."));
+    address = container.config().getString("address");
+    if (address == null) {
+      startResult.setFailure(new IllegalArgumentException("No address specified."));
       return;
     }
-    cluster = Factories.createObject(clusterClass, vertx, container);
+
+    try {
+      cluster = parseCluster(container.config(), vertx, container);
+    }
+    catch (Exception e) {
+      startResult.setFailure(e);
+      return;
+    }
+
     vertx.eventBus().registerHandler(address, messageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -171,7 +174,7 @@ public abstract class NetworkManager extends BusModBase {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
         }
         else {
-          cluster.set(context.address(), NetworkContext.toJson(context), new Handler<AsyncResult<Void>>() {
+          cluster.set(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
@@ -198,7 +201,7 @@ public abstract class NetworkManager extends BusModBase {
             complete.fail(result.cause());
           }
           else {
-            cluster.set(component.address(), ComponentContext.toJson(component), new Handler<AsyncResult<Void>>() {
+            cluster.set(component.address(), ComponentContext.toJson(component).encode(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
@@ -227,7 +230,7 @@ public abstract class NetworkManager extends BusModBase {
           else if (result.result()) {
             // Even if the instance is already deployed, update its context in the cluster.
             // It's possible that the instance's connections could have changed with the update.
-            cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
+            cluster.set(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
@@ -248,7 +251,7 @@ public abstract class NetworkManager extends BusModBase {
   }
 
   private void deployInstance(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
+    cluster.set(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -270,7 +273,7 @@ public abstract class NetworkManager extends BusModBase {
   }
 
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployModule(instance.address(), instance.component().toModule().module(), new JsonObject().putString("address", instance.address()), 1, new Handler<AsyncResult<String>>() {
+    cluster.deployModule(instance.address(), instance.component().toModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -284,7 +287,7 @@ public abstract class NetworkManager extends BusModBase {
   }
 
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployVerticle(instance.address(), instance.component().toVerticle().main(),  new JsonObject().putString("address", instance.address()), 1, new Handler<AsyncResult<String>>() {
+    cluster.deployVerticle(instance.address(), instance.component().toVerticle().main(),  buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -298,7 +301,7 @@ public abstract class NetworkManager extends BusModBase {
   }
 
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployWorkerVerticle(instance.address(), instance.component().toVerticle().main(), new JsonObject().putString("address", instance.address()), 1, instance.component().toVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+    cluster.deployWorkerVerticle(instance.address(), instance.component().toVerticle().main(), buildConfig(instance, cluster), 1, instance.component().toVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -560,7 +563,7 @@ public abstract class NetworkManager extends BusModBase {
 
   private void updateInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      cluster.set(instance.address(), InstanceContext.toJson(instance), new Handler<AsyncResult<Void>>() {
+      cluster.set(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {

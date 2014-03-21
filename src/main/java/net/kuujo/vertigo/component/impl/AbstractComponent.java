@@ -135,14 +135,14 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     }
   };
 
-  protected AbstractComponent(Vertx vertx, Container container, InstanceContext context) {
+  protected AbstractComponent(Vertx vertx, Container container, InstanceContext context, ClusterClient cluster) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
     this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), context.address()));
     this.context = context;
-    this.cluster = context.cluster();
-    this.coordinator = new DefaultCoordinator(context);
+    this.cluster = cluster;
+    this.coordinator = new DefaultCoordinator(context, cluster);
     this.acker = new DefaultAcker(eventBus);
     this.instanceId = context.address();
     this.address = context.component().address();

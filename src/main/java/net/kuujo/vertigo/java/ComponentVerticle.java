@@ -16,15 +16,19 @@
 package net.kuujo.vertigo.java;
 
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import static net.kuujo.vertigo.util.Contexts.parseContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
+
+import static net.kuujo.vertigo.util.Config.parseCluster;
+import static net.kuujo.vertigo.util.Config.parseContext;
+import static net.kuujo.vertigo.util.Config.populateConfig;
 
 /**
  * Base class for Java vertigo component verticle implementations.
@@ -33,6 +37,7 @@ import org.vertx.java.platform.Verticle;
  */
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   protected Vertigo vertigo;
+  protected ClusterClient cluster;
   protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
@@ -54,7 +59,9 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   @Override
   public void start() {
     logger = container.logger();
+    cluster = parseCluster(container.config(), vertx, container);
     context = (InstanceContext) parseContext(container.config());
+    populateConfig(container.config(), context);
     config = container.config();
     final T component = createComponent(context);
     vertigo = new Vertigo(this);

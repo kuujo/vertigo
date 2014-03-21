@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -58,7 +59,7 @@ public class DefaultComponentFactory implements ComponentFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Component<?>> T createComponent(Class<T> type, InstanceContext context) {
+  public <T extends Component<?>> T createComponent(Class<T> type, InstanceContext context, ClusterClient cluster) {
     // Search the class for a factory method.
     for (Method method : type.getDeclaredMethods()) {
       if (method.isAnnotationPresent(Factory.class)) {
@@ -84,6 +85,9 @@ public class DefaultComponentFactory implements ComponentFactory {
           }
           else if (InstanceContext.class.isAssignableFrom(params[i])) {
             args[i] = context;
+          }
+          else if (ClusterClient.class.isAssignableFrom(params[i])) {
+            args[i] = cluster;
           }
         }
 

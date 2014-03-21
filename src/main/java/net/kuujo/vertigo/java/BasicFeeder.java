@@ -51,7 +51,7 @@ public abstract class BasicFeeder extends ComponentVerticle<Feeder> {
   @Override
   protected Feeder createComponent(InstanceContext context) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.createComponent(net.kuujo.vertigo.feeder.impl.BasicFeeder.class, context);
+    return componentFactory.createComponent(net.kuujo.vertigo.feeder.impl.BasicFeeder.class, context, cluster);
   }
 
   @Override

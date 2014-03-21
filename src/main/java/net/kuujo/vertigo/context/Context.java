@@ -18,7 +18,6 @@ package net.kuujo.vertigo.context;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.util.Observable;
 import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.serializer.Serializable;
@@ -34,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public abstract class Context<T extends Context<T>> implements Observable<T>, Serializable {
   private static final Serializer serializer = SerializerFactory.getSerializer(Context.class);
-  protected ClusterClient cluster;
   @JsonIgnore
   protected final Set<Observer<T>> observers = new HashSet<>();
 
@@ -58,15 +56,6 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
       object.registerObserver(observer);
       observer.update(object);
     }
-  }
-
-  /**
-   * Returns the context cluster.
-   *
-   * @return The cluster to which the context belongs.
-   */
-  public ClusterClient cluster() {
-    return cluster;
   }
 
   /**
@@ -111,17 +100,6 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
 
     protected Builder(T context) {
       this.context = context;
-    }
-
-    /**
-     * Sets the context cluster.
-     *
-     * @param cluster The context cluster.
-     * @return The builder instance.
-     */
-    public Builder<T> setCluster(ClusterClient cluster) {
-      context.cluster = cluster;
-      return this;
     }
 
     /**

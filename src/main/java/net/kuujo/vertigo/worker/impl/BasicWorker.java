@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.worker.impl;
 
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -34,14 +35,14 @@ import org.vertx.java.platform.Container;
 public class BasicWorker extends AbstractComponent<Worker> implements Worker {
 
   @Factory
-  public static BasicWorker factory(Vertx vertx, Container container, InstanceContext context) {
-    return new BasicWorker(vertx, container, context);
+  public static BasicWorker factory(Vertx vertx, Container container, InstanceContext context, ClusterClient cluster) {
+    return new BasicWorker(vertx, container, context, cluster);
   }
 
   protected Handler<JsonMessage> messageHandler;
 
-  public BasicWorker(Vertx vertx, Container container, InstanceContext context) {
-    super(vertx, container, context);
+  public BasicWorker(Vertx vertx, Container container, InstanceContext context, ClusterClient cluster) {
+    super(vertx, container, context, cluster);
   }
 
   @Override

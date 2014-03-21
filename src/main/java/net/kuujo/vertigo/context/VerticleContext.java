@@ -83,7 +83,6 @@ public class VerticleContext extends ComponentContext<VerticleContext> {
    * @author Jordan Halterman
    */
   public static class Builder extends net.kuujo.vertigo.context.Context.Builder<VerticleContext> {
-    private VerticleContext context;
 
     private Builder() {
       super(new VerticleContext());

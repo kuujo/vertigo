@@ -63,9 +63,6 @@ public final class ContextBuilder {
   public static NetworkContext buildContext(Network network, ClusterClient cluster) {
     NetworkContext.Builder context = NetworkContext.Builder.newBuilder();
 
-    // Set the network cluster.
-    context.setCluster(cluster);
-
     // Set basic network configuration options.
     context.setAddress(network.getAddress());
     context.setAckingEnabled(network.isAckingEnabled());
@@ -89,7 +86,6 @@ public final class ContextBuilder {
       if (component.isModule()) {
         // Set up basic module configuratin options.
         ModuleContext.Builder module = ModuleContext.Builder.newBuilder();
-        module.setCluster(cluster);
         module.setName(component.getName());
         String address = component.getAddress();
         if (address == null) {
@@ -118,7 +114,6 @@ public final class ContextBuilder {
       else {
         // Set up basic verticle configuration options.
         VerticleContext.Builder verticle = VerticleContext.Builder.newBuilder();
-        verticle.setCluster(cluster);
         verticle.setName(component.getName());
         String address = component.getAddress();
         if (address == null) {
@@ -136,7 +131,6 @@ public final class ContextBuilder {
         List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getNumInstances(); i++) {
           InstanceContext.Builder instance = InstanceContext.Builder.newBuilder();
-          instance.setCluster(cluster);
           instance.setAddress(String.format("%s-%d", address, i));
           instance.setNumber(i);
           instance.setInput(InputContext.Builder.newBuilder().build());
@@ -159,7 +153,6 @@ public final class ContextBuilder {
         // to each instance to which the stream feeds. The InputStreamContext will
         // contain a single connection on which the instance listens for messages.
         OutputStreamContext.Builder outputStream = OutputStreamContext.Builder.newBuilder();
-        outputStream.setCluster(cluster);
         outputStream.setName(info.getStream());
         outputStream.setGrouping(info.getGrouping());
 
@@ -175,7 +168,6 @@ public final class ContextBuilder {
           for (InstanceContext inputInstanceContext : inputComponentContext.instances()) {
             String address = String.format("%s.%s.%s", outputComponentContext.address(), inputInstanceContext.address(), info.getStream());
             InputStreamContext.Builder inputStream = InputStreamContext.Builder.newBuilder();
-            inputStream.setCluster(cluster);
             inputStream.setName(info.getStream());
             inputStream.setAddress(address);
             ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(address).build();
@@ -226,7 +218,6 @@ public final class ContextBuilder {
       if (component.isModule()) {
         // Set up basic module configuratin options.
         ModuleContext.Builder module = ModuleContext.Builder.newBuilder();
-        module.setCluster(base.cluster());
         module.setName(component.getName());
         String address = component.getAddress();
         if (address == null) {
@@ -255,7 +246,6 @@ public final class ContextBuilder {
       else {
         // Set up basic verticle configuration options.
         VerticleContext.Builder verticle = VerticleContext.Builder.newBuilder();
-        verticle.setCluster(base.cluster());
         verticle.setName(component.getName());
         String address = component.getAddress();
         if (address == null) {
@@ -273,7 +263,6 @@ public final class ContextBuilder {
         List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getNumInstances(); i++) {
           InstanceContext.Builder instance = InstanceContext.Builder.newBuilder();
-          instance.setCluster(base.cluster());
           instance.setAddress(String.format("%s-%d", address, i));
           instance.setNumber(i);
           instance.setInput(InputContext.Builder.newBuilder().build());
@@ -296,7 +285,6 @@ public final class ContextBuilder {
         // to each instance to which the stream feeds. The InputStreamContext will
         // contain a single connection on which the instance listens for messages.
         OutputStreamContext.Builder outputStream = OutputStreamContext.Builder.newBuilder();
-        outputStream.setCluster(base.cluster());
         outputStream.setName(info.getStream());
         outputStream.setGrouping(info.getGrouping());
 
@@ -320,7 +308,6 @@ public final class ContextBuilder {
             String address = String.format("%s.%s.%s", outputComponentContext.address(), inputInstanceContext.address(), info.getStream());
             InputStreamContext.Builder inputStream = InputStreamContext.Builder.newBuilder();
             inputStream.setSource(outputComponentContext.name());
-            inputStream.setCluster(base.cluster());
             inputStream.setName(info.getStream());
             inputStream.setAddress(address);
             ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(address).build();

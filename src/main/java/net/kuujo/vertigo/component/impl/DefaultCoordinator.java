@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.component.impl;
 
+import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.component.Coordinator;
 import net.kuujo.vertigo.context.ContextRegistry;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -33,9 +34,9 @@ public class DefaultCoordinator implements Coordinator {
   private final InstanceContext context;
   private final ContextRegistry registry;
 
-  public DefaultCoordinator(InstanceContext context) {
+  public DefaultCoordinator(InstanceContext context, ClusterClient cluster) {
     this.context = context;
-    this.registry = new DefaultContextRegistry(context.cluster());
+    this.registry = new DefaultContextRegistry(cluster);
   }
 
   @Override

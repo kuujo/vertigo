@@ -138,7 +138,6 @@ public final class InstanceContext extends Context<InstanceContext> {
    * @author Jordan Halterman
    */
   public static class Builder extends net.kuujo.vertigo.context.Context.Builder<InstanceContext> {
-    private InstanceContext context;
 
     private Builder() {
       super(new InstanceContext());

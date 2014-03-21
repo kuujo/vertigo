@@ -27,12 +27,11 @@ import net.kuujo.vertigo.context.ContextRegistry;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Default context registry.
@@ -40,7 +39,6 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class DefaultContextRegistry implements ContextRegistry {
-  private final Serializer serializer = SerializerFactory.getSerializer(Context.class);
   private final ClusterClient cluster;
   private final Map<Context<?>, Handler<ClusterEvent>> handlerMap = new HashMap<>();
 
@@ -58,7 +56,7 @@ public class DefaultContextRegistry implements ContextRegistry {
     Handler<ClusterEvent> handler = new Handler<ClusterEvent>() {
       @Override
       public void handle(ClusterEvent event) {
-        network.notify(serializer.deserializeString(event.<String>value(), NetworkContext.class));
+        network.notify(NetworkContext.fromJson(new JsonObject(event.<String>value())));
       }
     };
     cluster.watch(network.address(), handler, new Handler<AsyncResult<Void>>() {
@@ -160,7 +158,7 @@ public class DefaultContextRegistry implements ContextRegistry {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(ClusterEvent event) {
-        component.notify((T) serializer.deserializeString(event.<String>value(), ComponentContext.class));
+        component.notify((T) ComponentContext.fromJson(new JsonObject(event.<String>value())));
       }
     };
     cluster.watch(component.address(), handler, new Handler<AsyncResult<Void>>() {
@@ -259,7 +257,7 @@ public class DefaultContextRegistry implements ContextRegistry {
     Handler<ClusterEvent> handler = new Handler<ClusterEvent>() {
       @Override
       public void handle(ClusterEvent event) {
-        instance.notify(serializer.deserializeString(event.<String>value(), InstanceContext.class));
+        instance.notify(InstanceContext.fromJson(new JsonObject(event.<String>value())));
       }
     };
     cluster.watch(instance.address(), handler, new Handler<AsyncResult<Void>>() {

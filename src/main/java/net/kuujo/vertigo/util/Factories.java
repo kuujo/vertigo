@@ -25,7 +25,7 @@ public class Factories {
           throw new IllegalArgumentException("Factory method " + method.getName() + " in " + clazz.getCanonicalName() + " must be public and static.");
         }
         // The method return type must be a Class<T> instance.
-        if (!method.getReturnType().equals(clazz)) {
+        if (!method.getReturnType().isAssignableFrom(clazz)) {
           throw new IllegalArgumentException("Factory method " + method.getName() + " in " + clazz.getCanonicalName() + " must return a " + clazz.getCanonicalName() + " instance.");
         }
 

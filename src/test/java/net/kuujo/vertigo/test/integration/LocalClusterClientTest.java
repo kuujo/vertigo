@@ -15,10 +15,6 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import static org.vertx.testtools.VertxAssert.assertEquals;
-import static org.vertx.testtools.VertxAssert.assertTrue;
-import static org.vertx.testtools.VertxAssert.assertFalse;
-import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.ClusterClient;
 import net.kuujo.vertigo.cluster.LocalClusterClient;
 
@@ -28,6 +24,12 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 import org.vertx.testtools.TestVerticle;
+
+import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.assertFalse;
+import static org.vertx.testtools.VertxAssert.assertNull;
+import static org.vertx.testtools.VertxAssert.testComplete;
 
 /**
  * A local cluster test.
@@ -152,6 +154,38 @@ public class LocalClusterClientTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
             testComplete();
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testSetGetDelete() {
+    final ClusterClient client = new LocalClusterClient(vertx, container);
+    client.set("foo", "bar", new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        assertTrue(result.succeeded());
+        client.get("foo", new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            assertTrue(result.succeeded());
+            assertEquals("bar", result.result());
+            client.delete("foo", new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                assertTrue(result.succeeded());
+                client.get("foo", new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    assertTrue(result.succeeded());
+                    assertNull(result.result());
+                    testComplete();
+                  }
+                });
+              }
+            });
           }
         });
       }

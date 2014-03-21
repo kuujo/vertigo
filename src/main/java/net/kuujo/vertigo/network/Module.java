@@ -35,18 +35,18 @@ public class Module extends Component<Module> {
   public Module() {
   }
 
-  public Module(Type type, String address) {
-    super(type, address);
+  public Module(String name) {
+    super(name);
   }
 
-  public Module(Type type, String address, String moduleName) {
-    this(type, address);
+  public Module(String name, String moduleName) {
+    this(name);
     setModule(moduleName);
   }
 
   @Override
-  protected String getDeploymentType() {
-    return Component.COMPONENT_MODULE;
+  protected String getType() {
+    return Component.COMPONENT_TYPE_MODULE;
   }
 
   @Override

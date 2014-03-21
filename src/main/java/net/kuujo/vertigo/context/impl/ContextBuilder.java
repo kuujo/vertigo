@@ -96,7 +96,6 @@ public final class ContextBuilder {
           address = String.format(COMPONENT_ADDRESS_PATTERN, network.getAddress(), component.getName());
         }
         module.setAddress(address);
-        module.setType(component.getType());
         module.setModule(((Module) component).getModule());
         module.setConfig(component.getConfig());
         module.setHooks(component.getHooks());
@@ -126,7 +125,6 @@ public final class ContextBuilder {
           address = String.format(COMPONENT_ADDRESS_PATTERN, network.getAddress(), component.getName());
         }
         verticle.setAddress(address);
-        verticle.setType(component.getType());
         verticle.setMain(((Verticle) component).getMain());
         verticle.setWorker(((Verticle) component).isWorker());
         verticle.setMultiThreaded(((Verticle) component).isMultiThreaded());
@@ -235,7 +233,6 @@ public final class ContextBuilder {
           address = String.format(COMPONENT_ADDRESS_PATTERN, merge.getAddress(), component.getName());
         }
         module.setAddress(address);
-        module.setType(component.getType());
         module.setModule(((Module) component).getModule());
         module.setConfig(component.getConfig());
         module.setHooks(component.getHooks());
@@ -265,7 +262,6 @@ public final class ContextBuilder {
           address = String.format(COMPONENT_ADDRESS_PATTERN, merge.getAddress(), component.getName());
         }
         verticle.setAddress(address);
-        verticle.setType(component.getType());
         verticle.setMain(((Verticle) component).getMain());
         verticle.setWorker(((Verticle) component).isWorker());
         verticle.setMultiThreaded(((Verticle) component).isMultiThreaded());

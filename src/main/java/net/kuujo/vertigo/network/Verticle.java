@@ -51,18 +51,18 @@ public class Verticle extends Component<Verticle> {
   public Verticle() {
   }
 
-  public Verticle(Type type, String address) {
-    super(type, address);
+  public Verticle(String name) {
+    super(name);
   }
 
-  public Verticle(Type type, String address, String main) {
-    this(type, address);
+  public Verticle(String name, String main) {
+    this(name);
     setMain(main);
   }
 
   @Override
-  protected String getDeploymentType() {
-    return Component.COMPONENT_VERTICLE;
+  protected String getType() {
+    return Component.COMPONENT_TYPE_VERTICLE;
   }
 
   @Override

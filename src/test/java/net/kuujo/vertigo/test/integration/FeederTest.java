@@ -56,16 +56,16 @@ public class FeederTest extends TestVerticle {
   @Test
   public void testAckingFeeder() {
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", TestAckingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder");
+    network.addVerticle("feeder", TestAckingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
   }
 
   @Test
   public void testFailingFeeder() {
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", TestFailingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorkerVerticle("worker", TestFailingWorker.class.getName()).addInput("feeder");
+    network.addVerticle("feeder", TestFailingFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addVerticle("worker", TestFailingWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
   }
 
@@ -73,8 +73,8 @@ public class FeederTest extends TestVerticle {
   public void testTimingOutFeeder() {
     Network network = new Network("test");
     network.setMessageTimeout(1000);
-    network.addFeederVerticle("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
-    network.addWorkerVerticle("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
+    network.addVerticle("feeder", TestTimingOutFeeder.class.getName(), new JsonObject().putString("body", "Hello world"));
+    network.addVerticle("worker", TestTimingOutWorker.class.getName()).addInput("feeder");
     deployNetwork(network);
   }
 
@@ -94,8 +94,8 @@ public class FeederTest extends TestVerticle {
   @Test
   public void testStreamFeeder() {
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", StreamFeeder.class.getName());
-    network.addWorkerVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder", "stream");
+    network.addVerticle("feeder", StreamFeeder.class.getName());
+    network.addVerticle("worker", TestAckingWorker.class.getName()).addInput("feeder", "stream");
     deployNetwork(network);
   }
 
@@ -104,8 +104,8 @@ public class FeederTest extends TestVerticle {
     final Set<String> inputs = new HashSet<>(Arrays.asList(new String[]{"test.worker-1", "test.worker-2", "test.worker-3", "test.worker-4"}));
     final Set<String> alive = new HashSet<>();
     final Network network = new Network("test.network");
-    network.addFeeder("test.feeder", TestOneToManyFeeder.class.getName());
-    network.addWorker("test.worker", TestOneToManyWorker.class.getName(), 4).addInput("test.feeder");
+    network.addVerticle("test.feeder", TestOneToManyFeeder.class.getName());
+    network.addVerticle("test.worker", TestOneToManyWorker.class.getName(), 4).addInput("test.feeder");
     vertx.eventBus().registerHandler("test", new Handler<Message<String>>() {
       @Override
       public void handle(Message<String> message) {
@@ -145,8 +145,8 @@ public class FeederTest extends TestVerticle {
     final Set<String> inputs = new HashSet<>(Arrays.asList(new String[]{"test.worker-1", "test.worker-2", "test.worker-3", "test.worker-4"}));
     final Set<String> alive = new HashSet<>();
     final Network network = new Network("test.network");
-    network.addFeeder("test.feeder", TestManyToManyFeeder.class.getName(), 4);
-    network.addWorker("test.worker", TestManyToManyWorker.class.getName(), 4).addInput("test.feeder");
+    network.addVerticle("test.feeder", TestManyToManyFeeder.class.getName(), 4);
+    network.addVerticle("test.worker", TestManyToManyWorker.class.getName(), 4).addInput("test.feeder");
     vertx.eventBus().registerHandler("test", new Handler<Message<String>>() {
       @Override
       public void handle(Message<String> message) {
@@ -189,8 +189,8 @@ public class FeederTest extends TestVerticle {
   @Test
   public void testManyToOneFeeder() {
     final Network network = new Network("test.network");
-    network.addFeeder("test.feeder", TestManyToOneFeeder.class.getName(), 4);
-    network.addWorker("test.worker", TestManyToOneWorker.class.getName(), 4).addInput("test.feeder");
+    network.addVerticle("test.feeder", TestManyToOneFeeder.class.getName(), 4);
+    network.addVerticle("test.worker", TestManyToOneWorker.class.getName(), 4).addInput("test.feeder");
     vertx.eventBus().registerHandler("test", new Handler<Message<String>>() {
       @Override
       public void handle(Message<String> message) {

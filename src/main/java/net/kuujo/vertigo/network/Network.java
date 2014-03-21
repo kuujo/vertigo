@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.util.serializer.SerializationException;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
-import static net.kuujo.vertigo.util.Components.isModuleName;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -326,6 +325,68 @@ public final class Network implements Config {
   }
 
   /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  public Module addModule(String name, String moduleName) {
+    return addModule(new Module(name, moduleName));
+  }
+
+  /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @param config The module configuration. This configuration will be made
+   *          available as the verticle configuration within deployed module instances.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  public Module addModule(String name, String moduleName, JsonObject config) {
+    return addModule(new Module(name, moduleName).setConfig(config));
+  }
+
+  /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @param numInstances The number of module instances. If multiple instances are
+   *          defined, groupings will be used to determine how messages are distributed
+   *          between multiple component instances.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  public Module addModule(String name, String moduleName, int numInstances) {
+    return addModule(new Module(name, moduleName).setNumInstances(numInstances));
+  }
+
+  /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @param config The module configuration. This configuration will be made
+   *          available as the verticle configuration within deployed module instances.
+   * @param numInstances The number of module instances. If multiple instances are
+   *          defined, groupings will be used to determine how messages are distributed
+   *          between multiple component instances.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  public Module addModule(String name, String moduleName, JsonObject config, int numInstances) {
+    return addModule(new Module(name, moduleName).setConfig(config).setNumInstances(numInstances));
+  }
+
+  /**
    * Adds a verticle to the network.
    * 
    * @param verticle The verticle to add.
@@ -337,423 +398,61 @@ public final class Network implements Config {
   }
 
   /**
-   * Adds a feeder component to the network.
+   * Adds a verticle to the network.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param moduleOrMain The feeder component main or module name. Vertigo will
-   *          automatically detect whether the feeder is a module or a verticle based on
-   *          module naming conventions.
-   * @return The new feeder component configuration.
+   * @param main The verticle main.
+   * @return The new verticle configuration.
    */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(name, moduleOrMain);
-    }
-    else {
-      return (T) addFeederVerticle(name, moduleOrMain);
-    }
+  public Verticle addVerticle(String name, String main) {
+    return addVerticle(new Verticle(name, main));
   }
 
   /**
-   * Adds a feeder component to the network.
+   * Adds a verticle to the network.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param moduleOrMain The feeder component main or module name. Vertigo will
-   *          automatically detect whether the feeder is a module or a verticle based on
-   *          module naming conventions.
-   * @param config The feeder component configuration. This configuration will be made
-   *          available as the verticle configuration within the component implementation.
-   * @return The new feeder component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(name, moduleOrMain, config);
-    }
-    else {
-      return (T) addFeederVerticle(name, moduleOrMain, config);
-    }
-  }
-
-  /**
-   * Adds a feeder component to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleOrMain The feeder component main or module name. Vertigo will
-   *          automatically detect whether the feeder is a module or a verticle based on
-   *          module naming conventions.
-   * @param numInstances The number of feeder instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new feeder component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain, int numInstances) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(name, moduleOrMain, numInstances);
-    }
-    else {
-      return (T) addFeederVerticle(name, moduleOrMain, numInstances);
-    }
-  }
-
-  /**
-   * Adds a feeder component to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleOrMain The feeder component main or module name. Vertigo will
-   *          automatically detect whether the feeder is a module or a verticle based on
-   *          module naming conventions.
-   * @param config The feeder component configuration. This configuration will be made
-   *          available as the verticle configuration within the component implementation.
-   * @param numInstances The number of feeder instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new feeder component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addFeeder(String name, String moduleOrMain, JsonObject config, int numInstances) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addFeederModule(name, moduleOrMain, config, numInstances);
-    }
-    else {
-      return (T) addFeederVerticle(name, moduleOrMain, config, numInstances);
-    }
-  }
-
-  /**
-   * Adds a feeder module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The feeder module name.
-   * @return The new feeder module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addFeederModule(String name, String moduleName) {
-    return addModule(new Module(Component.Type.FEEDER, name, moduleName));
-  }
-
-  /**
-   * Adds a feeder module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The feeder module name.
-   * @param config The feeder module configuration. This configuration will be made
+   * @param main The verticle main.
+   * @param config The verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
-   * @return The new feeder module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   * @return The new verticle configuration.
    */
-  public Module addFeederModule(String name, String moduleName, JsonObject config) {
-    return addModule(new Module(Component.Type.FEEDER, name, moduleName).setConfig(config));
+  public Verticle addVerticle(String name, String main, JsonObject config) {
+    return addVerticle(new Verticle(name, main).setConfig(config));
   }
 
   /**
-   * Adds a feeder module to the network.
+   * Adds a verticle to the network.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param moduleName The feeder module name.
-   * @param numInstances The number of module instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new feeder module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addFeederModule(String name, String moduleName, int numInstances) {
-    return addModule(new Module(Component.Type.FEEDER, name, moduleName).setNumInstances(numInstances));
-  }
-
-  /**
-   * Adds a feeder module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The feeder module name.
-   * @param config The feeder module configuration. This configuration will be made
-   *          available as the verticle configuration within deployed module instances.
-   * @param numInstances The number of module instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new feeder module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addFeederModule(String name, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new Module(Component.Type.FEEDER, name, moduleName).setConfig(config).setNumInstances(numInstances));
-  }
-
-  /**
-   * Adds a feeder verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The feeder verticle main.
-   * @return The new feeder verticle configuration.
-   */
-  public Verticle addFeederVerticle(String name, String main) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, name, main));
-  }
-
-  /**
-   * Adds a feeder verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The feeder verticle main.
-   * @param config The feeder verticle configuration. This configuration will be made
-   *          available as the verticle configuration within deployed module instances.
-   * @return The new feeder verticle configuration.
-   */
-  public Verticle addFeederVerticle(String name, String main, JsonObject config) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, name, main).setConfig(config));
-  }
-
-  /**
-   * Adds a feeder verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The feeder verticle main.
+   * @param main The verticle main.
    * @param numInstances The number of verticle instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
-   * @return The new feeder verticle configuration.
+   * @return The new verticle configuration.
    */
-  public Verticle addFeederVerticle(String name, String main, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, name, main).setNumInstances(numInstances));
+  public Verticle addVerticle(String name, String main, int numInstances) {
+    return addVerticle(new Verticle(name, main).setNumInstances(numInstances));
   }
 
   /**
-   * Adds a feeder verticle to the network.
+   * Adds a verticle to the network.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param main The feeder verticle main.
-   * @param config The feeder verticle configuration. This configuration will be made
+   * @param main The verticle main.
+   * @param config The verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
    * @param numInstances The number of verticle instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
-   * @return The new feeder verticle configuration.
+   * @return The new verticle configuration.
    */
-  public Verticle addFeederVerticle(String name, String main, JsonObject config, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.FEEDER, name, main).setConfig(config).setNumInstances(numInstances));
-  }
-
-  /**
-   * Adds a worker component to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleOrMain The worker component main or module name. Vertigo will
-   *          automatically detect whether the worker is a module or a verticle based on
-   *          module naming conventions.
-   * @return The new worker component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String name, String moduleOrMain) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(name, moduleOrMain);
-    }
-    else {
-      return (T) addWorkerVerticle(name, moduleOrMain);
-    }
-  }
-
-  /**
-   * Adds a worker component to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleOrMain The worker component main or module name. Vertigo will
-   *          automatically detect whether the worker is a module or a verticle based on
-   *          module naming conventions.
-   * @param config The worker component configuration. This configuration will be made
-   *          available as the verticle configuration within the component implementation.
-   * @return The new worker component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String name, String moduleOrMain, JsonObject config) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(name, moduleOrMain, config);
-    }
-    else {
-      return (T) addWorkerVerticle(name, moduleOrMain, config);
-    }
-  }
-
-  /**
-   * Adds a worker component to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleOrMain The worker component main or module name. Vertigo will
-   *          automatically detect whether the worker is a module or a verticle based on
-   *          module naming conventions.
-   * @param numInstances The number of worker instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new worker component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String name, String moduleOrMain, int numInstances) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(name, moduleOrMain, numInstances);
-    }
-    else {
-      return (T) addWorkerVerticle(name, moduleOrMain, numInstances);
-    }
-  }
-
-  /**
-   * Adds a worker component to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleOrMain The worker component main or module name. Vertigo will
-   *          automatically detect whether the worker is a module or a verticle based on
-   *          module naming conventions.
-   * @param config The worker component configuration. This configuration will be made
-   *          available as the verticle configuration within the component implementation.
-   * @param numInstances The number of worker instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new worker component configuration.
-   */
-  @SuppressWarnings("unchecked")
-  public <T extends Component<T>> T addWorker(String name, String moduleOrMain, JsonObject config, int numInstances) {
-    if (isModuleName(moduleOrMain)) {
-      return (T) addWorkerModule(name, moduleOrMain, config, numInstances);
-    }
-    else {
-      return (T) addWorkerVerticle(name, moduleOrMain, config, numInstances);
-    }
-  }
-
-  /**
-   * Adds a worker module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The worker module name.
-   * @return The new worker module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addWorkerModule(String name, String moduleName) {
-    return addModule(new Module(Component.Type.WORKER, name, moduleName));
-  }
-
-  /**
-   * Adds a worker module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The worker module name.
-   * @param config The worker module configuration. This configuration will be made
-   *          available as the verticle configuration within deployed module instances.
-   * @return The new worker module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addWorkerModule(String name, String moduleName, JsonObject config) {
-    return addModule(new Module(Component.Type.WORKER, name, moduleName).setConfig(config));
-  }
-
-  /**
-   * Adds a worker module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The worker module name.
-   * @param numInstances The number of module instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new worker module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addWorkerModule(String name, String moduleName, int numInstances) {
-    return addModule(new Module(Component.Type.WORKER, name, moduleName).setNumInstances(numInstances));
-  }
-
-  /**
-   * Adds a worker module to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param moduleName The worker module name.
-   * @param config The worker module configuration. This configuration will be made
-   *          available as the verticle configuration within deployed module instances.
-   * @param numInstances The number of module instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new worker module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module addWorkerModule(String name, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new Module(Component.Type.WORKER, name, moduleName).setConfig(config).setNumInstances(numInstances));
-  }
-
-  /**
-   * Adds a worker verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The worker verticle main.
-   * @return The new worker verticle configuration.
-   */
-  public Verticle addWorkerVerticle(String name, String main) {
-    return addVerticle(new Verticle(Component.Type.WORKER, name, main));
-  }
-
-  /**
-   * Adds a worker verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The worker verticle main.
-   * @param config The worker verticle configuration. This configuration will be made
-   *          available as the verticle configuration within deployed module instances.
-   * @return The new worker verticle configuration.
-   */
-  public Verticle addWorkerVerticle(String name, String main, JsonObject config) {
-    return addVerticle(new Verticle(Component.Type.WORKER, name, main).setConfig(config));
-  }
-
-  /**
-   * Adds a worker verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The worker verticle main.
-   * @param numInstances The number of verticle instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new worker verticle configuration.
-   */
-  public Verticle addWorkerVerticle(String name, String main, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.WORKER, name, main).setNumInstances(numInstances));
-  }
-
-  /**
-   * Adds a worker verticle to the network.
-   * 
-   * @param name The component name. This will be used as the basis for internal
-   *          component addresses.
-   * @param main The worker verticle main.
-   * @param config The worker verticle configuration. This configuration will be made
-   *          available as the verticle configuration within deployed module instances.
-   * @param numInstances The number of verticle instances. If multiple instances are
-   *          defined, groupings will be used to determine how messages are distributed
-   *          between multiple component instances.
-   * @return The new worker verticle configuration.
-   */
-  public Verticle addWorkerVerticle(String name, String main, JsonObject config, int numInstances) {
-    return addVerticle(new Verticle(Component.Type.WORKER, name, main).setConfig(config).setNumInstances(numInstances));
+  public Verticle addVerticle(String name, String main, JsonObject config, int numInstances) {
+    return addVerticle(new Verticle(name, main).setConfig(config).setNumInstances(numInstances));
   }
 
   @Override

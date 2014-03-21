@@ -23,7 +23,6 @@ import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
-import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Module;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Verticle;
@@ -89,14 +88,13 @@ public class ContextTest {
   @Test
   public void testDefaultFeederVerticleContext() {
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", "feeder.py");
+    network.addVerticle("feeder", "feeder.py");
     NetworkContext context = ContextBuilder.buildContext(network, null);
     assertEquals("test", context.address());
     VerticleContext verticleContext = context.component("feeder");
     assertEquals("feeder", verticleContext.name());
     assertEquals("test.feeder", verticleContext.address());
     assertEquals("feeder.py", verticleContext.main());
-    assertEquals(Component.Type.FEEDER, verticleContext.type());
     assertTrue(verticleContext.isVerticle());
     assertFalse(verticleContext.isModule());
     assertEquals(new JsonObject(), verticleContext.config());
@@ -110,7 +108,7 @@ public class ContextTest {
   @Test
   public void testConfiguredFeederVerticleContext() {
     Network network = new Network("test");
-    Verticle verticle = network.addFeederVerticle("feeder", "feeder.py");
+    Verticle verticle = network.addVerticle("feeder", "feeder.py");
     verticle.setMain("feeder.py");
     verticle.setConfig(new JsonObject().putString("foo", "bar"));
     verticle.setNumInstances(2);
@@ -123,7 +121,6 @@ public class ContextTest {
     assertEquals("feeder", verticleContext.name());
     assertEquals("test.feeder", verticleContext.address());
     assertEquals("feeder.py", verticleContext.main());
-    assertEquals(Component.Type.FEEDER, verticleContext.type());
     assertTrue(verticleContext.isVerticle());
     assertFalse(verticleContext.isModule());
     assertEquals("bar", verticleContext.config().getString("foo"));
@@ -139,14 +136,13 @@ public class ContextTest {
   @Test
   public void testDefaultFeederModuleContext() {
     Network network = new Network("test");
-    network.addFeederModule("feeder", "com.test~test-module~1.0");
+    network.addModule("feeder", "com.test~test-module~1.0");
     NetworkContext context = ContextBuilder.buildContext(network, null);
     assertEquals("test", context.address());
     ModuleContext moduleContext = context.component("feeder");
     assertEquals("feeder", moduleContext.name());
     assertEquals("test.feeder", moduleContext.address());
     assertEquals("com.test~test-module~1.0", moduleContext.module());
-    assertEquals(Component.Type.FEEDER, moduleContext.type());
     assertFalse(moduleContext.isVerticle());
     assertTrue(moduleContext.isModule());
     assertEquals(new JsonObject(), moduleContext.config());
@@ -158,7 +154,7 @@ public class ContextTest {
   @Test
   public void testConfiguredFeederModuleContext() {
     Network network = new Network("test");
-    Module verticle = network.addFeederModule("feeder", "com.test~test-module~1.0");
+    Module verticle = network.addModule("feeder", "com.test~test-module~1.0");
     verticle.setModule("com.test~test-module~1.0");
     verticle.setConfig(new JsonObject().putString("foo", "bar"));
     verticle.setNumInstances(2);
@@ -169,7 +165,6 @@ public class ContextTest {
     assertEquals("feeder", moduleContext.name());
     assertEquals("test.feeder", moduleContext.address());
     assertEquals("com.test~test-module~1.0", moduleContext.module());
-    assertEquals(Component.Type.FEEDER, moduleContext.type());
     assertFalse(moduleContext.isVerticle());
     assertTrue(moduleContext.isModule());
     assertEquals("bar", moduleContext.config().getString("foo"));
@@ -183,14 +178,13 @@ public class ContextTest {
   @Test
   public void testDefaultWorkerVerticleContext() {
     Network network = new Network("test");
-    network.addWorkerVerticle("worker", "worker.py");
+    network.addVerticle("worker", "worker.py");
     NetworkContext context = ContextBuilder.buildContext(network, null);
     assertEquals("test", context.address());
     VerticleContext verticleContext = context.component("worker");
     assertEquals("worker", verticleContext.name());
     assertEquals("test.worker", verticleContext.address());
     assertEquals("worker.py", verticleContext.main());
-    assertEquals(Component.Type.WORKER, verticleContext.type());
     assertTrue(verticleContext.isVerticle());
     assertFalse(verticleContext.isModule());
     assertEquals(new JsonObject(), verticleContext.config());
@@ -204,7 +198,7 @@ public class ContextTest {
   @Test
   public void testConfiguredWorkerVerticleContext() {
     Network network = new Network("test");
-    Verticle verticle = network.addWorkerVerticle("worker", "worker.py");
+    Verticle verticle = network.addVerticle("worker", "worker.py");
     verticle.setMain("worker.py");
     verticle.setConfig(new JsonObject().putString("foo", "bar"));
     verticle.setNumInstances(2);
@@ -217,7 +211,6 @@ public class ContextTest {
     assertEquals("worker", verticleContext.name());
     assertEquals("test.worker", verticleContext.address());
     assertEquals("worker.py", verticleContext.main());
-    assertEquals(Component.Type.WORKER, verticleContext.type());
     assertTrue(verticleContext.isVerticle());
     assertFalse(verticleContext.isModule());
     assertEquals("bar", verticleContext.config().getString("foo"));
@@ -233,14 +226,13 @@ public class ContextTest {
   @Test
   public void testDefaultWorkerModuleContext() {
     Network network = new Network("test");
-    network.addWorkerModule("worker", "com.test~test-module~1.0");
+    network.addModule("worker", "com.test~test-module~1.0");
     NetworkContext context = ContextBuilder.buildContext(network, null);
     assertEquals("test", context.address());
     ModuleContext moduleContext = context.component("worker");
     assertEquals("worker", moduleContext.name());
     assertEquals("test.worker", moduleContext.address());
     assertEquals("com.test~test-module~1.0", moduleContext.module());
-    assertEquals(Component.Type.WORKER, moduleContext.type());
     assertFalse(moduleContext.isVerticle());
     assertTrue(moduleContext.isModule());
     assertEquals(new JsonObject(), moduleContext.config());
@@ -252,7 +244,7 @@ public class ContextTest {
   @Test
   public void testConfiguredWorkerModuleContext() {
     Network network = new Network("test");
-    Module module = network.addWorkerModule("worker", "com.test~test-module~1.0");
+    Module module = network.addModule("worker", "com.test~test-module~1.0");
     module.setModule("com.test~test-module~1.0");
     module.setConfig(new JsonObject().putString("foo", "bar"));
     module.setNumInstances(2);
@@ -263,7 +255,6 @@ public class ContextTest {
     assertEquals("worker", moduleContext.name());
     assertEquals("test.worker", moduleContext.address());
     assertEquals("com.test~test-module~1.0", moduleContext.module());
-    assertEquals(Component.Type.WORKER, moduleContext.type());
     assertFalse(moduleContext.isVerticle());
     assertTrue(moduleContext.isModule());
     assertEquals("bar", moduleContext.config().getString("foo"));
@@ -277,7 +268,7 @@ public class ContextTest {
   @Test
   public void testHookContext() {
     Network network = new Network("test");
-    Verticle verticle = network.addFeederVerticle("feeder", "feeder.py");
+    Verticle verticle = network.addVerticle("feeder", "feeder.py");
     verticle.addHook(new TestHook());
     NetworkContext context = ContextBuilder.buildContext(network, null);
     assertEquals("test", context.address());
@@ -289,7 +280,7 @@ public class ContextTest {
   @Test
   public void testInstanceContext() {
     Network network = new Network("test");
-    Verticle verticle = network.addFeederVerticle("feeder", "feeder.py");
+    Verticle verticle = network.addVerticle("feeder", "feeder.py");
     verticle.setNumInstances(2);
     NetworkContext context = ContextBuilder.buildContext(network, null);
     assertEquals("test", context.address());
@@ -305,8 +296,8 @@ public class ContextTest {
   @Test
   public void testInputOutputContext() {
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", "feeder.py");
-    Verticle verticle = network.addWorkerVerticle("worker", "worker.py");
+    network.addVerticle("feeder", "feeder.py");
+    Verticle verticle = network.addVerticle("worker", "worker.py");
     verticle.setNumInstances(2);
     verticle.addInput("feeder", "stream").randomGrouping();
     NetworkContext context = ContextBuilder.buildContext(network, null);
@@ -334,7 +325,7 @@ public class ContextTest {
   @Test
   public void testInputContextStream() {
     Network network = new Network("test");
-    Verticle verticle = network.addWorkerVerticle("worker", "worker.py");
+    Verticle verticle = network.addVerticle("worker", "worker.py");
     verticle.setNumInstances(2);
     verticle.addInput("input", "nondefault");
     NetworkContext context = ContextBuilder.buildContext(network, null);
@@ -347,7 +338,7 @@ public class ContextTest {
   @Test
   public void testInputContextGrouping() {
     Network network = new Network("test");
-    Verticle verticle = network.addWorkerVerticle("worker", "worker.py");
+    Verticle verticle = network.addVerticle("worker", "worker.py");
     verticle.setNumInstances(2);
     verticle.addInput("input").fieldsGrouping("foo", "bar");
     NetworkContext context = ContextBuilder.buildContext(network, null);
@@ -360,7 +351,7 @@ public class ContextTest {
   @Test
   public void testInputContextCount() {
     Network network = new Network("test");
-    Verticle verticle = network.addWorkerVerticle("worker", "worker.py");
+    Verticle verticle = network.addVerticle("worker", "worker.py");
     verticle.setNumInstances(2);
     verticle.addInput("input");
     NetworkContext context = ContextBuilder.buildContext(network, null);

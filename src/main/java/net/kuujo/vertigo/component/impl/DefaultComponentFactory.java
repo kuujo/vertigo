@@ -23,8 +23,6 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.worker.Worker;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
@@ -61,20 +59,6 @@ public class DefaultComponentFactory implements ComponentFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T extends Component<?>> T createComponent(Class<T> type, InstanceContext context) {
-    // Validate a feeder.
-    if (Feeder.class.isAssignableFrom(type)) {
-      if (!context.component().type().equals(net.kuujo.vertigo.network.Component.Type.FEEDER)) {
-        throw new IllegalArgumentException(type.getCanonicalName() + " is not a valid feeder component.");
-      }
-    }
-
-    // Validate a worker.
-    if (Worker.class.isAssignableFrom(type)) {
-      if (!context.component().type().equals(net.kuujo.vertigo.network.Component.Type.WORKER)) {
-        throw new IllegalArgumentException(type.getCanonicalName() + " is not a valid worker component.");
-      }
-    }
-
     // Search the class for a factory method.
     for (Method method : type.getDeclaredMethods()) {
       if (method.isAnnotationPresent(Factory.class)) {

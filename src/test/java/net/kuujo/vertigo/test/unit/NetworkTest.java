@@ -79,9 +79,8 @@ public class NetworkTest {
 
   @Test
   public void testVerticleDefaults() {
-    Verticle verticle = new Verticle(Component.Type.FEEDER, "test", "test.py");
+    Verticle verticle = new Verticle("test", "test.py");
     assertEquals("test", verticle.getAddress());
-    assertEquals(Component.Type.FEEDER, verticle.getType());
     assertFalse(verticle.isModule());
     assertTrue(verticle.isVerticle());
     assertEquals("test.py", verticle.getMain());
@@ -96,9 +95,8 @@ public class NetworkTest {
 
   @Test
   public void testVerticleConfig() {
-    Verticle verticle = new Verticle(Component.Type.FEEDER, "test", "test.py");
+    Verticle verticle = new Verticle("test", "test.py");
     assertEquals("test", verticle.getAddress());
-    assertEquals(Component.Type.FEEDER, verticle.getType());
     assertFalse(verticle.isModule());
     assertTrue(verticle.isVerticle());
     assertEquals("test.py", verticle.getMain());
@@ -127,7 +125,7 @@ public class NetworkTest {
   public void testAddInvalidModule() {
     Network network = new Network("test");
     try {
-      network.addFeederModule("feeder", "feeder.py");
+      network.addModule("feeder", "feeder.py");
       fail();
     }
     catch (IllegalArgumentException e) {
@@ -136,9 +134,8 @@ public class NetworkTest {
 
   @Test
   public void testModuleDefaults() {
-    Module verticle = new Module(Component.Type.FEEDER, "test", "com.test~test-module~1.0");
+    Module verticle = new Module("test", "com.test~test-module~1.0");
     assertEquals("test", verticle.getAddress());
-    assertEquals(Component.Type.FEEDER, verticle.getType());
     assertTrue(verticle.isModule());
     assertFalse(verticle.isVerticle());
     assertEquals("com.test~test-module~1.0", verticle.getModule());
@@ -151,9 +148,8 @@ public class NetworkTest {
 
   @Test
   public void testModuleConfig() {
-    Module module = new Module(Component.Type.FEEDER, "test", "com.test~test-module~1.0");
+    Module module = new Module("test", "com.test~test-module~1.0");
     assertEquals("test", module.getAddress());
-    assertEquals(Component.Type.FEEDER, module.getType());
     assertTrue(module.isModule());
     assertFalse(module.isVerticle());
     assertEquals("com.test~test-module~1.0", module.getModule());
@@ -198,8 +194,8 @@ public class NetworkTest {
 
   @Test
   public void testAddInput() {
-    Verticle worker = new Verticle(Component.Type.WORKER, "worker", "worker.py");
-    Verticle feeder = new Verticle(Component.Type.FEEDER, "feeder", "feeder.py");
+    Verticle worker = new Verticle("worker", "worker.py");
+    Verticle feeder = new Verticle("feeder", "feeder.py");
     assertEquals(0, worker.getInputs().size());
     Input input1 = worker.addInput(feeder);
     assertEquals("feeder", input1.getAddress());
@@ -239,56 +235,56 @@ public class NetworkTest {
   public void testAddFeeder() {
     Network network = new Network("test");
     assertEquals("test", network.getAddress());
-    Component<?> verticle1 = network.addFeeder("verticle1", "verticle1.py");
+    Component<?> verticle1 = network.addVerticle("verticle1", "verticle1.py");
     assertEquals("verticle1", verticle1.getAddress());
     assertFalse(verticle1.isModule());
     assertTrue(verticle1.isVerticle());
     assertEquals("verticle1.py", ((Verticle) verticle1).getMain());
     assertEquals(new JsonObject(), verticle1.getConfig());
     assertEquals(1, verticle1.getNumInstances());
-    Component<?> verticle2 = network.addFeeder("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
+    Component<?> verticle2 = network.addVerticle("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
     assertEquals("verticle2", verticle2.getAddress());
     assertFalse(verticle2.isModule());
     assertTrue(verticle2.isVerticle());
     assertEquals("verticle2.py", ((Verticle) verticle2).getMain());
     assertEquals("bar", verticle2.getConfig().getString("foo"));
     assertEquals(1, verticle2.getNumInstances());
-    Component<?> verticle3 = network.addFeeder("verticle3", "verticle3.py", 2);
+    Component<?> verticle3 = network.addVerticle("verticle3", "verticle3.py", 2);
     assertEquals("verticle3", verticle3.getAddress());
     assertFalse(verticle3.isModule());
     assertTrue(verticle3.isVerticle());
     assertEquals("verticle3.py", ((Verticle) verticle3).getMain());
     assertEquals(new JsonObject(), verticle3.getConfig());
     assertEquals(2, verticle3.getNumInstances());
-    Component<?> verticle4 = network.addFeeder("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
+    Component<?> verticle4 = network.addVerticle("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("verticle4", verticle4.getAddress());
     assertFalse(verticle4.isModule());
     assertTrue(verticle4.isVerticle());
     assertEquals("verticle4.py", ((Verticle) verticle4).getMain());
     assertEquals("bar", verticle4.getConfig().getString("foo"));
     assertEquals(2, verticle4.getNumInstances());
-    Component<?> module1 = network.addFeeder("module1", "com.test~test-module~1.0");
+    Component<?> module1 = network.addModule("module1", "com.test~test-module~1.0");
     assertEquals("module1", module1.getAddress());
     assertTrue(module1.isModule());
     assertFalse(module1.isVerticle());
     assertEquals("com.test~test-module~1.0", ((Module) module1).getModule());
     assertEquals(new JsonObject(), module1.getConfig());
     assertEquals(1, module1.getNumInstances());
-    Component<?> module2 = network.addFeeder("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
+    Component<?> module2 = network.addModule("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
     assertEquals("module2", module2.getAddress());
     assertTrue(module2.isModule());
     assertFalse(module2.isVerticle());
     assertEquals("com.test~test-module~2.0", ((Module) module2).getModule());
     assertEquals("bar", module2.getConfig().getString("foo"));
     assertEquals(1, module2.getNumInstances());
-    Component<?> module3 = network.addFeeder("module3", "com.test~test-module~3.0", 2);
+    Component<?> module3 = network.addModule("module3", "com.test~test-module~3.0", 2);
     assertEquals("module3", module3.getAddress());
     assertTrue(module3.isModule());
     assertFalse(module3.isVerticle());
     assertEquals("com.test~test-module~3.0", ((Module) module3).getModule());
     assertEquals(new JsonObject(), module3.getConfig());
     assertEquals(2, module3.getNumInstances());
-    Component<?> module4 = network.addFeeder("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
+    Component<?> module4 = network.addModule("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("module4", module4.getAddress());
     assertTrue(module4.isModule());
     assertFalse(module4.isVerticle());
@@ -301,28 +297,28 @@ public class NetworkTest {
   public void testAddFeederVerticle() {
     Network network = new Network("test");
     assertEquals("test", network.getAddress());
-    Verticle verticle1 = network.addFeederVerticle("verticle1", "verticle1.py");
+    Verticle verticle1 = network.addVerticle("verticle1", "verticle1.py");
     assertEquals("verticle1", verticle1.getAddress());
     assertFalse(verticle1.isModule());
     assertTrue(verticle1.isVerticle());
     assertEquals("verticle1.py", verticle1.getMain());
     assertEquals(new JsonObject(), verticle1.getConfig());
     assertEquals(1, verticle1.getNumInstances());
-    Verticle verticle2 = network.addFeederVerticle("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
+    Verticle verticle2 = network.addVerticle("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
     assertEquals("verticle2", verticle2.getAddress());
     assertFalse(verticle2.isModule());
     assertTrue(verticle2.isVerticle());
     assertEquals("verticle2.py", verticle2.getMain());
     assertEquals("bar", verticle2.getConfig().getString("foo"));
     assertEquals(1, verticle2.getNumInstances());
-    Verticle verticle3 = network.addFeederVerticle("verticle3", "verticle3.py", 2);
+    Verticle verticle3 = network.addVerticle("verticle3", "verticle3.py", 2);
     assertEquals("verticle3", verticle3.getAddress());
     assertFalse(verticle3.isModule());
     assertTrue(verticle3.isVerticle());
     assertEquals("verticle3.py", verticle3.getMain());
     assertEquals(new JsonObject(), verticle3.getConfig());
     assertEquals(2, verticle3.getNumInstances());
-    Verticle verticle4 = network.addFeederVerticle("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
+    Verticle verticle4 = network.addVerticle("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("verticle4", verticle4.getAddress());
     assertFalse(verticle4.isModule());
     assertTrue(verticle4.isVerticle());
@@ -335,28 +331,28 @@ public class NetworkTest {
   public void testAddFeederModule() {
     Network network = new Network("test");
     assertEquals("test", network.getAddress());
-    Module module1 = network.addFeederModule("module1", "com.test~test-module~1.0");
+    Module module1 = network.addModule("module1", "com.test~test-module~1.0");
     assertEquals("module1", module1.getAddress());
     assertTrue(module1.isModule());
     assertFalse(module1.isVerticle());
     assertEquals("com.test~test-module~1.0", module1.getModule());
     assertEquals(new JsonObject(), module1.getConfig());
     assertEquals(1, module1.getNumInstances());
-    Module module2 = network.addFeederModule("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
+    Module module2 = network.addModule("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
     assertEquals("module2", module2.getAddress());
     assertTrue(module2.isModule());
     assertFalse(module2.isVerticle());
     assertEquals("com.test~test-module~2.0", module2.getModule());
     assertEquals("bar", module2.getConfig().getString("foo"));
     assertEquals(1, module2.getNumInstances());
-    Module module3 = network.addFeederModule("module3", "com.test~test-module~3.0", 2);
+    Module module3 = network.addModule("module3", "com.test~test-module~3.0", 2);
     assertEquals("module3", module3.getAddress());
     assertTrue(module3.isModule());
     assertFalse(module3.isVerticle());
     assertEquals("com.test~test-module~3.0", module3.getModule());
     assertEquals(new JsonObject(), module3.getConfig());
     assertEquals(2, module3.getNumInstances());
-    Module module4 = network.addFeederModule("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
+    Module module4 = network.addModule("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("module4", module4.getAddress());
     assertTrue(module4.isModule());
     assertFalse(module4.isVerticle());
@@ -369,56 +365,56 @@ public class NetworkTest {
   public void testAddWorker() {
     Network network = new Network("test");
     assertEquals("test", network.getAddress());
-    Component<?> verticle1 = network.addWorker("verticle1", "verticle1.py");
+    Component<?> verticle1 = network.addVerticle("verticle1", "verticle1.py");
     assertEquals("verticle1", verticle1.getAddress());
     assertFalse(verticle1.isModule());
     assertTrue(verticle1.isVerticle());
     assertEquals("verticle1.py", ((Verticle) verticle1).getMain());
     assertEquals(new JsonObject(), verticle1.getConfig());
     assertEquals(1, verticle1.getNumInstances());
-    Component<?> verticle2 = network.addWorker("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
+    Component<?> verticle2 = network.addVerticle("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
     assertEquals("verticle2", verticle2.getAddress());
     assertFalse(verticle2.isModule());
     assertTrue(verticle2.isVerticle());
     assertEquals("verticle2.py", ((Verticle) verticle2).getMain());
     assertEquals("bar", verticle2.getConfig().getString("foo"));
     assertEquals(1, verticle2.getNumInstances());
-    Component<?> verticle3 = network.addWorker("verticle3", "verticle3.py", 2);
+    Component<?> verticle3 = network.addVerticle("verticle3", "verticle3.py", 2);
     assertEquals("verticle3", verticle3.getAddress());
     assertFalse(verticle3.isModule());
     assertTrue(verticle3.isVerticle());
     assertEquals("verticle3.py", ((Verticle) verticle3).getMain());
     assertEquals(new JsonObject(), verticle3.getConfig());
     assertEquals(2, verticle3.getNumInstances());
-    Component<?> verticle4 = network.addWorker("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
+    Component<?> verticle4 = network.addVerticle("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("verticle4", verticle4.getAddress());
     assertFalse(verticle4.isModule());
     assertTrue(verticle4.isVerticle());
     assertEquals("verticle4.py", ((Verticle) verticle4).getMain());
     assertEquals("bar", verticle4.getConfig().getString("foo"));
     assertEquals(2, verticle4.getNumInstances());
-    Component<?> module1 = network.addWorker("module1", "com.test~test-module~1.0");
+    Component<?> module1 = network.addModule("module1", "com.test~test-module~1.0");
     assertEquals("module1", module1.getAddress());
     assertTrue(module1.isModule());
     assertFalse(module1.isVerticle());
     assertEquals("com.test~test-module~1.0", ((Module) module1).getModule());
     assertEquals(new JsonObject(), module1.getConfig());
     assertEquals(1, module1.getNumInstances());
-    Component<?> module2 = network.addWorker("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
+    Component<?> module2 = network.addModule("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
     assertEquals("module2", module2.getAddress());
     assertTrue(module2.isModule());
     assertFalse(module2.isVerticle());
     assertEquals("com.test~test-module~2.0", ((Module) module2).getModule());
     assertEquals("bar", module2.getConfig().getString("foo"));
     assertEquals(1, module2.getNumInstances());
-    Component<?> module3 = network.addWorker("module3", "com.test~test-module~3.0", 2);
+    Component<?> module3 = network.addModule("module3", "com.test~test-module~3.0", 2);
     assertEquals("module3", module3.getAddress());
     assertTrue(module3.isModule());
     assertFalse(module3.isVerticle());
     assertEquals("com.test~test-module~3.0", ((Module) module3).getModule());
     assertEquals(new JsonObject(), module3.getConfig());
     assertEquals(2, module3.getNumInstances());
-    Component<?> module4 = network.addWorker("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
+    Component<?> module4 = network.addModule("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("module4", module4.getAddress());
     assertTrue(module4.isModule());
     assertFalse(module4.isVerticle());
@@ -431,28 +427,28 @@ public class NetworkTest {
   public void testAddWorkerVerticle() {
     Network network = new Network("test");
     assertEquals("test", network.getAddress());
-    Verticle verticle1 = network.addWorkerVerticle("verticle1", "verticle1.py");
+    Verticle verticle1 = network.addVerticle("verticle1", "verticle1.py");
     assertEquals("verticle1", verticle1.getAddress());
     assertFalse(verticle1.isModule());
     assertTrue(verticle1.isVerticle());
     assertEquals("verticle1.py", verticle1.getMain());
     assertEquals(new JsonObject(), verticle1.getConfig());
     assertEquals(1, verticle1.getNumInstances());
-    Verticle verticle2 = network.addWorkerVerticle("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
+    Verticle verticle2 = network.addVerticle("verticle2", "verticle2.py", new JsonObject().putString("foo", "bar"));
     assertEquals("verticle2", verticle2.getAddress());
     assertFalse(verticle2.isModule());
     assertTrue(verticle2.isVerticle());
     assertEquals("verticle2.py", verticle2.getMain());
     assertEquals("bar", verticle2.getConfig().getString("foo"));
     assertEquals(1, verticle2.getNumInstances());
-    Verticle verticle3 = network.addWorkerVerticle("verticle3", "verticle3.py", 2);
+    Verticle verticle3 = network.addVerticle("verticle3", "verticle3.py", 2);
     assertEquals("verticle3", verticle3.getAddress());
     assertFalse(verticle3.isModule());
     assertTrue(verticle3.isVerticle());
     assertEquals("verticle3.py", verticle3.getMain());
     assertEquals(new JsonObject(), verticle3.getConfig());
     assertEquals(2, verticle3.getNumInstances());
-    Verticle verticle4 = network.addWorkerVerticle("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
+    Verticle verticle4 = network.addVerticle("verticle4", "verticle4.py", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("verticle4", verticle4.getAddress());
     assertFalse(verticle4.isModule());
     assertTrue(verticle4.isVerticle());
@@ -465,28 +461,28 @@ public class NetworkTest {
   public void testAddWorkerModule() {
     Network network = new Network("test");
     assertEquals("test", network.getAddress());
-    Module module1 = network.addWorkerModule("module1", "com.test~test-module~1.0");
+    Module module1 = network.addModule("module1", "com.test~test-module~1.0");
     assertEquals("module1", module1.getAddress());
     assertTrue(module1.isModule());
     assertFalse(module1.isVerticle());
     assertEquals("com.test~test-module~1.0", module1.getModule());
     assertEquals(new JsonObject(), module1.getConfig());
     assertEquals(1, module1.getNumInstances());
-    Module module2 = network.addWorkerModule("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
+    Module module2 = network.addModule("module2", "com.test~test-module~2.0", new JsonObject().putString("foo", "bar"));
     assertEquals("module2", module2.getAddress());
     assertTrue(module2.isModule());
     assertFalse(module2.isVerticle());
     assertEquals("com.test~test-module~2.0", module2.getModule());
     assertEquals("bar", module2.getConfig().getString("foo"));
     assertEquals(1, module2.getNumInstances());
-    Module module3 = network.addWorkerModule("module3", "com.test~test-module~3.0", 2);
+    Module module3 = network.addModule("module3", "com.test~test-module~3.0", 2);
     assertEquals("module3", module3.getAddress());
     assertTrue(module3.isModule());
     assertFalse(module3.isVerticle());
     assertEquals("com.test~test-module~3.0", module3.getModule());
     assertEquals(new JsonObject(), module3.getConfig());
     assertEquals(2, module3.getNumInstances());
-    Module module4 = network.addWorkerModule("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
+    Module module4 = network.addModule("module4", "com.test~test-module~4.0", new JsonObject().putString("foo", "bar"), 2);
     assertEquals("module4", module4.getAddress());
     assertTrue(module4.isModule());
     assertFalse(module4.isVerticle());
@@ -525,8 +521,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(Module.COMPONENT_ADDRESS, "feeder")
-        .putString(Module.COMPONENT_TYPE, "feeder")
-        .putString(Module.COMPONENT_DEPLOYMENT, Module.COMPONENT_MODULE)
+        .putString(Module.COMPONENT_TYPE, Module.COMPONENT_TYPE_MODULE)
         .putString(Module.MODULE_NAME, "com.test~test-module~1.0")
         .putObject(Module.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(Module.COMPONENT_NUM_INSTANCES, 2);
@@ -535,7 +530,6 @@ public class NetworkTest {
     assertEquals("test", network.getAddress());
     Module module = network.getComponent("feeder");
     assertEquals("feeder", module.getAddress());
-    assertEquals(Component.Type.FEEDER.getName(), module.getType());
     assertEquals("com.test~test-module~1.0", module.getModule());
     assertEquals("bar", module.getConfig().getString("foo"));
     assertEquals(2, module.getNumInstances());
@@ -550,8 +544,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(Verticle.COMPONENT_ADDRESS, "feeder")
-        .putString(Verticle.COMPONENT_TYPE, "feeder")
-        .putString(Verticle.COMPONENT_DEPLOYMENT, Verticle.COMPONENT_VERTICLE)
+        .putString(Verticle.COMPONENT_TYPE, Verticle.COMPONENT_TYPE_VERTICLE)
         .putString(Verticle.VERTICLE_MAIN, "test.py")
         .putObject(Verticle.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(Verticle.COMPONENT_NUM_INSTANCES, 2)
@@ -562,7 +555,6 @@ public class NetworkTest {
     assertEquals("test", network.getAddress());
     Verticle verticle = network.getComponent("feeder");
     assertEquals("feeder", verticle.getAddress());
-    assertEquals(Component.Type.FEEDER.getName(), verticle.getType());
     assertEquals("test.py", verticle.getMain());
     assertEquals("bar", verticle.getConfig().getString("foo"));
     assertEquals(2, verticle.getNumInstances());
@@ -579,8 +571,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonWorker = new JsonObject()
         .putString(Module.COMPONENT_ADDRESS, "worker")
-        .putString(Module.COMPONENT_TYPE, "worker")
-        .putString(Module.COMPONENT_DEPLOYMENT, Module.COMPONENT_MODULE)
+        .putString(Module.COMPONENT_TYPE, Module.COMPONENT_TYPE_MODULE)
         .putString(Module.MODULE_NAME, "com.test~test-module~1.0")
         .putObject(Module.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(Module.COMPONENT_NUM_INSTANCES, 2);
@@ -589,7 +580,6 @@ public class NetworkTest {
     assertEquals("test", network.getAddress());
     Module module = network.getComponent("worker");
     assertEquals("worker", module.getAddress());
-    assertEquals(Component.Type.WORKER.getName(), module.getType());
     assertEquals("com.test~test-module~1.0", module.getModule());
     assertEquals("bar", module.getConfig().getString("foo"));
     assertEquals(2, module.getNumInstances());
@@ -604,8 +594,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonWorker = new JsonObject()
         .putString(Verticle.COMPONENT_ADDRESS, "worker")
-        .putString(Verticle.COMPONENT_TYPE, "worker")
-        .putString(Verticle.COMPONENT_DEPLOYMENT, Verticle.COMPONENT_VERTICLE)
+        .putString(Verticle.COMPONENT_TYPE, Verticle.COMPONENT_TYPE_VERTICLE)
         .putString(Verticle.VERTICLE_MAIN, "test.py")
         .putObject(Verticle.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(Verticle.COMPONENT_NUM_INSTANCES, 2)
@@ -616,7 +605,6 @@ public class NetworkTest {
     assertEquals("test", network.getAddress());
     Verticle verticle = network.getComponent("worker");
     assertEquals("worker", verticle.getAddress());
-    assertEquals(Component.Type.WORKER.getName(), verticle.getType());
     assertEquals("test.py", verticle.getMain());
     assertEquals("bar", verticle.getConfig().getString("foo"));
     assertEquals(2, verticle.getNumInstances());
@@ -633,8 +621,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(Verticle.COMPONENT_ADDRESS, "feeder")
-        .putString(Verticle.COMPONENT_TYPE, "feeder")
-        .putString(Verticle.COMPONENT_DEPLOYMENT, Verticle.COMPONENT_VERTICLE)
+        .putString(Verticle.COMPONENT_TYPE, Verticle.COMPONENT_TYPE_VERTICLE)
         .putString(Verticle.VERTICLE_MAIN, "test.py");
     JsonObject jsonHook = new JsonObject().putString("type", TestHook.class.getName());
     jsonFeeder.putArray(Verticle.COMPONENT_HOOKS, new JsonArray().add(jsonHook));
@@ -653,8 +640,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(Verticle.COMPONENT_ADDRESS, "feeder")
-        .putString(Verticle.COMPONENT_TYPE, "feeder")
-        .putString(Verticle.COMPONENT_DEPLOYMENT, Verticle.COMPONENT_VERTICLE)
+        .putString(Verticle.COMPONENT_TYPE, Verticle.COMPONENT_TYPE_VERTICLE)
         .putString(Verticle.VERTICLE_MAIN, "test.py");
 
     JsonArray jsonInputs = new JsonArray();

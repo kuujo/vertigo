@@ -76,8 +76,8 @@ public class MessagingTest extends TestVerticle {
   public void testAck() {
     final ClusterClient cluster = new LocalClusterClient(vertx, container);
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", "feeder.py", 2);
-    network.addWorkerVerticle("worker", "worker.py", 2).addInput("feeder");
+    network.addVerticle("feeder", "feeder.py", 2);
+    network.addVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
     final Acker acker1 = new DefaultAcker(vertx.eventBus());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
@@ -131,8 +131,8 @@ public class MessagingTest extends TestVerticle {
   public void testFail() {
     final ClusterClient cluster = new LocalClusterClient(vertx, container);
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", "feeder.py", 2);
-    network.addWorkerVerticle("worker", "worker.py", 2).addInput("feeder");
+    network.addVerticle("feeder", "feeder.py", 2);
+    network.addVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
     final Acker acker1 = new DefaultAcker(vertx.eventBus());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
@@ -186,8 +186,8 @@ public class MessagingTest extends TestVerticle {
   public void testTimeout() {
     final ClusterClient cluster = new LocalClusterClient(vertx, container);
     Network network = new Network("test");
-    network.addFeederVerticle("feeder", "feeder.py", 2);
-    network.addWorkerVerticle("worker", "worker.py", 2).addInput("feeder");
+    network.addVerticle("feeder", "feeder.py", 2);
+    network.addVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
     final Acker acker1 = new DefaultAcker(vertx.eventBus());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);

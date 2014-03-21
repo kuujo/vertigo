@@ -44,9 +44,9 @@ public class LocalClusterTest extends TestVerticle {
   public void testLocalDeploy() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.addFeeder("test.feeder", TestFeeder.class.getName());
-    network.addWorker("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addWorker("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+    network.addVerticle("test.feeder", TestFeeder.class.getName());
+    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
+    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
 
     VertigoCluster cluster = new LocalCluster(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -62,9 +62,9 @@ public class LocalClusterTest extends TestVerticle {
   public void testLocalShutdown() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.addFeeder("test.feeder", TestFeeder.class.getName());
-    network.addWorker("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addWorker("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+    network.addVerticle("test.feeder", TestFeeder.class.getName());
+    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
+    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
 
     final VertigoCluster cluster = new LocalCluster(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {

@@ -139,7 +139,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", context.component().type().getName(), context.address()));
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), context.address()));
     this.context = context;
     this.cluster = context.cluster();
     this.coordinator = new DefaultCoordinator(context);

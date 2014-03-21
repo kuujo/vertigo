@@ -20,16 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.vertx.java.core.json.JsonObject;
-
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.util.serializer.Serializable;
+
+import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A network component definition.
@@ -48,11 +47,11 @@ import net.kuujo.vertigo.util.serializer.Serializable;
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.NAME,
   include=JsonTypeInfo.As.PROPERTY,
-  property="deploy"
+  property="type"
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=Module.class, name=Component.COMPONENT_MODULE),
-  @JsonSubTypes.Type(value=Verticle.class, name=Component.COMPONENT_VERTICLE)
+  @JsonSubTypes.Type(value=Module.class, name=Component.COMPONENT_TYPE_MODULE),
+  @JsonSubTypes.Type(value=Verticle.class, name=Component.COMPONENT_TYPE_VERTICLE)
 })
 public abstract class Component<T extends Component<T>> implements Config {
 
@@ -73,28 +72,19 @@ public abstract class Component<T extends Component<T>> implements Config {
 
   /**
    * <code>type</code> is a string indicating the type of component that will be deployed.
-   * This can be either <code>feeder</code>, <code>worker</code>, or <code>executor</code>
-   * . If the component type does not match the implementation then an error will occur
-   * upon deployment of the component. This field is required.
+   * This can be either <code>module</code> or <code>verticle</code>. This field is required.
    */
   public static final String COMPONENT_TYPE = "type";
 
   /**
-   * <code>deploy</code> is a string indicating the deployment method for the component.
-   * This can be either <code>module</code> or <code>verticle</code>. This field is
-   * required.
+   * <code>module</code> is the module component type.
    */
-  public static final String COMPONENT_DEPLOYMENT = "deploy";
+  public static final String COMPONENT_TYPE_MODULE = "module";
 
   /**
-   * <code>module</code> is the module deployment method.
+   * <code>verticle</code> is the verticle component type.
    */
-  public static final String COMPONENT_MODULE = "module";
-
-  /**
-   * <code>verticle</code> is the verticle deployment method.
-   */
-  public static final String COMPONENT_VERTICLE = "verticle";
+  public static final String COMPONENT_TYPE_VERTICLE = "verticle";
 
   /**
    * <code>config</code> is an object defining the configuration to pass to each instance
@@ -137,69 +127,11 @@ public abstract class Component<T extends Component<T>> implements Config {
    */
   public static final String COMPONENT_INPUTS = "inputs";
 
-  /**
-   * Component type.
-   * 
-   * @author Jordan Halterman
-   */
-  public static enum Type {
-
-    /**
-     * A feeder component.
-     */
-    FEEDER("feeder"),
-
-    /**
-     * A worker component.
-     */
-    WORKER("worker");
-
-    private final String name;
-
-    private Type(String name) {
-      this.name = name;
-    }
-
-    /**
-     * Returns the component type name.
-     * 
-     * @return The component type name.
-     */
-    public String getName() {
-      return name;
-    }
-
-    @Override
-    public String toString() {
-      return name;
-    }
-
-    /**
-     * Parses a component type name.
-     * 
-     * @param name The component type name.
-     * @return A component type.
-     * @throws IllegalArgumentException If the compoennt type name is invalid.
-     */
-    public static Type parse(String name) {
-      switch (name) {
-        case "feeder":
-          return FEEDER;
-        case "worker":
-          return WORKER;
-        default:
-          throw new IllegalArgumentException("Invalid component type " + name);
-      }
-    }
-
-  }
-
   private static final int DEFAULT_NUM_INSTANCES = 1;
   private static final String DEFAULT_GROUP = "__DEFAULT__";
 
   private String name;
   private String address;
-  private Type type;
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
   private String group = DEFAULT_GROUP;
@@ -210,16 +142,17 @@ public abstract class Component<T extends Component<T>> implements Config {
     address = UUID.randomUUID().toString();
   }
 
-  public Component(Type type, String name) {
-    this.type = type;
+  public Component(String name) {
     this.name = name;
   }
 
   /**
-   * Returns the component deployment type.
+   * Returns the component type.
+   *
+   * @return The component type - either "module" or "verticle".
    */
-  @JsonGetter("deploy")
-  protected abstract String getDeploymentType();
+  @JsonGetter("type")
+  protected abstract String getType();
 
   @SuppressWarnings("unchecked")
   T setName(String name) {
@@ -258,31 +191,6 @@ public abstract class Component<T extends Component<T>> implements Config {
   public T setAddress(String address) {
     this.address = address;
     return (T) this;
-  }
-
-  /**
-   * Gets the component type.
-   * <p>
-   * 
-   * The component type is a type that indicates the nature of the component
-   * implementation (module or verticle). For instance, if the component is a
-   * <code>Feeder</code> component, the module or verticle must be a
-   * <code>FeederVerticle</code> instance.
-   * 
-   * @return The component type.
-   */
-  public Type getType() {
-    return type;
-  }
-
-  @JsonGetter("type")
-  private String getSerializedType() {
-    return type.getName();
-  }
-
-  @JsonSetter("type")
-  private void setSerializedType(String type) {
-    this.type = Type.parse(type);
   }
 
   /**

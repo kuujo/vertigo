@@ -23,7 +23,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -42,17 +41,16 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.NAME,
   include=JsonTypeInfo.As.PROPERTY,
-  property="deploy"
+  property="type"
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_MODULE),
-  @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_VERTICLE)
+  @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_TYPE_MODULE),
+  @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_TYPE_VERTICLE)
 })
 public abstract class ComponentContext<T extends ComponentContext<T>> extends Context<T> {
   private static final String DEFAULT_GROUP = "__DEFAULT__";
   protected String name;
   protected String address;
-  protected Component.Type type;
   protected String group = DEFAULT_GROUP;
   protected Map<String, Object> config;
   protected List<InstanceContext> instances = new ArrayList<>();
@@ -91,8 +89,8 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
   /**
    * Returns the component deployment type.
    */
-  @JsonGetter("deploy")
-  protected abstract String getDeploymentType();
+  @JsonGetter("type")
+  protected abstract String type();
 
   /**
    * Sets the component parent.
@@ -119,25 +117,6 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
    */
   public String address() {
     return address;
-  }
-
-  /**
-   * Gets the component type.
-   * 
-   * @return The component type.
-   */
-  public Component.Type type() {
-    return type;
-  }
-
-  @JsonGetter("type")
-  private String getSerializedType() {
-    return type.getName();
-  }
-
-  @JsonSetter("type")
-  private void setSerializedType(String type) {
-    this.type = Component.Type.parse(type);
   }
 
   /**

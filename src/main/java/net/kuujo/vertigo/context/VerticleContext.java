@@ -40,8 +40,8 @@ public class VerticleContext extends ComponentContext<VerticleContext> {
   private boolean multiThreaded;
 
   @Override
-  protected String getDeploymentType() {
-    return Component.COMPONENT_VERTICLE;
+  protected String type() {
+    return Component.COMPONENT_TYPE_VERTICLE;
   }
 
   @Override
@@ -131,17 +131,6 @@ public class VerticleContext extends ComponentContext<VerticleContext> {
      */
     public Builder setAddress(String address) {
       context.address = address;
-      return this;
-    }
-
-    /**
-     * Sets the component type.
-     *
-     * @param type A component type constant.
-     * @return The context builder.
-     */
-    public Builder setType(Component.Type type) {
-      context.type = type;
       return this;
     }
 

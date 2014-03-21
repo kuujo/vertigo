@@ -57,9 +57,9 @@ public class WorkerTest extends TestVerticle {
   @Test
   public void testOneToManyWorker() {
     final Network network = new Network("test.network");
-    network.addFeeder("test.feeder", TestFeeder.class.getName());
-    network.addWorker("test.worker1", TestOneToManyWorker1.class.getName()).addInput("test.feeder").allGrouping();
-    network.addWorker("test.worker2", TestOneToManyWorker2.class.getName(), 4).addInput("test.worker1");
+    network.addVerticle("test.feeder", TestFeeder.class.getName());
+    network.addVerticle("test.worker1", TestOneToManyWorker1.class.getName()).addInput("test.feeder").allGrouping();
+    network.addVerticle("test.worker2", TestOneToManyWorker2.class.getName(), 4).addInput("test.worker1");
     deployNetwork(network);
   }
 
@@ -101,9 +101,9 @@ public class WorkerTest extends TestVerticle {
   @Test
   public void testManyToManyWorker() {
     final Network network = new Network("test.network");
-    network.addFeeder("test.feeder", TestFeeder.class.getName());
-    network.addWorker("test.worker1", TestManyToManyWorker1.class.getName(), 4).addInput("test.feeder").allGrouping();
-    network.addWorker("test.worker2", TestManyToManyWorker2.class.getName(), 4).addInput("test.worker1");
+    network.addVerticle("test.feeder", TestFeeder.class.getName());
+    network.addVerticle("test.worker1", TestManyToManyWorker1.class.getName(), 4).addInput("test.feeder").allGrouping();
+    network.addVerticle("test.worker2", TestManyToManyWorker2.class.getName(), 4).addInput("test.worker1");
     deployNetwork(network);
   }
 
@@ -149,9 +149,9 @@ public class WorkerTest extends TestVerticle {
   @Test
   public void testManyToOneWorker() {
     final Network network = new Network("test.network");
-    network.addFeeder("test.feeder", TestFeeder.class.getName());
-    network.addWorker("test.worker1", TestManyToOneWorker1.class.getName(), 4).addInput("test.feeder").allGrouping();
-    network.addWorker("test.worker2", TestManyToOneWorker2.class.getName()).addInput("test.worker1");
+    network.addVerticle("test.feeder", TestFeeder.class.getName());
+    network.addVerticle("test.worker1", TestManyToOneWorker1.class.getName(), 4).addInput("test.feeder").allGrouping();
+    network.addVerticle("test.worker2", TestManyToOneWorker2.class.getName()).addInput("test.worker1");
     deployNetwork(network);
   }
 

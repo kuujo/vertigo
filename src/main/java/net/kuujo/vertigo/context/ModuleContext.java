@@ -35,8 +35,8 @@ public class ModuleContext extends ComponentContext<ModuleContext> {
   private String module;
 
   @Override
-  protected String getDeploymentType() {
-    return Component.COMPONENT_MODULE;
+  protected String type() {
+    return Component.COMPONENT_TYPE_MODULE;
   }
 
   @Override
@@ -111,17 +111,6 @@ public class ModuleContext extends ComponentContext<ModuleContext> {
      */
     public Builder setAddress(String address) {
       context.address = address;
-      return this;
-    }
-
-    /**
-     * Sets the component type.
-     *
-     * @param type A component type constant.
-     * @return The context builder.
-     */
-    public Builder setType(Component.Type type) {
-      context.type = type;
       return this;
     }
 

@@ -15,14 +15,15 @@
  */
 package net.kuujo.vertigo.output.impl;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
+
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 
 /**
  * Default output connection implementation.
@@ -34,9 +35,9 @@ public class DefaultOutputConnection implements OutputConnection {
   private final String address;
   private final EventBus eventBus;
 
-  public DefaultOutputConnection(String address, Vertx vertx) {
-    this.address = address;
+  public DefaultOutputConnection(Vertx vertx, ConnectionContext context) {
     this.eventBus = vertx.eventBus();
+    this.address = context.address();
   }
 
   @Override

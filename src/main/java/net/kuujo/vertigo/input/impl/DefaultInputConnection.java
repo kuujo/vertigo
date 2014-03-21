@@ -21,6 +21,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.util.serializer.SerializationException;
@@ -51,9 +52,9 @@ public class DefaultInputConnection implements InputConnection {
     }
   };
 
-  public DefaultInputConnection(String address, Vertx vertx) {
-    this.address = address;
+  public DefaultInputConnection(Vertx vertx, ConnectionContext context) {
     this.eventBus = vertx.eventBus();
+    this.address = context.address();
   }
 
   @Override

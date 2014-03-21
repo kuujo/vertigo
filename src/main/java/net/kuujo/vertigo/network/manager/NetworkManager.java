@@ -273,7 +273,7 @@ public class NetworkManager extends BusModBase {
   }
 
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployModule(instance.address(), instance.component().toModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    cluster.deployModuleTo(instance.address(), instance.component().deploymentGroup(), instance.component().toModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -287,7 +287,7 @@ public class NetworkManager extends BusModBase {
   }
 
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployVerticle(instance.address(), instance.component().toVerticle().main(),  buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    cluster.deployVerticleTo(instance.address(), instance.component().deploymentGroup(), instance.component().toVerticle().main(),  buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -301,7 +301,7 @@ public class NetworkManager extends BusModBase {
   }
 
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployWorkerVerticle(instance.address(), instance.component().toVerticle().main(), buildConfig(instance, cluster), 1, instance.component().toVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+    cluster.deployWorkerVerticleTo(instance.address(), instance.component().deploymentGroup(), instance.component().toVerticle().main(), buildConfig(instance, cluster), 1, instance.component().toVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {

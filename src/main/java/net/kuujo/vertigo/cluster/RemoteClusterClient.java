@@ -31,8 +31,6 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Remote cluster client implementation.
  *
@@ -40,9 +38,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class RemoteClusterClient implements ClusterClient {
   private static final String CLUSTER_ADDRESS = "__CLUSTER__";
-  @JsonIgnore
   private final EventBus eventBus;
-  @JsonIgnore
   private final Map<String, Map<Handler<ClusterEvent>, HandlerWrapper>> watchHandlers = new HashMap<>();
 
   private static class HandlerWrapper {

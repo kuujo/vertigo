@@ -15,25 +15,16 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.util.serializer.Serializable;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * Cluster client.
  *
  * @author Jordan Halterman
  */
-@JsonTypeInfo(
-  use=JsonTypeInfo.Id.CLASS,
-  include=JsonTypeInfo.As.PROPERTY,
-  property="type"
-)
-public interface ClusterClient extends Serializable {
+public interface ClusterClient {
 
   /**
    * Checks whether a module or verticle is deployed in the cluster.

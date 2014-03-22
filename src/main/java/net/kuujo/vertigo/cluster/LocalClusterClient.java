@@ -26,13 +26,12 @@ import net.kuujo.vertigo.annotations.Factory;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Local cluster client implementation.
@@ -40,20 +39,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public class LocalClusterClient implements ClusterClient {
-  @JsonIgnore
   private final Vertx vertx;
-  @JsonIgnore
   private final Container container;
-  @JsonIgnore
   private final ConcurrentSharedMap<String, String> deployments;
-  @JsonIgnore
   private final ConcurrentSharedMap<String, Object> data;
-  @JsonIgnore
   private final ConcurrentSharedMap<String, String> watchers;
-  @JsonIgnore
-  private final Map<String, Handler<ClusterEvent>> watchHandlers = new HashMap<>();
-  @JsonIgnore
-  private final Map<Handler<ClusterEvent>, String> handlerMap = new HashMap<>();
+  private final Map<Handler<ClusterEvent>, String> watchAddresses = new HashMap<>();
+  private final Map<String, Handler<Message<JsonObject>>> messageHandlers = new HashMap<>();
 
   @Factory
   public static ClusterClient factory(Vertx vertx, Container container) {
@@ -368,9 +360,16 @@ public class LocalClusterClient implements ClusterClient {
         else {
           addWatcher(watchers, event, address);
         }
+        final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
+          @Override
+          public void handle(Message<JsonObject> message) {
+            handler.handle(new ClusterEvent(ClusterEvent.Type.parse(message.body().getString("type")), message.body().getString("key"), message.body().getValue("value")));
+          }
+        };
+        vertx.eventBus().registerLocalHandler(address, messageHandler);
         LocalClusterClient.this.watchers.put(key, watchers.encode());
-        watchHandlers.put(address, handler);
-        handlerMap.put(handler, address);
+        messageHandlers.put(address, messageHandler);
+        watchAddresses.put(handler, address);
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
@@ -408,8 +407,8 @@ public class LocalClusterClient implements ClusterClient {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        if (handlerMap.containsKey(handler)) {
-          String address = handlerMap.remove(handler);
+        if (watchAddresses.containsKey(handler)) {
+          String address = watchAddresses.remove(handler);
           String swatchers = LocalClusterClient.this.watchers.get(key);
           JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
           if (swatchers == null) {
@@ -424,8 +423,11 @@ public class LocalClusterClient implements ClusterClient {
           else {
             removeWatcher(watchers, event, address);
           }
+          Handler<Message<JsonObject>> messageHandler = messageHandlers.remove(address);
+          if (messageHandler != null) {
+            vertx.eventBus().unregisterHandler(address, messageHandler);
+          }
           LocalClusterClient.this.watchers.put(key, watchers.encode());
-          watchHandlers.remove(address);
         }
         else {
           new DefaultFutureResult<Void>(new VertigoException("Handler not registered."));
@@ -464,10 +466,7 @@ public class LocalClusterClient implements ClusterClient {
     JsonArray addresses = watchers.getArray(type.toString());
     if (addresses != null) {
       for (Object address : addresses) {
-        Handler<ClusterEvent> handler = watchHandlers.get((String) address);
-        if (handler != null) {
-          handler.handle(new ClusterEvent(type, key, value));
-        }
+        vertx.eventBus().send((String) address, new JsonObject().putString("type", type.toString()).putString("key", key).putValue("value", value));
       }
     }
   }

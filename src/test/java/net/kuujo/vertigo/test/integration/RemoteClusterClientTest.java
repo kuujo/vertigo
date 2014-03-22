@@ -19,9 +19,11 @@ import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.ClusterClient;
-import net.kuujo.vertigo.cluster.LocalClusterClient;
+import net.kuujo.vertigo.cluster.ClusterEvent;
+import net.kuujo.vertigo.cluster.RemoteClusterClient;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;
@@ -53,7 +55,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testDeployVerticle() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.deployVerticle("test-verticle1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -65,7 +67,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testUndeployVerticle() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.deployVerticle("test-verticle2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -84,7 +86,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testVerticleIsDeployed() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.deployVerticle("test-verticle3", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -104,7 +106,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testVerticleIsNotDeployed() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.deployVerticle("test-verticle4", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -130,7 +132,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testDeployWorkerVerticle() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.deployWorkerVerticle("test-worker1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -142,7 +144,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testUndeployWorkerVerticle() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.deployWorkerVerticle("test-worker2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -161,7 +163,7 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
 
   @Test
   public void testSetGetDelete() {
-    final ClusterClient client = new LocalClusterClient(vertx, container);
+    final ClusterClient client = new RemoteClusterClient(vertx);
     client.set("foo", "bar", new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -187,6 +189,104 @@ public class RemoteClusterClientTest extends XyncTestVerticle {
             });
           }
         });
+      }
+    });
+  }
+
+  @Test
+  public void testWatchCreate() {
+    final ClusterClient cluster = new RemoteClusterClient(vertx);
+    cluster.watch("test1", new Handler<ClusterEvent>() {
+      @Override
+      public void handle(ClusterEvent event) {
+        if (event.type().equals(ClusterEvent.Type.CREATE)) {
+          assertEquals(ClusterEvent.Type.CREATE, event.type());
+          assertEquals("test1", event.key());
+          assertEquals("Hello world 1!", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          fail(result.cause().getMessage());
+        }
+        else {
+          cluster.set("test1", "Hello world 1!");
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testWatchUpdate() {
+    final ClusterClient cluster = new RemoteClusterClient(vertx);
+    cluster.watch("test2", new Handler<ClusterEvent>() {
+      @Override
+      public void handle(ClusterEvent event) {
+        if (event.type().equals(ClusterEvent.Type.UPDATE)) {
+          assertEquals(ClusterEvent.Type.UPDATE, event.type());
+          assertEquals("test2", event.key());
+          assertEquals("Hello world 2 again!", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          fail(result.cause().getMessage());
+        }
+        else {
+          cluster.set("test2", "Hello world 2!", new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                fail(result.cause().getMessage());
+              }
+              else {
+                cluster.set("test2", "Hello world 2 again!");
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testWatchDelete() {
+    final ClusterClient cluster = new RemoteClusterClient(vertx);
+    cluster.watch("test3", new Handler<ClusterEvent>() {
+      @Override
+      public void handle(ClusterEvent event) {
+        if (event.type().equals(ClusterEvent.Type.DELETE)) {
+          assertEquals(ClusterEvent.Type.DELETE, event.type());
+          assertEquals("test3", event.key());
+          assertEquals("Hello world 3!", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          fail(result.cause().getMessage());
+        }
+        else {
+          cluster.set("test3", "Hello world 3!", new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                fail(result.cause().getMessage());
+              }
+              else {
+                cluster.delete("test3");
+              }
+            }
+          });
+        }
       }
     });
   }

@@ -241,13 +241,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
                             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                           }
                           else {
-                            coordinator.resumeHandler(new Handler<Void>() {
-                              @Override
-                              public void handle(Void _) {
-                                started = true;
-                                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-                              }
-                            });
                             coordinator.resume();
                           }
                         }
@@ -259,6 +252,13 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
             }
           });
         }
+      }
+    });
+    coordinator.resumeHandler(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        started = true;
+        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
   }

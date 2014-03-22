@@ -97,17 +97,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
                       new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
                     }
                     else {
-                      cluster.exists(currentContext.component().network().status(), new Handler<AsyncResult<Boolean>>() {
-                        @Override
-                        public void handle(AsyncResult<Boolean> result) {
-                          if (result.succeeded() && result.result()) {
-                            if (resumeHandler != null) {
-                              resumeHandler.handle((Void) null);
-                            }
-                            new DefaultFutureResult<InstanceContext>(currentContext).setHandler(doneHandler);
-                          }
-                        }
-                      });
+                      new DefaultFutureResult<InstanceContext>(currentContext).setHandler(doneHandler);
                     }
                   }
                 });

@@ -341,42 +341,47 @@ public class LocalClusterClient implements ClusterClient {
 
   @Override
   public ClusterClient watch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    final String address = UUID.randomUUID().toString();
+    if (event == null) {
+      addWatcher(ClusterEvent.Type.CREATE, key, address);
+      addWatcher(ClusterEvent.Type.UPDATE, key, address);
+      addWatcher(ClusterEvent.Type.CHANGE, key, address);
+      addWatcher(ClusterEvent.Type.DELETE, key, address);
+    }
+    else {
+      addWatcher(event, key, address);
+    }
+
+    final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        handler.handle(new ClusterEvent(ClusterEvent.Type.parse(message.body().getString("type")), message.body().getString("key"), message.body().getValue("value")));
+      }
+    };
+
+    vertx.eventBus().registerLocalHandler(address, messageHandler);
+
+    messageHandlers.put(address, messageHandler);
+    watchAddresses.put(handler, address);
+
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        String swatchers = LocalClusterClient.this.watchers.get(key);
-        JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
-        if (swatchers == null) {
-          watchers = new JsonObject();
-        }
-
-        final String address = UUID.randomUUID().toString();
-        if (event == null) {
-          addWatcher(watchers, ClusterEvent.Type.CREATE, address);
-          addWatcher(watchers, ClusterEvent.Type.UPDATE, address);
-          addWatcher(watchers, ClusterEvent.Type.CHANGE, address);
-          addWatcher(watchers, ClusterEvent.Type.DELETE, address);
-        }
-        else {
-          addWatcher(watchers, event, address);
-        }
-        final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
-          @Override
-          public void handle(Message<JsonObject> message) {
-            handler.handle(new ClusterEvent(ClusterEvent.Type.parse(message.body().getString("type")), message.body().getString("key"), message.body().getValue("value")));
-          }
-        };
-        vertx.eventBus().registerLocalHandler(address, messageHandler);
-        LocalClusterClient.this.watchers.put(key, watchers.encode());
-        messageHandlers.put(address, messageHandler);
-        watchAddresses.put(handler, address);
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
     return this;
   }
 
-  private void addWatcher(JsonObject watchers, ClusterEvent.Type event, String address) {
+  /**
+   * Adds a watcher to a key.
+   */
+  private void addWatcher(ClusterEvent.Type event, String key, String address) {
+    String swatchers = this.watchers.get(key);
+    JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
+    if (swatchers == null) {
+      watchers = new JsonObject();
+    }
     JsonArray addresses = watchers.getArray(event.toString());
     if (addresses == null) {
       addresses = new JsonArray();
@@ -385,6 +390,7 @@ public class LocalClusterClient implements ClusterClient {
     if (!addresses.contains(address)) {
       addresses.add(address);
     }
+    this.watchers.put(key, watchers.encode());
   }
 
   @Override
@@ -404,36 +410,42 @@ public class LocalClusterClient implements ClusterClient {
 
   @Override
   public ClusterClient unwatch(final String key, final ClusterEvent.Type event, final Handler<ClusterEvent> handler, final Handler<AsyncResult<Void>> doneHandler) {
-    vertx.runOnContext(new Handler<Void>() {
-      @Override
-      public void handle(Void _) {
-        if (watchAddresses.containsKey(handler)) {
-          String address = watchAddresses.remove(handler);
-          String swatchers = LocalClusterClient.this.watchers.get(key);
-          JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
-          if (swatchers == null) {
-            watchers = new JsonObject();
-          }
-          if (event == null) {
-            removeWatcher(watchers, ClusterEvent.Type.CREATE, address);
-            removeWatcher(watchers, ClusterEvent.Type.UPDATE, address);
-            removeWatcher(watchers, ClusterEvent.Type.CHANGE, address);
-            removeWatcher(watchers, ClusterEvent.Type.DELETE, address);
-          }
-          else {
-            removeWatcher(watchers, event, address);
-          }
-          Handler<Message<JsonObject>> messageHandler = messageHandlers.remove(address);
-          if (messageHandler != null) {
-            vertx.eventBus().unregisterHandler(address, messageHandler);
-          }
-          LocalClusterClient.this.watchers.put(key, watchers.encode());
+    if (watchAddresses.containsKey(handler)) {
+      String address = watchAddresses.remove(handler);
+      String swatchers = this.watchers.get(key);
+      JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
+      if (swatchers == null) {
+        watchers = new JsonObject();
+      }
+      if (event == null) {
+        removeWatcher(watchers, ClusterEvent.Type.CREATE, address);
+        removeWatcher(watchers, ClusterEvent.Type.UPDATE, address);
+        removeWatcher(watchers, ClusterEvent.Type.CHANGE, address);
+        removeWatcher(watchers, ClusterEvent.Type.DELETE, address);
+      }
+      else {
+        removeWatcher(watchers, event, address);
+      }
+      Handler<Message<JsonObject>> messageHandler = messageHandlers.remove(address);
+      if (messageHandler != null) {
+        vertx.eventBus().unregisterHandler(address, messageHandler);
+      }
+      this.watchers.put(key, watchers.encode());
+      vertx.runOnContext(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
-        else {
+      });
+    }
+    else {
+      vertx.runOnContext(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
           new DefaultFutureResult<Void>(new VertigoException("Handler not registered."));
         }
-      }
-    });
+      });
+    }
     return this;
   }
 

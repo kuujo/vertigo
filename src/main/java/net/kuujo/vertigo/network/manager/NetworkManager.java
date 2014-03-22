@@ -136,6 +136,7 @@ public class NetworkManager extends BusModBase {
    * Handles the creation of the network.
    */
   private void handleCreate(final NetworkContext context) {
+    currentContext = context;
     deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
@@ -271,21 +272,19 @@ public class NetworkManager extends BusModBase {
    * Checks whether all components are ready in the network.
    */
   private boolean allReady() {
+    if (currentContext == null) return false;
     List<InstanceContext> instances = new ArrayList<>();
-    for (ComponentContext<?> component : currentContext.components()) {
+    boolean match = true;
+    outer: for (ComponentContext<?> component : currentContext.components()) {
       instances.addAll(component.instances());
-    }
-    if (instances.size() == ready.size()) {
-      boolean match = true;
-      for (InstanceContext instance : instances) {
+      for (InstanceContext instance : component.instances()) {
         if (!ready.contains(instance.address())) {
           match = false;
-          break;
+          break outer;
         }
       }
-      return match;
     }
-    return false;
+    return match;
   }
 
   /**

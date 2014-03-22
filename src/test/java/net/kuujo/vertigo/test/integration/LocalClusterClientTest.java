@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.test.integration;
 
 import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.ClusterEvent;
 import net.kuujo.vertigo.cluster.LocalClusterClient;
 
 import org.junit.Test;
@@ -25,6 +26,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 import org.vertx.testtools.TestVerticle;
 
+import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertFalse;
@@ -188,6 +190,104 @@ public class LocalClusterClientTest extends TestVerticle {
             });
           }
         });
+      }
+    });
+  }
+
+  @Test
+  public void testWatchCreate() {
+    final ClusterClient cluster = new LocalClusterClient(vertx, container);
+    cluster.watch("test1", new Handler<ClusterEvent>() {
+      @Override
+      public void handle(ClusterEvent event) {
+        if (event.type().equals(ClusterEvent.Type.CREATE)) {
+          assertEquals(ClusterEvent.Type.CREATE, event.type());
+          assertEquals("test1", event.key());
+          assertEquals("Hello world 1!", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          fail(result.cause().getMessage());
+        }
+        else {
+          cluster.set("test1", "Hello world 1!");
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testWatchUpdate() {
+    final ClusterClient cluster = new LocalClusterClient(vertx, container);
+    cluster.watch("test2", new Handler<ClusterEvent>() {
+      @Override
+      public void handle(ClusterEvent event) {
+        if (event.type().equals(ClusterEvent.Type.UPDATE)) {
+          assertEquals(ClusterEvent.Type.UPDATE, event.type());
+          assertEquals("test2", event.key());
+          assertEquals("Hello world 2 again!", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          fail(result.cause().getMessage());
+        }
+        else {
+          cluster.set("test2", "Hello world 2!", new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                fail(result.cause().getMessage());
+              }
+              else {
+                cluster.set("test2", "Hello world 2 again!");
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testWatchDelete() {
+    final ClusterClient cluster = new LocalClusterClient(vertx, container);
+    cluster.watch("test3", new Handler<ClusterEvent>() {
+      @Override
+      public void handle(ClusterEvent event) {
+        if (event.type().equals(ClusterEvent.Type.DELETE)) {
+          assertEquals(ClusterEvent.Type.DELETE, event.type());
+          assertEquals("test3", event.key());
+          assertEquals("Hello world 3!", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          fail(result.cause().getMessage());
+        }
+        else {
+          cluster.set("test3", "Hello world 3!", new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                fail(result.cause().getMessage());
+              }
+              else {
+                cluster.delete("test3");
+              }
+            }
+          });
+        }
       }
     });
   }

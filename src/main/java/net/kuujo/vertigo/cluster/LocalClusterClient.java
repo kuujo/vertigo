@@ -265,7 +265,16 @@ public class LocalClusterClient implements ClusterClient {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        data.put(key, value);
+        if (!data.containsKey(key)) {
+          data.put(key, value);
+          triggerEvent(ClusterEvent.Type.CHANGE, key, value);
+          triggerEvent(ClusterEvent.Type.CREATE, key, value);
+        }
+        else {
+          data.put(key, value);
+          triggerEvent(ClusterEvent.Type.CHANGE, key, value);
+          triggerEvent(ClusterEvent.Type.UPDATE, key, value);
+        }
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
@@ -303,7 +312,9 @@ public class LocalClusterClient implements ClusterClient {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        data.remove(key);
+        Object value = data.remove(key);
+        triggerEvent(ClusterEvent.Type.CHANGE, key, value);
+        triggerEvent(ClusterEvent.Type.DELETE, key, value);
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
@@ -357,6 +368,7 @@ public class LocalClusterClient implements ClusterClient {
         else {
           addWatcher(watchers, event, address);
         }
+        LocalClusterClient.this.watchers.put(key, watchers.encode());
         watchHandlers.put(address, handler);
         handlerMap.put(handler, address);
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -412,6 +424,7 @@ public class LocalClusterClient implements ClusterClient {
           else {
             removeWatcher(watchers, event, address);
           }
+          LocalClusterClient.this.watchers.put(key, watchers.encode());
           watchHandlers.remove(address);
         }
         else {
@@ -436,6 +449,26 @@ public class LocalClusterClient implements ClusterClient {
     }
     if (addresses.size() == 0) {
       watchers.removeField(event.toString());
+    }
+  }
+
+  /**
+   * Triggers a cluster event.
+   */
+  private void triggerEvent(ClusterEvent.Type type, String key, Object value) {
+    String swatchers = this.watchers.get(key);
+    JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
+    if (swatchers == null) {
+      watchers = new JsonObject();
+    }
+    JsonArray addresses = watchers.getArray(type.toString());
+    if (addresses != null) {
+      for (Object address : addresses) {
+        Handler<ClusterEvent> handler = watchHandlers.get((String) address);
+        if (handler != null) {
+          handler.handle(new ClusterEvent(type, key, value));
+        }
+      }
     }
   }
 

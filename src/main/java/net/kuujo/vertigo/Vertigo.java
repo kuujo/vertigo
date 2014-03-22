@@ -64,6 +64,15 @@ public final class Vertigo {
   }
 
   /**
+   * Returns a new local cluster.
+   *
+   * @return A local Vertigo cluster instance.
+   */
+  public LocalCluster localCluster() {
+    return new LocalCluster(vertx, container);
+  }
+
+  /**
    * Deploys a network within the current Vert.x instance.
    * <p>
    * 
@@ -148,6 +157,15 @@ public final class Vertigo {
     VertigoCluster cluster = new LocalCluster(vertx, container);
     cluster.undeployNetwork(network, doneHandler);
     return this;
+  }
+
+  /**
+   * Returns a new remote cluster.
+   *
+   * @return A remote Vertigo cluster instance.
+   */
+  public RemoteCluster remoteCluster() {
+    return new RemoteCluster(vertx, container);
   }
 
   /**

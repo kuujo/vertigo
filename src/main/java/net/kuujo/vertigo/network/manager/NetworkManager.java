@@ -136,7 +136,17 @@ public class NetworkManager extends BusModBase {
    * Handles the creation of the network.
    */
   private void handleCreate(final NetworkContext context) {
-    deployNetwork(context, null);
+    deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
+      @Override
+      public void handle(AsyncResult<NetworkContext> result) {
+        if (result.failed()) {
+          log.error(result.cause());
+        }
+        else {
+          log.info("Successfully deployed network " + context.address());
+        }
+      }
+    });
   }
 
   /**
@@ -298,17 +308,7 @@ public class NetworkManager extends BusModBase {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
               }
               else {
-                cluster.set(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    if (result.failed()) {
-                      new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-                    }
-                    else {
-                      new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
-                    }
-                  }
-                });
+                new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
               }
             }
           });

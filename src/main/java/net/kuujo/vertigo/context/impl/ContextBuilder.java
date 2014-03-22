@@ -160,6 +160,8 @@ public final class ContextBuilder {
             InputStreamContext.Builder inputStream = InputStreamContext.Builder.newBuilder();
             inputStream.setName(info.getStream());
             inputStream.setAddress(streamAddress);
+            inputStream.setSource(info.getAddress());
+            inputStream.setGrouping(info.getGrouping());
             ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(address).build();
             inputStream.setConnection(connection);
             InputContext.Builder.newBuilder(inputInstanceContext.input()).addStream(inputStream.build()).build();
@@ -170,8 +172,9 @@ public final class ContextBuilder {
             for (InstanceContext outputInstanceContext : outputComponentContext.instances()) {
               OutputStreamContext.Builder outputStream = OutputStreamContext.Builder.newBuilder();
               outputStream.setName(info.getStream());
-              outputStream.setGrouping(info.getGrouping());
               outputStream.setAddress(streamAddress);
+              outputStream.setTarget(inputComponentContext.name());
+              outputStream.setGrouping(info.getGrouping());
               for (InstanceContext inputInstanceContext : inputComponentContext.instances()) {
                 String address = String.format("%s.%s.%s.%s", network.getAddress(), info.getAddress(), inputInstanceContext.address(), info.getStream());
                 ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(address).build();
@@ -235,7 +238,12 @@ public final class ContextBuilder {
               if (!exists) {
                 InstanceContext.Builder.newBuilder(sourceInstance).setOutput(
                     OutputContext.Builder.newBuilder(sourceInstance.output()).addStream(
-                        OutputStreamContext.Builder.newBuilder().addConnection(input.connection()).build()).build());
+                        OutputStreamContext.Builder.newBuilder()
+                            .setName(input.name())
+                            .setAddress(input.address())
+                            .setTarget(targetComponent.name())
+                            .setGrouping(input.grouping())
+                            .addConnection(input.connection()).build()).build());
               }
             }
           }

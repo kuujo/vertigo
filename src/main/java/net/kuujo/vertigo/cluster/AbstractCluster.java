@@ -141,7 +141,7 @@ abstract class AbstractCluster implements VertigoCluster {
             updatedContext = ContextBuilder.buildContext(network, cluster);
           }
           final NetworkContext context = updatedContext;
-          cluster.set(context.address(), new Handler<AsyncResult<Void>>() {
+          cluster.set(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
@@ -250,7 +250,7 @@ abstract class AbstractCluster implements VertigoCluster {
                   });
                 }
                 else {
-                  cluster.set(context.address(), NetworkContext.toJson(context), new Handler<AsyncResult<Void>>() {
+                  cluster.set(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<Void>>() {
                     @Override
                     public void handle(AsyncResult<Void> result) {
                       if (result.failed()) {

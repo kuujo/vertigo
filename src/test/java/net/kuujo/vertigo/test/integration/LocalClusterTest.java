@@ -42,11 +42,11 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testLocalDeploy() {
-    Network network = new Network("test");
+    Network network = new Network("test1");
     network.setNumAuditors(2);
-    network.addVerticle("test.feeder", TestFeeder.class.getName());
-    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+    network.addVerticle("feeder", TestFeeder.class.getName());
+    network.addVerticle("worker1", TestWorker.class.getName(), 2).addInput("feeder", "stream1");
+    network.addVerticle("worker2", TestWorker.class.getName(), 2).addInput("feeder", "stream2");
 
     VertigoCluster cluster = new LocalCluster(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -60,11 +60,11 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testLocalShutdown() {
-    Network network = new Network("test");
+    Network network = new Network("test2");
     network.setNumAuditors(2);
-    network.addVerticle("test.feeder", TestFeeder.class.getName());
-    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+    network.addVerticle("feeder", TestFeeder.class.getName());
+    network.addVerticle("worker1", TestWorker.class.getName(), 2).addInput("feeder", "stream1");
+    network.addVerticle("worker2", TestWorker.class.getName(), 2).addInput("feeder", "stream2");
 
     final VertigoCluster cluster = new LocalCluster(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -74,7 +74,7 @@ public class LocalClusterTest extends TestVerticle {
         vertx.setTimer(2000, new Handler<Long>() {
           @Override
           public void handle(Long timerID) {
-            cluster.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
+            cluster.undeployNetwork("test2", new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());

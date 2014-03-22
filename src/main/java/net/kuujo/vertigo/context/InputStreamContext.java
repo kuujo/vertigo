@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.input.grouping.Grouping;
+
 
 /**
  * Input stream context.
@@ -25,6 +27,7 @@ public class InputStreamContext extends Context<InputStreamContext> {
   private String address;
   private String stream;
   private String source;
+  private Grouping grouping;
   private ConnectionContext connection;
 
   /**
@@ -48,6 +51,15 @@ public class InputStreamContext extends Context<InputStreamContext> {
    */
   public String source() {
     return source;
+  }
+
+  /**
+   * Returns the stream grouping.
+   *
+   * @return The stream grouping.
+   */
+  public Grouping grouping() {
+    return grouping;
   }
 
   /**
@@ -129,6 +141,17 @@ public class InputStreamContext extends Context<InputStreamContext> {
      */
     public Builder setSource(String source) {
       context.source = source;
+      return this;
+    }
+
+    /**
+     * Sets the input grouping.
+     *
+     * @param grouping The input grouping.
+     * @return The context builder.
+     */
+    public Builder setGrouping(Grouping grouping) {
+      context.grouping = grouping;
       return this;
     }
 

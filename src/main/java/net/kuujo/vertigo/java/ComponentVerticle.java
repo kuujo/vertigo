@@ -71,6 +71,7 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
       @Override
       public void handle(AsyncResult<T> result) {
         if (result.succeeded()) {
+          context = component.context();
           start(component);
         }
       }

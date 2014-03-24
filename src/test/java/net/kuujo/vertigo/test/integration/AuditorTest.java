@@ -15,8 +15,13 @@
  */
 package net.kuujo.vertigo.test.integration;
 
+import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.testComplete;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -35,11 +40,6 @@ import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-
-import static org.vertx.testtools.VertxAssert.assertTrue;
-import static org.vertx.testtools.VertxAssert.assertEquals;
-import static org.vertx.testtools.VertxAssert.testComplete;
-
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -101,7 +101,7 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker(vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus(), new HashSet<String>(Arrays.asList(new String[]{"auditor"})));
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
@@ -141,7 +141,7 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker(vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus(), new HashSet<String>(Arrays.asList(new String[]{"auditor"})));
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
@@ -192,7 +192,7 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker(vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus(), new HashSet<String>(Arrays.asList(new String[]{"auditor"})));
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
@@ -233,7 +233,7 @@ public class AuditorTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<Void> result) {
         assertTrue(result.succeeded());
-        final Acker acker = new DefaultAcker(vertx.eventBus());
+        final Acker acker = new DefaultAcker(vertx.eventBus(), new HashSet<String>(Arrays.asList(new String[]{"auditor"})));
         acker.start(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
@@ -273,8 +273,6 @@ public class AuditorTest extends TestVerticle {
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(messageId)
         .setBody(body)
-        .setSource("test")
-        .setStream(stream)
         .build();
     return message;
   }
@@ -291,8 +289,6 @@ public class AuditorTest extends TestVerticle {
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(messageId)
         .setBody(body)
-        .setSource("test")
-        .setStream(stream)
         .build();
     return message;
   }

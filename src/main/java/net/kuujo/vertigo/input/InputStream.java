@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -29,6 +30,13 @@ import org.vertx.java.core.Handler;
 public interface InputStream {
 
   /**
+   * Returns the stream name.
+   *
+   * @return The stream name.
+   */
+  String name();
+
+  /**
    * Returns the input stream context.
    *
    * @return The input stream context.
@@ -36,38 +44,62 @@ public interface InputStream {
   InputStreamContext context();
 
   /**
+   * Adds an input hook to the stream.
+   *
+   * @param hook An input hook.
+   * @return The input stream.
+   */
+  InputStream addHook(InputHook hook);
+
+  /**
    * Registers a message handler on the stream.
    *
-   * @param message A message handler.
+   * @param handler A message handler.
    * @return The input stream.
    */
-  InputStream messageHandler(Handler<JsonMessage> message);
+  InputStream messageHandler(Handler<JsonMessage> handler);
 
   /**
-   * Starts the input stream.
+   * Acknowledges a message.
+   * 
+   * @param message The message to ack.
+   * @return The input stream.
+   */
+  InputStream ack(JsonMessage message);
+
+  /**
+   * Fails a message.
+   * 
+   * @param message The message to fail.
+   * @return The input stream.
+   */
+  InputStream fail(JsonMessage message);
+
+  /**
+   * Opens the input stream.
    *
    * @return The input stream.
    */
-  InputStream start();
+  InputStream open();
 
   /**
-   * Starts the input stream.
+   * Opens the input stream.
    *
-   * @param doneHandler An asynchronous handler to be called once started.
+   * @param doneHandler An asynchronous handler to be called once opened.
    * @return The input stream.
    */
-  InputStream start(Handler<AsyncResult<Void>> doneHandler);
+  InputStream open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Stops the input stream.
+   * Closes the input stream.
    */
-  void stop();
+  void close();
 
   /**
-   * Stops the input stream.
+   * Closes the input stream.
    *
-   * @param doneHandler An asynchronous handler to be called once stopped.
+   * @param doneHandler An asynchronous handler to be called once closed.
    */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

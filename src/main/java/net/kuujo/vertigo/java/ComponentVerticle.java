@@ -15,10 +15,17 @@
  */
 package net.kuujo.vertigo.java;
 
+import static net.kuujo.vertigo.util.Config.parseAddress;
+import static net.kuujo.vertigo.util.Config.parseCluster;
+import static net.kuujo.vertigo.util.Config.parseNetwork;
+import static net.kuujo.vertigo.util.Config.populateConfig;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.output.OutputCollector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -26,32 +33,21 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
-import static net.kuujo.vertigo.util.Config.parseCluster;
-import static net.kuujo.vertigo.util.Config.parseNetwork;
-import static net.kuujo.vertigo.util.Config.parseAddress;
-import static net.kuujo.vertigo.util.Config.populateConfig;
-
 /**
  * Base class for Java vertigo component verticle implementations.
  * 
  * @author Jordan Halterman
  */
-abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
+public abstract class ComponentVerticle extends Verticle {
   protected Vertigo vertigo;
   protected VertigoCluster cluster;
   protected String address;
   protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
-
-  /**
-   * Creates a component instance for the verticle.
-   * 
-   * @param network The network address.
-   * @param address The component instance address.
-   * @return The new component instance.
-   */
-  protected abstract T createComponent(String network, String address);
+  protected Component component;
+  protected InputCollector input;
+  protected OutputCollector output;
 
   /**
    * Because of the method by which Vertigo coordinates starting of component instances,
@@ -67,12 +63,14 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
     address = parseAddress(container.config());
     populateConfig(container.config());
     config = container.config();
-    final T component = createComponent(network, address);
+    component = new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(network, address, cluster);
+    input = component.input();
+    output = component.output();
     vertigo = new Vertigo(this);
 
-    component.start(new Handler<AsyncResult<T>>() {
+    component.start(new Handler<AsyncResult<Component>>() {
       @Override
-      public void handle(AsyncResult<T> result) {
+      public void handle(AsyncResult<Component> result) {
         if (result.succeeded()) {
           context = component.context();
           start(component);
@@ -90,7 +88,7 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
    * 
    * @param component The component that was started.
    */
-  protected void start(T component) {
+  protected void start(Component component) {
   }
 
 }

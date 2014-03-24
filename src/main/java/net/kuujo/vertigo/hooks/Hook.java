@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,22 +39,5 @@ import net.kuujo.vertigo.network.Network;
  * @param <T> The hook subject
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="type")
-public interface Hook<T> extends Serializable {
-
-  /**
-   * Called when the hook subject has started.
-   *
-   * @param subject
-   *   The hook subject.
-   */
-  void handleStart(T subject);
-
-  /**
-   * Called when the hook subject has stopped.
-   *
-   * @param subject
-   *   The hook subject.
-   */
-  void handleStop(T subject);
-
+public interface Hook extends Serializable {
 }

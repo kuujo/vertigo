@@ -30,8 +30,6 @@ import org.vertx.java.core.json.JsonObject;
 public class DefaultJsonMessage implements JsonMessage {
   private MessageId id;
   private Map<String, Object> body;
-  private String stream;
-  private String source;
 
   private DefaultJsonMessage() {
   }
@@ -47,22 +45,10 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public String stream() {
-    return stream;
-  }
-
-  @Override
-  public String source() {
-    return source;
-  }
-
-  @Override
   public JsonMessage copy(String correlationId) {
     return Builder.newBuilder()
         .setMessageId(id.copy(correlationId))
         .setBody(body)
-        .setSource(source)
-        .setStream(stream)
         .build();
   }
 
@@ -113,28 +99,6 @@ public class DefaultJsonMessage implements JsonMessage {
      */
     public Builder setBody(Map<String, Object> body) {
       message.body = body;
-      return this;
-    }
-
-    /**
-     * Sets the message stream.
-     *
-     * @param stream The message stream.
-     * @return The message builder.
-     */
-    public Builder setStream(String stream) {
-      message.stream = stream;
-      return this;
-    }
-
-    /**
-     * Sets the message source.
-     *
-     * @param source The message source.
-     * @return The message builder.
-     */
-    public Builder setSource(String source) {
-      message.source = source;
       return this;
     }
 

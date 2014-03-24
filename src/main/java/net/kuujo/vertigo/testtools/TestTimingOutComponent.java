@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,27 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import net.kuujo.vertigo.java.BasicWorker;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.java.ComponentVerticle;
+
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * A test worker that fails all messages.
+ * Timing out test component.
  *
  * @author Jordan Halterman
  */
-public class TestFailingWorker extends BasicWorker {
+public class TestTimingOutComponent extends ComponentVerticle {
 
   @Override
-  protected void handleMessage(JsonMessage message, Worker worker) {
-    worker.fail(message);
+  public void start(final Component component) {
+    vertx.setPeriodic(1000, new Handler<Long>() {
+      @Override
+      public void handle(Long timerID) {
+         component.output().stream("default").emit(new JsonObject().putString("body", "Hello world!"));
+      }
+    });
   }
 
 }

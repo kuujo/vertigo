@@ -310,7 +310,7 @@ public class ContextTest {
       OutputStreamContext outputContext = instanceContext.output().streams().iterator().next();
       assertTrue(outputContext.connections().size() == 2);
       assertTrue(outputContext.name().equals("stream"));
-      assertTrue(outputContext.grouping() instanceof RandomGrouping);
+      assertTrue(outputContext.connections().iterator().next().grouping() instanceof RandomGrouping);
     }
 
     VerticleContext workerContext = context.component("worker");
@@ -363,11 +363,11 @@ public class ContextTest {
 
   public static class TestHook implements ComponentHook {
     @Override
-    public void handleStart(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStart(net.kuujo.vertigo.component.Component subject) {
       
     }
     @Override
-    public void handleStop(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStop(net.kuujo.vertigo.component.Component subject) {
       
     }
     @Override

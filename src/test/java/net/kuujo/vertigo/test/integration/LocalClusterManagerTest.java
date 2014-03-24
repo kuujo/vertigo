@@ -15,20 +15,15 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.cluster.VertigoClusterManager;
-import net.kuujo.vertigo.cluster.LocalClusterManager;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.java.BasicFeeder;
-import net.kuujo.vertigo.java.BasicWorker;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.worker.Worker;
-
-import org.junit.Test;
-
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
+import net.kuujo.vertigo.cluster.LocalClusterManager;
+import net.kuujo.vertigo.cluster.VertigoClusterManager;
+import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.java.ComponentVerticle;
+import net.kuujo.vertigo.network.Network;
 
+import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.testtools.TestVerticle;
@@ -87,15 +82,10 @@ public class LocalClusterManagerTest extends TestVerticle {
     });
   }
 
-  public static class TestFeeder extends BasicFeeder {
-    
+  public static class TestFeeder extends ComponentVerticle {
   }
 
-  public static class TestWorker extends BasicWorker {
-    @Override
-    protected void handleMessage(JsonMessage message, Worker worker) {
-      worker.ack(message);
-    }
+  public static class TestWorker extends ComponentVerticle {
   }
 
 }

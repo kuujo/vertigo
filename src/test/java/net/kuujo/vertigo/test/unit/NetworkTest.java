@@ -684,11 +684,11 @@ public class NetworkTest {
 
   public static class TestHook implements ComponentHook {
     @Override
-    public void handleStart(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStart(net.kuujo.vertigo.component.Component subject) {
       
     }
     @Override
-    public void handleStop(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStop(net.kuujo.vertigo.component.Component subject) {
       
     }
     @Override

@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.output.selector.RandomSelector;
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.network.Input;
 
 /**
  * The <code>random</code> grouping dispatches messages to component workers randomly.<p>

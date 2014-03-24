@@ -15,18 +15,18 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import net.kuujo.vertigo.context.InputConnectionContext;
+import net.kuujo.vertigo.input.InputConnection;
+import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.util.serializer.DeserializationException;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-
-import net.kuujo.vertigo.context.ConnectionContext;
-import net.kuujo.vertigo.input.InputConnection;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.util.serializer.SerializationException;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
  * Default input connection implementation.
@@ -35,31 +35,35 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
  */
 public class DefaultInputConnection implements InputConnection {
   private static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
-  private final String address;
   private final EventBus eventBus;
+  private final InputConnectionContext context;
   private Handler<JsonMessage> messageHandler;
 
-  private final Handler<Message<String>> handler = new Handler<Message<String>>() {
+  private final Handler<Message<String>> internalMessageHandler = new Handler<Message<String>>() {
     @Override
     public void handle(Message<String> message) {
       if (messageHandler != null) {
         try {
           messageHandler.handle(serializer.deserializeString(message.body(), JsonMessage.class));
-        }
-        catch (SerializationException e) {
+        } catch (DeserializationException e) {
         }
       }
     }
   };
 
-  public DefaultInputConnection(Vertx vertx, ConnectionContext context) {
+  public DefaultInputConnection(Vertx vertx, InputConnectionContext context) {
     this.eventBus = vertx.eventBus();
-    this.address = context.address();
+    this.context = context;
   }
 
   @Override
-  public String address() {
-    return address;
+  public InputConnectionContext context() {
+    return context;
+  }
+
+  @Override
+  public String port() {
+    return context.port();
   }
 
   @Override
@@ -70,24 +74,23 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection open() {
-    eventBus.registerHandler(address, handler);
-    return this;
+    return open(null);
   }
 
   @Override
   public InputConnection open(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.registerHandler(address, handler, doneHandler);
+    eventBus.registerHandler(context.port(), internalMessageHandler, doneHandler);
     return this;
   }
 
   @Override
   public void close() {
-    eventBus.unregisterHandler(address, handler);
+    close(null);
   }
 
   @Override
   public void close(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.unregisterHandler(address, handler, doneHandler);
+    eventBus.unregisterHandler(context.port(), internalMessageHandler, doneHandler);
   }
 
 }

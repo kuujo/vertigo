@@ -18,6 +18,7 @@ package net.kuujo.vertigo.network.auditor.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.vertigo.message.MessageId;
@@ -38,13 +39,20 @@ import org.vertx.java.core.json.JsonObject;
 public class DefaultAcker implements Acker {
   private final String address = UUID.randomUUID().toString();
   private final EventBus eventBus;
+  private final Set<String> auditors;
   private Map<String, Long> children = new HashMap<>();
   private Handler<String> ackHandler;
   private Handler<String> failHandler;
   private Handler<String> timeoutHandler;
 
-  public DefaultAcker(EventBus eventBus) {
+  public DefaultAcker(EventBus eventBus, Set<String> auditors) {
     this.eventBus = eventBus;
+    this.auditors = auditors;
+  }
+
+  @Override
+  public Set<String> auditors() {
+    return auditors;
   }
 
   @Override

@@ -24,14 +24,11 @@ import java.util.Set;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputContext;
-import net.kuujo.vertigo.context.InputStreamContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.OutputContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.network.Component;
 import net.kuujo.vertigo.network.Input;
@@ -142,47 +139,9 @@ public final class ContextBuilder {
       }
     }
 
-    // Iterate through all inputs in the network and set up input/output streams.
-    for (Component<?> component : network.getComponents()) {
-      for (Input info : component.getInputs()) {
-
-        // Set up the output stream. Each connection between components (represented
-        // as an Input instance) will have an associated InputStreamContext and
-        // OutputStreamContext. The OutputStreamContext contains a set of connections
-        // to each instance to which the stream feeds. The InputStreamContext will
-        // contain a single connection on which the instance listens for messages.
-        ComponentContext<?> inputComponentContext = components.get(component.getName());
-        if (inputComponentContext != null) {
-          String streamAddress = String.format("%s.%s.%s.%s", network.getAddress(), info.getAddress(), inputComponentContext.name(), info.getStream());
-          for (InstanceContext inputInstanceContext : inputComponentContext.instances()) {
-            String address = String.format("%s.%s.%s.%s", network.getAddress(), info.getAddress(), inputInstanceContext.address(), info.getStream());
-            InputStreamContext.Builder inputStream = InputStreamContext.Builder.newBuilder();
-            inputStream.setName(info.getStream());
-            inputStream.setAddress(streamAddress);
-            inputStream.setSource(info.getAddress());
-            inputStream.setGrouping(info.getGrouping());
-            ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(address).build();
-            inputStream.setConnection(connection);
-            InputContext.Builder.newBuilder(inputInstanceContext.input()).addStream(inputStream.build()).build();
-          }
-
-          ComponentContext<?> outputComponentContext = components.get(info.getAddress());
-          if (outputComponentContext != null) {
-            for (InstanceContext outputInstanceContext : outputComponentContext.instances()) {
-              OutputStreamContext.Builder outputStream = OutputStreamContext.Builder.newBuilder();
-              outputStream.setName(info.getStream());
-              outputStream.setAddress(streamAddress);
-              outputStream.setTarget(inputComponentContext.name());
-              outputStream.setGrouping(info.getGrouping());
-              for (InstanceContext inputInstanceContext : inputComponentContext.instances()) {
-                String address = String.format("%s.%s.%s.%s", network.getAddress(), info.getAddress(), inputInstanceContext.address(), info.getStream());
-                ConnectionContext connection = ConnectionContext.Builder.newBuilder().setAddress(address).build();
-                outputStream.addConnection(connection);
-              }
-              OutputContext.Builder.newBuilder(outputInstanceContext.output()).addStream(outputStream.build()).build();
-            }
-          }
-        }
+    for (ComponentContext<?> component : components.values()) {
+      for (InstanceContext instance : component.instances()) {
+        
       }
     }
 
@@ -205,50 +164,7 @@ public final class ContextBuilder {
 
     NetworkContext.Builder context = NetworkContext.Builder.newBuilder(base);
 
-    // Add components to the network.
-    for (ComponentContext<?> component : merge.components()) {
-      context.addComponent(component);
-    }
-
-    // Iterate through all components and map any missing connections.
-    for (ComponentContext<?> targetComponent : base.components()) {
-      for (InstanceContext targetInstance : targetComponent.instances()) {
-        for (InputStreamContext input : targetInstance.input().streams()) {
-          ComponentContext<?> sourceComponent = base.component(input.source());
-          if (sourceComponent != null) {
-            for (InstanceContext sourceInstance : sourceComponent.instances()) {
-              boolean exists = false;
-              for (OutputStreamContext output : sourceInstance.output().streams()) {
-                if (output.address().equals(input.address())) {
-                  boolean hasConnection = false;
-                  for (ConnectionContext connection : output.connections()) {
-                    if (connection.address().equals(input.connection().address())) {
-                      hasConnection = true;
-                      break;
-                    }
-                  }
-                  if (!hasConnection) {
-                    OutputStreamContext.Builder.newBuilder(output).addConnection(input.connection()).build();
-                  }
-                  exists = true;
-                  break;
-                }
-              }
-              if (!exists) {
-                InstanceContext.Builder.newBuilder(sourceInstance).setOutput(
-                    OutputContext.Builder.newBuilder(sourceInstance.output()).addStream(
-                        OutputStreamContext.Builder.newBuilder()
-                            .setName(input.name())
-                            .setAddress(input.address())
-                            .setTarget(targetComponent.name())
-                            .setGrouping(input.grouping())
-                            .addConnection(input.connection()).build()).build());
-              }
-            }
-          }
-        }
-      }
-    }
+    // TODO Merge input/output contexts.
 
     return context.build();
   }
@@ -267,51 +183,9 @@ public final class ContextBuilder {
 
     NetworkContext.Builder context = NetworkContext.Builder.newBuilder(base);
 
-    // Iterate through all the components being removed and remove their connections.
-    for (ComponentContext<?> targetComponent : merge.components()) {
-      for (InstanceContext targetInstance : targetComponent.instances()) {
-        for (InputStreamContext input : targetInstance.input().streams()) {
-          ComponentContext<?> sourceComponent = base.component(input.source());
-          if (sourceComponent != null) {
-            for (InstanceContext sourceInstance : sourceComponent.instances()) {
-              for (OutputStreamContext output : sourceInstance.output().streams()) {
-                if (output.address().equals(input.address())) {
-                  for (ConnectionContext connection : output.connections()) {
-                    if (connection.address().equals(input.connection().address())) {
-                      OutputStreamContext.Builder.newBuilder(output).removeConnection(connection).build();
-                    }
-                  }
-                  OutputContext.Builder.newBuilder(sourceInstance.output()).removeStream(output).build();
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    for (ComponentContext<?> component : merge.components()) {
-      context.removeComponent(component);
-    }
+    // TODO Unmerge input/output contexts.
 
     return context.build();
-  }
-
-  /**
-   * Indicates whether the two contexts are equivalent by simply counting components.
-   *
-   * @param base The base network context.
-   * @param merge The context being unmerged.
-   * @return Indicates whether the contexts are equivalent.
-   */
-  public static boolean isCompleteUnmerge(NetworkContext base, Network merge) {
-    int count = 0;
-    for (Component<?> component : merge.getComponents()) {
-      if (base.component(component.getName()) != null) {
-        count++;
-      }
-    }
-    return count == base.components().size();
   }
 
 }

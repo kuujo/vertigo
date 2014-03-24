@@ -39,7 +39,7 @@ public class EventBusHook implements ComponentHook {
   @JsonIgnore private String address;
 
   @Override
-  public void handleStart(Component<?> component) {
+  public void handleStart(Component component) {
     this.eventBus = component.vertx().eventBus();
     this.context = component.context();
     this.address = component.context().component().address();
@@ -82,7 +82,7 @@ public class EventBusHook implements ComponentHook {
   }
 
   @Override
-  public void handleStop(Component<?> subject) {
+  public void handleStop(Component subject) {
     eventBus.publish(String.format("vertigo.hooks.%s.stop", address), InstanceContext.toJson(context));
   }
 

@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.network.Input;
 
 /**
  * The <code>all</code> grouping dispatches messages to all instances of each

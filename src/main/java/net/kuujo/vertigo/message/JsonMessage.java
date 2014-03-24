@@ -50,21 +50,6 @@ public interface JsonMessage extends Serializable {
   JsonObject body();
 
   /**
-   * Returns the message stream.
-   * 
-   * @return The stream on which the message was emitted from a component.
-   */
-  String stream();
-
-  /**
-   * Returns the message source. This is the event bus address of the component from which
-   * this message tree originated.
-   * 
-   * @return The source address.
-   */
-  String source();
-
-  /**
    * Copies the message.
    *
    * @return A new copy of the message.

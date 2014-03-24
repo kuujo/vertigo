@@ -21,11 +21,8 @@ import net.kuujo.vertigo.cluster.LocalClusterManager;
 import net.kuujo.vertigo.cluster.RemoteClusterManager;
 import net.kuujo.vertigo.cluster.VertigoClusterManager;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.java.BasicFeeder;
-import net.kuujo.vertigo.java.BasicWorker;
-import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;
@@ -86,15 +83,10 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
     });
   }
 
-  public static class TestFeeder extends BasicFeeder {
-    
+  public static class TestFeeder extends ComponentVerticle {
   }
 
-  public static class TestWorker extends BasicWorker {
-    @Override
-    protected void handleMessage(JsonMessage message, Worker worker) {
-      worker.ack(message);
-    }
+  public static class TestWorker extends ComponentVerticle {
   }
 
 }

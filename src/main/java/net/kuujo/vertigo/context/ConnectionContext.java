@@ -18,66 +18,9 @@ package net.kuujo.vertigo.context;
 
 /**
  * Connection contexts represent a direct connection between
- * one component instance and another component instance.
+ * one component and another component.
  *
  * @author Jordan Halterman
  */
-public class ConnectionContext extends Context<ConnectionContext> {
-  private String address;
-
-  /**
-   * Returns the connection address.
-   *
-   * @return The connection address.
-   */
-  public String address() {
-    return address;
-  }
-
-  /**
-   * Connection context builder.
-   *
-   * @author Jordan Halterman
-   */
-  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<ConnectionContext> {
-
-    private Builder() {
-      super(new ConnectionContext());
-    }
-
-    private Builder(ConnectionContext context) {
-      super(context);
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @return A new context builder.
-     */
-    public static Builder newBuilder() {
-      return new Builder();
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @param context A starting connection context.
-     * @return A new context builder.
-     */
-    public static Builder newBuilder(ConnectionContext context) {
-      return new Builder(context);
-    }
-
-    /**
-     * Sets the connection address.
-     *
-     * @param address The connection address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
-      return this;
-    }
-  }
-
+public abstract class ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
 }

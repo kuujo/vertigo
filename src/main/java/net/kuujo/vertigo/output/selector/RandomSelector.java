@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Random;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.output.OutputConnection;
 
 /**
  * A *random* selector.
@@ -35,9 +34,9 @@ public class RandomSelector implements Selector {
   }
 
   @Override
-  public List<OutputConnection> select(JsonMessage message, List<OutputConnection> connections) {
-    int index = rand.nextInt(connections.size());
-    return connections.subList(index, index+1);
+  public List<String> select(JsonMessage message, List<String> ports) {
+    int index = rand.nextInt(ports.size());
+    return ports.subList(index, index+1);
   }
 
 }

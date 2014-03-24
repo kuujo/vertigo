@@ -15,24 +15,32 @@
  */
 package net.kuujo.vertigo.input;
 
+import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Input connection.
+ * A component-to-component input connection.
  *
  * @author Jordan Halterman
  */
 public interface InputConnection {
+ 
+  /**
+   * Returns the input connection context.
+   *
+   * @return The input connection context.
+   */
+  InputConnectionContext context();
 
   /**
-   * Returns the connection address.
+   * Returns the connection port.
    *
-   * @return The connection address.
+   * @return The connection port.
    */
-  String address();
+  String port();
 
   /**
    * Registers a message handler on the connection.

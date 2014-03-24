@@ -44,18 +44,18 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 /**
- * A base component.
+ * A default component implementation.
  *
  * @author Jordan Halterman
  */
-public abstract class AbstractComponent<T extends Component<T>> implements Component<T> {
+public class DefaultComponent implements Component {
   protected final Vertx vertx;
   protected final EventBus eventBus;
   protected final Container container;
   protected final Logger logger;
   protected final VertigoCluster cluster;
   private final ComponentCoordinator coordinator;
-  private final Acker acker;
+  private Acker acker;
   protected final String address;
   protected InstanceContext context;
   protected InputCollector input;
@@ -64,10 +64,6 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   private boolean started;
 
   private InputHook inputHook = new InputHook() {
-    @Override
-    public void handleStart(InputCollector subject) {
-      // Do nothing. This hook is called elsewhere.
-    }
     @Override
     public void handleReceive(String id) {
       for (ComponentHook hook : hooks) {
@@ -86,17 +82,9 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
         hook.handleFail(id);
       }
     }
-    @Override
-    public void handleStop(InputCollector subject) {
-      // Do nothing. This hook is called elsewhere.
-    }
   };
 
   private OutputHook outputHook = new OutputHook() {
-    @Override
-    public void handleStart(OutputCollector subject) {
-      // Do nothing. This hook is called elsewhere.
-    }
     @Override
     public void handleEmit(String id) {
       for (ComponentHook hook : hooks) {
@@ -121,20 +109,15 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
         hook.handleTimeout(id);
       }
     }
-    @Override
-    public void handleStop(OutputCollector subject) {
-      // Do nothing. This hook is called elsewhere.
-    }
   };
 
-  protected AbstractComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
+  protected DefaultComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
     this.address = address;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.container = container;
     this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address));
     this.cluster = cluster;
-    this.acker = new DefaultAcker(eventBus);
     this.coordinator = new DefaultComponentCoordinator(network, address, cluster);
   }
 
@@ -174,14 +157,13 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public T addHook(ComponentHook hook) {
+  public Component addHook(ComponentHook hook) {
     if (hooks.isEmpty()) {
       input.addHook(inputHook);
       output.addHook(outputHook);
     }
     hooks.add(hook);
-    return (T) this;
+    return  this;
   }
 
   /**
@@ -214,6 +196,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           context = result.result();
+          acker = new DefaultAcker(eventBus, context.component().network().auditors());
           input = new DefaultInputCollector(vertx, context.input(), acker);
           output = new DefaultOutputCollector(vertx, context.output(), acker);
           for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
@@ -225,13 +208,13 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
               } else {
-                output.start(new Handler<AsyncResult<Void>>() {
+                output.open(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                     } else {
-                      input.start(new Handler<AsyncResult<Void>>() {
+                      input.open(new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
@@ -260,14 +243,13 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   }
 
   @Override
-  public T start() {
+  public Component start() {
     return start(null);
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public T start(Handler<AsyncResult<T>> doneHandler) {
-    final Future<T> future = new DefaultFutureResult<T>().setHandler(doneHandler);
+  public Component start(Handler<AsyncResult<Component>> doneHandler) {
+    final Future<Component> future = new DefaultFutureResult<Component>().setHandler(doneHandler);
     if (!started) {
       setup(new Handler<AsyncResult<Void>>() {
         @Override
@@ -276,7 +258,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
             future.setFailure(result.cause());
           } else {
             hookStart();
-            future.setResult((T) AbstractComponent.this);
+            future.setResult(DefaultComponent.this);
           }
         }
       });
@@ -285,11 +267,11 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
       vertx.runOnContext(new Handler<Void>() {
         @Override
         public void handle(Void _) {
-          future.setResult((T) AbstractComponent.this);
+          future.setResult(DefaultComponent.this);
         }
       });
     }
-    return (T) this;
+    return this;
   }
 
 }

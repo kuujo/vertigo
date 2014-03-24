@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
@@ -49,11 +48,11 @@ public interface Selector extends Serializable {
    *
    * @param message
    *   The message being emitted.
-   * @param connections
-   *   A list of connections from which to select.
+   * @param ports
+   *   A list of ports from which to select.
    * @return
    *   A list of selected connections.
    */
-  List<OutputConnection> select(JsonMessage message, List<OutputConnection> connections);
+  List<String> select(JsonMessage message, List<String> ports);
 
 }

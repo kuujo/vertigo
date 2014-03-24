@@ -15,13 +15,13 @@
  */
 package net.kuujo.vertigo.output;
 
+import java.util.Collection;
+
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.hooks.OutputHook;
-import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * An output collector.
@@ -31,7 +31,7 @@ import org.vertx.java.core.json.JsonObject;
  * component. When a new component instance is started, the output collector registers an
  * event bus handler at the component address. This is the address at which other
  * components publish listen requests. When a new listen request is received, the output
- * collector sets up an output {@link Channel} and any new messages emitted from the
+ * collector sets up an output stream and any new messages emitted from the
  * component will be sent to the new channel as well.
  * 
  * @author Jordan Halterman
@@ -54,149 +54,48 @@ public interface OutputCollector {
   OutputCollector addHook(OutputHook hook);
 
   /**
-   * Emits a new message to the default stream.
-   * 
-   * @param body The message body.
-   * @return The unique output message correlation identifier. This identifier can be used
-   *         to correlate new messages with the emitted message.
+   * Returns a collection of output streams.
+   *
+   * @return A collection of output streams.
    */
-  String emit(JsonObject body);
+  Collection<OutputStream> streams();
 
   /**
-   * Emits a child message to the default stream.
-   * 
-   * Emitting data as the child of an existing message creates a new node in the parent
-   * message's message tree. When the new message is emitted, the auditor assigned to the
-   * parent message will be notified of the change, and the new message will be tracked as
-   * a child. This means that the parent message will not be considered fully processed
-   * until all of its children have been acked and are considered fully processed (their
-   * children are acked... etc). It is strongly recommended that users use this API
-   * whenever possible.
-   * 
-   * @param body The message body.
-   * @param parent The parent message of the data.
-   * @return The unique child message correlation identifier. This identifier can be used
-   *         to correlate new messages with the emitted message.
+   * Returns an output stream. The stream will be automatically created if
+   * it doesn't already exist.
+   *
+   * @param name The output stream name.
+   * @return An output stream.
    */
-  String emit(JsonObject body, JsonMessage parent);
+  OutputStream stream(String name);
 
   /**
-   * Emits a message to the default stream as a child of itself.
+   * Opens the output.
    * 
-   * This is useful when a message is simply passing through a component without any
-   * actual changes to its internal data, such as with message filtering. A new message
-   * will be created as a child of the given message. The new message will contain a copy
-   * of the given message body.
-   * 
-   * @param message The message to emit.
-   * @return The new unique message correlation identifier.
+   * @return The output instance.
    */
-  String emit(JsonMessage message);
+  OutputCollector open();
 
   /**
-   * Emits a new message to the default stream.
-   * 
-   * @param stream The stream to which to emit the message.
-   * @param body The message body.
-   * @return The unique output message correlation identifier. This identifier can be used
-   *         to correlate new messages with the emitted message.
-   */
-  String emitTo(String stream, JsonObject body);
-
-  /**
-   * Emits a child message to the default stream.
-   * 
-   * Emitting data as the child of an existing message creates a new node in the parent
-   * message's message tree. When the new message is emitted, the auditor assigned to the
-   * parent message will be notified of the change, and the new message will be tracked as
-   * a child. This means that the parent message will not be considered fully processed
-   * until all of its children have been acked and are considered fully processed (their
-   * children are acked... etc). It is strongly recommended that users use this API
-   * whenever possible.
-   * 
-   * @param stream The stream to which to emit the message.
-   * @param body The message body.
-   * @param parent The parent message of the data.
-   * @return The unique child message correlation identifier. This identifier can be used
-   *         to correlate new messages with the emitted message.
-   */
-  String emitTo(String stream, JsonObject body, JsonMessage parent);
-
-  /**
-   * Emits a message to the default stream as a child of itself.
-   * 
-   * This is useful when a message is simply passing through a component without any
-   * actual changes to its internal data, such as with message filtering. A new message
-   * will be created as a child of the given message. The new message will contain a copy
-   * of the given message body.
-   * 
-   * @param stream The stream to which to emit the message.
-   * @param message The message to emit.
-   * @return The new unique message correlation identifier.
-   */
-  String emitTo(String stream, JsonMessage message);
-
-  /**
-   * Sets an ack handler on the output collector.
-   * 
-   * This handler will be called with the correlation identifier of the message that was
-   * acked once a message completes processing.
-   * 
-   * @param handler A handler to be invoked when an ack message is received.
-   * @return The called output collector instance.
-   */
-  OutputCollector ackHandler(Handler<String> handler);
-
-  /**
-   * Sets a fail handler on the output collector.
-   * 
-   * This handler will be called with the correlation identifier of the message that was
-   * failed. Note that even if a descendant of the output message was failed, all parent
-   * and ancestor messages are failed as well, up to the root.
-   * 
-   * @param handler A handler to be invoked when a fail message is received.
-   * @return The called output collector instance.
-   */
-  OutputCollector failHandler(Handler<String> handler);
-
-  /**
-   * Sets a timeout handler on the output collector.
-   * 
-   * This handler will be called with the correlation identifier of the message that timed
-   * out. Note that timeouts apply only to root messages, not children of other messages.
-   * 
-   * @param handler A handler to be invoked when a message has timed out.
-   * @return The called output collector instance.
-   */
-  OutputCollector timeoutHandler(Handler<String> handler);
-
-  /**
-   * Starts the output collector.
-   * 
-   * @return The called output collector instance.
-   */
-  OutputCollector start();
-
-  /**
-   * Starts the output collector.
+   * Opens the output collector.
    * 
    * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          started.
-   * @return The called output collector instance.
+   *          opened.
+   * @return The output instance.
    */
-  OutputCollector start(Handler<AsyncResult<Void>> doneHandler);
+  OutputCollector open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Stops the output collector.
+   * Closes the output collector.
    */
-  void stop();
+  void close();
 
   /**
-   * Stops the output collector.
+   * Closes the output collector.
    * 
    * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          stopped.
+   *          closed.
    */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

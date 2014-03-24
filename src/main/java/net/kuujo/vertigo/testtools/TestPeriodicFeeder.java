@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,26 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import java.util.UUID;
+import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.java.ComponentVerticle;
+import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-
-import net.kuujo.vertigo.feeder.Feeder;
-import net.kuujo.vertigo.java.BasicFeeder;
 
 /**
- * A feeder that periodically feeds a network with randomly generated field values.
+ * Periodic feeder test component.
  *
  * @author Jordan Halterman
  */
-public class TestPeriodicFeeder extends BasicFeeder {
-  private static final long DEFAULT_INTERVAL = 100;
+public class TestPeriodicFeeder extends ComponentVerticle {
 
   @Override
-  public void start(final Feeder feeder) {
-    final JsonArray fields = container.config().getArray("fields");
-    final long interval = container.config().getLong("interval", DEFAULT_INTERVAL);
-    vertx.setPeriodic(interval, new Handler<Long>() {
+  public void start(final Component component) {
+    component.input().stream("default").messageHandler(new Handler<JsonMessage>() {
       @Override
-      public void handle(Long timerId) {
-        JsonObject data = new JsonObject();
-        for (Object field : fields) {
-          data.putString((String) field, UUID.randomUUID().toString());
-        }
-        feeder.emit(data);
+      public void handle(JsonMessage message) {
+        component.output().stream("default").emit(message.body(), message);
+        component.input().stream("default").ack(message);
       }
     });
   }

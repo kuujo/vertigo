@@ -18,9 +18,9 @@ package net.kuujo.vertigo.input.grouping;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
-import net.kuujo.vertigo.network.Input;
 
 /**
  * The <code>fields</code> grouping is a hashing based grouping. Given a set of

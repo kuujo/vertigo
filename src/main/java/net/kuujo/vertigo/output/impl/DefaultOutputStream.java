@@ -16,20 +16,30 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.hooks.OutputHook;
+import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
+import net.kuujo.vertigo.message.impl.DefaultMessageId;
+import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.output.OutputConnection;
+import net.kuujo.vertigo.output.OutputStream;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.RoundRobin;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
-
-import net.kuujo.vertigo.context.ConnectionContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.output.OutputConnection;
-import net.kuujo.vertigo.output.OutputStream;
-import net.kuujo.vertigo.output.selector.Selector;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Default output stream implementation.
@@ -38,15 +48,54 @@ import net.kuujo.vertigo.output.selector.Selector;
  */
 public class DefaultOutputStream implements OutputStream {
   private final Vertx vertx;
+  private final String address;
   private final OutputStreamContext context;
-  private final String instanceAddress;
-  private List<OutputConnection> connections;
-  private Selector selector;
+  private final Acker acker;
+  private final List<OutputConnection> connections = new ArrayList<>();
+  private final Iterator<String> auditors;
+  private final List<OutputHook> hooks = new ArrayList<>();
+  private final Random random = new Random();
+  private final Map<String, JsonMessage> messages = new HashMap<>();
 
-  public DefaultOutputStream(Vertx vertx, OutputStreamContext context, String instanceAddress) {
+  private final Handler<String> ackHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      hookAcked(messageId);
+    }
+  };
+
+  private final Handler<String> failHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      hookFailed(messageId);
+    }
+  };
+
+  private final Handler<String> timeoutHandler = new Handler<String>() {
+    @Override
+    public void handle(String messageId) {
+      hookTimeout(messageId);
+    }
+  };
+
+  public DefaultOutputStream(Vertx vertx, OutputStreamContext context, Acker acker) {
     this.vertx = vertx;
+    this.address = context.address();
     this.context = context;
-    this.instanceAddress = instanceAddress;
+    this.acker = acker;
+    List<String> auditors = new ArrayList<>();
+    for (String auditor : acker.auditors()) {
+      auditors.add(auditor);
+    }
+    this.auditors = new RoundRobin<>(auditors).iterator();
+    acker.ackHandler(ackHandler);
+    acker.failHandler(failHandler);
+    acker.timeoutHandler(timeoutHandler);
+  }
+
+  @Override
+  public String name() {
+    return context.name();
   }
 
   @Override
@@ -55,53 +104,230 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
-  public List<MessageId> emit(JsonMessage message) {
-    List<MessageId> messageIds = new ArrayList<>();
-    for (OutputConnection connection : selector.select(message, connections)) {
-      messageIds.add(connection.write(message.copy(new StringBuilder()
-          .append(instanceAddress)
-          .append(":")
-          .append(OutputCounter.incrementAndGet())
-          .toString())));
-    }
-    return messageIds;
+  public OutputStream addHook(OutputHook hook) {
+    hooks.add(hook);
+    return this;
   }
 
-  @Override
-  public OutputStream start() {
-    return start(null);
-  }
-
-  @Override
-  public OutputStream start(final Handler<AsyncResult<Void>> doneHandler) {
-    selector = context.grouping().createSelector();
-    connections = new ArrayList<>();
-    for (ConnectionContext connection : context.connections()) {
-      connections.add(new DefaultOutputConnection(vertx, connection));
-    }
-    vertx.runOnContext(new Handler<Void>() {
-      @Override
-      public void handle(Void _) {
-        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+  /**
+   * Calls acked hooks.
+   */
+  private void hookAcked(final String messageId) {
+    JsonMessage message = messages.remove(messageId);
+    if (message != null) {
+      for (OutputHook hook : hooks) {
+        hook.handleAcked(messageId);
       }
-    });
+    }
+  }
+
+  /**
+   * Calls failed hooks.
+   */
+  private void hookFailed(final String messageId) {
+    JsonMessage message = messages.remove(messageId);
+    if (message != null) {
+      for (OutputHook hook : hooks) {
+        hook.handleFailed(messageId);
+      }
+    }
+  }
+
+  /**
+   * Calls timed-out hooks.
+   */
+  private void hookTimeout(final String messageId) {
+    JsonMessage message = messages.remove(messageId);
+    if (message != null) {
+      for (OutputHook hook : hooks) {
+        hook.handleTimeout(messageId);
+      }
+      doEmitNew(message.body());
+    }
+  }
+
+  /**
+   * Calls emit hooks.
+   */
+  private void hookEmit(final String messageId) {
+    for (OutputHook hook : hooks) {
+      hook.handleEmit(messageId);
+    }
+  }
+
+  @Override
+  public String emit(JsonObject body) {
+    return doEmitNew(body);
+  }
+
+  @Override
+  public String emit(JsonObject body, JsonMessage parent) {
+    return doEmitChild(body, parent);
+  }
+
+  @Override
+  public String emit(JsonMessage message) {
+    return doEmitChild(message.body(), message);
+  }
+
+  /**
+   * Emits a new message to an output stream.
+   * New messages are tracked by calling fork() and create() on the local acker.
+   * This will cause the acker to send a single message indicating the total
+   * ack count for all emitted messages.
+   */
+  private String doEmitNew(JsonObject body) {
+    if (!connections.isEmpty()) {
+      final JsonMessage message = createNewMessage(body);
+      final MessageId messageId = message.messageId();
+      messages.put(messageId.correlationId(), message);
+      acker.create(messageId, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.succeeded()) {
+            for (OutputConnection connection : connections) {
+              acker.fork(messageId, connection.send(message));
+            }
+            acker.commit(messageId);
+            hookEmit(messageId.correlationId());
+          }
+          else {
+            hookTimeout(messageId.correlationId());
+          }
+        }
+      });
+      return messageId.correlationId();
+    }
+    return null;
+  }
+
+  /**
+   * Emits a child message to an output stream.
+   * Child messages are tracked by only calling fork() on the local acker.
+   * Once the input collector calls ack() on the acker, the acker will notify
+   * the auditor of the update on the ack count for the message tree.
+   */
+  private String doEmitChild(JsonObject body, JsonMessage parent) {
+    if (!connections.isEmpty()) {
+      JsonMessage message = createChildMessage(body, parent);
+      MessageId messageId = message.messageId();
+      for (OutputConnection connection : connections) {
+        acker.fork(messageId, connection.send(message));
+      }
+      hookEmit(messageId.correlationId());
+      return messageId.correlationId();
+    }
+    return null;
+  }
+
+  /**
+   * Creates a new message.
+   */
+  private JsonMessage createNewMessage(JsonObject body) {
+    JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
+        .setMessageId(DefaultMessageId.Builder.newBuilder()
+            .setCorrelationId(new StringBuilder()
+                .append(address)
+                .append(":")
+                .append(OutputCounter.incrementAndGet())
+                .toString())
+            .setAuditor(auditors.next())
+            .setCode(random.nextInt())
+            .build())
+        .setBody(body)
+        .build();
+    return message;
+  }
+
+  /**
+   * Creates a child message.
+   */
+  private JsonMessage createChildMessage(JsonObject body, JsonMessage parent) {
+    MessageId parentId = parent.messageId();
+    JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
+        .setMessageId(DefaultMessageId.Builder.newBuilder()
+            .setCorrelationId(new StringBuilder()
+                .append(address)
+                .append(":")
+                .append(OutputCounter.incrementAndGet())
+                .toString())
+            .setAuditor(parentId.auditor())
+            .setCode(random.nextInt())
+            .setTree(parentId.tree())
+            .build())
+        .setBody(body)
+        .build();
+    return message;
+  }
+
+  @Override
+  public OutputStream open() {
+    return open(null);
+  }
+
+  @Override
+  public OutputStream open(final Handler<AsyncResult<Void>> doneHandler) {
+    if (connections.isEmpty()) {
+      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
+      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          } else {
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          }
+        }
+      });
+
+      for (OutputConnectionContext connection : context.connections()) {
+        connections.add(new DefaultOutputConnection(vertx, connection).open(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              startCounter.fail(result.cause());
+            } else {
+              startCounter.succeed();
+            }
+          }
+        }));
+      }
+    }
     return this;
   }
 
   @Override
-  public void stop() {
-    stop(null);
+  public void close() {
+    close(null);
   }
 
   @Override
-  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
-    connections.clear();
-    vertx.runOnContext(new Handler<Void>() {
+  public void close(final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(connections.size());
+    stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
-      public void handle(Void _) {
-        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          connections.clear();
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
       }
     });
+
+    for (OutputConnection connection : connections) {
+      connection.close(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            stopCounter.fail(result.cause());
+          } else {
+            stopCounter.succeed();
+          }
+        }
+      });
+    }
   }
 
 }

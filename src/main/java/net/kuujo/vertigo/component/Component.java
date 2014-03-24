@@ -30,7 +30,7 @@ import org.vertx.java.platform.Container;
 /**
  * A network component.
  */
-public interface Component<T extends Component<T>> {
+public interface Component {
 
   /**
    * Gets the component Vertx instance.
@@ -92,14 +92,14 @@ public interface Component<T extends Component<T>> {
    * @param hook The hook to add.
    * @return The called component instance.
    */
-  T addHook(ComponentHook hook);
+  Component addHook(ComponentHook hook);
 
   /**
    * Starts the component.
    *
    * @return The called component instance.
    */
-  T start();
+  Component start();
 
   /**
    * Starts the component.
@@ -107,6 +107,6 @@ public interface Component<T extends Component<T>> {
    * @param doneHandler An asynchronous handler to be invoked once the component is started.
    * @return The called component instance.
    */
-  T start(Handler<AsyncResult<T>> doneHandler);
+  Component start(Handler<AsyncResult<Component>> doneHandler);
 
 }

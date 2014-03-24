@@ -47,7 +47,7 @@ public class MetricsHook implements ComponentHook {
   }
 
   @Override
-  public void handleStart(Component<?> component) {
+  public void handleStart(Component component) {
     context = component.context();
     eventBus = component.vertx().eventBus();
   }
@@ -102,7 +102,7 @@ public class MetricsHook implements ComponentHook {
   }
 
   @Override
-  public void handleStop(Component<?> component) {
+  public void handleStop(Component component) {
     
   }
 

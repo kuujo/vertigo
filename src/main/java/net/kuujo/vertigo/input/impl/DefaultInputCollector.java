@@ -16,15 +16,18 @@
 package net.kuujo.vertigo.input.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputStreamContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputStream;
-import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
@@ -43,15 +46,13 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   private final Vertx vertx;
   private final InputContext context;
   private final Acker acker;
-  private final List<InputHook> hooks = new ArrayList<InputHook>();
-  private final List<InputStream> streams = new ArrayList<>();
-  private Handler<JsonMessage> messageHandler;
+  private final List<InputHook> hooks = new ArrayList<>();
+  private final Map<String, InputStream> streams = new HashMap<>();
 
   public DefaultInputCollector(Vertx vertx, InputContext context, Acker acker) {
     this.vertx = vertx;
     this.context = context;
     this.acker = acker;
-    context.registerObserver(this);
   }
 
   @Override
@@ -62,95 +63,34 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   @Override
   public InputCollector addHook(InputHook hook) {
     hooks.add(hook);
-    return this;
-  }
-
-  @Override
-  public InputCollector messageHandler(Handler<JsonMessage> handler) {
-    messageHandler = handler != null ? wrapMessageHandler(handler) : null;
-    for (InputStream stream : streams) {
-      stream.messageHandler(messageHandler);
+    for (InputStream stream : streams.values()) {
+      stream.addHook(hook);
     }
     return this;
   }
 
-  private Handler<JsonMessage> wrapMessageHandler(final Handler<JsonMessage> handler) {
-    return new Handler<JsonMessage>() {
-      @Override
-      public void handle(JsonMessage message) {
-        handler.handle(message);
-        hookReceived(message.messageId().correlationId());
-      }
-    };
+  @Override
+  public Collection<InputStream> streams() {
+    return streams.values();
   }
 
   @Override
-  public InputCollector ack(JsonMessage message) {
-    acker.ack(message.messageId());
-    hookAck(message.messageId().correlationId());
-    return this;
-  }
-
-  @Override
-  public InputCollector fail(JsonMessage message) {
-    acker.fail(message.messageId());
-    hookFail(message.messageId().correlationId());
-    return this;
-  }
-
-  /**
-   * Calls start hooks.
-   */
-  private void hookStart() {
-    for (InputHook hook : hooks) {
-      hook.handleStart(this);
+  public InputStream stream(String name) {
+    InputStream stream = streams.get(name);
+    if (stream == null) {
+      InputStreamContext context = InputStreamContext.Builder.newBuilder()
+          .setAddress(UUID.randomUUID().toString())
+          .setName(name)
+          .build();
+      stream = new DefaultInputStream(vertx, context, acker);
+      streams.put(name, stream);
     }
-  }
-
-  /**
-   * Calls receive hooks.
-   */
-  private void hookReceived(final String messageId) {
-    for (InputHook hook : hooks) {
-      hook.handleReceive(messageId);
-    }
-  }
-
-  /**
-   * Calls ack hooks.
-   */
-  private void hookAck(final String messageId) {
-    for (InputHook hook : hooks) {
-      hook.handleAck(messageId);
-    }
-  }
-
-  /**
-   * Calls fail hooks.
-   */
-  private void hookFail(final String messageId) {
-    for (InputHook hook : hooks) {
-      hook.handleFail(messageId);
-    }
-  }
-
-  /**
-   * Calls stop hooks.
-   */
-  private void hookStop() {
-    for (InputHook hook : hooks) {
-      hook.handleStart(this);
-    }
-  }
-
-  @Override
-  public InputCollector start() {
-    return start(null);
+    return stream;
   }
 
   @Override
   public void update(InputContext update) {
-    Iterator<InputStream> iter = streams.iterator();
+    Iterator<InputStream> iter = streams.values().iterator();
     while (iter.hasNext()) {
       InputStream stream = iter.next();
       boolean exists = false;
@@ -161,27 +101,32 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         }
       }
       if (!exists) {
-        stream.stop();
+        stream.close();
         iter.remove();
       }
     }
 
     for (InputStreamContext input : update.streams()) {
       boolean exists = false;
-      for (InputStream stream : streams) {
+      for (InputStream stream : streams.values()) {
         if (stream.context().equals(input)) {
           exists = true;
           break;
         }
       }
       if (!exists) {
-        streams.add(new DefaultInputStream(vertx, input).start());
+        streams.put(input.name(), new DefaultInputStream(vertx, input, acker).open());
       }
     }
   }
 
   @Override
-  public InputCollector start(final Handler<AsyncResult<Void>> doneHandler) {
+  public InputCollector open() {
+    return open(null);
+  }
+
+  @Override
+  public InputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
     if (streams.isEmpty()) {
       final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.streams().size());
       startCounter.setHandler(new Handler<AsyncResult<Void>>() {
@@ -190,14 +135,13 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           } else {
-            hookStart();
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
       });
 
       for (InputStreamContext stream : context.streams()) {
-        streams.add(new DefaultInputStream(vertx, stream).start(new Handler<AsyncResult<Void>>() {
+        streams.put(stream.name(), new DefaultInputStream(vertx, stream, acker).open(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
@@ -206,19 +150,19 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
               startCounter.succeed();
             }
           }
-        }).messageHandler(messageHandler));
+        }));
       }
     }
     return this;
   }
 
   @Override
-  public void stop() {
-    stop(null);
+  public void close() {
+    close(null);
   }
 
   @Override
-  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+  public void close(final Handler<AsyncResult<Void>> doneHandler) {
     final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(streams.size());
     stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
@@ -226,15 +170,14 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
-          hookStop();
           streams.clear();
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
     });
 
-    for (InputStream stream : streams) {
-      stream.stop(new Handler<AsyncResult<Void>>() {
+    for (InputStream stream : streams.values()) {
+      stream.close(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {

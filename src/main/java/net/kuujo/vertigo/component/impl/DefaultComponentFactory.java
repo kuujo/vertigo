@@ -15,11 +15,6 @@
  */
 package net.kuujo.vertigo.component.impl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
@@ -57,31 +52,8 @@ public class DefaultComponentFactory implements ComponentFactory {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T extends Component<?>> T createComponent(Class<T> type, String network, String address, VertigoCluster cluster) {
-    // Search the class for a factory method.
-    for (Method method : type.getDeclaredMethods()) {
-      if (method.isAnnotationPresent(Factory.class)) {
-        // The method must be public static.
-        if (!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) {
-          throw new IllegalArgumentException("Factory method " + method.getName() + " in " + type.getCanonicalName() + " must be public and static.");
-        }
-        // The method return type must be a Class<T> instance.
-        if (!method.getReturnType().equals(type)) {
-          throw new IllegalArgumentException("Factory method " + method.getName() + " in " + type.getCanonicalName() + " must return a " + type.getCanonicalName() + " instance.");
-        }
-
-        Object[] args = new Object[]{network, address, vertx, container, cluster};
-
-        // Invoke the factory method.
-        try {
-          return (T) method.invoke(null, args);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-          continue; // Just skip it. An exception will be thrown later.
-        }
-      }
-    }
-    throw new IllegalArgumentException(type.getCanonicalName() + " does not contain a valid factory method.");
+  public Component createComponent(String network, String address, VertigoCluster cluster) {
+    return new DefaultComponent(network, address, vertx, container, cluster);
   }
 
 }

@@ -15,9 +15,10 @@
  */
 package net.kuujo.vertigo.input;
 
+import java.util.Collection;
+
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.hooks.InputHook;
-import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -51,56 +52,48 @@ public interface InputCollector {
   InputCollector addHook(InputHook hook);
 
   /**
-   * Sets a message handler on the collector.
-   * 
-   * @param handler The message handler.
-   * @return The called collector instance.
+   * Returns a collection of input streams.
+   *
+   * @return A collection of input streams.
    */
-  InputCollector messageHandler(Handler<JsonMessage> handler);
+  Collection<InputStream> streams();
 
   /**
-   * Acknowledges a message.
-   * 
-   * @param message The message to ack.
-   * @return The called input collector instance.
+   * Returns an input stream. The stream will be automatically created if it doesn't
+   * already exist.
+   *
+   * @param name The name of the stream to get.
+   * @return The input stream.
    */
-  InputCollector ack(JsonMessage message);
+  InputStream stream(String name);
 
   /**
-   * Fails a message.
+   * Opens the input collector.
    * 
-   * @param message The message to fail.
-   * @return The called input collector instance.
+   * @return The input collector instance.
    */
-  InputCollector fail(JsonMessage message);
+  InputCollector open();
 
   /**
-   * Starts the input collector.
-   * 
-   * @return The called input collector instance.
-   */
-  InputCollector start();
-
-  /**
-   * Starts the input collector.
+   * Opens the input collector.
    * 
    * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          started.
-   * @return The called input collector instance.
+   *          opened.
+   * @return The input collector instance.
    */
-  InputCollector start(Handler<AsyncResult<Void>> doneHandler);
+  InputCollector open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Stops the input collector.
+   * Closes the input collector.
    */
-  void stop();
+  void close();
 
   /**
-   * Stops the input collector.
+   * Closes the input collector.
    * 
    * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          stopped.
+   *          closed.
    */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

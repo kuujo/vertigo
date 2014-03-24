@@ -15,14 +15,13 @@
  */
 package net.kuujo.vertigo.output;
 
-import java.util.List;
-
 import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An input stream.
@@ -32,6 +31,13 @@ import org.vertx.java.core.Handler;
 public interface OutputStream {
 
   /**
+   * Returns the output stream name.
+   *
+   * @return The output stream name.
+   */
+  String name();
+
+  /**
    * Returns the output stream context.
    *
    * @return The output stream context.
@@ -39,38 +45,71 @@ public interface OutputStream {
   OutputStreamContext context();
 
   /**
+   * Adds a hook to the stream.
+   *
+   * @param hook An output hook.
+   * @return The output stream.
+   */
+  OutputStream addHook(OutputHook hook);
+
+  /**
+   * Emits a message to the output stream.
+   *
+   * @param body The body of the message to emit.
+   * @return The emitted message ID.
+   */
+  String emit(JsonObject body);
+
+  /**
+   * Emits a child message to the output stream.
+   * 
+   * Emitting data as the child of an existing message creates a new node in the parent
+   * message's message tree. When the new message is emitted, the auditor assigned to the
+   * parent message will be notified of the change, and the new message will be tracked as
+   * a child. This means that the parent message will not be considered fully processed
+   * until all of its children have been acked and are considered fully processed (their
+   * children are acked... etc). It is strongly recommended that users use this API
+   * whenever possible.
+   *
+   * @param body The body of the message to emit.
+   * @param parent The parent of the message being emitted.
+   * @return The emitted message ID.
+   */
+  String emit(JsonObject body, JsonMessage parent);
+
+  /**
    * Emits a message to the output stream.
    *
    * @param message The message to emit.
    * @return The emitted message ID.
    */
-  List<MessageId> emit(JsonMessage message);
+  String emit(JsonMessage message);
 
   /**
-   * Starts the input stream.
+   * Opens the output stream.
    *
-   * @return The input stream.
+   * @return The output stream.
    */
-  OutputStream start();
+  OutputStream open();
 
   /**
-   * Starts the input stream.
+   * Opens the output stream.
    *
-   * @param doneHandler An asynchronous handler to be called once started.
-   * @return The input stream.
+   * @param doneHandler An asynchronous handler to be called once opened.
+   * @return The output stream.
    */
-  OutputStream start(Handler<AsyncResult<Void>> doneHandler);
+  OutputStream open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Stops the input stream.
+   * Closes the output stream.
    */
-  void stop();
+  void close();
 
   /**
-   * Stops the input stream.
+   * Closes the output stream.
    *
-   * @param doneHandler An asynchronous handler to be called once stopped.
+   * @param doneHandler An asynchronous handler to be called once closed.
    */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

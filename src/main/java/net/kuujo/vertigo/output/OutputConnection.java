@@ -15,33 +15,71 @@
  */
 package net.kuujo.vertigo.output;
 
+import java.util.List;
+
+import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 /**
- * A single point-to-point connection.
- * 
- * A connection represents a globally unique event bus address on which a single component
- * instance resides. This is the facility for sending messages to specific component
- * instances using selectors.
+ * A component-to-component output connection.
  * 
  * @author Jordan Halterman
  */
 public interface OutputConnection {
 
   /**
-   * Gets the remote connection address.
-   * 
-   * @return The remote connection address.
+   * Returns the output connection context.
+   *
+   * @return The output connection context.
    */
-  String address();
+  OutputConnectionContext context();
 
   /**
-   * Writes a message to the connection.
+   * Returns the remote connection ports.
    * 
-   * @param message The message to write to the connection.
-   * @return The written message identifier.
+   * @return The remote connection ports.
    */
-  MessageId write(JsonMessage message);
+  List<String> ports();
+
+  /**
+   * Sends a message on the connection.
+   * 
+   * @param message The message to send on the connection.
+   * @return The sent message identifier.
+   */
+  List<MessageId> send(JsonMessage message);
+
+  /**
+   * Opens the connection.
+   *
+   * @return The output connection.
+   */
+  OutputConnection open();
+
+  /**
+   * Opens the connection.
+   *
+   * @param doneHandler An asynchronous handler to be called once the connection has
+   *                    been opened.
+   * @return The output connection.
+   */
+  OutputConnection open(Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Closes the connection.
+   */
+  void close();
+
+  /**
+   * Closes the connection.
+   *
+   * @param doneHandler An asynchronous handler to be called once the connection has
+   *                    been closed.
+   */
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

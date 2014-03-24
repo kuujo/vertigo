@@ -20,10 +20,10 @@ import net.kuujo.vertigo.cluster.LocalClusterManager;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.testtools.TestAckingWorker;
-import net.kuujo.vertigo.testtools.TestFailingWorker;
+import net.kuujo.vertigo.testtools.TestAckingComponent;
+import net.kuujo.vertigo.testtools.TestFailingComponent;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
-import net.kuujo.vertigo.testtools.TestTimingOutWorker;
+import net.kuujo.vertigo.testtools.TestTimingOutComponent;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -54,13 +54,13 @@ public class HooksTest extends TestVerticle {
       this.hook = hook;
     }
     @Override
-    public void handleStart(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStart(net.kuujo.vertigo.component.Component subject) {
       if (hook.equals("start")) {
         testComplete();
       }
     }
     @Override
-    public void handleStop(net.kuujo.vertigo.component.Component<?> subject) {
+    public void handleStop(net.kuujo.vertigo.component.Component subject) {
       if (hook.equals("stop")) {
         testComplete();
       }
@@ -113,7 +113,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentStartHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingWorker.class.getName(), 2).addHook(new TestComponentHook("start")).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("start")).addInput("feeder");
     deploy(network);
   }
 
@@ -121,7 +121,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentEmitHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("emit"));
-    network.addVerticle("worker", TestAckingWorker.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 
@@ -129,7 +129,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentReceivedHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingWorker.class.getName(), 2).addHook(new TestComponentHook("received")).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("received")).addInput("feeder");
     deploy(network);
   }
 
@@ -137,7 +137,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentAckHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingWorker.class.getName(), 2).addHook(new TestComponentHook("ack")).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("ack")).addInput("feeder");
     deploy(network);
   }
 
@@ -145,7 +145,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentFailHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestFailingWorker.class.getName(), 2).addHook(new TestComponentHook("fail")).addInput("feeder");
+    network.addVerticle("worker", TestFailingComponent.class.getName(), 2).addHook(new TestComponentHook("fail")).addInput("feeder");
     deploy(network);
   }
 
@@ -153,7 +153,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentAckedHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("acked"));
-    network.addVerticle("worker", TestAckingWorker.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 
@@ -161,7 +161,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentFailedHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("failed"));
-    network.addVerticle("worker", TestFailingWorker.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestFailingComponent.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 
@@ -170,7 +170,7 @@ public class HooksTest extends TestVerticle {
     Network network = new Network("test");
     network.setMessageTimeout(1000);
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("timeout"));
-    network.addVerticle("worker", TestTimingOutWorker.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestTimingOutComponent.class.getName(), 2).addInput("feeder");
     deploy(network);
   }
 

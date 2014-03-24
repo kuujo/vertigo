@@ -15,8 +15,9 @@
  */
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.input.grouping.Grouping;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Input stream context.
@@ -26,9 +27,7 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 public class InputStreamContext extends Context<InputStreamContext> {
   private String address;
   private String stream;
-  private String source;
-  private Grouping grouping;
-  private ConnectionContext connection;
+  private Collection<InputConnectionContext> connections = new ArrayList<>();
 
   /**
    * Returns the stream name.
@@ -45,36 +44,30 @@ public class InputStreamContext extends Context<InputStreamContext> {
   }
 
   /**
-   * Returns the stream source.
+   * Returns a collection of input stream connections.
    *
-   * @return The stream source.
+   * @return A list of input connections.
    */
-  public String source() {
-    return source;
-  }
-
-  /**
-   * Returns the stream grouping.
-   *
-   * @return The stream grouping.
-   */
-  public Grouping grouping() {
-    return grouping;
-  }
-
-  /**
-   * Returns the input connection context.
-   *
-   * @return The input connection context.
-   */
-  public ConnectionContext connection() {
-    return connection;
+  public Collection<InputConnectionContext> connections() {
+    return connections;
   }
 
   @Override
   public void notify(InputStreamContext update) {
     super.notify(update);
-    connection.notify(update.connection());
+    for (InputConnectionContext connection : connections) {
+      boolean updated = false;
+      for (InputConnectionContext c : update.connections()) {
+        if (connection.equals(c)) {
+          connection.notify(c);
+          updated = true;
+          break;
+        }
+      }
+      if (!updated) {
+        connection.notify(null);
+      }
+    }
   }
 
   /**
@@ -112,17 +105,6 @@ public class InputStreamContext extends Context<InputStreamContext> {
     }
 
     /**
-     * Sets the input stream name.
-     *
-     * @param stream The stream name.
-     * @return The context builder.
-     */
-    public Builder setName(String stream) {
-      context.stream = stream;
-      return this;
-    }
-
-    /**
      * Sets the input stream address.
      *
      * @param address The input stream address.
@@ -134,35 +116,57 @@ public class InputStreamContext extends Context<InputStreamContext> {
     }
 
     /**
-     * Sets the input stream source.
+     * Sets the input stream name.
      *
-     * @param source The stream source.
+     * @param stream The stream name.
      * @return The context builder.
      */
-    public Builder setSource(String source) {
-      context.source = source;
+    public Builder setName(String stream) {
+      context.stream = stream;
       return this;
     }
 
     /**
-     * Sets the input grouping.
+     * Sets the stream connections.
      *
-     * @param grouping The input grouping.
+     * @param connections An array of stream connections.
      * @return The context builder.
      */
-    public Builder setGrouping(Grouping grouping) {
-      context.grouping = grouping;
+    public Builder setConnections(InputConnectionContext... connections) {
+      context.connections = Arrays.asList(connections);
       return this;
     }
 
     /**
-     * Sets the stream connection.
+     * Sets the stream connections.
      *
-     * @param connection The input stream connection.
+     * @param connections A collection of stream connections.
      * @return The context builder.
      */
-    public Builder setConnection(ConnectionContext connection) {
-      context.connection = connection;
+    public Builder setConnections(Collection<InputConnectionContext> connections) {
+      context.connections = connections;
+      return this;
+    }
+
+    /**
+     * Adds a connection to the stream.
+     *
+     * @param connection A stream connection to add.
+     * @return The context builder.
+     */
+    public Builder addConnection(InputConnectionContext connection) {
+      context.connections.add(connection);
+      return this;
+    }
+
+    /**
+     * Removes a connection from the stream.
+     *
+     * @param connection A stream connection to remove.
+     * @return The context builder.
+     */
+    public Builder removeConnection(InputConnectionContext connection) {
+      context.connections.remove(connection);
       return this;
     }
   }

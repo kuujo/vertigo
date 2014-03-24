@@ -46,12 +46,11 @@ public interface ComponentFactory {
   /**
    * Creates a component.
    * 
-   * @param type The component type.
    * @param network The network address.
    * @param address The component address.
    * @param cluster The current Vertigo cluster client.
    * @return A new component instance.
    */
-  <T extends Component<?>> T createComponent(Class<T> type, String network, String address, VertigoCluster cluster);
+  Component createComponent(String network, String address, VertigoCluster cluster);
 
 }

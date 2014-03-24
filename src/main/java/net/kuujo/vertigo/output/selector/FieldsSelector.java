@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.output.OutputConnection;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -53,15 +52,15 @@ public class FieldsSelector implements Selector {
   }
 
   @Override
-  public List<OutputConnection> select(JsonMessage message, List<OutputConnection> connections) {
+  public List<String> select(JsonMessage message, List<String> ports) {
     JsonObject body = message.body();
     Map<String, Object> fields = new HashMap<>(this.fields.size() + 1);
     for (String fieldName : this.fields) {
       Object value = body.getValue(fieldName);
       fields.put(fieldName, value);
     }
-    int index = Math.abs(fields.hashCode() % connections.size());
-    return connections.subList(index, index+1);
+    int index = Math.abs(fields.hashCode() % ports.size());
+    return ports.subList(index, index+1);
   }
 
 }

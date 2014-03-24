@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.testtools;
+package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.java.BasicWorker;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.worker.Worker;
+import net.kuujo.vertigo.VertigoException;
+
 
 /**
- * A test worker that acks and emits all messages as children.
+ * A connection exception.<p>
  *
  * @author Jordan Halterman
  */
-public class TestAckingWorker extends BasicWorker {
+@SuppressWarnings("serial")
+public class ConnectionException extends VertigoException {
 
-  @Override
-  protected void handleMessage(JsonMessage message, Worker worker) {
-    worker.emit(message);
-    worker.ack(message);
+  public ConnectionException(String message) {
+    super(message);
+  }
+
+  public ConnectionException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public ConnectionException(Throwable cause) {
+    super(cause);
   }
 
 }

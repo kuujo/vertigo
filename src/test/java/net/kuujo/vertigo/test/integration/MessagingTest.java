@@ -17,10 +17,12 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+
 import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -60,18 +62,6 @@ public class MessagingTest extends TestVerticle {
     });
   }
 
-  private final Handler<String> emptyHandler = new Handler<String>() {
-    public void handle(String messageId) {
-    }
-  };
-
-  private final Handler<String> completeHandler = new Handler<String>() {
-    @Override
-    public void handle(String messageId) {
-      testComplete();
-    }
-  };
-
   @Test
   public void testAck() {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
@@ -79,9 +69,9 @@ public class MessagingTest extends TestVerticle {
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
-    final Acker acker1 = new DefaultAcker(vertx.eventBus());
+    final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
-    final Acker acker2 = new DefaultAcker(vertx.eventBus());
+    final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
 
     deployAuditor(context.auditors().iterator().next(), 30000, new Handler<AsyncResult<Void>>() {
@@ -96,25 +86,40 @@ public class MessagingTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                input.messageHandler(new Handler<JsonMessage>() {
+                input.stream("default").messageHandler(new Handler<JsonMessage>() {
                   @Override
                   public void handle(JsonMessage message) {
-                    input.ack(message);
+                    input.stream("default").ack(message);
                   }
                 });
-                input.start(new Handler<AsyncResult<Void>>() {
+                input.open(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     assertTrue(result.succeeded());
-                    output.ackHandler(completeHandler);
-                    output.failHandler(emptyHandler);
-                    output.timeoutHandler(emptyHandler);
-                    output.start(new Handler<AsyncResult<Void>>() {
+                    output.addHook(new OutputHook() {
+                      @Override
+                      public void handleEmit(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleAcked(String messageId) {
+                        testComplete();
+                      }
+                      @Override
+                      public void handleFailed(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleTimeout(String messageId) {
+                        
+                      }
+                    });
+                    output.open(new Handler<AsyncResult<Void>>() {
                       @Override
                       public void handle(AsyncResult<Void> result) {
                         assertTrue(result.succeeded());
-                        output.emit(new JsonObject().putString("foo", "bar"));
-                        output.emit(new JsonObject().putString("foo", "bar"));
+                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
+                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
                       }
                     });
                   }
@@ -134,9 +139,9 @@ public class MessagingTest extends TestVerticle {
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
-    final Acker acker1 = new DefaultAcker(vertx.eventBus());
+    final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
-    final Acker acker2 = new DefaultAcker(vertx.eventBus());
+    final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
 
     deployAuditor(context.auditors().iterator().next(), 30000, new Handler<AsyncResult<Void>>() {
@@ -151,25 +156,40 @@ public class MessagingTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                input.messageHandler(new Handler<JsonMessage>() {
+                input.stream("default").messageHandler(new Handler<JsonMessage>() {
                   @Override
                   public void handle(JsonMessage message) {
-                    input.fail(message);
+                    input.stream("default").fail(message);
                   }
                 });
-                input.start(new Handler<AsyncResult<Void>>() {
+                input.open(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     assertTrue(result.succeeded());
-                    output.ackHandler(emptyHandler);
-                    output.failHandler(completeHandler);
-                    output.timeoutHandler(emptyHandler);
-                    output.start(new Handler<AsyncResult<Void>>() {
+                    output.addHook(new OutputHook() {
+                      @Override
+                      public void handleEmit(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleAcked(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleFailed(String messageId) {
+                        testComplete();
+                      }
+                      @Override
+                      public void handleTimeout(String messageId) {
+                        
+                      }
+                    });
+                    output.open(new Handler<AsyncResult<Void>>() {
                       @Override
                       public void handle(AsyncResult<Void> result) {
                         assertTrue(result.succeeded());
-                        output.emit(new JsonObject().putString("foo", "bar"));
-                        output.emit(new JsonObject().putString("foo", "bar"));
+                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
+                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
                       }
                     });
                   }
@@ -189,9 +209,9 @@ public class MessagingTest extends TestVerticle {
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2).addInput("feeder");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
-    final Acker acker1 = new DefaultAcker(vertx.eventBus());
+    final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
-    final Acker acker2 = new DefaultAcker(vertx.eventBus());
+    final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
 
     deployAuditor(context.auditors().iterator().next(), 1000, new Handler<AsyncResult<Void>>() {
@@ -206,24 +226,39 @@ public class MessagingTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                input.messageHandler(new Handler<JsonMessage>() {
+                input.stream("default").messageHandler(new Handler<JsonMessage>() {
                   @Override
                   public void handle(JsonMessage message) {
                   }
                 });
-                input.start(new Handler<AsyncResult<Void>>() {
+                input.open(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     assertTrue(result.succeeded());
-                    output.ackHandler(emptyHandler);
-                    output.failHandler(emptyHandler);
-                    output.timeoutHandler(completeHandler);
-                    output.start(new Handler<AsyncResult<Void>>() {
+                    output.addHook(new OutputHook() {
+                      @Override
+                      public void handleEmit(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleAcked(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleFailed(String messageId) {
+                        
+                      }
+                      @Override
+                      public void handleTimeout(String messageId) {
+                        testComplete();
+                      }
+                    });
+                    output.open(new Handler<AsyncResult<Void>>() {
                       @Override
                       public void handle(AsyncResult<Void> result) {
                         assertTrue(result.succeeded());
-                        output.emit(new JsonObject().putString("foo", "bar"));
-                        output.emit(new JsonObject().putString("foo", "bar"));
+                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
+                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
                       }
                     });
                   }

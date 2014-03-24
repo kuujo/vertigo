@@ -1,11 +1,12 @@
 package net.kuujo.vertigo.network.auditor;
 
 import java.util.List;
+import java.util.Set;
 
 import net.kuujo.vertigo.message.MessageId;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 
 /**
  * A message acker.
@@ -13,6 +14,13 @@ import org.vertx.java.core.AsyncResult;
  * @author Jordan Halterman
  */
 public interface Acker {
+
+  /**
+   * Returns a set of available auditors.
+   *
+   * @return A set of available auditors.
+   */
+  Set<String> auditors();
 
   /**
    * Starts the acker.

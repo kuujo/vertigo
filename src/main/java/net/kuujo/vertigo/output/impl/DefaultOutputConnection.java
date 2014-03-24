@@ -15,15 +15,22 @@
  */
 package net.kuujo.vertigo.output.impl;
 
-import net.kuujo.vertigo.context.ConnectionContext;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.output.OutputConnection;
+import net.kuujo.vertigo.output.selector.Selector;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.impl.DefaultFutureResult;
 
 /**
  * Default output connection implementation.
@@ -32,28 +39,80 @@ import org.vertx.java.core.eventbus.EventBus;
  */
 public class DefaultOutputConnection implements OutputConnection {
   private static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
-  private final String address;
+  private final Vertx vertx;
   private final EventBus eventBus;
+  private final OutputConnectionContext context;
+  private final String address;
+  private final List<String> ports;
+  private final Selector selector;
+  private boolean open;
 
-  public DefaultOutputConnection(String address, Vertx vertx) {
-    this.address = address;
+  public DefaultOutputConnection(Vertx vertx, OutputConnectionContext context) {
+    this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-  }
-
-  public DefaultOutputConnection(Vertx vertx, ConnectionContext context) {
-    this.eventBus = vertx.eventBus();
+    this.context = context;
     this.address = context.address();
+    this.ports = context.ports();
+    this.selector = context.grouping().createSelector();
   }
 
   @Override
-  public String address() {
-    return address;
+  public OutputConnectionContext context() {
+    return context;
   }
 
   @Override
-  public MessageId write(JsonMessage message) {
-    eventBus.send(address, serializer.serializeToString(message));
-    return message.messageId();
+  public List<String> ports() {
+    return ports;
+  }
+
+  @Override
+  public List<MessageId> send(JsonMessage message) {
+    final List<MessageId> messageIds = new ArrayList<>();
+    if (!open) return messageIds;
+    for (String address : selector.select(message, ports)) {
+      JsonMessage child = message.copy(new StringBuilder()
+        .append(this.address)
+        .append(":")
+        .append(OutputCounter.incrementAndGet())
+        .toString());
+      eventBus.send(address, serializer.serializeToString(child));
+      messageIds.add(child.messageId());
+    }
+    return messageIds;
+  }
+
+  @Override
+  public OutputConnection open() {
+    return open(null);
+  }
+
+  @Override
+  public OutputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
+    open = true;
+    vertx.runOnContext(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public void close() {
+    close(null);
+  }
+
+  @Override
+  public void close(final Handler<AsyncResult<Void>> doneHandler) {
+    open = false;
+    vertx.runOnContext(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+      }
+    });
   }
 
 }

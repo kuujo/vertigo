@@ -17,9 +17,7 @@ package net.kuujo.vertigo.context;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import net.kuujo.vertigo.input.grouping.Grouping;
+import java.util.Collection;
 
 /**
  * The stream context represents a connection between one component
@@ -32,9 +30,7 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
   private static final String DEFAULT_STREAM = "default";
   private String stream = DEFAULT_STREAM;
   private String address;
-  private String target;
-  private Grouping grouping;
-  private List<ConnectionContext> connections = new ArrayList<>();
+  private Collection<OutputConnectionContext> connections = new ArrayList<>();
 
   /**
    * Returns the stream name.
@@ -51,38 +47,20 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
   }
 
   /**
-   * Returns the stream target.
-   *
-   * @return The stream target.
-   */
-  public String target() {
-    return target;
-  }
-
-  /**
-   * Returns the stream grouping.
-   *
-   * @return The stream grouping.
-   */
-  public Grouping grouping() {
-    return grouping;
-  }
-
-  /**
    * Returns a collection of stream connections.
    *
    * @return A collection of connections in the stream.
    */
-  public List<ConnectionContext> connections() {
+  public Collection<OutputConnectionContext> connections() {
     return connections;
   }
 
   @Override
   public void notify(OutputStreamContext update) {
     super.notify(update);
-    for (ConnectionContext connection : connections) {
+    for (OutputConnectionContext connection : connections) {
       boolean updated = false;
-      for (ConnectionContext c : update.connections()) {
+      for (OutputConnectionContext c : update.connections()) {
         if (connection.equals(c)) {
           connection.notify(c);
           updated = true;
@@ -152,34 +130,12 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
     }
 
     /**
-     * Sets the stream target.
-     *
-     * @param target The stream target.
-     * @return The context builder
-     */
-    public Builder setTarget(String target) {
-      context.target = target;
-      return this;
-    }
-
-    /**
-     * Sets the stream grouping.
-     *
-     * @param grouping The stream grouping.
-     * @return The context builder.
-     */
-    public Builder setGrouping(Grouping grouping) {
-      context.grouping = grouping;
-      return this;
-    }
-
-    /**
      * Sets the stream connections.
      *
      * @param connections An array of stream connections.
      * @return The context builder.
      */
-    public Builder setConnections(ConnectionContext... connections) {
+    public Builder setConnections(OutputConnectionContext... connections) {
       context.connections = Arrays.asList(connections);
       return this;
     }
@@ -190,7 +146,7 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
      * @param connections A collection of stream connections.
      * @return The context builder.
      */
-    public Builder setConnections(List<ConnectionContext> connections) {
+    public Builder setConnections(Collection<OutputConnectionContext> connections) {
       context.connections = connections;
       return this;
     }
@@ -201,7 +157,7 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
      * @param connection A stream connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(ConnectionContext connection) {
+    public Builder addConnection(OutputConnectionContext connection) {
       context.connections.add(connection);
       return this;
     }
@@ -212,7 +168,7 @@ public class OutputStreamContext extends Context<OutputStreamContext> {
      * @param connection A stream connection to remove.
      * @return The context builder.
      */
-    public Builder removeConnection(ConnectionContext connection) {
+    public Builder removeConnection(OutputConnectionContext connection) {
       context.connections.remove(connection);
       return this;
     }

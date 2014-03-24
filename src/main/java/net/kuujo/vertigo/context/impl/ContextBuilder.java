@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputContext;
@@ -60,7 +60,7 @@ public final class ContextBuilder {
    * @throws MalformedNetworkException 
    *   If the network is malformed.
    */
-  public static NetworkContext buildContext(Network network, ClusterClient cluster) {
+  public static NetworkContext buildContext(Network network, VertigoCluster cluster) {
     NetworkContext.Builder context = NetworkContext.Builder.newBuilder();
 
     // Set basic network configuration options.

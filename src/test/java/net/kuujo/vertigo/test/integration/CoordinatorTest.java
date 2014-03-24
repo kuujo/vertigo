@@ -15,8 +15,12 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
-import net.kuujo.vertigo.cluster.LocalClusterClient;
+import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.fail;
+import static org.vertx.testtools.VertxAssert.testComplete;
+import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.impl.DefaultComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -27,10 +31,6 @@ import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.testtools.TestVerticle;
-
-import static org.vertx.testtools.VertxAssert.assertEquals;
-import static org.vertx.testtools.VertxAssert.fail;
-import static org.vertx.testtools.VertxAssert.testComplete;
 
 /**
  * A component coordinator test.
@@ -51,15 +51,17 @@ public class CoordinatorTest extends TestVerticle {
             .addInstance(InstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
-    final ClusterClient cluster = new LocalClusterClient(vertx, container);
-    cluster.set(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<Void>>() {
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+
+    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
         }
         else {
-          final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance.address(), cluster);
+          final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
@@ -72,7 +74,7 @@ public class CoordinatorTest extends TestVerticle {
               }
             }
           });
-          cluster.set(context.status(), true);
+          data.put(context.status(), "ready");
         }
       }
     });
@@ -90,15 +92,17 @@ public class CoordinatorTest extends TestVerticle {
             .addInstance(InstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
-    final ClusterClient cluster = new LocalClusterClient(vertx, container);
-    cluster.set(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<Void>>() {
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+
+    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
         }
         else {
-          final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance.address(), cluster);
+          final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
@@ -113,11 +117,11 @@ public class CoordinatorTest extends TestVerticle {
                     testComplete();
                   }
                 });
-                cluster.delete(context.status());
+                data.remove(context.status());
               }
             }
           });
-          cluster.set(context.status(), true);
+          data.put(context.status(), "ready");
         }
       }
     });
@@ -135,15 +139,17 @@ public class CoordinatorTest extends TestVerticle {
             .addInstance(InstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
-    final ClusterClient cluster = new LocalClusterClient(vertx, container);
-    cluster.set(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<Void>>() {
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+
+    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
         }
         else {
-          final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance.address(), cluster);
+          final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
@@ -158,21 +164,21 @@ public class CoordinatorTest extends TestVerticle {
                     testComplete();
                   }
                 });
-                cluster.delete(context.status(), new Handler<AsyncResult<Void>>() {
+                data.remove(context.status(), new Handler<AsyncResult<String>>() {
                   @Override
-                  public void handle(AsyncResult<Void> result) {
+                  public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
                       fail(result.cause().getMessage());
                     }
                     else {
-                      cluster.set(context.status(), true);
+                      data.put(context.status(), "ready");
                     }
                   }
                 });
               }
             }
           });
-          cluster.set(context.status(), true);
+          data.put(context.status(), "ready");
         }
       }
     });

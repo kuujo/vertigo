@@ -49,9 +49,9 @@ public abstract class BasicWorker extends ComponentVerticle<Worker> {
   protected Worker worker;
 
   @Override
-  protected Worker createComponent(String address) {
+  protected final Worker createComponent(String network, String address) {
     ComponentFactory componentFactory = new DefaultComponentFactory(vertx, container);
-    return componentFactory.createComponent(net.kuujo.vertigo.worker.impl.BasicWorker.class, address, cluster);
+    return componentFactory.createComponent(net.kuujo.vertigo.worker.impl.BasicWorker.class, network, address, cluster);
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.java;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 
@@ -27,6 +27,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
 import static net.kuujo.vertigo.util.Config.parseCluster;
+import static net.kuujo.vertigo.util.Config.parseNetwork;
 import static net.kuujo.vertigo.util.Config.parseAddress;
 import static net.kuujo.vertigo.util.Config.populateConfig;
 
@@ -37,7 +38,7 @@ import static net.kuujo.vertigo.util.Config.populateConfig;
  */
 abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   protected Vertigo vertigo;
-  protected ClusterClient cluster;
+  protected VertigoCluster cluster;
   protected String address;
   protected InstanceContext context;
   protected JsonObject config;
@@ -46,10 +47,11 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   /**
    * Creates a component instance for the verticle.
    * 
-   * @param context The component instance address.
+   * @param network The network address.
+   * @param address The component instance address.
    * @return The new component instance.
    */
-  protected abstract T createComponent(String address);
+  protected abstract T createComponent(String network, String address);
 
   /**
    * Because of the method by which Vertigo coordinates starting of component instances,
@@ -61,10 +63,11 @@ abstract class ComponentVerticle<T extends Component<T>> extends Verticle {
   public void start() {
     logger = container.logger();
     cluster = parseCluster(container.config(), vertx, container);
+    String network = parseNetwork(container.config());
     address = parseAddress(container.config());
     populateConfig(container.config());
     config = container.config();
-    final T component = createComponent(address);
+    final T component = createComponent(network, address);
     vertigo = new Vertigo(this);
 
     component.start(new Handler<AsyncResult<T>>() {

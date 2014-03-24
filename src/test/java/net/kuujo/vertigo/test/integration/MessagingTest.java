@@ -17,8 +17,8 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.ClusterClient;
-import net.kuujo.vertigo.cluster.LocalClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.input.InputCollector;
@@ -74,7 +74,7 @@ public class MessagingTest extends TestVerticle {
 
   @Test
   public void testAck() {
-    final ClusterClient cluster = new LocalClusterClient(vertx, container);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     Network network = new Network("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2).addInput("feeder");
@@ -129,7 +129,7 @@ public class MessagingTest extends TestVerticle {
 
   @Test
   public void testFail() {
-    final ClusterClient cluster = new LocalClusterClient(vertx, container);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     Network network = new Network("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2).addInput("feeder");
@@ -184,7 +184,7 @@ public class MessagingTest extends TestVerticle {
 
   @Test
   public void testTimeout() {
-    final ClusterClient cluster = new LocalClusterClient(vertx, container);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     Network network = new Network("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2).addInput("feeder");

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.component.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.ComponentContext;
@@ -53,7 +53,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   protected final EventBus eventBus;
   protected final Container container;
   protected final Logger logger;
-  protected final ClusterClient cluster;
+  protected final VertigoCluster cluster;
   private final ComponentCoordinator coordinator;
   private final Acker acker;
   protected final String address;
@@ -127,7 +127,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     }
   };
 
-  protected AbstractComponent(String address, Vertx vertx, Container container, ClusterClient cluster) {
+  protected AbstractComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
     this.address = address;
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
@@ -135,7 +135,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
     this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address));
     this.cluster = cluster;
     this.acker = new DefaultAcker(eventBus);
-    this.coordinator = new DefaultComponentCoordinator(address, cluster);
+    this.coordinator = new DefaultComponentCoordinator(network, address, cluster);
   }
 
   @Override
@@ -164,7 +164,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
   }
 
   @Override
-  public ClusterClient cluster() {
+  public VertigoCluster cluster() {
     return cluster;
   }
 

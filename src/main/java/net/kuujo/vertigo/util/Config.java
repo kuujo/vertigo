@@ -17,7 +17,7 @@ package net.kuujo.vertigo.util;
 
 import java.util.HashSet;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InstanceContext;
 
 import org.vertx.java.core.Vertx;
@@ -38,8 +38,9 @@ public final class Config {
    * @param cluster The verticle cluster.
    * @return A verticle configuration.
    */
-  public static JsonObject buildConfig(InstanceContext context, ClusterClient cluster) {
+  public static JsonObject buildConfig(InstanceContext context, VertigoCluster cluster) {
     JsonObject config = new JsonObject();
+    config.putString("network", context.component().network().address());
     config.putString("address", context.address());
     config.putString("cluster", cluster.getClass().getName());
     config.putObject("config", context.component().config());
@@ -53,20 +54,33 @@ public final class Config {
    * @return A cluster client.
    */
   @SuppressWarnings("unchecked")
-  public static ClusterClient parseCluster(JsonObject config, Vertx vertx, Container container) {
+  public static VertigoCluster parseCluster(JsonObject config, Vertx vertx, Container container) {
     String clusterType = config.getString("cluster");
     if (clusterType == null) {
       throw new IllegalArgumentException("No cluster class specified.");
     }
-    Class<? extends ClusterClient> clusterClass;
+    Class<? extends VertigoCluster> clusterClass;
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     try {
-      clusterClass = (Class<? extends ClusterClient>) loader.loadClass(clusterType);
+      clusterClass = (Class<? extends VertigoCluster>) loader.loadClass(clusterType);
     }
     catch (Exception e) {
       throw new IllegalArgumentException("Error instantiating serializer factory.");
     }
     return Factories.createObject(clusterClass, vertx, container);
+  }
+
+  /**
+   * Parses a network address.
+   *
+   * @param config The Json configuration object.
+   * @return A network address.
+   */
+  public static String parseNetwork(JsonObject config) {
+    if (config != null && config.containsField("network")) {
+      return config.getString("network");
+    }
+    return null;
   }
 
   /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,19 @@
  */
 package net.kuujo.vertigo.test.integration;
 
+import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.RemoteCluster;
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.java.BasicFeeder;
-import net.kuujo.vertigo.java.BasicWorker;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.worker.Worker;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
 /**
  * A remote cluster test.
@@ -39,44 +36,88 @@ import org.vertx.java.core.Handler;
  */
 public class RemoteClusterTest extends XyncTestVerticle {
 
-  @Test
-  public void testLocalDeploy() {
-    Network network = new Network("test");
-    network.setNumAuditors(2);
-    network.addVerticle("test.feeder", TestFeeder.class.getName());
-    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+  public static class TestVerticle1 extends Verticle {
+    @Override
+    public void start() {
+      super.start();
+    }
+  }
 
-    VertigoCluster cluster = new RemoteCluster(this);
-    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
+  public static class TestVerticle2 extends Verticle {
+    @Override
+    public void start() {
+      testComplete();
+    }
+  }
+
+  @Test
+  public void testDeployVerticle() {
+    final VertigoCluster client = new RemoteCluster(vertx);
+    client.deployVerticle("test-verticle1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<NetworkContext> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        testComplete();
+        assertEquals("test-verticle1", result.result());
       }
     });
   }
 
   @Test
-  public void testLocalShutdown() {
-    Network network = new Network("test");
-    network.setNumAuditors(2);
-    network.addVerticle("test.feeder", TestFeeder.class.getName());
-    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
-
-    final VertigoCluster cluster = new LocalCluster(this);
-    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
+  public void testUndeployVerticle() {
+    final VertigoCluster client = new RemoteCluster(vertx);
+    client.deployVerticle("test-verticle2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<NetworkContext> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        vertx.setTimer(2000, new Handler<Long>() {
+        assertEquals("test-verticle2", result.result());
+        client.undeployVerticle("test-verticle2", new Handler<AsyncResult<Void>>() {
           @Override
-          public void handle(Long timerID) {
-            cluster.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+            testComplete();
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testVerticleIsDeployed() {
+    final VertigoCluster client = new RemoteCluster(vertx);
+    client.deployVerticle("test-verticle3", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        assertEquals("test-verticle3", result.result());
+        client.isDeployed("test-verticle3", new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            assertTrue(result.succeeded());
+            assertTrue(result.result());
+            testComplete();
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testVerticleIsNotDeployed() {
+    final VertigoCluster client = new RemoteCluster(vertx);
+    client.deployVerticle("test-verticle4", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        assertEquals("test-verticle4", result.result());
+        client.undeployVerticle("test-verticle4", new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+            client.isDeployed("test-verticle4", new Handler<AsyncResult<Boolean>>() {
               @Override
-              public void handle(AsyncResult<Void> result) {
+              public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
+                assertFalse(result.result());
                 testComplete();
               }
             });
@@ -86,15 +127,35 @@ public class RemoteClusterTest extends XyncTestVerticle {
     });
   }
 
-  public static class TestFeeder extends BasicFeeder {
-    
+  @Test
+  public void testDeployWorkerVerticle() {
+    final VertigoCluster client = new RemoteCluster(vertx);
+    client.deployWorkerVerticle("test-worker1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        assertEquals("test-worker1", result.result());
+      }
+    });
   }
 
-  public static class TestWorker extends BasicWorker {
-    @Override
-    protected void handleMessage(JsonMessage message, Worker worker) {
-      worker.ack(message);
-    }
+  @Test
+  public void testUndeployWorkerVerticle() {
+    final VertigoCluster client = new RemoteCluster(vertx);
+    client.deployWorkerVerticle("test-worker2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        assertEquals("test-worker2", result.result());
+        client.undeployVerticle("test-worker2", new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+            testComplete();
+          }
+        });
+      }
+    });
   }
 
 }

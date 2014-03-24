@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.impl.AbstractComponent;
 import net.kuujo.vertigo.feeder.Feeder;
 import net.kuujo.vertigo.network.FailureException;
@@ -46,8 +46,8 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   public static final int AUTO_RETRY_ATTEMPTS_UNLIMITED = -1;
 
   @Factory
-  public static BasicFeeder factory(String address, Vertx vertx, Container container, ClusterClient cluster) {
-    return new BasicFeeder(address, vertx, container, cluster);
+  public static BasicFeeder factory(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
+    return new BasicFeeder(network, address, vertx, container, cluster);
   }
 
   private static final long DEFAULT_FEED_INTERVAL = 10;
@@ -62,8 +62,8 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
   private boolean fed;
   private long feedTimer;
 
-  public BasicFeeder(String address, Vertx vertx, Container container, ClusterClient cluster) {
-    super(address, vertx, container, cluster);
+  public BasicFeeder(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
+    super(network, address, vertx, container, cluster);
   }
 
   private final Handler<String> internalAckHandler = new Handler<String>() {

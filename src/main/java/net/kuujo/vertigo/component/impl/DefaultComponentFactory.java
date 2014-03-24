@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
 
@@ -58,7 +58,7 @@ public class DefaultComponentFactory implements ComponentFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Component<?>> T createComponent(Class<T> type, String address, ClusterClient cluster) {
+  public <T extends Component<?>> T createComponent(Class<T> type, String network, String address, VertigoCluster cluster) {
     // Search the class for a factory method.
     for (Method method : type.getDeclaredMethods()) {
       if (method.isAnnotationPresent(Factory.class)) {
@@ -71,24 +71,7 @@ public class DefaultComponentFactory implements ComponentFactory {
           throw new IllegalArgumentException("Factory method " + method.getName() + " in " + type.getCanonicalName() + " must return a " + type.getCanonicalName() + " instance.");
         }
 
-        // Set up the factory arguments.
-        Class<?>[] params = method.getParameterTypes();
-        Object[] args = new Object[params.length];
-        for (int i = 0; i < params.length; i++) {
-          args[i] = null;
-          if (String.class.isAssignableFrom(params[i])) {
-            args[i] = address;
-          }
-          else if (Vertx.class.isAssignableFrom(params[i])) {
-            args[i] = vertx;
-          }
-          else if (Container.class.isAssignableFrom(params[i])) {
-            args[i] = container;
-          }
-          else if (ClusterClient.class.isAssignableFrom(params[i])) {
-            args[i] = cluster;
-          }
-        }
+        Object[] args = new Object[]{network, address, vertx, container, cluster};
 
         // Invoke the factory method.
         try {

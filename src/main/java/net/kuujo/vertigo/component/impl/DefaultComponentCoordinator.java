@@ -16,8 +16,9 @@
 package net.kuujo.vertigo.component.impl;
 
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.cluster.ClusterClient;
-import net.kuujo.vertigo.cluster.ClusterEvent;
+import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.data.MapEvent;
+import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
 
@@ -33,29 +34,29 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultComponentCoordinator implements ComponentCoordinator {
   private final String address;
-  private final ClusterClient cluster;
+  private final WatchableAsyncMap<String, String> data;
   private InstanceContext currentContext;
   private Handler<Void> resumeHandler;
   private Handler<Void> pauseHandler;
 
-  private final Handler<ClusterEvent> instanceHandler = new Handler<ClusterEvent>() {
+  private final Handler<MapEvent<String, String>> instanceHandler = new Handler<MapEvent<String, String>>() {
     @Override
-    public void handle(ClusterEvent event) {
+    public void handle(MapEvent<String, String> event) {
       if (currentContext != null) {
-        currentContext.notify(InstanceContext.fromJson(new JsonObject(event.<String>value())));
+        currentContext.notify(InstanceContext.fromJson(new JsonObject(event.value())));
       }
     }
   };
 
-  private final Handler<ClusterEvent> statusHandler = new Handler<ClusterEvent>() {
+  private final Handler<MapEvent<String, String>> statusHandler = new Handler<MapEvent<String, String>>() {
     @Override
-    public void handle(ClusterEvent event) {
-      if (event.type().equals(ClusterEvent.Type.CREATE)) {
+    public void handle(MapEvent<String, String> event) {
+      if (event.type().equals(MapEvent.Type.CREATE)) {
         if (resumeHandler != null) {
           resumeHandler.handle((Void) null);
         }
       }
-      if (event.type().equals(ClusterEvent.Type.DELETE)) {
+      if (event.type().equals(MapEvent.Type.DELETE)) {
         if (pauseHandler != null) {
           pauseHandler.handle((Void) null);
         }
@@ -63,9 +64,9 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     }
   };
 
-  public DefaultComponentCoordinator(String address, ClusterClient cluster) {
+  public DefaultComponentCoordinator(String network, String address, VertigoCluster cluster) {
     this.address = address;
-    this.cluster = cluster;
+    this.data = cluster.getMap(network);
   }
 
   @Override
@@ -75,7 +76,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
 
   @Override
   public ComponentCoordinator start(final Handler<AsyncResult<InstanceContext>> doneHandler) {
-    cluster.get(address, new Handler<AsyncResult<String>>() {
+    data.get(address, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -83,14 +84,14 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
         }
         else {
           currentContext = InstanceContext.fromJson(new JsonObject(result.result()));
-          cluster.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
+          data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
               }
               else {
-                cluster.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
+                data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
@@ -118,9 +119,9 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public ComponentCoordinator resume(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null) {
-      cluster.set(currentContext.status(), true, new Handler<AsyncResult<Void>>() {
+      data.put(currentContext.status(), "ready", new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<Void> result) {
+        public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           }
@@ -144,9 +145,9 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public ComponentCoordinator pause(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null) {
-      cluster.delete(currentContext.status(), new Handler<AsyncResult<Void>>() {
+      data.remove(currentContext.status(), new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<Void> result) {
+        public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           }
@@ -177,22 +178,22 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null) {
-      cluster.unwatch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
+      data.unwatch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
-            cluster.unwatch(address, instanceHandler);
+            data.unwatch(address, instanceHandler);
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           }
           else {
-            cluster.unwatch(address, instanceHandler, doneHandler);
+            data.unwatch(address, instanceHandler, doneHandler);
           }
           currentContext = null;
         }
       });
     }
     else {
-      cluster.unwatch(address, instanceHandler, doneHandler);
+      data.unwatch(address, instanceHandler, doneHandler);
     }
   }
 

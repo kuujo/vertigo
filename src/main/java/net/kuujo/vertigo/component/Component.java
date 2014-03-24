@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.component;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
@@ -78,11 +78,11 @@ public interface Component<T extends Component<T>> {
   InstanceContext context();
 
   /**
-   * Returns the component cluster client.
+   * Returns the cluster to which the component belongs.
    *
-   * @return The component cluster client.
+   * @return The cluster to which the component belongs.
    */
-  ClusterClient cluster();
+  VertigoCluster cluster();
 
   /**
    * Returns the instance logger.

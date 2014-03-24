@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.component;
 
-import net.kuujo.vertigo.cluster.ClusterClient;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
@@ -47,10 +47,11 @@ public interface ComponentFactory {
    * Creates a component.
    * 
    * @param type The component type.
+   * @param network The network address.
    * @param address The component address.
    * @param cluster The current Vertigo cluster client.
    * @return A new component instance.
    */
-  <T extends Component<?>> T createComponent(Class<T> type, String address, ClusterClient cluster);
+  <T extends Component<?>> T createComponent(Class<T> type, String network, String address, VertigoCluster cluster);
 
 }

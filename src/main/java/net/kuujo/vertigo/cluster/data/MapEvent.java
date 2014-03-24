@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.data;
 
 import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
- * Cluster event.
+ * Map event.
  *
  * @author Jordan Halterman
  */
-public class ClusterEvent implements Serializable {
+public class MapEvent<K, V> implements Serializable {
 
   /**
-   * Cluster event type.
+   * Map event type.
    *
    * @author Jordan Halterman
    */
@@ -86,10 +86,10 @@ public class ClusterEvent implements Serializable {
   }
 
   private Type type;
-  private String key;
-  private Object value;
+  private K key;
+  private V value;
 
-  public ClusterEvent(Type type, String key, Object value) {
+  public MapEvent(Type type, K key, V value) {
     this.type = type;
     this.key = key;
     this.value = value;
@@ -98,7 +98,7 @@ public class ClusterEvent implements Serializable {
   /**
    * Returns the event type.
    *
-   * @return The cluster event type.
+   * @return The map event type.
    */
   public Type type() {
     return type;
@@ -109,8 +109,8 @@ public class ClusterEvent implements Serializable {
    *
    * @return The key on which the event occurred.
    */
-  public String key() {
-    return key;
+  public K key() {
+    return (K) key;
   }
 
   /**
@@ -118,9 +118,8 @@ public class ClusterEvent implements Serializable {
    *
    * @return The current key value.
    */
-  @SuppressWarnings("unchecked")
-  public <T> T value() {
-    return (T) value;
+  public V value() {
+    return (V) value;
   }
 
 }

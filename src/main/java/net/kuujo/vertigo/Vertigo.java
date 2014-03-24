@@ -21,9 +21,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.RemoteCluster;
+import net.kuujo.vertigo.cluster.VertigoClusterManager;
+import net.kuujo.vertigo.cluster.LocalClusterManager;
+import net.kuujo.vertigo.cluster.RemoteClusterManager;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.Network;
@@ -64,19 +64,10 @@ public final class Vertigo {
   }
 
   /**
-   * Returns a new local cluster.
-   *
-   * @return A local Vertigo cluster instance.
-   */
-  public LocalCluster localCluster() {
-    return new LocalCluster(vertx, container);
-  }
-
-  /**
    * Deploys a network within the current Vert.x instance.
    * <p>
    * 
-   * This deployment method uses the basic {@link LocalCluster} cluster implementation to
+   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
    * deploy network verticles and modules using the current Vert.x {@link Container}
    * instance.
    * 
@@ -84,7 +75,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo deployLocalNetwork(Network network) {
-    VertigoCluster cluster = new LocalCluster(vertx, container);
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.deployNetwork(network);
     return this;
   }
@@ -93,7 +84,7 @@ public final class Vertigo {
    * Deploys a network within the current Vert.x instance.
    * <p>
    * 
-   * This deployment method uses the basic {@link LocalCluster} cluster implementation to
+   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
    * deploy network verticles and modules using the current Vert.x {@link Container}
    * instance.
    * 
@@ -104,7 +95,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo deployLocalNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
-    VertigoCluster cluster = new LocalCluster(vertx, container);
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.deployNetwork(network, doneHandler);
     return this;
   }
@@ -116,7 +107,7 @@ public final class Vertigo {
    * @return The Vertigo instance.
    */
   public Vertigo undeployLocalNetwork(String address) {
-    VertigoCluster cluster = new LocalCluster(vertx, container);
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.undeployNetwork(address);
     return this;
   }
@@ -129,7 +120,7 @@ public final class Vertigo {
    * @return The Vertigo instance.
    */
   public Vertigo undeployLocalNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoCluster cluster = new LocalCluster(vertx, container);
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.undeployNetwork(address, doneHandler);
     return this;
   }
@@ -141,7 +132,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo undeployLocalNetwork(Network network) {
-    VertigoCluster cluster = new LocalCluster(vertx, container);
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.undeployNetwork(network);
     return this;
   }
@@ -154,24 +145,15 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo undeployLocalNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoCluster cluster = new LocalCluster(vertx, container);
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.undeployNetwork(network, doneHandler);
     return this;
   }
 
   /**
-   * Returns a new remote cluster.
-   *
-   * @return A remote Vertigo cluster instance.
-   */
-  public RemoteCluster remoteCluster() {
-    return new RemoteCluster(vertx, container);
-  }
-
-  /**
    * Deploys a network via the Vert.x event bus.
    * 
-   * Deployment is performed using a {@link RemoteCluster} instance which communicates
+   * Deployment is performed using a {@link RemoteClusterManager} instance which communicates
    * module and verticle deployments over the event bus rather than performing deployments
    * directly using the Vert.x {@link Container}.
    * 
@@ -179,7 +161,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo deployRemoteNetwork(Network network) {
-    VertigoCluster cluster = new RemoteCluster(vertx, container);
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.deployNetwork(network);
     return this;
   }
@@ -187,7 +169,7 @@ public final class Vertigo {
   /**
    * Deploys a network via the Vert.x event bus.
    * 
-   * Deployment is performed using a {@link RemoteCluster} instance which communicates
+   * Deployment is performed using a {@link RemoteClusterManager} instance which communicates
    * module and verticle deployments over the event bus rather than performing deployments
    * directly using the Vert.x {@link Container}.
    * 
@@ -198,7 +180,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo deployRemoteNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
-    VertigoCluster cluster = new RemoteCluster(vertx, container);
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.deployNetwork(network, doneHandler);
     return this;
   }
@@ -210,7 +192,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo undeployRemoteNetwork(String address) {
-    VertigoCluster cluster = new RemoteCluster(vertx, container);
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.undeployNetwork(address);
     return this;
   }
@@ -224,7 +206,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo undeployRemoteNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoCluster cluster = new RemoteCluster(vertx, container);
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.undeployNetwork(address, doneHandler);
     return this;
   }
@@ -236,7 +218,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo undeployRemoteNetwork(Network network) {
-    VertigoCluster cluster = new RemoteCluster(vertx, container);
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.undeployNetwork(network);
     return this;
   }
@@ -250,7 +232,7 @@ public final class Vertigo {
    * @return The called Vertigo instance.
    */
   public Vertigo undeployRemoteNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoCluster cluster = new RemoteCluster(vertx, container);
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.undeployNetwork(network, doneHandler);
     return this;
   }

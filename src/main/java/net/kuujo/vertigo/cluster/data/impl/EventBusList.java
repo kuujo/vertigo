@@ -64,11 +64,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(doneHandler);
         }
       }
@@ -92,11 +90,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(doneHandler);
         }
       }
@@ -121,11 +117,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<T>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<T>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<T>((T) result.result().body().getValue("result")).setHandler(doneHandler);
         }
       }
@@ -144,11 +138,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
         }
       }
@@ -166,11 +158,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Integer>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Integer>(result.result().body().getInteger("result")).setHandler(resultHandler);
         }
       }
@@ -188,11 +178,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
         }
       }
@@ -215,11 +203,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
@@ -239,11 +225,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<T>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<T>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<T>((T) result.result().body().getValue("result")).setHandler(resultHandler);
         }
       }
@@ -268,11 +252,9 @@ public class EventBusList<T> implements AsyncList<T> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }

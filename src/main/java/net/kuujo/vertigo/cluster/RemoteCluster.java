@@ -66,11 +66,9 @@ public class RemoteCluster implements VertigoCluster {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("ok")) {
+        } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(new DeploymentException(result.result().body().getString("message"))).setHandler(resultHandler);
         }
       }
@@ -100,11 +98,9 @@ public class RemoteCluster implements VertigoCluster {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("ok")) {
+        } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
@@ -134,11 +130,9 @@ public class RemoteCluster implements VertigoCluster {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("ok")) {
+        } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
@@ -170,11 +164,9 @@ public class RemoteCluster implements VertigoCluster {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("ok")) {
+        } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
@@ -193,11 +185,9 @@ public class RemoteCluster implements VertigoCluster {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("ok")) {
+        } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
@@ -216,11 +206,9 @@ public class RemoteCluster implements VertigoCluster {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("ok")) {
+        } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }

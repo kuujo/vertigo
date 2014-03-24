@@ -212,8 +212,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
       public void handle(AsyncResult<InstanceContext> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           context = result.result();
           input = new DefaultInputCollector(vertx, context.input(), acker);
           output = new DefaultOutputCollector(vertx, context.output(), acker);
@@ -225,22 +224,19 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 output.start(new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                    }
-                    else {
+                    } else {
                       input.start(new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
                             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                          }
-                          else {
+                          } else {
                             coordinator.resume();
                           }
                         }
@@ -278,8 +274,7 @@ public abstract class AbstractComponent<T extends Component<T>> implements Compo
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             future.setFailure(result.cause());
-          }
-          else {
+          } else {
             hookStart();
             future.setResult((T) AbstractComponent.this);
           }

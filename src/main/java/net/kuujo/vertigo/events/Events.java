@@ -56,8 +56,7 @@ public final class Events {
   public void trigger(Class<? extends Event> eventClass, Object... args) {
     try {
       eventClass.getConstructor(new Class<?>[]{EventBus.class}).newInstance(eventBus).trigger(args);
-    }
-    catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
+    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException |
         InvocationTargetException | NoSuchMethodException | SecurityException e) {
       // Do nothing.
     }
@@ -123,8 +122,7 @@ public final class Events {
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
-        }
-        catch (SerializationException e) {
+        } catch (SerializationException e) {
           // Do nothing.
         }
       }
@@ -164,8 +162,7 @@ public final class Events {
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
-        }
-        catch (SerializationException e) {
+        } catch (SerializationException e) {
           // Do nothing.
         }
       }
@@ -203,8 +200,7 @@ public final class Events {
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
-        }
-        catch (SerializationException e) {
+        } catch (SerializationException e) {
           // Do nothing.
         }
       } 
@@ -253,8 +249,7 @@ public final class Events {
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(DEPLOY, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
-        }
-        catch (SerializationException e) {
+        } catch (SerializationException e) {
           // Do nothing.
         }
       }
@@ -294,8 +289,7 @@ public final class Events {
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(START, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
-        }
-        catch (SerializationException e) {
+        } catch (SerializationException e) {
           // Do nothing.
         }
       }
@@ -335,8 +329,7 @@ public final class Events {
         Serializer serializer = SerializerFactory.getSerializer(Context.class);
         try {
           eventBus.publish(SHUTDOWN, new JsonObject().putString("address", address).putObject("context", serializer.serializeToObject(context)));
-        }
-        catch (SerializationException e) {
+        } catch (SerializationException e) {
           // Do nothing.
         }
       }

@@ -243,8 +243,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             timeout(messageId.correlationId());
-          }
-          else {
+          } else {
             for (OutputStream output : outputs) {
               acker.fork(messageId, output.emit(message));
             }
@@ -360,8 +359,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
         if (!exists) {
           streams.add(new DefaultOutputStream(vertx, output, context.instance().address()).start());
         }
-      }
-      else {
+      } else {
         streams = new ArrayList<>();
         streams.add(new DefaultOutputStream(vertx, output, context.instance().address()).start());
         this.streams.put(output.name(), streams);
@@ -383,8 +381,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             hookStart();
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
@@ -397,8 +394,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
               startCounter.fail(result.cause());
-            }
-            else {
+            } else {
               startCounter.succeed();
             }
           }
@@ -431,8 +427,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           hookStop();
           streams.clear();
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -447,8 +442,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
               stopCounter.fail(result.cause());
-            }
-            else {
+            } else {
               stopCounter.succeed();
             }
           }

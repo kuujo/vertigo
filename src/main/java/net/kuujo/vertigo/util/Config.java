@@ -63,8 +63,7 @@ public final class Config {
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     try {
       clusterClass = (Class<? extends VertigoCluster>) loader.loadClass(clusterType);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new IllegalArgumentException("Error instantiating serializer factory.");
     }
     return Factories.createObject(clusterClass, vertx, container);

@@ -131,8 +131,7 @@ public class DefaultAcker implements Acker {
           public void handle(AsyncResult<Message<Void>> result) {
             if (result.failed()) {
               new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-            }
-            else {
+            } else {
               new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
             }
           }

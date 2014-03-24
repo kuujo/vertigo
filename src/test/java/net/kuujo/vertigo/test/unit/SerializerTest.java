@@ -57,8 +57,7 @@ public class SerializerTest {
     try {
       SerializerFactory.getSerializer(SomeOtherInterface.class);
       fail("Returned invalid serializer.");
-    }
-    catch (SerializationException e) {
+    } catch (SerializationException e) {
     }
   }
 

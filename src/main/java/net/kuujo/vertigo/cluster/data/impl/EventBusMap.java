@@ -91,11 +91,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<V>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<V>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<V>((V) result.result().body().getValue("result")).setHandler(doneHandler);
         }
       }
@@ -115,11 +113,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<V>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<V>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<V>((V) result.result().body().getValue("result")).setHandler(resultHandler);
         }
       }
@@ -144,11 +140,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<V>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<V>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<V>((V) result.result().body().getValue("result")).setHandler(resultHandler);
         }
       }
@@ -167,11 +161,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
         }
       }
@@ -190,11 +182,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Set<K>>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Set<K>>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           JsonArray jsonKeys = result.result().body().getArray("result");
           if (jsonKeys != null) {
             Set<K> keys = new HashSet<>();
@@ -202,8 +192,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
               keys.add((K) key);
             }
             new DefaultFutureResult<Set<K>>(keys).setHandler(resultHandler);
-          }
-          else {
+          } else {
             new DefaultFutureResult<Set<K>>(new DataException("Invalid response.")).setHandler(resultHandler);
           }
         }
@@ -223,11 +212,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Collection<V>>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Collection<V>>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           JsonArray jsonValues = result.result().body().getArray("result");
           if (jsonValues != null) {
             List<V> values = new ArrayList<>();
@@ -235,8 +222,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
               values.add((V) value);
             }
             new DefaultFutureResult<Collection<V>>(values).setHandler(resultHandler);
-          }
-          else {
+          } else {
             new DefaultFutureResult<Collection<V>>(new DataException("Invalid response.")).setHandler(resultHandler);
           }
         }
@@ -255,11 +241,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Integer>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Integer>(result.result().body().getInteger("result")).setHandler(resultHandler);
         }
       }
@@ -277,11 +261,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
         }
       }
@@ -304,11 +286,9 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
@@ -354,8 +334,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           handlers.put(handler, wrapper);
           JsonObject message = new JsonObject()
               .putString("action", "watch")
@@ -370,15 +349,13 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
                 eventBus.unregisterHandler(id, watchHandler);
                 handlers.remove(handler);
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 JsonObject body = result.result().body();
                 if (body.getString("status").equals("error")) {
                   eventBus.unregisterHandler(id, watchHandler);
                   handlers.remove(handler);
                   new DefaultFutureResult<Void>(new VertxException(body.getString("message"))).setHandler(doneHandler);
-                }
-                else {
+                } else {
                   new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                 }
               }
@@ -429,8 +406,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
           HandlerWrapper wrapper = handlers.remove(handler);
           eventBus.unregisterHandler(wrapper.address, wrapper.messageHandler);
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           HandlerWrapper wrapper = handlers.remove(handler);
           eventBus.unregisterHandler(wrapper.address, wrapper.messageHandler, doneHandler);
         }

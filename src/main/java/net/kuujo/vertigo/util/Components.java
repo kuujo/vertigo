@@ -38,8 +38,7 @@ public final class Components {
   public static boolean isModuleName(String moduleName) {
     try {
       new ModuleIdentifier(moduleName);
-    }
-    catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       return false;
     }
     return true;

@@ -182,8 +182,7 @@ public class SharedDataList<T> implements AsyncList<T> {
     JsonArray jsonArray;
     if (array == null) {
       jsonArray = new JsonArray();
-    }
-    else {
+    } else {
       jsonArray = new JsonArray(array);
     }
     return jsonArray;

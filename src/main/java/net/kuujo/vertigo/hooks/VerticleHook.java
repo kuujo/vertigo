@@ -88,8 +88,7 @@ public class VerticleHook extends DeployableHook {
         if (result.succeeded()) {
           deploymentId = result.result();
           future.setResult(null);
-        }
-        else {
+        } else {
           future.setFailure(result.cause());
         }
       }

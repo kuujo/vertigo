@@ -308,8 +308,7 @@ public final class NetworkContext extends Context<NetworkContext> {
     public Builder setMessageTimeoutsEnabled(boolean enabled) {
       if (!enabled) {
         context.timeout = 0;
-      }
-      else if (context.timeout == 0) {
+      } else if (context.timeout == 0) {
         context.timeout = 30000;
       }
       return this;

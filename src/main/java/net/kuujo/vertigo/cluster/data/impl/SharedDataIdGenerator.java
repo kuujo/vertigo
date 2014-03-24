@@ -54,8 +54,7 @@ public class SharedDataIdGenerator implements AsyncIdGenerator {
         if (!map.containsKey(name)) {
           map.put(name, 1L);
           value = 1L;
-        }
-        else {
+        } else {
           value = map.get(name)+1;
           map.put(name, value);
         }

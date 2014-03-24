@@ -150,8 +150,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
         List<T> list = getList();
         if (!list.isEmpty()) {
           new DefaultFutureResult<T>(list.get(0)).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<T>(new IllegalStateException("Queue is empty.")).setHandler(resultHandler);
         }
       }
@@ -166,8 +165,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
         List<T> list = getList();
         if (!list.isEmpty()) {
           new DefaultFutureResult<T>(list.get(0)).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<T>((T) null).setHandler(resultHandler);
         }
       }
@@ -182,8 +180,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
         List<T> list = getList();
         if (!list.isEmpty()) {
           new DefaultFutureResult<T>(list.remove(0)).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<T>((T) null).setHandler(resultHandler);
         }
       }
@@ -198,8 +195,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
         List<T> list = getList();
         if (!list.isEmpty()) {
           new DefaultFutureResult<T>(list.remove(0)).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<T>(new IllegalStateException("Queue is empty.")).setHandler(resultHandler);
         }
       }
@@ -211,8 +207,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     JsonArray jsonArray;
     if (array == null) {
       jsonArray = new JsonArray();
-    }
-    else {
+    } else {
       jsonArray = new JsonArray(array);
     }
     return jsonArray;

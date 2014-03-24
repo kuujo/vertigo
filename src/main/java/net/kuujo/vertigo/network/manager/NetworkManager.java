@@ -61,11 +61,9 @@ public class NetworkManager extends BusModBase {
     public void handle(MapEvent<String, String> event) {
       if (event.type().equals(MapEvent.Type.CREATE)) {
         handleCreate(NetworkContext.fromJson(new JsonObject(event.value())));
-      }
-      else if (event.type().equals(MapEvent.Type.UPDATE)) {
+      } else if (event.type().equals(MapEvent.Type.UPDATE)) {
         handleUpdate(NetworkContext.fromJson(new JsonObject(event.value())));
-      }
-      else if (event.type().equals(MapEvent.Type.DELETE)) { 
+      } else if (event.type().equals(MapEvent.Type.DELETE)) { 
         handleDelete(NetworkContext.fromJson(new JsonObject(event.value())));
       }
     }
@@ -81,8 +79,7 @@ public class NetworkManager extends BusModBase {
 
     try {
       cluster = parseCluster(container.config(), vertx, container);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       startResult.setFailure(e);
       return;
     }
@@ -94,8 +91,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           startResult.setFailure(result.cause());
-        }
-        else {
+        } else {
           // In the event that the manager failed, the current network context
           // will be persisted in the cluster. Attempt to retrieve it.
           data.get(address, new Handler<AsyncResult<String>>() {
@@ -103,8 +99,7 @@ public class NetworkManager extends BusModBase {
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 startResult.setFailure(result.cause());
-              }
-              else if (result.result() != null) {
+              } else if (result.result() != null) {
                 currentContext = NetworkContext.fromJson(new JsonObject(result.result()));
                 // Try to determine the current status of the network.
                 for (ComponentContext<?> component : currentContext.components()) {
@@ -114,19 +109,16 @@ public class NetworkManager extends BusModBase {
                       public void handle(AsyncResult<Boolean> result) {
                         if (result.failed()) {
                           log.error(result.cause());
-                        }
-                        else if (result.result()) {
+                        } else if (result.result()) {
                           handleReady(address);
-                        }
-                        else {
+                        } else {
                           handleUnready(address);
                         }
                       }
                     });
                   }
                 }
-              }
-              else {
+              } else {
                 NetworkManager.super.start(startResult);
               }
             }
@@ -146,8 +138,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
           log.error(result.cause());
-        }
-        else {
+        } else {
           log.info("Successfully deployed network " + context.address());
         }
       }
@@ -176,8 +167,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             log.error(result.cause());
-          }
-          else {
+          } else {
             log.info("Successfully undeployed " + removedComponents.size() + " components");
           }
 
@@ -195,8 +185,7 @@ public class NetworkManager extends BusModBase {
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 log.error(result.cause());
-              }
-              else {
+              } else {
                 log.info("Successfully deployed " + addedComponents.size() + " components");
                 log.info("Updating network contexts");
                 updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
@@ -204,8 +193,7 @@ public class NetworkManager extends BusModBase {
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       log.error(result.cause());
-                    }
-                    else {
+                    } else {
                       log.info("Successfully updated network contexts for " + address);
                     }
                   }
@@ -226,8 +214,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<NetworkContext> result) {
           if (result.failed()) {
             log.error(result.cause());
-          }
-          else {
+          } else {
             log.info("Successfully deployed network " + context.address());
           }
         }
@@ -244,8 +231,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           log.error(result.cause());
-        }
-        else {
+        } else {
           log.info("Successfully undeployed network " + context.address());
         }
       }
@@ -301,16 +287,14 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
           complete.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
               }
             }
@@ -332,8 +316,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             complete.fail(result.cause());
-          }
-          else {
+          } else {
             complete.succeed();
           }
         }
@@ -352,15 +335,13 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             complete.fail(result.cause());
-          }
-          else {
+          } else {
             data.put(component.address(), ComponentContext.toJson(component).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
                   complete.fail(result.cause());
-                }
-                else {
+                } else {
                   complete.succeed();
                 }
               }
@@ -382,8 +363,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Boolean> result) {
           if (result.failed()) {
             counter.fail(result.cause());
-          }
-          else if (result.result()) {
+          } else if (result.result()) {
             // Even if the instance is already deployed, update its context in the cluster.
             // It's possible that the instance's connections could have changed with the update.
             data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
@@ -391,14 +371,12 @@ public class NetworkManager extends BusModBase {
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
                   counter.fail(result.cause());
-                }
-                else {
+                } else {
                   counter.succeed();
                 }
               }
             });
-          }
-          else {
+          } else {
             deployInstance(instance, counter);
           }
         }
@@ -415,16 +393,14 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           counter.fail(result.cause());
-        }
-        else {
+        } else {
           if (!watchHandlers.containsKey(instance.address())) {
             final Handler<MapEvent<String, String>> watchHandler = new Handler<MapEvent<String, String>>() {
               @Override
               public void handle(MapEvent<String, String> event) {
                 if (event.type().equals(MapEvent.Type.CREATE)) {
                   handleReady(instance.address());
-                }
-                else if (event.type().equals(MapEvent.Type.DELETE)) {
+                } else if (event.type().equals(MapEvent.Type.DELETE)) {
                   handleUnready(instance.address());
                 }
               }
@@ -434,30 +410,24 @@ public class NetworkManager extends BusModBase {
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
                   counter.fail(result.cause());
-                }
-                else {
+                } else {
                   watchHandlers.put(instance.address(), watchHandler);
                   if (instance.component().isModule()) {
                     deployModule(instance, counter);
-                  }
-                  else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
+                  } else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
                     deployVerticle(instance, counter);
-                  }
-                  else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
+                  } else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
                     deployWorkerVerticle(instance, counter);
                   }
                 }
               }
             });
-          }
-          else {
+          } else {
             if (instance.component().isModule()) {
               deployModule(instance, counter);
-            }
-            else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
+            } else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
               deployVerticle(instance, counter);
-            }
-            else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
+            } else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
               deployWorkerVerticle(instance, counter);
             }
           }
@@ -475,8 +445,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           counter.fail(result.cause());
-        }
-        else {
+        } else {
           counter.succeed();
         }
       }
@@ -492,8 +461,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           counter.fail(result.cause());
-        }
-        else {
+        } else {
           counter.succeed();
         }
       }
@@ -509,8 +477,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           counter.fail(result.cause());
-        }
-        else {
+        } else {
           counter.succeed();
         }
       }
@@ -527,16 +494,14 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
           complete.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
               }
             }
@@ -558,8 +523,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             complete.fail(result.cause());
-          }
-          else {
+          } else {
             complete.succeed();
           }
         }
@@ -578,15 +542,13 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             complete.fail(result.cause());
-          }
-          else {
+          } else {
             data.remove(component.address(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
                   complete.fail(result.cause());
-                }
-                else {
+                } else {
                   complete.succeed();
                 }
               }
@@ -608,16 +570,13 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Boolean> result) {
           if (result.failed()) {
             counter.fail(result.cause());
-          }
-          else if (result.result()) {
+          } else if (result.result()) {
             if (instance.component().isModule()) {
               undeployModule(instance, counter);
-            }
-            else if (instance.component().isVerticle()) {
+            } else if (instance.component().isVerticle()) {
               undeployVerticle(instance, counter);
             }
-          }
-          else {
+          } else {
             unwatchInstance(instance, counter);
           }
         }
@@ -639,23 +598,20 @@ public class NetworkManager extends BusModBase {
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 counter.fail(result.cause());
-              }
-              else {
+              } else {
                 counter.succeed();
               }
             }
           });
         }
       });
-    }
-    else {
+    } else {
       data.remove(instance.address(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             counter.fail(result.cause());
-          }
-          else {
+          } else {
             counter.succeed();
           }
         }
@@ -697,8 +653,7 @@ public class NetworkManager extends BusModBase {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
@@ -717,8 +672,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             complete.fail(result.cause());
-          }
-          else {
+          } else {
             complete.succeed();
           }
         }
@@ -737,8 +691,7 @@ public class NetworkManager extends BusModBase {
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             counter.fail(result.cause());
-          }
-          else {
+          } else {
             counter.succeed();
           }
         }

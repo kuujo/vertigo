@@ -76,13 +76,11 @@ public class DefaultComponentFactory implements ComponentFactory {
         // Invoke the factory method.
         try {
           return (T) method.invoke(null, args);
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
           continue; // Just skip it. An exception will be thrown later.
         }
       }
     }
-
     throw new IllegalArgumentException(type.getCanonicalName() + " does not contain a valid factory method.");
   }
 

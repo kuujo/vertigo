@@ -52,8 +52,7 @@ public class SharedDataLock implements AsyncLock {
       public void handle(Void _) {
         if (checkLock()) {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-        else {
+        } else {
           vertx.setPeriodic(10, new Handler<Long>() {
             @Override
             public void handle(Long timerID) {
@@ -87,16 +86,14 @@ public class SharedDataLock implements AsyncLock {
         final long startTime = System.currentTimeMillis();
         if (checkLock()) {
           new DefaultFutureResult<Boolean>(true).setHandler(resultHandler);
-        }
-        else {
+        } else {
           vertx.setPeriodic(10, new Handler<Long>() {
             @Override
             public void handle(Long timerID) {
               if (System.currentTimeMillis() - startTime > timeout) {
                 vertx.cancelTimer(timerID);
                 new DefaultFutureResult<Boolean>(false).setHandler(resultHandler);
-              }
-              else if (checkLock()) {
+              } else if (checkLock()) {
                 vertx.cancelTimer(timerID);
                 new DefaultFutureResult<Boolean>(true).setHandler(resultHandler);
               }

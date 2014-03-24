@@ -48,8 +48,7 @@ public class DefaultSerializer implements Serializer {
   public <T extends Serializable> byte[] serializeToBytes(T object) {
     try {
       return mapper.writeValueAsBytes(object);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -58,8 +57,7 @@ public class DefaultSerializer implements Serializer {
   public <T extends Serializable> T deserializeBytes(byte[] json, Class<T> type) {
     try {
       return mapper.readValue(json, type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -68,8 +66,7 @@ public class DefaultSerializer implements Serializer {
   public <T> T deserializeBytes(byte[] json, TypeReference<T> type) {
     try {
       return mapper.readValue(json, type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -78,8 +75,7 @@ public class DefaultSerializer implements Serializer {
   public <T extends Serializable> String serializeToString(T object) {
     try {
       return mapper.writeValueAsString(object);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -88,8 +84,7 @@ public class DefaultSerializer implements Serializer {
   public <T extends Serializable> T deserializeString(String json, Class<T> type) {
     try {
       return mapper.readValue(json, type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -98,8 +93,7 @@ public class DefaultSerializer implements Serializer {
   public <T> T deserializeString(String json, TypeReference<T> type) {
     try {
       return mapper.readValue(json, type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -108,8 +102,7 @@ public class DefaultSerializer implements Serializer {
   public <T extends Serializable> JsonObject serializeToObject(T object) {
     try {
       return new JsonObject(mapper.writeValueAsString(object));
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new SerializationException(e.getMessage());
     }
   }
@@ -118,8 +111,7 @@ public class DefaultSerializer implements Serializer {
   public <T extends Serializable> T deserializeObject(JsonObject json, Class<T> type) {
     try {
       return mapper.readValue(json.encode(), type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new DeserializationException(e.getMessage());
     }
   }
@@ -128,8 +120,7 @@ public class DefaultSerializer implements Serializer {
   public <T> T deserializeObject(JsonObject json, TypeReference<T> type) {
     try {
       return mapper.readValue(json.encode(), type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new DeserializationException(e.getMessage());
     }
   }
@@ -138,8 +129,7 @@ public class DefaultSerializer implements Serializer {
   public <T> T deserializeObject(JsonArray json, Class<T> type) {
     try {
       return mapper.readValue(json.encode(), type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new DeserializationException(e.getMessage());
     }
   }
@@ -148,8 +138,7 @@ public class DefaultSerializer implements Serializer {
   public <T> T deserializeObject(JsonArray json, TypeReference<T> type) {
     try {
       return mapper.readValue(json.encode(), type);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new DeserializationException(e.getMessage());
     }
   }

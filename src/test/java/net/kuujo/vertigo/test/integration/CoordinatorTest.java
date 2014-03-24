@@ -59,16 +59,14 @@ public class CoordinatorTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
-        }
-        else {
+        } else {
           final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
               if (result.failed()) {
                 fail(result.cause().getMessage());
-              }
-              else {
+              } else {
                 assertEquals(instance.address(), result.result().address());
                 testComplete();
               }
@@ -100,16 +98,14 @@ public class CoordinatorTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
-        }
-        else {
+        } else {
           final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
               if (result.failed()) {
                 fail(result.cause().getMessage());
-              }
-              else {
+              } else {
                 assertEquals(instance.address(), result.result().address());
                 coordinator.pauseHandler(new Handler<Void>() {
                   @Override
@@ -147,16 +143,14 @@ public class CoordinatorTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
-        }
-        else {
+        } else {
           final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
               if (result.failed()) {
                 fail(result.cause().getMessage());
-              }
-              else {
+              } else {
                 assertEquals(instance.address(), result.result().address());
                 coordinator.resumeHandler(new Handler<Void>() {
                   @Override
@@ -169,8 +163,7 @@ public class CoordinatorTest extends TestVerticle {
                   public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
                       fail(result.cause().getMessage());
-                    }
-                    else {
+                    } else {
                       data.put(context.status(), "ready");
                     }
                   }

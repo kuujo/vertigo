@@ -79,8 +79,7 @@ public class LocalCluster implements VertigoCluster {
           new DefaultFutureResult<String>(new DeploymentException("Deployment ID already exists.")).setHandler(doneHandler);
         }
       });
-    }
-    else {
+    } else {
       deployments.put(deploymentID, new JsonObject()
           .putString("type", "module")
           .putString("module", moduleName)
@@ -92,8 +91,7 @@ public class LocalCluster implements VertigoCluster {
           if (result.failed()) {
             deployments.remove(deploymentID);
             new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             String sdeployment = deployments.get(deploymentID);
             if (sdeployment != null) {
               JsonObject deployment = new JsonObject(sdeployment);
@@ -123,8 +121,7 @@ public class LocalCluster implements VertigoCluster {
           new DefaultFutureResult<String>(new DeploymentException("Deployment ID already exists.")).setHandler(doneHandler);
         }
       });
-    }
-    else {
+    } else {
       deployments.put(deploymentID, new JsonObject()
           .putString("type", "verticle")
           .putString("main", main)
@@ -136,8 +133,7 @@ public class LocalCluster implements VertigoCluster {
           if (result.failed()) {
             deployments.remove(deploymentID);
             new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             String sdeployment = deployments.get(deploymentID);
             if (sdeployment != null) {
               JsonObject deployment = new JsonObject(sdeployment);
@@ -167,8 +163,7 @@ public class LocalCluster implements VertigoCluster {
           new DefaultFutureResult<String>(new DeploymentException("Deployment ID already exists.")).setHandler(doneHandler);
         }
       });
-    }
-    else {
+    } else {
       deployments.put(deploymentID, new JsonObject()
           .putString("type", "verticle")
           .putString("main", main)
@@ -182,8 +177,7 @@ public class LocalCluster implements VertigoCluster {
           if (result.failed()) {
             deployments.remove(deploymentID);
             new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             String sdeployment = deployments.get(deploymentID);
             if (sdeployment != null) {
               JsonObject deployment = new JsonObject(sdeployment);
@@ -212,8 +206,7 @@ public class LocalCluster implements VertigoCluster {
           new DefaultFutureResult<Void>(new DeploymentException("Invalid deployment ID.")).setHandler(doneHandler);
         }
       });
-    }
-    else {
+    } else {
       String sdeploymentInfo = deployments.remove(deploymentID);
       JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
       String id = deploymentInfo.getString("id");
@@ -233,8 +226,7 @@ public class LocalCluster implements VertigoCluster {
           new DefaultFutureResult<Void>(new DeploymentException("Invalid deployment ID.")).setHandler(doneHandler);
         }
       });
-    }
-    else {
+    } else {
       String sdeploymentInfo = deployments.remove(deploymentID);
       JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
       String id = deploymentInfo.getString("id");

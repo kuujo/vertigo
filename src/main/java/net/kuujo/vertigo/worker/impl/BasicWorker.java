@@ -53,8 +53,7 @@ public class BasicWorker extends AbstractComponent<Worker> implements Worker {
       public void handle(AsyncResult<Worker> result) {
         if (result.failed()) {
           new DefaultFutureResult<Worker>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           input.messageHandler(messageHandler);
           new DefaultFutureResult<Worker>(BasicWorker.this).setHandler(doneHandler);
         }

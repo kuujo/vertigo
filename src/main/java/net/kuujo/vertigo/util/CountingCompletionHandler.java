@@ -53,8 +53,7 @@ public class CountingCompletionHandler<T> {
     if (!failed) {
       if (doneHandler != null) {
         doneHandler.handle(new DefaultFutureResult<T>(t));
-      }
-      else {
+      } else {
         cause = t;
       }
       failed = true;
@@ -78,8 +77,7 @@ public class CountingCompletionHandler<T> {
     if (doneHandler != null) {
       if (cause != null) {
         doneHandler.handle(new DefaultFutureResult<T>(cause));
-      }
-      else {
+      } else {
         if (count == required) {
           doneHandler.handle(new DefaultFutureResult<T>((T) null));
         }

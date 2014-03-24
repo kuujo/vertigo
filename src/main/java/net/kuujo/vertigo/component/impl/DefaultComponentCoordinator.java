@@ -81,23 +81,20 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           currentContext = InstanceContext.fromJson(new JsonObject(result.result()));
           data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
-                    }
-                    else {
+                    } else {
                       new DefaultFutureResult<InstanceContext>(currentContext).setHandler(doneHandler);
                     }
                   }
@@ -124,8 +121,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
@@ -150,14 +146,12 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
       });
-    }
-    else {
+    } else {
       new DefaultFutureResult<Void>(new VertigoException("No component context available.")).setHandler(doneHandler);
     }
     return this;
@@ -184,15 +178,13 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
           if (result.failed()) {
             data.unwatch(address, instanceHandler);
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             data.unwatch(address, instanceHandler, doneHandler);
           }
           currentContext = null;
         }
       });
-    }
-    else {
+    } else {
       data.unwatch(address, instanceHandler, doneHandler);
     }
   }

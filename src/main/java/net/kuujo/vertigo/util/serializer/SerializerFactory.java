@@ -57,8 +57,7 @@ public abstract class SerializerFactory {
       String className = DefaultSerializerFactory.class.getName();
       try {
         className = System.getProperty(SERIALIZER_FACTORY_CLASS_NAME);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
       }
 
       if (className != null) {
@@ -66,12 +65,10 @@ public abstract class SerializerFactory {
         try {
           Class<?> clazz = loader.loadClass(className);
           instance = (SerializerFactory) clazz.newInstance();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           throw new IllegalArgumentException("Error instantiating serializer factory.");
         }
-      }
-      else {
+      } else {
         instance = new DefaultSerializerFactory();
       }
     }

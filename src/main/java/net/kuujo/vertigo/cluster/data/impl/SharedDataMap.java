@@ -78,8 +78,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
           triggerEvent(MapEvent.Type.CHANGE, key, value);
           triggerEvent(MapEvent.Type.CREATE, key, value);
           new DefaultFutureResult<V>((V) null).setHandler(doneHandler);
-        }
-        else {
+        } else {
           V result = map.put(key, value);
           triggerEvent(MapEvent.Type.CHANGE, key, value);
           triggerEvent(MapEvent.Type.UPDATE, key, value);
@@ -206,8 +205,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
       addWatcher(MapEvent.Type.UPDATE, key, address);
       addWatcher(MapEvent.Type.CHANGE, key, address);
       addWatcher(MapEvent.Type.DELETE, key, address);
-    }
-    else {
+    } else {
       addWatcher(event, key, address);
     }
 
@@ -271,33 +269,36 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
   public void unwatch(final String key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
     if (watchAddresses.containsKey(handler)) {
       String address = watchAddresses.remove(handler);
+
       String swatchers = this.watchers.get(key);
       JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
       if (swatchers == null) {
         watchers = new JsonObject();
       }
+
       if (event == null) {
         removeWatcher(watchers, MapEvent.Type.CREATE, address);
         removeWatcher(watchers, MapEvent.Type.UPDATE, address);
         removeWatcher(watchers, MapEvent.Type.CHANGE, address);
         removeWatcher(watchers, MapEvent.Type.DELETE, address);
-      }
-      else {
+      } else {
         removeWatcher(watchers, event, address);
       }
+
       Handler<Message<JsonObject>> messageHandler = messageHandlers.remove(address);
       if (messageHandler != null) {
         vertx.eventBus().unregisterHandler(address, messageHandler);
       }
+
       this.watchers.put(key, watchers.encode());
+
       vertx.runOnContext(new Handler<Void>() {
         @Override
         public void handle(Void _) {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       });
-    }
-    else {
+    } else {
       vertx.runOnContext(new Handler<Void>() {
         @Override
         public void handle(Void _) {
@@ -313,12 +314,14 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
       addresses = new JsonArray();
       watchers.putArray(event.toString(), addresses);
     }
+
     Iterator<Object> iter = addresses.iterator();
     while (iter.hasNext()) {
       if (iter.next().equals(address)) {
         iter.remove();
       }
     }
+
     if (addresses.size() == 0) {
       watchers.removeField(event.toString());
     }
@@ -333,6 +336,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
     if (swatchers == null) {
       watchers = new JsonObject();
     }
+
     JsonArray addresses = watchers.getArray(type.toString());
     if (addresses != null) {
       for (Object address : addresses) {

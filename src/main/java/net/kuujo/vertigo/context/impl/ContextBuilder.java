@@ -108,8 +108,7 @@ public final class ContextBuilder {
         module.setInstances(instances);
 
         components.put(component.getName(), module.build());
-      }
-      else {
+      } else {
         // Set up basic verticle configuration options.
         VerticleContext.Builder verticle = VerticleContext.Builder.newBuilder();
         verticle.setName(component.getName());

@@ -234,8 +234,7 @@ public class FeederTest extends TestVerticle {
       public void handle(AsyncResult<NetworkContext> result) {
         if (result.failed()) {
           assertTrue(result.cause().getMessage(), result.succeeded());
-        }
-        else {
+        } else {
           assertTrue(result.succeeded());
         }
       }

@@ -56,11 +56,9 @@ public class EventBusIdGenerator implements AsyncIdGenerator {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Long>(result.cause()).setHandler(resultHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Long>(result.result().body().getLong("result")).setHandler(resultHandler);
         }
       }

@@ -89,8 +89,7 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
-        }
-        else {
+        } else {
           data.put("test1", "Hello world 1!");
         }
       }
@@ -116,15 +115,13 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
-        }
-        else {
+        } else {
           data.put("test2", "Hello world 2!", new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 fail(result.cause().getMessage());
-              }
-              else {
+              } else {
                 data.put("test2", "Hello world 2 again!");
               }
             }
@@ -153,8 +150,7 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           fail(result.cause().getMessage());
-        }
-        else {
+        } else {
           data.put("test3", "Hello world 3!", new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {

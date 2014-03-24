@@ -67,8 +67,7 @@ public class AuditorVerticle extends Verticle {
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
-        }
-        else {
+        } else {
           AuditorVerticle.super.start(future);
         }
       }
@@ -111,8 +110,7 @@ public class AuditorVerticle extends Verticle {
           log.debug("Message " + tree.id + " timed out.");
         }
         timeout(tree);
-      }
-      else {
+      } else {
         break;
       }
     }
@@ -145,8 +143,7 @@ public class AuditorVerticle extends Verticle {
             trees.remove(treeId);
             ack(tree);
           }
-        }
-        else {
+        } else {
           ack(trees.remove(treeId));
         }
       }

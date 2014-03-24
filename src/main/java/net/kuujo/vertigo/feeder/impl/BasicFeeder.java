@@ -108,8 +108,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
       public void handle(AsyncResult<Feeder> result) {
         if (result.failed()) {
           future.setFailure(result.cause());
-        }
-        else {
+        } else {
           output.ackHandler(internalAckHandler);
           output.failHandler(internalFailHandler);
           output.timeoutHandler(internalTimeoutHandler);
@@ -130,8 +129,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     if (feedHandler != null) {
       fed = true;
       doRecursiveFeed();
-    }
-    else if (feedTimer > 0) {
+    } else if (feedTimer > 0) {
       vertx.cancelTimer(feedTimer);
       feedTimer = 0;
     }
@@ -141,8 +139,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
     if (fed && !feedQueueFull()) {
       fed = false;
       vertx.runOnContext(feedRunner);
-    }
-    else {
+    } else {
       feedTimer = vertx.setTimer(feedDelay, new Handler<Long>() {
         @Override
         public void handle(Long timerID) {
@@ -261,8 +258,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
         if (autoRetry && (retryAttempts == AUTO_RETRY_ATTEMPTS_UNLIMITED || attempts < retryAttempts)
             && result.failed() && result.cause() instanceof TimeoutException) {
           doFeed(stream, data, attempts+1, ackHandler);
-        }
-        else if (ackHandler != null) {
+        } else if (ackHandler != null) {
           ackHandler.handle(result);
         }
       }
@@ -282,8 +278,7 @@ public class BasicFeeder extends AbstractComponent<Feeder> implements Feeder {
           drainHandler.handle(null);
         }
       }
-    }
-    else if (feedQueueFull()) {
+    } else if (feedQueueFull()) {
       paused = true;
     }
   }

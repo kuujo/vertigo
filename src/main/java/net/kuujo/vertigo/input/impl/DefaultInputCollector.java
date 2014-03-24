@@ -189,8 +189,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          }
-          else {
+          } else {
             hookStart();
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
@@ -203,8 +202,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
               startCounter.fail(result.cause());
-            }
-            else {
+            } else {
               startCounter.succeed();
             }
           }
@@ -227,8 +225,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           hookStop();
           streams.clear();
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -242,8 +239,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             stopCounter.fail(result.cause());
-          }
-          else {
+          } else {
             stopCounter.succeed();
           }
         }

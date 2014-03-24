@@ -53,18 +53,15 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(resultHandler);
-        }
-        else if (!result.result()) {
+        } else if (!result.result()) {
           new DefaultFutureResult<NetworkContext>(new DeploymentException("Network is not deployed.")).setHandler(resultHandler);
-        }
-        else {
+        } else {
           cluster.<String, String>getMap("__CLUSTER__").get(address, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(resultHandler);
-              }
-              else {
+              } else {
                 new DefaultFutureResult<NetworkContext>(NetworkContext.fromJson(new JsonObject(result.result())));
               }
             }
@@ -87,18 +84,15 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result()) {
+        } else if (result.result()) {
           doDeployNetwork(network, doneHandler);
-        }
-        else {
+        } else {
           cluster.<String, String>getMap("__CLUSTER__").remove(network.getAddress(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 JsonObject config = new JsonObject()
                     .putString("address", network.getAddress())
                     .putString("cluster", cluster.getClass().getName());
@@ -107,8 +101,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
                   public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-                    }
-                    else {
+                    } else {
                       doDeployNetwork(network, doneHandler);
                     }
                   }
@@ -131,23 +124,21 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-        }
-        else {
+        } else {
           NetworkContext updatedContext;
           if (result.result() != null) {
             updatedContext = ContextBuilder.mergeContexts(NetworkContext.fromJson(new JsonObject(result.result())), ContextBuilder.buildContext(network, cluster));
-          }
-          else {
+          } else {
             updatedContext = ContextBuilder.buildContext(network, cluster);
           }
+
           final NetworkContext context = updatedContext;
           cluster.<String, String>getMap("__CLUSTER__").put(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
               }
             }
@@ -169,25 +160,21 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (!result.result()) {
+        } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
-        }
-        else {
+        } else {
           cluster.<String, String>getMap("__CLUSTER__").remove(address, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else {
+              } else {
                 cluster.undeployVerticle(address, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                    }
-                    else {
+                    } else {
                       new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                     }
                   }
@@ -213,18 +200,15 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (!result.result()) {
+        } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
-        }
-        else {
+        } else {
           cluster.<String, String>getMap("__CLUSTER__").get(network.getAddress(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              }
-              else if (result.result() != null) {
+              } else if (result.result() != null) {
                 final NetworkContext context = ContextBuilder.unmergeContexts(NetworkContext.fromJson(new JsonObject(result.result())), ContextBuilder.buildContext(network, cluster));
                 if (context.components().isEmpty()) {
                   cluster.<String, String>getMap("__CLUSTER__").remove(context.address(), new Handler<AsyncResult<String>>() {
@@ -232,15 +216,13 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {
                         new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                      }
-                      else {
+                      } else {
                         cluster.undeployVerticle(context.address(), new Handler<AsyncResult<Void>>() {
                           @Override
                           public void handle(AsyncResult<Void> result) {
                             if (result.failed()) {
                               new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                            }
-                            else {
+                            } else {
                               new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                             }
                           }
@@ -248,22 +230,19 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
                       }
                     }
                   });
-                }
-                else {
+                } else {
                   cluster.<String, String>getMap("__CLUSTER__").put(context.address(), NetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {
                         new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                      }
-                      else {
+                      } else {
                         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                       }
                     }
                   });
                 }
-              }
-              else {
+              } else {
                 new DefaultFutureResult<Void>(new DeploymentException("Network configuration not found.")).setHandler(doneHandler);
               }
             }

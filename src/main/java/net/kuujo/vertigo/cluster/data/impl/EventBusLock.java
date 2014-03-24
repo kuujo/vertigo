@@ -58,8 +58,7 @@ public class EventBusLock implements AsyncLock {
       public void handle(Message<JsonObject> message) {
         if (message.body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(message.body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(resultHandler);
         }
       }
@@ -83,15 +82,12 @@ public class EventBusLock implements AsyncLock {
         if (result.failed()) {
           if (((ReplyException) result.cause()).failureType().equals(ReplyFailure.TIMEOUT)) {
             new DefaultFutureResult<Boolean>(false).setHandler(resultHandler);
-          }
-          else {
+          } else {
             new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
           }
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
         }
       }
@@ -114,11 +110,9 @@ public class EventBusLock implements AsyncLock {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        }
-        else if (result.result().body().getString("status").equals("error")) {
+        } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-        else {
+        } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }

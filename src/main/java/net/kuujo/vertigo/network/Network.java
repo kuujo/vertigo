@@ -235,8 +235,7 @@ public final class Network implements Config {
   public Network setMessageTimeoutsEnabled(boolean isEnabled) {
     if (isEnabled) {
       return enableMessageTimeouts();
-    }
-    else {
+    } else {
       return disableMessageTimeouts();
     }
   }

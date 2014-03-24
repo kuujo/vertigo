@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,16 +35,14 @@ public interface Component<T extends Component<T>> {
   /**
    * Gets the component Vertx instance.
    *
-   * @return
-   *   The component Vertx instance.
+   * @return The component Vertx instance.
    */
   Vertx vertx();
 
   /**
    * Gets the component container instance.
    *
-   * @return
-   *   The component container instance.
+   * @return The component container instance.
    */
   Container container();
 
@@ -52,8 +50,7 @@ public interface Component<T extends Component<T>> {
    * Returns the component's {@link InputCollector}. This is the element of the
    * component which subscribes to and receives input from other components.
    *
-   * @return
-   *   The components {@link InputCollector}.
+   * @return The components {@link InputCollector}.
    */
   InputCollector input();
 
@@ -61,8 +58,7 @@ public interface Component<T extends Component<T>> {
    * Returns the component's {@link OutputCollector}. This is the element of the
    * component which receives subscriptions and emits messages to other components.
    *
-   * @return
-   *   The component's {@link OutputCollector}.
+   * @return The component's {@link OutputCollector}.
    */
   OutputCollector output();
 
@@ -72,8 +68,7 @@ public interface Component<T extends Component<T>> {
    * The instance context can be used to retrieve useful information about an
    * entire network.
    *
-   * @return
-   *   The instance context.
+   * @return The instance context.
    */
   InstanceContext context();
 
@@ -87,36 +82,30 @@ public interface Component<T extends Component<T>> {
   /**
    * Returns the instance logger.
    *
-   * @return
-   *   The logger for the component instance.
+   * @return The logger for the component instance.
    */
   Logger logger();
 
   /**
    * Adds a hook to the component.
    *
-   * @param hook
-   *   The hook to add.
-   * @return
-   *   The called component instance.
+   * @param hook The hook to add.
+   * @return The called component instance.
    */
   T addHook(ComponentHook hook);
 
   /**
    * Starts the component.
    *
-   * @return
-   *   The called component instance.
+   * @return The called component instance.
    */
   T start();
 
   /**
    * Starts the component.
    *
-   * @param doneHandler
-   *   An asynchronous handler to be invoked once the component is started.
-   * @return
-   *   The called component instance.
+   * @param doneHandler An asynchronous handler to be invoked once the component is started.
+   * @return The called component instance.
    */
   T start(Handler<AsyncResult<T>> doneHandler);
 

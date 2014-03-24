@@ -56,7 +56,7 @@ public interface InputCollector {
    *
    * @return A collection of input streams.
    */
-  Collection<InputStream> streams();
+  Collection<InputPort> streams();
 
   /**
    * Returns an input stream. The stream will be automatically created if it doesn't
@@ -65,7 +65,7 @@ public interface InputCollector {
    * @param name The name of the stream to get.
    * @return The input stream.
    */
-  InputStream stream(String name);
+  InputPort stream(String name);
 
   /**
    * Opens the input collector.

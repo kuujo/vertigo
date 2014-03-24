@@ -27,8 +27,7 @@ import net.kuujo.vertigo.input.grouping.Grouping;
  */
 public class OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
   private String address;
-  private String target;
-  private List<String> ports;
+  private List<String> targets;
   private Grouping grouping;
 
   @Override
@@ -37,17 +36,19 @@ public class OutputConnectionContext extends ConnectionContext<OutputConnectionC
   }
 
   /**
-   * 
-   * @return
+   * Returns a list of output addresses.
+   *
+   * @return A list of output addresses.
    */
-  public String target() {
-    return target;
+  public List<String> targets() {
+    return targets;
   }
 
-  public List<String> ports() {
-    return ports;
-  }
-
+  /**
+   * Returns the output connection grouping.
+   *
+   * @return The output connection grouping.
+   */
   public Grouping grouping() {
     return grouping;
   }
@@ -98,13 +99,46 @@ public class OutputConnectionContext extends ConnectionContext<OutputConnectionC
     }
 
     /**
-     * Sets the connection target.
+     * Sets the connection targets.
      *
-     * @param target The connection target.
+     * @param targets The connection targets.
      * @return The context builder.
      */
-    public Builder setTarget(String target) {
-      context.target = target;
+    public Builder setTargets(String... targets) {
+      context.targets = Arrays.asList(targets);
+      return this;
+    }
+
+    /**
+     * Sets the connection targets.
+     *
+     * @param targets The connection targets.
+     * @return The context builder.
+     */
+    public Builder setTargets(List<String> targets) {
+      context.targets = targets;
+      return this;
+    }
+
+    /**
+     * Adds a target to the component.
+     *
+     * @param target The target to add.
+     * @return The context builder.
+     */
+    public Builder addTarget(String target) {
+      context.targets.add(target);
+      return this;
+    }
+
+    /**
+     * Removes a target from the component.
+     *
+     * @param target The target to remove.
+     * @return The context builder.
+     */
+    public Builder removeTarget(String target) {
+      context.targets.remove(target);
       return this;
     }
 
@@ -116,50 +150,6 @@ public class OutputConnectionContext extends ConnectionContext<OutputConnectionC
      */
     public Builder setGrouping(Grouping grouping) {
       context.grouping = grouping;
-      return this;
-    }
-
-    /**
-     * Sets the connection ports.
-     *
-     * @param ports An array of output ports.
-     * @return The context builder.
-     */
-    public Builder setPorts(String... ports) {
-      context.ports = Arrays.asList(ports);
-      return this;
-    }
-
-    /**
-     * Sets the connection ports.
-     *
-     * @param ports A collection of output ports.
-     * @return The context builder.
-     */
-    public Builder setPorts(List<String> ports) {
-      context.ports = ports;
-      return this;
-    }
-
-    /**
-     * Adds a port to the connection.
-     *
-     * @param port The port to add.
-     * @return The context builder.
-     */
-    public Builder addPort(String port) {
-      context.ports.add(port);
-      return this;
-    }
-
-    /**
-     * Removes a port from the connection.
-     *
-     * @param port The port to remove.
-     * @return The context builder.
-     */
-    public Builder removePort(String port) {
-      context.ports.remove(port);
       return this;
     }
   }

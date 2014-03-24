@@ -62,11 +62,6 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
-  public String port() {
-    return context.port();
-  }
-
-  @Override
   public InputConnection messageHandler(Handler<JsonMessage> handler) {
     messageHandler = handler;
     return this;
@@ -79,7 +74,7 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection open(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.registerHandler(context.port(), internalMessageHandler, doneHandler);
+    eventBus.registerHandler(context.source(), internalMessageHandler, doneHandler);
     return this;
   }
 
@@ -90,7 +85,7 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public void close(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.unregisterHandler(context.port(), internalMessageHandler, doneHandler);
+    eventBus.unregisterHandler(context.source(), internalMessageHandler, doneHandler);
   }
 
 }

@@ -34,8 +34,8 @@ public class AllSelector implements Selector {
   }
 
   @Override
-  public List<String> select(JsonMessage message, List<String> ports) {
-    return ports;
+  public List<String> select(JsonMessage message, List<String> targets) {
+    return targets;
   }
 
 }

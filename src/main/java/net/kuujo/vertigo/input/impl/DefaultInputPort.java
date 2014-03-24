@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputConnection;
-import net.kuujo.vertigo.input.InputStream;
+import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -33,13 +33,13 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 
 /**
- * Default input stream implementation.
+ * Default input port implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultInputStream implements InputStream {
+public class DefaultInputPort implements InputPort {
   private final Vertx vertx;
-  private final InputStreamContext context;
+  private final InputPortContext context;
   private final Acker acker;
   private final List<InputConnection> connections = new ArrayList<>();
   private final List<InputHook> hooks = new ArrayList<>();
@@ -55,7 +55,7 @@ public class DefaultInputStream implements InputStream {
     }
   };
 
-  public DefaultInputStream(Vertx vertx, InputStreamContext context, Acker acker) {
+  public DefaultInputPort(Vertx vertx, InputPortContext context, Acker acker) {
     this.vertx = vertx;
     this.context = context;
     this.acker = acker;
@@ -67,12 +67,12 @@ public class DefaultInputStream implements InputStream {
   }
 
   @Override
-  public InputStreamContext context() {
+  public InputPortContext context() {
     return context;
   }
 
   @Override
-  public InputStream addHook(InputHook hook) {
+  public InputPort addHook(InputHook hook) {
     hooks.add(hook);
     return this;
   }
@@ -105,32 +105,32 @@ public class DefaultInputStream implements InputStream {
   }
 
   @Override
-  public InputStream messageHandler(Handler<JsonMessage> handler) {
+  public InputPort messageHandler(Handler<JsonMessage> handler) {
     messageHandler = handler;
     return this;
   }
 
   @Override
-  public InputStream ack(JsonMessage message) {
+  public InputPort ack(JsonMessage message) {
     acker.ack(message.messageId());
     hookAck(message.messageId().correlationId());
     return this;
   }
 
   @Override
-  public InputStream fail(JsonMessage message) {
+  public InputPort fail(JsonMessage message) {
     acker.fail(message.messageId());
     hookFail(message.messageId().correlationId());
     return this;
   }
 
   @Override
-  public InputStream open() {
+  public InputPort open() {
     return open(null);
   }
 
   @Override
-  public InputStream open(final Handler<AsyncResult<Void>> doneHandler) {
+  public InputPort open(final Handler<AsyncResult<Void>> doneHandler) {
     if (connections.isEmpty()) {
       final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
       startCounter.setHandler(new Handler<AsyncResult<Void>>() {

@@ -52,15 +52,15 @@ public class FieldsSelector implements Selector {
   }
 
   @Override
-  public List<String> select(JsonMessage message, List<String> ports) {
+  public List<String> select(JsonMessage message, List<String> targets) {
     JsonObject body = message.body();
     Map<String, Object> fields = new HashMap<>(this.fields.size() + 1);
     for (String fieldName : this.fields) {
       Object value = body.getValue(fieldName);
       fields.put(fieldName, value);
     }
-    int index = Math.abs(fields.hashCode() % ports.size());
-    return ports.subList(index, index+1);
+    int index = Math.abs(fields.hashCode() % targets.size());
+    return targets.subList(index, index+1);
   }
 
 }

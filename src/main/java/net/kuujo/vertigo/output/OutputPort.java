@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
@@ -24,36 +24,36 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * An input stream.
+ * An input port.
  *
  * @author Jordan Halterman
  */
-public interface OutputStream {
+public interface OutputPort {
 
   /**
-   * Returns the output stream name.
+   * Returns the output port name.
    *
-   * @return The output stream name.
+   * @return The output port name.
    */
   String name();
 
   /**
-   * Returns the output stream context.
+   * Returns the output port context.
    *
-   * @return The output stream context.
+   * @return The output port context.
    */
-  OutputStreamContext context();
+  OutputPortContext context();
 
   /**
-   * Adds a hook to the stream.
+   * Adds a hook to the port.
    *
    * @param hook An output hook.
-   * @return The output stream.
+   * @return The output port.
    */
-  OutputStream addHook(OutputHook hook);
+  OutputPort addHook(OutputHook hook);
 
   /**
-   * Emits a message to the output stream.
+   * Emits a message to the output port.
    *
    * @param body The body of the message to emit.
    * @return The emitted message ID.
@@ -61,7 +61,7 @@ public interface OutputStream {
   String emit(JsonObject body);
 
   /**
-   * Emits a child message to the output stream.
+   * Emits a child message to the output port.
    * 
    * Emitting data as the child of an existing message creates a new node in the parent
    * message's message tree. When the new message is emitted, the auditor assigned to the
@@ -78,7 +78,7 @@ public interface OutputStream {
   String emit(JsonObject body, JsonMessage parent);
 
   /**
-   * Emits a message to the output stream.
+   * Emits a message to the output port.
    *
    * @param message The message to emit.
    * @return The emitted message ID.
@@ -86,27 +86,27 @@ public interface OutputStream {
   String emit(JsonMessage message);
 
   /**
-   * Opens the output stream.
+   * Opens the output port.
    *
-   * @return The output stream.
+   * @return The output port.
    */
-  OutputStream open();
+  OutputPort open();
 
   /**
-   * Opens the output stream.
+   * Opens the output port.
    *
    * @param doneHandler An asynchronous handler to be called once opened.
-   * @return The output stream.
+   * @return The output port.
    */
-  OutputStream open(Handler<AsyncResult<Void>> doneHandler);
+  OutputPort open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Closes the output stream.
+   * Closes the output port.
    */
   void close();
 
   /**
-   * Closes the output stream.
+   * Closes the output port.
    *
    * @param doneHandler An asynchronous handler to be called once closed.
    */

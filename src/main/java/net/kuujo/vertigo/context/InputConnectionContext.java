@@ -30,15 +30,6 @@ public class InputConnectionContext extends ConnectionContext<InputConnectionCon
   }
 
   /**
-   * Returns the connection port.
-   *
-   * @return The connection port.
-   */
-  public String port() {
-    return address;
-  }
-
-  /**
    * Returns the connection source.
    *
    * @return The connection source.

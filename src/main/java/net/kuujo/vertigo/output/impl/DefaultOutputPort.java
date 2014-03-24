@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Random;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
@@ -31,7 +31,7 @@ import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.message.impl.DefaultMessageId;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.output.OutputConnection;
-import net.kuujo.vertigo.output.OutputStream;
+import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.RoundRobin;
 
@@ -42,14 +42,14 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Default output stream implementation.
+ * Default output port implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultOutputStream implements OutputStream {
+public class DefaultOutputPort implements OutputPort {
   private final Vertx vertx;
   private final String address;
-  private final OutputStreamContext context;
+  private final OutputPortContext context;
   private final Acker acker;
   private final List<OutputConnection> connections = new ArrayList<>();
   private final Iterator<String> auditors;
@@ -78,7 +78,7 @@ public class DefaultOutputStream implements OutputStream {
     }
   };
 
-  public DefaultOutputStream(Vertx vertx, OutputStreamContext context, Acker acker) {
+  public DefaultOutputPort(Vertx vertx, OutputPortContext context, Acker acker) {
     this.vertx = vertx;
     this.address = context.address();
     this.context = context;
@@ -99,12 +99,12 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
-  public OutputStreamContext context() {
+  public OutputPortContext context() {
     return context;
   }
 
   @Override
-  public OutputStream addHook(OutputHook hook) {
+  public OutputPort addHook(OutputHook hook) {
     hooks.add(hook);
     return this;
   }
@@ -261,12 +261,12 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
-  public OutputStream open() {
+  public OutputPort open() {
     return open(null);
   }
 
   @Override
-  public OutputStream open(final Handler<AsyncResult<Void>> doneHandler) {
+  public OutputPort open(final Handler<AsyncResult<Void>> doneHandler) {
     if (connections.isEmpty()) {
       final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
       startCounter.setHandler(new Handler<AsyncResult<Void>>() {

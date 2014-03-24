@@ -34,9 +34,9 @@ public class RandomSelector implements Selector {
   }
 
   @Override
-  public List<String> select(JsonMessage message, List<String> ports) {
-    int index = rand.nextInt(ports.size());
-    return ports.subList(index, index+1);
+  public List<String> select(JsonMessage message, List<String> targets) {
+    int index = rand.nextInt(targets.size());
+    return targets.subList(index, index+1);
   }
 
 }

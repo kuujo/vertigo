@@ -20,22 +20,23 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Input stream context.
+ * Output port context.
  *
  * @author Jordan Halterman
  */
-public class InputStreamContext extends Context<InputStreamContext> {
+public class OutputPortContext extends Context<OutputPortContext> {
+  private static final String DEFAULT_PORT = "default";
+  private String port = DEFAULT_PORT;
   private String address;
-  private String stream;
-  private Collection<InputConnectionContext> connections = new ArrayList<>();
+  private Collection<OutputConnectionContext> connections = new ArrayList<>();
 
   /**
-   * Returns the stream name.
+   * Returns the port name.
    *
-   * @return The input stream name.
+   * @return The port name.
    */
   public String name() {
-    return stream;
+    return port;
   }
 
   @Override
@@ -44,20 +45,20 @@ public class InputStreamContext extends Context<InputStreamContext> {
   }
 
   /**
-   * Returns a collection of input stream connections.
+   * Returns a collection of port connections.
    *
-   * @return A list of input connections.
+   * @return A collection of connections in the port.
    */
-  public Collection<InputConnectionContext> connections() {
+  public Collection<OutputConnectionContext> connections() {
     return connections;
   }
 
   @Override
-  public void notify(InputStreamContext update) {
+  public void notify(OutputPortContext update) {
     super.notify(update);
-    for (InputConnectionContext connection : connections) {
+    for (OutputConnectionContext connection : connections) {
       boolean updated = false;
-      for (InputConnectionContext c : update.connections()) {
+      for (OutputConnectionContext c : update.connections()) {
         if (connection.equals(c)) {
           connection.notify(c);
           updated = true;
@@ -71,24 +72,24 @@ public class InputStreamContext extends Context<InputStreamContext> {
   }
 
   /**
-   * Connection context builder.
+   * port context builder.
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<InputStreamContext> {
+  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<OutputPortContext> {
 
     private Builder() {
-      super(new InputStreamContext());
+      super(new OutputPortContext());
     }
 
-    private Builder(InputStreamContext context) {
+    private Builder(OutputPortContext context) {
       super(context);
     }
 
     /**
      * Creates a new context builder.
      *
-     * @return A new input stream context builder.
+     * @return A new context builder.
      */
     public static Builder newBuilder() {
       return new Builder();
@@ -97,17 +98,28 @@ public class InputStreamContext extends Context<InputStreamContext> {
     /**
      * Creates a new context builder.
      *
-     * @param context A starting input stream context.
-     * @return A new input stream context builder.
+     * @param context A starting port context.
+     * @return A new context builder.
      */
-    public static Builder newBuilder(InputStreamContext context) {
+    public static Builder newBuilder(OutputPortContext context) {
       return new Builder(context);
     }
 
     /**
-     * Sets the input stream address.
+     * Sets the port name.
      *
-     * @param address The input stream address.
+     * @param port The port name.
+     * @return The context builder.
+     */
+    public Builder setName(String port) {
+      context.port = port;
+      return this;
+    }
+
+    /**
+     * Sets the port address.
+     *
+     * @param address The port address.
      * @return The context builder.
      */
     public Builder setAddress(String address) {
@@ -116,56 +128,45 @@ public class InputStreamContext extends Context<InputStreamContext> {
     }
 
     /**
-     * Sets the input stream name.
+     * Sets the port connections.
      *
-     * @param stream The stream name.
+     * @param connections An array of port connections.
      * @return The context builder.
      */
-    public Builder setName(String stream) {
-      context.stream = stream;
-      return this;
-    }
-
-    /**
-     * Sets the stream connections.
-     *
-     * @param connections An array of stream connections.
-     * @return The context builder.
-     */
-    public Builder setConnections(InputConnectionContext... connections) {
+    public Builder setConnections(OutputConnectionContext... connections) {
       context.connections = Arrays.asList(connections);
       return this;
     }
 
     /**
-     * Sets the stream connections.
+     * Sets the port connections.
      *
-     * @param connections A collection of stream connections.
+     * @param connections A collection of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(Collection<InputConnectionContext> connections) {
+    public Builder setConnections(Collection<OutputConnectionContext> connections) {
       context.connections = connections;
       return this;
     }
 
     /**
-     * Adds a connection to the stream.
+     * Adds a connection to the port.
      *
-     * @param connection A stream connection to add.
+     * @param connection A port connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(InputConnectionContext connection) {
+    public Builder addConnection(OutputConnectionContext connection) {
       context.connections.add(connection);
       return this;
     }
 
     /**
-     * Removes a connection from the stream.
+     * Removes a connection from the port.
      *
-     * @param connection A stream connection to remove.
+     * @param connection A port connection to remove.
      * @return The context builder.
      */
-    public Builder removeConnection(InputConnectionContext connection) {
+    public Builder removeConnection(OutputConnectionContext connection) {
       context.connections.remove(connection);
       return this;
     }

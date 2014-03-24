@@ -33,7 +33,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class InputContext extends IOContext<InputContext> {
-  private Collection<InputStreamContext> streams = new ArrayList<>();
+  private Collection<InputPortContext> ports = new ArrayList<>();
 
   /**
    * Creates a new input context from JSON.
@@ -62,12 +62,12 @@ public class InputContext extends IOContext<InputContext> {
   }
 
   /**
-   * Returns the input's stream contexts.
+   * Returns the input's port contexts.
    *
-   * @return A collection of input stream contexts.
+   * @return A collection of input port contexts.
    */
-  public Collection<InputStreamContext> streams() {
-    return streams;
+  public Collection<InputPortContext> ports() {
+    return ports;
   }
 
   @Override
@@ -78,17 +78,17 @@ public class InputContext extends IOContext<InputContext> {
   @Override
   public void notify(InputContext update) {
     super.notify(update);
-    for (InputStreamContext stream : streams) {
+    for (InputPortContext port : ports) {
       boolean updated = false;
-      for (InputStreamContext s : update.streams()) {
-        if (stream.equals(s)) {
-          stream.notify(s);
+      for (InputPortContext s : update.ports()) {
+        if (port.equals(s)) {
+          port.notify(s);
           updated = true;
           break;
         }
       }
       if (!updated) {
-        stream.notify(null);
+        port.notify(null);
       }
     }
   }
@@ -128,46 +128,46 @@ public class InputContext extends IOContext<InputContext> {
     }
 
     /**
-     * Sets the input streams.
+     * Sets the input ports.
      *
-     * @param streams An array of input stream contexts.
+     * @param ports An array of input port contexts.
      * @return The context builder.
      */
-    public Builder setStreams(InputStreamContext... streams) {
-      context.streams = Arrays.asList(streams);
+    public Builder setPorts(InputPortContext... ports) {
+      context.ports = Arrays.asList(ports);
       return this;
     }
 
     /**
-     * Sets the input streams.
+     * Sets the input ports.
      *
-     * @param streams A collection of input stream contexts.
+     * @param ports A collection of input port contexts.
      * @return The context builder.
      */
-    public Builder setStreams(Collection<InputStreamContext> streams) {
-      context.streams = streams;
+    public Builder setPorts(Collection<InputPortContext> ports) {
+      context.ports = ports;
       return this;
     }
 
     /**
-     * Adds a stream to the input.
+     * Adds a port to the input.
      *
-     * @param stream An input stream context.
+     * @param port An input port context.
      * @return The context builder.
      */
-    public Builder addStream(InputStreamContext stream) {
-      context.streams.add(stream);
+    public Builder addPort(InputPortContext port) {
+      context.ports.add(port);
       return this;
     }
 
     /**
-     * Removes a stream from the input.
+     * Removes a port from the input.
      *
-     * @param stream An input stream context.
+     * @param port An input port context.
      * @return The context builder.
      */
-    public Builder removeStream(InputStreamContext stream) {
-      context.streams.remove(stream);
+    public Builder removePort(InputPortContext port) {
+      context.ports.remove(port);
       return this;
     }
   }

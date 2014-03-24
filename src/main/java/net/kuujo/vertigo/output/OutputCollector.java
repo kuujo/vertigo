@@ -58,7 +58,7 @@ public interface OutputCollector {
    *
    * @return A collection of output streams.
    */
-  Collection<OutputStream> streams();
+  Collection<OutputPort> streams();
 
   /**
    * Returns an output stream. The stream will be automatically created if
@@ -67,7 +67,7 @@ public interface OutputCollector {
    * @param name The output stream name.
    * @return An output stream.
    */
-  OutputStream stream(String name);
+  OutputPort stream(String name);
 
   /**
    * Opens the output.

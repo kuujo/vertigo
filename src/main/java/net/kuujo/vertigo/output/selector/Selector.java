@@ -48,11 +48,11 @@ public interface Selector extends Serializable {
    *
    * @param message
    *   The message being emitted.
-   * @param ports
-   *   A list of ports from which to select.
+   * @param targets
+   *   A list of targets from which to select.
    * @return
    *   A list of selected connections.
    */
-  List<String> select(JsonMessage message, List<String> ports);
+  List<String> select(JsonMessage message, List<String> targets);
 
 }

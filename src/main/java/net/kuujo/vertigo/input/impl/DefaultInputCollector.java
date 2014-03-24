@@ -24,10 +24,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.InputContext;
-import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.input.InputStream;
+import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
@@ -47,7 +47,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   private final InputContext context;
   private final Acker acker;
   private final List<InputHook> hooks = new ArrayList<>();
-  private final Map<String, InputStream> streams = new HashMap<>();
+  private final Map<String, InputPort> ports = new HashMap<>();
 
   public DefaultInputCollector(Vertx vertx, InputContext context, Acker acker) {
     this.vertx = vertx;
@@ -63,38 +63,38 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   @Override
   public InputCollector addHook(InputHook hook) {
     hooks.add(hook);
-    for (InputStream stream : streams.values()) {
+    for (InputPort stream : ports.values()) {
       stream.addHook(hook);
     }
     return this;
   }
 
   @Override
-  public Collection<InputStream> streams() {
-    return streams.values();
+  public Collection<InputPort> streams() {
+    return ports.values();
   }
 
   @Override
-  public InputStream stream(String name) {
-    InputStream stream = streams.get(name);
+  public InputPort stream(String name) {
+    InputPort stream = ports.get(name);
     if (stream == null) {
-      InputStreamContext context = InputStreamContext.Builder.newBuilder()
+      InputPortContext context = InputPortContext.Builder.newBuilder()
           .setAddress(UUID.randomUUID().toString())
           .setName(name)
           .build();
-      stream = new DefaultInputStream(vertx, context, acker);
-      streams.put(name, stream);
+      stream = new DefaultInputPort(vertx, context, acker);
+      ports.put(name, stream);
     }
     return stream;
   }
 
   @Override
   public void update(InputContext update) {
-    Iterator<InputStream> iter = streams.values().iterator();
+    Iterator<InputPort> iter = ports.values().iterator();
     while (iter.hasNext()) {
-      InputStream stream = iter.next();
+      InputPort stream = iter.next();
       boolean exists = false;
-      for (InputStreamContext input : update.streams()) {
+      for (InputPortContext input : update.ports()) {
         if (input.equals(stream.context())) {
           exists = true;
           break;
@@ -106,16 +106,16 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
       }
     }
 
-    for (InputStreamContext input : update.streams()) {
+    for (InputPortContext input : update.ports()) {
       boolean exists = false;
-      for (InputStream stream : streams.values()) {
+      for (InputPort stream : ports.values()) {
         if (stream.context().equals(input)) {
           exists = true;
           break;
         }
       }
       if (!exists) {
-        streams.put(input.name(), new DefaultInputStream(vertx, input, acker).open());
+        ports.put(input.name(), new DefaultInputPort(vertx, input, acker).open());
       }
     }
   }
@@ -127,8 +127,8 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
 
   @Override
   public InputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (streams.isEmpty()) {
-      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.streams().size());
+    if (ports.isEmpty()) {
+      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
       startCounter.setHandler(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
@@ -140,8 +140,8 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         }
       });
 
-      for (InputStreamContext stream : context.streams()) {
-        streams.put(stream.name(), new DefaultInputStream(vertx, stream, acker).open(new Handler<AsyncResult<Void>>() {
+      for (InputPortContext port : context.ports()) {
+        ports.put(port.name(), new DefaultInputPort(vertx, port, acker).open(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
@@ -163,21 +163,21 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(streams.size());
+    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
     stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
-          streams.clear();
+          ports.clear();
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
     });
 
-    for (InputStream stream : streams.values()) {
-      stream.close(new Handler<AsyncResult<Void>>() {
+    for (InputPort port : ports.values()) {
+      port.close(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {

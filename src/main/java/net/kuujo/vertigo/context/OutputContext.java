@@ -32,7 +32,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class OutputContext extends IOContext<OutputContext> {
-  private Collection<OutputStreamContext> streams = new ArrayList<>();
+  private Collection<OutputPortContext> ports = new ArrayList<>();
 
   /**
    * Creates a new output context from JSON.
@@ -66,28 +66,28 @@ public class OutputContext extends IOContext<OutputContext> {
   }
 
   /**
-   * Returns the output's stream contexts.
+   * Returns the output's port contexts.
    *
-   * @return A collection of output stream contexts.
+   * @return A collection of output port contexts.
    */
-  public Collection<OutputStreamContext> streams() {
-    return streams;
+  public Collection<OutputPortContext> ports() {
+    return ports;
   }
 
   @Override
   public void notify(OutputContext update) {
     super.notify(update);
-    for (OutputStreamContext stream : streams) {
+    for (OutputPortContext port : ports) {
       boolean updated = false;
-      for (OutputStreamContext s : update.streams()) {
-        if (stream.equals(s)) {
-          stream.notify(s);
+      for (OutputPortContext s : update.ports()) {
+        if (port.equals(s)) {
+          port.notify(s);
           updated = true;
           break;
         }
       }
       if (!updated) {
-        stream.notify(null);
+        port.notify(null);
       }
     }
   }
@@ -127,46 +127,46 @@ public class OutputContext extends IOContext<OutputContext> {
     }
 
     /**
-     * Sets the output streams.
+     * Sets the output ports.
      *
-     * @param streams An array of output stream contexts.
+     * @param ports An array of output port contexts.
      * @return The context builder.
      */
-    public Builder setStreams(OutputStreamContext... streams) {
-      context.streams = Arrays.asList(streams);
+    public Builder setPorts(OutputPortContext... ports) {
+      context.ports = Arrays.asList(ports);
       return this;
     }
 
     /**
-     * Sets the output streams.
+     * Sets the output ports.
      *
-     * @param streams A collection of output stream contexts.
+     * @param ports A collection of output port contexts.
      * @return The context builder.
      */
-    public Builder setStreams(Collection<OutputStreamContext> streams) {
-      context.streams = streams;
+    public Builder setPorts(Collection<OutputPortContext> ports) {
+      context.ports = ports;
       return this;
     }
 
     /**
-     * Adds a stream to the output.
+     * Adds a port to the output.
      *
-     * @param stream An output stream context.
+     * @param port An output port context.
      * @return The context builder.
      */
-    public Builder addStream(OutputStreamContext stream) {
-      context.streams.add(stream);
+    public Builder addPort(OutputPortContext port) {
+      context.ports.add(port);
       return this;
     }
 
     /**
-     * Removes a stream from the output.
+     * Removes a port from the output.
      *
-     * @param stream An output stream context.
+     * @param port An output port context.
      * @return The context builder.
      */
-    public Builder removeStream(OutputStreamContext stream) {
-      context.streams.remove(stream);
+    public Builder removePort(OutputPortContext port) {
+      context.ports.remove(port);
       return this;
     }
   }

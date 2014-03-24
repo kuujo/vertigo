@@ -43,7 +43,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private final EventBus eventBus;
   private final OutputConnectionContext context;
   private final String address;
-  private final List<String> ports;
+  private final List<String> targets;
   private final Selector selector;
   private boolean open;
 
@@ -52,7 +52,7 @@ public class DefaultOutputConnection implements OutputConnection {
     this.eventBus = vertx.eventBus();
     this.context = context;
     this.address = context.address();
-    this.ports = context.ports();
+    this.targets = context.targets();
     this.selector = context.grouping().createSelector();
   }
 
@@ -62,15 +62,10 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public List<String> ports() {
-    return ports;
-  }
-
-  @Override
   public List<MessageId> send(JsonMessage message) {
     final List<MessageId> messageIds = new ArrayList<>();
     if (!open) return messageIds;
-    for (String address : selector.select(message, ports)) {
+    for (String address : selector.select(message, targets)) {
       JsonMessage child = message.copy(new StringBuilder()
         .append(this.address)
         .append(":")

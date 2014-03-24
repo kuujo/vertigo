@@ -34,9 +34,9 @@ public class RoundSelector implements Selector {
   }
 
   @Override
-  public List<String> select(JsonMessage message, List<String> ports) {
-    int index = current++ % ports.size();
-    return ports.subList(index, index+1);
+  public List<String> select(JsonMessage message, List<String> targets) {
+    int index = current++ % targets.size();
+    return targets.subList(index, index+1);
   }
 
 }

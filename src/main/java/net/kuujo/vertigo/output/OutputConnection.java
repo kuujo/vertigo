@@ -39,13 +39,6 @@ public interface OutputConnection {
   OutputConnectionContext context();
 
   /**
-   * Returns the remote connection ports.
-   * 
-   * @return The remote connection ports.
-   */
-  List<String> ports();
-
-  /**
    * Sends a message on the connection.
    * 
    * @param message The message to send on the connection.

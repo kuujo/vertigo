@@ -15,11 +15,11 @@
  */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
@@ -307,7 +307,7 @@ public class ContextTest {
     assertEquals("feeder", feederContext.name());
     assertEquals("test.feeder", feederContext.address());
     for (InstanceContext instanceContext : feederContext.instances()) {
-      OutputStreamContext outputContext = instanceContext.output().streams().iterator().next();
+      OutputPortContext outputContext = instanceContext.output().ports().iterator().next();
       assertTrue(outputContext.connections().size() == 2);
       assertTrue(outputContext.name().equals("stream"));
       assertTrue(outputContext.connections().iterator().next().grouping() instanceof RandomGrouping);
@@ -317,7 +317,7 @@ public class ContextTest {
     assertEquals("worker", workerContext.name());
     assertEquals("test.worker", workerContext.address());
     for (InstanceContext instanceContext : workerContext.instances()) {
-      InputStreamContext inputContext = instanceContext.input().streams().iterator().next();
+      InputPortContext inputContext = instanceContext.input().ports().iterator().next();
       inputContext.name().equals("stream");
     }
   }

@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.input;
 
-import net.kuujo.vertigo.context.InputStreamContext;
+import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
@@ -23,80 +23,80 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * An input stream.
+ * An input port.
  *
  * @author Jordan Halterman
  */
-public interface InputStream {
+public interface InputPort {
 
   /**
-   * Returns the stream name.
+   * Returns the port name.
    *
-   * @return The stream name.
+   * @return The port name.
    */
   String name();
 
   /**
-   * Returns the input stream context.
+   * Returns the input port context.
    *
-   * @return The input stream context.
+   * @return The input port context.
    */
-  InputStreamContext context();
+  InputPortContext context();
 
   /**
-   * Adds an input hook to the stream.
+   * Adds an input hook to the port.
    *
    * @param hook An input hook.
-   * @return The input stream.
+   * @return The input port.
    */
-  InputStream addHook(InputHook hook);
+  InputPort addHook(InputHook hook);
 
   /**
-   * Registers a message handler on the stream.
+   * Registers a message handler on the port.
    *
    * @param handler A message handler.
-   * @return The input stream.
+   * @return The input port.
    */
-  InputStream messageHandler(Handler<JsonMessage> handler);
+  InputPort messageHandler(Handler<JsonMessage> handler);
 
   /**
    * Acknowledges a message.
    * 
    * @param message The message to ack.
-   * @return The input stream.
+   * @return The input port.
    */
-  InputStream ack(JsonMessage message);
+  InputPort ack(JsonMessage message);
 
   /**
    * Fails a message.
    * 
    * @param message The message to fail.
-   * @return The input stream.
+   * @return The input port.
    */
-  InputStream fail(JsonMessage message);
+  InputPort fail(JsonMessage message);
 
   /**
-   * Opens the input stream.
+   * Opens the input port.
    *
-   * @return The input stream.
+   * @return The input port.
    */
-  InputStream open();
+  InputPort open();
 
   /**
-   * Opens the input stream.
+   * Opens the input port.
    *
    * @param doneHandler An asynchronous handler to be called once opened.
-   * @return The input stream.
+   * @return The input port.
    */
-  InputStream open(Handler<AsyncResult<Void>> doneHandler);
+  InputPort open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Closes the input stream.
+   * Closes the input port.
    */
   void close();
 
   /**
-   * Closes the input stream.
+   * Closes the input port.
    *
    * @param doneHandler An asynchronous handler to be called once closed.
    */

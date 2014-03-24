@@ -36,13 +36,6 @@ public interface InputConnection {
   InputConnectionContext context();
 
   /**
-   * Returns the connection port.
-   *
-   * @return The connection port.
-   */
-  String port();
-
-  /**
    * Registers a message handler on the connection.
    *
    * @param handler A message handler.

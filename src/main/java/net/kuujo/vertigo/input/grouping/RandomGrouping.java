@@ -15,14 +15,14 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
-import net.kuujo.vertigo.network.Input;
+import net.kuujo.vertigo.network.Connection;
 import net.kuujo.vertigo.output.selector.RandomSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
  * The <code>random</code> grouping dispatches messages to component workers randomly.<p>
  *
- * Note that users should use the <code>randomGrouping</code> {@link Input} method
+ * Note that users should use the <code>randomGrouping</code> {@link Connection} method
  * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman

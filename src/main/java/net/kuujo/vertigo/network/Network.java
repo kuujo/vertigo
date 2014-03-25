@@ -16,11 +16,13 @@
 package net.kuujo.vertigo.network;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.util.serializer.SerializationException;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -93,6 +95,7 @@ public final class Network implements Config {
   private boolean acking = true;
   private long timeout = DEFAULT_MESSAGE_TIMEOUT;
   private Map<String, Component<?>> components = new HashMap<String, Component<?>>();
+  private List<Connection> connections = new ArrayList<>();
 
   public Network() {
     address = UUID.randomUUID().toString();
@@ -452,6 +455,73 @@ public final class Network implements Config {
    */
   public Verticle addVerticle(String name, String main, JsonObject config, int numInstances) {
     return addVerticle(new Verticle(name, main).setConfig(config).setNumInstances(numInstances));
+  }
+
+  /**
+   * Creates a connection between two components.
+   *
+   * @param source The source component.
+   * @param target The target component.
+   * @return A new connection instance.
+   */
+  public Connection createConnection(String source, String target) {
+    Connection connection = new Connection(source, target);
+    connections.add(connection);
+    return connection;
+  }
+
+  /**
+   * Creates a connection between two components.
+   *
+   * @param source The source component.
+   * @param target The target component.
+   * @param grouping The connection grouping.
+   * @return A new connection instance.
+   */
+  public Connection createConnection(String source, String target, Grouping grouping) {
+    Connection connection = new Connection(source, target, grouping);
+    connections.add(connection);
+    return connection;
+  }
+
+  /**
+   * Creates a connection between two components.
+   *
+   * @param source The source component.
+   * @param out The source output port.
+   * @param target The target component.
+   * @param in The target output port.
+   * @return A new connection instance.
+   */
+  public Connection createConnection(String source, String out, String target, String in) {
+    Connection connection = new Connection(source, out, target, in);
+    connections.add(connection);
+    return connection;
+  }
+
+  /**
+   * Creates a connection between two components.
+   *
+   * @param source The source component.
+   * @param out The source output port.
+   * @param target The target component.
+   * @param in The target output port.
+   * @param grouping The connection grouping.
+   * @return A new connection instance.
+   */
+  public Connection createConnection(String source, String out, String target, String in, Grouping grouping) {
+    Connection connection = new Connection(source, out, target, in, grouping);
+    connections.add(connection);
+    return connection;
+  }
+
+  /**
+   * Returns a collection of network connections.
+   *
+   * @return A collection of connections in the network.
+   */
+  public Collection<Connection> getConnections() {
+    return connections;
   }
 
   @Override

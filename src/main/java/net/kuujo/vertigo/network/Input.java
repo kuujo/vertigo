@@ -39,11 +39,16 @@ public class Input implements Config {
   public static final String INPUT_ADDRESS = "address";
 
   /**
-   * <code>stream</code> is a string that indicates the stream to which to subscribe for
-   * messages. If the <code>stream</code> is not provided then the default
-   * <code>default</code> stream will be used.
+   * <code>out</code> is a string that indicates the output port to which this input
+   * subscribes for messages.
    */
-  public static final String INPUT_STREAM = "stream";
+  public static final String INPUT_OUT_PORT = "out";
+
+  /**
+   * <code>in</code> is a string that indicates the input port on which this input
+   * receives messages.
+   */
+  public static final String INPUT_IN_PORT = "in";
 
   /**
    * <code>grouping</code> is an object defining the configuration for the input grouping.
@@ -57,33 +62,24 @@ public class Input implements Config {
   public static final String INPUT_GROUPING = "grouping";
 
   /**
-   * The default input stream: <code>default</code>
+   * The default output port: <code>out</code>
    */
-  public static final String DEFAULT_STREAM = "default";
+  public static final String DEFAULT_OUT_PORT = "out";
+
+  /**
+   * The default input port: <code>in</code>
+   */
+  public static final String DEFAULT_IN_PORT = "in";
 
   private String address;
-  private String stream = DEFAULT_STREAM;
+  private String out = DEFAULT_OUT_PORT;
+  private String in = DEFAULT_IN_PORT;
   private Grouping grouping;
 
-  protected Input() {
-    this(null, DEFAULT_STREAM, new RoundGrouping());
-  }
-
-  public Input(String address) {
-    this(address, DEFAULT_STREAM, new RoundGrouping());
-  }
-
-  public Input(String address, String stream) {
-    this(address, stream, new RoundGrouping());
-  }
-
-  public Input(String address, Grouping grouping) {
-    this(address, DEFAULT_STREAM, grouping);
-  }
-
-  public Input(String address, String stream, Grouping grouping) {
+  public Input(String address, String outPort, String inPort, Grouping grouping) {
     this.address = address;
-    this.stream = stream;
+    this.out = outPort;
+    this.in = inPort;
     groupBy(grouping);
   }
 
@@ -99,22 +95,42 @@ public class Input implements Config {
   }
 
   /**
-   * Returns the input stream ID.
-   * 
-   * @return The input stream ID.
+   * Returns the output port name.
+   *
+   * @return The output port name.
    */
-  public String getStream() {
-    return stream;
+  public String getOutputPort() {
+    return out;
   }
 
   /**
-   * Sets the input stream ID.
-   * 
-   * @param stream The input stream ID.
-   * @return The called input instance.
+   * Sets the output port name.
+   *
+   * @param out The output port name.
+   * @return The input.
    */
-  public Input setStream(String stream) {
-    this.stream = stream;
+  public Input setOutputPort(String out) {
+    this.out = out;
+    return this;
+  }
+
+  /**
+   * Returns the input port name.
+   *
+   * @return The input port name.
+   */
+  public String getInputPort() {
+    return in;
+  }
+
+  /**
+   * Sets the input port name.
+   *
+   * @param in The input port name.
+   * @return The input.
+   */
+  public Input setInputPort(String in) {
+    this.in = in;
     return this;
   }
 

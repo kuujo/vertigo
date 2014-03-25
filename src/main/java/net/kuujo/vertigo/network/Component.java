@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.util.serializer.Serializable;
 
 import org.vertx.java.core.json.JsonObject;
@@ -114,19 +113,6 @@ public abstract class Component<T extends Component<T>> implements Config {
    */
   public static final String COMPONENT_HOOKS = "hooks";
 
-  /**
-   * <code>inputs</code> is an array of input configurations. Each input configuration
-   * must contain the <code>address</code> to which the input subscribes. Additionally,
-   * each configuration may contain a <code>grouping</code> field indicating the input
-   * grouping method. This must be an object containing at least a <code>type</code>
-   * field. The <code>type</code> field can be one of <code>round</code>,
-   * <code>random</code>, <code>fields</code>, or <code>all</code>. The
-   * <code>grouping</code> defaults to <code>round</code>. Finally, a <code>stream</code>
-   * field may be provided to indicate the stream to which to subscribe. This field
-   * defaults to <code>default</code>.
-   */
-  public static final String COMPONENT_INPUTS = "inputs";
-
   private static final int DEFAULT_NUM_INSTANCES = 1;
   private static final String DEFAULT_GROUP = "__DEFAULT__";
 
@@ -136,7 +122,6 @@ public abstract class Component<T extends Component<T>> implements Config {
   private int instances = DEFAULT_NUM_INSTANCES;
   private String group = DEFAULT_GROUP;
   private List<ComponentHook> hooks = new ArrayList<>();
-  private List<Input> inputs = new ArrayList<>();
 
   public Component() {
     address = UUID.randomUUID().toString();
@@ -307,120 +292,6 @@ public abstract class Component<T extends Component<T>> implements Config {
    */
   public List<ComponentHook> getHooks() {
     return hooks;
-  }
-
-  /**
-   * Gets a list of component inputs.
-   * 
-   * @return A list of component inputs.
-   */
-  public List<Input> getInputs() {
-    return inputs;
-  }
-
-  /**
-   * Adds a component input.
-   * 
-   * @param input The input to add.
-   * @return The new input instance.
-   */
-  public Input addInput(Input input) {
-    inputs.add(input);
-    return input;
-  }
-
-  /**
-   * Adds a component input from another component.
-   * 
-   * @param component The component from which to receive input.
-   * @return The new input instance.
-   */
-  public Input addInput(Component<?> component) {
-    return addInput(new Input(component.getName()));
-  }
-
-  /**
-   * Adds a component input from another component on a specific stream.
-   * 
-   * @param component The component from which to receive input.
-   * @param stream The stream on which to receive input.
-   * @return The new input instance.
-   */
-  public Input addInput(Component<?> component, String stream) {
-    return addInput(new Input(component.getName(), stream));
-  }
-
-  /**
-   * Adds a component input from another component.
-   * 
-   * @param component The component from which to receive input.
-   * @param grouping The grouping by which to group the input.
-   * @return The new input instance.
-   */
-  public Input addInput(Component<?> component, Grouping grouping) {
-    return addInput(new Input(component.getName()).groupBy(grouping));
-  }
-
-  /**
-   * Adds a component input from another component on a specific stream.
-   * 
-   * @param component The component from which to receive input.
-   * @param stream The stream on which to receive input.
-   * @param grouping The grouping by which to group the input.
-   * @return The new input instance.
-   */
-  public Input addInput(Component<?> component, String stream, Grouping grouping) {
-    return addInput(new Input(component.getName(), stream).groupBy(grouping));
-  }
-
-  /**
-   * Adds a component input on the default stream.
-   * 
-   * @param address The input address. This is the event bus address of a component to
-   *          which this component will listen for output.
-   * @return The new input instance.
-   */
-  public Input addInput(String address) {
-    return addInput(new Input(address));
-  }
-
-  /**
-   * Adds a component input on a specific stream.
-   * 
-   * @param address The input address. This is the event bus address of a component to
-   *          which this component will listen for output.
-   * @param stream The stream on which to receive input.
-   * @return The new input instance.
-   */
-  public Input addInput(String address, String stream) {
-    return addInput(new Input(address, stream));
-  }
-
-  /**
-   * Adds a component input on the default stream with a grouping.
-   * 
-   * @param address The input address. This is the event bus address of a component to
-   *          which this component will listen for output.
-   * @param grouping An input grouping. This input grouping helps determine how messages
-   *          will be distributed among multiple instances of this component.
-   * @return The new input instance.
-   */
-  public Input addInput(String address, Grouping grouping) {
-    return addInput(new Input(address).groupBy(grouping));
-  }
-
-  /**
-   * Adds a component input on a specific stream with a grouping.
-   * 
-   * @param address The input address. This is the event bus address of a component to
-   *          which this component will listen for output.
-   * @param stream The stream on which to receive input.
-   * @param grouping An input grouping. This input grouping helps determine how messages
-   *          will be distributed among multiple instances of this component.
-   * @return The new input instance.
-   */
-  public Input addInput(String address, String stream, Grouping grouping) {
-    return addInput(new Input(address, stream).groupBy(grouping));
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,10 @@
  */
 package net.kuujo.vertigo.test.unit;
 
-import net.kuujo.vertigo.context.InputPortContext;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.network.Module;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Verticle;
@@ -291,74 +287,6 @@ public class ContextTest {
     assertEquals("test.feeder-1", verticleContext.instances().get(0).address());
     assertEquals("test.feeder-2", verticleContext.instances().get(1).address());
     assertNotNull(verticleContext.instances().get(0).component());
-  }
-
-  @Test
-  public void testInputOutputContext() {
-    Network network = new Network("test");
-    network.addVerticle("feeder", "feeder.py");
-    Verticle verticle = network.addVerticle("worker", "worker.py");
-    verticle.setNumInstances(2);
-    verticle.addInput("feeder", "stream").randomGrouping();
-    NetworkContext context = ContextBuilder.buildContext(network, null);
-    assertEquals("test", context.address());
-
-    VerticleContext feederContext = context.component("feeder");
-    assertEquals("feeder", feederContext.name());
-    assertEquals("test.feeder", feederContext.address());
-    for (InstanceContext instanceContext : feederContext.instances()) {
-      OutputPortContext outputContext = instanceContext.output().ports().iterator().next();
-      assertTrue(outputContext.connections().size() == 2);
-      assertTrue(outputContext.name().equals("stream"));
-      assertTrue(outputContext.connections().iterator().next().grouping() instanceof RandomGrouping);
-    }
-
-    VerticleContext workerContext = context.component("worker");
-    assertEquals("worker", workerContext.name());
-    assertEquals("test.worker", workerContext.address());
-    for (InstanceContext instanceContext : workerContext.instances()) {
-      InputPortContext inputContext = instanceContext.input().ports().iterator().next();
-      inputContext.name().equals("stream");
-    }
-  }
-
-  @Test
-  public void testInputContextStream() {
-    Network network = new Network("test");
-    Verticle verticle = network.addVerticle("worker", "worker.py");
-    verticle.setNumInstances(2);
-    verticle.addInput("input", "nondefault");
-    NetworkContext context = ContextBuilder.buildContext(network, null);
-    assertEquals("test", context.address());
-    VerticleContext verticleContext = context.component("worker");
-    assertEquals("worker", verticleContext.name());
-    assertEquals("test.worker", verticleContext.address());
-  }
-
-  @Test
-  public void testInputContextGrouping() {
-    Network network = new Network("test");
-    Verticle verticle = network.addVerticle("worker", "worker.py");
-    verticle.setNumInstances(2);
-    verticle.addInput("input").fieldsGrouping("foo", "bar");
-    NetworkContext context = ContextBuilder.buildContext(network, null);
-    assertEquals("test", context.address());
-    VerticleContext verticleContext = context.component("worker");
-    assertEquals("worker", verticleContext.name());
-    assertEquals("test.worker", verticleContext.address());
-  }
-
-  @Test
-  public void testInputContextCount() {
-    Network network = new Network("test");
-    Verticle verticle = network.addVerticle("worker", "worker.py");
-    verticle.setNumInstances(2);
-    verticle.addInput("input");
-    NetworkContext context = ContextBuilder.buildContext(network, null);
-    assertEquals("test", context.address());
-    VerticleContext verticleContext = context.component("worker");
-    assertEquals("worker", verticleContext.name());
-    assertEquals("test.worker", verticleContext.address());
   }
 
   public static class TestHook implements ComponentHook {

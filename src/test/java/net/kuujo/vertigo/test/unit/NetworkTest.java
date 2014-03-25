@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@ package net.kuujo.vertigo.test.unit;
 import java.util.List;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.grouping.AllGrouping;
-import net.kuujo.vertigo.input.grouping.FieldsGrouping;
-import net.kuujo.vertigo.input.grouping.RandomGrouping;
-import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.network.Component;
-import net.kuujo.vertigo.network.Input;
 import net.kuujo.vertigo.network.Module;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.Verticle;
@@ -90,7 +85,6 @@ public class NetworkTest {
     assertFalse(verticle.isWorker());
     assertFalse(verticle.isMultiThreaded());
     assertEquals(0, verticle.getHooks().size());
-    assertEquals(0, verticle.getInputs().size());
   }
 
   @Test
@@ -143,7 +137,6 @@ public class NetworkTest {
     assertEquals(1, verticle.getNumInstances());
     assertEquals("__DEFAULT__", verticle.getDeploymentGroup());
     assertEquals(0, verticle.getHooks().size());
-    assertEquals(0, verticle.getInputs().size());
   }
 
   @Test
@@ -164,71 +157,6 @@ public class NetworkTest {
     assertEquals("__DEFAULT__", module.getDeploymentGroup());
     module.setDeploymentGroup("test");
     assertEquals("test", module.getDeploymentGroup());
-  }
-
-  @Test
-  public void testInputDefaults() {
-    Input input = new Input("test");
-    assertEquals("test", input.getAddress());
-    assertEquals("default", input.getStream());
-    assertTrue(input.getGrouping() instanceof RoundGrouping);
-  }
-
-  @Test
-  public void testInputConfig() {
-    Input input = new Input("test");
-    assertEquals("test", input.getAddress());
-    assertEquals("default", input.getStream());
-    input.setStream("nondefault");
-    assertEquals("nondefault", input.getStream());
-    assertTrue(input.getGrouping() instanceof RoundGrouping);
-    input.randomGrouping();
-    assertTrue(input.getGrouping() instanceof RandomGrouping);
-    input.roundGrouping();
-    assertTrue(input.getGrouping() instanceof RoundGrouping);
-    input.fieldsGrouping("foo", "bar");
-    assertTrue(input.getGrouping() instanceof FieldsGrouping);
-    input.allGrouping();
-    assertTrue(input.getGrouping() instanceof AllGrouping);
-  }
-
-  @Test
-  public void testAddInput() {
-    Verticle worker = new Verticle("worker", "worker.py");
-    Verticle feeder = new Verticle("feeder", "feeder.py");
-    assertEquals(0, worker.getInputs().size());
-    Input input1 = worker.addInput(feeder);
-    assertEquals("feeder", input1.getAddress());
-    assertEquals("default", input1.getStream());
-    assertTrue(input1.getGrouping() instanceof RoundGrouping);
-    Input input2 = worker.addInput(feeder, "nondefault");
-    assertEquals("feeder", input2.getAddress());
-    assertEquals("nondefault", input2.getStream());
-    assertTrue(input2.getGrouping() instanceof RoundGrouping);
-    Input input3 = worker.addInput(feeder, new RandomGrouping());
-    assertEquals("feeder", input3.getAddress());
-    assertEquals("default", input3.getStream());
-    assertTrue(input3.getGrouping() instanceof RandomGrouping);
-    Input input4 = worker.addInput(feeder, "nondefault", new RandomGrouping());
-    assertEquals("feeder", input4.getAddress());
-    assertEquals("nondefault", input4.getStream());
-    assertTrue(input4.getGrouping() instanceof RandomGrouping);
-    Input input5 = worker.addInput("feeder");
-    assertEquals("feeder", input5.getAddress());
-    assertEquals("default", input5.getStream());
-    assertTrue(input5.getGrouping() instanceof RoundGrouping);
-    Input input6 = worker.addInput("feeder", "nondefault");
-    assertEquals("feeder", input6.getAddress());
-    assertEquals("nondefault", input6.getStream());
-    assertTrue(input6.getGrouping() instanceof RoundGrouping);
-    Input input7 = worker.addInput("feeder", new RandomGrouping());
-    assertEquals("feeder", input7.getAddress());
-    assertEquals("default", input7.getStream());
-    assertTrue(input7.getGrouping() instanceof RandomGrouping);
-    Input input8 = worker.addInput("feeder", "nondefault", new RandomGrouping());
-    assertEquals("feeder", input8.getAddress());
-    assertEquals("nondefault", input8.getStream());
-    assertTrue(input8.getGrouping() instanceof RandomGrouping);
   }
 
   @Test
@@ -536,7 +464,6 @@ public class NetworkTest {
     assertFalse(module.isVerticle());
     assertTrue(module.isModule());
     assertEquals(0, module.getHooks().size());
-    assertEquals(0, module.getInputs().size());
   }
 
   @Test
@@ -563,7 +490,6 @@ public class NetworkTest {
     assertTrue(verticle.isWorker());
     assertTrue(verticle.isMultiThreaded());
     assertEquals(0, verticle.getHooks().size());
-    assertEquals(0, verticle.getInputs().size());
   }
 
   @Test
@@ -586,7 +512,6 @@ public class NetworkTest {
     assertFalse(module.isVerticle());
     assertTrue(module.isModule());
     assertEquals(0, module.getHooks().size());
-    assertEquals(0, module.getInputs().size());
   }
 
   @Test
@@ -613,7 +538,6 @@ public class NetworkTest {
     assertTrue(verticle.isWorker());
     assertTrue(verticle.isMultiThreaded());
     assertEquals(0, verticle.getHooks().size());
-    assertEquals(0, verticle.getInputs().size());
   }
 
   @Test
@@ -633,53 +557,6 @@ public class NetworkTest {
     List<ComponentHook> hooks = feeder.getHooks();
     assertEquals(1, hooks.size());
     assertTrue(hooks.get(0) instanceof TestHook);
-  }
-
-  @Test
-  public void testAddInputsFromJson() {
-    JsonObject json = new JsonObject().putString(Network.NETWORK_ADDRESS, "test");
-    JsonObject jsonFeeder = new JsonObject()
-        .putString(Verticle.COMPONENT_ADDRESS, "feeder")
-        .putString(Verticle.COMPONENT_TYPE, Verticle.COMPONENT_TYPE_VERTICLE)
-        .putString(Verticle.VERTICLE_MAIN, "test.py");
-
-    JsonArray jsonInputs = new JsonArray();
-    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input1"));
-    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input2")
-        .putString(Input.INPUT_STREAM, "nondefault"));
-    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input3")
-        .putObject(Input.INPUT_GROUPING, new JsonObject().putString("type", "random")));
-    jsonInputs.add(new JsonObject().putString(Input.INPUT_ADDRESS, "input4")
-        .putObject(Input.INPUT_GROUPING, new JsonObject().putString("type", "fields")
-            .putArray("fields", new JsonArray().add("foo").add("bar"))));
-    jsonFeeder.putArray(Verticle.COMPONENT_INPUTS, jsonInputs);
-
-    json.putObject(Network.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    Network network = Network.fromJson(json);
-    assertEquals("test", network.getAddress());
-    Verticle feeder = network.getComponent("feeder");
-    assertNotNull(feeder);
-
-    List<Input> inputs = feeder.getInputs();
-    assertEquals(4, inputs.size());
-    Input input1 = inputs.get(0);
-    assertEquals("input1", input1.getAddress());
-    assertEquals("default", input1.getStream());
-    assertTrue(input1.getGrouping() instanceof RoundGrouping);
-    Input input2 = inputs.get(1);
-    assertEquals("input2", input2.getAddress());
-    assertEquals("nondefault", input2.getStream());
-    assertTrue(input2.getGrouping() instanceof RoundGrouping);
-    Input input3 = inputs.get(2);
-    assertEquals("input3", input3.getAddress());
-    assertEquals("default", input3.getStream());
-    assertTrue(input3.getGrouping() instanceof RandomGrouping);
-    Input input4 = inputs.get(3);
-    assertEquals("input4", input4.getAddress());
-    assertEquals("default", input4.getStream());
-    assertTrue(input4.getGrouping() instanceof FieldsGrouping);
-    assertTrue(((FieldsGrouping) input4.getGrouping()).getFields().contains("foo"));
-    assertTrue(((FieldsGrouping) input4.getGrouping()).getFields().contains("bar"));
   }
 
   public static class TestHook implements ComponentHook {

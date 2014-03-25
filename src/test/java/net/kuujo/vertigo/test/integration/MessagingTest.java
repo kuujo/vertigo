@@ -67,7 +67,8 @@ public class MessagingTest extends TestVerticle {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
     Network network = new Network("test");
     network.addVerticle("feeder", "feeder.py", 2);
-    network.addVerticle("worker", "worker.py", 2).addInput("feeder");
+    network.addVerticle("worker", "worker.py", 2);
+    network.createConnection("feeder", "worker");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
@@ -137,7 +138,8 @@ public class MessagingTest extends TestVerticle {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
     Network network = new Network("test");
     network.addVerticle("feeder", "feeder.py", 2);
-    network.addVerticle("worker", "worker.py", 2).addInput("feeder");
+    network.addVerticle("worker", "worker.py", 2);
+    network.createConnection("feeder", "worker");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
@@ -207,7 +209,8 @@ public class MessagingTest extends TestVerticle {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
     Network network = new Network("test");
     network.addVerticle("feeder", "feeder.py", 2);
-    network.addVerticle("worker", "worker.py", 2).addInput("feeder");
+    network.addVerticle("worker", "worker.py", 2);
+    network.createConnection("feeder", "worker");
     NetworkContext context = ContextBuilder.buildContext(network, cluster);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);

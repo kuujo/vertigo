@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,11 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
   public void testLocalDeploy() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.addVerticle("test.feeder", TestFeeder.class.getName());
-    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+    network.addVerticle("feeder", TestFeeder.class.getName());
+    network.addVerticle("worker1", TestWorker.class.getName(), 2);
+    network.createConnection("feeder", "stream1", "worker", "stream1");
+    network.addVerticle("worker2", TestWorker.class.getName(), 2);
+    network.createConnection("feeder", "stream2", "worker", "stream2");
 
     VertigoClusterManager cluster = new RemoteClusterManager(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
@@ -58,9 +60,11 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
   public void testLocalShutdown() {
     Network network = new Network("test");
     network.setNumAuditors(2);
-    network.addVerticle("test.feeder", TestFeeder.class.getName());
-    network.addVerticle("test.worker1", TestWorker.class.getName(), 2).addInput("test.feeder", "stream1");
-    network.addVerticle("test.worker2", TestWorker.class.getName(), 2).addInput("test.feeder", "stream2");
+    network.addVerticle("feeder", TestFeeder.class.getName());
+    network.addVerticle("worker1", TestWorker.class.getName(), 2);
+    network.createConnection("feeder", "stream1", "worker", "stream1");
+    network.addVerticle("worker2", TestWorker.class.getName(), 2);
+    network.createConnection("feeder", "stream2", "worker", "stream2");
 
     final VertigoClusterManager cluster = new LocalClusterManager(this);
     cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {

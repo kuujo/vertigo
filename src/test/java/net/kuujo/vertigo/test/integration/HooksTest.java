@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentStartHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("start")).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("start"));
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
@@ -121,7 +122,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentEmitHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("emit"));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2);
     deploy(network);
   }
 
@@ -129,7 +130,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentReceivedHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("received")).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("received"));
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
@@ -137,7 +139,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentAckHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("ack")).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("ack"));
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
@@ -145,7 +148,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentFailHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestFailingComponent.class.getName(), 2).addHook(new TestComponentHook("fail")).addInput("feeder");
+    network.addVerticle("worker", TestFailingComponent.class.getName(), 2).addHook(new TestComponentHook("fail"));
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
@@ -153,7 +157,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentAckedHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("acked"));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2);
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
@@ -161,7 +166,8 @@ public class HooksTest extends TestVerticle {
   public void testComponentFailedHook() {
     Network network = new Network("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("failed"));
-    network.addVerticle("worker", TestFailingComponent.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestFailingComponent.class.getName(), 2);
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
@@ -170,7 +176,8 @@ public class HooksTest extends TestVerticle {
     Network network = new Network("test");
     network.setMessageTimeout(1000);
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("timeout"));
-    network.addVerticle("worker", TestTimingOutComponent.class.getName(), 2).addInput("feeder");
+    network.addVerticle("worker", TestTimingOutComponent.class.getName(), 2);
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 

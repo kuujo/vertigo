@@ -15,9 +15,10 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import org.vertx.java.platform.impl.ModuleIdentifier;
-
 import net.kuujo.vertigo.network.ModuleConfig;
+import net.kuujo.vertigo.network.NetworkConfig;
+
+import org.vertx.java.platform.impl.ModuleIdentifier;
 
 /**
  * Default module configuration implementation.
@@ -38,8 +39,8 @@ public class DefaultModuleConfig extends AbstractComponentConfig<ModuleConfig> i
     super();
   }
 
-  public DefaultModuleConfig(String name, String moduleName) {
-    super(name);
+  public DefaultModuleConfig(String name, String moduleName, NetworkConfig network) {
+    super(name, network);
     setModule(moduleName);
   }
 

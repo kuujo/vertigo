@@ -39,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value=ModuleConfig.class, name="module"),
   @JsonSubTypes.Type(value=VerticleConfig.class, name="verticle")
 })
-public interface ComponentConfig<T extends ComponentConfig<T>> extends Config {
+public interface ComponentConfig<T extends ComponentConfig<T>> extends Config, ComponentConfigurable, ConnectionConfigurable {
 
   /**
    * Component type.

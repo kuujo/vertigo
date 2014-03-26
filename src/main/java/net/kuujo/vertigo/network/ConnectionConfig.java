@@ -22,7 +22,7 @@ import net.kuujo.vertigo.input.grouping.Grouping;
  *
  * @author Jordan Halterman
  */
-public interface ConnectionConfig extends Config {
+public interface ConnectionConfig extends Config, ComponentConfigurable, ConnectionConfigurable {
 
   /**
    * Returns the connection source.

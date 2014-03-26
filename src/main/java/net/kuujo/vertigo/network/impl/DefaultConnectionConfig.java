@@ -15,16 +15,24 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import org.vertx.java.core.json.JsonObject;
+
 import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
+import net.kuujo.vertigo.network.ModuleConfig;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.VerticleConfig;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Default connection configuration implementation.
- *
+ * 
  * @author Jordan Halterman
  */
 public class DefaultConnectionConfig implements ConnectionConfig {
@@ -34,29 +42,36 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
   private Grouping grouping;
+  @JsonIgnore
+  private NetworkConfig network;
 
   public DefaultConnectionConfig() {
     grouping = new RoundGrouping();
   }
 
-  public DefaultConnectionConfig(String source, String target) {
-    this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT), parseComponent(target), parsePort(target, DEFAULT_IN_PORT), new RoundGrouping());
+  public DefaultConnectionConfig(String source, String target, NetworkConfig network) {
+    this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
+        parseComponent(target), parsePort(target, DEFAULT_IN_PORT),
+        new RoundGrouping(), network);
   }
 
-  public DefaultConnectionConfig(String source, String target, Grouping grouping) {
-    this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT), parseComponent(target), parsePort(target, DEFAULT_IN_PORT), grouping);
+  public DefaultConnectionConfig(String source, String target, Grouping grouping, NetworkConfig network) {
+    this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
+        parseComponent(target), parsePort(target, DEFAULT_IN_PORT), grouping,
+        network);
   }
 
-  public DefaultConnectionConfig(String source, String out, String target, String in) {
-    this(source, out, target, in, new RoundGrouping());
+  public DefaultConnectionConfig(String source, String out, String target, String in, NetworkConfig network) {
+    this(source, out, target, in, new RoundGrouping(), network);
   }
 
-  public DefaultConnectionConfig(String source, String out, String target, String in, Grouping grouping) {
+  public DefaultConnectionConfig(String source, String out, String target, String in, Grouping grouping, NetworkConfig network) {
     this.source.setComponent(source);
     this.source.setPort(out);
     this.target.setComponent(target);
     this.target.setPort(in);
     this.grouping = grouping != null ? grouping : new RoundGrouping();
+    this.network = network;
   }
 
   @Override
@@ -105,6 +120,152 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
+  @SuppressWarnings("rawtypes")
+  public <T extends ComponentConfig> T addComponent(T component) {
+    return network.addComponent(component);
+  }
+
+  @Override
+  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain) {
+    return network.addComponent(name, moduleOrMain);
+  }
+
+  @Override
+  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config) {
+    return network.addComponent(name, moduleOrMain, config);
+  }
+
+  @Override
+  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances) {
+    return network.addComponent(name, moduleOrMain, instances);
+  }
+
+  @Override
+  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, int instances) {
+    return network.addComponent(name, moduleOrMain, config, instances);
+  }
+
+  @Override
+  public <T extends ComponentConfig<T>> T removeComponent(T component) {
+    return network.removeComponent(component);
+  }
+
+  @Override
+  public <T extends ComponentConfig<T>> T removeComponent(String name) {
+    return network.removeComponent(name);
+  }
+
+  @Override
+  public ModuleConfig addModule(ModuleConfig module) {
+    return network.addModule(module);
+  }
+
+  @Override
+  public ModuleConfig addModule(String name, String moduleName) {
+    return network.addModule(name, moduleName);
+  }
+
+  @Override
+  public ModuleConfig addModule(String name, String moduleName, JsonObject config) {
+    return network.addModule(name, moduleName, config);
+  }
+
+  @Override
+  public ModuleConfig addModule(String name, String moduleName, int instances) {
+    return network.addModule(name, moduleName, instances);
+  }
+
+  @Override
+  public ModuleConfig addModule(String name, String moduleName, JsonObject config, int instances) {
+    return network.addModule(name, moduleName, config, instances);
+  }
+
+  @Override
+  public ModuleConfig removeModule(ModuleConfig module) {
+    return network.removeModule(module);
+  }
+
+  @Override
+  public ModuleConfig removeModule(String name) {
+    return network.removeModule(name);
+  }
+
+  @Override
+  public VerticleConfig addVerticle(VerticleConfig verticle) {
+    return network.addVerticle(verticle);
+  }
+
+  @Override
+  public VerticleConfig addVerticle(String name, String main) {
+    return network.addVerticle(name, main);
+  }
+
+  @Override
+  public VerticleConfig addVerticle(String name, String main, JsonObject config) {
+    return network.addVerticle(name, main, config);
+  }
+
+  @Override
+  public VerticleConfig addVerticle(String name, String main, int instances) {
+    return network.addVerticle(name, main, instances);
+  }
+
+  @Override
+  public VerticleConfig addVerticle(String name, String main, JsonObject config, int instances) {
+    return network.addVerticle(name, main, config, instances);
+  }
+
+  @Override
+  public VerticleConfig removeVerticle(VerticleConfig verticle) {
+    return network.removeVerticle(verticle);
+  }
+
+  @Override
+  public VerticleConfig removeVerticle(String name) {
+    return network.removeVerticle(name);
+  }
+
+  @Override
+  public ConnectionConfig createConnection(ConnectionConfig connection) {
+    return network.createConnection(connection);
+  }
+
+  @Override
+  public ConnectionConfig createConnection(String source, String target) {
+    return network.createConnection(source, target);
+  }
+
+  @Override
+  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
+    return network.createConnection(source, target, grouping);
+  }
+
+  @Override
+  public ConnectionConfig createConnection(String source, String out, String target, String in) {
+    return network.createConnection(source, out, target, in);
+  }
+
+  @Override
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
+    return network.createConnection(source, out, target, in, grouping);
+  }
+
+  @Override
+  public NetworkConfig destroyConnection(ConnectionConfig connection) {
+    return network.destroyConnection(connection);
+  }
+
+  @Override
+  public NetworkConfig destroyConnection(String source, String target) {
+    return network.destroyConnection(source, target);
+  }
+
+  @Override
+  public NetworkConfig destroyConnection(String source, String out, String target, String in) {
+    return network.destroyConnection(source, out, target, in);
+  }
+
+  @Override
   public boolean equals(Object other) {
     if (!(other instanceof ConnectionConfig)) {
       return false;
@@ -118,7 +279,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   /**
    * Default source implementation.
-   *
+   * 
    * @author Jordan Halterman
    */
   private static class DefaultSource implements Source {
@@ -154,7 +315,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   /**
    * Default target implementation.
-   *
+   * 
    * @author Jordan Halterman
    */
   private static class DefaultTarget implements Target {
@@ -192,7 +353,8 @@ public class DefaultConnectionConfig implements ConnectionConfig {
    * Parses a component name from the connection address.
    */
   private static String parseComponent(String address) {
-    return !address.contains(":") ? address : address.substring(0, address.indexOf(":"));
+    return !address.contains(":") ? address : address.substring(0,
+        address.indexOf(":"));
   }
 
   /**
@@ -202,7 +364,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     if (!address.contains(":")) {
       return def;
     }
-    return address.substring(address.indexOf(":")+1);
+    return address.substring(address.indexOf(":") + 1);
   }
 
 }

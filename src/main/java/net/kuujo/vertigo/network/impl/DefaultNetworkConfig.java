@@ -278,22 +278,22 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public ModuleConfig addModule(String name, String moduleName) {
-    return addModule(new DefaultModuleConfig(name, moduleName));
+    return addModule(new DefaultModuleConfig(name, moduleName, this));
   }
 
   @Override
   public ModuleConfig addModule(String name, String moduleName, JsonObject config) {
-    return addModule(new DefaultModuleConfig(name, moduleName).setConfig(config));
+    return addModule(new DefaultModuleConfig(name, moduleName, this).setConfig(config));
   }
 
   @Override
   public ModuleConfig addModule(String name, String moduleName, int numInstances) {
-    return addModule(new DefaultModuleConfig(name, moduleName).setInstances(numInstances));
+    return addModule(new DefaultModuleConfig(name, moduleName, this).setInstances(numInstances));
   }
 
   @Override
   public ModuleConfig addModule(String name, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new DefaultModuleConfig(name, moduleName).setConfig(config).setInstances(numInstances));
+    return addModule(new DefaultModuleConfig(name, moduleName, this).setConfig(config).setInstances(numInstances));
   }
 
   @Override
@@ -318,22 +318,22 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public VerticleConfig addVerticle(String name, String main) {
-    return addVerticle(new DefaultVerticleConfig(name, main));
+    return addVerticle(new DefaultVerticleConfig(name, main, this));
   }
 
   @Override
   public VerticleConfig addVerticle(String name, String main, JsonObject config) {
-    return addVerticle(new DefaultVerticleConfig(name, main).setConfig(config));
+    return addVerticle(new DefaultVerticleConfig(name, main, this).setConfig(config));
   }
 
   @Override
   public VerticleConfig addVerticle(String name, String main, int numInstances) {
-    return addVerticle(new DefaultVerticleConfig(name, main).setInstances(numInstances));
+    return addVerticle(new DefaultVerticleConfig(name, main, this).setInstances(numInstances));
   }
 
   @Override
   public VerticleConfig addVerticle(String name, String main, JsonObject config, int numInstances) {
-    return addVerticle(new DefaultVerticleConfig(name, main).setConfig(config).setInstances(numInstances));
+    return addVerticle(new DefaultVerticleConfig(name, main, this).setConfig(config).setInstances(numInstances));
   }
 
   @Override
@@ -358,28 +358,28 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public ConnectionConfig createConnection(String source, String target) {
-    ConnectionConfig connection = new DefaultConnectionConfig(source, target);
+    ConnectionConfig connection = new DefaultConnectionConfig(source, target, this);
     connections.add(connection);
     return connection;
   }
 
   @Override
   public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
-    ConnectionConfig connection = new DefaultConnectionConfig(source, target, grouping);
+    ConnectionConfig connection = new DefaultConnectionConfig(source, target, grouping, this);
     connections.add(connection);
     return connection;
   }
 
   @Override
   public ConnectionConfig createConnection(String source, String out, String target, String in) {
-    ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in);
+    ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in, this);
     connections.add(connection);
     return connection;
   }
 
   @Override
   public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
-    ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in, grouping);
+    ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in, grouping, this);
     connections.add(connection);
     return connection;
   }
@@ -401,12 +401,12 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public NetworkConfig destroyConnection(String source, String target) {
-    return destroyConnection(new DefaultConnectionConfig(source, target));
+    return destroyConnection(new DefaultConnectionConfig(source, target, this));
   }
 
   @Override
   public NetworkConfig destroyConnection(String source, String out, String target, String in) {
-    return destroyConnection(new DefaultConnectionConfig(source, out, target, in));
+    return destroyConnection(new DefaultConnectionConfig(source, out, target, in, this));
   }
 
   @Override

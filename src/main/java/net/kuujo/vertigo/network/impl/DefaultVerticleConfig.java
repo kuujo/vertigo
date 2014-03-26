@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -54,8 +55,8 @@ public class DefaultVerticleConfig extends AbstractComponentConfig<VerticleConfi
     super();
   }
 
-  public DefaultVerticleConfig(String name, String main) {
-    super(name);
+  public DefaultVerticleConfig(String name, String main, NetworkConfig network) {
+    super(name, network);
     this.main = main;
   }
 

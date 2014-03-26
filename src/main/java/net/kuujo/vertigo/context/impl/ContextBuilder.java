@@ -75,10 +75,7 @@ public final class ContextBuilder {
         // Set up basic module configuratin options.
         DefaultModuleContext.Builder module = DefaultModuleContext.Builder.newBuilder();
         module.setName(component.getName());
-        String address = component.getName();
-        if (address == null) {
-          address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), component.getName());
-        }
+        String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), component.getName());
         module.setAddress(address);
         module.setStatusAddress(String.format("%s.__status", address));
         module.setModule(((ModuleConfig) component).getModule());
@@ -103,10 +100,7 @@ public final class ContextBuilder {
         // Set up basic verticle configuration options.
         DefaultVerticleContext.Builder verticle = DefaultVerticleContext.Builder.newBuilder();
         verticle.setName(component.getName());
-        String address = component.getName();
-        if (address == null) {
-          address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), component.getName());
-        }
+        String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), component.getName());
         verticle.setAddress(address);
         verticle.setStatusAddress(String.format("%s.__status", address));
         verticle.setMain(((VerticleConfig) component).getMain());

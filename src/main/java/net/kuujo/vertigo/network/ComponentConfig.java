@@ -76,21 +76,21 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config {
    *
    * @return The component type.
    */
-  public Type getType();
+  Type getType();
 
   /**
    * Returns the component name.
    *
    * @return The component name.
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the component configuration.
    * 
    * @return The component configuration.
    */
-  public JsonObject getConfig();
+  JsonObject getConfig();
 
   /**
    * Sets the component configuration.
@@ -102,14 +102,14 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config {
    * @param config The component configuration.
    * @return The component configuration.
    */
-  public T setConfig(JsonObject config);
+  T setConfig(JsonObject config);
 
   /**
    * Returns the number of component instances to deploy within the network.
    * 
    * @return The number of component instances.
    */
-  public int getInstances();
+  int getInstances();
 
   /**
    * Sets the number of component instances to deploy within the network.
@@ -117,7 +117,7 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config {
    * @param instances The number of component instances.
    * @return The component configuration.
    */
-  public T setInstances(int instances);
+  T setInstances(int instances);
 
   /**
    * Sets the component deployment group.
@@ -125,14 +125,14 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config {
    * @param group The component deployment group.
    * @return The component configuration.
    */
-  public T setGroup(String group);
+  T setGroup(String group);
 
   /**
    * Returns the component deployment group.
    *
    * @return The component deployment group.
    */
-  public String getGroup();
+  String getGroup();
 
   /**
    * Adds a component hook to the component.
@@ -150,13 +150,13 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config {
    * @return The component configuration.
    * @see ComponentHook
    */
-  public T addHook(ComponentHook hook);
+  T addHook(ComponentHook hook);
 
   /**
    * Returns a list of all component hooks.
    * 
    * @return A list of component hooks.
    */
-  public List<ComponentHook> getHooks();
+  List<ComponentHook> getHooks();
 
 }

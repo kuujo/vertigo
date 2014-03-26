@@ -59,14 +59,14 @@ public interface ConnectionConfig extends Config {
    * 
    * @return The connection instance.
    */
-  public ConnectionConfig randomGrouping();
+  ConnectionConfig randomGrouping();
 
   /**
    * Sets a round-robin connection grouping on the input.
    * 
    * @return The connection instance.
    */
-  public ConnectionConfig roundGrouping();
+  ConnectionConfig roundGrouping();
 
   /**
    * Sets a fields grouping on the connection.
@@ -74,14 +74,14 @@ public interface ConnectionConfig extends Config {
    * @param fields The fields on which to hash.
    * @return The connection instance.
    */
-  public ConnectionConfig fieldsGrouping(String... fields);
+  ConnectionConfig fieldsGrouping(String... fields);
 
   /**
    * Sets an all grouping on the connection.
    * 
    * @return The connection instance.
    */
-  public ConnectionConfig allGrouping();
+  ConnectionConfig allGrouping();
 
   /**
    * Connection source.

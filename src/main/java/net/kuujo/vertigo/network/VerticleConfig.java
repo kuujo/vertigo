@@ -38,14 +38,14 @@ public interface VerticleConfig extends ComponentConfig<VerticleConfig> {
    * @param main The verticle main.
    * @return The verticle configuration.
    */
-  public VerticleConfig setMain(String main);
+  VerticleConfig setMain(String main);
 
   /**
    * Gets the verticle main.
    * 
    * @return The verticle main.
    */
-  public String getMain();
+  String getMain();
 
   /**
    * Sets the verticle worker option.
@@ -53,14 +53,14 @@ public interface VerticleConfig extends ComponentConfig<VerticleConfig> {
    * @param isWorker Indicates whether the verticle should be deployed as a worker.
    * @return The verticle configuration.
    */
-  public VerticleConfig setWorker(boolean isWorker);
+  VerticleConfig setWorker(boolean isWorker);
 
   /**
    * Returns a boolean indicating whether the verticle is a worker.
    * 
    * @return Indicates whether the verticle is a worker.
    */
-  public boolean isWorker();
+  boolean isWorker();
 
   /**
    * Sets the verticle multi-threaded option. This option only applies to worker
@@ -69,7 +69,7 @@ public interface VerticleConfig extends ComponentConfig<VerticleConfig> {
    * @param isMultiThreaded Indicates whether the worker verticle is multi-threaded.
    * @return The verticle configuration.
    */
-  public VerticleConfig setMultiThreaded(boolean isMultiThreaded);
+  VerticleConfig setMultiThreaded(boolean isMultiThreaded);
 
   /**
    * Returns a boolean indicating whether the verticle is a worker and is multi-threaded.
@@ -77,6 +77,6 @@ public interface VerticleConfig extends ComponentConfig<VerticleConfig> {
    * @return Indicates whether the verticle is a worker and is multi-threaded. If the
    *         verticle is not a worker verticle then <code>false</code> will be returned.
    */
-  public boolean isMultiThreaded();
+  boolean isMultiThreaded();
 
 }

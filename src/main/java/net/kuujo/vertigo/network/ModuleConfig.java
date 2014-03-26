@@ -39,13 +39,13 @@ public interface ModuleConfig extends ComponentConfig<ModuleConfig> {
    * @return The module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public ModuleConfig setModule(String moduleName);
+  ModuleConfig setModule(String moduleName);
 
   /**
    * Gets the module name.
    * 
    * @return The module name.
    */
-  public String getModule();
+  String getModule();
 
 }

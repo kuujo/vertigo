@@ -28,12 +28,9 @@ import java.util.UUID;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
-import net.kuujo.vertigo.network.MalformedNetworkException;
 import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
-import net.kuujo.vertigo.util.serializer.SerializationException;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -48,10 +45,10 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
 
   /**
-   * <code>address</code> is a string indicating the unique network address. This is the
+   * <code>name</code> is a string indicating the unique network name. This is the
    * address at which the network will monitor network components. This field is required.
    */
-  public static final String NETWORK_ADDRESS = "address";
+  public static final String NETWORK_NAME = "name";
 
   /**
    * <code>auditors</code> is a number indicating the number of auditor instances to
@@ -108,22 +105,6 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   public DefaultNetworkConfig(String name) {
     this.name = name;
-  }
-
-  /**
-   * Creates a network from JSON.
-   * 
-   * @param json A JSON representation of the network.
-   * @return A new network configuration.
-   * @throws MalformedNetworkException If the network definition is malformed.
-   */
-  public static NetworkConfig fromJson(JsonObject json) {
-    try {
-      return SerializerFactory.getSerializer(NetworkConfig.class).deserializeObject(json, NetworkConfig.class);
-    }
-    catch (SerializationException e) {
-      throw new MalformedNetworkException(e);
-    }
   }
 
   @Override
@@ -389,10 +370,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
     Iterator<ConnectionConfig> iter = connections.iterator();
     while (iter.hasNext()) {
       ConnectionConfig check = iter.next();
-      if (check.getSource().getComponent().equals(connection.getSource().getComponent())
-          && check.getSource().getPort().equals(connection.getSource().getPort())
-          && check.getTarget().getComponent().equals(connection.getTarget().getComponent())
-          && check.getTarget().getPort().equals(connection.getTarget().getComponent())) {
+      if (check.equals(connection)) {
         iter.remove();
       }
     }

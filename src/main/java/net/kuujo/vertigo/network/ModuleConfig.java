@@ -25,11 +25,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @author Jordan Halterman
  */
 @JsonTypeInfo(
-    use=JsonTypeInfo.Id.CLASS,
-    include=JsonTypeInfo.As.PROPERTY,
-    property="class",
-    defaultImpl=DefaultModuleConfig.class
-  )
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultModuleConfig.class
+)
 public interface ModuleConfig extends ComponentConfig<ModuleConfig> {
 
   /**

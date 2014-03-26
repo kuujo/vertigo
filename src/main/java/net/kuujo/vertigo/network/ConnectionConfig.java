@@ -16,12 +16,21 @@
 package net.kuujo.vertigo.network;
 
 import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * Connection configuration.
  *
  * @author Jordan Halterman
  */
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultConnectionConfig.class
+)
 public interface ConnectionConfig extends Config, ComponentConfigurable, ConnectionConfigurable {
 
   /**
@@ -88,6 +97,12 @@ public interface ConnectionConfig extends Config, ComponentConfigurable, Connect
    *
    * @author Jordan Halterman
    */
+  @JsonTypeInfo(
+    use=JsonTypeInfo.Id.CLASS,
+    include=JsonTypeInfo.As.PROPERTY,
+    property="class",
+    defaultImpl=DefaultConnectionConfig.DefaultSource.class
+  )
   public static interface Source extends Config {
 
     /**
@@ -127,6 +142,12 @@ public interface ConnectionConfig extends Config, ComponentConfigurable, Connect
    *
    * @author Jordan Halterman
    */
+  @JsonTypeInfo(
+    use=JsonTypeInfo.Id.CLASS,
+    include=JsonTypeInfo.As.PROPERTY,
+    property="class",
+    defaultImpl=DefaultConnectionConfig.DefaultTarget.class
+  )
   public static interface Target extends Config {
 
     /**

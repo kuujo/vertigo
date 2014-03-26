@@ -282,7 +282,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
    * 
    * @author Jordan Halterman
    */
-  private static class DefaultSource implements Source {
+  public static class DefaultSource implements Source {
     private String component;
     private String port;
 
@@ -318,7 +318,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
    * 
    * @author Jordan Halterman
    */
-  private static class DefaultTarget implements Target {
+  public static class DefaultTarget implements Target {
     private String component;
     private String port;
 

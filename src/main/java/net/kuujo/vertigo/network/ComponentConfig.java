@@ -18,6 +18,8 @@ package net.kuujo.vertigo.network;
 import java.util.List;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
+import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
 import net.kuujo.vertigo.util.serializer.Serializable;
 
 import org.vertx.java.core.json.JsonObject;
@@ -36,8 +38,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   property="type"
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleConfig.class, name="module"),
-  @JsonSubTypes.Type(value=VerticleConfig.class, name="verticle")
+  @JsonSubTypes.Type(value=DefaultModuleConfig.class, name="module"),
+  @JsonSubTypes.Type(value=DefaultVerticleConfig.class, name="verticle")
 })
 public interface ComponentConfig<T extends ComponentConfig<T>> extends Config, ComponentConfigurable, ConnectionConfigurable {
 

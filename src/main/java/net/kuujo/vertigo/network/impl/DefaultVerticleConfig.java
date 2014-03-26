@@ -79,6 +79,9 @@ public class DefaultVerticleConfig extends AbstractComponentConfig<VerticleConfi
   @Override
   public VerticleConfig setWorker(boolean isWorker) {
     this.worker = isWorker;
+    if (!worker) {
+      multiThreaded = false;
+    }
     return this;
   }
 

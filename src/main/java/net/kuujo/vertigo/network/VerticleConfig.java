@@ -25,11 +25,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @author Jordan Halterman
  */
 @JsonTypeInfo(
-    use=JsonTypeInfo.Id.CLASS,
-    include=JsonTypeInfo.As.PROPERTY,
-    property="class",
-    defaultImpl=DefaultVerticleConfig.class
-  )
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultVerticleConfig.class
+)
 public interface VerticleConfig extends ComponentConfig<VerticleConfig> {
 
   /**

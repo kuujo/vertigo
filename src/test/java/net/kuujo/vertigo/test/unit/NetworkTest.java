@@ -23,11 +23,14 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.ComponentConfig;
+import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
+import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
@@ -77,7 +80,7 @@ public class NetworkTest {
 
   @Test
   public void testVerticleDefaults() {
-    DefaultVerticleConfig verticle = new DefaultVerticleConfig("test", "test.py");
+    DefaultVerticleConfig verticle = new DefaultVerticleConfig("test", "test.py", new DefaultNetworkConfig("test"));
     assertEquals("test", verticle.getName());
     assertTrue(verticle.getType().equals(ComponentConfig.Type.VERTICLE));
     assertEquals("test.py", verticle.getMain());
@@ -91,7 +94,7 @@ public class NetworkTest {
 
   @Test
   public void testDefaultVerticleConfig() {
-    DefaultVerticleConfig verticle = new DefaultVerticleConfig("test", "test.py");
+    DefaultVerticleConfig verticle = new DefaultVerticleConfig("test", "test.py", new DefaultNetworkConfig("test"));
     assertEquals("test", verticle.getName());
     assertTrue(verticle.getType().equals(ComponentConfig.Type.VERTICLE));
     assertEquals("test.py", verticle.getMain());
@@ -129,19 +132,19 @@ public class NetworkTest {
 
   @Test
   public void testModuleDefaults() {
-    DefaultModuleConfig verticle = new DefaultModuleConfig("test", "com.test~test-module~1.0");
-    assertEquals("test", verticle.getName());
-    assertTrue(verticle.getType().equals(ComponentConfig.Type.VERTICLE));
-    assertEquals("com.test~test-module~1.0", verticle.getModule());
-    assertEquals(new JsonObject(), verticle.getConfig());
-    assertEquals(1, verticle.getInstances());
-    assertEquals("__DEFAULT__", verticle.getGroup());
-    assertEquals(0, verticle.getHooks().size());
+    DefaultModuleConfig module = new DefaultModuleConfig("test", "com.test~test-module~1.0", new DefaultNetworkConfig("test"));
+    assertEquals("test", module.getName());
+    assertTrue(module.getType().equals(ComponentConfig.Type.MODULE));
+    assertEquals("com.test~test-module~1.0", module.getModule());
+    assertEquals(new JsonObject(), module.getConfig());
+    assertEquals(1, module.getInstances());
+    assertEquals("__DEFAULT__", module.getGroup());
+    assertEquals(0, module.getHooks().size());
   }
 
   @Test
   public void testDefaultModuleConfig() {
-    DefaultModuleConfig module = new DefaultModuleConfig("test", "com.test~test-module~1.0");
+    DefaultModuleConfig module = new DefaultModuleConfig("test", "com.test~test-module~1.0", new DefaultNetworkConfig("test"));
     assertEquals("test", module.getName());
     assertTrue(module.getType().equals(ComponentConfig.Type.MODULE));
     assertEquals("com.test~test-module~1.0", module.getModule());
@@ -387,14 +390,80 @@ public class NetworkTest {
   }
 
   @Test
+  public void testConnectionEquals() {
+    ConnectionConfig connection1 = new DefaultConnectionConfig("foo:bar", "bar:baz", new DefaultNetworkConfig("test"));
+    ConnectionConfig connection2 = new DefaultConnectionConfig("foo:bar", "bar:baz", new DefaultNetworkConfig("test"));
+    assertTrue(connection1.equals(connection2));
+  }
+
+  @Test
+  public void testConnectionDefaultPort() {
+    ConnectionConfig connection = new DefaultConnectionConfig("foo", "bar", new DefaultNetworkConfig("test"));
+    assertEquals("foo", connection.getSource().getComponent());
+    assertEquals("out", connection.getSource().getPort());
+    assertEquals("bar", connection.getTarget().getComponent());
+    assertEquals("in", connection.getTarget().getPort());
+  }
+
+  @Test
+  public void testConnectionParsedPort() {
+    ConnectionConfig connection = new DefaultConnectionConfig("foo:notout", "bar:notin", new DefaultNetworkConfig("test"));
+    assertEquals("foo", connection.getSource().getComponent());
+    assertEquals("notout", connection.getSource().getPort());
+    assertEquals("bar", connection.getTarget().getComponent());
+    assertEquals("notin", connection.getTarget().getPort());
+  }
+
+  @Test
+  public void testCreateConnectionDefaultPort() {
+    NetworkConfig network = new DefaultNetworkConfig("test");
+    ConnectionConfig connection = network.createConnection("foo", "bar");
+    assertEquals("foo", connection.getSource().getComponent());
+    assertEquals("out", connection.getSource().getPort());
+    assertEquals("bar", connection.getTarget().getComponent());
+    assertEquals("in", connection.getTarget().getPort());
+  }
+
+  @Test
+  public void testCreateConnectionParsedPort() {
+    NetworkConfig network = new DefaultNetworkConfig("test");
+    ConnectionConfig connection = network.createConnection("foo:notout", "bar:notin");
+    assertEquals("foo", connection.getSource().getComponent());
+    assertEquals("notout", connection.getSource().getPort());
+    assertEquals("bar", connection.getTarget().getComponent());
+    assertEquals("notin", connection.getTarget().getPort());
+    boolean exists = false;
+    for (ConnectionConfig other : network.getConnections()) {
+      if (other.equals(connection)) {
+        exists = true;
+      }
+    }
+    assertTrue(exists);
+  }
+
+  @Test
+  public void testDestroyConnection() {
+    NetworkConfig network = new DefaultNetworkConfig("test");
+    ConnectionConfig connection = network.createConnection("foo", "bar");
+    network.destroyConnection("foo", "bar");
+    boolean exists = false;
+    for (ConnectionConfig other : network.getConnections()) {
+      if (other.equals(connection)) {
+        exists = true;
+      }
+    }
+    assertFalse(exists);
+  }
+
+  @Test
   public void testNetworkFromJson() {
     JsonObject json = new JsonObject()
-        .putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test")
+        .putString(DefaultNetworkConfig.NETWORK_NAME, "test")
         .putBoolean(DefaultNetworkConfig.NETWORK_ACKING_ENABLED, true)
         .putNumber(DefaultNetworkConfig.NETWORK_NUM_AUDITORS, 3)
         .putNumber(DefaultNetworkConfig.NETWORK_MESSAGE_TIMEOUT, 10000)
         .putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject());
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
     assertTrue(network.isAckingEnabled());
     assertEquals(3, network.getNumAuditors());
@@ -405,15 +474,15 @@ public class NetworkTest {
   @Test
   public void testNetworkTimeoutsDisabledFromJson() {
     JsonObject json = new JsonObject()
-        .putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test")
+        .putString(DefaultNetworkConfig.NETWORK_NAME, "test")
         .putBoolean(DefaultNetworkConfig.NETWORK_MESSAGE_TIMEOUTS_ENABLED, false);
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertFalse(network.isMessageTimeoutsEnabled());
   }
 
   @Test
   public void testAddFeederModuleFromJson() {
-    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test");
+    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(DefaultModuleConfig.COMPONENT_NAME, "feeder")
         .putString(DefaultModuleConfig.COMPONENT_TYPE, DefaultModuleConfig.COMPONENT_TYPE_MODULE)
@@ -421,7 +490,7 @@ public class NetworkTest {
         .putObject(DefaultModuleConfig.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(DefaultModuleConfig.COMPONENT_NUM_INSTANCES, 2);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
     DefaultModuleConfig module = network.getComponent("feeder");
     assertEquals("feeder", module.getName());
@@ -434,7 +503,7 @@ public class NetworkTest {
 
   @Test
   public void testAddFeederVerticleFromJson() {
-    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test");
+    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(DefaultVerticleConfig.COMPONENT_NAME, "feeder")
         .putString(DefaultVerticleConfig.COMPONENT_TYPE, DefaultVerticleConfig.COMPONENT_TYPE_VERTICLE)
@@ -444,7 +513,7 @@ public class NetworkTest {
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_WORKER, true)
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_MULTI_THREADED, true);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
     DefaultVerticleConfig verticle = network.getComponent("feeder");
     assertEquals("feeder", verticle.getName());
@@ -459,7 +528,7 @@ public class NetworkTest {
 
   @Test
   public void testAddWorkerModuleFromJson() {
-    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test");
+    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
     JsonObject jsonWorker = new JsonObject()
         .putString(DefaultModuleConfig.COMPONENT_NAME, "worker")
         .putString(DefaultModuleConfig.COMPONENT_TYPE, DefaultModuleConfig.COMPONENT_TYPE_MODULE)
@@ -467,7 +536,7 @@ public class NetworkTest {
         .putObject(DefaultModuleConfig.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(DefaultModuleConfig.COMPONENT_NUM_INSTANCES, 2);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("worker", jsonWorker));
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
     DefaultModuleConfig module = network.getComponent("worker");
     assertEquals("worker", module.getName());
@@ -480,7 +549,7 @@ public class NetworkTest {
 
   @Test
   public void testAddWorkerVerticleFromJson() {
-    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test");
+    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
     JsonObject jsonWorker = new JsonObject()
         .putString(DefaultVerticleConfig.COMPONENT_NAME, "worker")
         .putString(DefaultVerticleConfig.COMPONENT_TYPE, DefaultVerticleConfig.COMPONENT_TYPE_VERTICLE)
@@ -490,7 +559,7 @@ public class NetworkTest {
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_WORKER, true)
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_MULTI_THREADED, true);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("worker", jsonWorker));
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
     DefaultVerticleConfig verticle = network.getComponent("worker");
     assertEquals("worker", verticle.getName());
@@ -504,8 +573,25 @@ public class NetworkTest {
   }
 
   @Test
+  public void testAddConnectionFromJson() {
+    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
+    JsonObject jsonConnection = new JsonObject()
+        .putObject("source", new JsonObject().putString("component", "foo").putString("port", "notout"))
+        .putObject("target", new JsonObject().putString("component", "bar").putString("port", "notin"))
+        .putObject("grouping", new JsonObject().putString("type", "random"));
+    json.putArray("connections", new JsonArray().add(jsonConnection));
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    assertEquals("test", network.getName());
+    ConnectionConfig connection = network.getConnections().iterator().next();
+    assertEquals("foo", connection.getSource().getComponent());
+    assertEquals("notout", connection.getSource().getPort());
+    assertEquals("bar", connection.getTarget().getComponent());
+    assertEquals("notin", connection.getTarget().getPort());
+  }
+
+  @Test
   public void testAddHookFromJson() {
-    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_ADDRESS, "test");
+    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
     JsonObject jsonFeeder = new JsonObject()
         .putString(DefaultVerticleConfig.COMPONENT_NAME, "feeder")
         .putString(DefaultVerticleConfig.COMPONENT_TYPE, DefaultVerticleConfig.Type.VERTICLE.getName())
@@ -513,7 +599,7 @@ public class NetworkTest {
     JsonObject jsonHook = new JsonObject().putString("type", TestHook.class.getName());
     jsonFeeder.putArray(DefaultVerticleConfig.COMPONENT_HOOKS, new JsonArray().add(jsonHook));
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    NetworkConfig network = DefaultNetworkConfig.fromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
     DefaultVerticleConfig feeder = network.getComponent("feeder");
     assertNotNull(feeder);

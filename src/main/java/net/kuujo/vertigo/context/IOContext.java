@@ -15,37 +15,18 @@
  */
 package net.kuujo.vertigo.context;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Input/output context.
  *
  * @author Jordan Halterman
  */
-abstract class IOContext<T extends IOContext<T>> extends Context<T> {
-  protected Collection<OutputPortContext> streams = new ArrayList<>();
-  @JsonIgnore
-  private InstanceContext instance;
-
-  /**
-   * Sets the input parent.
-   */
-  @SuppressWarnings("unchecked")
-  T setInstanceContext(InstanceContext instance) {
-    this.instance = instance;
-    return (T) this;
-  }
+public interface IOContext<T extends IOContext<T>> extends Context<T> {
 
   /**
    * Returns the parent instance context.
    *
    * @return The parent instance context.
    */
-  public InstanceContext instance() {
-    return instance;
-  }
+  public InstanceContext instance();
 
 }

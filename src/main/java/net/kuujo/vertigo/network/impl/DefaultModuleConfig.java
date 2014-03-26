@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network;
+package net.kuujo.vertigo.network.impl;
 
-import static net.kuujo.vertigo.util.Components.isModuleName;
+import org.vertx.java.platform.impl.ModuleIdentifier;
+
+import net.kuujo.vertigo.network.ModuleConfig;
 
 /**
- * A module component.
- * 
+ * Default module configuration implementation.
+ *
  * @author Jordan Halterman
  */
-public class Module extends Component<Module> {
+public class DefaultModuleConfig extends AbstractComponentConfig<ModuleConfig> implements ModuleConfig {
 
   /**
    * <code>module</code> is a string indicating the module name. This field is required
@@ -32,48 +34,30 @@ public class Module extends Component<Module> {
 
   private String module;
 
-  public Module() {
+  public DefaultModuleConfig() {
+    super();
   }
 
-  public Module(String name) {
+  public DefaultModuleConfig(String name, String moduleName) {
     super(name);
-  }
-
-  public Module(String name, String moduleName) {
-    this(name);
     setModule(moduleName);
   }
 
   @Override
-  protected String getType() {
-    return Component.COMPONENT_TYPE_MODULE;
+  public Type getType() {
+    return Type.MODULE;
   }
 
   @Override
-  public boolean isModule() {
-    return true;
-  }
-
-  /**
-   * Sets the module name.
-   * 
-   * @param moduleName The module name.
-   * @return The module configuration.
-   * @throws IllegalArgumentException If the module name is not a valid module identifier.
-   */
-  public Module setModule(String moduleName) {
-    if (!isModuleName(moduleName)) {
-      throw new IllegalArgumentException(moduleName + " is not a valid module name.");
-    }
-    module = moduleName;
+  public ModuleConfig setModule(String moduleName) {
+    // Instantiate a module identifier to force it to validate the module name.
+    // If the module name is invalid then an IllegalArgumentException will be thrown.
+    new ModuleIdentifier(moduleName);
+    this.module = moduleName;
     return this;
   }
 
-  /**
-   * Gets the module name.
-   * 
-   * @return The module name.
-   */
+  @Override
   public String getModule() {
     return module;
   }

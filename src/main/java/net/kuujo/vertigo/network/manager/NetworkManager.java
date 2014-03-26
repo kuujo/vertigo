@@ -31,6 +31,9 @@ import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.impl.DefaultComponentContext;
+import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.network.auditor.AuditorVerticle;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
@@ -60,11 +63,11 @@ public class NetworkManager extends BusModBase {
     @Override
     public void handle(MapEvent<String, String> event) {
       if (event.type().equals(MapEvent.Type.CREATE)) {
-        handleCreate(NetworkContext.fromJson(new JsonObject(event.value())));
+        handleCreate(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
       } else if (event.type().equals(MapEvent.Type.UPDATE)) {
-        handleUpdate(NetworkContext.fromJson(new JsonObject(event.value())));
+        handleUpdate(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
       } else if (event.type().equals(MapEvent.Type.DELETE)) { 
-        handleDelete(NetworkContext.fromJson(new JsonObject(event.value())));
+        handleDelete(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
       }
     }
   };
@@ -100,7 +103,7 @@ public class NetworkManager extends BusModBase {
               if (result.failed()) {
                 startResult.setFailure(result.cause());
               } else if (result.result() != null) {
-                currentContext = NetworkContext.fromJson(new JsonObject(result.result()));
+                currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 // Try to determine the current status of the network.
                 for (ComponentContext<?> component : currentContext.components()) {
                   for (InstanceContext instance : component.instances()) {
@@ -336,7 +339,7 @@ public class NetworkManager extends BusModBase {
           if (result.failed()) {
             complete.fail(result.cause());
           } else {
-            data.put(component.address(), ComponentContext.toJson(component).encode(), new Handler<AsyncResult<String>>() {
+            data.put(component.address(), DefaultComponentContext.toJson(component).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
@@ -366,7 +369,7 @@ public class NetworkManager extends BusModBase {
           } else if (result.result()) {
             // Even if the instance is already deployed, update its context in the cluster.
             // It's possible that the instance's connections could have changed with the update.
-            data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+            data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
@@ -388,7 +391,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a single component instance.
    */
   private void deployInstance(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+    data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -414,9 +417,9 @@ public class NetworkManager extends BusModBase {
                   watchHandlers.put(instance.address(), watchHandler);
                   if (instance.component().isModule()) {
                     deployModule(instance, counter);
-                  } else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
+                  } else if (instance.component().isVerticle() && !instance.component().asVerticle().isWorker()) {
                     deployVerticle(instance, counter);
-                  } else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
+                  } else if (instance.component().isVerticle() && instance.component().asVerticle().isWorker()) {
                     deployWorkerVerticle(instance, counter);
                   }
                 }
@@ -425,9 +428,9 @@ public class NetworkManager extends BusModBase {
           } else {
             if (instance.component().isModule()) {
               deployModule(instance, counter);
-            } else if (instance.component().isVerticle() && !instance.component().toVerticle().isWorker()) {
+            } else if (instance.component().isVerticle() && !instance.component().asVerticle().isWorker()) {
               deployVerticle(instance, counter);
-            } else if (instance.component().isVerticle() && instance.component().toVerticle().isWorker()) {
+            } else if (instance.component().isVerticle() && instance.component().asVerticle().isWorker()) {
               deployWorkerVerticle(instance, counter);
             }
           }
@@ -440,7 +443,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a module component instance.
    */
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployModuleTo(instance.address(), instance.component().deploymentGroup(), instance.component().toModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    cluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -456,7 +459,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a verticle component instance.
    */
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployVerticleTo(instance.address(), instance.component().deploymentGroup(), instance.component().toVerticle().main(),  buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    cluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(),  buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -472,7 +475,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a worker verticle deployment instance.
    */
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployWorkerVerticleTo(instance.address(), instance.component().deploymentGroup(), instance.component().toVerticle().main(), buildConfig(instance, cluster), 1, instance.component().toVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+    cluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -686,7 +689,7 @@ public class NetworkManager extends BusModBase {
    */
   private void updateInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+      data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {

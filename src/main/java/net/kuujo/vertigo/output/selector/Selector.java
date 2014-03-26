@@ -30,7 +30,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
  * used to subscribe to the output of another component, the input's grouping
  * is converted to an output {@link Selector}. Each time a message is emitted
  * to the resulting output channel, the selector is used to select which
- * {@link Connection}s to which to send the message.
+ * {@link ConnectionConfig}s to which to send the message.
  *
  * @author Jordan Halterman
  */

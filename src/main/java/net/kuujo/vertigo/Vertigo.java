@@ -15,18 +15,21 @@
  */
 package net.kuujo.vertigo;
 
+import net.kuujo.vertigo.cluster.LocalClusterManager;
+import net.kuujo.vertigo.cluster.RemoteClusterManager;
+import net.kuujo.vertigo.cluster.VertigoClusterManager;
+import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.network.ActiveNetwork;
+import net.kuujo.vertigo.network.Configs;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
-
-import net.kuujo.vertigo.cluster.VertigoClusterManager;
-import net.kuujo.vertigo.cluster.LocalClusterManager;
-import net.kuujo.vertigo.cluster.RemoteClusterManager;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.network.Network;
 
 /**
  * The primary Vertigo API.
@@ -56,11 +59,58 @@ public final class Vertigo {
   /**
    * Creates a new network.
    * 
-   * @param address The network address.
+   * @param name The network name.
    * @return A new network instance.
    */
-  public Network createNetwork(String address) {
-    return new Network(address);
+  public NetworkConfig createNetwork(String name) {
+    return new DefaultNetworkConfig(name);
+  }
+
+  /**
+   * Creates a network configuration from json.
+   *
+   * @param json A json network configuration.
+   * @return A network configuration.
+   */
+  public NetworkConfig createNetworkFromJson(JsonObject json) {
+    return Configs.createNetwork(json);
+  }
+
+  /**
+   * Deploys a network within the current Vert.x instance.
+   * <p>
+   * 
+   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
+   * deploy network verticles and modules using the current Vert.x {@link Container}
+   * instance.
+   * 
+   * @param name The name of the network to deploy.
+   * @return The called Vertigo instance.
+   */
+  public Vertigo deployLocalNetwork(String name) {
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
+    cluster.deployNetwork(name);
+    return this;
+  }
+
+  /**
+   * Deploys a network within the current Vert.x instance.
+   * <p>
+   * 
+   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
+   * deploy network verticles and modules using the current Vert.x {@link Container}
+   * instance.
+   * 
+   * @param name The name of the network to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   *          The handler will be called with the deployed network context which contains
+   *          information about the network's component locations and event bus addresses.
+   * @return The called Vertigo instance.
+   */
+  public Vertigo deployLocalNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
+    cluster.deployNetwork(name, doneHandler);
+    return this;
   }
 
   /**
@@ -74,7 +124,7 @@ public final class Vertigo {
    * @param network The network to deploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployLocalNetwork(Network network) {
+  public Vertigo deployLocalNetwork(NetworkConfig network) {
     VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.deployNetwork(network);
     return this;
@@ -94,7 +144,7 @@ public final class Vertigo {
    *          information about the network's component locations and event bus addresses.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployLocalNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+  public Vertigo deployLocalNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.deployNetwork(network, doneHandler);
     return this;
@@ -131,7 +181,7 @@ public final class Vertigo {
    * @param network The network to undeploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo undeployLocalNetwork(Network network) {
+  public Vertigo undeployLocalNetwork(NetworkConfig network) {
     VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.undeployNetwork(network);
     return this;
@@ -144,9 +194,36 @@ public final class Vertigo {
    * @param doneHandler An asynchronous handler to be called once the network has been undeployed.
    * @return The called Vertigo instance.
    */
-  public Vertigo undeployLocalNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployLocalNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler) {
     VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
     cluster.undeployNetwork(network, doneHandler);
+    return this;
+  }
+
+  /**
+   * Deploys a network.
+   *
+   * @param name The name of the network to deploy.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployRemoteNetwork(String name) {
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
+    cluster.deployNetwork(name);
+    return this;
+  }
+
+  /**
+   * Deploys a network.
+   *
+   * @param name The name of the network to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   *          The handler will be called with the deployed network context which contains
+   *          information about the network's component locations and event bus addresses.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployRemoteNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
+    cluster.deployNetwork(name, doneHandler);
     return this;
   }
 
@@ -160,7 +237,7 @@ public final class Vertigo {
    * @param network The network to deploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployRemoteNetwork(Network network) {
+  public Vertigo deployRemoteNetwork(NetworkConfig network) {
     VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.deployNetwork(network);
     return this;
@@ -179,7 +256,7 @@ public final class Vertigo {
    *          information about the network's component locations and event bus addresses.
    * @return The called Vertigo instance.
    */
-  public Vertigo deployRemoteNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler) {
+  public Vertigo deployRemoteNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.deployNetwork(network, doneHandler);
     return this;
@@ -188,26 +265,26 @@ public final class Vertigo {
   /**
    * Undeploys a network via the Vert.x event bus.
    * 
-   * @param address The address of the network to undeploy.
+   * @param name The name of the network to undeploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo undeployRemoteNetwork(String address) {
+  public Vertigo undeployRemoteNetwork(String name) {
     VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.undeployNetwork(address);
+    cluster.undeployNetwork(name);
     return this;
   }
 
   /**
    * Undeploys a network via the Vert.x event bus.
    * 
-   * @param address The address of the network to undeploy.
+   * @param name The name of the network to undeploy.
    * @param doneHandler An asynchronous handler to be called once the network has been
    *          undeployed.
    * @return The called Vertigo instance.
    */
-  public Vertigo undeployRemoteNetwork(String address, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployRemoteNetwork(String name, Handler<AsyncResult<Void>> doneHandler) {
     VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.undeployNetwork(address, doneHandler);
+    cluster.undeployNetwork(name, doneHandler);
     return this;
   }
 
@@ -217,7 +294,7 @@ public final class Vertigo {
    * @param network The network configuration to undeploy.
    * @return The called Vertigo instance.
    */
-  public Vertigo undeployRemoteNetwork(Network network) {
+  public Vertigo undeployRemoteNetwork(NetworkConfig network) {
     VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.undeployNetwork(network);
     return this;
@@ -231,7 +308,7 @@ public final class Vertigo {
    *          undeployed.
    * @return The called Vertigo instance.
    */
-  public Vertigo undeployRemoteNetwork(Network network, Handler<AsyncResult<Void>> doneHandler) {
+  public Vertigo undeployRemoteNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler) {
     VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
     cluster.undeployNetwork(network, doneHandler);
     return this;

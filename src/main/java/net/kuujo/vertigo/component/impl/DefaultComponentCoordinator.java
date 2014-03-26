@@ -21,6 +21,7 @@ import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -43,7 +44,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     @Override
     public void handle(MapEvent<String, String> event) {
       if (currentContext != null) {
-        currentContext.notify(InstanceContext.fromJson(new JsonObject(event.value())));
+        currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(event.value())));
       }
     }
   };
@@ -82,7 +83,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
         if (result.failed()) {
           new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
         } else {
-          currentContext = InstanceContext.fromJson(new JsonObject(result.result()));
+          currentContext = DefaultInstanceContext.fromJson(new JsonObject(result.result()));
           data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {

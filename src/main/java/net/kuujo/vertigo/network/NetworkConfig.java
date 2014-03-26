@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,123 +15,38 @@
  */
 package net.kuujo.vertigo.network;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.util.serializer.SerializationException;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * A Vertigo network configuration.
- * <p>
- * 
- * A network is a collection of <code>components</code> - Vert.x verticles or modules -
- * that are interconnected in a meaningful and reliable manner. This class is used to
- * define such structures.
- * 
+ * Network configuration.
+ *
  * @author Jordan Halterman
  */
-public final class Network implements Config {
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="type",
+  defaultImpl=DefaultNetworkConfig.class
+)
+public interface NetworkConfig extends Config {
 
   /**
-   * <code>address</code> is a string indicating the unique network address. This is the
-   * address at which the network will monitor network components. This field is required.
-   */
-  public static final String NETWORK_ADDRESS = "address";
-
-  /**
-   * <code>auditors</code> is a number indicating the number of auditor instances to
-   * deploy with the network. Auditors are used to track messages through the network, and
-   * increasing the number of auditors may help improve performace in networks with high
-   * message volume. Defaults to <code>1</code>
-   */
-  public static final String NETWORK_NUM_AUDITORS = "auditors";
-
-  /**
-   * <code>acking</code> is a boolean indicating whether acking is enabled for the
-   * network. If acking is disabled then messages will not be tracked through the network.
-   * Instead, messages will be immediately "completed" once they have been emitted from a
-   * component. Defaults to <code>true</code> (acking enabled).
-   */
-  public static final String NETWORK_ACKING_ENABLED = "acking";
-
-  /**
-   * <code>timeouts</code> is a boolean indicating whether message timeouts are enabled
-   * for the network. If message timeouts are disabled then auditors will never time out
-   * messages. Ack and failure mechanisms will continue to work. Defaults to
-   * <code>true</code> (timweouts enabled).
-   */
-  public static final String NETWORK_MESSAGE_TIMEOUTS_ENABLED = "timeouts";
-
-  /**
-   * <code>timeout</code> is a number indicating the number of milliseconds after which a
-   * not-yet-completed message should be timed out. Defaults to <code>30000</code> (30
-   * seconds).
-   */
-  public static final String NETWORK_MESSAGE_TIMEOUT = "timeout";
-
-  /**
-   * <code>components</code> is an object defining network component configurations. Each
-   * item in the object must be keyed by the unique component address, with each item
-   * being an object containing the component configuration. See the {@link Component}
-   * class for component configuration options.
-   */
-  public static final String NETWORK_COMPONENTS = "components";
-
-  private static final int DEFAULT_NUM_AUDITORS = 1;
-  private static final long DEFAULT_MESSAGE_TIMEOUT = 30000;
-
-  private String address;
-  private int auditors = DEFAULT_NUM_AUDITORS;
-  private boolean acking = true;
-  private long timeout = DEFAULT_MESSAGE_TIMEOUT;
-  private Map<String, Component<?>> components = new HashMap<String, Component<?>>();
-  private List<Connection> connections = new ArrayList<>();
-
-  public Network() {
-    address = UUID.randomUUID().toString();
-  }
-
-  public Network(String address) {
-    this.address = address;
-  }
-
-  /**
-   * Creates a network from JSON.
-   * 
-   * @param json A JSON representation of the network.
-   * @return A new network configuration.
-   * @throws MalformedNetworkException If the network definition is malformed.
-   */
-  public static Network fromJson(JsonObject json) {
-    try {
-      return SerializerFactory.getSerializer(Network.class).deserializeObject(json, Network.class);
-    }
-    catch (SerializationException e) {
-      throw new MalformedNetworkException(e);
-    }
-  }
-
-  /**
-   * Returns the network address.
+   * Returns the network name.
    * 
    * This is the event bus address at which the network's coordinator will register a
    * handler for components to connect to once deployed.
    * 
-   * @return The network address.
+   * @return The network name.
    */
-  public String getAddress() {
-    return address;
-  }
+  String getName();
 
   /**
    * Enables acking on the network.
@@ -141,10 +56,7 @@ public final class Network implements Config {
    * 
    * @return The network configuration.
    */
-  public Network enableAcking() {
-    acking = true;
-    return this;
-  }
+  NetworkConfig enableAcking();
 
   /**
    * Disables acking on the network.
@@ -155,10 +67,7 @@ public final class Network implements Config {
    * 
    * @return The network configuration.
    */
-  public Network disableAcking() {
-    acking = false;
-    return this;
-  }
+  NetworkConfig disableAcking();
 
   /**
    * Sets acking on the network.
@@ -166,28 +75,21 @@ public final class Network implements Config {
    * @param enabled Whether acking is enabled for the network.
    * @return The network configuration.
    */
-  public Network setAckingEnabled(boolean enabled) {
-    acking = enabled;
-    return this;
-  }
+  NetworkConfig setAckingEnabled(boolean enabled);
 
   /**
    * Returns a boolean indicating whether acking is enabled.
    * 
    * @return Indicates whether acking is enabled for the network.
    */
-  public boolean isAckingEnabled() {
-    return acking;
-  }
+  boolean isAckingEnabled();
 
   /**
    * Returns the number of network auditors.
    * 
    * @return The number of network auditors.
    */
-  public int getNumAuditors() {
-    return auditors;
-  }
+  int getNumAuditors();
 
   /**
    * Sets the number of network auditors.
@@ -201,32 +103,21 @@ public final class Network implements Config {
    * @param numAuditors The number of network auditors.
    * @return The network configuration.
    */
-  public Network setNumAuditors(int numAuditors) {
-    this.auditors = numAuditors;
-    return this;
-  }
+  NetworkConfig setNumAuditors(int numAuditors);
 
   /**
    * Enables message timeouts for the network.
    * 
    * @return The network configuration.
    */
-  public Network enableMessageTimeouts() {
-    if (timeout == 0) {
-      timeout = DEFAULT_MESSAGE_TIMEOUT;
-    }
-    return this;
-  }
+  NetworkConfig enableMessageTimeouts();
 
   /**
    * Disables message timeouts for the network.
    * 
    * @return The network configuration.
    */
-  public Network disableMessageTimeouts() {
-    timeout = 0;
-    return this;
-  }
+  NetworkConfig disableMessageTimeouts();
 
   /**
    * Sets whether message timeouts are enabled for the network.
@@ -234,23 +125,14 @@ public final class Network implements Config {
    * @param isEnabled Indicates whether to enable message timeouts.
    * @return The network configuration.
    */
-  @JsonSetter("timeouts")
-  public Network setMessageTimeoutsEnabled(boolean isEnabled) {
-    if (isEnabled) {
-      return enableMessageTimeouts();
-    } else {
-      return disableMessageTimeouts();
-    }
-  }
+  NetworkConfig setMessageTimeoutsEnabled(boolean isEnabled);
 
   /**
    * Returns a boolean indicating whether message timeouts are enabled for the network.
    * 
    * @return Indicates whether message timeouts are enabled.
    */
-  public boolean isMessageTimeoutsEnabled() {
-    return timeout > 0;
-  }
+  boolean isMessageTimeoutsEnabled();
 
   /**
    * Sets the network message timeout.
@@ -261,32 +143,21 @@ public final class Network implements Config {
    * @param timeout A message timeout in milliseconds.
    * @return The network configuration.
    */
-  public Network setMessageTimeout(long timeout) {
-    this.timeout = timeout;
-    return this;
-  }
+  NetworkConfig setMessageTimeout(long timeout);
 
   /**
    * Gets the network message timeout.
    * 
    * @return The message timeout for the network in milliseconds. Defaults to 30000
    */
-  public long getMessageTimeout() {
-    return timeout;
-  }
+  long getMessageTimeout();
 
   /**
    * Gets a list of network components.
    * 
    * @return A list of network components.
    */
-  public List<Component<?>> getComponents() {
-    List<Component<?>> components = new ArrayList<Component<?>>();
-    for (Map.Entry<String, Component<?>> entry : this.components.entrySet()) {
-      components.add(entry.getValue().setName(entry.getKey()));
-    }
-    return components;
-  }
+  List<ComponentConfig<?>> getComponents();
 
   /**
    * Gets a component by name.
@@ -296,13 +167,7 @@ public final class Network implements Config {
    * @throws IllegalArgumentException If the given component address does not exist within
    *           the network.
    */
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  public <T extends Component> T getComponent(String name) {
-    if (components.containsKey(name)) {
-      return (T) components.get(name);
-    }
-    throw new IllegalArgumentException(name + " is not a valid component name in " + getAddress());
-  }
+  <T extends ComponentConfig<T>> T getComponent(String name);
 
   /**
    * Adds a component to the network.
@@ -310,10 +175,85 @@ public final class Network implements Config {
    * @param component The component to add.
    * @return The added component configuration.
    */
-  public <T extends Component<T>> T addComponent(T component) {
-    components.put(component.getName(), component);
-    return component;
-  }
+  @SuppressWarnings("rawtypes")
+  <T extends ComponentConfig> T addComponent(T component);
+
+  /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain);
+
+  /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @param config The module configuration. This configuration will be made
+   *          available as the verticle configuration within deployed module instances.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config);
+
+  /**
+   * Adds a module to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleName The module name.
+   * @param numInstances The number of module instances. If multiple instances are
+   *          defined, groupings will be used to determine how messages are distributed
+   *          between multiple component instances.
+   * @return The new module configuration.
+   * @throws IllegalArgumentException If the module name is not a valid module identifier.
+   */
+  <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances);
+
+  /**
+   * Adds a module or verticle component to the network.
+   * 
+   * @param name The component name. This will be used as the basis for internal
+   *          component addresses.
+   * @param moduleOrMain The component module name or verticle main.
+   * @param config The component configuration. This configuration will be made
+   *          available as the verticle configuration within deployed module instances.
+   * @param instances The number of component instances. If multiple instances are
+   *          defined, groupings will be used to determine how messages are distributed
+   *          between multiple component instances.
+   * @return The new module configuration.
+   */
+  <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, int instances);
+
+  /**
+   * Returns a boolean indicating whether the network has a component.
+   *
+   * @param name The component name.
+   * @return Indicates whether the component exists in the network.
+   */
+  boolean hasComponent(String name);
+
+  /**
+   * Removes a component from the network.
+   *
+   * @param component The component to remove.
+   * @return The removed component configuration.
+   */
+  <T extends ComponentConfig<T>> T removeComponent(T component);
+
+  /**
+   * Removes a component from the network.
+   *
+   * @param name The component name.
+   * @return The removed component configuration.
+   */
+  <T extends ComponentConfig<T>> T removeComponent(String name);
 
   /**
    * Adds a module to the network.
@@ -321,10 +261,7 @@ public final class Network implements Config {
    * @param module The module to add.
    * @return The added module component configuration.
    */
-  public Module addModule(Module module) {
-    components.put(module.getName(), module);
-    return module;
-  }
+  ModuleConfig addModule(ModuleConfig module);
 
   /**
    * Adds a module to the network.
@@ -335,9 +272,7 @@ public final class Network implements Config {
    * @return The new module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addModule(String name, String moduleName) {
-    return addModule(new Module(name, moduleName));
-  }
+  ModuleConfig addModule(String name, String moduleName);
 
   /**
    * Adds a module to the network.
@@ -350,9 +285,7 @@ public final class Network implements Config {
    * @return The new module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addModule(String name, String moduleName, JsonObject config) {
-    return addModule(new Module(name, moduleName).setConfig(config));
-  }
+  ModuleConfig addModule(String name, String moduleName, JsonObject config);
 
   /**
    * Adds a module to the network.
@@ -366,9 +299,7 @@ public final class Network implements Config {
    * @return The new module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addModule(String name, String moduleName, int numInstances) {
-    return addModule(new Module(name, moduleName).setNumInstances(numInstances));
-  }
+  ModuleConfig addModule(String name, String moduleName, int numInstances);
 
   /**
    * Adds a module to the network.
@@ -384,9 +315,23 @@ public final class Network implements Config {
    * @return The new module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  public Module addModule(String name, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new Module(name, moduleName).setConfig(config).setNumInstances(numInstances));
-  }
+  ModuleConfig addModule(String name, String moduleName, JsonObject config, int numInstances);
+
+  /**
+   * Removes a module from the network.
+   *
+   * @param module The module component.
+   * @return The removed module configuration.
+   */
+  ModuleConfig removeModule(ModuleConfig module);
+
+  /**
+   * Removes a module from the network.
+   *
+   * @param name The module component name.
+   * @return The removed module configuration.
+   */
+  ModuleConfig removeModule(String name);
 
   /**
    * Adds a verticle to the network.
@@ -394,10 +339,7 @@ public final class Network implements Config {
    * @param verticle The verticle to add.
    * @return The added verticle component configuration.
    */
-  public Verticle addVerticle(Verticle verticle) {
-    components.put(verticle.getName(), verticle);
-    return verticle;
-  }
+  VerticleConfig addVerticle(VerticleConfig verticle);
 
   /**
    * Adds a verticle to the network.
@@ -407,9 +349,7 @@ public final class Network implements Config {
    * @param main The verticle main.
    * @return The new verticle configuration.
    */
-  public Verticle addVerticle(String name, String main) {
-    return addVerticle(new Verticle(name, main));
-  }
+  VerticleConfig addVerticle(String name, String main);
 
   /**
    * Adds a verticle to the network.
@@ -421,9 +361,7 @@ public final class Network implements Config {
    *          available as the verticle configuration within deployed module instances.
    * @return The new verticle configuration.
    */
-  public Verticle addVerticle(String name, String main, JsonObject config) {
-    return addVerticle(new Verticle(name, main).setConfig(config));
-  }
+  VerticleConfig addVerticle(String name, String main, JsonObject config);
 
   /**
    * Adds a verticle to the network.
@@ -436,9 +374,7 @@ public final class Network implements Config {
    *          between multiple component instances.
    * @return The new verticle configuration.
    */
-  public Verticle addVerticle(String name, String main, int numInstances) {
-    return addVerticle(new Verticle(name, main).setNumInstances(numInstances));
-  }
+  VerticleConfig addVerticle(String name, String main, int numInstances);
 
   /**
    * Adds a verticle to the network.
@@ -453,9 +389,31 @@ public final class Network implements Config {
    *          between multiple component instances.
    * @return The new verticle configuration.
    */
-  public Verticle addVerticle(String name, String main, JsonObject config, int numInstances) {
-    return addVerticle(new Verticle(name, main).setConfig(config).setNumInstances(numInstances));
-  }
+  VerticleConfig addVerticle(String name, String main, JsonObject config, int numInstances);
+
+  /**
+   * Removes a verticle configuration from the network.
+   *
+   * @param verticle The verticle component.
+   * @return The removed verticle configuration.
+   */
+  VerticleConfig removeVerticle(VerticleConfig verticle);
+
+  /**
+   * Removes a verticle configuration from the network.
+   *
+   * @param name The verticle component name.
+   * @return The removed verticle configuration.
+   */
+  VerticleConfig removeVerticle(String name);
+
+  /**
+   * Creates a connection between two components.
+   *
+   * @param connection The new connection.
+   * @return The connection instance.
+   */
+  ConnectionConfig createConnection(ConnectionConfig connection);
 
   /**
    * Creates a connection between two components.
@@ -464,11 +422,7 @@ public final class Network implements Config {
    * @param target The target component.
    * @return A new connection instance.
    */
-  public Connection createConnection(String source, String target) {
-    Connection connection = new Connection(source, target);
-    connections.add(connection);
-    return connection;
-  }
+  ConnectionConfig createConnection(String source, String target);
 
   /**
    * Creates a connection between two components.
@@ -478,11 +432,7 @@ public final class Network implements Config {
    * @param grouping The connection grouping.
    * @return A new connection instance.
    */
-  public Connection createConnection(String source, String target, Grouping grouping) {
-    Connection connection = new Connection(source, target, grouping);
-    connections.add(connection);
-    return connection;
-  }
+  ConnectionConfig createConnection(String source, String target, Grouping grouping);
 
   /**
    * Creates a connection between two components.
@@ -493,11 +443,7 @@ public final class Network implements Config {
    * @param in The target output port.
    * @return A new connection instance.
    */
-  public Connection createConnection(String source, String out, String target, String in) {
-    Connection connection = new Connection(source, out, target, in);
-    connections.add(connection);
-    return connection;
-  }
+  ConnectionConfig createConnection(String source, String out, String target, String in);
 
   /**
    * Creates a connection between two components.
@@ -509,24 +455,41 @@ public final class Network implements Config {
    * @param grouping The connection grouping.
    * @return A new connection instance.
    */
-  public Connection createConnection(String source, String out, String target, String in, Grouping grouping) {
-    Connection connection = new Connection(source, out, target, in, grouping);
-    connections.add(connection);
-    return connection;
-  }
+  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping);
+
+  /**
+   * Destroys a connection between two components.
+   *
+   * @param connection The connection to destroy.
+   * @return The network configuration.
+   */
+  NetworkConfig destroyConnection(ConnectionConfig connection);
+
+  /**
+   * Destroys a connection between two components.
+   *
+   * @param source The source component name and port.
+   * @param target The target component name and port.
+   * @return The network configuration.
+   */
+  NetworkConfig destroyConnection(String source, String target);
+
+  /**
+   * Destroys a connection between two components.
+   *
+   * @param source The source component name.
+   * @param out The source component out port.
+   * @param target The target component name.
+   * @param in The target component in port.
+   * @return The network configuration.
+   */
+  NetworkConfig destroyConnection(String source, String out, String target, String in);
 
   /**
    * Returns a collection of network connections.
    *
    * @return A collection of connections in the network.
    */
-  public Collection<Connection> getConnections() {
-    return connections;
-  }
-
-  @Override
-  public String toString() {
-    return getAddress();
-  }
+  Collection<ConnectionConfig> getConnections();
 
 }

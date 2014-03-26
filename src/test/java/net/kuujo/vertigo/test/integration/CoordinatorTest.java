@@ -25,7 +25,9 @@ import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.impl.DefaultComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.context.VerticleContext;
+import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -41,20 +43,20 @@ public class CoordinatorTest extends TestVerticle {
 
   @Test
   public void testStartWithExistingContext() {
-    final NetworkContext context = NetworkContext.Builder.newBuilder()
+    final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
         .setAddress("test")
         .setStatusAddress("test.__status")
-        .addComponent(VerticleContext.Builder.newBuilder()
+        .addComponent(DefaultVerticleContext.Builder.newBuilder()
             .setName("test")
             .setAddress("test.test")
             .setStatusAddress("test.test.__status")
-            .addInstance(InstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
+            .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final VertigoCluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
 
-    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+    data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -80,20 +82,20 @@ public class CoordinatorTest extends TestVerticle {
 
   @Test
   public void testPauseHandler() {
-    final NetworkContext context = NetworkContext.Builder.newBuilder()
+    final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
         .setAddress("test")
         .setStatusAddress("test.__status")
-        .addComponent(VerticleContext.Builder.newBuilder()
+        .addComponent(DefaultVerticleContext.Builder.newBuilder()
             .setName("test")
             .setAddress("test.test")
             .setStatusAddress("test.test.__status")
-            .addInstance(InstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
+            .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final VertigoCluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
 
-    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+    data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -125,20 +127,20 @@ public class CoordinatorTest extends TestVerticle {
 
   @Test
   public void testResumeHandler() {
-    final NetworkContext context = NetworkContext.Builder.newBuilder()
+    final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
         .setAddress("test")
         .setStatusAddress("test.__status")
-        .addComponent(VerticleContext.Builder.newBuilder()
+        .addComponent(DefaultVerticleContext.Builder.newBuilder()
             .setName("test")
             .setAddress("test.test")
             .setStatusAddress("test.test.__status")
-            .addInstance(InstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
+            .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final VertigoCluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
 
-    data.put(instance.address(), InstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+    data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {

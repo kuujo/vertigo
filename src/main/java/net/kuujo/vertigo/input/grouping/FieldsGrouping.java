@@ -18,7 +18,7 @@ package net.kuujo.vertigo.input.grouping;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.kuujo.vertigo.network.Connection;
+import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
@@ -27,7 +27,7 @@ import net.kuujo.vertigo.output.selector.Selector;
  * fields on which to hash, this grouping guarantees that workers will always
  * receive messages with the same field values.<p>
  *
- * Note that users should use the <code>fieldsGrouping</code> {@link Connection} method
+ * Note that users should use the <code>fieldsGrouping</code> {@link ConnectionConfig} method
  * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman

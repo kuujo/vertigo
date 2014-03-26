@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
-import net.kuujo.vertigo.network.Connection;
+import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.RoundSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
@@ -23,7 +23,7 @@ import net.kuujo.vertigo.output.selector.Selector;
  * The round grouping dispatches messages to workers in a round-robin
  * fashion.<p>
  *
- * Note that users should use the <code>roundGrouping</code> {@link Connection} method
+ * Note that users should use the <code>roundGrouping</code> {@link ConnectionConfig} method
  * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman

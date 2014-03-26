@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.ActiveNetwork;
+import net.kuujo.vertigo.network.NetworkConfig;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -31,11 +31,28 @@ public interface VertigoClusterManager {
   /**
    * Gets a network context for a deployed network.
    *
-   * @param address The address of the network to get.
+   * @param name The name of the network to get.
    * @param resultHandler An asynchronous handler to be called with the result.
    * @return The cluster manager.
    */
-  VertigoClusterManager getNetwork(String address, Handler<AsyncResult<NetworkContext>> resultHandler);
+  VertigoClusterManager getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler);
+
+  /**
+   * Deploys a network to the cluster.
+   *
+   * @param name The network name.
+   * @return The cluster manager.
+   */
+  VertigoClusterManager deployNetwork(String name);
+
+  /**
+   * Deploys a network to the cluster.
+   *
+   * @param name The network name.
+   * @param doneHandler An asynchronous handler to be called once the deployment is complete.
+   * @return The cluster manager.
+   */
+  VertigoClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Deploys a network to the cluster.
@@ -43,7 +60,7 @@ public interface VertigoClusterManager {
    * @param network The network configuration.
    * @return The cluster manager.
    */
-  VertigoClusterManager deployNetwork(Network network);
+  VertigoClusterManager deployNetwork(NetworkConfig network);
 
   /**
    * Deploys a network to the cluster.
@@ -52,24 +69,24 @@ public interface VertigoClusterManager {
    * @param doneHandler An asynchronous handler to be called once the deployment is complete.
    * @return The cluster manager.
    */
-  VertigoClusterManager deployNetwork(Network network, Handler<AsyncResult<NetworkContext>> doneHandler);
+  VertigoClusterManager deployNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Undeploys a network from the cluster.
    *
-   * @param address The address of the network to undeploy.
+   * @param name The name of the network to undeploy.
    * @return The cluster manager.
    */
-  VertigoClusterManager undeployNetwork(String address);
+  VertigoClusterManager undeployNetwork(String name);
 
   /**
    * Undeploys a network from the cluster.
    *
-   * @param address The address of the network to undeploy.
+   * @param name The name of the network to undeploy.
    * @param doneHandler An asynchronous handler to be called once the network is undeployed.
    * @return The cluster manager.
    */
-  VertigoClusterManager undeployNetwork(String address, Handler<AsyncResult<Void>> doneHandler);
+  VertigoClusterManager undeployNetwork(String name, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Undeploys a network from the cluster.
@@ -77,7 +94,7 @@ public interface VertigoClusterManager {
    * @param network The network configuration to undeploy.
    * @return The cluster manager.
    */
-  VertigoClusterManager undeployNetwork(Network network);
+  VertigoClusterManager undeployNetwork(NetworkConfig network);
 
   /**
    * Undeploys a network from the cluster.
@@ -86,6 +103,6 @@ public interface VertigoClusterManager {
    * @param doneHandler An asynchronous handler to be called once the network is undeployed.
    * @return The cluster manager.
    */
-  VertigoClusterManager undeployNetwork(Network network, Handler<AsyncResult<Void>> doneHandler);
+  VertigoClusterManager undeployNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);
 
 }

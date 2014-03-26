@@ -21,7 +21,7 @@ import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.util.serializer.Serializable;
 import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.NetworkConfig;
 
 /**
  * A base hook.
@@ -32,7 +32,7 @@ import net.kuujo.vertigo.network.Network;
  * This hook receives notifications of when a Vertigo object starts or
  * stops, such as an {@link InputCollector}, {@link OutputCollector},
  * or a {@link Component} instance. Hooks can be added either directly
- * on the relevant object or added externally via a {@link Network} definition.
+ * on the relevant object or added externally via a {@link NetworkConfig} definition.
  *
  * @author Jordan Halterman
  *

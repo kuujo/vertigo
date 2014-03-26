@@ -17,7 +17,6 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -26,10 +25,11 @@ import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.network.auditor.AuditorVerticle;
 import net.kuujo.vertigo.network.auditor.impl.DefaultAcker;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
 
@@ -65,7 +65,7 @@ public class MessagingTest extends TestVerticle {
   @Test
   public void testAck() {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
-    Network network = new Network("test");
+    NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
@@ -136,7 +136,7 @@ public class MessagingTest extends TestVerticle {
   @Test
   public void testFail() {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
-    Network network = new Network("test");
+    NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
@@ -207,7 +207,7 @@ public class MessagingTest extends TestVerticle {
   @Test
   public void testTimeout() {
     final VertigoCluster cluster = new LocalCluster(vertx, container);
-    Network network = new Network("test");
+    NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");

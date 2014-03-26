@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,14 @@
  */
 package net.kuujo.vertigo.context;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.network.Component;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
  * A component context which contains information regarding each component instance within
@@ -44,138 +37,66 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
   property="type"
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name=Component.COMPONENT_TYPE_MODULE),
-  @JsonSubTypes.Type(value=VerticleContext.class, name=Component.COMPONENT_TYPE_VERTICLE)
+  @JsonSubTypes.Type(value=ModuleContext.class, name="module"),
+  @JsonSubTypes.Type(value=VerticleContext.class, name="verticle")
 })
-public abstract class ComponentContext<T extends ComponentContext<T>> extends Context<T> {
-  private static final String DEFAULT_GROUP = "__DEFAULT__";
-  protected String name;
-  protected String address;
-  protected String status;
-  protected String group = DEFAULT_GROUP;
-  protected Map<String, Object> config;
-  protected List<InstanceContext> instances = new ArrayList<>();
-  protected List<ComponentHook> hooks = new ArrayList<>();
-  private @JsonIgnore
-  NetworkContext network;
-
-  /**
-   * Creates a component context from JSON.
-   * 
-   * @param context A JSON representation of the component context.
-   * @return A component context instance.
-   * @throws MalformedContextException If the context is malformed.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T extends ComponentContext<T>> T fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(ComponentContext.class);
-    T component = (T) serializer.deserializeObject(context.getObject("component"), ComponentContext.class);
-    NetworkContext network = NetworkContext.fromJson(context);
-    return (T) component.setNetworkContext(network);
-  }
-
-  /**
-   * Serializes a component context to JSON.
-   * 
-   * @param context The component context to serialize.
-   * @return A Json representation of the component context.
-   */
-  public static <T extends ComponentContext<T>> JsonObject toJson(ComponentContext<T> context) {
-    Serializer serializer = SerializerFactory.getSerializer(ComponentContext.class);
-    JsonObject json = NetworkContext.toJson(context.network());
-    json.putObject("component", serializer.serializeToObject(context));
-    return json;
-  }
-
-  /**
-   * Returns the component deployment type.
-   */
-  @JsonGetter("type")
-  protected abstract String type();
-
-  /**
-   * Sets the component parent.
-   */
-  @SuppressWarnings("unchecked")
-  T setNetworkContext(NetworkContext network) {
-    this.network = network;
-    return (T) this;
-  }
+public interface ComponentContext<T extends ComponentContext<T>> extends Context<T> {
 
   /**
    * Reurns the component name.
    *
    * @return The component name.
    */
-  public String name() {
-    return name;
-  }
+  public String name();
 
   /**
    * Gets the unique component address.
    * 
    * @return The component address.
    */
-  public String address() {
-    return address;
-  }
+  public String address();
 
   /**
    * Returns the component status address.
    *
    * @return The component status address.
    */
-  public String status() {
-    return status;
-  }
+  public String status();
 
   /**
    * Returns a boolean indicating whether the component is a module.
    * 
    * @return Indicates whether the component is a module.
    */
-  public boolean isModule() {
-    return false;
-  }
+  public boolean isModule();
 
   /**
    * Returns a boolean indicating whether the component is a verticle.
    * 
    * @return Indicates whether the component is a verticle.
    */
-  public boolean isVerticle() {
-    return false;
-  }
+  public boolean isVerticle();
 
   /**
    * Gets the component configuration.
    * 
    * @return The component configuration.
    */
-  public JsonObject config() {
-    return config != null ? new JsonObject(config) : new JsonObject();
-  }
+  public JsonObject config();
 
   /**
    * Gets a list of all component instance contexts.
    * 
    * @return A list of component instance contexts.
    */
-  public List<InstanceContext> instances() {
-    for (InstanceContext instance : instances) {
-      instance.setComponentContext(this);
-    }
-    return instances;
-  }
+  public List<InstanceContext> instances();
 
   /**
    * Returns the number of component instances.
    * 
    * @return The number of component instances.
    */
-  public int numInstances() {
-    return instances.size();
-  }
+  public int numInstances();
 
   /**
    * Gets a component instance context by instance ID.
@@ -183,14 +104,7 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
    * @param id The instance ID.
    * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext instance(int instanceNumber) {
-    for (InstanceContext instance : instances) {
-      if (instance.number() == instanceNumber) {
-        return instance.setComponentContext(this);
-      }
-    }
-    return null;
-  }
+  public InstanceContext instance(int instanceNumber);
 
   /**
    * Gets a component instance context by instance address.
@@ -198,81 +112,41 @@ public abstract class ComponentContext<T extends ComponentContext<T>> extends Co
    * @param address The instance address.
    * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext instance(String address) {
-    for (InstanceContext instance : instances) {
-      if (instance.address().equals(address)) {
-        return instance.setComponentContext(this);
-      }
-    }
-    return null;
-  }
+  public InstanceContext instance(String address);
 
   /**
    * Returns the component deployment group.
    * 
    * @return The component HA group.
    */
-  public String deploymentGroup() {
-    return group;
-  }
+  public String group();
 
   /**
    * Gets a list of component hooks.
    * 
    * @return A list of component hooks.
    */
-  public List<ComponentHook> hooks() {
-    return hooks;
-  }
+  public List<ComponentHook> hooks();
 
   /**
    * Returns the component context as a module context.
    *
    * @return A module context.
    */
-  public ModuleContext toModule() {
-    return (ModuleContext) this;
-  }
+  public ModuleContext asModule();
 
   /**
    * Returns the component context as a verticle context.
    *
    * @return A verticle context.
    */
-  public VerticleContext toVerticle() {
-    return (VerticleContext) this;
-  }
+  public VerticleContext asVerticle();
 
   /**
    * Returns the parent network context.
    * 
    * @return The parent network context.
    */
-  public NetworkContext network() {
-    return network;
-  }
-
-  @Override
-  public void notify(T update) {
-    super.notify(update);
-    for (InstanceContext instance : instances) {
-      boolean updated = false;
-      for (InstanceContext i : update.instances()) {
-        if (instance.equals(i)) {
-          instance.notify(i);
-          updated = true;
-          break;
-        }
-      }
-      if (!updated) {
-        instance.notify(null);
-      }
-    }
-  }
-
-  @Override
-  public String toString() {
-    return address();
-  }
+  public NetworkContext network();
 
 }

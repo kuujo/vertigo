@@ -15,48 +15,15 @@
  */
 package net.kuujo.vertigo.context;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import net.kuujo.vertigo.util.Observable;
-import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.serializer.Serializable;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Base context.
  * 
  * @author Jordan Halterman
  */
-public abstract class Context<T extends Context<T>> implements Observable<T>, Serializable {
-  private static final Serializer serializer = SerializerFactory.getSerializer(Context.class);
-  @JsonIgnore
-  protected final Set<Observer<T>> observers = new HashSet<>();
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T registerObserver(Observer<T> observer) {
-    observers.add(observer);
-    return (T) this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T unregisterObserver(Observer<T> observer) {
-    observers.remove(observer);
-    return (T) this;
-  }
-
-  @Override
-  public void notify(T object) {
-    for (Observer<T> observer : observers) {
-      object.registerObserver(observer);
-      observer.update(object);
-    }
-  }
+public interface Context<T extends Context<T>> extends Observable<T>, Serializable {
 
   /**
    * Returns the context address.
@@ -64,53 +31,5 @@ public abstract class Context<T extends Context<T>> implements Observable<T>, Se
    * @return The context address.
    */
   public abstract String address();
-
-  @Override
-  public String toString() {
-    return address();
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    return other instanceof Context && ((Context<?>) other).address().equals(address());
-  }
-
-  @Override
-  public int hashCode() {
-    return address().hashCode();
-  }
-
-  /**
-   * Creates a copy of the context.
-   *
-   * @return A new copy of the context.
-   */
-  @SuppressWarnings("unchecked")
-  public T copy() {
-    return (T) serializer.deserializeString(serializer.serializeToString(this), getClass());
-  }
-
-  /**
-   * Base context builder.
-   *
-   * @author Jordan Halterman
-   */
-  public static abstract class Builder<T extends Context<T>> {
-    protected final T context;
-
-    protected Builder(T context) {
-      this.context = context;
-    }
-
-    /**
-     * Builds the context.
-     *
-     * @return The context.
-     */
-    public T build() {
-      return context;
-    }
-
-  }
 
 }

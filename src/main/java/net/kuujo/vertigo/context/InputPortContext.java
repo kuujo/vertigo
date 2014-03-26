@@ -15,160 +15,37 @@
  */
 package net.kuujo.vertigo.context;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+
+import net.kuujo.vertigo.context.impl.DefaultInputPortContext;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * Input port context.
  *
  * @author Jordan Halterman
  */
-public class InputPortContext extends Context<InputPortContext> {
-  private String address;
-  private String port;
-  private Collection<InputConnectionContext> connections = new ArrayList<>();
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultInputPortContext.class
+)
+public interface InputPortContext extends Context<InputPortContext> {
 
   /**
    * Returns the port name.
    *
    * @return The input port name.
    */
-  public String name() {
-    return port;
-  }
-
-  @Override
-  public String address() {
-    return address;
-  }
+  public String name();
 
   /**
    * Returns a collection of input port connections.
    *
    * @return A list of input connections.
    */
-  public Collection<InputConnectionContext> connections() {
-    return connections;
-  }
-
-  @Override
-  public void notify(InputPortContext update) {
-    super.notify(update);
-    for (InputConnectionContext connection : connections) {
-      boolean updated = false;
-      for (InputConnectionContext c : update.connections()) {
-        if (connection.equals(c)) {
-          connection.notify(c);
-          updated = true;
-          break;
-        }
-      }
-      if (!updated) {
-        connection.notify(null);
-      }
-    }
-  }
-
-  /**
-   * Connection context builder.
-   *
-   * @author Jordan Halterman
-   */
-  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<InputPortContext> {
-
-    private Builder() {
-      super(new InputPortContext());
-    }
-
-    private Builder(InputPortContext context) {
-      super(context);
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @return A new input port context builder.
-     */
-    public static Builder newBuilder() {
-      return new Builder();
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @param context A starting input port context.
-     * @return A new input port context builder.
-     */
-    public static Builder newBuilder(InputPortContext context) {
-      return new Builder(context);
-    }
-
-    /**
-     * Sets the input port address.
-     *
-     * @param address The input port address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
-      return this;
-    }
-
-    /**
-     * Sets the input port name.
-     *
-     * @param port The port name.
-     * @return The context builder.
-     */
-    public Builder setName(String port) {
-      context.port = port;
-      return this;
-    }
-
-    /**
-     * Sets the port connections.
-     *
-     * @param connections An array of port connections.
-     * @return The context builder.
-     */
-    public Builder setConnections(InputConnectionContext... connections) {
-      context.connections = Arrays.asList(connections);
-      return this;
-    }
-
-    /**
-     * Sets the port connections.
-     *
-     * @param connections A collection of port connections.
-     * @return The context builder.
-     */
-    public Builder setConnections(Collection<InputConnectionContext> connections) {
-      context.connections = connections;
-      return this;
-    }
-
-    /**
-     * Adds a connection to the port.
-     *
-     * @param connection A port connection to add.
-     * @return The context builder.
-     */
-    public Builder addConnection(InputConnectionContext connection) {
-      context.connections.add(connection);
-      return this;
-    }
-
-    /**
-     * Removes a connection from the port.
-     *
-     * @param connection A port connection to remove.
-     * @return The context builder.
-     */
-    public Builder removeConnection(InputConnectionContext connection) {
-      context.connections.remove(connection);
-      return this;
-    }
-  }
+  public Collection<InputConnectionContext> connections();
 
 }

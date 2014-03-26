@@ -20,9 +20,10 @@ import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.LocalClusterManager;
 import net.kuujo.vertigo.cluster.RemoteClusterManager;
 import net.kuujo.vertigo.cluster.VertigoClusterManager;
-import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.java.ComponentVerticle;
-import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.ActiveNetwork;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
 
   @Test
   public void testLocalDeploy() {
-    Network network = new Network("test");
+    NetworkConfig network = new DefaultNetworkConfig("test");
     network.setNumAuditors(2);
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
@@ -47,9 +48,9 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
     network.createConnection("feeder", "stream2", "worker", "stream2");
 
     VertigoClusterManager cluster = new RemoteClusterManager(this);
-    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
+    cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
-      public void handle(AsyncResult<NetworkContext> result) {
+      public void handle(AsyncResult<ActiveNetwork> result) {
         assertTrue(result.succeeded());
         testComplete();
       }
@@ -58,7 +59,7 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
 
   @Test
   public void testLocalShutdown() {
-    Network network = new Network("test");
+    NetworkConfig network = new DefaultNetworkConfig("test");
     network.setNumAuditors(2);
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
@@ -67,9 +68,9 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
     network.createConnection("feeder", "stream2", "worker", "stream2");
 
     final VertigoClusterManager cluster = new LocalClusterManager(this);
-    cluster.deployNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
+    cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
-      public void handle(AsyncResult<NetworkContext> result) {
+      public void handle(AsyncResult<ActiveNetwork> result) {
         assertTrue(result.succeeded());
         vertx.setTimer(2000, new Handler<Long>() {
           @Override

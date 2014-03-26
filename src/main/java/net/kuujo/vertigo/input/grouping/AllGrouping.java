@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.input.grouping;
 
-import net.kuujo.vertigo.network.Connection;
+import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
@@ -25,7 +25,7 @@ import net.kuujo.vertigo.output.selector.Selector;
  * four instances, all four component workers will receive a copy of every
  * message emitted to that component.<p>
  *
- * Note that users should use the <code>allGrouping</code> {@link Connection} method
+ * Note that users should use the <code>allGrouping</code> {@link ConnectionConfig} method
  * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman

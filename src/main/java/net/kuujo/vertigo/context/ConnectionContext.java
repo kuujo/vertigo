@@ -22,5 +22,5 @@ package net.kuujo.vertigo.context;
  *
  * @author Jordan Halterman
  */
-public abstract class ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
+public interface ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
 }

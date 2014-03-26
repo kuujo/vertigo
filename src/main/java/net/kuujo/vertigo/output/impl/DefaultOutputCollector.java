@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.context.impl.DefaultOutputPortContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.output.OutputCollector;
@@ -78,7 +79,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   public OutputPort stream(String name) {
     OutputPort stream = streams.get(name);
     if (stream == null) {
-      OutputPortContext context = OutputPortContext.Builder.newBuilder()
+      OutputPortContext context = DefaultOutputPortContext.Builder.newBuilder()
           .setAddress(UUID.randomUUID().toString())
           .setName(name)
           .build();

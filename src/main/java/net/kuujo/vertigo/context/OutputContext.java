@@ -15,14 +15,11 @@
  */
 package net.kuujo.vertigo.context;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
+import net.kuujo.vertigo.context.impl.DefaultOutputContext;
 
-import org.vertx.java.core.json.JsonObject;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * Output context represents output information between a
@@ -31,144 +28,19 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class OutputContext extends IOContext<OutputContext> {
-  private Collection<OutputPortContext> ports = new ArrayList<>();
-
-  /**
-   * Creates a new output context from JSON.
-   * 
-   * @param context A JSON representation of the output context.
-   * @return A new output context instance.
-   * @throws MalformedContextException If the JSON context is malformed.
-   */
-  public static OutputContext fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(InstanceContext.class);
-    OutputContext output = serializer.deserializeObject(context.getObject("output"), OutputContext.class);
-    InstanceContext instance = InstanceContext.fromJson(context);
-    return output.setInstanceContext(instance);
-  }
-
-  /**
-   * Serializes an output context to JSON.
-   * 
-   * @param context The IO context to serialize.
-   * @return A Json representation of the IO context.
-   */
-  public static JsonObject toJson(OutputContext context) {
-    Serializer serializer = SerializerFactory.getSerializer(InstanceContext.class);
-    JsonObject json = InstanceContext.toJson(context.instance());
-    return json.putObject("output", serializer.serializeToObject(context));
-  }
-
-  @Override
-  public String address() {
-    return null;
-  }
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultOutputContext.class
+)
+public interface OutputContext extends IOContext<OutputContext> {
 
   /**
    * Returns the output's port contexts.
    *
    * @return A collection of output port contexts.
    */
-  public Collection<OutputPortContext> ports() {
-    return ports;
-  }
-
-  @Override
-  public void notify(OutputContext update) {
-    super.notify(update);
-    for (OutputPortContext port : ports) {
-      boolean updated = false;
-      for (OutputPortContext s : update.ports()) {
-        if (port.equals(s)) {
-          port.notify(s);
-          updated = true;
-          break;
-        }
-      }
-      if (!updated) {
-        port.notify(null);
-      }
-    }
-  }
-
-  /**
-   * Output context builder.
-   *
-   * @author Jordan Halterman
-   */
-  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<OutputContext> {
-
-    private Builder() {
-      super(new OutputContext());
-    }
-
-    private Builder(OutputContext context) {
-      super(context);
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @return A new context builder.
-     */
-    public static Builder newBuilder() {
-      return new Builder();
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @param context A starting output context.
-     * @return A new context builder.
-     */
-    public static Builder newBuilder(OutputContext context) {
-      return new Builder(context);
-    }
-
-    /**
-     * Sets the output ports.
-     *
-     * @param ports An array of output port contexts.
-     * @return The context builder.
-     */
-    public Builder setPorts(OutputPortContext... ports) {
-      context.ports = Arrays.asList(ports);
-      return this;
-    }
-
-    /**
-     * Sets the output ports.
-     *
-     * @param ports A collection of output port contexts.
-     * @return The context builder.
-     */
-    public Builder setPorts(Collection<OutputPortContext> ports) {
-      context.ports = ports;
-      return this;
-    }
-
-    /**
-     * Adds a port to the output.
-     *
-     * @param port An output port context.
-     * @return The context builder.
-     */
-    public Builder addPort(OutputPortContext port) {
-      context.ports.add(port);
-      return this;
-    }
-
-    /**
-     * Removes a port from the output.
-     *
-     * @param port An output port context.
-     * @return The context builder.
-     */
-    public Builder removePort(OutputPortContext port) {
-      context.ports.remove(port);
-      return this;
-    }
-  }
+  public Collection<OutputPortContext> ports();
 
 }

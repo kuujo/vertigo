@@ -15,84 +15,28 @@
  */
 package net.kuujo.vertigo.context;
 
+import net.kuujo.vertigo.context.impl.DefaultInputConnectionContext;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 /**
  * Input connection context.
  *
  * @author Jordan Halterman
  */
-public class InputConnectionContext extends ConnectionContext<InputConnectionContext> {
-  private String address;
-  private String source;
-
-  @Override
-  public String address() {
-    return address;
-  }
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultInputConnectionContext.class
+)
+public interface InputConnectionContext extends ConnectionContext<InputConnectionContext> {
 
   /**
    * Returns the connection source.
    *
    * @return The connection source.
    */
-  public String source() {
-    return source;
-  }
-
-  /**
-   * Input connection context builder.
-   *
-   * @author Jordan Halterman
-   */
-  public static class Builder extends net.kuujo.vertigo.context.Context.Builder<InputConnectionContext> {
-
-    private Builder() {
-      super(new InputConnectionContext());
-    }
-
-    private Builder(InputConnectionContext context) {
-      super(context);
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @return A new context builder.
-     */
-    public static Builder newBuilder() {
-      return new Builder();
-    }
-
-    /**
-     * Creates a new context builder.
-     *
-     * @param context A starting connection context.
-     * @return A new context builder.
-     */
-    public static Builder newBuilder(InputConnectionContext context) {
-      return new Builder(context);
-    }
-
-    /**
-     * Sets the stream address.
-     *
-     * @param address The stream address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
-      return this;
-    }
-
-    /**
-     * Sets the connection source.
-     *
-     * @param source The connection source.
-     * @return The context builder.
-     */
-    public Builder setSource(String source) {
-      context.source = source;
-      return this;
-    }
-  }
+  String source();
 
 }

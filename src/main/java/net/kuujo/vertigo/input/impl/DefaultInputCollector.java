@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputPortContext;
+import net.kuujo.vertigo.context.impl.DefaultInputPortContext;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputPort;
@@ -78,7 +79,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   public InputPort stream(String name) {
     InputPort stream = ports.get(name);
     if (stream == null) {
-      InputPortContext context = InputPortContext.Builder.newBuilder()
+      InputPortContext context = DefaultInputPortContext.Builder.newBuilder()
           .setAddress(UUID.randomUUID().toString())
           .setName(name)
           .build();

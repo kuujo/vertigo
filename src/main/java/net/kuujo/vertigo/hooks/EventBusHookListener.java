@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.hooks;
 
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -60,7 +61,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          startHandler.handle(InstanceContext.fromJson(body));
+          startHandler.handle(DefaultInstanceContext.fromJson(body));
         }
       }
     });
@@ -207,7 +208,7 @@ public class EventBusHookListener {
       public void handle(Message<JsonObject> message) {
         JsonObject body = message.body();
         if (body != null) {
-          stopHandler.handle(InstanceContext.fromJson(body));
+          stopHandler.handle(DefaultInstanceContext.fromJson(body));
         }
       }
     });

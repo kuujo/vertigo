@@ -198,10 +198,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   @Override
   @SuppressWarnings("unchecked")
   public <T extends ComponentConfig<T>> T getComponent(String name) {
-    if (components.containsKey(name)) {
-      return (T) components.get(name);
-    }
-    throw new IllegalArgumentException(name + " is not a valid component name in " + getName());
+    return (T) components.get(name);
   }
 
   @Override

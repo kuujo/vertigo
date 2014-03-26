@@ -26,6 +26,7 @@ import java.util.List;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.ComponentConfig;
+import net.kuujo.vertigo.network.Configs;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -453,6 +454,59 @@ public class NetworkTest {
       }
     }
     assertFalse(exists);
+  }
+
+  @Test
+  public void testMergeNetworks() {
+    NetworkConfig network1 = new DefaultNetworkConfig("test");
+    network1.addComponent("foo", "foo.py", 2);
+    NetworkConfig network2 = new DefaultNetworkConfig("test");
+    network2.addComponent("bar", "bar.js", 4);
+    network2.createConnection("foo", "bar");
+    NetworkConfig network3 = Configs.mergeNetworks(network1, network2);
+    assertTrue(network3.hasComponent("foo"));
+    assertTrue(network3.hasComponent("bar"));
+    boolean exists = false;
+    for (ConnectionConfig connection : network3.getConnections()) {
+      if (connection.equals(new DefaultConnectionConfig("foo", "bar", null))) {
+        exists = true;
+        break;
+      }
+    }
+    assertTrue(exists);
+  }
+
+  @Test
+  public void testUnmergeNetworks() {
+    NetworkConfig network1 = new DefaultNetworkConfig("test");
+    network1.addComponent("foo", "foo.py", 2);
+    network1.addComponent("bar", "bar.js", 4);
+    network1.createConnection("foo", "bar");
+    NetworkConfig network2 = new DefaultNetworkConfig("test");
+    network2.addComponent("bar", "bar.js", 4);
+    network2.createConnection("foo", "bar");
+    NetworkConfig network3 = Configs.unmergeNetworks(network1, network2);
+    assertTrue(network3.hasComponent("foo"));
+    assertFalse(network3.hasComponent("bar"));
+    boolean exists = false;
+    for (ConnectionConfig connection : network3.getConnections()) {
+      if (connection.equals(new DefaultConnectionConfig("foo", "bar", null))) {
+        exists = true;
+        break;
+      }
+    }
+    assertFalse(exists);
+  }
+
+  @Test
+  public void testMergeNetworksFail() {
+    NetworkConfig network1 = new DefaultNetworkConfig("test");
+    NetworkConfig network2 = new DefaultNetworkConfig("nottest");
+    try {
+      Configs.mergeNetworks(network1, network2);
+      fail();
+    } catch(Exception e) {
+    }
   }
 
   @Test

@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -46,16 +45,11 @@ public final class ContextBuilder {
   /**
    * Builds a network context from a network definition.
    *
-   * @param network
-   *   The network definition.
-   * @param cluster
-   *   The cluster in which the network is being deployed.
-   * @return
-   *   A new network context.
-   * @throws MalformedNetworkException 
-   *   If the network is malformed.
+   * @param network The network definition.
+   * @return A new network context.
+   * @throws MalformedNetworkException If the network is malformed.
    */
-  public static NetworkContext buildContext(NetworkConfig network, VertigoCluster cluster) {
+  public static NetworkContext buildContext(NetworkConfig network) {
     DefaultNetworkContext.Builder context = DefaultNetworkContext.Builder.newBuilder();
 
     // Set basic network configuration options.

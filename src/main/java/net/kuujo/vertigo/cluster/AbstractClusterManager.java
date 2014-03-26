@@ -164,9 +164,9 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
           if (result.result() != null) {
             NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
             NetworkConfig updatedConfig = Configs.mergeNetworks(currentContext.config(), network);
-            updatedContext = ContextBuilder.buildContext(updatedConfig, cluster);
+            updatedContext = ContextBuilder.buildContext(updatedConfig);
           } else {
-            updatedContext = ContextBuilder.buildContext(network, cluster);
+            updatedContext = ContextBuilder.buildContext(network);
           }
 
           final NetworkContext context = updatedContext;
@@ -266,7 +266,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
               } else if (result.result() != null) {
                 NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 NetworkConfig updatedConfig = Configs.unmergeNetworks(currentContext.config(), network);
-                final NetworkContext context = ContextBuilder.buildContext(updatedConfig, cluster);
+                final NetworkContext context = ContextBuilder.buildContext(updatedConfig);
                 if (context.components().isEmpty()) {
                   cluster.<String, String>getMap("__CLUSTER__").remove(context.address(), new Handler<AsyncResult<String>>() {
                     @Override

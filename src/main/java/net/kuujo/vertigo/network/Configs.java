@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -72,32 +71,25 @@ public final class Configs {
       throw new IllegalArgumentException("Cannot merge networks of different names.");
     }
 
-    NetworkConfig network = new DefaultNetworkConfig(base.getName());
-
     for (ComponentConfig<?> component : merge.getComponents()) {
-      ComponentConfig<?> existing = base.getComponent(component.getName());
-      if (existing == null) {
-        network.addComponent(component);
-      } else {
-        network.addComponent(existing);
+      if (!base.hasComponent(component.getName())) {
+        base.addComponent(component);
       }
     }
 
     for (ConnectionConfig connection : merge.getConnections()) {
-      ConnectionConfig exists = null;
+      boolean exists = false;
       for (ConnectionConfig existing : base.getConnections()) {
         if (existing.equals(connection)) {
-          exists = existing;
+          exists = true;
           break;
         }
       }
-      if (exists != null) {
-        network.createConnection(exists);
-      } else {
-        network.createConnection(connection);
+      if (!exists) {
+        base.createConnection(connection);
       }
     }
-    return network;
+    return base;
   }
 
   /**
@@ -112,27 +104,14 @@ public final class Configs {
       throw new IllegalArgumentException("Cannot merge networks of different names.");
     }
 
-    NetworkConfig network = new DefaultNetworkConfig(base.getName());
-
-    for (ComponentConfig<?> component : base.getComponents()) {
-      if (!unmerge.hasComponent(component.getName())) {
-        network.addComponent(component);
-      }
+    for (ComponentConfig<?> component : unmerge.getComponents()) {
+      base.removeComponent(component.getName());
     }
 
-    for (ConnectionConfig connection : base.getConnections()) {
-      boolean exists = false;
-      for (ConnectionConfig existing : unmerge.getConnections()) {
-        if (existing.equals(connection)) {
-          exists = true;
-          break;
-        }
-      }
-      if (!exists) {
-        network.createConnection(connection);
-      }
+    for (ConnectionConfig connection : unmerge.getConnections()) {
+      base.destroyConnection(connection);
     }
-    return network;
+    return base;
   }
 
 }

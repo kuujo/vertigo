@@ -17,8 +17,6 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -64,12 +62,11 @@ public class MessagingTest extends TestVerticle {
 
   @Test
   public void testAck() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
     NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
-    NetworkContext context = ContextBuilder.buildContext(network, cluster);
+    NetworkContext context = ContextBuilder.buildContext(network);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
     final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
@@ -135,12 +132,11 @@ public class MessagingTest extends TestVerticle {
 
   @Test
   public void testFail() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
     NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
-    NetworkContext context = ContextBuilder.buildContext(network, cluster);
+    NetworkContext context = ContextBuilder.buildContext(network);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
     final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
@@ -206,12 +202,11 @@ public class MessagingTest extends TestVerticle {
 
   @Test
   public void testTimeout() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
     NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", "feeder.py", 2);
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
-    NetworkContext context = ContextBuilder.buildContext(network, cluster);
+    NetworkContext context = ContextBuilder.buildContext(network);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
     final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
     final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());

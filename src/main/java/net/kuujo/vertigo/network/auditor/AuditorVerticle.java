@@ -222,14 +222,14 @@ public class AuditorVerticle extends Verticle {
      * Adds a new message to the tree.
      */
     private void fork(long signature) {
-      this.signature += signature;
+      this.signature ^= signature;
     }
 
     /**
      * Acks a message in the tree.
      */
     private void ack(long signature) {
-      this.signature -= signature;
+      this.signature ^= signature;
     }
 
     /**

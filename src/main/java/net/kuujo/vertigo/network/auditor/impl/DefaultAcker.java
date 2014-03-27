@@ -154,7 +154,7 @@ public class DefaultAcker implements Acker {
       ack = (long) 0;
     }
     for (MessageId child : children) {
-      ack += child.signature();
+      ack ^= child.signature();
     }
     this.children.put(messageId.tree(), ack);
     return this;

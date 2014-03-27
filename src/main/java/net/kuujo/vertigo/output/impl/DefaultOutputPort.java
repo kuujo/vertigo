@@ -25,6 +25,7 @@ import java.util.Random;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputHook;
+import net.kuujo.vertigo.message.FailureException;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageId;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
@@ -47,6 +48,12 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultOutputPort implements OutputPort {
+  private static final FailureException FAILURE_EXCEPTION = new FailureException("Processing failed.");
+
+  static {
+    FAILURE_EXCEPTION.setStackTrace(new StackTraceElement[0]);
+  }
+
   private final Vertx vertx;
   private final String address;
   private final OutputPortContext context;
@@ -56,6 +63,7 @@ public class DefaultOutputPort implements OutputPort {
   private final List<OutputHook> hooks = new ArrayList<>();
   private final Random random = new Random();
   private final Map<String, JsonMessage> messages = new HashMap<>();
+  private final Map<String, Handler<AsyncResult<String>>> completeHandlers = new HashMap<>();
 
   private final Handler<String> ackHandler = new Handler<String>() {
     @Override
@@ -115,6 +123,10 @@ public class DefaultOutputPort implements OutputPort {
   private void hookAcked(final String messageId) {
     JsonMessage message = messages.remove(messageId);
     if (message != null) {
+      Handler<AsyncResult<String>> completeHandler = completeHandlers.remove(messageId);
+      if (completeHandler != null) {
+        new DefaultFutureResult<String>(messageId).setHandler(completeHandler);
+      }
       for (OutputHook hook : hooks) {
         hook.handleAcked(messageId);
       }
@@ -127,6 +139,10 @@ public class DefaultOutputPort implements OutputPort {
   private void hookFailed(final String messageId) {
     JsonMessage message = messages.remove(messageId);
     if (message != null) {
+      Handler<AsyncResult<String>> completeHandler = completeHandlers.remove(messageId);
+      if (completeHandler != null) {
+        new DefaultFutureResult<String>(FAILURE_EXCEPTION).setHandler(completeHandler);
+      }
       for (OutputHook hook : hooks) {
         hook.handleFailed(messageId);
       }
@@ -137,12 +153,23 @@ public class DefaultOutputPort implements OutputPort {
    * Calls timed-out hooks.
    */
   private void hookTimeout(final String messageId) {
-    JsonMessage message = messages.remove(messageId);
+    final JsonMessage message = messages.get(messageId);
     if (message != null) {
-      for (OutputHook hook : hooks) {
-        hook.handleTimeout(messageId);
-      }
-      doEmitNew(message.body());
+      acker.create(message.id(), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.succeeded()) {
+            for (OutputConnection connection : connections) {
+              acker.fork(message.id(), connection.send(message));
+            }
+            acker.commit(message.id());
+            hookEmit(messageId);
+          }
+          else {
+            hookTimeout(messageId);
+          }
+        }
+      });
     }
   }
 
@@ -158,6 +185,13 @@ public class DefaultOutputPort implements OutputPort {
   @Override
   public String emit(JsonObject body) {
     return doEmitNew(body);
+  }
+
+  @Override
+  public String emit(JsonObject body, Handler<AsyncResult<String>> completeHandler) {
+    final String id = doEmitNew(body);
+    completeHandlers.put(id, completeHandler);
+    return id;
   }
 
   @Override

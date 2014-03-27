@@ -61,6 +61,21 @@ public interface OutputPort {
   String emit(JsonObject body);
 
   /**
+   * Emits a message to the output port with an completion handler.
+   *
+   * The completion handler will be called once the message and all of its
+   * descendants have finished processing. If the message or any of its
+   * descendants are explicitly failed, the completion handler will fail
+   * with a <code>FailureException</code>.
+   *
+   * @param body The body of the message to emit.
+   * @param completeHandler An asynchronous handler to be called once the message
+   *        and all of its descendants have completed processing.
+   * @return The emitted message ID.
+   */
+  String emit(JsonObject body, Handler<AsyncResult<String>> completeHandler);
+
+  /**
    * Emits a child message to the output port.
    * 
    * Emitting data as the child of an existing message creates a new node in the parent

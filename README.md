@@ -1,123 +1,137 @@
-Vert.igo
-========
+Vertigo
+=======
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
 **[Java User Manual](https://github.com/kuujo/vertigo/wiki/Java-User-Manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
 
-Vertigo is a distributed event processing framework built on the
-[Vert.x](http://vertx.io/) application platform. Following a concept and
-structure similar to [Storm](https://github.com/nathanmarz/storm), Vertigo
-allows real-time problems to be broken down into smaller tasks (as Vert.x
-verticles) and distributed across **one or many Vert.x instances**, managing
-communication between components in a **predictable and reliable** manner.
+**[Javascript API][vertigo-js]**
+
+**[Python API][vertigo-python]**
+
+Vertigo is a fast, reliable, fault-tolerant event processing framework built on
+the [Vert.x](http://vertx.io/) application platform. Combining concepts of
+cutting-edge [real-time systems](http://storm.incubator.apache.org/) and
+[flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
+Vertigo allows real-time problems to be broken down into smaller tasks (as
+Vert.x verticles) and distributed across a Vert.x cluster. Vertigo provides
+fault-tolerance for data streams and components, allowing developers to spend more
+time focusing on application code.
 
 * Manages multi-step event processing systems, from simple pipelines to
   **complex networks of Vert.x modules/verticles**, including **remote procedure
   calls spanning multiple Vert.x verticle instances**
-* **Abstracts communication details** from verticle implementations by providing
-  an API for defining verticle relationships at the point of deployment
-* **Guarantees message processing** through ack/fail/timeout mechanisms, providing
-  data sources with feedback on the status of processing simple or complex
-  message trees
-* Supports distribution of messages between multiple verticle instances using
-  **random, round-robin, hashing, or fanout** approaches
-* Supports **distribution of verticle/modules instances across a cluster** of Vert.x
-  instances
-* **Monitors networks for failures** and automatically reassigns/redeploys failed
-  verticles and modules
+* Supports deployment of networks within a single Vert.x instance or across a Vert.x cluster.
+* **Promotes reusability** by abstracting communication details from verticle implementations,
+  allowing components to be arbitrarily connected to form complex networks.
+* **Guarantees message processing** through ack/fail/timeout mechanisms, tracking
+  complex message trees through multiple Vert.x verticle instances and providing
+  data sources with feedback on the status of processing.
+* Facilitates distribution of messages between multiple verticle instances using
+  **random, round-robin, mod hashing, or fanout** methods.
 * Network components can be written in **any Vert.x supported language**, with
-  APIs for Vertigo 0.6 in [Javascript][vertigo-js]
-  and [Python][vertigo-python]
-* Integrates seemlessly with existing Vert.x applications
+  APIs for Vertigo 0.6 in [Javascript][vertigo-js] and [Python][vertigo-python]
 
-### New in Vertigo 0.6
+### New in Vertigo 0.7
+Vertigo 0.7 represents a significant directional shift for Vertigo. In my view, Vertigo
+is finally gaining an identity of its own. We have now adopted many concepts of
+[flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
+essentially merging modern reliable stream-processing features with more abstract component
+APIs and communication models. Vertigo 0.7 is not yet stable, but we do have a comprehensive
+list of the changes that have been or will be made prior to a 0.7 release.
 
-* Smaller, **simpler core APIs** with explicitly typed components - feeder, worker, and executor
-* Consolidated network deployment API in a `Vertx` like object
-* Automatic construction of component instances within component Vert.x verticles
-* Improved Java API with component verticle implementations
-* New **stream abstraction**. Emit messages to specific output streams and subscribe
-to messages from specific input streams:
-* Improved ack/fail/timeout feedback mechanisms
-* Network deployment events via the Vert.x event bus
-* Component event hooks via Java classes or the event bus
-* Completely redesigned **Jackson-based serializer** which supports automated serialization
-  of most obejcts
-* Improved message tracking algorithm with significantly smaller memory footprint
-  (able to track huge numbers of messages efficiently)
-* [Complete Python API][vertigo-python]
-* [Complete Javascript API][vertigo-js]
+#### Vertigo UI
+Contributors to Vertigo have been developing a UI for Vertigo that will allow users to
+visually design Vertigo networks. Significant work is being done to ensure that Vertigo
+will integrate seamlessly with the new UI. See the Vertigo Google Group for more info.
 
-### Upcoming in Vertigo 0.6.3
-* Improved component logging
-* Support for worker verticle components and related options
-* Network Json configuration bug fixes
-* Distributed coordination of network components (removed a central point of failure)
+#### A single abstract component
+Vertigo itself no longer provides high level component implementations - e.g. feeders
+and workers. Instead, Vertigo provides a single "black box" `Component` which can both
+receive and send messages. This means that components can be arbitrarily connected to
+one another without component type limitations.
 
-### Roadmap for Vertigo 0.7
-Vertigo 0.7 will provide many new advanced reliability features. I'd like to
-outline some of those features and the reasoning behind them.
+#### Redesigned network configuration API
+The network configuration API has been completely redesigned for Vertigo 0.7. The design is
+loosely based on common flow-based programming APIs, but more importantly it allows for
+partial network configurations to be interpreted by Vertigo in order to support runtime
+network configuration changes (see below).
 
-#### Fault-tolerance
-Vertigo's clustering support is being refactored to provide for fault-tolerant
-networks. Currently, Vertigo supports deploying networks within a cluster of
-Vert.x instances using [Via](https://github.com/kuujo/via). But Via is only a
-basic cluster management system that cannot provide any reliability guarantees
-whatsoever. This is an issue for users who want to ensure their Vertigo networks
-remain alive. So, I've begun work on redesigning Via to provide fault-tolerant
-cluster management. What this means is that once a Vertigo component is deployed
-to a Via cluster, if any node in the cluster dies then that node's assignments
-will be automatically reassigned to a node that is still alive. Indeed, this is
-the current behavior of Via, but the Via master node represents a single point
-of failure that means if the master dies then the entire cluster stops working.
+```java
+NetworkConfig network = vertigo.createNetwork("wordcount")
+  .addComponent("foo", "foo.js", 2)
+  .addComponent("bar", "bar.js", 4)
+  .createConnection("foo", "out", "bar", "in");
+```
 
-The way to remedy this is by building a decentralized cluster management system.
-That means using a consensus algorithm to get disparate nodes to agree on values
-regardless of their location in time and space. So, to that end I've created an
-implementation of the
-[Raft consensus algorithm](https://ramcloud.stanford.edu/wiki/download/attachments/11370504/raft.pdf)
-on top of the Vert.x event bus. [CopyCat](https://github.com/kuujo/copycat) is a
-simple framework for replicating state across a Vert.x cluster, and it will
-soon be used as the basis for cluster and state management in Vertigo.
+#### Runtime network configuration changes
+One of the primary focuses in Vertigo 0.7 was the ability to support adding and removing
+components and connections from networks while running. To accomplish this, the entire
+coordination framework underlying Vertigo was rewritten to use a distributed implementation
+of the observer pattern to allow components and networks to watch their own configurations
+for changes and update themselves asynchronously. This allows Vertigo networks to be
+restructured at runtime by simply deploying and undeploying partial networks.
 
-#### Strong ordering
-Currently, Vertigo provides no guarantees on the order of messages arriving at
-any given component. If a descendant of a message emitted from any feeder times
-out at any time, Vertigo will re-emit the message from the feeder, meaning that
-while the message was originally created in a certain order, it may not necessarily
-arrive at any given component in that same order. But some applications require
-that message be strongly ordered, so Vertigo will provide stream-based ordering
-options.
+#### Active networks
+In conjunction with support for runtime network configuration changes, Vertigo now provides
+an `ActiveNetwork` object that allows networks to be reconfigured by directly altering
+network configurations.
 
-#### Exactly-once processing semantics
-If a Vertigo message is taking too long to process, Vertigo may automatically
-re-emit that message from the original feeder. This can mean that any given
-component in any network may in fact end up seeing the same message twice. But
-sometimes the internal state of components may require that messages not be
-received more than once. Vertigo will provide stream-based options for exactly-once
-processing semantics.
+```java
+vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    ActiveNetwork network = result.result();
+    network.addComponent("baz", "baz.py", 3); // Add a component.
+    network.removeComponent("foo"); // Remove a component.
+    network.createConnection("bar", "baz"); // Create a connection.
+    network.destroyConnection("foo", "bar"); // Destroy a connection.
+  }
+});
+```
 
-#### Support for deploying networks from the command line
-Finally, a popular feature of Vertigo has been the ability to create network
-configurations from json data. While Vert.x modules and verticles can be deployed
-from the command line, custom verticles must be written in order to define and
-deploy Vertigo networks. Vertigo will build upon its deserialization features
-to support deployment of Vertigo networks from the command line using json
-configuration files.
+#### Reliable connections
+Vertigo's internal messaging framework has been redesigned to remove potential reliability
+issues in cases where the Vert.x event loop is blocked. Previously, Vertigo's pub-sub style
+messaging was dependent upon a timout mechanism which could fail under certain circumstances,
+but Vertigo is now guaranteed not to temporarily drop connections in those cases.
 
----
+#### Fault-tolerant components
+Vertigo's clustering support is now backed by [Xync](http://github.com/kuujo/xync), a
+custom Vert.x platform manager that integrates remote deployments with the Vert.x HA
+mechanism. This allows Vertigo to deploy components across a Vert.x cluster and still
+failover those deployments when a Vert.x instance dies.
 
-Vertigo is not a replacement for [Storm](https://github.com/nathanmarz/storm).
-Rather, Vertigo is a lightweight alternative that is intended to be embedded
-within larger Vert.x applications.
+#### Fault-tolerant data streams
+Vertigo 0.7 will automatically batch and replicate data streams so that data sources
+no longer have to be fault-tolerant/persistent in order to ensure reliability within
+networks. Fault-tolerant data streams will be handled entirely within Vertigo.
 
-For an in-depth look at the concepts underlying Vertigo, check out
-[how it works](https://github.com/kuujo/vertigo/wiki/How-it-works).
+#### Stateful components
+In conjuction with stream batching, Vertigo will support stateful components through
+per-batch checkpointing.
 
-**[Javascript API][vertigo-js]**
+#### Cluster-wide shared data structures
+Vertigo 0.7 supports cluster-wide shared data structures like `map`, `list`, `set`,
+`queue`, `lock`, and `id` (a unique ID generator). These data structures can be used
+for coordination between components and are available both regarless of whether Vert.x
+is in clustering mode.
 
-**[Python API][vertigo-python]**
+#### Streams to ports
+Vertigo 0.7 has adopted the concept of ports from the flow-based programming model. This
+is a rather insignificant change which means that rather than one component subscribing
+to an output stream from another component, connections are created on named output
+and input ports between two components. This allows for components to be more easily reused
+since connections can be created between arbitrary ports on two components.
+
+#### Network deployment from JSON files
+Finally, Vertigo 0.7 supports deployment of networks directly from configuration files
+with the `vertigo-deployer` module. This module essentially behaves like a standard
+Vert.x language module, allowing `*.network.json` files to be deployed directly using
+the Vert.x command line interface.
+
+```
+vertx run wordcount.network.json
+```
 
 ### Adding Vertigo as a Maven dependency
 
@@ -125,18 +139,19 @@ For an in-depth look at the concepts underlying Vertigo, check out
 <dependency>
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>0.6.2</version>
+  <version>0.7.0-SNAPSHOT</version>
 </dependency>
 ```
 
 ### Including Vertigo in a Vert.x module
+
 To use the Vertigo Java API, you can include the Vertigo module in your module's
 `mod.json` file. This will make Vertigo classes available within your module.
 
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.6.2"
+  "includes": "net.kuujo~vertigo~0.7.0-SNAPSHOT"
 }
 ```
 

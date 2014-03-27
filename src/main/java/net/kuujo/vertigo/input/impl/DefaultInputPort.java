@@ -43,7 +43,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 public class DefaultInputPort implements InputPort {
   private static final Logger log = LoggerFactory.getLogger(DefaultInputPort.class);
   private final Vertx vertx;
-  private final InputPortContext context;
+  private InputPortContext context;
   private final Acker acker;
   private final List<InputConnection> connections = new ArrayList<>();
   private final List<InputHook> hooks = new ArrayList<>();
@@ -78,6 +78,11 @@ public class DefaultInputPort implements InputPort {
   @Override
   public InputPortContext context() {
     return context;
+  }
+
+  DefaultInputPort setContext(InputPortContext context) {
+    this.context = context;
+    return this;
   }
 
   @Override

@@ -146,16 +146,32 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
       });
 
       for (OutputPortContext port : context.ports()) {
-        ports.put(port.name(), new DefaultOutputPort(vertx, port, cluster, acker).open(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            if (result.failed()) {
-              startCounter.fail(result.cause());
-            } else {
-              startCounter.succeed();
+        if (ports.containsKey(port.name())) {
+          ((DefaultOutputPort) ports.get(port.name())).setContext(port).open(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                startCounter.fail(result.cause());
+              } else {
+                startCounter.succeed();
+              }
             }
+          });
+        } else {
+          ports.put(port.name(), new DefaultOutputPort(vertx, port, cluster, acker).open(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                startCounter.fail(result.cause());
+              } else {
+                startCounter.succeed();
+              }
+            }
+          }));
+          for (OutputHook hook : hooks) {
+            ports.get(port.name()).addHook(hook);
           }
-        }));
+        }
       }
       started = true;
     } else {

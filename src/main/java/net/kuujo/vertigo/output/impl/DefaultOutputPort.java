@@ -56,7 +56,7 @@ public class DefaultOutputPort implements OutputPort {
 
   private final Vertx vertx;
   private final String address;
-  private final OutputPortContext context;
+  private OutputPortContext context;
   private final Acker acker;
   private final List<OutputConnection> connections = new ArrayList<>();
   private final Iterator<String> auditors;
@@ -109,6 +109,11 @@ public class DefaultOutputPort implements OutputPort {
   @Override
   public OutputPortContext context() {
     return context;
+  }
+
+  DefaultOutputPort setContext(OutputPortContext context) {
+    this.context = context;
+    return this;
   }
 
   @Override

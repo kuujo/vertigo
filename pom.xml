@@ -23,6 +23,7 @@
     <testtools.version>2.0.2-final</testtools.version>
     <junit.version>4.8.2</junit.version>
     <xync.version>0.1.0-SNAPSHOT</xync.version>
+    <xynctools.version>0.1.0-SNAPSHOT</xynctools.version>
 
     <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
@@ -90,6 +91,11 @@
       <artifactId>xync</artifactId>
       <version>${xync.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.kuujo</groupId>
+      <artifactId>xync-tools</artifactId>
+      <version>${xynctools.version}</version>
     </dependency>
   </dependencies>
 

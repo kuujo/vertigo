@@ -48,7 +48,7 @@ public class DefaultInputPort implements InputPort {
   private final Handler<JsonMessage> internalMessageHandler = new Handler<JsonMessage>() {
     @Override
     public void handle(JsonMessage message) {
-      hookReceived(message.messageId().correlationId());
+      hookReceived(message.id().correlationId());
       if (messageHandler != null) {
         messageHandler.handle(message);
       }
@@ -112,15 +112,15 @@ public class DefaultInputPort implements InputPort {
 
   @Override
   public InputPort ack(JsonMessage message) {
-    acker.ack(message.messageId());
-    hookAck(message.messageId().correlationId());
+    acker.ack(message.id());
+    hookAck(message.id().correlationId());
     return this;
   }
 
   @Override
   public InputPort fail(JsonMessage message) {
-    acker.fail(message.messageId());
-    hookFail(message.messageId().correlationId());
+    acker.fail(message.id());
+    hookFail(message.id().correlationId());
     return this;
   }
 

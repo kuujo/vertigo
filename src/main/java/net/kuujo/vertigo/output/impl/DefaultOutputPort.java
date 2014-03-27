@@ -179,7 +179,7 @@ public class DefaultOutputPort implements OutputPort {
   private String doEmitNew(JsonObject body) {
     if (!connections.isEmpty()) {
       final JsonMessage message = createNewMessage(body);
-      final MessageId messageId = message.messageId();
+      final MessageId messageId = message.id();
       messages.put(messageId.correlationId(), message);
       acker.create(messageId, new Handler<AsyncResult<Void>>() {
         @Override
@@ -210,7 +210,7 @@ public class DefaultOutputPort implements OutputPort {
   private String doEmitChild(JsonObject body, JsonMessage parent) {
     if (!connections.isEmpty()) {
       JsonMessage message = createChildMessage(body, parent);
-      MessageId messageId = message.messageId();
+      MessageId messageId = message.id();
       for (OutputConnection connection : connections) {
         acker.fork(messageId, connection.send(message));
       }
@@ -243,7 +243,7 @@ public class DefaultOutputPort implements OutputPort {
    * Creates a child message.
    */
   private JsonMessage createChildMessage(JsonObject body, JsonMessage parent) {
-    MessageId parentId = parent.messageId();
+    MessageId parentId = parent.id();
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setMessageId(DefaultMessageId.Builder.newBuilder()
             .setCorrelationId(new StringBuilder()

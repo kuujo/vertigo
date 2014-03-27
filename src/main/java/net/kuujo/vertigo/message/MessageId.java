@@ -48,11 +48,11 @@ public interface MessageId extends Serializable {
   String tree();
 
   /**
-   * Gets the random message code.
+   * Gets the random message signature.
    * 
-   * @return A random message code.
+   * @return A random message signature.
    */
-  int ackCode();
+  int signature();
 
   /**
    * Gets the message auditor address.

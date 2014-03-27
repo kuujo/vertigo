@@ -35,7 +35,7 @@ public class DefaultMessageId implements MessageId {
   }
 
   @Override
-  public int ackCode() {
+  public int signature() {
     return code;
   }
 

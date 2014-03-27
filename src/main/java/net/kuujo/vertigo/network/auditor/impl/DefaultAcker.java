@@ -154,7 +154,7 @@ public class DefaultAcker implements Acker {
       ack = (long) 0;
     }
     for (MessageId child : children) {
-      ack += child.ackCode();
+      ack += child.signature();
     }
     this.children.put(messageId.tree(), ack);
     return this;
@@ -167,14 +167,14 @@ public class DefaultAcker implements Acker {
       eventBus.send(messageId.auditor(), new JsonObject()
           .putString("action", "commit")
           .putString("tree", messageId.tree())
-          .putNumber("parent", messageId.ackCode())
+          .putNumber("parent", messageId.signature())
           .putNumber("children", ack));
     }
     else {
       eventBus.send(messageId.auditor(), new JsonObject()
           .putString("action", "commit")
           .putString("tree", messageId.tree())
-          .putNumber("parent", messageId.ackCode()));
+          .putNumber("parent", messageId.signature()));
     }
     return this;
   }
@@ -186,14 +186,14 @@ public class DefaultAcker implements Acker {
       eventBus.send(messageId.auditor(), new JsonObject()
           .putString("action", "ack")
           .putString("tree", messageId.tree())
-          .putNumber("parent", messageId.ackCode())
+          .putNumber("parent", messageId.signature())
           .putNumber("children", ack));
     }
     else {
       eventBus.send(messageId.auditor(), new JsonObject()
           .putString("action", "ack")
           .putString("tree", messageId.tree())
-          .putNumber("parent", messageId.ackCode()));
+          .putNumber("parent", messageId.signature()));
     }
     return this;
   }

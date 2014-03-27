@@ -35,7 +35,7 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public MessageId messageId() {
+  public MessageId id() {
     return id;
   }
 

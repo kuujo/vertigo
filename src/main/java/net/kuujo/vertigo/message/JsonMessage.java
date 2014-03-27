@@ -40,7 +40,7 @@ public interface JsonMessage extends Serializable {
    * 
    * @return The message ID.
    */
-  MessageId messageId();
+  MessageId id();
 
   /**
    * Returns the message body.

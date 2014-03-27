@@ -209,7 +209,7 @@ public class AuditorVerticle extends Verticle {
   private static class MessageTree {
     private final String id;
     private final String source;
-    private long code;
+    private long signature;
     private long timeout;
 
     private MessageTree(String messageId, String source, long timeout) {
@@ -221,27 +221,27 @@ public class AuditorVerticle extends Verticle {
     /**
      * Adds a new message to the tree.
      */
-    private void fork(long code) {
-      this.code += code;
+    private void fork(long signature) {
+      this.signature += signature;
     }
 
     /**
      * Acks a message in the tree.
      */
-    private void ack(long code) {
-      this.code -= code;
+    private void ack(long signature) {
+      this.signature -= signature;
     }
 
     /**
      * Checks whether the tree has been completely processed.
      */
     private boolean complete() {
-      return code == 0;
+      return signature == 0;
     }
 
     @Override
     public String toString() {
-      return String.valueOf(code);
+      return String.valueOf(signature);
     }
   }
 

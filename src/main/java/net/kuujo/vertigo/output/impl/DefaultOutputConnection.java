@@ -72,7 +72,7 @@ public class DefaultOutputConnection implements OutputConnection {
         .append(OutputCounter.incrementAndGet())
         .toString());
       eventBus.send(address, serializer.serializeToString(child));
-      messageIds.add(child.messageId());
+      messageIds.add(child.id());
     }
     return messageIds;
   }

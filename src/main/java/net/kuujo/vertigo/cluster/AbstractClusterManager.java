@@ -62,7 +62,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
         } else if (!result.result()) {
           new DefaultFutureResult<ActiveNetwork>(new DeploymentException("Network is not deployed.")).setHandler(resultHandler);
         } else {
-          cluster.<String, String>getMap("__CLUSTER__").get(name, new Handler<AsyncResult<String>>() {
+          cluster.<String, String>getMap(name).get(name, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
@@ -70,7 +70,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
               } else {
                 NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-                cluster.<String, String>getMap("__CLUSTER__").watch(name, new Handler<MapEvent<String, String>>() {
+                cluster.<String, String>getMap(name).watch(name, new Handler<MapEvent<String, String>>() {
                   @Override
                   public void handle(MapEvent<String, String> event) {
                     String scontext = event.value();
@@ -122,14 +122,14 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
         } else if (result.result()) {
           doDeployNetwork(network, doneHandler);
         } else {
-          cluster.<String, String>getMap("__CLUSTER__").remove(network.getName(), new Handler<AsyncResult<String>>() {
+          cluster.<String, String>getMap(network.getName()).remove(network.getName(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
               } else {
                 JsonObject config = new JsonObject()
-                    .putString("address", network.getName())
+                    .putString("name", network.getName())
                     .putString("cluster", cluster.getClass().getName());
                 cluster.deployVerticle(network.getName(), NetworkManager.class.getName(), config, 1, new Handler<AsyncResult<String>>() {
                   @Override
@@ -154,7 +154,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
    * Handles deployment of a network.
    */
   private void doDeployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    cluster.<String, String>getMap("__CLUSTER__").get(network.getName(), new Handler<AsyncResult<String>>() {
+    cluster.<String, String>getMap(network.getName()).get(network.getName(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -170,14 +170,14 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
           }
 
           final NetworkContext context = updatedContext;
-          cluster.<String, String>getMap("__CLUSTER__").put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+          cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
               } else {
                 final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-                cluster.<String, String>getMap("__CLUSTER__").watch(network.getName(), new Handler<MapEvent<String, String>>() {
+                cluster.<String, String>getMap(network.getName()).watch(network.getName(), new Handler<MapEvent<String, String>>() {
                   @Override
                   public void handle(MapEvent<String, String> event) {
                     String scontext = event.value();
@@ -204,13 +204,13 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
   }
 
   @Override
-  public VertigoClusterManager undeployNetwork(String address) {
-    return undeployNetwork(address, null);
+  public VertigoClusterManager undeployNetwork(String name) {
+    return undeployNetwork(name, null);
   }
 
   @Override
-  public VertigoClusterManager undeployNetwork(final String address, final Handler<AsyncResult<Void>> doneHandler) {
-    cluster.isDeployed(address, new Handler<AsyncResult<Boolean>>() {
+  public VertigoClusterManager undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) {
+    cluster.isDeployed(name, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
@@ -218,13 +218,13 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
         } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
         } else {
-          cluster.<String, String>getMap("__CLUSTER__").remove(address, new Handler<AsyncResult<String>>() {
+          cluster.<String, String>getMap(name).remove(name, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
               } else {
-                cluster.undeployVerticle(address, new Handler<AsyncResult<Void>>() {
+                cluster.undeployVerticle(name, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
@@ -258,7 +258,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
         } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
         } else {
-          cluster.<String, String>getMap("__CLUSTER__").get(network.getName(), new Handler<AsyncResult<String>>() {
+          cluster.<String, String>getMap(network.getName()).get(network.getName(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
@@ -268,7 +268,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
                 NetworkConfig updatedConfig = Configs.unmergeNetworks(currentContext.config(), network);
                 final NetworkContext context = ContextBuilder.buildContext(updatedConfig);
                 if (context.components().isEmpty()) {
-                  cluster.<String, String>getMap("__CLUSTER__").remove(context.address(), new Handler<AsyncResult<String>>() {
+                  cluster.<String, String>getMap(network.getName()).remove(context.address(), new Handler<AsyncResult<String>>() {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {
@@ -288,7 +288,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
                     }
                   });
                 } else {
-                  cluster.<String, String>getMap("__CLUSTER__").put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                  cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {

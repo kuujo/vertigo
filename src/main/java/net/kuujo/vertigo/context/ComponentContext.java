@@ -17,12 +17,14 @@ package net.kuujo.vertigo.context;
 
 import java.util.List;
 
+import net.kuujo.vertigo.context.impl.DefaultModuleContext;
+import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
+
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import net.kuujo.vertigo.hooks.ComponentHook;
 
 /**
  * A component context which contains information regarding each component instance within
@@ -37,8 +39,8 @@ import net.kuujo.vertigo.hooks.ComponentHook;
   property="type"
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(value=ModuleContext.class, name="module"),
-  @JsonSubTypes.Type(value=VerticleContext.class, name="verticle")
+  @JsonSubTypes.Type(value=DefaultModuleContext.class, name="module"),
+  @JsonSubTypes.Type(value=DefaultVerticleContext.class, name="verticle")
 })
 public interface ComponentContext<T extends ComponentContext<T>> extends Context<T> {
 

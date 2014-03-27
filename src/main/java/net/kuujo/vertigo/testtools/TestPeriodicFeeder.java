@@ -30,11 +30,11 @@ public class TestPeriodicFeeder extends ComponentVerticle {
 
   @Override
   public void start(final Component component) {
-    component.input().stream("default").messageHandler(new Handler<JsonMessage>() {
+    component.input().port("in").messageHandler(new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {
-        component.output().stream("default").emit(message.body(), message);
-        component.input().stream("default").ack(message);
+        component.output().port("out").emit(message.body(), message);
+        component.input().port("in").ack(message);
       }
     });
   }

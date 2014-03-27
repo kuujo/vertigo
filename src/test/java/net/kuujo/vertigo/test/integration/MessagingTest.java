@@ -17,6 +17,8 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
+import net.kuujo.vertigo.cluster.LocalCluster;
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -67,10 +69,11 @@ public class MessagingTest extends TestVerticle {
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
     NetworkContext context = ContextBuilder.buildContext(network);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
-    final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
+    final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), cluster, acker1);
     final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
-    final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
+    final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), cluster, acker2);
 
     deployAuditor(context.auditors().iterator().next(), 30000, new Handler<AsyncResult<Void>>() {
       @Override
@@ -84,10 +87,10 @@ public class MessagingTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                input.stream("default").messageHandler(new Handler<JsonMessage>() {
+                input.port("in").messageHandler(new Handler<JsonMessage>() {
                   @Override
                   public void handle(JsonMessage message) {
-                    input.stream("default").ack(message);
+                    input.port("in").ack(message);
                   }
                 });
                 input.open(new Handler<AsyncResult<Void>>() {
@@ -116,8 +119,8 @@ public class MessagingTest extends TestVerticle {
                       @Override
                       public void handle(AsyncResult<Void> result) {
                         assertTrue(result.succeeded());
-                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
-                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
+                        output.port("out").emit(new JsonObject().putString("foo", "bar"));
+                        output.port("out").emit(new JsonObject().putString("foo", "bar"));
                       }
                     });
                   }
@@ -137,10 +140,11 @@ public class MessagingTest extends TestVerticle {
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
     NetworkContext context = ContextBuilder.buildContext(network);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
-    final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
+    final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), cluster, acker1);
     final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
-    final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
+    final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), cluster, acker2);
 
     deployAuditor(context.auditors().iterator().next(), 30000, new Handler<AsyncResult<Void>>() {
       @Override
@@ -154,10 +158,10 @@ public class MessagingTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                input.stream("default").messageHandler(new Handler<JsonMessage>() {
+                input.port("in").messageHandler(new Handler<JsonMessage>() {
                   @Override
                   public void handle(JsonMessage message) {
-                    input.stream("default").fail(message);
+                    input.port("in").fail(message);
                   }
                 });
                 input.open(new Handler<AsyncResult<Void>>() {
@@ -186,8 +190,8 @@ public class MessagingTest extends TestVerticle {
                       @Override
                       public void handle(AsyncResult<Void> result) {
                         assertTrue(result.succeeded());
-                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
-                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
+                        output.port("out").emit(new JsonObject().putString("foo", "bar"));
+                        output.port("out").emit(new JsonObject().putString("foo", "bar"));
                       }
                     });
                   }
@@ -207,10 +211,11 @@ public class MessagingTest extends TestVerticle {
     network.addVerticle("worker", "worker.py", 2);
     network.createConnection("feeder", "worker");
     NetworkContext context = ContextBuilder.buildContext(network);
+    final VertigoCluster cluster = new LocalCluster(vertx, container);
     final Acker acker1 = new DefaultAcker(vertx.eventBus(), context.auditors());
-    final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), acker1);
+    final OutputCollector output = new DefaultOutputCollector(vertx, context.component("feeder").instance(1).output(), cluster, acker1);
     final Acker acker2 = new DefaultAcker(vertx.eventBus(), context.auditors());
-    final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), acker2);
+    final InputCollector input = new DefaultInputCollector(vertx, context.component("worker").instance(1).input(), cluster, acker2);
 
     deployAuditor(context.auditors().iterator().next(), 1000, new Handler<AsyncResult<Void>>() {
       @Override
@@ -224,7 +229,7 @@ public class MessagingTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                input.stream("default").messageHandler(new Handler<JsonMessage>() {
+                input.port("in").messageHandler(new Handler<JsonMessage>() {
                   @Override
                   public void handle(JsonMessage message) {
                   }
@@ -255,8 +260,8 @@ public class MessagingTest extends TestVerticle {
                       @Override
                       public void handle(AsyncResult<Void> result) {
                         assertTrue(result.succeeded());
-                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
-                        output.stream("default").emit(new JsonObject().putString("foo", "bar"));
+                        output.port("out").emit(new JsonObject().putString("foo", "bar"));
+                        output.port("out").emit(new JsonObject().putString("foo", "bar"));
                       }
                     });
                   }

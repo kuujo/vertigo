@@ -10,10 +10,10 @@ public class TestFailingComponent extends ComponentVerticle {
 
   @Override
   public void start(final Component component) {
-    component.input().stream("default").messageHandler(new Handler<JsonMessage>() {
+    component.input().port("in").messageHandler(new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {
-        component.input().stream("default").fail(message);
+        component.input().port("out").fail(message);
       }
     });
   }

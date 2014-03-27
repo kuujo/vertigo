@@ -52,20 +52,20 @@ public interface InputCollector {
   InputCollector addHook(InputHook hook);
 
   /**
-   * Returns a collection of input streams.
+   * Returns a collection of input ports.
    *
-   * @return A collection of input streams.
+   * @return A collection of input ports.
    */
-  Collection<InputPort> streams();
+  Collection<InputPort> ports();
 
   /**
-   * Returns an input stream. The stream will be automatically created if it doesn't
+   * Returns an input port. The port will be automatically created if it doesn't
    * already exist.
    *
-   * @param name The name of the stream to get.
-   * @return The input stream.
+   * @param name The name of the port to get.
+   * @return The input port.
    */
-  InputPort stream(String name);
+  InputPort port(String name);
 
   /**
    * Opens the input collector.

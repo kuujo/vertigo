@@ -197,8 +197,8 @@ public class DefaultComponent implements Component {
         } else {
           context = result.result();
           acker = new DefaultAcker(eventBus, context.component().network().auditors());
-          input = new DefaultInputCollector(vertx, context.input(), acker);
-          output = new DefaultOutputCollector(vertx, context.output(), acker);
+          input = new DefaultInputCollector(vertx, context.input(), cluster, acker);
+          output = new DefaultOutputCollector(vertx, context.output(), cluster, acker);
           for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
             addHook(hook);
           }

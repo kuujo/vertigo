@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.impl.DefaultOutputPortContext;
@@ -46,13 +47,16 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 public class DefaultOutputCollector implements OutputCollector, Observer<OutputContext> {
   private final Vertx vertx;
   private final OutputContext context;
+  private final VertigoCluster cluster;
   private final Acker acker;
   private final List<OutputHook> hooks = new ArrayList<>();
-  private final Map<String, OutputPort> streams = new HashMap<>();
+  private final Map<String, OutputPort> ports = new HashMap<>();
+  private boolean started;
 
-  public DefaultOutputCollector(Vertx vertx, OutputContext context, Acker acker) {
+  public DefaultOutputCollector(Vertx vertx, OutputContext context, VertigoCluster cluster, Acker acker) {
     this.vertx = vertx;
     this.context = context;
+    this.cluster = cluster;
     this.acker = acker;
   }
 
@@ -64,59 +68,59 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   @Override
   public OutputCollector addHook(OutputHook hook) {
     hooks.add(hook);
-    for (OutputPort stream : streams.values()) {
-      stream.addHook(hook);
+    for (OutputPort port : ports.values()) {
+      port.addHook(hook);
     }
     return this;
   }
 
   @Override
-  public Collection<OutputPort> streams() {
-    return streams.values();
+  public Collection<OutputPort> ports() {
+    return ports.values();
   }
 
   @Override
-  public OutputPort stream(String name) {
-    OutputPort stream = streams.get(name);
-    if (stream == null) {
+  public OutputPort port(String name) {
+    OutputPort port = ports.get(name);
+    if (port == null) {
       OutputPortContext context = DefaultOutputPortContext.Builder.newBuilder()
           .setAddress(UUID.randomUUID().toString())
           .setName(name)
           .build();
-      stream = new DefaultOutputPort(vertx, context, acker);
-      streams.put(name, stream);
+      port = new DefaultOutputPort(vertx, context, cluster, acker);
+      ports.put(name, port);
     }
-    return stream;
+    return port;
   }
 
   @Override
   public void update(OutputContext update) {
-    Iterator<OutputPort> iter = streams.values().iterator();
+    Iterator<OutputPort> iter = ports.values().iterator();
     while (iter.hasNext()) {
-      OutputPort stream = iter.next();
+      OutputPort port = iter.next();
       boolean exists = false;
       for (OutputPortContext output : update.ports()) {
-        if (output.equals(stream.context())) {
+        if (output.equals(port.context())) {
           exists = true;
           break;
         }
       }
       if (!exists) {
-        stream.close();
+        port.close();
         iter.remove();
       }
     }
 
     for (OutputPortContext output : update.ports()) {
       boolean exists = false;
-      for (OutputPort stream : streams.values()) {
-        if (stream.context().equals(output)) {
+      for (OutputPort port : ports.values()) {
+        if (port.context().equals(output)) {
           exists = true;
           break;
         }
       }
       if (!exists) {
-        streams.put(output.name(), new DefaultOutputPort(vertx, output, acker).open());
+        ports.put(output.name(), new DefaultOutputPort(vertx, output, cluster, acker).open());
       }
     }
   }
@@ -128,7 +132,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
 
   @Override
   public OutputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (streams.isEmpty()) {
+    if (!started) {
       final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
       startCounter.setHandler(new Handler<AsyncResult<Void>>() {
         @Override
@@ -141,8 +145,8 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
         }
       });
 
-      for (OutputPortContext stream : context.ports()) {
-        streams.put(stream.name(), new DefaultOutputPort(vertx, stream, acker).open(new Handler<AsyncResult<Void>>() {
+      for (OutputPortContext port : context.ports()) {
+        ports.put(port.name(), new DefaultOutputPort(vertx, port, cluster, acker).open(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
@@ -153,6 +157,9 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
           }
         }));
       }
+      started = true;
+    } else {
+      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
     }
     return this;
   }
@@ -164,30 +171,35 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(streams.size());
-    stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else {
-          streams.clear();
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-      }
-    });
-
-    for (OutputPort output : streams.values()) {
-      output.close(new Handler<AsyncResult<Void>>() {
+    if (started) {
+      final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
+      stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
-            stopCounter.fail(result.cause());
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           } else {
-            stopCounter.succeed();
+            ports.clear();
+            started = false;
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
       });
+  
+      for (OutputPort output : ports.values()) {
+        output.close(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              stopCounter.fail(result.cause());
+            } else {
+              stopCounter.succeed();
+            }
+          }
+        });
+      }
+    } else {
+      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
     }
   }
 

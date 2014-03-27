@@ -33,7 +33,7 @@ public class TestTimingOutComponent extends ComponentVerticle {
     vertx.setPeriodic(1000, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
-         component.output().stream("default").emit(new JsonObject().putString("body", "Hello world!"));
+         component.output().port("out").emit(new JsonObject().putString("body", "Hello world!"));
       }
     });
   }

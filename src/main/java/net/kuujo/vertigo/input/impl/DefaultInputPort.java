@@ -18,6 +18,7 @@ package net.kuujo.vertigo.input.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.hooks.InputHook;
@@ -63,7 +64,7 @@ public class DefaultInputPort implements InputPort {
     }
   };
 
-  public DefaultInputPort(Vertx vertx, InputPortContext context, Acker acker) {
+  public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster, Acker acker) {
     this.vertx = vertx;
     this.context = context;
     this.acker = acker;

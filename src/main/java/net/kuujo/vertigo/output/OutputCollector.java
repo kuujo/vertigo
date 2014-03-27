@@ -31,7 +31,7 @@ import org.vertx.java.core.Handler;
  * component. When a new component instance is started, the output collector registers an
  * event bus handler at the component address. This is the address at which other
  * components publish listen requests. When a new listen request is received, the output
- * collector sets up an output stream and any new messages emitted from the
+ * collector sets up an output port and any new messages emitted from the
  * component will be sent to the new channel as well.
  * 
  * @author Jordan Halterman
@@ -54,20 +54,20 @@ public interface OutputCollector {
   OutputCollector addHook(OutputHook hook);
 
   /**
-   * Returns a collection of output streams.
+   * Returns a collection of output ports.
    *
-   * @return A collection of output streams.
+   * @return A collection of output ports.
    */
-  Collection<OutputPort> streams();
+  Collection<OutputPort> ports();
 
   /**
-   * Returns an output stream. The stream will be automatically created if
+   * Returns an output port. The port will be automatically created if
    * it doesn't already exist.
    *
-   * @param name The output stream name.
-   * @return An output stream.
+   * @param name The output port name.
+   * @return An output port.
    */
-  OutputPort stream(String name);
+  OutputPort port(String name);
 
   /**
    * Opens the output.

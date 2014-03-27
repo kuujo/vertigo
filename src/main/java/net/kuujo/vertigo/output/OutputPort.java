@@ -56,24 +56,18 @@ public interface OutputPort {
    * Emits a message to the output port.
    *
    * @param body The body of the message to emit.
-   * @return The emitted message ID.
+   * @return The emitted message identifier.
    */
   String emit(JsonObject body);
 
   /**
-   * Emits a message to the output port with an completion handler.
-   *
-   * The completion handler will be called once the message and all of its
-   * descendants have finished processing. If the message or any of its
-   * descendants are explicitly failed, the completion handler will fail
-   * with a <code>FailureException</code>.
+   * Emits a message to the output port.
    *
    * @param body The body of the message to emit.
-   * @param completeHandler An asynchronous handler to be called once the message
-   *        and all of its descendants have completed processing.
-   * @return The emitted message ID.
+   * @param doneHandler An asynchronous handler to be called once the message has been emitted.
+   * @return The emitted message identifier.
    */
-  String emit(JsonObject body, Handler<AsyncResult<String>> completeHandler);
+  String emit(JsonObject body, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Emits a child message to the output port.
@@ -88,17 +82,44 @@ public interface OutputPort {
    *
    * @param body The body of the message to emit.
    * @param parent The parent of the message being emitted.
-   * @return The emitted message ID.
+   * @return The emitted message identifier.
    */
   String emit(JsonObject body, JsonMessage parent);
+
+  /**
+   * Emits a child message to the output port.
+   * 
+   * Emitting data as the child of an existing message creates a new node in the parent
+   * message's message tree. When the new message is emitted, the auditor assigned to the
+   * parent message will be notified of the change, and the new message will be tracked as
+   * a child. This means that the parent message will not be considered fully processed
+   * until all of its children have been acked and are considered fully processed (their
+   * children are acked... etc). It is strongly recommended that users use this API
+   * whenever possible.
+   *
+   * @param body The body of the message to emit.
+   * @param parent The parent of the message being emitted.
+   * @param doneHandler An asynchronous handler to be called once the message has been emitted.
+   * @return The emitted message identifier.
+   */
+  String emit(JsonObject body, JsonMessage parent, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Emits a message to the output port.
    *
    * @param message The message to emit.
-   * @return The emitted message ID.
+   * @return The emitted message identifier.
    */
   String emit(JsonMessage message);
+
+  /**
+   * Emits a message to the output port.
+   *
+   * @param message The message to emit.
+   * @param doneHandler An asynchronous handler to be called once the message has been emitted.
+   * @return The emitted message identifier.
+   */
+  String emit(JsonMessage message, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Opens the output port.

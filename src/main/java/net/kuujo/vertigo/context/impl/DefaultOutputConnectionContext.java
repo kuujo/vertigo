@@ -15,11 +15,13 @@
  */
 package net.kuujo.vertigo.context.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
 /**
  * Output connection context.
@@ -28,8 +30,8 @@ import net.kuujo.vertigo.input.grouping.Grouping;
  */
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
   private String address;
-  private List<String> targets;
-  private Grouping grouping;
+  private List<String> targets = new ArrayList<>();
+  private Grouping grouping = new RoundGrouping();
 
   @Override
   public String address() {

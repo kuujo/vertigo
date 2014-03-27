@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
@@ -171,21 +172,7 @@ public class DefaultOutputPort implements OutputPort {
           for (OutputHook hook : hooks) {
             hook.handleTimeout(messageId);
           }
-          final JsonMessage message = serializer.deserializeString(result.result(), JsonMessage.class);
-          acker.create(message.id(), new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                log.error(result.cause());
-              } else {
-                for (OutputConnection connection : connections) {
-                  acker.fork(message.id(), connection.send(message));
-                }
-                acker.commit(message.id());
-                hookEmit(messageId);
-              }
-            }
-          });
+          doReEmit(serializer.deserializeString(result.result(), JsonMessage.class));
         }
       }
     });
@@ -228,6 +215,26 @@ public class DefaultOutputPort implements OutputPort {
   @Override
   public String emit(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
     return doEmitChild(message.body(), message, doneHandler);
+  }
+
+  /**
+   * Reemits a timed out message.
+   */
+  private void doReEmit(final JsonMessage message) {
+    acker.create(message.id(), new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          log.error(result.cause());
+        } else {
+          for (OutputConnection connection : connections) {
+            acker.fork(message.id(), connection.send(message));
+          }
+          acker.commit(message.id());
+          hookEmit(message.id().correlationId());
+        }
+      }
+    });
   }
 
   /**
@@ -351,7 +358,40 @@ public class DefaultOutputPort implements OutputPort {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           } else {
-            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+            // Check for messages in the cluster that need to be replayed.
+            messages.size(new Handler<AsyncResult<Integer>>() {
+              @Override
+              public void handle(AsyncResult<Integer> result) {
+                if (result.failed()) {
+                  new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                } else if (result.result() == 0) {
+                  new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                } else {
+                  messages.keySet(new Handler<AsyncResult<Set<String>>>() {
+                    @Override
+                    public void handle(AsyncResult<Set<String>> result) {
+                      if (result.failed()) {
+                        new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                      } else {
+                        Set<String> keys = result.result();
+                        final CountingCompletionHandler<Void> recoverCounter = new CountingCompletionHandler<Void>(keys.size());
+                        for (String key : keys) {
+                          messages.get(key, new Handler<AsyncResult<String>>() {
+                            @Override
+                            public void handle(AsyncResult<String> result) {
+                              if (result.succeeded() && result.result() != null) {
+                                doReEmit(serializer.deserializeString(result.result(), JsonMessage.class));
+                              }
+                              recoverCounter.succeed();
+                            }
+                          });
+                        }
+                      }
+                    }
+                  });
+                }
+              }
+            });
           }
         }
       });

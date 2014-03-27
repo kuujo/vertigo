@@ -22,19 +22,18 @@ import net.kuujo.vertigo.cluster.data.AsyncLock;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.cluster.data.impl.EventBusIdGenerator;
-import net.kuujo.vertigo.cluster.data.impl.EventBusList;
-import net.kuujo.vertigo.cluster.data.impl.EventBusLock;
-import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
-import net.kuujo.vertigo.cluster.data.impl.EventBusQueue;
-import net.kuujo.vertigo.cluster.data.impl.EventBusSet;
+import net.kuujo.vertigo.cluster.data.impl.XyncIdGenerator;
+import net.kuujo.vertigo.cluster.data.impl.XyncList;
+import net.kuujo.vertigo.cluster.data.impl.XyncLock;
+import net.kuujo.vertigo.cluster.data.impl.XyncMap;
+import net.kuujo.vertigo.cluster.data.impl.XyncQueue;
+import net.kuujo.vertigo.cluster.data.impl.XyncSet;
+import net.kuujo.xync.XyncCluster;
+import net.kuujo.xync.impl.DefaultXyncCluster;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
@@ -44,8 +43,7 @@ import org.vertx.java.platform.Container;
  * @author Jordan Halterman
  */
 public class RemoteCluster implements VertigoCluster {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
-  private final EventBus eventBus;
+  private final XyncCluster cluster;
 
   @Factory
   public static VertigoCluster factory(Vertx vertx, Container container) {
@@ -53,197 +51,91 @@ public class RemoteCluster implements VertigoCluster {
   }
 
   public RemoteCluster(Vertx vertx) {
-    this.eventBus = vertx.eventBus();
+    this.cluster = new DefaultXyncCluster(vertx);
   }
 
   @Override
   public VertigoCluster isDeployed(String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "check")
-        .putString("id", deploymentID);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
-        } else {
-          new DefaultFutureResult<Boolean>(new DeploymentException(result.result().body().getString("message"))).setHandler(resultHandler);
-        }
-      }
-    });
+    cluster.isDeployed(deploymentID, resultHandler);
     return this;
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config,
-      int instances, final Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, null, moduleName, config, instances, doneHandler);
-  }
-
-  @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances,
-      final Handler<AsyncResult<String>> doneHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "deploy")
-        .putString("id", deploymentID)
-        .putString("group", groupID)
-        .putString("type", "module")
-        .putString("module", moduleName)
-        .putObject("config", config)
-        .putNumber("instances", instances);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-        } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-      }
-    });
+  public VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+    cluster.deployModule(deploymentID, moduleName, config, instances, doneHandler);
     return this;
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, int instances,
-      Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, null, main, config, instances, doneHandler);
-  }
-
-  @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config,
-      int instances, final Handler<AsyncResult<String>> doneHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "deploy")
-        .putString("id", deploymentID)
-        .putString("group", groupID)
-        .putString("type", "verticle")
-        .putString("main", main)
-        .putObject("config", config)
-        .putNumber("instances", instances);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-        } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-      }
-    });
+  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+    cluster.deployModuleTo(deploymentID, groupID, moduleName, config, instances, doneHandler);
     return this;
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config,
-      int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, null, main, config, instances, multiThreaded, doneHandler);
+  public VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    cluster.deployVerticle(deploymentID, main, config, instances, doneHandler);
+    return this;
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main,
-      JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "deploy")
-        .putString("id", deploymentID)
-        .putString("group", groupID)
-        .putString("type", "verticle")
-        .putString("main", main)
-        .putObject("config", config)
-        .putNumber("instances", instances)
-        .putBoolean("worker", true)
-        .putBoolean("multi-threaded", multiThreaded);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
-        } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-      }
-    });
+  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+    cluster.deployVerticleTo(deploymentID, groupID, main, config, instances, doneHandler);
+    return this;
+  }
+
+  @Override
+  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
+    cluster.deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, doneHandler);
+    return this;
+  }
+
+  @Override
+  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
+    cluster.deployWorkerVerticleTo(deploymentID, groupID, main, config, instances, multiThreaded, doneHandler);
     return this;
   }
 
   @Override
   public VertigoCluster undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "undeploy")
-        .putString("id", deploymentID)
-        .putString("type", "module");
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-      }
-    });
+    cluster.undeployModule(deploymentID, doneHandler);
     return this;
   }
 
   @Override
   public VertigoCluster undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "undeploy")
-        .putString("id", deploymentID)
-        .putString("type", "verticle");
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
-        }
-      }
-    });
+    cluster.undeployVerticle(deploymentID, doneHandler);
     return this;
   }
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return new EventBusList<T>(name, eventBus);
+    return new XyncList<T>(cluster.<T>getList(name));
   }
 
   @Override
   public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    return new EventBusMap<K, V>(name, eventBus);
+    return new XyncMap<K, V>(cluster.<K, V>getMap(name));
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return new EventBusSet<T>(name, eventBus);
+    return new XyncSet<T>(cluster.<T>getSet(name));
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return new EventBusQueue<T>(name, eventBus);
+    return new XyncQueue<T>(cluster.<T>getQueue(name));
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return new EventBusIdGenerator(name, eventBus);
+    return new XyncIdGenerator(cluster.getIdGenerator(name));
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return new EventBusLock(name, eventBus);
+    return new XyncLock(cluster.getLock(name));
   }
 
 }

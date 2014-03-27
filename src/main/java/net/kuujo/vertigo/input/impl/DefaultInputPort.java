@@ -31,6 +31,8 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default input port implementation.
@@ -38,6 +40,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class DefaultInputPort implements InputPort {
+  private static final Logger log = LoggerFactory.getLogger(DefaultInputPort.class);
   private final Vertx vertx;
   private final InputPortContext context;
   private final Acker acker;
@@ -50,7 +53,12 @@ public class DefaultInputPort implements InputPort {
     public void handle(JsonMessage message) {
       hookReceived(message.id().correlationId());
       if (messageHandler != null) {
-        messageHandler.handle(message);
+        try {
+          messageHandler.handle(message);
+        } catch (Exception e) {
+          log.error(e);
+          fail(message);
+        }
       }
     }
   };

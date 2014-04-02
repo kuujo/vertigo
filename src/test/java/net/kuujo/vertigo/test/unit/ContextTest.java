@@ -44,11 +44,6 @@ public class ContextTest {
     DefaultNetworkConfig network = new DefaultNetworkConfig("test");
     NetworkContext context = ContextBuilder.buildContext(network);
     assertEquals("test", context.address());
-    assertEquals(1, context.auditors().size());
-    assertEquals(1, context.numAuditors());
-    assertTrue(context.isAckingEnabled());
-    assertTrue(context.isMessageTimeoutsEnabled());
-    assertEquals(30000, context.messageTimeout());
     assertEquals(0, context.components().size());
     try {
       context.component("foo");
@@ -61,16 +56,8 @@ public class ContextTest {
   @Test
   public void testConfiguredNetworkContext() {
     DefaultNetworkConfig network = new DefaultNetworkConfig("test");
-    network.setAckingEnabled(true);
-    network.setNumAuditors(2);
-    network.setMessageTimeout(10000);
     NetworkContext context = ContextBuilder.buildContext(network);
     assertEquals("test", context.address());
-    assertEquals(2, context.auditors().size());
-    assertEquals(2, context.numAuditors());
-    assertTrue(context.isAckingEnabled());
-    assertTrue(context.isMessageTimeoutsEnabled());
-    assertEquals(10000, context.messageTimeout());
     assertEquals(0, context.components().size());
     try {
       context.component("foo");
@@ -306,19 +293,11 @@ public class ContextTest {
       
     }
     @Override
-    public void handleFail(String String) {
-      
-    }
-    @Override
     public void handleEmit(String String) {
       
     }
     @Override
     public void handleAcked(String String) {
-      
-    }
-    @Override
-    public void handleFailed(String String) {
       
     }
     @Override

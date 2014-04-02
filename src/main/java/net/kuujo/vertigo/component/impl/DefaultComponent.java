@@ -24,8 +24,6 @@ import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.hooks.InputHook;
-import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.message.MessageAcker;
@@ -62,54 +60,6 @@ public class DefaultComponent implements Component {
   protected OutputCollector output;
   protected List<ComponentHook> hooks = new ArrayList<>();
   private boolean started;
-
-  private InputHook inputHook = new InputHook() {
-    @Override
-    public void handleReceive(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleReceive(id);
-      }
-    }
-    @Override
-    public void handleAck(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleAck(id);
-      }
-    }
-    @Override
-    public void handleFail(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleFail(id);
-      }
-    }
-  };
-
-  private OutputHook outputHook = new OutputHook() {
-    @Override
-    public void handleEmit(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleEmit(id);
-      }
-    }
-    @Override
-    public void handleAcked(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleAcked(id);
-      }
-    }
-    @Override
-    public void handleFailed(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleFailed(id);
-      }
-    }
-    @Override
-    public void handleTimeout(String id) {
-      for (ComponentHook hook : hooks) {
-        hook.handleTimeout(id);
-      }
-    }
-  };
 
   protected DefaultComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
     this.address = address;
@@ -158,10 +108,6 @@ public class DefaultComponent implements Component {
 
   @Override
   public Component addHook(ComponentHook hook) {
-    if (hooks.isEmpty()) {
-      input.addHook(inputHook);
-      output.addHook(outputHook);
-    }
     hooks.add(hook);
     return  this;
   }

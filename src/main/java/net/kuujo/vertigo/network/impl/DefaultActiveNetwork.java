@@ -17,7 +17,7 @@ package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.cluster.VertigoClusterManager;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
@@ -338,7 +338,7 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping) {
     return createConnection(source, target, grouping, null);
   }
 
@@ -348,7 +348,7 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping) {
     return createConnection(source, out, target, in, grouping, null);
   }
 
@@ -365,7 +365,7 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     ConnectionConfig connection = network.createConnection(source, target, grouping);
     cluster.deployNetwork(network, doneHandler);
     return connection;
@@ -377,7 +377,7 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     ConnectionConfig connection = network.createConnection(source, out, target, in, grouping);
     cluster.deployNetwork(network, doneHandler);
     return connection;

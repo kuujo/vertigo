@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
@@ -33,8 +33,6 @@ import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 
 import org.vertx.java.core.json.JsonObject;
-
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Default network configuration implementation.
@@ -51,37 +49,6 @@ public class DefaultNetworkConfig implements NetworkConfig {
   public static final String NETWORK_NAME = "name";
 
   /**
-   * <code>auditors</code> is a number indicating the number of auditor instances to
-   * deploy with the network. Auditors are used to track messages through the network, and
-   * increasing the number of auditors may help improve performace in networks with high
-   * message volume. Defaults to <code>1</code>
-   */
-  public static final String NETWORK_NUM_AUDITORS = "auditors";
-
-  /**
-   * <code>acking</code> is a boolean indicating whether acking is enabled for the
-   * network. If acking is disabled then messages will not be tracked through the network.
-   * Instead, messages will be immediately "completed" once they have been emitted from a
-   * component. Defaults to <code>true</code> (acking enabled).
-   */
-  public static final String NETWORK_ACKING_ENABLED = "acking";
-
-  /**
-   * <code>timeouts</code> is a boolean indicating whether message timeouts are enabled
-   * for the network. If message timeouts are disabled then auditors will never time out
-   * messages. Ack and failure mechanisms will continue to work. Defaults to
-   * <code>true</code> (timweouts enabled).
-   */
-  public static final String NETWORK_MESSAGE_TIMEOUTS_ENABLED = "timeouts";
-
-  /**
-   * <code>timeout</code> is a number indicating the number of milliseconds after which a
-   * not-yet-completed message should be timed out. Defaults to <code>30000</code> (30
-   * seconds).
-   */
-  public static final String NETWORK_MESSAGE_TIMEOUT = "timeout";
-
-  /**
    * <code>components</code> is an object defining network component configurations. Each
    * item in the object must be keyed by the unique component address, with each item
    * being an object containing the component configuration. See the {@link ComponentConfig}
@@ -89,13 +56,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
    */
   public static final String NETWORK_COMPONENTS = "components";
 
-  private static final int DEFAULT_NUM_AUDITORS = 1;
-  private static final long DEFAULT_MESSAGE_TIMEOUT = 30000;
-
   private String name;
-  private int auditors = DEFAULT_NUM_AUDITORS;
-  private boolean acking = true;
-  private long timeout = DEFAULT_MESSAGE_TIMEOUT;
   private Map<String, ComponentConfig<?>> components = new HashMap<String, ComponentConfig<?>>();
   private List<ConnectionConfig> connections = new ArrayList<>();
 
@@ -110,80 +71,6 @@ public class DefaultNetworkConfig implements NetworkConfig {
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public NetworkConfig enableAcking() {
-    acking = true;
-    return this;
-  }
-
-  @Override
-  public NetworkConfig disableAcking() {
-    acking = false;
-    return this;
-  }
-
-  @Override
-  public NetworkConfig setAckingEnabled(boolean enabled) {
-    acking = enabled;
-    return this;
-  }
-
-  @Override
-  public boolean isAckingEnabled() {
-    return acking;
-  }
-
-  @Override
-  public int getNumAuditors() {
-    return auditors;
-  }
-
-  @Override
-  public NetworkConfig setNumAuditors(int numAuditors) {
-    this.auditors = numAuditors;
-    return this;
-  }
-
-  @Override
-  public NetworkConfig enableMessageTimeouts() {
-    if (timeout == 0) {
-      timeout = DEFAULT_MESSAGE_TIMEOUT;
-    }
-    return this;
-  }
-
-  @Override
-  public NetworkConfig disableMessageTimeouts() {
-    timeout = 0;
-    return this;
-  }
-
-  @Override
-  @JsonSetter("timeouts")
-  public NetworkConfig setMessageTimeoutsEnabled(boolean isEnabled) {
-    if (isEnabled) {
-      return enableMessageTimeouts();
-    } else {
-      return disableMessageTimeouts();
-    }
-  }
-
-  @Override
-  public boolean isMessageTimeoutsEnabled() {
-    return timeout > 0;
-  }
-
-  @Override
-  public NetworkConfig setMessageTimeout(long timeout) {
-    this.timeout = timeout;
-    return this;
-  }
-
-  @Override
-  public long getMessageTimeout() {
-    return timeout;
   }
 
   @Override
@@ -342,7 +229,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping) {
     ConnectionConfig connection = new DefaultConnectionConfig(source, target, grouping, this);
     connections.add(connection);
     return connection;
@@ -356,7 +243,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping) {
     ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in, grouping, this);
     connections.add(connection);
     return connection;

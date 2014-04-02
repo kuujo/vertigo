@@ -15,11 +15,9 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import org.vertx.java.core.json.JsonObject;
-
 import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.network.ComponentConfig;
@@ -28,7 +26,12 @@ import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 
+import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Default connection configuration implementation.
@@ -41,7 +44,11 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
-  private Grouping grouping;
+  private Delivery delivery = Delivery.AT_MOST_ONCE;
+  private Order order = Order.NO_ORDER;
+  @JsonProperty("synchronized")
+  private boolean synchronize;
+  private MessageGrouping grouping;
   @JsonIgnore
   private NetworkConfig network;
 
@@ -55,7 +62,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
         new RoundGrouping(), network);
   }
 
-  public DefaultConnectionConfig(String source, String target, Grouping grouping, NetworkConfig network) {
+  public DefaultConnectionConfig(String source, String target, MessageGrouping grouping, NetworkConfig network) {
     this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
         parseComponent(target), parsePort(target, DEFAULT_IN_PORT), grouping,
         network);
@@ -65,7 +72,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     this(source, out, target, in, new RoundGrouping(), network);
   }
 
-  public DefaultConnectionConfig(String source, String out, String target, String in, Grouping grouping, NetworkConfig network) {
+  public DefaultConnectionConfig(String source, String out, String target, String in, MessageGrouping grouping, NetworkConfig network) {
     this.source.setComponent(source);
     this.source.setPort(out);
     this.target.setComponent(target);
@@ -85,12 +92,54 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public Grouping getGrouping() {
+  public ConnectionConfig setDelivery(Delivery delivery) {
+    this.delivery = delivery;
+    return this;
+  }
+
+  @JsonSetter("delivery")
+  private void setDeliveryMethod(String delivery) {
+    this.delivery = Delivery.parse(delivery);
+  }
+
+  @JsonGetter("delivery")
+  private String getDeliveryMethod() {
+    return this.delivery.toString();
+  }
+
+  @Override
+  public Delivery getDelivery() {
+    return delivery;
+  }
+
+  @Override
+  public ConnectionConfig setOrder(Order order) {
+    this.order = order;
+    return this;
+  }
+
+  @JsonSetter("order")
+  private void setOrderMethod(boolean ordered) {
+    this.order = Order.parse(ordered);
+  }
+
+  @JsonGetter("order")
+  private boolean getOrderMethod() {
+    return this.order.isOrdered();
+  }
+
+  @Override
+  public Order getOrder() {
+    return order;
+  }
+
+  @Override
+  public MessageGrouping getGrouping() {
     return grouping;
   }
 
   @Override
-  public ConnectionConfig groupBy(Grouping grouping) {
+  public ConnectionConfig groupBy(MessageGrouping grouping) {
     this.grouping = grouping;
     return this;
   }
@@ -236,7 +285,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping) {
     return network.createConnection(source, target, grouping);
   }
 
@@ -246,7 +295,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping) {
     return network.createConnection(source, out, target, in, grouping);
   }
 

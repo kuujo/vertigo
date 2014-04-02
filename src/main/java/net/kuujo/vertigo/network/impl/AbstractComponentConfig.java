@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
@@ -283,7 +283,7 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping) {
     return network.createConnection(source, target, grouping);
   }
 
@@ -293,7 +293,7 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping) {
     return network.createConnection(source, out, target, in, grouping);
   }
 

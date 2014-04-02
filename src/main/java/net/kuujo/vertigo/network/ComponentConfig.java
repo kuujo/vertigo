@@ -71,6 +71,7 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config, C
     public String toString() {
       return name;
     }
+
   }
 
   /**

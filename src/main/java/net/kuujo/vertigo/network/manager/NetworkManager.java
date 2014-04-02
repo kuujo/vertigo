@@ -34,7 +34,6 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.DefaultComponentContext;
 import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
-import net.kuujo.vertigo.network.auditor.AuditorVerticle;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.busmods.BusModBase;
@@ -284,47 +283,18 @@ public class NetworkManager extends BusModBase {
    * Deploys a complete network.
    */
   private void deployNetwork(final NetworkContext context, final Handler<AsyncResult<NetworkContext>> doneHandler) {
-    final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.auditors().size());
+    final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
     complete.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
         } else {
-          final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
-          complete.setHandler(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                new DefaultFutureResult<NetworkContext>(result.cause()).setHandler(doneHandler);
-              } else {
-                new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
-              }
-            }
-          });
-          deployComponents(context.components(), complete);
+          new DefaultFutureResult<NetworkContext>(context).setHandler(doneHandler);
         }
       }
     });
-    deployAuditors(context.auditors(), context.messageTimeout(), complete);
-  }
-
-  /**
-   * Deploys all network auditors.
-   */
-  private void deployAuditors(Set<String> auditors, long timeout, final CountingCompletionHandler<Void> complete) {
-    for (String address : auditors) {
-      cluster.deployVerticle(address, AuditorVerticle.class.getName(), new JsonObject().putString("address", address).putNumber("timeout", timeout), 1, new Handler<AsyncResult<String>>() {
-        @Override
-        public void handle(AsyncResult<String> result) {
-          if (result.failed()) {
-            complete.fail(result.cause());
-          } else {
-            complete.succeed();
-          }
-        }
-      });
-    }
+    deployComponents(context.components(), complete);
   }
 
   /**
@@ -498,40 +468,11 @@ public class NetworkManager extends BusModBase {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
-          final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
-          complete.setHandler(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              } else {
-                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-              }
-            }
-          });
-          undeployComponents(context.components(), complete);
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }
     });
-    undeployAuditors(context.auditors(), complete);
-  }
-
-  /**
-   * Undeploys all network auditors.
-   */
-  private void undeployAuditors(Set<String> auditors, final CountingCompletionHandler<Void> complete) {
-    for (String address : auditors) {
-      cluster.undeployVerticle(address, new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            complete.fail(result.cause());
-          } else {
-            complete.succeed();
-          }
-        }
-      });
-    }
+    undeployComponents(context.components(), complete);
   }
 
   /**

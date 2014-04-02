@@ -36,11 +36,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface JsonMessage extends Serializable {
 
   /**
-   * Returns the message ID.
+   * Returns the unique message ID.
    * 
-   * @return The message ID.
+   * @return The unique message ID.
    */
-  MessageId id();
+  String id();
 
   /**
    * Returns the message body.
@@ -48,6 +48,20 @@ public interface JsonMessage extends Serializable {
    * @return The message body.
    */
   JsonObject body();
+
+  /**
+   * Returns the parent message ID.
+   *
+   * @return The parent message ID.
+   */
+  String parent();
+
+  /**
+   * Returns the root message ID in the message tree.
+   *
+   * @return The root message ID in the message tree.
+   */
+  String root();
 
   /**
    * Copies the message.

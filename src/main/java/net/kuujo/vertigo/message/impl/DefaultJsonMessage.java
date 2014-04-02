@@ -18,7 +18,6 @@ package net.kuujo.vertigo.message.impl;
 import java.util.Map;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -28,14 +27,16 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultJsonMessage implements JsonMessage {
-  private MessageId id;
+  private String id;
   private Map<String, Object> body;
+  private String parent;
+  private String root;
 
   private DefaultJsonMessage() {
   }
 
   @Override
-  public MessageId id() {
+  public String id() {
     return id;
   }
 
@@ -45,10 +46,22 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonMessage copy(String correlationId) {
+  public String parent() {
+    return parent;
+  }
+
+  @Override
+  public String root() {
+    return root;
+  }
+
+  @Override
+  public JsonMessage copy(String id) {
     return Builder.newBuilder()
-        .setMessageId(id.copy(correlationId))
+        .setId(id)
         .setBody(body)
+        .setParent(parent)
+        .setRoot(root)
         .build();
   }
 
@@ -75,8 +88,8 @@ public class DefaultJsonMessage implements JsonMessage {
      * @param messageId The message ID.
      * @return The message builder.
      */
-    public Builder setMessageId(MessageId messageId) {
-      message.id = messageId;
+    public Builder setId(String id) {
+      message.id = id;
       return this;
     }
 
@@ -99,6 +112,28 @@ public class DefaultJsonMessage implements JsonMessage {
      */
     public Builder setBody(Map<String, Object> body) {
       message.body = body;
+      return this;
+    }
+
+    /**
+     * Sets the parent message ID.
+     *
+     * @param parent The parent message ID.
+     * @return The message builder.
+     */
+    public Builder setParent(String parent) {
+      message.parent = parent;
+      return this;
+    }
+
+    /**
+     * Sets the root message ID.
+     *
+     * @param root The root message ID.
+     * @return The message builder.
+     */
+    public Builder setRoot(String root) {
+      message.root = root;
       return this;
     }
 

@@ -24,7 +24,6 @@ import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.testtools.TestAckingComponent;
-import net.kuujo.vertigo.testtools.TestFailingComponent;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
 import net.kuujo.vertigo.testtools.TestTimingOutComponent;
 
@@ -77,12 +76,6 @@ public class HooksTest extends TestVerticle {
       }
     }
     @Override
-    public void handleFail(String id) {
-      if (hook.equals("fail")) {
-        testComplete();
-      }
-    }
-    @Override
     public void handleEmit(String id) {
       if (hook.equals("emit")) {
         testComplete();
@@ -91,12 +84,6 @@ public class HooksTest extends TestVerticle {
     @Override
     public void handleAcked(String id) {
       if (hook.equals("acked")) {
-        testComplete();
-      }
-    }
-    @Override
-    public void handleFailed(String id) {
-      if (hook.equals("failed")) {
         testComplete();
       }
     }
@@ -144,15 +131,6 @@ public class HooksTest extends TestVerticle {
   }
 
   @Test
-  public void testComponentFailHook() {
-    NetworkConfig network = new DefaultNetworkConfig("test");
-    network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestFailingComponent.class.getName(), 2).addHook(new TestComponentHook("fail"));
-    network.createConnection("feeder", "worker");
-    deploy(network);
-  }
-
-  @Test
   public void testComponentAckedHook() {
     NetworkConfig network = new DefaultNetworkConfig("test");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("acked"));
@@ -162,18 +140,8 @@ public class HooksTest extends TestVerticle {
   }
 
   @Test
-  public void testComponentFailedHook() {
-    NetworkConfig network = new DefaultNetworkConfig("test");
-    network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("failed"));
-    network.addVerticle("worker", TestFailingComponent.class.getName(), 2);
-    network.createConnection("feeder", "worker");
-    deploy(network);
-  }
-
-  @Test
   public void testComponentTimeoutHook() {
     NetworkConfig network = new DefaultNetworkConfig("test");
-    network.setMessageTimeout(1000);
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("timeout"));
     network.addVerticle("worker", TestTimingOutComponent.class.getName(), 2);
     network.createConnection("feeder", "worker");

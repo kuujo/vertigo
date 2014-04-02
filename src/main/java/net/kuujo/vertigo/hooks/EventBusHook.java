@@ -58,11 +58,6 @@ public class EventBusHook implements ComponentHook {
   }
 
   @Override
-  public void handleFail(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.fail", address), messageId);
-  }
-
-  @Override
   public void handleEmit(String messageId) {
     eventBus.publish(String.format("vertigo.hooks.%s.emit", address), messageId);
   }
@@ -70,11 +65,6 @@ public class EventBusHook implements ComponentHook {
   @Override
   public void handleAcked(String messageId) {
     eventBus.publish(String.format("vertigo.hooks.%s.acked", address), messageId);
-  }
-
-  @Override
-  public void handleFailed(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.failed", address), messageId);
   }
 
   @Override

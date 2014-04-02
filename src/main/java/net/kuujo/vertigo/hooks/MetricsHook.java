@@ -67,13 +67,6 @@ public class MetricsHook implements ComponentHook {
   }
 
   @Override
-  public void handleFail(String messageId) {
-    eventBus.send(address, new JsonObject()
-      .putString("action", "mark")
-      .putString("name", String.format("%s.fail", context.address())));
-  }
-
-  @Override
   public void handleEmit(String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
@@ -85,13 +78,6 @@ public class MetricsHook implements ComponentHook {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
       .putString("name", String.format("%s.acked", context.address())));
-  }
-
-  @Override
-  public void handleFailed(String messageId) {
-    eventBus.send(address, new JsonObject()
-      .putString("action", "mark")
-      .putString("name", String.format("%s.failed", context.address())));
   }
 
   @Override

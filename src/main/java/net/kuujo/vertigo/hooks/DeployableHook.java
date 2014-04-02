@@ -80,13 +80,6 @@ abstract class DeployableHook implements ComponentHook {
   }
 
   @Override
-  public void handleFail(String messageId) {
-    if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "fail").putString("id", messageId));
-    }
-  }
-
-  @Override
   public void handleEmit(String messageId) {
     if (deployed()) {
       eventBus.send(address, new JsonObject().putString("event", "emit").putString("id", messageId));
@@ -97,13 +90,6 @@ abstract class DeployableHook implements ComponentHook {
   public void handleAcked(String messageId) {
     if (deployed()) {
       eventBus.send(address, new JsonObject().putString("event", "acked").putString("id", messageId));
-    }
-  }
-
-  @Override
-  public void handleFailed(String messageId) {
-    if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "failed").putString("id", messageId));
     }
   }
 

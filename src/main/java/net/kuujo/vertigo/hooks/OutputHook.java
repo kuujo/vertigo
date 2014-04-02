@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,6 @@ public interface OutputHook extends Hook {
    *   The unique message identifier.
    */
   void handleAcked(String messageId);
-
-  /**
-   * Called when the output receives a failure for an emitted message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleFailed(String messageId);
 
   /**
    * Called when the output receives a timeout for an emitted message.

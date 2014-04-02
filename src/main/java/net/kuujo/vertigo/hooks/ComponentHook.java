@@ -54,14 +54,6 @@ public interface ComponentHook extends Hook {
   void handleAck(String messageId);
 
   /**
-   * Called when the component fails a received message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleFail(String messageId);
-
-  /**
    * Called when the component emits a message.
    *
    * @param messageId
@@ -76,14 +68,6 @@ public interface ComponentHook extends Hook {
    *   The unique message identifier.
    */
   void handleAcked(String messageId);
-
-  /**
-   * Called when the component receives a failure for an emitted message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleFailed(String messageId);
 
   /**
    * Called when the component receives a timeout for an emitted message.

@@ -26,7 +26,7 @@ import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.RandomSelector;
 import net.kuujo.vertigo.output.selector.RoundSelector;
-import net.kuujo.vertigo.output.selector.Selector;
+import net.kuujo.vertigo.output.selector.MessageSelector;
 
 import org.junit.Test;
 import org.vertx.java.core.json.JsonObject;
@@ -52,7 +52,7 @@ public class SelectorTest {
 
   @Test
   public void testAllSelector() {
-    Selector selector = new AllSelector();
+    MessageSelector selector = new AllSelector();
     for (String outputConnection : selector.select(testMessage, testConnections)) {
       assertTrue(testConnections.contains(outputConnection));
     }
@@ -60,7 +60,7 @@ public class SelectorTest {
 
   @Test
   public void testRandomSelector() {
-    Selector selector = new RandomSelector();
+    MessageSelector selector = new RandomSelector();
     Set<String> selected = new HashSet<>();
     while (selected.size() < testConnections.size()) {
       List<String> outputConnections = selector.select(testMessage, testConnections);
@@ -74,7 +74,7 @@ public class SelectorTest {
 
   @Test
   public void testRoundSelector() {
-    Selector selector = new RoundSelector();
+    MessageSelector selector = new RoundSelector();
     for (int i = 0; i < 5; i++) {
       int expected = 0;
       for (int j = 0; j < testConnections.size(); j++) {
@@ -89,7 +89,7 @@ public class SelectorTest {
 
   @Test
   public void testFieldsSelector() {
-    Selector selector = new FieldsSelector("test");
+    MessageSelector selector = new FieldsSelector("test");
 
     JsonMessage test1 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
     List<String> connections1 = selector.select(test1, testConnections);
@@ -112,7 +112,7 @@ public class SelectorTest {
     assertEquals(1, connections6.size());
     assertEquals(connections5.get(0), connections6.get(0));
 
-    Selector multiSelector = new FieldsSelector("test1", "test2");
+    MessageSelector multiSelector = new FieldsSelector("test1", "test2");
 
     JsonMessage test4 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test1", "a")).build();
     List<String> connections7 = multiSelector.select(test4, testConnections);

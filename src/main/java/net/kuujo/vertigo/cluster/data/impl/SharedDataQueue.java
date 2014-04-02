@@ -15,7 +15,8 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
 
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 
@@ -23,7 +24,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 /**
@@ -37,12 +37,14 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
   private static final String QUEUE_MAP_NAME = "__QUEUE__";
   private final String name;
   private final Vertx vertx;
-  private final ConcurrentSharedMap<String, String> map;
+  private final ConcurrentSharedMap<Integer, Object> map;
+  private int currentIndex;
 
   public SharedDataQueue(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(QUEUE_MAP_NAME);
+    this.currentIndex = (int) map.get(-1);
   }
 
   @Override
@@ -60,22 +62,11 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        JsonArray jsonArray = getArray();
-        jsonArray.add(value);
-        map.put(name, jsonArray.encode());
+        int index = currentIndex + map.size() - 1;
+        map.put(index, value);
         new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
       }
     });
-  }
-
-  @Override
-  public void offer(T value) {
-    add(value, null);
-  }
-
-  @Override
-  public void offer(T value, Handler<AsyncResult<Boolean>> doneHandler) {
-    add(value, doneHandler);
   }
 
   @Override
@@ -88,9 +79,20 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        List<T> list = getList();
-        list.remove(value);
-        setList(list);
+        Iterator<Map.Entry<Integer, Object>> iter = map.entrySet().iterator();
+        while (iter.hasNext()) {
+          Map.Entry<Integer, Object> entry = iter.next();
+          if (entry.getValue().equals(value)) {
+            iter.remove();
+            int index = entry.getKey()+1;
+            while (map.containsKey(index)) {
+              map.put(index-1, map.remove(index));
+              index++;
+            }
+            new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
+            return;
+          }
+        }
         new DefaultFutureResult<Boolean>(false).setHandler(doneHandler);
       }
     });
@@ -101,7 +103,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        new DefaultFutureResult<Boolean>(getList().contains(value)).setHandler(resultHandler);
+        new DefaultFutureResult<Boolean>(map.values().contains(value)).setHandler(resultHandler);
       }
     });
   }
@@ -111,7 +113,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        new DefaultFutureResult<Integer>(getArray().size()).setHandler(resultHandler);
+        new DefaultFutureResult<Integer>(map.size()-1).setHandler(resultHandler);
       }
     });
   }
@@ -121,7 +123,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        new DefaultFutureResult<Boolean>(getArray().size() == 0).setHandler(resultHandler);
+        new DefaultFutureResult<Boolean>(map.size()==1).setHandler(resultHandler);
       }
     });
   }
@@ -136,20 +138,39 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        map.remove(name);
+        map.clear();
+        map.put(-1, currentIndex);
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
   }
 
   @Override
+  public void offer(T value) {
+    offer(value, null);
+  }
+
+  @Override
+  public void offer(final T value, final Handler<AsyncResult<Boolean>> doneHandler) {
+    vertx.runOnContext(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        int index = currentIndex + map.size() - 1;
+        map.put(index, value);
+        new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
+      }
+    });
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
   public void element(final Handler<AsyncResult<T>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        List<T> list = getList();
-        if (!list.isEmpty()) {
-          new DefaultFutureResult<T>(list.get(0)).setHandler(resultHandler);
+        T value = (T) map.get(currentIndex);
+        if (value != null) {
+          new DefaultFutureResult<T>(value).setHandler(resultHandler);
         } else {
           new DefaultFutureResult<T>(new IllegalStateException("Queue is empty.")).setHandler(resultHandler);
         }
@@ -158,69 +179,49 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void peek(final Handler<AsyncResult<T>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        List<T> list = getList();
-        if (!list.isEmpty()) {
-          new DefaultFutureResult<T>(list.get(0)).setHandler(resultHandler);
-        } else {
-          new DefaultFutureResult<T>((T) null).setHandler(resultHandler);
-        }
+        T value = (T) map.get(currentIndex);
+        new DefaultFutureResult<T>(value).setHandler(resultHandler);
       }
     });
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void poll(final Handler<AsyncResult<T>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        List<T> list = getList();
-        if (!list.isEmpty()) {
-          new DefaultFutureResult<T>(list.remove(0)).setHandler(resultHandler);
-        } else {
-          new DefaultFutureResult<T>((T) null).setHandler(resultHandler);
+        T value = (T) map.remove(currentIndex);
+        if (value != null) {
+          currentIndex++;
+          map.put(-1, currentIndex);
         }
+        new DefaultFutureResult<T>(value).setHandler(resultHandler);
       }
     });
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void remove(final Handler<AsyncResult<T>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        List<T> list = getList();
-        if (!list.isEmpty()) {
-          new DefaultFutureResult<T>(list.remove(0)).setHandler(resultHandler);
+        if (map.containsKey(currentIndex)) {
+          T value = (T) map.remove(currentIndex);
+          currentIndex++;
+          map.put(-1, currentIndex);
+          new DefaultFutureResult<T>(value).setHandler(resultHandler);
         } else {
           new DefaultFutureResult<T>(new IllegalStateException("Queue is empty.")).setHandler(resultHandler);
         }
       }
     });
-  }
-
-  private JsonArray getArray() {
-    String array = map.get(name);
-    JsonArray jsonArray;
-    if (array == null) {
-      jsonArray = new JsonArray();
-    } else {
-      jsonArray = new JsonArray(array);
-    }
-    return jsonArray;
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<T> getList() {
-    return getArray().toList();
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private void setList(List list) {
-    map.put(name, new JsonArray(list).encode());
   }
 
 }

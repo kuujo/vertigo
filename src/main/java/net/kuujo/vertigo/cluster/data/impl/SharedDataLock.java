@@ -29,7 +29,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  * @author Jordan Halterman
  */
 public class SharedDataLock implements AsyncLock {
-  private static final String LIST_MAP_NAME = "__LOCK__";
+  private static final String LOCK_MAP_NAME = "__LOCK__";
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<String, Long> map;
@@ -37,7 +37,7 @@ public class SharedDataLock implements AsyncLock {
   public SharedDataLock(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
-    this.map = vertx.sharedData().getMap(LIST_MAP_NAME);
+    this.map = vertx.sharedData().getMap(LOCK_MAP_NAME);
   }
 
   @Override

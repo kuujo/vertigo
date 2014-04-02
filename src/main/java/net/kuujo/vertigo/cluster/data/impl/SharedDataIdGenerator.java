@@ -29,7 +29,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  * @author Jordan Halterman
  */
 public class SharedDataIdGenerator implements AsyncIdGenerator {
-  private static final String LIST_MAP_NAME = "__ID__";
+  private static final String ID_MAP_NAME = "__ID__";
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<String, Long> map;
@@ -37,7 +37,7 @@ public class SharedDataIdGenerator implements AsyncIdGenerator {
   public SharedDataIdGenerator(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
-    this.map = vertx.sharedData().getMap(LIST_MAP_NAME);
+    this.map = vertx.sharedData().getMap(ID_MAP_NAME);
   }
 
   @Override

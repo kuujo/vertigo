@@ -20,7 +20,7 @@ import java.util.Set;
 
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
-import net.kuujo.vertigo.output.selector.Selector;
+import net.kuujo.vertigo.output.selector.MessageSelector;
 
 /**
  * The <code>fields</code> grouping is a hashing based grouping. Given a set of
@@ -32,7 +32,7 @@ import net.kuujo.vertigo.output.selector.Selector;
  *
  * @author Jordan Halterman
  */
-public class FieldsGrouping implements Grouping {
+public class FieldsGrouping implements MessageGrouping {
   private Set<String> fields;
 
   public FieldsGrouping() {
@@ -99,7 +99,7 @@ public class FieldsGrouping implements Grouping {
   }
 
   @Override
-  public Selector createSelector() {
+  public MessageSelector createSelector() {
     return new FieldsSelector(fields);
   }
 

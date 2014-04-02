@@ -28,7 +28,7 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class AllSelector implements Selector {
+public class AllSelector implements MessageSelector {
 
   public AllSelector() {
   }

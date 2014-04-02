@@ -27,7 +27,7 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class RoundSelector implements Selector {
+public class RoundSelector implements MessageSelector {
   private int current;
 
   public RoundSelector() {

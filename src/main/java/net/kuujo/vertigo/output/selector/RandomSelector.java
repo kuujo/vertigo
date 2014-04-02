@@ -27,7 +27,7 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class RandomSelector implements Selector {
+public class RandomSelector implements MessageSelector {
   private Random rand = new Random();
 
   public RandomSelector() {

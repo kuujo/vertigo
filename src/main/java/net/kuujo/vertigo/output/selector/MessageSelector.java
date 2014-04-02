@@ -28,7 +28,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
  *
  * Output selectors are the counterparts to input groupings. When an input is
  * used to subscribe to the output of another component, the input's grouping
- * is converted to an output {@link Selector}. Each time a message is emitted
+ * is converted to an output {@link MessageSelector}. Each time a message is emitted
  * to the resulting output channel, the selector is used to select which
  * {@link ConnectionConfig}s to which to send the message.
  *
@@ -41,7 +41,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
   @JsonSubTypes.Type(value=FieldsSelector.class, name="fields"),
   @JsonSubTypes.Type(value=AllSelector.class, name="all")
 })
-public interface Selector extends Serializable {
+public interface MessageSelector extends Serializable {
 
   /**
    * Selects a list of connections to which to emit messages.

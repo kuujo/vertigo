@@ -18,7 +18,7 @@ package net.kuujo.vertigo.input.grouping;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import net.kuujo.vertigo.output.selector.Selector;
+import net.kuujo.vertigo.output.selector.MessageSelector;
 import net.kuujo.vertigo.util.serializer.Serializable;
 
 /**
@@ -26,7 +26,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
  *
  * Input groupings define how messages are to be distributed among multiple
  * instance of a component. When an input prepares to register with the interesting
- * component's output, the grouping will be converted into a {@link Selector}.
+ * component's output, the grouping will be converted into a {@link MessageSelector}.
  * This selector is used to select specific component instances to which to send
  * each message.
  *
@@ -39,7 +39,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
   @JsonSubTypes.Type(value=FieldsGrouping.class, name="fields"),
   @JsonSubTypes.Type(value=AllGrouping.class, name="all")
 })
-public interface Grouping extends Serializable {
+public interface MessageGrouping extends Serializable {
 
   /**
    * Creates an output selector from the grouping.
@@ -47,6 +47,6 @@ public interface Grouping extends Serializable {
    * @return
    *   An output selector.
    */
-  Selector createSelector();
+  MessageSelector createSelector();
 
 }

@@ -34,7 +34,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class FieldsSelector implements Selector {
+public class FieldsSelector implements MessageSelector {
   private Set<String> fields;
 
   public FieldsSelector() {

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.input.grouping;
 
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.RandomSelector;
-import net.kuujo.vertigo.output.selector.Selector;
+import net.kuujo.vertigo.output.selector.MessageSelector;
 
 /**
  * The <code>random</code> grouping dispatches messages to component workers randomly.<p>
@@ -27,10 +27,10 @@ import net.kuujo.vertigo.output.selector.Selector;
  *
  * @author Jordan Halterman
  */
-public class RandomGrouping implements Grouping {
+public class RandomGrouping implements MessageGrouping {
 
   @Override
-  public Selector createSelector() {
+  public MessageSelector createSelector() {
     return new RandomSelector();
   }
 

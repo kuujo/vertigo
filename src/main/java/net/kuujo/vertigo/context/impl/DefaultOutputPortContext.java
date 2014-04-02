@@ -20,7 +20,10 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Output port context.
@@ -32,6 +35,13 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
   private String port = DEFAULT_PORT;
   private String address;
   private Collection<OutputConnectionContext> connections = new ArrayList<>();
+  @JsonIgnore
+  private OutputContext output;
+
+  DefaultOutputPortContext setOutput(OutputContext output) {
+    this.output = output;
+    return this;
+  }
 
   /**
    * Returns the port name.
@@ -40,6 +50,11 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
    */
   public String name() {
     return port;
+  }
+
+  @Override
+  public OutputContext output() {
+    return output;
   }
 
   @Override
@@ -53,6 +68,9 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
    * @return A collection of connections in the port.
    */
   public Collection<OutputConnectionContext> connections() {
+    for (OutputConnectionContext connection : connections) {
+      ((DefaultOutputConnectionContext) connection).setPort(this);
+    }
     return connections;
   }
 

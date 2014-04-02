@@ -39,14 +39,14 @@ public interface VerticleContext extends ComponentContext<VerticleContext> {
    * 
    * @return The verticle main.
    */
-  public String main();
+  String main();
 
   /**
    * Returns a boolean indicating whether the verticle is a worker verticle.
    * 
    * @return Indicates whether the verticle is a worker verticle.
    */
-  public boolean isWorker();
+  boolean isWorker();
 
   /**
    * Returns a boolean indicating whether the verticle is a worker and is multi-threaded.
@@ -54,6 +54,6 @@ public interface VerticleContext extends ComponentContext<VerticleContext> {
    * 
    * @return Indicates whether the verticle is a worker and is multi-threaded.
    */
-  public boolean isMultiThreaded();
+  boolean isMultiThreaded();
 
 }

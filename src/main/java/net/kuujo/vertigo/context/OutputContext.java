@@ -41,6 +41,6 @@ public interface OutputContext extends IOContext<OutputContext> {
    *
    * @return A collection of output port contexts.
    */
-  public Collection<OutputPortContext> ports();
+  Collection<OutputPortContext> ports();
 
 }

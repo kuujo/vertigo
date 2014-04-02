@@ -20,7 +20,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.context.impl.DefaultOutputConnectionContext;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.MessageGrouping;
 
 /**
  * Output connection context.
@@ -36,17 +36,24 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
 
   /**
+   * Returns the parent output port context.
+   *
+   * @return The parent port context.
+   */
+  OutputPortContext port();
+
+  /**
    * Returns a list of output addresses.
    *
    * @return A list of output addresses.
    */
-  public List<String> targets();
+  List<String> targets();
 
   /**
    * Returns the output connection grouping.
    *
    * @return The output connection grouping.
    */
-  public Grouping grouping();
+  MessageGrouping grouping();
 
 }

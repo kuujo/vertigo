@@ -27,6 +27,6 @@ public interface IOContext<T extends IOContext<T>> extends Context<T> {
    *
    * @return The parent instance context.
    */
-  public InstanceContext instance();
+  InstanceContext instance();
 
 }

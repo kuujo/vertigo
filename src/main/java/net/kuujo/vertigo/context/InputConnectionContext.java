@@ -33,6 +33,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface InputConnectionContext extends ConnectionContext<InputConnectionContext> {
 
   /**
+   * Returns the parent input port context.
+   *
+   * @return The parent port context.
+   */
+  InputPortContext port();
+
+  /**
    * Returns the connection source.
    *
    * @return The connection source.

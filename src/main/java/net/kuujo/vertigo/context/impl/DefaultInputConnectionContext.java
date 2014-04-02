@@ -15,7 +15,11 @@
  */
 package net.kuujo.vertigo.context.impl;
 
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
+import net.kuujo.vertigo.context.InputPortContext;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Input connection context.
@@ -24,11 +28,35 @@ import net.kuujo.vertigo.context.InputConnectionContext;
  */
 public class DefaultInputConnectionContext extends DefaultConnectionContext<InputConnectionContext> implements InputConnectionContext {
   private String address;
+  private ConnectionContext.Delivery delivery;
+  private ConnectionContext.Order order;
   private String source;
+  @JsonIgnore
+  private InputPortContext port;
+
+  DefaultInputConnectionContext setPort(InputPortContext port) {
+    this.port = port;
+    return this;
+  }
 
   @Override
   public String address() {
     return address;
+  }
+
+  @Override
+  public ConnectionContext.Delivery delivery() {
+    return delivery;
+  }
+
+  @Override
+  public ConnectionContext.Order order() {
+    return order;
+  }
+
+  @Override
+  public InputPortContext port() {
+    return port;
   }
 
   @Override
@@ -78,6 +106,28 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
      */
     public Builder setAddress(String address) {
       context.address = address;
+      return this;
+    }
+
+    /**
+     * Sets the message delivery method.
+     *
+     * @param delivery The message delivery method.
+     * @return The context builder.
+     */
+    public Builder setDelivery(ConnectionContext.Delivery delivery) {
+      context.delivery = delivery;
+      return this;
+    }
+
+    /**
+     * Sets the message order.
+     *
+     * @param order The message order.
+     * @return The context builder.
+     */
+    public Builder setOrder(ConnectionContext.Order order) {
+      context.order = order;
       return this;
     }
 

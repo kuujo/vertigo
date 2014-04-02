@@ -19,9 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Output connection context.
@@ -30,12 +34,36 @@ import net.kuujo.vertigo.input.grouping.RoundGrouping;
  */
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
   private String address;
+  private ConnectionContext.Delivery delivery;
+  private ConnectionContext.Order order;
   private List<String> targets = new ArrayList<>();
-  private Grouping grouping = new RoundGrouping();
+  private MessageGrouping grouping = new RoundGrouping();
+  @JsonIgnore
+  private OutputPortContext port;
+
+  DefaultOutputConnectionContext setPort(OutputPortContext port) {
+    this.port = port;
+    return this;
+  }
 
   @Override
   public String address() {
     return address;
+  }
+
+  @Override
+  public ConnectionContext.Delivery delivery() {
+    return delivery;
+  }
+
+  @Override
+  public ConnectionContext.Order order() {
+    return order;
+  }
+
+  @Override
+  public OutputPortContext port() {
+    return port;
   }
 
   /**
@@ -52,7 +80,7 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
    *
    * @return The output connection grouping.
    */
-  public Grouping grouping() {
+  public MessageGrouping grouping() {
     return grouping;
   }
 
@@ -98,6 +126,28 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      */
     public Builder setAddress(String address) {
       context.address = address;
+      return this;
+    }
+
+    /**
+     * Sets the message delivery method.
+     *
+     * @param delivery The message delivery method.
+     * @return The context builder.
+     */
+    public Builder setDelivery(ConnectionContext.Delivery delivery) {
+      context.delivery = delivery;
+      return this;
+    }
+
+    /**
+     * Sets the message order.
+     *
+     * @param order The message order.
+     * @return The context builder.
+     */
+    public Builder setOrder(ConnectionContext.Order order) {
+      context.order = order;
       return this;
     }
 
@@ -151,7 +201,7 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      * @param grouping The connection grouping.
      * @return The context builder.
      */
-    public Builder setGrouping(Grouping grouping) {
+    public Builder setGrouping(MessageGrouping grouping) {
       context.grouping = grouping;
       return this;
     }

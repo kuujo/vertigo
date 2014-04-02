@@ -39,13 +39,20 @@ public interface InputPortContext extends Context<InputPortContext> {
    *
    * @return The input port name.
    */
-  public String name();
+  String name();
+
+  /**
+   * Returns the parent input context.
+   *
+   * @return The parent input context.
+   */
+  InputContext input();
 
   /**
    * Returns a collection of input port connections.
    *
    * @return A list of input connections.
    */
-  public Collection<InputConnectionContext> connections();
+  Collection<InputConnectionContext> connections();
 
 }

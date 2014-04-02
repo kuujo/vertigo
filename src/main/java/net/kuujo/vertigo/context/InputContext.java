@@ -42,6 +42,6 @@ public interface InputContext extends IOContext<InputContext> {
    *
    * @return A collection of input port contexts.
    */
-  public Collection<InputPortContext> ports();
+  Collection<InputPortContext> ports();
 
 }

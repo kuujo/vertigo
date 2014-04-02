@@ -38,35 +38,35 @@ public interface InstanceContext extends Context<InstanceContext> {
    * 
    * @return The instance number.
    */
-  public int number();
+  int number();
 
   /**
    * Returns the instance address.
    *
    * @return The instance address.
    */
-  public String address();
+  String address();
 
   /**
    * Returns the instance status address.
    *
    * @return The instance status address.
    */
-  public String status();
+  String status();
 
   /**
    * Returns the instance input context.
    *
    * @return The instance input context.
    */
-  public InputContext input();
+  InputContext input();
 
   /**
    * Returns the instance output context.
    *
    * @return The instance output context.
    */
-  public OutputContext output();
+  OutputContext output();
 
   /**
    * Returns the parent component context.
@@ -74,6 +74,6 @@ public interface InstanceContext extends Context<InstanceContext> {
    * @return The parent component context.
    */
   @SuppressWarnings("rawtypes")
-  public <T extends ComponentContext> T component();
+  <T extends ComponentContext> T component();
 
 }

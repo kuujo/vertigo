@@ -49,56 +49,56 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
    *
    * @return The component name.
    */
-  public String name();
+  String name();
 
   /**
    * Gets the unique component address.
    * 
    * @return The component address.
    */
-  public String address();
+  String address();
 
   /**
    * Returns the component status address.
    *
    * @return The component status address.
    */
-  public String status();
+  String status();
 
   /**
    * Returns a boolean indicating whether the component is a module.
    * 
    * @return Indicates whether the component is a module.
    */
-  public boolean isModule();
+  boolean isModule();
 
   /**
    * Returns a boolean indicating whether the component is a verticle.
    * 
    * @return Indicates whether the component is a verticle.
    */
-  public boolean isVerticle();
+  boolean isVerticle();
 
   /**
    * Gets the component configuration.
    * 
    * @return The component configuration.
    */
-  public JsonObject config();
+  JsonObject config();
 
   /**
    * Gets a list of all component instance contexts.
    * 
    * @return A list of component instance contexts.
    */
-  public List<InstanceContext> instances();
+  List<InstanceContext> instances();
 
   /**
    * Returns the number of component instances.
    * 
    * @return The number of component instances.
    */
-  public int numInstances();
+  int numInstances();
 
   /**
    * Gets a component instance context by instance ID.
@@ -106,7 +106,7 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
    * @param id The instance ID.
    * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext instance(int instanceNumber);
+  InstanceContext instance(int instanceNumber);
 
   /**
    * Gets a component instance context by instance address.
@@ -114,41 +114,41 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
    * @param address The instance address.
    * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  public InstanceContext instance(String address);
+  InstanceContext instance(String address);
 
   /**
    * Returns the component deployment group.
    * 
    * @return The component HA group.
    */
-  public String group();
+  String group();
 
   /**
    * Gets a list of component hooks.
    * 
    * @return A list of component hooks.
    */
-  public List<ComponentHook> hooks();
+  List<ComponentHook> hooks();
 
   /**
    * Returns the component context as a module context.
    *
    * @return A module context.
    */
-  public ModuleContext asModule();
+  ModuleContext asModule();
 
   /**
    * Returns the component context as a verticle context.
    *
    * @return A verticle context.
    */
-  public VerticleContext asVerticle();
+  VerticleContext asVerticle();
 
   /**
    * Returns the parent network context.
    * 
    * @return The parent network context.
    */
-  public NetworkContext network();
+  NetworkContext network();
 
 }

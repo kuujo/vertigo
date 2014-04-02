@@ -20,7 +20,10 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
+import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputPortContext;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Input port context.
@@ -31,6 +34,13 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
   private String address;
   private String port;
   private Collection<InputConnectionContext> connections = new ArrayList<>();
+  @JsonIgnore
+  private InputContext input;
+
+  DefaultInputPortContext setInput(InputContext input) {
+    this.input = input;
+    return this;
+  }
 
   /**
    * Returns the port name.
@@ -39,6 +49,11 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
    */
   public String name() {
     return port;
+  }
+
+  @Override
+  public InputContext input() {
+    return input;
   }
 
   @Override
@@ -52,6 +67,9 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
    * @return A list of input connections.
    */
   public Collection<InputConnectionContext> connections() {
+    for (InputConnectionContext connection : connections) {
+      ((DefaultInputConnectionContext) connection).setPort(this);
+    }
     return connections;
   }
 

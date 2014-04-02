@@ -17,12 +17,11 @@ package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.kuujo.vertigo.context.ComponentContext;
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -57,15 +56,6 @@ public final class ContextBuilder {
     context.setAddress(network.getName());
     context.setConfig(network);
     context.setStatusAddress(String.format("%s.__status", network.getName()));
-    context.setAckingEnabled(network.isAckingEnabled());
-    context.setMessageTimeout(network.getMessageTimeout());
-
-    // Set up network auditors with unique addresses.
-    Set<String> auditors = new HashSet<>();
-    for (int i = 1; i <= network.getNumAuditors(); i++) {
-      auditors.add(String.format("%s.auditor.%d", network.getName(), i));
-    }
-    context.setAuditors(auditors);
 
     // Set up network components without inputs. Inputs are stored in a map so
     // that they can be set up after all component instances have been set up.
@@ -160,6 +150,8 @@ public final class ContextBuilder {
           // Add an output connection to the output port.
           DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
           outConnection.setAddress(String.format("%s.%s[%d]%s-%s.%s", network.getName(), source.name(), sourceInstance.number(), connection.getSource().getPort(), target.name(), connection.getTarget().getPort()));
+          outConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
+          outConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
           outConnection.setGrouping(connection.getGrouping());
 
           for (InstanceContext targetInstance : target.instances()) {
@@ -187,6 +179,8 @@ public final class ContextBuilder {
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
             String address = String.format("%s.%s[%d]%s-%s[%d]%s", network.getName(), target.name(), targetInstance.number(), connection.getTarget().getPort(), source.name(), sourceInstance.number(), connection.getTarget().getPort());
             inConnection.setAddress(address);
+            inConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
+            inConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
             inConnection.setSource(address);
             outConnection.addTarget(address);
 

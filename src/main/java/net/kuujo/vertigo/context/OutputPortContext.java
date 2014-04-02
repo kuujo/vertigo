@@ -39,13 +39,20 @@ public interface OutputPortContext extends Context<OutputPortContext> {
    *
    * @return The port name.
    */
-  public String name();
+  String name();
+
+  /**
+   * Returns the parent output context.
+   *
+   * @return The parent output context.
+   */
+  OutputContext output();
 
   /**
    * Returns a collection of port connections.
    *
    * @return A collection of connections in the port.
    */
-  public Collection<OutputConnectionContext> connections();
+  Collection<OutputConnectionContext> connections();
 
 }

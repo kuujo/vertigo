@@ -65,6 +65,9 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
 
   @Override
   public Collection<InputPortContext> ports() {
+    for (InputPortContext port : ports) {
+      ((DefaultInputPortContext) port).setInput(this);
+    }
     return ports;
   }
 

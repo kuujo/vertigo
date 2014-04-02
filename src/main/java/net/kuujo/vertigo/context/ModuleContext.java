@@ -39,6 +39,6 @@ public interface ModuleContext extends ComponentContext<ModuleContext> {
    * 
    * @return The module name.
    */
-  public String module();
+  String module();
 
 }

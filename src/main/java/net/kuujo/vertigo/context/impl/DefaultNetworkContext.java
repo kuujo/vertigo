@@ -16,13 +16,10 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -42,9 +39,6 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   private String name;
   private NetworkConfig config;
   private String status;
-  private Set<String> auditors = new HashSet<>();
-  private boolean acking = true;
-  private long timeout = 30000;
   private Map<String, DefaultComponentContext<?>> components = new HashMap<>();
 
   private DefaultNetworkContext() {
@@ -89,31 +83,6 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   @Override
   public String status() {
     return status;
-  }
-
-  @Override
-  public int numAuditors() {
-    return auditors().size();
-  }
-
-  @Override
-  public Set<String> auditors() {
-    return auditors;
-  }
-
-  @Override
-  public boolean isAckingEnabled() {
-    return acking;
-  }
-
-  @Override
-  public boolean isMessageTimeoutsEnabled() {
-    return timeout > 0;
-  }
-
-  @Override
-  public long messageTimeout() {
-    return timeout;
   }
 
   @Override
@@ -243,87 +212,6 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      */
     public Builder setStatusAddress(String address) {
       context.status = address;
-      return this;
-    }
-
-    /**
-     * Sets the network auditors.
-     *
-     * @param addresses An array of auditor addresses.
-     * @return The context builder.
-     */
-    public Builder setAuditors(String... addresses) {
-      context.auditors = new HashSet<String>(Arrays.asList(addresses));
-      return this;
-    }
-
-    /**
-     * Sets the network auditors.
-     *
-     * @param addresses A set of auditor addresses.
-     * @return The context builder.
-     */
-    public Builder setAuditors(Set<String> addresses) {
-      context.auditors = addresses;
-      return this;
-    }
-
-    /**
-     * Adds an auditor to the network.
-     *
-     * @param address An auditor address.
-     * @return The context builder.
-     */
-    public Builder addAuditor(String address) {
-      context.auditors.add(address);
-      return this;
-    }
-
-    /**
-     * Removes an auditor from the network.
-     *
-     * @param address An auditor address.
-     * @return The context builder.
-     */
-    public Builder removeAuditor(String address) {
-      context.auditors.remove(address);
-      return this;
-    }
-
-    /**
-     * Sets whether acking is enabled.
-     *
-     * @param enabled Whether acking is enabled.
-     * @return The context builder.
-     */
-    public Builder setAckingEnabled(boolean enabled) {
-      context.acking = enabled;
-      return this;
-    }
-
-    /**
-     * Sets whether message timeouts are enabled.
-     *
-     * @param enabled Whether message timeouts are enabled.
-     * @return The context builder.
-     */
-    public Builder setMessageTimeoutsEnabled(boolean enabled) {
-      if (!enabled) {
-        context.timeout = 0;
-      } else if (context.timeout == 0) {
-        context.timeout = 30000;
-      }
-      return this;
-    }
-
-    /**
-     * Sets the network message timeout.
-     *
-     * @param timeout The network message timeout.
-     * @return The context builder.
-     */
-    public Builder setMessageTimeout(long timeout) {
-      context.timeout = timeout;
       return this;
     }
 

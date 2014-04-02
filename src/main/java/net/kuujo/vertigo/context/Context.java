@@ -30,6 +30,6 @@ public interface Context<T extends Context<T>> extends Observable<T>, Serializab
    *
    * @return The context address.
    */
-  public abstract String address();
+  String address();
 
 }

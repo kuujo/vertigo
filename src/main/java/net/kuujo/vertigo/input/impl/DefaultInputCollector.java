@@ -15,11 +15,9 @@
  */
 package net.kuujo.vertigo.input.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,10 +25,9 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.impl.DefaultInputPortContext;
-import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputPort;
-import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 
@@ -48,12 +45,11 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   private final Vertx vertx;
   private final InputContext context;
   private final VertigoCluster cluster;
-  private final Acker acker;
-  private final List<InputHook> hooks = new ArrayList<>();
+  private final MessageAcker acker;
   private final Map<String, InputPort> ports = new HashMap<>();
   private boolean started;
 
-  public DefaultInputCollector(Vertx vertx, InputContext context, VertigoCluster cluster, Acker acker) {
+  public DefaultInputCollector(Vertx vertx, InputContext context, VertigoCluster cluster, MessageAcker acker) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
@@ -63,15 +59,6 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   @Override
   public InputContext context() {
     return context;
-  }
-
-  @Override
-  public InputCollector addHook(InputHook hook) {
-    hooks.add(hook);
-    for (InputPort port : ports.values()) {
-      port.addHook(hook);
-    }
-    return this;
   }
 
   @Override
@@ -168,9 +155,6 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
               }
             }
           }));
-          for (InputHook hook : hooks) {
-            ports.get(port.name()).addHook(hook);
-          }
         }
       }
       started = true;

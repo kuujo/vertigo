@@ -15,25 +15,23 @@
  */
 package net.kuujo.vertigo.input.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
-import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default input port implementation.
@@ -41,33 +39,23 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
  * @author Jordan Halterman
  */
 public class DefaultInputPort implements InputPort {
-  private static final Logger log = LoggerFactory.getLogger(DefaultInputPort.class);
   private final Vertx vertx;
   private InputPortContext context;
-  private final Acker acker;
-  private final List<InputConnection> connections = new ArrayList<>();
-  private final List<InputHook> hooks = new ArrayList<>();
+  private final VertigoCluster cluster;
+  private final MessageAcker acker;
+  private final Map<String, InputConnection> connections = new HashMap<>();
   private Handler<JsonMessage> messageHandler;
 
-  private final Handler<JsonMessage> internalMessageHandler = new Handler<JsonMessage>() {
-    @Override
-    public void handle(JsonMessage message) {
-      hookReceived(message.id().correlationId());
-      if (messageHandler != null) {
-        try {
-          messageHandler.handle(message);
-        } catch (Exception e) {
-          log.error(e);
-          fail(message);
-        }
-      }
-    }
-  };
-
-  public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster, Acker acker) {
+  public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster, MessageAcker acker) {
     this.vertx = vertx;
     this.context = context;
+    this.cluster = cluster;
     this.acker = acker;
+  }
+
+  DefaultInputPort setContext(InputPortContext context) {
+    this.context = context;
+    return this;
   }
 
   @Override
@@ -80,61 +68,18 @@ public class DefaultInputPort implements InputPort {
     return context;
   }
 
-  DefaultInputPort setContext(InputPortContext context) {
-    this.context = context;
-    return this;
-  }
-
-  @Override
-  public InputPort addHook(InputHook hook) {
-    hooks.add(hook);
-    return this;
-  }
-
-  /**
-   * Calls receive hooks.
-   */
-  private void hookReceived(final String messageId) {
-    for (InputHook hook : hooks) {
-      hook.handleReceive(messageId);
-    }
-  }
-
-  /**
-   * Calls ack hooks.
-   */
-  private void hookAck(final String messageId) {
-    for (InputHook hook : hooks) {
-      hook.handleAck(messageId);
-    }
-  }
-
-  /**
-   * Calls fail hooks.
-   */
-  private void hookFail(final String messageId) {
-    for (InputHook hook : hooks) {
-      hook.handleFail(messageId);
-    }
-  }
-
   @Override
   public InputPort messageHandler(Handler<JsonMessage> handler) {
-    messageHandler = handler;
+    this.messageHandler = handler;
+    for (InputConnection connection : connections.values()) {
+      connection.messageHandler(handler);
+    }
     return this;
   }
 
   @Override
   public InputPort ack(JsonMessage message) {
-    acker.ack(message.id());
-    hookAck(message.id().correlationId());
-    return this;
-  }
-
-  @Override
-  public InputPort fail(JsonMessage message) {
-    acker.fail(message.id());
-    hookFail(message.id().correlationId());
+    acker.ack(message);
     return this;
   }
 
@@ -144,31 +89,52 @@ public class DefaultInputPort implements InputPort {
   }
 
   @Override
-  public InputPort open(final Handler<AsyncResult<Void>> doneHandler) {
+  public InputPort open(Handler<AsyncResult<Void>> doneHandler) {
     if (connections.isEmpty()) {
       final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
-      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          } else {
-            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+      startCounter.setHandler(doneHandler);
+
+      for (InputConnectionContext connectionContext : context.connections()) {
+        InputConnection connection = null;
+
+        // Basic at-most-once delivery.
+        if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
+          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new BasicInputConnection(vertx, connectionContext, cluster, acker);
+          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedInputConnection(vertx, connectionContext, cluster, acker);
+          }
+        // Required at-least-once delivery.
+        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
+          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new AtLeastOnceInputConnection(vertx, connectionContext, cluster, acker);
+          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedAtLeastOnceInputConnection(vertx, connectionContext, cluster, acker);
+          }
+        // Required exactly-once delivery.
+        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
+          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new ExactlyOnceInputConnection(vertx, connectionContext, cluster, acker);
+          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedExactlyOnceInputConnection(vertx, connectionContext, cluster, acker);
           }
         }
-      });
 
-      for (InputConnectionContext connection : context.connections()) {
-        connections.add(new DefaultInputConnection(vertx, connection).open(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            if (result.failed()) {
-              startCounter.fail(result.cause());
-            } else {
-              startCounter.succeed();
+        if (connection != null) {
+          connection.messageHandler(messageHandler);
+          connections.put(connectionContext.address(), connection.open(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                startCounter.fail(result.cause());
+              } else {
+                startCounter.succeed();
+              }
             }
-          }
-        }).messageHandler(internalMessageHandler));
+          }));
+        } else {
+          startCounter.succeed();
+        }
       }
     }
     return this;
@@ -194,7 +160,7 @@ public class DefaultInputPort implements InputPort {
       }
     });
 
-    for (InputConnection connection : connections) {
+    for (InputConnection connection : connections.values()) {
       connection.close(new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {

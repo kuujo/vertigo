@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.context.InputPortContext;
-import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -44,14 +43,6 @@ public interface InputPort {
   InputPortContext context();
 
   /**
-   * Adds an input hook to the port.
-   *
-   * @param hook An input hook.
-   * @return The input port.
-   */
-  InputPort addHook(InputHook hook);
-
-  /**
    * Registers a message handler on the port.
    *
    * @param handler A message handler.
@@ -66,14 +57,6 @@ public interface InputPort {
    * @return The input port.
    */
   InputPort ack(JsonMessage message);
-
-  /**
-   * Fails a message.
-   * 
-   * @param message The message to fail.
-   * @return The input port.
-   */
-  InputPort fail(JsonMessage message);
 
   /**
    * Opens the input port.

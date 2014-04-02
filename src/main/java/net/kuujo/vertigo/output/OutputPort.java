@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
@@ -45,12 +44,27 @@ public interface OutputPort {
   OutputPortContext context();
 
   /**
-   * Adds a hook to the port.
+   * Sets the output queue max size.
    *
-   * @param hook An output hook.
+   * @param maxSize The output queue max size.
    * @return The output port.
    */
-  OutputPort addHook(OutputHook hook);
+  OutputPort setSendQueueMaxSize(int maxSize);
+
+  /**
+   * Returns a boolean indicating whether the send queue is full.
+   *
+   * @return Indicates whether the send queue is full.
+   */
+  boolean sendQueueFull();
+
+  /**
+   * Sets a handler to be called when the port is prepared to accept new messages.
+   *
+   * @param handler A drain handler.
+   * @return The output port.
+   */
+  OutputPort drainHandler(Handler<Void> handler);
 
   /**
    * Emits a message to the output port.

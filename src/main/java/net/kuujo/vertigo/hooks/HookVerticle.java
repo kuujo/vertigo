@@ -15,10 +15,6 @@
  */
 package net.kuujo.vertigo.hooks;
 
-import net.kuujo.vertigo.message.MessageId;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
-
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -39,7 +35,6 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 public abstract class HookVerticle extends Verticle {
-  private static final Serializer serializer = SerializerFactory.getSerializer(MessageId.class);
 
   @Override
   public void start(final Future<Void> future) {
@@ -55,25 +50,25 @@ public abstract class HookVerticle extends Verticle {
               handleStart();
               break;
             case "receive":
-              handleReceive(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleReceive(body.getString("id"));
               break;
             case "ack":
-              handleAck(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleAck(body.getString("id"));
               break;
             case "fail":
-              handleFail(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleFail(body.getString("id"));
               break;
             case "emit":
-              handleEmit(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleEmit(body.getString("id"));
               break;
             case "acked":
-              handleAcked(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleAcked(body.getString("id"));
               break;
             case "failed":
-              handleFailed(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleFailed(body.getString("id"));
               break;
             case "timeout":
-              handleTimeout(serializer.deserializeObject(body.getObject("id"), MessageId.class));
+              handleTimeout(body.getString("id"));
               break;
             case "stop":
               handleStop();
@@ -103,7 +98,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleReceive(MessageId messageId);
+  protected abstract void handleReceive(String messageId);
 
   /**
    * Called when the hooked component acks a received message.
@@ -111,7 +106,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleAck(MessageId messageId);
+  protected abstract void handleAck(String messageId);
 
   /**
    * Called when the hooked component fails a received message.
@@ -119,7 +114,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleFail(MessageId messageId);
+  protected abstract void handleFail(String messageId);
 
   /**
    * Called when the hooked component emits a message.
@@ -127,7 +122,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleEmit(MessageId messageId);
+  protected abstract void handleEmit(String messageId);
 
   /**
    * Called when the hooked component receives an ack for an emitted message.
@@ -135,7 +130,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleAcked(MessageId messageId);
+  protected abstract void handleAcked(String messageId);
 
   /**
    * Called when the hooked component receives a failure for an emitted message.
@@ -143,7 +138,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleFailed(MessageId messageId);
+  protected abstract void handleFailed(String messageId);
 
   /**
    * Called when the hooked component receives a timeout for an emitted message.
@@ -151,7 +146,7 @@ public abstract class HookVerticle extends Verticle {
    * @param messageId
    *   The unique message identifier.
    */
-  protected abstract void handleTimeout(MessageId messageId);
+  protected abstract void handleTimeout(String messageId);
 
   /**
    * Called when the hook component stops.

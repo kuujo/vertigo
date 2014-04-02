@@ -15,36 +15,25 @@
  */
 package net.kuujo.vertigo.output;
 
-import java.util.List;
-
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * A component-to-component output connection.
- * 
+ * Output connection.
+ *
  * @author Jordan Halterman
  */
 public interface OutputConnection {
 
   /**
-   * Returns the output connection context.
+   * Returns the connection context.
    *
-   * @return The output connection context.
+   * @return The connection context.
    */
   OutputConnectionContext context();
-
-  /**
-   * Sends a message on the connection.
-   * 
-   * @param message The message to send on the connection.
-   * @return The sent message identifier.
-   */
-  List<MessageId> send(JsonMessage message);
 
   /**
    * Opens the connection.
@@ -56,11 +45,79 @@ public interface OutputConnection {
   /**
    * Opens the connection.
    *
-   * @param doneHandler An asynchronous handler to be called once the connection has
-   *                    been opened.
+   * @param doneHandler An asynchronous handler to be called once complete.
    * @return The output connection.
    */
   OutputConnection open(Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Sets the connection send queue maximum size.
+   *
+   * @param maxSize The maximum size for the connection's send queue.
+   * @return The output connection.
+   */
+  OutputConnection setSendQueueMaxSize(int maxSize);
+
+  /**
+   * Returns a boolean indicating whether the send queue is full.
+   *
+   * @return Indicates whether the connection's send queue is full.
+   */
+  boolean sendQueueFull();
+
+  /**
+   * Sets a full handler on the connection.
+   *
+   * @param handler A handler to be called when the connection's send queue becomes full.
+   * @return The output connection.
+   */
+  OutputConnection fullHandler(Handler<Void> handler);
+
+  /**
+   * Sets a drain handler on the connection.
+   *
+   * @param handler A handler to be called when the connection's send queue is drained.
+   * @return The output connection.
+   */
+  OutputConnection drainHandler(Handler<Void> handler);
+
+  /**
+   * Sends a message.
+   *
+   * @param message The message to send.
+   * @return The sent message identifier.
+   */
+  String send(JsonMessage message);
+
+  /**
+   * Sends a message, awaiting replication.
+   *
+   * @param message The message to send.
+   * @param doneHandler An asynchronous handler to be called once the message has
+   *        been sent or enqueued to be sent replicated.
+   * @return The sent message identifier.
+   */
+  String send(JsonMessage message, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Sends a child message.
+   *
+   * @param message The message to send.
+   * @param parent The message parent.
+   * @return The sent message identifier.
+   */
+  String send(JsonMessage message, JsonMessage parent);
+
+  /**
+   * Sends a child message, awaiting replication.
+   *
+   * @param message The message to send.
+   * @param parent The message parent.
+   * @param doneHandler An asynchronous handler to be called once the message has
+   *        been sent or enqueued to be sent replicated.
+   * @return The sent message identifier.
+   */
+  String send(JsonMessage message, JsonMessage parent, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Closes the connection.
@@ -70,8 +127,7 @@ public interface OutputConnection {
   /**
    * Closes the connection.
    *
-   * @param doneHandler An asynchronous handler to be called once the connection has
-   *                    been closed.
+   * @param doneHandler An asynchronous handler to be called once the connection is closed.
    */
   void close(Handler<AsyncResult<Void>> doneHandler);
 

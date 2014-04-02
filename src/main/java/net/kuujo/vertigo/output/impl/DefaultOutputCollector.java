@@ -15,11 +15,9 @@
  */
 package net.kuujo.vertigo.output.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,8 +25,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.impl.DefaultOutputPortContext;
-import net.kuujo.vertigo.hooks.OutputHook;
-import net.kuujo.vertigo.network.auditor.Acker;
+import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -48,12 +45,11 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   private final Vertx vertx;
   private final OutputContext context;
   private final VertigoCluster cluster;
-  private final Acker acker;
-  private final List<OutputHook> hooks = new ArrayList<>();
+  private final MessageAcker acker;
   private final Map<String, OutputPort> ports = new HashMap<>();
   private boolean started;
 
-  public DefaultOutputCollector(Vertx vertx, OutputContext context, VertigoCluster cluster, Acker acker) {
+  public DefaultOutputCollector(Vertx vertx, OutputContext context, VertigoCluster cluster, MessageAcker acker) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
@@ -63,15 +59,6 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   @Override
   public OutputContext context() {
     return context;
-  }
-
-  @Override
-  public OutputCollector addHook(OutputHook hook) {
-    hooks.add(hook);
-    for (OutputPort port : ports.values()) {
-      port.addHook(hook);
-    }
-    return this;
   }
 
   @Override
@@ -168,9 +155,6 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
               }
             }
           }));
-          for (OutputHook hook : hooks) {
-            ports.get(port.name()).addHook(hook);
-          }
         }
       }
       started = true;

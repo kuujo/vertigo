@@ -15,45 +15,44 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.util.serializer.DeserializationException;
+import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 
 /**
- * Default input connection implementation.
+ * Base input connection.
  *
  * @author Jordan Halterman
  */
-public class DefaultInputConnection implements InputConnection {
-  private static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
-  private final EventBus eventBus;
-  private final InputConnectionContext context;
-  private Handler<JsonMessage> messageHandler;
+public abstract class BaseInputConnection implements InputConnection {
+  protected static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
+  protected final Vertx vertx;
+  protected final InputConnectionContext context;
+  protected final VertigoCluster cluster;
+  protected final MessageAcker acker;
+  protected Handler<JsonMessage> messageHandler;
 
-  private final Handler<Message<String>> internalMessageHandler = new Handler<Message<String>>() {
+  private final Handler<Message<String>> internalHandler = new Handler<Message<String>>() {
     @Override
     public void handle(Message<String> message) {
-      if (messageHandler != null) {
-        try {
-          messageHandler.handle(serializer.deserializeString(message.body(), JsonMessage.class));
-        } catch (DeserializationException e) {
-        }
-      }
+      handleMessage(serializer.deserializeString(message.body(), JsonMessage.class), message);
     }
   };
 
-  public DefaultInputConnection(Vertx vertx, InputConnectionContext context) {
-    this.eventBus = vertx.eventBus();
+  public BaseInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
+    this.vertx = vertx;
     this.context = context;
+    this.cluster = cluster;
+    this.acker = acker;
   }
 
   @Override
@@ -63,8 +62,17 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection messageHandler(Handler<JsonMessage> handler) {
-    messageHandler = handler;
+    this.messageHandler = handler;
     return this;
+  }
+
+  /**
+   * Handles a message.
+   */
+  protected void handleMessage(JsonMessage message, Message<String> sourceMessage) {
+    if (messageHandler != null) {
+      messageHandler.handle(message);
+    }
   }
 
   @Override
@@ -74,7 +82,7 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection open(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.registerHandler(context.source(), internalMessageHandler, doneHandler);
+    vertx.eventBus().registerHandler(context.address(), internalHandler, doneHandler);
     return this;
   }
 
@@ -85,7 +93,7 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public void close(Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.unregisterHandler(context.source(), internalMessageHandler, doneHandler);
+    vertx.eventBus().unregisterHandler(context.address(), internalHandler, doneHandler);
   }
 
 }

@@ -16,35 +16,24 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.AsyncMap;
+import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageId;
+import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
-import net.kuujo.vertigo.message.impl.DefaultMessageId;
-import net.kuujo.vertigo.network.auditor.Acker;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
-import net.kuujo.vertigo.util.RoundRobin;
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default output port implementation.
@@ -52,54 +41,37 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
  * @author Jordan Halterman
  */
 public class DefaultOutputPort implements OutputPort {
-  private static final Logger log = LoggerFactory.getLogger(DefaultOutputPort.class);
-  private static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
-
   private final Vertx vertx;
-  private final String address;
   private OutputPortContext context;
-  private final Acker acker;
+  private final VertigoCluster cluster;
+  private final MessageAcker acker;
+  private int maxQueueSize = 10000;
+  private boolean full;
+  private Handler<Void> drainHandler;
   private final List<OutputConnection> connections = new ArrayList<>();
-  private final Iterator<String> auditors;
-  private final List<OutputHook> hooks = new ArrayList<>();
-  private final Random random = new Random();
-  private final AsyncMap<String, String> messages;
 
-  private final Handler<String> ackHandler = new Handler<String>() {
+  private final Handler<Void> connectionFullHandler = new Handler<Void>() {
     @Override
-    public void handle(String messageId) {
-      hookAcked(messageId);
+    public void handle(Void _) {
+      full = true;
     }
   };
 
-  private final Handler<String> failHandler = new Handler<String>() {
+  private final Handler<Void> connectionDrainHandler = new Handler<Void>() {
     @Override
-    public void handle(String messageId) {
-      hookFailed(messageId);
+    public void handle(Void _) {
+      full = false;
+      if (drainHandler != null) {
+        drainHandler.handle((Void) null);
+      }
     }
   };
 
-  private final Handler<String> timeoutHandler = new Handler<String>() {
-    @Override
-    public void handle(String messageId) {
-      hookTimeout(messageId);
-    }
-  };
-
-  public DefaultOutputPort(Vertx vertx, OutputPortContext context, VertigoCluster cluster, Acker acker) {
+  public DefaultOutputPort(Vertx vertx, OutputPortContext context, VertigoCluster cluster, MessageAcker acker) {
     this.vertx = vertx;
-    this.address = context.address();
     this.context = context;
-    this.messages = cluster.getMap(String.format("%s.__messages", address));
+    this.cluster = cluster;
     this.acker = acker;
-    List<String> auditors = new ArrayList<>();
-    for (String auditor : acker.auditors()) {
-      auditors.add(auditor);
-    }
-    this.auditors = new RoundRobin<>(auditors).iterator();
-    acker.ackHandler(ackHandler);
-    acker.failHandler(failHandler);
-    acker.timeoutHandler(timeoutHandler);
   }
 
   @Override
@@ -118,205 +90,99 @@ public class DefaultOutputPort implements OutputPort {
   }
 
   @Override
-  public OutputPort addHook(OutputHook hook) {
-    hooks.add(hook);
+  public OutputPort setSendQueueMaxSize(int maxSize) {
+    this.maxQueueSize = maxSize;
+    for (OutputConnection connection : connections) {
+      connection.setSendQueueMaxSize(maxSize);
+    }
     return this;
   }
 
-  /**
-   * Calls acked hooks.
-   */
-  private void hookAcked(final String messageId) {
-    messages.remove(messageId, new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.failed()) {
-          log.error(result.cause());
-        } else if (result.result() != null) {
-          for (OutputHook hook : hooks) {
-            hook.handleAcked(messageId);
-          }
-        }
-      }
-    });
+  @Override
+  public boolean sendQueueFull() {
+    return full;
   }
 
-  /**
-   * Calls failed hooks.
-   */
-  private void hookFailed(final String messageId) {
-    messages.remove(messageId, new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.failed()) {
-          log.error(result.cause());
-        } else if (result.result() != null) {
-          for (OutputHook hook : hooks) {
-            hook.handleFailed(messageId);
-          }
-        }
-      }
-    });
-  }
-
-  /**
-   * Calls timed-out hooks.
-   */
-  private void hookTimeout(final String messageId) {
-    messages.get(messageId, new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.failed()) {
-          log.error(result.cause());
-        } else if (result.result() != null) {
-          for (OutputHook hook : hooks) {
-            hook.handleTimeout(messageId);
-          }
-          doReEmit(serializer.deserializeString(result.result(), JsonMessage.class));
-        }
-      }
-    });
-  }
-
-  /**
-   * Calls emit hooks.
-   */
-  private void hookEmit(final String messageId) {
-    for (OutputHook hook : hooks) {
-      hook.handleEmit(messageId);
-    }
+  @Override
+  public OutputPort drainHandler(Handler<Void> handler) {
+    this.drainHandler = handler;
+    return this;
   }
 
   @Override
   public String emit(JsonObject body) {
-    return doEmitNew(body, null);
+    final JsonMessage message = createNewMessage(body);
+    for (OutputConnection connection : connections) {
+      connection.send(createChildMessage(body, message));
+    }
+    return message.id();
   }
 
   @Override
   public String emit(JsonObject body, Handler<AsyncResult<Void>> doneHandler) {
-    return doEmitNew(body, doneHandler);
+    final JsonMessage message = createNewMessage(body);
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
+    counter.setHandler(doneHandler);
+    for (OutputConnection connection : connections) {
+      connection.send(createChildMessage(body, message), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          } else {
+            counter.succeed();
+          }
+        }
+      });
+    }
+    return message.id();
   }
 
   @Override
   public String emit(JsonObject body, JsonMessage parent) {
-    return doEmitChild(body, parent, null);
+    final JsonMessage message = createChildMessage(body, parent);
+    for (OutputConnection connection : connections) {
+      connection.send(createCopy(message), parent);
+    }
+    return message.id();
   }
 
   @Override
   public String emit(JsonObject body, JsonMessage parent, Handler<AsyncResult<Void>> doneHandler) {
-    return doEmitChild(body, parent, doneHandler);
+    final JsonMessage message = createChildMessage(body, parent);
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
+    counter.setHandler(doneHandler);
+    for (OutputConnection connection : connections) {
+      connection.send(createCopy(message), parent, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          } else {
+            counter.succeed();
+          }
+        }
+      });
+    }
+    return message.id();
   }
 
   @Override
   public String emit(JsonMessage message) {
-    return doEmitChild(message.body(), message, null);
+    return emit(message.body(), message);
   }
 
   @Override
   public String emit(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
-    return doEmitChild(message.body(), message, doneHandler);
-  }
-
-  /**
-   * Reemits a timed out message.
-   */
-  private void doReEmit(final JsonMessage message) {
-    acker.create(message.id(), new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          log.error(result.cause());
-        } else {
-          for (OutputConnection connection : connections) {
-            acker.fork(message.id(), connection.send(message));
-          }
-          acker.commit(message.id());
-          hookEmit(message.id().correlationId());
-        }
-      }
-    });
-  }
-
-  /**
-   * Emits a new message to an output port.
-   * New messages are tracked by calling fork() and create() on the local acker.
-   * This will cause the acker to send a single message indicating the total
-   * ack count for all emitted messages.
-   */
-  private String doEmitNew(JsonObject body, final Handler<AsyncResult<Void>> doneHandler) {
-    if (!connections.isEmpty()) {
-      final JsonMessage message = createNewMessage(body);
-      final MessageId messageId = message.id();
-      messages.put(messageId.correlationId(), serializer.serializeToString(message), new Handler<AsyncResult<String>>() {
-        @Override
-        public void handle(AsyncResult<String> result) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          } else {
-            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-            acker.create(messageId, new Handler<AsyncResult<Void>>() {
-              @Override
-              public void handle(AsyncResult<Void> result) {
-                if (result.succeeded()) {
-                  for (OutputConnection connection : connections) {
-                    acker.fork(messageId, connection.send(message));
-                  }
-                  acker.commit(messageId);
-                  hookEmit(messageId.correlationId());
-                } else {
-                  hookTimeout(messageId.correlationId());
-                }
-              }
-            });
-          }
-        }
-      });
-      return messageId.correlationId();
-    }
-    return null;
-  }
-
-  /**
-   * Emits a child message to an output port.
-   * Child messages are tracked by only calling fork() on the local acker.
-   * Once the input collector calls ack() on the acker, the acker will notify
-   * the auditor of the update on the ack count for the message tree.
-   */
-  private String doEmitChild(JsonObject body, JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
-    if (!connections.isEmpty()) {
-      JsonMessage message = createChildMessage(body, parent);
-      MessageId messageId = message.id();
-      for (OutputConnection connection : connections) {
-        acker.fork(messageId, connection.send(message));
-      }
-      hookEmit(messageId.correlationId());
-      // Run the async handler on the event loop to prevent blocking in cases
-      // where users expect the handler to be called asynchronously.
-      vertx.runOnContext(new Handler<Void>() {
-        @Override
-        public void handle(Void _) {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-      });
-      return messageId.correlationId();
-    }
-    return null;
+    return emit(message.body(), message, doneHandler);
   }
 
   /**
    * Creates a new message.
    */
-  private JsonMessage createNewMessage(JsonObject body) {
+  protected JsonMessage createNewMessage(JsonObject body) {
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
-        .setMessageId(DefaultMessageId.Builder.newBuilder()
-            .setCorrelationId(new StringBuilder()
-                .append(address)
-                .append(":")
-                .append(OutputCounter.incrementAndGet())
-                .toString())
-            .setAuditor(auditors.next())
-            .setCode(random.nextInt())
-            .build())
+        .setId(createUniqueId())
         .setBody(body)
         .build();
     return message;
@@ -325,22 +191,32 @@ public class DefaultOutputPort implements OutputPort {
   /**
    * Creates a child message.
    */
-  private JsonMessage createChildMessage(JsonObject body, JsonMessage parent) {
-    MessageId parentId = parent.id();
+  protected JsonMessage createChildMessage(JsonObject body, JsonMessage parent) {
     JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
-        .setMessageId(DefaultMessageId.Builder.newBuilder()
-            .setCorrelationId(new StringBuilder()
-                .append(address)
-                .append(":")
-                .append(OutputCounter.incrementAndGet())
-                .toString())
-            .setAuditor(parentId.auditor())
-            .setCode(random.nextInt())
-            .setTree(parentId.tree())
-            .build())
+        .setId(createUniqueId())
         .setBody(body)
+        .setParent(parent.id())
+        .setRoot(parent.root() != null ? parent.root() : parent.id())
         .build();
     return message;
+  }
+
+  /**
+   * Creates a copy of a message.
+   */
+  protected JsonMessage createCopy(JsonMessage message) {
+    return message.copy(createUniqueId());
+  }
+
+  /**
+   * Creates a unique message ID.
+   */
+  private String createUniqueId() {
+    return new StringBuilder()
+      .append(context.address())
+      .append(":")
+      .append(OutputCounter.incrementAndGet())
+      .toString();
   }
 
   @Override
@@ -352,61 +228,52 @@ public class DefaultOutputPort implements OutputPort {
   public OutputPort open(final Handler<AsyncResult<Void>> doneHandler) {
     if (connections.isEmpty()) {
       final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
-      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          } else {
-            // Check for messages in the cluster that need to be replayed.
-            messages.size(new Handler<AsyncResult<Integer>>() {
-              @Override
-              public void handle(AsyncResult<Integer> result) {
-                if (result.failed()) {
-                  new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                } else if (result.result() == 0) {
-                  new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-                } else {
-                  messages.keySet(new Handler<AsyncResult<Set<String>>>() {
-                    @Override
-                    public void handle(AsyncResult<Set<String>> result) {
-                      if (result.failed()) {
-                        new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                      } else {
-                        Set<String> keys = result.result();
-                        final CountingCompletionHandler<Void> recoverCounter = new CountingCompletionHandler<Void>(keys.size());
-                        for (String key : keys) {
-                          messages.get(key, new Handler<AsyncResult<String>>() {
-                            @Override
-                            public void handle(AsyncResult<String> result) {
-                              if (result.succeeded() && result.result() != null) {
-                                doReEmit(serializer.deserializeString(result.result(), JsonMessage.class));
-                              }
-                              recoverCounter.succeed();
-                            }
-                          });
-                        }
-                      }
-                    }
-                  });
-                }
-              }
-            });
+      startCounter.setHandler(doneHandler);
+
+      for (OutputConnectionContext connectionContext : context.connections()) {
+        OutputConnection connection = null;
+
+        // Basic at-most-once delivery.
+        if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
+          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new BasicOutputConnection(vertx, connectionContext, cluster, acker);
+          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedOutputConnection(vertx, connectionContext, cluster, acker);
+          }
+        // Required at-least-once delivery.
+        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
+          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new AtLeastOnceOutputConnection(vertx, connectionContext, cluster, acker);
+          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedAtLeastOnceOutputConnection(vertx, connectionContext, cluster, acker);
+          }
+        // Required exactly-once delivery.
+        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
+          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new ExactlyOnceOutputConnection(vertx, connectionContext, cluster, acker);
+          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedExactlyOnceOutputConnection(vertx, connectionContext, cluster, acker);
           }
         }
-      });
 
-      for (OutputConnectionContext connection : context.connections()) {
-        connections.add(new DefaultOutputConnection(vertx, connection).open(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            if (result.failed()) {
-              startCounter.fail(result.cause());
-            } else {
-              startCounter.succeed();
+        if (connection != null) {
+          connection.setSendQueueMaxSize(maxQueueSize);
+          connection.fullHandler(connectionFullHandler);
+          connection.drainHandler(connectionDrainHandler);
+
+          connections.add(connection.open(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                startCounter.fail(result.cause());
+              } else {
+                startCounter.succeed();
+              }
             }
-          }
-        }));
+          }));
+        } else {
+          startCounter.succeed();
+        }
       }
     }
     return this;

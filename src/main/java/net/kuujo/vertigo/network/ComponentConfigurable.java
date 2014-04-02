@@ -63,7 +63,7 @@ public interface ComponentConfigurable {
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
    * @param moduleName The module name.
-   * @param numInstances The number of module instances. If multiple instances are
+   * @param instances The number of module instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new module configuration.
@@ -140,13 +140,13 @@ public interface ComponentConfigurable {
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
    * @param moduleName The module name.
-   * @param numInstances The number of module instances. If multiple instances are
+   * @param instances The number of module instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  ModuleConfig addModule(String name, String moduleName, int numInstances);
+  ModuleConfig addModule(String name, String moduleName, int instances);
 
   /**
    * Adds a module to the network.
@@ -156,13 +156,13 @@ public interface ComponentConfigurable {
    * @param moduleName The module name.
    * @param config The module configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
-   * @param numInstances The number of module instances. If multiple instances are
+   * @param instances The number of module instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new module configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
-  ModuleConfig addModule(String name, String moduleName, JsonObject config, int numInstances);
+  ModuleConfig addModule(String name, String moduleName, JsonObject config, int instances);
 
   /**
    * Removes a module from the network.
@@ -216,12 +216,12 @@ public interface ComponentConfigurable {
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
    * @param main The verticle main.
-   * @param numInstances The number of verticle instances. If multiple instances are
+   * @param instances The number of verticle instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new verticle configuration.
    */
-  VerticleConfig addVerticle(String name, String main, int numInstances);
+  VerticleConfig addVerticle(String name, String main, int instances);
 
   /**
    * Adds a verticle to the network.
@@ -231,12 +231,12 @@ public interface ComponentConfigurable {
    * @param main The verticle main.
    * @param config The verticle configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
-   * @param numInstances The number of verticle instances. If multiple instances are
+   * @param instances The number of verticle instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
    * @return The new verticle configuration.
    */
-  VerticleConfig addVerticle(String name, String main, JsonObject config, int numInstances);
+  VerticleConfig addVerticle(String name, String main, JsonObject config, int instances);
 
   /**
    * Removes a verticle configuration from the network.

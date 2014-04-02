@@ -48,35 +48,9 @@ import org.vertx.java.core.json.JsonObject;
 public class NetworkTest {
 
   @Test
-  public void testNetworkDefaults() {
-    DefaultNetworkConfig network = new DefaultNetworkConfig("test");
-    assertEquals("test", network.getName());
-    assertEquals(true, network.isAckingEnabled());
-    assertEquals(1, network.getNumAuditors());
-    assertEquals(true, network.isMessageTimeoutsEnabled());
-    assertEquals(30000, network.getMessageTimeout());
-  }
-
-  @Test
   public void testDefaultNetworkConfig() {
     DefaultNetworkConfig network = new DefaultNetworkConfig("test");
     assertEquals("test", network.getName());
-    network.enableAcking();
-    assertTrue(network.isAckingEnabled());
-    network.disableAcking();
-    assertFalse(network.isAckingEnabled());
-    network.setAckingEnabled(true);
-    assertTrue(network.isAckingEnabled());
-    network.setNumAuditors(2);
-    assertEquals(2, network.getNumAuditors());
-    network.enableMessageTimeouts();
-    assertTrue(network.isMessageTimeoutsEnabled());
-    network.disableMessageTimeouts();
-    assertFalse(network.isMessageTimeoutsEnabled());
-    network.setMessageTimeoutsEnabled(true);
-    assertTrue(network.isMessageTimeoutsEnabled());
-    network.setMessageTimeout(10000);
-    assertEquals(10000, network.getMessageTimeout());
   }
 
   @Test
@@ -513,25 +487,9 @@ public class NetworkTest {
   public void testNetworkFromJson() {
     JsonObject json = new JsonObject()
         .putString(DefaultNetworkConfig.NETWORK_NAME, "test")
-        .putBoolean(DefaultNetworkConfig.NETWORK_ACKING_ENABLED, true)
-        .putNumber(DefaultNetworkConfig.NETWORK_NUM_AUDITORS, 3)
-        .putNumber(DefaultNetworkConfig.NETWORK_MESSAGE_TIMEOUT, 10000)
         .putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject());
     NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
     assertEquals("test", network.getName());
-    assertTrue(network.isAckingEnabled());
-    assertEquals(3, network.getNumAuditors());
-    assertTrue(network.isMessageTimeoutsEnabled());
-    assertEquals(10000, network.getMessageTimeout());
-  }
-
-  @Test
-  public void testNetworkTimeoutsDisabledFromJson() {
-    JsonObject json = new JsonObject()
-        .putString(DefaultNetworkConfig.NETWORK_NAME, "test")
-        .putBoolean(DefaultNetworkConfig.NETWORK_MESSAGE_TIMEOUTS_ENABLED, false);
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
-    assertFalse(network.isMessageTimeoutsEnabled());
   }
 
   @Test
@@ -680,19 +638,11 @@ public class NetworkTest {
       
     }
     @Override
-    public void handleFail(String String) {
-      
-    }
-    @Override
     public void handleEmit(String String) {
       
     }
     @Override
     public void handleAcked(String String) {
-      
-    }
-    @Override
-    public void handleFailed(String String) {
       
     }
     @Override

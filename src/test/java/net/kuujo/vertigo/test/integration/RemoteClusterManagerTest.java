@@ -40,7 +40,6 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
   @Test
   public void testLocalDeploy() {
     NetworkConfig network = new DefaultNetworkConfig("test");
-    network.setNumAuditors(2);
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
     network.createConnection("feeder", "stream1", "worker", "stream1");
@@ -60,7 +59,6 @@ public class RemoteClusterManagerTest extends XyncTestVerticle {
   @Test
   public void testLocalShutdown() {
     NetworkConfig network = new DefaultNetworkConfig("test");
-    network.setNumAuditors(2);
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
     network.createConnection("feeder", "stream1", "worker", "stream1");

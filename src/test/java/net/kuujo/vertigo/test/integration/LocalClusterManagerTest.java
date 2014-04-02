@@ -39,7 +39,6 @@ public class LocalClusterManagerTest extends TestVerticle {
   @Test
   public void testLocalDeploy() {
     NetworkConfig network = new DefaultNetworkConfig("test1");
-    network.setNumAuditors(2);
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
     network.createConnection("feeder", "stream1", "worker", "stream1");
@@ -58,7 +57,6 @@ public class LocalClusterManagerTest extends TestVerticle {
   @Test
   public void testLocalShutdown() {
     NetworkConfig network = new DefaultNetworkConfig("test2");
-    network.setNumAuditors(2);
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
     network.createConnection("feeder", "stream1", "worker", "stream1");

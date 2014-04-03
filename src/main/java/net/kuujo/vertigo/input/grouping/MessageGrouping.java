@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.output.selector.MessageSelector;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
  * An input grouping.<p>
@@ -39,7 +39,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
   @JsonSubTypes.Type(value=FieldsGrouping.class, name="fields"),
   @JsonSubTypes.Type(value=AllGrouping.class, name="all")
 })
-public interface MessageGrouping extends Serializable {
+public interface MessageGrouping extends JsonSerializable {
 
   /**
    * Creates an output selector from the grouping.

@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 /**
  * An annotation introspector that automatically includes primitives and their
  * wrappers into all serializations. Additionally, any clas that implements the
- * {@link Serializable} interface will be automatically included for serialization.
+ * {@link JsonSerializable} interface will be automatically included for serialization.
  * This allows all Vertigo serializables to be automatically serialized by the
  * default serializer. 
  *
@@ -109,7 +109,7 @@ public class InclusiveAnnotationIntrospector extends JacksonAnnotationIntrospect
       return true;
     }
 
-    if (Serializable.class.isAssignableFrom(type)) {
+    if (JsonSerializable.class.isAssignableFrom(type)) {
       cache.put(type, true);
       return true;
     }

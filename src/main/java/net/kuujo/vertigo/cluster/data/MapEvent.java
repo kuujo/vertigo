@@ -15,14 +15,14 @@
  */
 package net.kuujo.vertigo.cluster.data;
 
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
  * Map event.
  *
  * @author Jordan Halterman
  */
-public class MapEvent<K, V> implements Serializable {
+public class MapEvent<K, V> implements JsonSerializable {
 
   /**
    * Map event type.

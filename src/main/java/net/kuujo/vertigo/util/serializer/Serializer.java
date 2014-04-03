@@ -39,7 +39,7 @@ public interface Serializer {
    * @return A Json representation of the serializable object.
    * @throws SerializationException If an error occurs during serialization.
    */
-  <T extends Serializable> byte[] serializeToBytes(T object);
+  <T> byte[] serializeToBytes(T object);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a
@@ -50,7 +50,7 @@ public interface Serializer {
    * @return The deserialized object.
    * @throws DeserializationException If an error occurs during deserialization.
    */
-  <T extends Serializable> T deserializeBytes(byte[] json, Class<T> type);
+  <T> T deserializeBytes(byte[] json, Class<T> type);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a
@@ -71,7 +71,7 @@ public interface Serializer {
    * @return A Json representation of the serializable object.
    * @throws SerializationException If an error occurs during serialization.
    */
-  <T extends Serializable> String serializeToString(T object);
+  <T> String serializeToString(T object);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a
@@ -82,7 +82,7 @@ public interface Serializer {
    * @return The deserialized object.
    * @throws DeserializationException If an error occurs during deserialization.
    */
-  <T extends Serializable> T deserializeString(String json, Class<T> type);
+  <T> T deserializeString(String json, Class<T> type);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a
@@ -103,7 +103,7 @@ public interface Serializer {
    * @return A Json representation of the serializable object.
    * @throws SerializationException If an error occurs during serialization.
    */
-  <T extends Serializable> JsonObject serializeToObject(T object);
+  <T> JsonObject serializeToObject(T object);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a
@@ -114,7 +114,7 @@ public interface Serializer {
    * @return The deserialized object.
    * @throws DeserializationException If an error occurs during deserialization.
    */
-  <T extends Serializable> T deserializeObject(JsonObject json, Class<T> type);
+  <T> T deserializeObject(JsonObject json, Class<T> type);
 
   /**
    * Deserializes an object from Json. If an error occurs during deserialization, a

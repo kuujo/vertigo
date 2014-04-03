@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
  * An output selector.
@@ -41,7 +41,7 @@ import net.kuujo.vertigo.util.serializer.Serializable;
   @JsonSubTypes.Type(value=FieldsSelector.class, name="fields"),
   @JsonSubTypes.Type(value=AllSelector.class, name="all")
 })
-public interface MessageSelector extends Serializable {
+public interface MessageSelector extends JsonSerializable {
 
   /**
    * Selects a list of connections to which to emit messages.

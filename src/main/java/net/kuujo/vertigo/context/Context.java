@@ -16,14 +16,14 @@
 package net.kuujo.vertigo.context;
 
 import net.kuujo.vertigo.util.Observable;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
  * Base context.
  * 
  * @author Jordan Halterman
  */
-public interface Context<T extends Context<T>> extends Observable<T>, Serializable {
+public interface Context<T extends Context<T>> extends Observable<T>, JsonSerializable {
 
   /**
    * Returns the context address.

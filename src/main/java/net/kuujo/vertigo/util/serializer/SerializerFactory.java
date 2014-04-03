@@ -18,7 +18,7 @@ package net.kuujo.vertigo.util.serializer;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.util.serializer.impl.DefaultSerializerFactory;
+import net.kuujo.vertigo.util.serializer.impl.JacksonSerializerFactory;
 
 /**
  * Json serializer factory.
@@ -34,8 +34,8 @@ import net.kuujo.vertigo.util.serializer.impl.DefaultSerializerFactory;
  * <p>
  * 
  * In order to serialize an object with the default serializer, classes must implement the
- * {@link Serializable} interface. In most cases, the default serializer will
- * automatically serialize all primitives, collections, and {@link Serializable}
+ * {@link JsonSerializable} interface. In most cases, the default serializer will
+ * automatically serialize all primitives, collections, and {@link JsonSerializable}
  * properties within the serializable object. For more advanced serialization, look at the
  * Jackson annotations documentation.
  * 
@@ -54,7 +54,7 @@ public abstract class SerializerFactory {
    */
   private static SerializerFactory getInstance() {
     if (instance == null) {
-      String className = DefaultSerializerFactory.class.getName();
+      String className = JacksonSerializerFactory.class.getName();
       try {
         className = System.getProperty(SERIALIZER_FACTORY_CLASS_NAME);
       } catch (Exception e) {
@@ -69,7 +69,7 @@ public abstract class SerializerFactory {
           throw new IllegalArgumentException("Error instantiating serializer factory.");
         }
       } else {
-        instance = new DefaultSerializerFactory();
+        instance = new JacksonSerializerFactory();
       }
     }
     return instance;
@@ -120,7 +120,7 @@ public abstract class SerializerFactory {
     Class<?>[] interfaces = type.getInterfaces();
     if (interfaces.length > 0) {
       for (Class<?> iface : interfaces) {
-        if (iface == Serializable.class) {
+        if (iface == JsonSerializable.class) {
           return type;
         }
       }

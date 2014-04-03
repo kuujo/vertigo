@@ -41,5 +41,5 @@ import com.fasterxml.jackson.annotation.JsonInclude;
     isGetterVisibility=JsonAutoDetect.Visibility.NONE,
     setterVisibility=JsonAutoDetect.Visibility.NONE
 )
-public interface Serializable {
+public interface JsonSerializable {
 }

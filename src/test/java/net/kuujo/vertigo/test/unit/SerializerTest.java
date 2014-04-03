@@ -17,7 +17,7 @@ package net.kuujo.vertigo.test.unit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 import net.kuujo.vertigo.util.serializer.SerializationException;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
@@ -31,7 +31,7 @@ import org.junit.Test;
  */
 public class SerializerTest {
 
-  public static interface SomeInterface extends Serializable {}
+  public static interface SomeInterface extends JsonSerializable {}
 
   public static interface SomeExtendingInterface extends SomeInterface{}
 

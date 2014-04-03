@@ -15,6 +15,10 @@
  */
 package net.kuujo.vertigo.util.serializer.impl;
 
+import net.kuujo.vertigo.util.serializer.DeserializationException;
+import net.kuujo.vertigo.util.serializer.SerializationException;
+import net.kuujo.vertigo.util.serializer.Serializer;
+
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -22,30 +26,25 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import net.kuujo.vertigo.util.serializer.DeserializationException;
-import net.kuujo.vertigo.util.serializer.Serializable;
-import net.kuujo.vertigo.util.serializer.SerializationException;
-import net.kuujo.vertigo.util.serializer.Serializer;
-
 /**
- * A default serializer implementation.
+ * A Jackson-based serializer implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultSerializer implements Serializer {
+public class JacksonSerializer implements Serializer {
   private final ObjectMapper mapper;
 
-  public DefaultSerializer() {
+  public JacksonSerializer() {
     this(new InclusiveAnnotationIntrospector());
   }
 
-  public DefaultSerializer(AnnotationIntrospector introspector) {
+  public JacksonSerializer(AnnotationIntrospector introspector) {
     mapper = new ObjectMapper();
     mapper.setAnnotationIntrospector(introspector);
   }
 
   @Override
-  public <T extends Serializable> byte[] serializeToBytes(T object) {
+  public <T> byte[] serializeToBytes(T object) {
     try {
       return mapper.writeValueAsBytes(object);
     } catch (Exception e) {
@@ -54,7 +53,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public <T extends Serializable> T deserializeBytes(byte[] json, Class<T> type) {
+  public <T> T deserializeBytes(byte[] json, Class<T> type) {
     try {
       return mapper.readValue(json, type);
     } catch (Exception e) {
@@ -72,7 +71,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public <T extends Serializable> String serializeToString(T object) {
+  public <T> String serializeToString(T object) {
     try {
       return mapper.writeValueAsString(object);
     } catch (Exception e) {
@@ -81,7 +80,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public <T extends Serializable> T deserializeString(String json, Class<T> type) {
+  public <T> T deserializeString(String json, Class<T> type) {
     try {
       return mapper.readValue(json, type);
     } catch (Exception e) {
@@ -99,7 +98,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public <T extends Serializable> JsonObject serializeToObject(T object) {
+  public <T> JsonObject serializeToObject(T object) {
     try {
       return new JsonObject(mapper.writeValueAsString(object));
     } catch (Exception e) {
@@ -108,7 +107,7 @@ public class DefaultSerializer implements Serializer {
   }
 
   @Override
-  public <T extends Serializable> T deserializeObject(JsonObject json, Class<T> type) {
+  public <T> T deserializeObject(JsonObject json, Class<T> type) {
     try {
       return mapper.readValue(json.encode(), type);
     } catch (Exception e) {

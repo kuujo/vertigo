@@ -15,12 +15,12 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
  * Base configuration.
  *
  * @author Jordan Halterman
  */
-public interface Config extends Serializable {
+public interface Config extends JsonSerializable {
 }

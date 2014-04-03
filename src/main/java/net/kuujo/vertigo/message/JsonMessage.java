@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.message;
 
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   property="type",
   defaultImpl=ReliableJsonMessage.class
 )
-public interface JsonMessage extends Serializable {
+public interface JsonMessage extends JsonSerializable {
 
   /**
    * Returns the unique message ID.

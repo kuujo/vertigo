@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -39,5 +39,5 @@ import net.kuujo.vertigo.network.NetworkConfig;
  * @param <T> The hook subject
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="type")
-public interface Hook extends Serializable {
+public interface Hook extends JsonSerializable {
 }

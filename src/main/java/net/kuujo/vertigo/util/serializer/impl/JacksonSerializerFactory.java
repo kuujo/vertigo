@@ -19,15 +19,15 @@ import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 /**
- * A default serializer factory implementation.
+ * A Jackson json serializer factory implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultSerializerFactory extends SerializerFactory {
+public class JacksonSerializerFactory extends SerializerFactory {
 
   @Override
   public Serializer createSerializer(Class<?> type) {
-    return new DefaultSerializer();
+    return new JacksonSerializer();
   }
 
 }

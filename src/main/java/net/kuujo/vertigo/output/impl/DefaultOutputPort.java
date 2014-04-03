@@ -25,8 +25,7 @@ import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputPortHook;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -47,7 +46,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   private final Vertx vertx;
   private OutputPortContext context;
   private final VertigoCluster cluster;
-  private final MessageAcker acker;
   private final List<OutputPortHook> hooks = new ArrayList<>();
   private int maxQueueSize = 10000;
   private boolean full;
@@ -71,11 +69,10 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     }
   };
 
-  public DefaultOutputPort(Vertx vertx, OutputPortContext context, VertigoCluster cluster, MessageAcker acker) {
+  public DefaultOutputPort(Vertx vertx, OutputPortContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
-    this.acker = acker;
   }
 
   @Override
@@ -121,7 +118,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public String send(JsonObject body) {
-    final JsonMessage message = createNewMessage(body);
+    final ReliableJsonMessage message = createNewMessage(body);
     for (OutputConnection connection : connections) {
       connection.send(createChildMessage(body, message));
     }
@@ -133,7 +130,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public String send(JsonObject body, final Handler<AsyncResult<Void>> doneHandler) {
-    final JsonMessage message = createNewMessage(body);
+    final ReliableJsonMessage message = createNewMessage(body);
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
     counter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
@@ -164,9 +161,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public String send(JsonObject body, JsonMessage parent) {
-    final JsonMessage message = createChildMessage(body, parent);
+    final ReliableJsonMessage message = createChildMessage(body, (ReliableJsonMessage) parent);
     for (OutputConnection connection : connections) {
-      connection.send(createCopy(message), parent);
+      connection.send(createCopy(message), (ReliableJsonMessage) parent);
     }
     for (OutputPortHook hook : hooks) {
       hook.handleSend(message.id());
@@ -176,7 +173,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public String send(JsonObject body, JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
-    final JsonMessage message = createChildMessage(body, parent);
+    final ReliableJsonMessage message = createChildMessage(body, (ReliableJsonMessage) parent);
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
     counter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
@@ -191,7 +188,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     });
 
     for (OutputConnection connection : connections) {
-      connection.send(createCopy(message), parent, new Handler<AsyncResult<Void>>() {
+      connection.send(createCopy(message), (ReliableJsonMessage) parent, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
@@ -218,19 +215,18 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   /**
    * Creates a new message.
    */
-  protected JsonMessage createNewMessage(JsonObject body) {
-    JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
+  protected ReliableJsonMessage createNewMessage(JsonObject body) {
+    return ReliableJsonMessage.Builder.newBuilder()
         .setId(createUniqueId())
         .setBody(body)
         .build();
-    return message;
   }
 
   /**
    * Creates a child message.
    */
-  protected JsonMessage createChildMessage(JsonObject body, JsonMessage parent) {
-    JsonMessage message = DefaultJsonMessage.Builder.newBuilder()
+  protected ReliableJsonMessage createChildMessage(JsonObject body, ReliableJsonMessage parent) {
+    ReliableJsonMessage message = ReliableJsonMessage.Builder.newBuilder()
         .setId(createUniqueId())
         .setBody(body)
         .setParent(parent.id())
@@ -242,7 +238,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   /**
    * Creates a copy of a message.
    */
-  protected JsonMessage createCopy(JsonMessage message) {
+  protected ReliableJsonMessage createCopy(ReliableJsonMessage message) {
     return message.copy(createUniqueId());
   }
 
@@ -290,23 +286,23 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         // Basic at-most-once delivery.
         if (output.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
           if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new BasicOutputConnection(vertx, output, cluster, acker);
+            connection = new BasicOutputConnection(vertx, output, cluster);
           } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedOutputConnection(vertx, output, cluster, acker);
+            connection = new OrderedOutputConnection(vertx, output, cluster);
           }
         // Required at-least-once delivery.
         } else if (output.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
           if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new AtLeastOnceOutputConnection(vertx, output, cluster, acker);
+            connection = new AtLeastOnceOutputConnection(vertx, output, cluster);
           } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedAtLeastOnceOutputConnection(vertx, output, cluster, acker);
+            connection = new OrderedAtLeastOnceOutputConnection(vertx, output, cluster);
           }
         // Required exactly-once delivery.
         } else if (output.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
           if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new ExactlyOnceOutputConnection(vertx, output, cluster, acker);
+            connection = new ExactlyOnceOutputConnection(vertx, output, cluster);
           } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedExactlyOnceOutputConnection(vertx, output, cluster, acker);
+            connection = new OrderedExactlyOnceOutputConnection(vertx, output, cluster);
           }
         }
 
@@ -338,23 +334,23 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         // Basic at-most-once delivery.
         if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new BasicOutputConnection(vertx, connectionContext, cluster, acker);
+            connection = new BasicOutputConnection(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedOutputConnection(vertx, connectionContext, cluster, acker);
+            connection = new OrderedOutputConnection(vertx, connectionContext, cluster);
           }
         // Required at-least-once delivery.
         } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new AtLeastOnceOutputConnection(vertx, connectionContext, cluster, acker);
+            connection = new AtLeastOnceOutputConnection(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedAtLeastOnceOutputConnection(vertx, connectionContext, cluster, acker);
+            connection = new OrderedAtLeastOnceOutputConnection(vertx, connectionContext, cluster);
           }
         // Required exactly-once delivery.
         } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new ExactlyOnceOutputConnection(vertx, connectionContext, cluster, acker);
+            connection = new ExactlyOnceOutputConnection(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedExactlyOnceOutputConnection(vertx, connectionContext, cluster, acker);
+            connection = new OrderedExactlyOnceOutputConnection(vertx, connectionContext, cluster);
           }
         }
 

@@ -15,12 +15,14 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.List;
+
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 
@@ -31,16 +33,37 @@ import org.vertx.java.core.eventbus.Message;
  */
 public class OrderedAtLeastOnceInputConnection extends BaseInputConnection {
 
-  public OrderedAtLeastOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public OrderedAtLeastOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
   }
 
   @Override
-  protected void handleMessage(JsonMessage message, final Message<String> sourceMessage) {
-    acker.register(message, new Handler<Boolean>() {
+  protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
+    message.setAcker(new MessageAcker() {
+      private int count;
+      private boolean complete;
       @Override
-      public void handle(Boolean success) {
-        sourceMessage.reply(success);
+      public void anchor(JsonMessage child) {
+        count++;
+      }
+      @Override
+      public void anchor(List<JsonMessage> children) {
+        count += children.size();
+      }
+      @Override
+      public void ack() {
+        count--;
+        if (!complete && count == 0) {
+          sourceMessage.reply(true);
+          complete = true;
+        }
+      }
+      @Override
+      public void timeout() {
+        if (!complete) {
+          sourceMessage.reply(false);
+          complete = true;
+        }
       }
     });
   }

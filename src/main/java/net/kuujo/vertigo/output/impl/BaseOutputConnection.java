@@ -20,7 +20,6 @@ import java.util.List;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.network.ConnectionException;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.selector.MessageSelector;
@@ -43,7 +42,6 @@ public abstract class BaseOutputConnection implements OutputConnection, Observer
   protected final Vertx vertx;
   protected final OutputConnectionContext context;
   protected final VertigoCluster cluster;
-  protected final MessageAcker acker;
   protected final MessageSelector selector;
   protected final List<String> targets;
   protected int maxQueueSize;
@@ -52,11 +50,10 @@ public abstract class BaseOutputConnection implements OutputConnection, Observer
   protected boolean open;
   protected boolean paused;
 
-  public BaseOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
+  public BaseOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
-    this.acker = acker;
     this.selector = context.grouping().createSelector();
     this.targets = context.targets();
     context.registerObserver(this);

@@ -19,7 +19,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
@@ -39,21 +39,19 @@ public abstract class BaseInputConnection implements InputConnection, Observer<I
   protected final Vertx vertx;
   protected final InputConnectionContext context;
   protected final VertigoCluster cluster;
-  protected final MessageAcker acker;
-  protected Handler<JsonMessage> messageHandler;
+  protected Handler<ReliableJsonMessage> messageHandler;
 
   private final Handler<Message<String>> internalHandler = new Handler<Message<String>>() {
     @Override
     public void handle(Message<String> message) {
-      handleMessage(serializer.deserializeString(message.body(), JsonMessage.class), message);
+      handleMessage(serializer.deserializeString(message.body(), ReliableJsonMessage.class), message);
     }
   };
 
-  public BaseInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
+  public BaseInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
-    this.acker = acker;
   }
 
   @Override
@@ -66,7 +64,7 @@ public abstract class BaseInputConnection implements InputConnection, Observer<I
   }
 
   @Override
-  public InputConnection messageHandler(Handler<JsonMessage> handler) {
+  public InputConnection messageHandler(Handler<ReliableJsonMessage> handler) {
     this.messageHandler = handler;
     return this;
   }
@@ -74,7 +72,7 @@ public abstract class BaseInputConnection implements InputConnection, Observer<I
   /**
    * Handles a message.
    */
-  protected void handleMessage(JsonMessage message, Message<String> sourceMessage) {
+  protected void handleMessage(ReliableJsonMessage message, Message<String> sourceMessage) {
     if (messageHandler != null) {
       messageHandler.handle(message);
     }

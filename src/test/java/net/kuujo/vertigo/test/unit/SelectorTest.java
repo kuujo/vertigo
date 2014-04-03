@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.selector.AllSelector;
 import net.kuujo.vertigo.output.selector.FieldsSelector;
 import net.kuujo.vertigo.output.selector.RandomSelector;
@@ -47,7 +47,7 @@ public class SelectorTest {
     add("baz");
   }};
 
-  private JsonMessage testMessage = DefaultJsonMessage.Builder.newBuilder()
+  private JsonMessage testMessage = ReliableJsonMessage.Builder.newBuilder()
       .setBody(new JsonObject().putString("body", "Hello world!")).build();
 
   @Test
@@ -91,21 +91,21 @@ public class SelectorTest {
   public void testFieldsSelector() {
     MessageSelector selector = new FieldsSelector("test");
 
-    JsonMessage test1 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
+    JsonMessage test1 = ReliableJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
     List<String> connections1 = selector.select(test1, testConnections);
     assertEquals(1, connections1.size());
     List<String> connections2 = selector.select(test1, testConnections);
     assertEquals(1, connections2.size());
     assertEquals(connections1.get(0), connections2.get(0));
 
-    JsonMessage test2 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
+    JsonMessage test2 = ReliableJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
     List<String> connections3 = selector.select(test2, testConnections);
     assertEquals(1, connections3.size());
     List<String> connections4 = selector.select(test2, testConnections);
     assertEquals(1, connections4.size());
     assertEquals(connections3.get(0), connections4.get(0));
 
-    JsonMessage test3 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
+    JsonMessage test3 = ReliableJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test", "a")).build();
     List<String> connections5 = selector.select(test3, testConnections);
     assertEquals(1, connections5.size());
     List<String> connections6 = selector.select(test3, testConnections);
@@ -114,21 +114,21 @@ public class SelectorTest {
 
     MessageSelector multiSelector = new FieldsSelector("test1", "test2");
 
-    JsonMessage test4 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test1", "a")).build();
+    JsonMessage test4 = ReliableJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test1", "a")).build();
     List<String> connections7 = multiSelector.select(test4, testConnections);
     assertEquals(1, connections7.size());
     List<String> connections8 = multiSelector.select(test4, testConnections);
     assertEquals(1, connections8.size());
     assertEquals(connections7.get(0), connections8.get(0));
 
-    JsonMessage test5 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test2", "ab")).build();
+    JsonMessage test5 = ReliableJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test2", "ab")).build();
     List<String> connections9 = multiSelector.select(test5, testConnections);
     assertEquals(1, connections9.size());
     List<String> connections10 = multiSelector.select(test5, testConnections);
     assertEquals(1, connections10.size());
     assertEquals(connections9.get(0), connections10.get(0));
 
-    JsonMessage test6 = DefaultJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test1", "ab").putString("test2", "abc")).build();
+    JsonMessage test6 = ReliableJsonMessage.Builder.newBuilder().setBody(new JsonObject().putString("test1", "ab").putString("test2", "abc")).build();
     List<String> connections11 = multiSelector.select(test6, testConnections);
     assertEquals(1, connections11.size());
     List<String> connections12 = multiSelector.select(test6, testConnections);

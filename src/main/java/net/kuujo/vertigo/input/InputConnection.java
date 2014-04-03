@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -41,7 +41,7 @@ public interface InputConnection {
    * @param handler A message handler.
    * @return The input connection.
    */
-  InputConnection messageHandler(Handler<JsonMessage> handler);
+  InputConnection messageHandler(Handler<ReliableJsonMessage> handler);
 
   /**
    * Opens the connection.

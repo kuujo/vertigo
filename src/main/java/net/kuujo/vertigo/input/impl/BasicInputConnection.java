@@ -15,11 +15,16 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.List;
+
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
+import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 
 /**
  * Basic input connection implementation.
@@ -27,9 +32,32 @@ import org.vertx.java.core.Vertx;
  * @author Jordan Halterman
  */
 public class BasicInputConnection extends BaseInputConnection {
+  private final MessageAcker emptyAcker = new MessageAcker() {
+    @Override
+    public void anchor(JsonMessage child) {
+      
+    }
+    @Override
+    public void anchor(List<JsonMessage> children) {
+      
+    }
+    @Override
+    public void ack() {
+      
+    }
+    @Override
+    public void timeout() {
+      
+    }
+  };
 
-  public BasicInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public BasicInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
+  }
+
+  @Override
+  protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
+    message.setAcker(emptyAcker);
   }
 
 }

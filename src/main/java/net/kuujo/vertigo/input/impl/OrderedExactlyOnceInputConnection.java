@@ -15,12 +15,14 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.List;
+
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 
@@ -31,16 +33,35 @@ import org.vertx.java.core.eventbus.Message;
  */
 public class OrderedExactlyOnceInputConnection extends BaseInputConnection {
 
-  public OrderedExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public OrderedExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
   }
 
   @Override
-  protected void handleMessage(JsonMessage message, final Message<String> sourceMessage) {
-    acker.register(message, new Handler<Boolean>() {
+  protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
+    message.setAcker(new MessageAcker() {
+      private boolean complete;
       @Override
-      public void handle(Boolean success) {
-        sourceMessage.reply(success);
+      public void anchor(JsonMessage child) {
+        
+      }
+      @Override
+      public void anchor(List<JsonMessage> children) {
+        
+      }
+      @Override
+      public void ack() {
+        if (!complete) {
+          sourceMessage.reply(true);
+          complete = true;
+        }
+      }
+      @Override
+      public void timeout() {
+        if (!complete) {
+          sourceMessage.reply(false);
+          complete = true;
+        }
       }
     });
   }

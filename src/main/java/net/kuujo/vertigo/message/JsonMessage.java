@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.message;
 
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.util.serializer.Serializable;
 
 import org.vertx.java.core.json.JsonObject;
@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   use=JsonTypeInfo.Id.CLASS,
   include=JsonTypeInfo.As.PROPERTY,
   property="type",
-  defaultImpl=DefaultJsonMessage.class
+  defaultImpl=ReliableJsonMessage.class
 )
 public interface JsonMessage extends Serializable {
 

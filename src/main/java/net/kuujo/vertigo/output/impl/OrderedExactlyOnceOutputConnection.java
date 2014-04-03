@@ -25,7 +25,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -45,8 +45,8 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
   private final Set<String> processing = new HashSet<>();
   private boolean queueFull;
 
-  public OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
     for (String address : targets) {
       messages.put(address, cluster.<String>getQueue(String.format("%s.%s", context.address(), address)));
       queueSizes.put(address, 0);
@@ -123,18 +123,18 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
   }
 
   @Override
-  public String send(JsonMessage message, JsonMessage parent) {
+  public String send(JsonMessage message, ReliableJsonMessage parent) {
     return send(message, parent, null);
   }
 
   @Override
-  public String send(final JsonMessage message, final JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
+  public String send(final JsonMessage message, final ReliableJsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
     checkFull();
     final List<String> addresses = selector.select(message, targets);
     final Map<String, JsonMessage> children = new HashMap<>();
     for (String address : addresses) {
       JsonMessage child = createCopy(message);
-      acker.anchor(parent, child); // Anchor the child messages to the parent.
+      parent.anchor(child); // Anchor the child messages to the parent.
       children.put(address, child);
     }
 
@@ -158,7 +158,7 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
-            acker.ack(parent); // Ack the child messages since they have been replicated.
+            parent.ack(); // Ack the child messages since they have been replicated.
             queueSizes.put(address, queueSizes.get(address)+1);
             if (queueSizes.get(address) >= maxQueueSize) queueFull = true;
             checkPause();

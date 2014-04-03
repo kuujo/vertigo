@@ -31,7 +31,6 @@ import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.InputPortHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputPort;
-import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 
@@ -49,16 +48,14 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   private final Vertx vertx;
   private final InputContext context;
   private final VertigoCluster cluster;
-  private final MessageAcker acker;
   private final List<InputHook> hooks = new ArrayList<>();
   private final Map<String, InputPort> ports = new HashMap<>();
   private boolean started;
 
-  public DefaultInputCollector(Vertx vertx, InputContext context, VertigoCluster cluster, MessageAcker acker) {
+  public DefaultInputCollector(Vertx vertx, InputContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
-    this.acker = acker;
   }
 
   @Override
@@ -102,7 +99,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
           .setAddress(UUID.randomUUID().toString())
           .setName(name)
           .build();
-      port = new DefaultInputPort(vertx, context, cluster, acker);
+      port = new DefaultInputPort(vertx, context, cluster);
       ports.put(name, port);
     }
     return port;
@@ -135,7 +132,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         }
       }
       if (!exists) {
-        ports.put(input.name(), new DefaultInputPort(vertx, input, cluster, acker).addHook(createPortHook(input.name())).open());
+        ports.put(input.name(), new DefaultInputPort(vertx, input, cluster).addHook(createPortHook(input.name())).open());
       }
     }
   }
@@ -173,7 +170,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           });
         } else {
-          ports.put(port.name(), new DefaultInputPort(vertx, port, cluster, acker).addHook(createPortHook(port.name())).open(new Handler<AsyncResult<Void>>() {
+          ports.put(port.name(), new DefaultInputPort(vertx, port, cluster).addHook(createPortHook(port.name())).open(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {

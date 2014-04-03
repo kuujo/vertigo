@@ -17,6 +17,7 @@ package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -106,7 +107,7 @@ public interface OutputConnection {
    * @param parent The message parent.
    * @return The sent message identifier.
    */
-  String send(JsonMessage message, JsonMessage parent);
+  String send(JsonMessage message, ReliableJsonMessage parent);
 
   /**
    * Sends a child message, awaiting replication.
@@ -117,7 +118,7 @@ public interface OutputConnection {
    *        been sent or enqueued to be sent replicated.
    * @return The sent message identifier.
    */
-  String send(JsonMessage message, JsonMessage parent, Handler<AsyncResult<Void>> doneHandler);
+  String send(JsonMessage message, ReliableJsonMessage parent, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Closes the connection.

@@ -18,21 +18,43 @@ package net.kuujo.vertigo.message.impl;
 import java.util.Map;
 
 import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.message.MessageAcker;
 
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A default JSON message implementation.
  *
  * @author Jordan Halterman
  */
-public class DefaultJsonMessage implements JsonMessage {
+public class ReliableJsonMessage implements JsonMessage {
+  @JsonIgnore
+  private MessageAcker acker;
   private String id;
   private Map<String, Object> body;
   private String parent;
   private String root;
 
-  private DefaultJsonMessage() {
+  private ReliableJsonMessage() {
+  }
+
+  public ReliableJsonMessage setAcker(MessageAcker acker) {
+    this.acker = acker;
+    return this;
+  }
+
+  public void anchor(JsonMessage child) {
+    acker.anchor(child);
+  }
+
+  public void ack() {
+    acker.ack();
+  }
+
+  public void timeout() {
+    acker.timeout();
   }
 
   @Override
@@ -56,7 +78,7 @@ public class DefaultJsonMessage implements JsonMessage {
   }
 
   @Override
-  public JsonMessage copy(String id) {
+  public ReliableJsonMessage copy(String id) {
     return Builder.newBuilder()
         .setId(id)
         .setBody(body)
@@ -71,7 +93,7 @@ public class DefaultJsonMessage implements JsonMessage {
    * @author Jordan Halterman
    */
   public static class Builder {
-    private DefaultJsonMessage message = new DefaultJsonMessage();
+    private ReliableJsonMessage message = new ReliableJsonMessage();
 
     /**
      * Creates a new message builder.
@@ -142,7 +164,7 @@ public class DefaultJsonMessage implements JsonMessage {
      *
      * @return A new message.
      */
-    public DefaultJsonMessage build() {
+    public ReliableJsonMessage build() {
       return message;
     }
 

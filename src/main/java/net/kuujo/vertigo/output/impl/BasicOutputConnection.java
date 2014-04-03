@@ -20,7 +20,7 @@ import java.util.List;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,8 +36,8 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  */
 public class BasicOutputConnection extends BaseOutputConnection {
 
-  public BasicOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public BasicOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
   }
 
   @Override
@@ -51,12 +51,12 @@ public class BasicOutputConnection extends BaseOutputConnection {
   }
 
   @Override
-  public String send(JsonMessage message, JsonMessage parent) {
+  public String send(JsonMessage message, ReliableJsonMessage parent) {
     return doSend(message, null);
   }
 
   @Override
-  public String send(JsonMessage message, JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
+  public String send(JsonMessage message, ReliableJsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
     return doSend(message, doneHandler);
   }
 

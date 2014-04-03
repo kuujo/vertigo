@@ -21,7 +21,6 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -40,8 +39,8 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
   private int currentQueueSize;
   private boolean processing;
 
-  public OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
     this.messages = cluster.getQueue(context.address());
   }
 

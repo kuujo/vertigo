@@ -29,7 +29,7 @@ import net.kuujo.vertigo.hooks.InputPortHook;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 
@@ -47,16 +47,14 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private final Vertx vertx;
   private InputPortContext context;
   private final VertigoCluster cluster;
-  private final MessageAcker acker;
   private final List<InputPortHook> hooks = new ArrayList<>();
   private final Map<String, InputConnection> connections = new HashMap<>();
-  private Handler<JsonMessage> messageHandler;
+  private Handler<ReliableJsonMessage> messageHandler;
 
-  public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster, MessageAcker acker) {
+  public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
-    this.acker = acker;
   }
 
   DefaultInputPort setContext(InputPortContext context) {
@@ -113,23 +111,23 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
         // Basic at-most-once delivery.
         if (input.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
           if (input.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new BasicInputConnection(vertx, input, cluster, acker);
+            connection = new BasicInputConnection(vertx, input, cluster);
           } else if (input.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedInputConnection(vertx, input, cluster, acker);
+            connection = new OrderedInputConnection(vertx, input, cluster);
           }
         // Required at-least-once delivery.
         } else if (input.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
           if (input.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new AtLeastOnceInputConnection(vertx, input, cluster, acker);
+            connection = new AtLeastOnceInputConnection(vertx, input, cluster);
           } else if (input.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedAtLeastOnceInputConnection(vertx, input, cluster, acker);
+            connection = new OrderedAtLeastOnceInputConnection(vertx, input, cluster);
           }
         // Required exactly-once delivery.
         } else if (input.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
           if (input.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new ExactlyOnceInputConnection(vertx, input, cluster, acker);
+            connection = new ExactlyOnceInputConnection(vertx, input, cluster);
           } else if (input.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedExactlyOnceInputConnection(vertx, input, cluster, acker);
+            connection = new OrderedExactlyOnceInputConnection(vertx, input, cluster);
           }
         }
 
@@ -142,9 +140,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public InputPort messageHandler(final Handler<JsonMessage> handler) {
-    this.messageHandler = new Handler<JsonMessage>() {
+    this.messageHandler = new Handler<ReliableJsonMessage>() {
       @Override
-      public void handle(JsonMessage message) {
+      public void handle(ReliableJsonMessage message) {
         handler.handle(message);
         for (InputPortHook hook : hooks) {
           hook.handleReceive(message.id());
@@ -159,7 +157,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public InputPort ack(JsonMessage message) {
-    acker.ack(message);
+    ((ReliableJsonMessage) message).ack();
     return this;
   }
 
@@ -180,23 +178,23 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
         // Basic at-most-once delivery.
         if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new BasicInputConnection(vertx, connectionContext, cluster, acker);
+            connection = new BasicInputConnection(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedInputConnection(vertx, connectionContext, cluster, acker);
+            connection = new OrderedInputConnection(vertx, connectionContext, cluster);
           }
         // Required at-least-once delivery.
         } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new AtLeastOnceInputConnection(vertx, connectionContext, cluster, acker);
+            connection = new AtLeastOnceInputConnection(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedAtLeastOnceInputConnection(vertx, connectionContext, cluster, acker);
+            connection = new OrderedAtLeastOnceInputConnection(vertx, connectionContext, cluster);
           }
         // Required exactly-once delivery.
         } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new ExactlyOnceInputConnection(vertx, connectionContext, cluster, acker);
+            connection = new ExactlyOnceInputConnection(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedExactlyOnceInputConnection(vertx, connectionContext, cluster, acker);
+            connection = new OrderedExactlyOnceInputConnection(vertx, connectionContext, cluster);
           }
         }
 

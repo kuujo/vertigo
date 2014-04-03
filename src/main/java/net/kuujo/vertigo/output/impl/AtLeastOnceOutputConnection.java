@@ -21,7 +21,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -39,8 +39,8 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
   private final AsyncMap<String, String> messages;
   private int currentQueueSize;
 
-  public AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
     this.messages = cluster.getMap(context.address());
   }
 
@@ -116,25 +116,25 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
   }
 
   @Override
-  public String send(JsonMessage message, JsonMessage parent) {
+  public String send(JsonMessage message, ReliableJsonMessage parent) {
     return send(message, parent, null);
   }
 
   @Override
-  public String send(final JsonMessage message, final JsonMessage parent, Handler<AsyncResult<Void>> doneHandler) {
+  public String send(final JsonMessage message, final ReliableJsonMessage parent, Handler<AsyncResult<Void>> doneHandler) {
     final List<String> addresses = selector.select(message, targets);
     for (final String address : addresses) {
       final JsonMessage child = createCopy(message);
-      acker.anchor(parent, child);
+      parent.anchor(child);
       vertx.eventBus().sendWithTimeout(address, serializer.serializeToString(child), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
         @Override
         public void handle(AsyncResult<Message<Boolean>> result) {
           if (result.failed()) {
-            acker.timeout(parent);
+            parent.timeout();
           } else if (result.result().body()) {
-            acker.ack(parent);
+            parent.ack();
           } else {
-            acker.timeout(parent);
+            parent.timeout();
           }
         }
       });

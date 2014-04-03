@@ -29,7 +29,6 @@ import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.impl.DefaultOutputPortContext;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.hooks.OutputPortHook;
-import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -49,16 +48,14 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   private final Vertx vertx;
   private final OutputContext context;
   private final VertigoCluster cluster;
-  private final MessageAcker acker;
   private final Map<String, OutputPort> ports = new HashMap<>();
   private final List<OutputHook> hooks = new ArrayList<>();
   private boolean started;
 
-  public DefaultOutputCollector(Vertx vertx, OutputContext context, VertigoCluster cluster, MessageAcker acker) {
+  public DefaultOutputCollector(Vertx vertx, OutputContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;
-    this.acker = acker;
     context.registerObserver(this);
   }
 
@@ -103,7 +100,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
           .setAddress(UUID.randomUUID().toString())
           .setName(name)
           .build();
-      port = new DefaultOutputPort(vertx, context, cluster, acker);
+      port = new DefaultOutputPort(vertx, context, cluster);
       ports.put(name, port);
     }
     return port;
@@ -136,7 +133,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
         }
       }
       if (!exists) {
-        ports.put(output.name(), new DefaultOutputPort(vertx, output, cluster, acker).addHook(createPortHook(output.name())).open());
+        ports.put(output.name(), new DefaultOutputPort(vertx, output, cluster).addHook(createPortHook(output.name())).open());
       }
     }
   }
@@ -174,7 +171,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
             }
           });
         } else {
-          ports.put(port.name(), new DefaultOutputPort(vertx, port, cluster, acker).addHook(createPortHook(port.name())).open(new Handler<AsyncResult<Void>>() {
+          ports.put(port.name(), new DefaultOutputPort(vertx, port, cluster).addHook(createPortHook(port.name())).open(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {

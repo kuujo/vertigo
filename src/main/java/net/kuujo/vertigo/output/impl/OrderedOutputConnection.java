@@ -22,7 +22,7 @@ import java.util.Queue;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
+import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -42,8 +42,8 @@ public class OrderedOutputConnection extends BaseOutputConnection {
   private final Queue<JsonMessage> queue = new ArrayDeque<>();
   private boolean processing;
 
-  public OrderedOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
-    super(vertx, context, cluster, acker);
+  public OrderedOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    super(vertx, context, cluster);
   }
 
   @Override
@@ -62,12 +62,12 @@ public class OrderedOutputConnection extends BaseOutputConnection {
   }
 
   @Override
-  public String send(JsonMessage message, JsonMessage parent) {
+  public String send(JsonMessage message, ReliableJsonMessage parent) {
     return doSend(message, null);
   }
 
   @Override
-  public String send(JsonMessage message, JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
+  public String send(JsonMessage message, ReliableJsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
     return doSend(message, doneHandler);
   }
 

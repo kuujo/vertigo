@@ -28,8 +28,6 @@ import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
-import net.kuujo.vertigo.message.MessageAcker;
-import net.kuujo.vertigo.message.impl.DefaultMessageAcker;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
 
@@ -55,7 +53,6 @@ public class DefaultComponent implements Component {
   protected final Logger logger;
   protected final VertigoCluster cluster;
   private final ComponentCoordinator coordinator;
-  private MessageAcker acker;
   protected final String address;
   protected InstanceContext context;
   protected InputCollector input;
@@ -166,9 +163,8 @@ public class DefaultComponent implements Component {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           context = result.result();
-          acker = new DefaultMessageAcker();
-          input = new DefaultInputCollector(vertx, context.input(), cluster, acker);
-          output = new DefaultOutputCollector(vertx, context.output(), cluster, acker);
+          input = new DefaultInputCollector(vertx, context.input(), cluster);
+          output = new DefaultOutputCollector(vertx, context.output(), cluster);
           for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
             addHook(hook);
           }

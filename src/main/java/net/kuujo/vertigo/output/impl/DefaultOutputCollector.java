@@ -54,6 +54,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
     this.context = context;
     this.cluster = cluster;
     this.acker = acker;
+    context.registerObserver(this);
   }
 
   @Override

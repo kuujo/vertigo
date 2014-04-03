@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
@@ -28,6 +29,7 @@ import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Observer;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -40,7 +42,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class DefaultOutputPort implements OutputPort {
+public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext> {
   private final Vertx vertx;
   private OutputPortContext context;
   private final VertigoCluster cluster;
@@ -217,6 +219,70 @@ public class DefaultOutputPort implements OutputPort {
       .append(":")
       .append(OutputCounter.incrementAndGet())
       .toString();
+  }
+
+  @Override
+  public void update(OutputPortContext update) {
+    Iterator<OutputConnection> iter = connections.iterator();
+    while (iter.hasNext()) {
+      OutputConnection connection = iter.next();
+      boolean exists = false;
+      for (OutputConnectionContext output : update.connections()) {
+        if (output.equals(connection.context())) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        connection.close();
+        iter.remove();
+      }
+    }
+
+    for (OutputConnectionContext output : update.connections()) {
+      boolean exists = false;
+      for (OutputConnection connection : connections) {
+        if (connection.context().equals(output)) {
+          exists = true;
+          break;
+        }
+      }
+
+      if (!exists) {
+        OutputConnection connection = null;
+
+        // Basic at-most-once delivery.
+        if (output.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
+          if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new BasicOutputConnection(vertx, output, cluster, acker);
+          } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedOutputConnection(vertx, output, cluster, acker);
+          }
+        // Required at-least-once delivery.
+        } else if (output.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
+          if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new AtLeastOnceOutputConnection(vertx, output, cluster, acker);
+          } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedAtLeastOnceOutputConnection(vertx, output, cluster, acker);
+          }
+        // Required exactly-once delivery.
+        } else if (output.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
+          if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
+            connection = new ExactlyOnceOutputConnection(vertx, output, cluster, acker);
+          } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
+            connection = new OrderedExactlyOnceOutputConnection(vertx, output, cluster, acker);
+          }
+        }
+
+        if (connection != null) {
+          connection.setSendQueueMaxSize(maxQueueSize);
+          connection.fullHandler(connectionFullHandler);
+          connection.drainHandler(connectionDrainHandler);
+
+          connections.add(connection.open());
+        }
+      }
+    }
   }
 
   @Override

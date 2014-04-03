@@ -24,6 +24,7 @@ import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.network.ConnectionException;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.selector.MessageSelector;
+import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -37,10 +38,11 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  *
  * @author Jordan Halterman
  */
-public abstract class BaseOutputConnection implements OutputConnection {
+public abstract class BaseOutputConnection implements OutputConnection, Observer<OutputConnectionContext> {
   protected static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
   protected final Vertx vertx;
   protected final OutputConnectionContext context;
+  protected final VertigoCluster cluster;
   protected final MessageAcker acker;
   protected final MessageSelector selector;
   protected final List<String> targets;
@@ -53,14 +55,30 @@ public abstract class BaseOutputConnection implements OutputConnection {
   public BaseOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
     this.vertx = vertx;
     this.context = context;
+    this.cluster = cluster;
     this.acker = acker;
     this.selector = context.grouping().createSelector();
     this.targets = context.targets();
+    context.registerObserver(this);
   }
 
   @Override
   public OutputConnectionContext context() {
     return context;
+  }
+
+  @Override
+  public void update(OutputConnectionContext update) {
+    for (String address : update.targets()) {
+      if (!targets.contains(address)) {
+        targets.add(address);
+      }
+    }
+    for (String address : targets) {
+      if (!update.targets().contains(address)) {
+        targets.remove(address);
+      }
+    }
   }
 
   @Override
@@ -157,6 +175,16 @@ public abstract class BaseOutputConnection implements OutputConnection {
   public void close(Handler<AsyncResult<Void>> doneHandler) {
     open = false;
     new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+  }
+
+  @Override
+  public String toString() {
+    return context.address();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    return getClass().isAssignableFrom(object.getClass()) && ((OutputConnection) object).context().address().equals(context.address());
   }
 
 }

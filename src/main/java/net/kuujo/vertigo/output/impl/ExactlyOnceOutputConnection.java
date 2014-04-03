@@ -56,6 +56,24 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
   }
 
   @Override
+  public void update(OutputConnectionContext update) {
+    for (String address : update.targets()) {
+      if (!targets.contains(address)) {
+        targets.add(address);
+        messages.put(address, cluster.<String, String>getMap(String.format("%s.%s", context.address(), address)));
+        queueSizes.put(address, 0);
+      }
+    }
+    for (String address : targets) {
+      if (!update.targets().contains(address)) {
+        targets.remove(address);
+        messages.remove(address).clear();
+        queueSizes.remove(address);
+      }
+    }
+  }
+
+  @Override
   public String send(JsonMessage message) {
     return send(message, (Handler<AsyncResult<Void>>) null);
   }

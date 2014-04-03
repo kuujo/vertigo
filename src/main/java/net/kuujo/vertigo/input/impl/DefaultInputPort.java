@@ -15,14 +15,17 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
+import net.kuujo.vertigo.hooks.InputPortHook;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -45,6 +48,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private InputPortContext context;
   private final VertigoCluster cluster;
   private final MessageAcker acker;
+  private final List<InputPortHook> hooks = new ArrayList<>();
   private final Map<String, InputConnection> connections = new HashMap<>();
   private Handler<JsonMessage> messageHandler;
 
@@ -68,6 +72,12 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   @Override
   public InputPortContext context() {
     return context;
+  }
+
+  @Override
+  public InputPort addHook(InputPortHook hook) {
+    hooks.add(hook);
+    return this;
   }
 
   @Override
@@ -131,10 +141,18 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
-  public InputPort messageHandler(Handler<JsonMessage> handler) {
-    this.messageHandler = handler;
+  public InputPort messageHandler(final Handler<JsonMessage> handler) {
+    this.messageHandler = new Handler<JsonMessage>() {
+      @Override
+      public void handle(JsonMessage message) {
+        handler.handle(message);
+        for (InputPortHook hook : hooks) {
+          hook.handleReceive(message.id());
+        }
+      }
+    };
     for (InputConnection connection : connections.values()) {
-      connection.messageHandler(handler);
+      connection.messageHandler(messageHandler);
     }
     return this;
   }

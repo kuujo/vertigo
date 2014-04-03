@@ -32,56 +32,30 @@ public interface ComponentHook extends Hook {
   /**
    * Called when the component has started.
    *
-   * @param component
-   *   The component instance.
+   * @param component The component instance.
    */
   void handleStart(Component component);
 
   /**
    * Called when the component receives an input message.
    *
-   * @param messageId
-   *   The unique message identifier.
+   * @param port The port on which the message was received.
+   * @param messageId The unique message identifier.
    */
-  void handleReceive(String messageId);
+  void handleReceive(String port, String messageId);
 
   /**
-   * Called when the component acks a received message.
+   * Called when the component sends a message.
    *
-   * @param messageId
-   *   The unique message identifier.
+   * @param port The port on which the message was sent.
+   * @param messageId The unique message identifier.
    */
-  void handleAck(String messageId);
-
-  /**
-   * Called when the component emits a message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleEmit(String messageId);
-
-  /**
-   * Called when the component receives an ack for an emitted message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleAcked(String messageId);
-
-  /**
-   * Called when the component receives a timeout for an emitted message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleTimeout(String messageId);
+  void handleSend(String port, String messageId);
 
   /**
    * Called when the component has stopped.
    *
-   * @param component
-   *   The component instance.
+   * @param component The component instance.
    */
   void handleStop(Component component);
 

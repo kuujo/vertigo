@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
 package net.kuujo.vertigo.hooks;
 
 /**
- * An output hook.
+ * Input port hook.
  *
  * @author Jordan Halterman
  */
-public interface OutputHook extends Hook {
+public interface InputPortHook extends Hook {
 
   /**
-   * Called when a message is sent on a port.
+   * Called when the component receives an input message.
    *
-   * @param port The port on which the message was sent.
    * @param messageId The unique message identifier.
    */
-  void handleSend(String port, String messageId);
+  void handleReceive(String messageId);
 
 }

@@ -25,7 +25,9 @@ import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Output connection context.
@@ -56,9 +58,29 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
     return delivery;
   }
 
+  @JsonSetter("delivery")
+  private void setDeliveryMethod(String delivery) {
+    this.delivery = Delivery.parse(delivery);
+  }
+
+  @JsonGetter("delivery")
+  private String getDeliveryMethod() {
+    return this.delivery.toString();
+  }
+
   @Override
   public ConnectionContext.Order order() {
     return order;
+  }
+
+  @JsonSetter("order")
+  private void setOrderMethod(boolean ordered) {
+    this.order = Order.parse(ordered);
+  }
+
+  @JsonGetter("order")
+  private boolean getOrderMethod() {
+    return this.order.isOrdered();
   }
 
   @Override

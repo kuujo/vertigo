@@ -24,6 +24,8 @@ import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.message.MessageAcker;
@@ -60,6 +62,24 @@ public class DefaultComponent implements Component {
   protected OutputCollector output;
   protected List<ComponentHook> hooks = new ArrayList<>();
   private boolean started;
+
+  private final InputHook inputHook = new InputHook() {
+    @Override
+    public void handleReceive(String port, String messageId) {
+      for (ComponentHook hook : hooks) {
+        hook.handleReceive(port, messageId);
+      }
+    }
+  };
+
+  private final OutputHook outputHook = new OutputHook() {
+    @Override
+    public void handleSend(String port, String messageId) {
+      for (ComponentHook hook : hooks) {
+        hook.handleSend(port, messageId);
+      }
+    }
+  };
 
   protected DefaultComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
     this.address = address;
@@ -108,6 +128,10 @@ public class DefaultComponent implements Component {
 
   @Override
   public Component addHook(ComponentHook hook) {
+    if (hooks.isEmpty()) {
+      input.addHook(inputHook);
+      output.addHook(outputHook);
+    }
     hooks.add(hook);
     return  this;
   }

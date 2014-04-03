@@ -23,6 +23,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.hooks.OutputPortHook;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
@@ -47,6 +48,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   private OutputPortContext context;
   private final VertigoCluster cluster;
   private final MessageAcker acker;
+  private final List<OutputPortHook> hooks = new ArrayList<>();
   private int maxQueueSize = 10000;
   private boolean full;
   private Handler<Void> drainHandler;
@@ -92,6 +94,12 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
+  public OutputPort addHook(OutputPortHook hook) {
+    hooks.add(hook);
+    return this;
+  }
+
+  @Override
   public OutputPort setSendQueueMaxSize(int maxSize) {
     this.maxQueueSize = maxSize;
     for (OutputConnection connection : connections) {
@@ -112,19 +120,33 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public String emit(JsonObject body) {
+  public String send(JsonObject body) {
     final JsonMessage message = createNewMessage(body);
     for (OutputConnection connection : connections) {
       connection.send(createChildMessage(body, message));
+    }
+    for (OutputPortHook hook : hooks) {
+      hook.handleSend(message.id());
     }
     return message.id();
   }
 
   @Override
-  public String emit(JsonObject body, Handler<AsyncResult<Void>> doneHandler) {
+  public String send(JsonObject body, final Handler<AsyncResult<Void>> doneHandler) {
     final JsonMessage message = createNewMessage(body);
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
-    counter.setHandler(doneHandler);
+    counter.setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        doneHandler.handle(result);
+        if (result.succeeded()) {
+          for (OutputPortHook hook : hooks) {
+            hook.handleSend(message.id());
+          }
+        }
+      }
+    });
+
     for (OutputConnection connection : connections) {
       connection.send(createChildMessage(body, message), new Handler<AsyncResult<Void>>() {
         @Override
@@ -141,19 +163,33 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public String emit(JsonObject body, JsonMessage parent) {
+  public String send(JsonObject body, JsonMessage parent) {
     final JsonMessage message = createChildMessage(body, parent);
     for (OutputConnection connection : connections) {
       connection.send(createCopy(message), parent);
+    }
+    for (OutputPortHook hook : hooks) {
+      hook.handleSend(message.id());
     }
     return message.id();
   }
 
   @Override
-  public String emit(JsonObject body, JsonMessage parent, Handler<AsyncResult<Void>> doneHandler) {
+  public String send(JsonObject body, JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
     final JsonMessage message = createChildMessage(body, parent);
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
-    counter.setHandler(doneHandler);
+    counter.setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        doneHandler.handle(result);
+        if (result.succeeded()) {
+          for (OutputPortHook hook : hooks) {
+            hook.handleSend(message.id());
+          }
+        }
+      }
+    });
+
     for (OutputConnection connection : connections) {
       connection.send(createCopy(message), parent, new Handler<AsyncResult<Void>>() {
         @Override
@@ -170,13 +206,13 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public String emit(JsonMessage message) {
-    return emit(message.body(), message);
+  public String send(JsonMessage message) {
+    return send(message.body(), message);
   }
 
   @Override
-  public String emit(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
-    return emit(message.body(), message, doneHandler);
+  public String send(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
+    return send(message.body(), message, doneHandler);
   }
 
   /**

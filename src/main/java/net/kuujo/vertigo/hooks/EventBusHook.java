@@ -48,28 +48,13 @@ public class EventBusHook implements ComponentHook {
   }
 
   @Override
-  public void handleReceive(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.receive", address), messageId);
+  public void handleReceive(String port, String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.%s.receive", address, port), messageId);
   }
 
   @Override
-  public void handleAck(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.ack", address), messageId);
-  }
-
-  @Override
-  public void handleEmit(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.emit", address), messageId);
-  }
-
-  @Override
-  public void handleAcked(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.acked", address), messageId);
-  }
-
-  @Override
-  public void handleTimeout(String messageId) {
-    eventBus.publish(String.format("vertigo.hooks.%s.timeout", address), messageId);
+  public void handleSend(String port, String messageId) {
+    eventBus.publish(String.format("vertigo.hooks.%s.%s.send", address, port), messageId);
   }
 
   @Override

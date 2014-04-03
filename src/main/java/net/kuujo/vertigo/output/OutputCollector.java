@@ -18,6 +18,7 @@ package net.kuujo.vertigo.output;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -43,6 +44,14 @@ public interface OutputCollector {
    * @return The current component output context.
    */
   OutputContext context();
+
+  /**
+   * Adds a hook to the output collector.
+   *
+   * @param hook The output hook to add.
+   * @return The output collector.
+   */
+  OutputCollector addHook(OutputHook hook);
 
   /**
    * Returns a collection of output ports.

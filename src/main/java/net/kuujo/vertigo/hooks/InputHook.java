@@ -25,17 +25,9 @@ public interface InputHook extends Hook {
   /**
    * Called when the component receives an input message.
    *
-   * @param messageId
-   *   The unique message identifier.
+   * @param port The port on which the message was received.
+   * @param messageId The unique message identifier.
    */
-  void handleReceive(String messageId);
-
-  /**
-   * Called when the component acks a received message.
-   *
-   * @param messageId
-   *   The unique message identifier.
-   */
-  void handleAck(String messageId);
+  void handleReceive(String port, String messageId);
 
 }

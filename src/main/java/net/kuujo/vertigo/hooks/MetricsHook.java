@@ -53,38 +53,17 @@ public class MetricsHook implements ComponentHook {
   }
 
   @Override
-  public void handleReceive(String messageId) {
+  public void handleReceive(String port, String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.receive", context.address())));
+      .putString("name", String.format("%s.%s.receive", context.address(), port)));
   }
 
   @Override
-  public void handleAck(String messageId) {
+  public void handleSend(String port, String messageId) {
     eventBus.send(address, new JsonObject()
       .putString("action", "mark")
-      .putString("name", String.format("%s.ack", context.address())));
-  }
-
-  @Override
-  public void handleEmit(String messageId) {
-    eventBus.send(address, new JsonObject()
-      .putString("action", "mark")
-      .putString("name", String.format("%s.emit", context.address())));
-  }
-
-  @Override
-  public void handleAcked(String messageId) {
-    eventBus.send(address, new JsonObject()
-      .putString("action", "mark")
-      .putString("name", String.format("%s.acked", context.address())));
-  }
-
-  @Override
-  public void handleTimeout(String messageId) {
-    eventBus.send(address, new JsonObject()
-      .putString("action", "mark")
-      .putString("name", String.format("%s.timeout", context.address())));
+      .putString("name", String.format("%s.%s.send", context.address(), port)));
   }
 
   @Override

@@ -33,7 +33,7 @@ public class TestAckingComponent extends ComponentVerticle {
     component.input().port("in").messageHandler(new Handler<JsonMessage>() {
       @Override
       public void handle(JsonMessage message) {
-        component.output().port("out").emit(message.body(), message);
+        component.output().port("out").send(message.body(), message);
         component.input().port("in").ack(message);
       }
     });

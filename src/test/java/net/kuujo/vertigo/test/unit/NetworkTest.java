@@ -630,23 +630,11 @@ public class NetworkTest {
       
     }
     @Override
-    public void handleReceive(String String) {
+    public void handleReceive(String port, String String) {
       
     }
     @Override
-    public void handleAck(String String) {
-      
-    }
-    @Override
-    public void handleEmit(String String) {
-      
-    }
-    @Override
-    public void handleAcked(String String) {
-      
-    }
-    @Override
-    public void handleTimeout(String String) {
+    public void handleSend(String port, String String) {
       
     }
   }

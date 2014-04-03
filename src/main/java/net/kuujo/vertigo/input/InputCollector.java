@@ -18,6 +18,7 @@ package net.kuujo.vertigo.input;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.InputContext;
+import net.kuujo.vertigo.hooks.InputHook;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -41,6 +42,14 @@ public interface InputCollector {
    * @return The input context.
    */
   InputContext context();
+
+  /**
+   * Adds a hook to the input.
+   *
+   * @param hook The hook to add.
+   * @return The input collector.
+   */
+  InputCollector addHook(InputHook hook);
 
   /**
    * Returns a collection of input ports.

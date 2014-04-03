@@ -30,7 +30,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
@@ -46,8 +45,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   private Target target = new DefaultTarget();
   private Delivery delivery = Delivery.AT_MOST_ONCE;
   private Order order = Order.NO_ORDER;
-  @JsonProperty("synchronized")
-  private boolean synchronize;
   private MessageGrouping grouping;
   @JsonIgnore
   private NetworkConfig network;

@@ -15,9 +15,11 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +27,8 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.impl.DefaultInputPortContext;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.InputPortHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.message.MessageAcker;
@@ -46,6 +50,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   private final InputContext context;
   private final VertigoCluster cluster;
   private final MessageAcker acker;
+  private final List<InputHook> hooks = new ArrayList<>();
   private final Map<String, InputPort> ports = new HashMap<>();
   private boolean started;
 
@@ -59,6 +64,29 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   @Override
   public InputContext context() {
     return context;
+  }
+
+  @Override
+  public InputCollector addHook(InputHook hook) {
+    hooks.add(hook);
+    return this;
+  }
+
+  /**
+   * Creates an input port hook.
+   *
+   * @param port The port name.
+   * @return An input port hook.
+   */
+  private InputPortHook createPortHook(final String port) {
+    return new InputPortHook() {
+      @Override
+      public void handleReceive(String messageId) {
+        for (InputHook hook : hooks) {
+          hook.handleReceive(port, messageId);
+        }
+      }
+    };
   }
 
   @Override
@@ -107,7 +135,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         }
       }
       if (!exists) {
-        ports.put(input.name(), new DefaultInputPort(vertx, input, cluster, acker).open());
+        ports.put(input.name(), new DefaultInputPort(vertx, input, cluster, acker).addHook(createPortHook(input.name())).open());
       }
     }
   }
@@ -145,7 +173,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           });
         } else {
-          ports.put(port.name(), new DefaultInputPort(vertx, port, cluster, acker).open(new Handler<AsyncResult<Void>>() {
+          ports.put(port.name(), new DefaultInputPort(vertx, port, cluster, acker).addHook(createPortHook(port.name())).open(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {

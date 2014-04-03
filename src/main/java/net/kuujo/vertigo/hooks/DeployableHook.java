@@ -66,37 +66,16 @@ abstract class DeployableHook implements ComponentHook {
   }
 
   @Override
-  public void handleReceive(String messageId) {
+  public void handleReceive(String port, String messageId) {
     if (deployed()) {
       eventBus.send(address, new JsonObject().putString("event", "receive").putString("id", messageId));
     }
   }
 
   @Override
-  public void handleAck(String messageId) {
+  public void handleSend(String port, String messageId) {
     if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "ack").putString("id", messageId));
-    }
-  }
-
-  @Override
-  public void handleEmit(String messageId) {
-    if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "emit").putString("id", messageId));
-    }
-  }
-
-  @Override
-  public void handleAcked(String messageId) {
-    if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "acked").putString("id", messageId));
-    }
-  }
-
-  @Override
-  public void handleTimeout(String messageId) {
-    if (deployed()) {
-      eventBus.send(address, new JsonObject().putString("event", "timeout").putString("id", messageId));
+      eventBus.send(address, new JsonObject().putString("event", "send").putString("id", messageId));
     }
   }
 

@@ -19,7 +19,9 @@ import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Input connection context.
@@ -28,8 +30,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class DefaultInputConnectionContext extends DefaultConnectionContext<InputConnectionContext> implements InputConnectionContext {
   private String address;
-  private ConnectionContext.Delivery delivery;
-  private ConnectionContext.Order order;
+  private ConnectionContext.Delivery delivery = ConnectionContext.Delivery.AT_MOST_ONCE;
+  private ConnectionContext.Order order = ConnectionContext.Order.NO_ORDER;
   private String source;
   @JsonIgnore
   private InputPortContext port;
@@ -49,9 +51,29 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
     return delivery;
   }
 
+  @JsonSetter("delivery")
+  private void setDeliveryMethod(String delivery) {
+    this.delivery = Delivery.parse(delivery);
+  }
+
+  @JsonGetter("delivery")
+  private String getDeliveryMethod() {
+    return this.delivery.toString();
+  }
+
   @Override
   public ConnectionContext.Order order() {
     return order;
+  }
+
+  @JsonSetter("order")
+  private void setOrderMethod(boolean ordered) {
+    this.order = Order.parse(ordered);
+  }
+
+  @JsonGetter("order")
+  private boolean getOrderMethod() {
+    return this.order.isOrdered();
   }
 
   @Override

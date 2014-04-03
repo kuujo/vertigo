@@ -39,24 +39,29 @@ public class OrderedInputConnection extends BaseInputConnection {
 
   @Override
   protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
-    message.setAcker(new MessageAcker() {
-      @Override
-      public void anchor(JsonMessage child) {
-        
-      }
-      @Override
-      public void anchor(List<JsonMessage> children) {
-        
-      }
-      @Override
-      public void ack() {
-        sourceMessage.reply(true);
-      }
-      @Override
-      public void timeout() {
-        
-      }
-    });
+    if (messageHandler != null) {
+      message.setAcker(new MessageAcker() {
+        @Override
+        public void anchor(JsonMessage child) {
+          
+        }
+        @Override
+        public void anchor(List<JsonMessage> children) {
+          
+        }
+        @Override
+        public void ack() {
+          sourceMessage.reply(true);
+        }
+        @Override
+        public void timeout() {
+          sourceMessage.reply(true);
+        }
+      });
+      messageHandler.handle(message);
+    } else {
+      sourceMessage.reply(true);
+    }
   }
 
 }

@@ -17,7 +17,6 @@ package net.kuujo.vertigo.testtools;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.java.ComponentVerticle;
-import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.Handler;
 
@@ -30,11 +29,10 @@ public class TestPeriodicFeeder extends ComponentVerticle {
 
   @Override
   public void start(final Component component) {
-    component.input().port("in").messageHandler(new Handler<JsonMessage>() {
+    vertx.setPeriodic(1000, new Handler<Long>() {
       @Override
-      public void handle(JsonMessage message) {
-        component.output().port("out").send(message.body(), message);
-        component.input().port("in").ack(message);
+      public void handle(Long timerID) {
+        component.output().port("out").send(context.component().config());
       }
     });
   }

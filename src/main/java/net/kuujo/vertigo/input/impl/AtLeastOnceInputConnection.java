@@ -39,33 +39,38 @@ public class AtLeastOnceInputConnection extends BaseInputConnection {
 
   @Override
   protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
-    message.setAcker(new MessageAcker() {
-      private int count;
-      private boolean complete;
-      @Override
-      public void anchor(JsonMessage child) {
-        count++;
-      }
-      @Override
-      public void anchor(List<JsonMessage> children) {
-        count += children.size();
-      }
-      @Override
-      public void ack() {
-        count--;
-        if (!complete && count == 0) {
-          sourceMessage.reply(true);
-          complete = true;
+    if (messageHandler != null) {
+      message.setAcker(new MessageAcker() {
+        private int count;
+        private boolean complete;
+        @Override
+        public void anchor(JsonMessage child) {
+          count++;
         }
-      }
-      @Override
-      public void timeout() {
-        if (!complete) {
-          sourceMessage.reply(false);
-          complete = true;
+        @Override
+        public void anchor(List<JsonMessage> children) {
+          count += children.size();
         }
-      }
-    });
+        @Override
+        public void ack() {
+          count--;
+          if (!complete && count == 0) {
+            sourceMessage.reply(true);
+            complete = true;
+          }
+        }
+        @Override
+        public void timeout() {
+          if (!complete) {
+            sourceMessage.reply(false);
+            complete = true;
+          }
+        }
+      });
+      messageHandler.handle(message);
+    } else {
+      sourceMessage.reply(false);
+    }
   }
 
 }

@@ -118,6 +118,13 @@ public final class ContextBuilder {
     }
 
     // Iterate through connections and create connection contexts.
+    // For each input connection, an internal input connection is created
+    // for each instance of the source component. corresponding output connections
+    // are assigned to each output connection. In other words, each internal
+    // output connection can send to multiple addresses, but each internal input
+    // connection only listens on a single event bus address for messages from a
+    // single instance of the source component. This simplifies back pressure and
+    // resolving ordering issues in many-to-many component relationships.
     for (ConnectionConfig connection : network.getConnections()) {
       ComponentContext<?> source = components.get(connection.getSource().getComponent());
       ComponentContext<?> target = components.get(connection.getTarget().getComponent());
@@ -139,7 +146,7 @@ public final class ContextBuilder {
           // If the output port doesn't already exist then add it.
           if (output == null) {
             DefaultOutputPortContext port = DefaultOutputPortContext.Builder.newBuilder()
-                .setAddress(String.format("%s.%s[%d]%s", network.getName(), source.name(), sourceInstance.number(), connection.getSource().getPort()))
+                .setAddress(String.format("out:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number()))
                 .setName(connection.getSource().getPort())
                 .build();
             DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) sourceInstance.output())
@@ -149,11 +156,12 @@ public final class ContextBuilder {
 
           // Add an output connection to the output port.
           DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
-          outConnection.setAddress(String.format("%s.%s[%d]%s-%s.%s", network.getName(), source.name(), sourceInstance.number(), connection.getSource().getPort(), target.name(), connection.getTarget().getPort()));
+          outConnection.setAddress(String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name()));
           outConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
           outConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
           outConnection.setGrouping(connection.getGrouping());
 
+          // For each target instance, add a unique input connection for the output.
           for (InstanceContext targetInstance : target.instances()) {
             // Check if the port already exists on the target's input.
             DefaultInputPortContext.Builder input = null;
@@ -167,7 +175,7 @@ public final class ContextBuilder {
             // If the input port doesn't already exist then add it.
             if (input == null) {
               DefaultInputPortContext port = DefaultInputPortContext.Builder.newBuilder()
-                  .setAddress(String.format("%s.%s[%d]%s", network.getName(), target.name(), targetInstance.number(), connection.getTarget().getPort()))
+                  .setAddress(String.format("in:%s@%s.%s[%d]", connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number()))
                   .setName(connection.getTarget().getPort())
                   .build();
               DefaultInputContext.Builder.newBuilder((DefaultInputContext) targetInstance.input())
@@ -177,7 +185,7 @@ public final class ContextBuilder {
 
             // Add an input connection to the input port.
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
-            String address = String.format("%s.%s[%d]%s-%s[%d]%s", network.getName(), target.name(), targetInstance.number(), connection.getTarget().getPort(), source.name(), sourceInstance.number(), connection.getTarget().getPort());
+            String address = String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number());
             inConnection.setAddress(address);
             inConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
             inConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));

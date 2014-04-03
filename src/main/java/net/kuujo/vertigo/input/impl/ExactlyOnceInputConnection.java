@@ -39,31 +39,36 @@ public class ExactlyOnceInputConnection extends BaseInputConnection {
 
   @Override
   protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
-    message.setAcker(new MessageAcker() {
-      private boolean complete;
-      @Override
-      public void anchor(JsonMessage child) {
-        
-      }
-      @Override
-      public void anchor(List<JsonMessage> children) {
-        
-      }
-      @Override
-      public void ack() {
-        if (!complete) {
-          sourceMessage.reply(true);
-          complete = true;
+    if (messageHandler != null) {
+      message.setAcker(new MessageAcker() {
+        private boolean complete;
+        @Override
+        public void anchor(JsonMessage child) {
+          
         }
-      }
-      @Override
-      public void timeout() {
-        if (!complete) {
-          sourceMessage.reply(false);
-          complete = true;
+        @Override
+        public void anchor(List<JsonMessage> children) {
+          
         }
-      }
-    });
+        @Override
+        public void ack() {
+          if (!complete) {
+            sourceMessage.reply(true);
+            complete = true;
+          }
+        }
+        @Override
+        public void timeout() {
+          if (!complete) {
+            sourceMessage.reply(false);
+            complete = true;
+          }
+        }
+      });
+      messageHandler.handle(message);
+    } else {
+      sourceMessage.reply(false);
+    }
   }
 
 }

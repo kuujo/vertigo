@@ -17,8 +17,7 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.LocalClusterManager;
-import net.kuujo.vertigo.cluster.VertigoClusterManager;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -64,7 +63,7 @@ public class HooksTest extends TestVerticle {
     }
     @Override
     public void handleReceive(String port, String id) {
-      if (hook.equals("received")) {
+      if (hook.equals("receive")) {
         testComplete();
       }
     }
@@ -78,7 +77,7 @@ public class HooksTest extends TestVerticle {
 
   @Test
   public void testComponentStartHook() {
-    NetworkConfig network = new DefaultNetworkConfig("test");
+    NetworkConfig network = new DefaultNetworkConfig("test1");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
     network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("start"));
     network.createConnection("feeder", "worker");
@@ -87,24 +86,25 @@ public class HooksTest extends TestVerticle {
 
   @Test
   public void testComponentSendHook() {
-    NetworkConfig network = new DefaultNetworkConfig("test");
+    NetworkConfig network = new DefaultNetworkConfig("test2");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("send"));
     network.addVerticle("worker", TestAckingComponent.class.getName(), 2);
+    network.createConnection("feeder", "worker");
     deploy(network);
   }
 
   @Test
-  public void testComponentReceivedHook() {
-    NetworkConfig network = new DefaultNetworkConfig("test");
+  public void testComponentReceiveHook() {
+    NetworkConfig network = new DefaultNetworkConfig("test3");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("received"));
+    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("receive"));
     network.createConnection("feeder", "worker");
     deploy(network);
   }
 
   private void deploy(NetworkConfig network) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {

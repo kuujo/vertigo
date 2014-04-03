@@ -57,7 +57,10 @@ public class BasicInputConnection extends BaseInputConnection {
 
   @Override
   protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
-    message.setAcker(emptyAcker);
+    if (messageHandler != null) {
+      message.setAcker(emptyAcker);
+      messageHandler.handle(message);
+    }
   }
 
 }

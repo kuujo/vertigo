@@ -38,17 +38,21 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class ExactlyOnceOutputConnection extends BaseOutputConnection {
-  private final AsyncMap<String, String> messages;
-  private int currentQueueSize;
+  private final Map<String, AsyncMap<String, String>> messages = new HashMap<>();
+  private final Map<String, Integer> queueSizes = new HashMap<>();
+  private boolean queueFull;
 
   public ExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
     super(vertx, context, cluster, acker);
-    this.messages = cluster.getMap(context.address());
+    for (String address : targets) {
+      messages.put(address, cluster.<String, String>getMap(String.format("%s.%s", context.address(), address)));
+      queueSizes.put(address, 0);
+    }
   }
 
   @Override
   public boolean sendQueueFull() {
-    return currentQueueSize >= maxQueueSize;
+    return queueFull;
   }
 
   @Override
@@ -78,14 +82,16 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
       }
     });
 
-    for (Map.Entry<String, JsonMessage> child : children.entrySet()) {
-      messages.put(child.getValue().id(), serializer.serializeToString(child.getValue()), new Handler<AsyncResult<String>>() {
+    for (Map.Entry<String, JsonMessage> entry : children.entrySet()) {
+      final String address = entry.getKey();
+      messages.get(address).put(entry.getValue().id(), serializer.serializeToString(entry.getValue()), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
-            currentQueueSize++;
+            queueSizes.put(address, queueSizes.get(address)+1);
+            if (queueSizes.get(address) >= maxQueueSize) queueFull = true;
             checkPause();
             counter.succeed();
           }
@@ -124,15 +130,17 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
       }
     });
 
-    for (final Map.Entry<String, JsonMessage> child : children.entrySet()) {
-      messages.put(child.getValue().id(), serializer.serializeToString(child.getValue()), new Handler<AsyncResult<String>>() {
+    for (Map.Entry<String, JsonMessage> entry : children.entrySet()) {
+      final String address = entry.getKey();
+      messages.get(address).put(entry.getValue().id(), serializer.serializeToString(entry.getValue()), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
             acker.ack(parent); // Ack the child messages since they have been replicated.
-            currentQueueSize++;
+            queueSizes.put(address, queueSizes.get(address)+1);
+            if (queueSizes.get(address) >= maxQueueSize) queueFull = true;
             checkPause();
             counter.succeed();
           }
@@ -143,13 +151,11 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
   }
 
   /**
-   * Sends a batch of messages.
+   * Sends a message.
    */
-  private void doSend(final Map<String, JsonMessage> messages) {
+  private void doSend(Map<String, JsonMessage> messages) {
     for (Map.Entry<String, JsonMessage> entry : messages.entrySet()) {
-      final String address = entry.getKey();
-      final JsonMessage message = entry.getValue();
-      doSend(address, message);
+      doSend(entry.getKey(), entry.getValue());
     }
   }
 
@@ -163,11 +169,24 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
         if (result.failed() || !result.result().body()) {
           doSend(address, message);
         } else {
-          messages.remove(message.id(), new Handler<AsyncResult<String>>() {
+          messages.get(address).remove(message.id(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.succeeded()) {
-                currentQueueSize--;
+                queueSizes.put(address, queueSizes.get(address)-1);
+                if (queueFull && queueSizes.get(address) < maxQueueSize) {
+                  boolean isFull = false;
+                  for (int size : queueSizes.values()) {
+                    if (size >= maxQueueSize) {
+                      isFull = true;
+                      break;
+                    }
+                  }
+                  if (!isFull) {
+                    queueFull = false;
+                  }
+                }
+                checkPause();
               }
             }
           });

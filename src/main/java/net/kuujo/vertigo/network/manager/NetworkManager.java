@@ -52,7 +52,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
  */
 public class NetworkManager extends BusModBase {
   private static final Logger log = LoggerFactory.getLogger(NetworkManager.class);
-  private String address;
+  private String name;
   private VertigoCluster cluster;
   private WatchableAsyncMap<String, String> data;
   private Set<String> ready = new HashSet<>();
@@ -73,9 +73,9 @@ public class NetworkManager extends BusModBase {
 
   @Override
   public void start(final Future<Void> startResult) {
-    address = container.config().getString("address");
-    if (address == null) {
-      startResult.setFailure(new IllegalArgumentException("No address specified."));
+    name = container.config().getString("name");
+    if (name == null) {
+      startResult.setFailure(new IllegalArgumentException("No network name specified."));
       return;
     }
 
@@ -86,9 +86,9 @@ public class NetworkManager extends BusModBase {
       return;
     }
 
-    data = cluster.getMap(address);
+    data = cluster.getMap(name);
 
-    data.watch(address, watchHandler, new Handler<AsyncResult<Void>>() {
+    data.watch(name, watchHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
@@ -96,7 +96,7 @@ public class NetworkManager extends BusModBase {
         } else {
           // In the event that the manager failed, the current network context
           // will be persisted in the cluster. Attempt to retrieve it.
-          data.get(address, new Handler<AsyncResult<String>>() {
+          data.get(name, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
@@ -112,9 +112,9 @@ public class NetworkManager extends BusModBase {
                         if (result.failed()) {
                           log.error(result.cause());
                         } else if (result.result()) {
-                          handleReady(address);
+                          handleReady(name);
                         } else {
-                          handleUnready(address);
+                          handleUnready(name);
                         }
                       }
                     });
@@ -196,7 +196,7 @@ public class NetworkManager extends BusModBase {
                     if (result.failed()) {
                       log.error(result.cause());
                     } else {
-                      log.info("Successfully updated network contexts for " + address);
+                      log.info("Successfully updated network contexts for " + name);
                     }
                   }
                 });

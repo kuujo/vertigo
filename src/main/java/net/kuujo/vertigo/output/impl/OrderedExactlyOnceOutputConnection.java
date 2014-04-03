@@ -16,8 +16,10 @@
 package net.kuujo.vertigo.output.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
@@ -38,17 +40,22 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
-  private final AsyncQueue<String> messages;
-  private int currentQueueSize;
+  private final Map<String, AsyncQueue<String>> messages = new HashMap<>();
+  private final Map<String, Integer> queueSizes = new HashMap<>();
+  private final Set<String> processing = new HashSet<>();
+  private boolean queueFull;
 
   public OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster, MessageAcker acker) {
     super(vertx, context, cluster, acker);
-    this.messages = cluster.getQueue(context.address());
+    for (String address : targets) {
+      messages.put(address, cluster.<String>getQueue(String.format("%s.%s", context.address(), address)));
+      queueSizes.put(address, 0);
+    }
   }
 
   @Override
   public boolean sendQueueFull() {
-    return currentQueueSize >= maxQueueSize;
+    return queueFull;
   }
 
   @Override
@@ -73,20 +80,22 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-          doSend(children);
         }
       }
     });
 
-    for (Map.Entry<String, JsonMessage> child : children.entrySet()) {
-      messages.add(serializer.serializeToString(child.getValue()), new Handler<AsyncResult<Boolean>>() {
+    for (Map.Entry<String, JsonMessage> entry : children.entrySet()) {
+      final String address = entry.getKey();
+      messages.get(address).add(serializer.serializeToString(entry.getValue()), new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
-            currentQueueSize++;
+            queueSizes.put(address, queueSizes.get(address)+1);
+            if (queueSizes.get(address) >= maxQueueSize) queueFull = true;
             checkPause();
+            checkMessages(address);
             counter.succeed();
           }
         }
@@ -119,38 +128,29 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-          doSend(children);
         }
       }
     });
 
-    for (final Map.Entry<String, JsonMessage> child : children.entrySet()) {
-      messages.add(serializer.serializeToString(child.getValue()), new Handler<AsyncResult<Boolean>>() {
+    for (Map.Entry<String, JsonMessage> entry : children.entrySet()) {
+      final String address = entry.getKey();
+      messages.get(address).add(serializer.serializeToString(entry.getValue()), new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
             acker.ack(parent); // Ack the child messages since they have been replicated.
-            currentQueueSize++;
+            queueSizes.put(address, queueSizes.get(address)+1);
+            if (queueSizes.get(address) >= maxQueueSize) queueFull = true;
             checkPause();
+            checkMessages(address);
             counter.succeed();
           }
         }
       });
     }
     return message.id();
-  }
-
-  /**
-   * Sends a batch of messages.
-   */
-  private void doSend(final Map<String, JsonMessage> messages) {
-    for (Map.Entry<String, JsonMessage> entry : messages.entrySet()) {
-      final String address = entry.getKey();
-      final JsonMessage message = entry.getValue();
-      doSend(address, message);
-    }
   }
 
   /**
@@ -163,17 +163,49 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
         if (result.failed() || !result.result().body()) {
           doSend(address, message);
         } else {
-          messages.remove(new Handler<AsyncResult<String>>() {
+          messages.get(address).remove(new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.succeeded()) {
-                currentQueueSize--;
+                processing.remove(address);
+                queueSizes.put(address, queueSizes.get(address)-1);
+                if (queueFull && queueSizes.get(address) < maxQueueSize) {
+                  boolean isFull = false;
+                  for (int size : queueSizes.values()) {
+                    if (size >= maxQueueSize) {
+                      isFull = true;
+                      break;
+                    }
+                  }
+                  if (!isFull) {
+                    queueFull = false;
+                  }
+                }
+                checkPause();
+                checkMessages(address);
               }
             }
           });
         }
       }
     });
+  }
+
+  /**
+   * Checks for messages that need to be sent to a specific address.
+   */
+  private void checkMessages(final String address) {
+    if (!processing.contains(address)) {
+      messages.get(address).peek(new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.succeeded() && result.result() != null) {
+            processing.add(address);
+            doSend(address, serializer.deserializeString(result.result(), JsonMessage.class));
+          }
+        }
+      });
+    }
   }
 
 }

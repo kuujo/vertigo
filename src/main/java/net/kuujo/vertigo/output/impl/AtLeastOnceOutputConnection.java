@@ -22,6 +22,7 @@ import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -47,6 +48,22 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
   @Override
   public boolean sendQueueFull() {
     return currentQueueSize >= maxQueueSize;
+  }
+
+  @Override
+  public OutputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
+    messages.size(new Handler<AsyncResult<Integer>>() {
+      @Override
+      public void handle(AsyncResult<Integer> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          currentQueueSize = result.result() != null ? result.result() : 0;
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
+    return this;
   }
 
   @Override

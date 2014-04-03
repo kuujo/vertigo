@@ -26,6 +26,7 @@ import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -74,6 +75,27 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
         queueSizes.remove(address);
       }
     }
+  }
+
+  @Override
+  public OutputConnection open(Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(messages.size());
+    counter.setHandler(doneHandler);
+    for (Map.Entry<String, AsyncQueue<String>> entry : messages.entrySet()) {
+      final String address = entry.getKey();
+      entry.getValue().size(new Handler<AsyncResult<Integer>>() {
+        @Override
+        public void handle(AsyncResult<Integer> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          } else {
+            queueSizes.put(address, result.result() != null ? result.result() : 0);
+            counter.succeed();
+          }
+        }
+      });
+    }
+    return this;
   }
 
   @Override

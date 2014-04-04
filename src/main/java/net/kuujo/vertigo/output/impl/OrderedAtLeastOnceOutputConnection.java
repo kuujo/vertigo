@@ -18,8 +18,8 @@ package net.kuujo.vertigo.output.impl;
 import java.util.List;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.data.AsyncQueue;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;

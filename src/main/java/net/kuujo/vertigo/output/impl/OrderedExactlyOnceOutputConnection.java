@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.data.AsyncQueue;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;

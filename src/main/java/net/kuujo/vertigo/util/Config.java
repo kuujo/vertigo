@@ -17,6 +17,10 @@ package net.kuujo.vertigo.util;
 
 import java.util.HashSet;
 
+import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.VertigoUtils;
+import net.kuujo.vertigo.annotations.ClusterType;
+import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InstanceContext;
 
@@ -59,6 +63,7 @@ public final class Config {
     if (clusterType == null) {
       throw new IllegalArgumentException("No cluster class specified.");
     }
+
     Class<? extends VertigoCluster> clusterClass;
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
     try {
@@ -66,6 +71,16 @@ public final class Config {
     } catch (Exception e) {
       throw new IllegalArgumentException("Error instantiating serializer factory.");
     }
+
+    // Check the cluster type and set the current cluster mode appropriately.
+    if (clusterClass.isAnnotationPresent(LocalType.class)) {
+      VertigoUtils.init(Vertigo.Mode.LOCAL);
+    } else if (clusterClass.isAnnotationPresent(ClusterType.class)) {
+      VertigoUtils.init(Vertigo.Mode.CLUSTER);
+    } else {
+      throw new IllegalArgumentException("Invalid cluster type. No type annotation found.");
+    }
+
     return Factories.createObject(clusterClass, vertx, container);
   }
 

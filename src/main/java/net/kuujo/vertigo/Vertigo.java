@@ -44,6 +44,8 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 public final class Vertigo {
+  private static boolean initialized;
+  private static Mode currentMode;
   private final Vertx vertx;
   private final Container container;
 
@@ -54,6 +56,43 @@ public final class Vertigo {
   public Vertigo(Vertx vertx, Container container) {
     this.vertx = vertx;
     this.container = container;
+  }
+
+  /**
+   * Vertigo cluster mode.
+   *
+   * @author Jordan Halterman
+   */
+  public static enum Mode {
+
+    /**
+     * Indicates local mode.
+     */
+    LOCAL,
+
+    /**
+     * Indicates cluster mode.
+     */
+    CLUSTER;
+
+  }
+
+  static void init(Mode mode) {
+    if (!initialized) {
+      currentMode = mode;
+      initialized = true;
+    } else if (!mode.equals(currentMode)) {
+      throw new IllegalStateException("Cannot alter immutable Vertigo cluster mode.");
+    }
+  }
+
+  /**
+   * Returns the current Vertigo cluster mode.
+   *
+   * @return The current Vertigo mode.
+   */
+  public static Mode currentMode() {
+    return currentMode;
   }
 
   /**

@@ -21,11 +21,13 @@ import java.util.Map;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.data.AsyncDataStore;
 import net.kuujo.vertigo.data.AsyncMap;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -45,8 +47,9 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
 
   public ExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
+    AsyncDataStore data = Factories.createObject(context.storage(), vertx, context);
     for (String address : targets) {
-      messages.put(address, cluster.<String, String>getMap(String.format("%s.%s", context.address(), address)));
+      messages.put(address, data.<String, String>getMap(String.format("%s.%s", context.address(), address)));
       queueSizes.put(address, 0);
     }
   }

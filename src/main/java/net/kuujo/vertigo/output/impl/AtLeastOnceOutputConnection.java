@@ -24,6 +24,7 @@ import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -42,7 +43,7 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
 
   public AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
-    this.messages = cluster.getMap(context.address());
+    this.messages = Factories.createObject(context.storage(), vertx, context).getMap(context.address());
   }
 
   @Override

@@ -23,6 +23,7 @@ import net.kuujo.vertigo.data.AsyncQueue;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -42,7 +43,7 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
 
   public OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
-    this.messages = cluster.getQueue(context.address());
+    this.messages = Factories.createObject(context.storage(), vertx, context).getQueue(context.address());
   }
 
   @Override

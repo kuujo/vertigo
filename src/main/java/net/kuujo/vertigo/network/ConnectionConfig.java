@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.data.AsyncDataStore;
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 
@@ -194,14 +194,14 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @param store A data store implementing class.
    * @return The connection configuration.
    */
-  ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store);
+  ConnectionConfig setDataStore(Class<? extends DataStore> store);
 
   /**
    * Returns the connection backing data store.
    *
    * @return A data store implementing class.
    */
-  Class<? extends AsyncDataStore> getDataStore();
+  Class<? extends DataStore> getDataStore();
 
   /**
    * Sets the connection backing data store.
@@ -210,7 +210,7 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @param config The data store configuration.
    * @return The connection configuration.
    */
-  ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store, JsonObject config);
+  ConnectionConfig setDataStore(Class<? extends DataStore> store, JsonObject config);
 
   /**
    * Returns the connection grouping.

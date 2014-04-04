@@ -18,6 +18,7 @@ package net.kuujo.vertigo.data;
 import net.kuujo.vertigo.annotations.ClusterTypeInfo;
 import net.kuujo.vertigo.annotations.LocalTypeInfo;
 import net.kuujo.vertigo.data.impl.HazelcastDataStore;
+import net.kuujo.vertigo.data.impl.RedisDataStore;
 import net.kuujo.vertigo.data.impl.SharedDataStore;
 
 /**
@@ -27,7 +28,22 @@ import net.kuujo.vertigo.data.impl.SharedDataStore;
  */
 @LocalTypeInfo(defaultImpl=SharedDataStore.class)
 @ClusterTypeInfo(defaultImpl=HazelcastDataStore.class)
-public interface AsyncDataStore {
+public interface DataStore {
+
+  /**
+   * Vert.x shared data based data store.
+   */
+  public static final Class<SharedDataStore> SHARED_DATA = SharedDataStore.class;
+
+  /**
+   * Hazelcast/Xync based data store.
+   */
+  public static final Class<HazelcastDataStore> HAZELCAST = HazelcastDataStore.class;
+
+  /**
+   * Redis-based data store.
+   */
+  public static final Class<RedisDataStore> REDIS = RedisDataStore.class;
 
   /**
    * Returns an asynchronous map backed by the data store.

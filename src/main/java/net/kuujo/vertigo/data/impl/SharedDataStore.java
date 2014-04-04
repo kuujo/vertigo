@@ -18,7 +18,7 @@ package net.kuujo.vertigo.data.impl;
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.annotations.LocalType;
-import net.kuujo.vertigo.data.AsyncDataStore;
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
@@ -35,7 +35,7 @@ import org.vertx.java.core.Vertx;
  */
 @LocalType
 @ClusterType
-public class SharedDataStore implements AsyncDataStore {
+public class SharedDataStore implements DataStore {
   private final Vertx vertx;
 
   @Factory

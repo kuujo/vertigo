@@ -18,7 +18,7 @@ package net.kuujo.vertigo.network.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.data.AsyncDataStore;
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
@@ -136,13 +136,13 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store) {
+  public ConnectionConfig setDataStore(Class<? extends DataStore> store) {
     storage.put("type", store);
     return this;
   }
 
   @Override
-  public ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store, JsonObject config) {
+  public ConnectionConfig setDataStore(Class<? extends DataStore> store, JsonObject config) {
     storage.put("type", store);
     for (String fieldName : config.getFieldNames()) {
       storage.put(fieldName, config.getValue(fieldName));
@@ -152,8 +152,8 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   @Override
   @SuppressWarnings("unchecked")
-  public Class<? extends AsyncDataStore> getDataStore() {
-    return (Class<? extends AsyncDataStore>) storage.get("type");
+  public Class<? extends DataStore> getDataStore() {
+    return (Class<? extends DataStore>) storage.get("type");
   }
 
   @Override

@@ -40,12 +40,34 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   property="type"
 )
 @JsonSubTypes({
+  @JsonSubTypes.Type(value=SharedDataStatePersistor.class, name="shared-data"),
+  @JsonSubTypes.Type(value=HazelcastStatePersistor.class, name="hazelcast"),
   @JsonSubTypes.Type(value=MongoStatePersistor.class, name="mongo"),
   @JsonSubTypes.Type(value=RedisStatePersistor.class, name="redis")
 })
 @LocalTypeInfo(defaultImpl=SharedDataStatePersistor.class)
 @ClusterTypeInfo(defaultImpl=HazelcastStatePersistor.class)
 public interface StatePersistor {
+
+  /**
+   * Shared data based state persistor.
+   */
+  public static final Class<SharedDataStatePersistor> SHARED_DATA = SharedDataStatePersistor.class;
+
+  /**
+   * Hazelcast-based state persistor.
+   */
+  public static final Class<HazelcastStatePersistor> HAZELCAST = HazelcastStatePersistor.class;
+
+  /**
+   * Redis-based state persistor.
+   */
+  public static final Class<RedisStatePersistor> REDIS = RedisStatePersistor.class;
+
+  /**
+   * Mongo-based state persistor.
+   */
+  public static final Class<MongoStatePersistor> MONGO = MongoStatePersistor.class;
 
   /**
    * Loads the component state.

@@ -36,6 +36,17 @@ import org.vertx.java.core.json.JsonObject;
 @LocalType
 @ClusterType
 public class MongoStatePersistor implements StatePersistor {
+
+  /**
+   * Configuration option that indicates the Mongo module address.
+   */
+  public static final String ADDRESS = "address";
+
+  /**
+   * Configuration option that indicates the Mongo collection to use.
+   */
+  public static final String COLLECTION = "collection";
+
   private final String address;
   private final String collection;
   private final Vertx vertx;

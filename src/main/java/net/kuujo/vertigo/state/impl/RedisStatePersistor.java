@@ -37,6 +37,17 @@ import org.vertx.java.core.json.JsonObject;
 @LocalType
 @ClusterType
 public class RedisStatePersistor implements StatePersistor {
+
+  /**
+   * Configuration option that indicates the address of the Redis module.
+   */
+  public static final String ADDRESS = "address";
+
+  /**
+   * Configuration option that indicates the key to which to persist the component state.
+   */
+  public static final String KEY = "key";
+
   private final String address;
   private final String key;
   private final Vertx vertx;

@@ -24,7 +24,7 @@ import java.util.Set;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.data.AsyncDataStore;
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.data.AsyncQueue;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
@@ -56,7 +56,7 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
 
   public OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
-    AsyncDataStore data = Factories.createObject(context.storage(), vertx, context);
+    DataStore data = Factories.createObject(context.storage(), vertx, context);
     for (String address : targets) {
       messages.put(address, data.<String>getQueue(String.format("%s.%s", context.address(), address)));
       queueSizes.put(address, 0);

@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.data.AsyncDataStore;
+import net.kuujo.vertigo.data.DataStore;
 
 /**
  * Connection contexts represent a direct connection between
@@ -44,7 +44,7 @@ public interface ConnectionContext<T extends ConnectionContext<T>> extends Conte
    *
    * @return The connection's backing data store type.
    */
-  Class<? extends AsyncDataStore> storage();
+  Class<? extends DataStore> storage();
 
   /**
    * Defines connection message delivery requirements.

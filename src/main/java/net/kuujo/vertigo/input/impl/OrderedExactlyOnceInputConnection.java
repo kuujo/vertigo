@@ -17,6 +17,7 @@ package net.kuujo.vertigo.input.impl;
 
 import java.util.List;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -32,6 +33,11 @@ import org.vertx.java.core.eventbus.Message;
  * @author Jordan Halterman
  */
 public class OrderedExactlyOnceInputConnection extends BaseInputConnection {
+
+  @Factory
+  public static OrderedExactlyOnceInputConnection factory(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+    return new OrderedExactlyOnceInputConnection(vertx, context, cluster);
+  }
 
   public OrderedExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

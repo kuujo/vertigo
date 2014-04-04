@@ -17,6 +17,7 @@ package net.kuujo.vertigo.output.impl;
 
 import java.util.List;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.data.AsyncQueue;
@@ -40,6 +41,11 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
   private final AsyncQueue<String> messages;
   private int currentQueueSize;
   private boolean processing;
+
+  @Factory
+  public static OrderedAtLeastOnceOutputConnection factory(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    return new OrderedAtLeastOnceOutputConnection(vertx, context, cluster);
+  }
 
   public OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

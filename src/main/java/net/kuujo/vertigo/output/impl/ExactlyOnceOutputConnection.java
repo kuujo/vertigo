@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.data.AsyncDataStore;
@@ -44,6 +45,11 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
   private final Map<String, AsyncMap<String, String>> messages = new HashMap<>();
   private final Map<String, Integer> queueSizes = new HashMap<>();
   private boolean queueFull;
+
+  @Factory
+  public static ExactlyOnceOutputConnection factory(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    return new ExactlyOnceOutputConnection(vertx, context, cluster);
+  }
 
   public ExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

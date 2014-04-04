@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.data.AsyncDataStore;
@@ -47,6 +48,11 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
   private final Map<String, Integer> queueSizes = new HashMap<>();
   private final Set<String> processing = new HashSet<>();
   private boolean queueFull;
+
+  @Factory
+  public static OrderedExactlyOnceOutputConnection factory(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    return new OrderedExactlyOnceOutputConnection(vertx, context, cluster);
+  }
 
   public OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

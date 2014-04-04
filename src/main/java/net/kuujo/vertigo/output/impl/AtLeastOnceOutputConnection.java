@@ -17,6 +17,7 @@ package net.kuujo.vertigo.output.impl;
 
 import java.util.List;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.data.AsyncMap;
@@ -40,6 +41,11 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 public class AtLeastOnceOutputConnection extends BaseOutputConnection {
   private final AsyncMap<String, String> messages;
   private int currentQueueSize;
+
+  @Factory
+  public static AtLeastOnceOutputConnection factory(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    return new AtLeastOnceOutputConnection(vertx, context, cluster);
+  }
 
   public AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

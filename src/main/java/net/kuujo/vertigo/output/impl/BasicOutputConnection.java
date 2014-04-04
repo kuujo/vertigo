@@ -17,6 +17,7 @@ package net.kuujo.vertigo.output.impl;
 
 import java.util.List;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -35,6 +36,11 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class BasicOutputConnection extends BaseOutputConnection {
+
+  @Factory
+  public static BasicOutputConnection factory(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    return new BasicOutputConnection(vertx, context, cluster);
+  }
 
   public BasicOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

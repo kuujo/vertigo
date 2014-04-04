@@ -17,6 +17,7 @@ package net.kuujo.vertigo.input.impl;
 
 import java.util.List;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -32,6 +33,12 @@ import org.vertx.java.core.eventbus.Message;
  * @author Jordan Halterman
  */
 public class BasicInputConnection extends BaseInputConnection {
+
+  @Factory
+  public static BasicInputConnection factory(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+    return new BasicInputConnection(vertx, context, cluster);
+  }
+
   private final MessageAcker emptyAcker = new MessageAcker() {
     @Override
     public void anchor(JsonMessage child) {

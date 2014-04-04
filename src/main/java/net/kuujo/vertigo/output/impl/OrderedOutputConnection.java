@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
@@ -41,6 +42,11 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 public class OrderedOutputConnection extends BaseOutputConnection {
   private final Queue<JsonMessage> queue = new ArrayDeque<>();
   private boolean processing;
+
+  @Factory
+  public static OrderedOutputConnection factory(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+    return new OrderedOutputConnection(vertx, context, cluster);
+  }
 
   public OrderedOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);

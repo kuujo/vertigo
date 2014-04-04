@@ -17,11 +17,11 @@ package net.kuujo.vertigo.component.impl;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.data.MapEvent;
+import net.kuujo.vertigo.data.WatchableAsyncMap;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

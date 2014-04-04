@@ -21,6 +21,7 @@ import java.util.List;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
+import net.kuujo.vertigo.component.StatefulComponent;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
@@ -30,6 +31,9 @@ import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
+import net.kuujo.vertigo.state.Snapshot;
+import net.kuujo.vertigo.state.StatePersistor;
+import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -46,7 +50,7 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
-public class DefaultComponent implements Component {
+public class DefaultComponent implements StatefulComponent {
   protected final Vertx vertx;
   protected final EventBus eventBus;
   protected final Container container;
@@ -58,6 +62,9 @@ public class DefaultComponent implements Component {
   protected InputCollector input;
   protected OutputCollector output;
   protected List<ComponentHook> hooks = new ArrayList<>();
+  protected Snapshot snapshot;
+  protected Handler<Snapshot> checkpointHandler;
+  protected Handler<Snapshot> installHandler;
   private boolean started;
 
   private final InputHook inputHook = new InputHook() {
@@ -152,12 +159,28 @@ public class DefaultComponent implements Component {
     }
   }
 
+  @Override
+  public StatefulComponent checkpointHandler(Handler<Snapshot> handler) {
+    this.checkpointHandler = handler;
+    return this;
+  }
+
+  @Override
+  public StatefulComponent installHandler(Handler<Snapshot> handler) {
+    this.installHandler = handler;
+    if (context != null && context.component().isStateful() && installHandler != null && snapshot != null) {
+      installHandler.handle(snapshot);
+    }
+    return this;
+  }
+
   /**
    * Sets up the component.
    */
   private void setup(final Handler<AsyncResult<Void>> doneHandler) {
     coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
+      @SuppressWarnings("unchecked")
       public void handle(AsyncResult<InstanceContext> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
@@ -168,6 +191,7 @@ public class DefaultComponent implements Component {
           for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
             addHook(hook);
           }
+          snapshot = new Snapshot(Factories.<StatePersistor>createObject(context.component().persistor(), context.component().options()));
           output.open(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
@@ -180,7 +204,19 @@ public class DefaultComponent implements Component {
                     if (result.failed()) {
                       new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                     } else {
-                      coordinator.resume();
+                      snapshot.load(new Handler<AsyncResult<Void>>() {
+                        @Override
+                        public void handle(AsyncResult<Void> result) {
+                          if (result.failed()) {
+                            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                          } else {
+                            if (context.component().isStateful() && installHandler != null) {
+                              installHandler.handle(snapshot);
+                            }
+                            coordinator.resume();
+                          }
+                        }
+                      });
                     }
                   }
                 });

@@ -22,8 +22,8 @@ import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.RemoteCluster;
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.data.MapEvent;
+import net.kuujo.vertigo.data.WatchableAsyncMap;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;

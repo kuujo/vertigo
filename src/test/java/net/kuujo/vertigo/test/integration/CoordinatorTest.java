@@ -20,7 +20,6 @@ import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.impl.DefaultComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -28,6 +27,7 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
+import net.kuujo.vertigo.data.WatchableAsyncMap;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

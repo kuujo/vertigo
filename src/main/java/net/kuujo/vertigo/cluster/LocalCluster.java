@@ -16,18 +16,18 @@
 package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
-import net.kuujo.vertigo.cluster.data.AsyncList;
-import net.kuujo.vertigo.cluster.data.AsyncLock;
-import net.kuujo.vertigo.cluster.data.AsyncQueue;
-import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataIdGenerator;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataList;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataLock;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataMap;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataQueue;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataSet;
+import net.kuujo.vertigo.data.AsyncIdGenerator;
+import net.kuujo.vertigo.data.AsyncList;
+import net.kuujo.vertigo.data.AsyncLock;
+import net.kuujo.vertigo.data.AsyncQueue;
+import net.kuujo.vertigo.data.AsyncSet;
+import net.kuujo.vertigo.data.WatchableAsyncMap;
+import net.kuujo.vertigo.data.impl.SharedDataIdGenerator;
+import net.kuujo.vertigo.data.impl.SharedDataList;
+import net.kuujo.vertigo.data.impl.SharedDataLock;
+import net.kuujo.vertigo.data.impl.SharedDataMap;
+import net.kuujo.vertigo.data.impl.SharedDataQueue;
+import net.kuujo.vertigo.data.impl.SharedDataSet;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

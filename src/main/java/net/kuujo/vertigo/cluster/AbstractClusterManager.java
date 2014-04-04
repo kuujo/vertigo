@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.data.MapEvent;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.Configs;
 import net.kuujo.vertigo.network.NetworkConfig;

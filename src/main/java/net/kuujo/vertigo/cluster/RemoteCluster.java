@@ -16,18 +16,18 @@
 package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
-import net.kuujo.vertigo.cluster.data.AsyncList;
-import net.kuujo.vertigo.cluster.data.AsyncLock;
-import net.kuujo.vertigo.cluster.data.AsyncQueue;
-import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.cluster.data.impl.XyncIdGenerator;
-import net.kuujo.vertigo.cluster.data.impl.XyncList;
-import net.kuujo.vertigo.cluster.data.impl.XyncLock;
-import net.kuujo.vertigo.cluster.data.impl.XyncMap;
-import net.kuujo.vertigo.cluster.data.impl.XyncQueue;
-import net.kuujo.vertigo.cluster.data.impl.XyncSet;
+import net.kuujo.vertigo.data.AsyncIdGenerator;
+import net.kuujo.vertigo.data.AsyncList;
+import net.kuujo.vertigo.data.AsyncLock;
+import net.kuujo.vertigo.data.AsyncQueue;
+import net.kuujo.vertigo.data.AsyncSet;
+import net.kuujo.vertigo.data.WatchableAsyncMap;
+import net.kuujo.vertigo.data.impl.XyncIdGenerator;
+import net.kuujo.vertigo.data.impl.XyncList;
+import net.kuujo.vertigo.data.impl.XyncLock;
+import net.kuujo.vertigo.data.impl.XyncMap;
+import net.kuujo.vertigo.data.impl.XyncQueue;
+import net.kuujo.vertigo.data.impl.XyncSet;
 import net.kuujo.xync.XyncCluster;
 import net.kuujo.xync.impl.DefaultXyncCluster;
 

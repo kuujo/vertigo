@@ -20,7 +20,8 @@ import java.util.List;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
 import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
-import net.kuujo.vertigo.util.serializer.Serializable;
+import net.kuujo.vertigo.state.StatePersistor;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -41,7 +42,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value=DefaultModuleConfig.class, name="module"),
   @JsonSubTypes.Type(value=DefaultVerticleConfig.class, name="verticle")
 })
-public interface ComponentConfig<T extends ComponentConfig<T>> extends Config, ComponentConfigurable, ConnectionConfigurable {
+public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>, ComponentConfigurable, ConnectionConfigurable {
 
   /**
    * Component type.
@@ -138,13 +139,52 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config, C
   String getGroup();
 
   /**
+   * Sets whether the component is stateful.
+   *
+   * @param isStateful Whether the component is stateful.
+   * @return The component configuration.
+   */
+  T setStateful(boolean isStateful);
+
+  /**
+   * Returns a boolean value indicating whether the component is stateful.
+   *
+   * @return Indicates whether the component is stateful.
+   */
+  boolean isStateful();
+
+  /**
+   * Sets the component state persistor.
+   *
+   * @param type The component state persistor implementation.
+   * @return The component configuration.
+   */
+  T setStatePersistor(Class<? extends StatePersistor> type);
+
+  /**
+   * Sets the component state persistor.
+   *
+   * @param type The component state persistor implementation.
+   * @param config The component state persistor configuration.
+   * @return The component configuration.
+   */
+  T setStatePersistor(Class<? extends StatePersistor> type, JsonObject config);
+
+  /**
+   * Returns the component state persistor.
+   *
+   * @return The component state persistor class.
+   */
+  Class<? extends StatePersistor> getStatePersistor();
+
+  /**
    * Adds a component hook to the component.
    * 
    * The output hook can be used to receive notifications on events that occur within the
    * component instance's inputs and outputs. Hooks should implement the
    * {@link ComponentHook} interface. Hook state will be automatically serialized to json
    * using an internal <code>Serializer</code>. By default, this means that any
-   * primitives, primitive wrappers, collections, or {@link Serializable} fields will be
+   * primitives, primitive wrappers, collections, or {@link JsonSerializable} fields will be
    * serialized. Finer grained control over serialization of hooks can be provided by
    * either using Jackson annotations within the hook implementation or by providing a
    * custom serializer for the hook.

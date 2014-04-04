@@ -15,8 +15,11 @@
  */
 package net.kuujo.vertigo.network;
 
+import net.kuujo.vertigo.data.AsyncDataStore;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
+
+import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -31,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   property="class",
   defaultImpl=DefaultConnectionConfig.class
 )
-public interface ConnectionConfig extends Config, ComponentConfigurable, ConnectionConfigurable {
+public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentConfigurable, ConnectionConfigurable {
 
   /**
    * Defines connection message delivery requirements.
@@ -186,6 +189,30 @@ public interface ConnectionConfig extends Config, ComponentConfigurable, Connect
   Order getOrder();
 
   /**
+   * Sets the connection backing data store.
+   *
+   * @param store A data store implementing class.
+   * @return The connection configuration.
+   */
+  ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store);
+
+  /**
+   * Returns the connection backing data store.
+   *
+   * @return A data store implementing class.
+   */
+  Class<? extends AsyncDataStore> getDataStore();
+
+  /**
+   * Sets the connection backing data store.
+   *
+   * @param store A data store implementing class.
+   * @param config The data store configuration.
+   * @return The connection configuration.
+   */
+  ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store, JsonObject config);
+
+  /**
    * Returns the connection grouping.
    *
    * @return The connection grouping. Defaults to round grouping if no grouping
@@ -241,7 +268,7 @@ public interface ConnectionConfig extends Config, ComponentConfigurable, Connect
     property="class",
     defaultImpl=DefaultConnectionConfig.DefaultSource.class
   )
-  public static interface Source extends Config {
+  public static interface Source extends Config<Source> {
 
     /**
      * Returns the connection source component.
@@ -286,7 +313,7 @@ public interface ConnectionConfig extends Config, ComponentConfigurable, Connect
     property="class",
     defaultImpl=DefaultConnectionConfig.DefaultTarget.class
   )
-  public static interface Target extends Config {
+  public static interface Target extends Config<Target> {
 
     /**
      * Returns the connection target component.

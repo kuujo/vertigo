@@ -22,7 +22,7 @@ package net.kuujo.vertigo.network;
  *
  * @param <T> The configuration type.
  */
-public interface ActiveConfig<T extends Config> {
+public interface ActiveConfig<T extends Config<T>> {
 
   /**
    * Returns the underlying configuration.

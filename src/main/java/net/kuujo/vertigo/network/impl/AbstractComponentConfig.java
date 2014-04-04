@@ -27,6 +27,7 @@ import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
+import net.kuujo.vertigo.state.StatePersistor;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -98,6 +99,9 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
   private String group = DEFAULT_GROUP;
+  private boolean stateful;
+  private Class<? extends StatePersistor> persistor;
+  private Map<String, Object> state = new HashMap<>();
   private List<ComponentHook> hooks = new ArrayList<>();
   @JsonIgnore
   private NetworkConfig network;
@@ -152,6 +156,74 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   @Override
   public String getGroup() {
     return group;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setStateful(boolean isStateful) {
+    this.stateful = isStateful;
+    return (T) this;
+  }
+
+  @Override
+  public boolean isStateful() {
+    return stateful;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setStatePersistor(Class<? extends StatePersistor> persistor) {
+    this.persistor = persistor;
+    return (T) this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setStatePersistor(Class<? extends StatePersistor> persistor, JsonObject config) {
+    this.persistor = persistor;
+    for (String fieldName : config.getFieldNames()) {
+      state.put(fieldName, config.getValue(fieldName));
+    }
+    return (T) this;
+  }
+
+  @Override
+  public Class<? extends StatePersistor> getStatePersistor() {
+    return persistor;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setOptions(JsonObject config) {
+    for (String fieldName : config.getFieldNames()) {
+      state.put(fieldName, config.getValue(fieldName));
+    }
+    return (T) this;
+  }
+
+  @Override
+  public JsonObject getOptions() {
+    return new JsonObject(state);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setOption(String option, Object value) {
+    state.put(option, value);
+    return (T) this;
+  }
+
+  @Override
+  @SuppressWarnings("hiding")
+  public <T> T getOption(String option) {
+    return new JsonObject(state).getValue(option);
+  }
+
+  @Override
+  @SuppressWarnings("hiding")
+  public <T> T getOption(String option, T defaultValue) {
+    T value = new JsonObject(state).getValue(option);
+    return value != null ? value : defaultValue;
   }
 
   @Override

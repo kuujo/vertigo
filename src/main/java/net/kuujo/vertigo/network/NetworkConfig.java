@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   property="type",
   defaultImpl=DefaultNetworkConfig.class
 )
-public interface NetworkConfig extends Config, ComponentConfigurable, ConnectionConfigurable {
+public interface NetworkConfig extends Config<NetworkConfig>, ComponentConfigurable, ConnectionConfigurable {
 
   /**
    * Returns the network name.

@@ -26,14 +26,14 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.impl.DefaultComponentContext;
 import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.data.MapEvent;
+import net.kuujo.vertigo.data.WatchableAsyncMap;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.busmods.BusModBase;

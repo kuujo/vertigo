@@ -57,6 +57,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   public static final String NETWORK_COMPONENTS = "components";
 
   private String name;
+  private Map<String, Object> options = new HashMap<>();
   private Map<String, ComponentConfig<?>> components = new HashMap<String, ComponentConfig<?>>();
   private List<ConnectionConfig> connections = new ArrayList<>();
 
@@ -71,6 +72,36 @@ public class DefaultNetworkConfig implements NetworkConfig {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public NetworkConfig setOptions(JsonObject options) {
+    this.options = options.toMap();
+    return this;
+  }
+
+  @Override
+  public JsonObject getOptions() {
+    return new JsonObject(options);
+  }
+
+  @Override
+  public NetworkConfig setOption(String option, Object value) {
+    options.put(option, value);
+    return this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T getOption(String option) {
+    return (T) options.get(option);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T getOption(String option, T defaultValue) {
+    T value = (T) options.get(option);
+    return value != null ? value : defaultValue;
   }
 
   @Override

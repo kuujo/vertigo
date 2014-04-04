@@ -15,6 +15,10 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import net.kuujo.vertigo.data.AsyncDataStore;
 import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
@@ -45,6 +49,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   private Target target = new DefaultTarget();
   private Delivery delivery = Delivery.AT_MOST_ONCE;
   private Order order = Order.NO_ORDER;
+  private Map<String, Object> storage = new HashMap<>();
   private MessageGrouping grouping;
   @JsonIgnore
   private NetworkConfig network;
@@ -128,6 +133,59 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   @Override
   public Order getOrder() {
     return order;
+  }
+
+  @Override
+  public ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store) {
+    storage.put("type", store);
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig setDataStore(Class<? extends AsyncDataStore> store, JsonObject config) {
+    storage.put("type", store);
+    for (String fieldName : config.getFieldNames()) {
+      storage.put(fieldName, config.getValue(fieldName));
+    }
+    return this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Class<? extends AsyncDataStore> getDataStore() {
+    return (Class<? extends AsyncDataStore>) storage.get("type");
+  }
+
+  @Override
+  public ConnectionConfig setOptions(JsonObject config) {
+    for (String fieldName : config.getFieldNames()) {
+      storage.put(fieldName, config.getValue(fieldName));
+    }
+    return this;
+  }
+
+  @Override
+  public JsonObject getOptions() {
+    return new JsonObject(storage);
+  }
+
+  @Override
+  public ConnectionConfig setOption(String option, Object value) {
+    storage.put(option, value);
+    return this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T getOption(String option) {
+    return (T) storage.get(option);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T getOption(String option, T defaultValue) {
+    T value = (T) storage.get(option);
+    return value != null ? value : defaultValue;
   }
 
   @Override
@@ -331,6 +389,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   public static class DefaultSource implements Source {
     private String component;
     private String port;
+    private Map<String, Object> options = new HashMap<>();
 
     private DefaultSource() {
     }
@@ -357,6 +416,36 @@ public class DefaultConnectionConfig implements ConnectionConfig {
       return this;
     }
 
+    @Override
+    public Source setOptions(JsonObject options) {
+      this.options = options.toMap();
+      return this;
+    }
+
+    @Override
+    public JsonObject getOptions() {
+      return new JsonObject(options);
+    }
+
+    @Override
+    public Source setOption(String option, Object value) {
+      options.put(option, value);
+      return this;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOption(String option) {
+      return (T) options.get(option);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOption(String option, T defaultValue) {
+      T value = (T) options.get(option);
+      return value != null ? value : defaultValue;
+    }
+
   }
 
   /**
@@ -367,6 +456,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   public static class DefaultTarget implements Target {
     private String component;
     private String port;
+    private Map<String, Object> options = new HashMap<>();
 
     private DefaultTarget() {
     }
@@ -391,6 +481,36 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     public Target setPort(String port) {
       this.port = port;
       return this;
+    }
+
+    @Override
+    public Target setOptions(JsonObject options) {
+      this.options = options.toMap();
+      return this;
+    }
+
+    @Override
+    public JsonObject getOptions() {
+      return new JsonObject(options);
+    }
+
+    @Override
+    public Target setOption(String option, Object value) {
+      options.put(option, value);
+      return this;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOption(String option) {
+      return (T) options.get(option);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOption(String option, T defaultValue) {
+      T value = (T) options.get(option);
+      return value != null ? value : defaultValue;
     }
 
   }

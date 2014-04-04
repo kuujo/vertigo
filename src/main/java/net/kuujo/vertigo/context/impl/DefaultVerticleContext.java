@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.state.StatePersistor;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -69,7 +70,7 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultVerticleContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultVerticleContext> {
 
     private Builder() {
       super(new DefaultVerticleContext());
@@ -106,17 +107,6 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      */
     public Builder setName(String name) {
       context.name = name;
-      return this;
-    }
-
-    /**
-     * Sets the component address.
-     *
-     * @param address The component event bus address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
       return this;
     }
 
@@ -197,6 +187,28 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      */
     public Builder setGroup(String group) {
       context.group = group;
+      return this;
+    }
+
+    /**
+     * Sets whether the component is stateful.
+     *
+     * @param isStateful Whether the component is stateful.
+     * @return The context builder.
+     */
+    public Builder setStateful(boolean isStateful) {
+      context.stateful = isStateful;
+      return this;
+    }
+
+    /**
+     * Sets the component state persistor type.
+     *
+     * @param persistor The state persistor type.
+     * @return The context builder.
+     */
+    public Builder setStatePersistor(Class<? extends StatePersistor> persistor) {
+      context.persistor = persistor;
       return this;
     }
 
@@ -286,15 +298,6 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
     public Builder removeInstance(DefaultInstanceContext instance) {
       context.instances.remove(instance);
       return this;
-    }
-
-    /**
-     * Builds the verticle context.
-     *
-     * @return A new verticle context.
-     */
-    public DefaultVerticleContext build() {
-      return context;
     }
   }
 

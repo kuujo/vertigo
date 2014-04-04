@@ -33,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class DefaultOutputPortContext extends BaseContext<OutputPortContext> implements OutputPortContext {
   private static final String DEFAULT_PORT = "default";
   private String port = DEFAULT_PORT;
-  private String address;
   private Collection<OutputConnectionContext> connections = new ArrayList<>();
   @JsonIgnore
   private OutputContext output;
@@ -97,7 +96,7 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultOutputPortContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultOutputPortContext> {
 
     private Builder() {
       super(new DefaultOutputPortContext());
@@ -134,17 +133,6 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      */
     public Builder setName(String port) {
       context.port = port;
-      return this;
-    }
-
-    /**
-     * Sets the port address.
-     *
-     * @param address The port address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
       return this;
     }
 

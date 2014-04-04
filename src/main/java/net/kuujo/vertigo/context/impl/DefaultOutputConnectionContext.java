@@ -22,6 +22,7 @@ import java.util.List;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.data.AsyncDataStore;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
@@ -35,9 +36,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * @author Jordan Halterman
  */
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
-  private String address;
   private ConnectionContext.Delivery delivery;
   private ConnectionContext.Order order;
+  private Class<? extends AsyncDataStore> storage;
   private List<String> targets = new ArrayList<>();
   private MessageGrouping grouping = new RoundGrouping();
   @JsonIgnore
@@ -84,6 +85,11 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
   }
 
   @Override
+  public Class<? extends AsyncDataStore> storage() {
+    return storage;
+  }
+
+  @Override
   public OutputPortContext port() {
     return port;
   }
@@ -111,7 +117,7 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultOutputConnectionContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultOutputConnectionContext> {
 
     private Builder() {
       super(new DefaultOutputConnectionContext());
@@ -141,17 +147,6 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
     }
 
     /**
-     * Sets the stream address.
-     *
-     * @param address The stream address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
-      return this;
-    }
-
-    /**
      * Sets the message delivery method.
      *
      * @param delivery The message delivery method.
@@ -170,6 +165,17 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      */
     public Builder setOrder(ConnectionContext.Order order) {
       context.order = order;
+      return this;
+    }
+
+    /**
+     * Sets the connection data store.
+     *
+     * @param storage The connection data store.
+     * @return The context builder.
+     */
+    public Builder setDataStore(Class<? extends AsyncDataStore> storage) {
+      context.storage = storage;
       return this;
     }
 

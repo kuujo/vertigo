@@ -102,7 +102,7 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultOutputContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultOutputContext> {
 
     private Builder() {
       super(new DefaultOutputContext());

@@ -24,6 +24,7 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.state.StatePersistor;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -56,6 +57,8 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   protected String address;
   protected String status;
   protected String group = DEFAULT_GROUP;
+  protected boolean stateful;
+  protected Class<? extends StatePersistor> persistor;
   protected Map<String, Object> config;
   protected List<DefaultInstanceContext> instances = new ArrayList<>();
   protected List<ComponentHook> hooks = new ArrayList<>();
@@ -173,6 +176,16 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   @Override
   public String group() {
     return group;
+  }
+
+  @Override
+  public boolean isStateful() {
+    return stateful;
+  }
+
+  @Override
+  public Class<? extends StatePersistor> persistor() {
+    return persistor;
   }
 
   @Override

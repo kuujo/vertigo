@@ -99,7 +99,7 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultInputContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultInputContext> {
 
     private Builder() {
       super(new DefaultInputContext());

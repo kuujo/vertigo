@@ -72,6 +72,9 @@ public final class ContextBuilder {
         module.setConfig(component.getConfig());
         module.setHooks(component.getHooks());
         module.setGroup(component.getGroup());
+        module.setStateful(component.isStateful());
+        module.setStatePersistor(component.getStatePersistor());
+        module.setOptions(component.getOptions());
 
         // Set up module instances.
         List<DefaultInstanceContext> instances = new ArrayList<>();
@@ -81,6 +84,7 @@ public final class ContextBuilder {
           instance.setNumber(i);
           instance.setInput(DefaultInputContext.Builder.newBuilder().build());
           instance.setOutput(DefaultOutputContext.Builder.newBuilder().build());
+          instance.setOptions(component.getOptions());
           instances.add(instance.build());
         }
         module.setInstances(instances);
@@ -99,6 +103,9 @@ public final class ContextBuilder {
         verticle.setConfig(component.getConfig());
         verticle.setHooks(component.getHooks());
         verticle.setGroup(component.getGroup());
+        verticle.setStateful(component.isStateful());
+        verticle.setStatePersistor(component.getStatePersistor());
+        verticle.setOptions(component.getOptions());
 
         // Set up module instances.
         List<DefaultInstanceContext> instances = new ArrayList<>();
@@ -109,6 +116,7 @@ public final class ContextBuilder {
           instance.setNumber(i);
           instance.setInput(DefaultInputContext.Builder.newBuilder().build());
           instance.setOutput(DefaultOutputContext.Builder.newBuilder().build());
+          instance.setOptions(component.getOptions());
           instances.add(instance.build());
         }
         verticle.setInstances(instances);
@@ -119,7 +127,7 @@ public final class ContextBuilder {
 
     // Iterate through connections and create connection contexts.
     // For each input connection, an internal input connection is created
-    // for each instance of the source component. corresponding output connections
+    // for each instance of the source component. Corresponding output connections
     // are assigned to each output connection. In other words, each internal
     // output connection can send to multiple addresses, but each internal input
     // connection only listens on a single event bus address for messages from a
@@ -160,6 +168,8 @@ public final class ContextBuilder {
           outConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
           outConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
           outConnection.setGrouping(connection.getGrouping());
+          outConnection.setDataStore(connection.getDataStore());
+          outConnection.setOptions(connection.getOptions());
 
           // For each target instance, add a unique input connection for the output.
           for (InstanceContext targetInstance : target.instances()) {
@@ -190,6 +200,12 @@ public final class ContextBuilder {
             inConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
             inConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
             inConnection.setSource(address);
+            inConnection.setDataStore(connection.getDataStore());
+            inConnection.setOptions(connection.getOptions());
+
+            // Add the new input connection as an output target. This creates a one-to-many
+            // relationship between output connections and input connections, and input
+            // connections maintain a many-to-one relationship with output connections.
             outConnection.addTarget(address);
 
             // Add the connection to the target input port.

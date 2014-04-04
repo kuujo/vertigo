@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public final class DefaultInstanceContext extends BaseContext<InstanceContext> implements InstanceContext {
   private int number;
-  private String address;
   private String status;
   private DefaultInputContext input;
   private DefaultOutputContext output;
@@ -129,7 +128,7 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultInstanceContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultInstanceContext> {
 
     private Builder() {
       super(new DefaultInstanceContext());
@@ -156,17 +155,6 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
      */
     public static Builder newBuilder(DefaultInstanceContext context) {
       return new Builder(context);
-    }
-
-    /**
-     * Sets the unique instance address.
-     *
-     * @param address A unique address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
-      return this;
     }
 
     /**
@@ -211,15 +199,6 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
     public Builder setOutput(DefaultOutputContext output) {
       context.output = output;
       return this;
-    }
-
-    /**
-     * Builds the instance context.
-     *
-     * @return A new instance context.
-     */
-    public DefaultInstanceContext build() {
-      return context;
     }
   }
 

@@ -77,7 +77,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
 
   @Override
   public String address() {
-    return name;
+    return address;
   }
 
   @Override
@@ -142,7 +142,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultNetworkContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultNetworkContext> {
 
     private Builder() {
       super(new DefaultNetworkContext());
@@ -179,6 +179,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      */
     public Builder setName(String name) {
       context.name = name;
+      context.address = name;
       return this;
     }
 

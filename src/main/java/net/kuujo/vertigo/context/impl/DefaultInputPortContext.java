@@ -31,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public class DefaultInputPortContext extends BaseContext<InputPortContext> implements InputPortContext {
-  private String address;
   private String port;
   private Collection<InputConnectionContext> connections = new ArrayList<>();
   @JsonIgnore
@@ -96,7 +95,7 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultInputPortContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultInputPortContext> {
 
     private Builder() {
       super(new DefaultInputPortContext());
@@ -123,17 +122,6 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      */
     public static Builder newBuilder(DefaultInputPortContext context) {
       return new Builder(context);
-    }
-
-    /**
-     * Sets the input port address.
-     *
-     * @param address The input port address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
-      return this;
     }
 
     /**

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.state.StatePersistor;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -58,7 +59,7 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<DefaultModuleContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultModuleContext> {
 
     private Builder() {
       super(new DefaultModuleContext());
@@ -95,17 +96,6 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      */
     public Builder setName(String name) {
       context.name = name;
-      return this;
-    }
-
-    /**
-     * Sets the component address.
-     *
-     * @param address The component event bus address.
-     * @return The context builder.
-     */
-    public Builder setAddress(String address) {
-      context.address = address;
       return this;
     }
 
@@ -161,6 +151,28 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      */
     public Builder setGroup(String group) {
       context.group = group;
+      return this;
+    }
+
+    /**
+     * Sets whether the component is stateful.
+     *
+     * @param isStateful Whether the component is stateful.
+     * @return The context builder.
+     */
+    public Builder setStateful(boolean isStateful) {
+      context.stateful = isStateful;
+      return this;
+    }
+
+    /**
+     * Sets the component state persistor type.
+     *
+     * @param persistor The state persistor type.
+     * @return The context builder.
+     */
+    public Builder setStatePersistor(Class<? extends StatePersistor> persistor) {
+      context.persistor = persistor;
       return this;
     }
 
@@ -250,15 +262,6 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
     public Builder removeInstance(DefaultInstanceContext instance) {
       context.instances.remove(instance);
       return this;
-    }
-
-    /**
-     * Builds the module context.
-     *
-     * @return A new module context.
-     */
-    public DefaultModuleContext build() {
-      return context;
     }
   }
 

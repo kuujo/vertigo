@@ -286,23 +286,23 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         // Basic at-most-once delivery.
         if (output.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
           if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new BasicOutputConnection(vertx, output, cluster);
+            connection = BasicOutputConnection.factory(vertx, output, cluster);
           } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedOutputConnection(vertx, output, cluster);
+            connection = OrderedOutputConnection.factory(vertx, output, cluster);
           }
         // Required at-least-once delivery.
         } else if (output.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
           if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new AtLeastOnceOutputConnection(vertx, output, cluster);
+            connection = AtLeastOnceOutputConnection.factory(vertx, output, cluster);
           } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedAtLeastOnceOutputConnection(vertx, output, cluster);
+            connection = OrderedAtLeastOnceOutputConnection.factory(vertx, output, cluster);
           }
         // Required exactly-once delivery.
         } else if (output.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
           if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new ExactlyOnceOutputConnection(vertx, output, cluster);
+            connection = ExactlyOnceOutputConnection.factory(vertx, output, cluster);
           } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedExactlyOnceOutputConnection(vertx, output, cluster);
+            connection = OrderedExactlyOnceOutputConnection.factory(vertx, output, cluster);
           }
         }
 
@@ -334,23 +334,23 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         // Basic at-most-once delivery.
         if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new BasicOutputConnection(vertx, connectionContext, cluster);
+            connection = BasicOutputConnection.factory(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedOutputConnection(vertx, connectionContext, cluster);
+            connection = OrderedOutputConnection.factory(vertx, connectionContext, cluster);
           }
         // Required at-least-once delivery.
         } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new AtLeastOnceOutputConnection(vertx, connectionContext, cluster);
+            connection = AtLeastOnceOutputConnection.factory(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedAtLeastOnceOutputConnection(vertx, connectionContext, cluster);
+            connection = OrderedAtLeastOnceOutputConnection.factory(vertx, connectionContext, cluster);
           }
         // Required exactly-once delivery.
         } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
           if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = new ExactlyOnceOutputConnection(vertx, connectionContext, cluster);
+            connection = ExactlyOnceOutputConnection.factory(vertx, connectionContext, cluster);
           } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = new OrderedExactlyOnceOutputConnection(vertx, connectionContext, cluster);
+            connection = OrderedExactlyOnceOutputConnection.factory(vertx, connectionContext, cluster);
           }
         }
 

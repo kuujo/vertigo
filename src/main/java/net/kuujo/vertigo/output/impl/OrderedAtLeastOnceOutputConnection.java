@@ -47,7 +47,7 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
     return new OrderedAtLeastOnceOutputConnection(vertx, context, cluster);
   }
 
-  public OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+  private OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
     this.messages = Factories.createObject(context.storage(), vertx, context).getQueue(context.address());
   }

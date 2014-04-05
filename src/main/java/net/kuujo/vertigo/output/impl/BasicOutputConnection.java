@@ -42,7 +42,7 @@ public class BasicOutputConnection extends BaseOutputConnection {
     return new BasicOutputConnection(vertx, context, cluster);
   }
 
-  public BasicOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+  private BasicOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

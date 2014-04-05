@@ -54,7 +54,7 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
     return new OrderedExactlyOnceOutputConnection(vertx, context, cluster);
   }
 
-  public OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+  private OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
     DataStore data = Factories.createObject(context.storage(), vertx, context);
     for (String address : targets) {

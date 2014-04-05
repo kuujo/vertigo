@@ -50,7 +50,7 @@ public abstract class BaseOutputConnection implements OutputConnection, Observer
   protected boolean open;
   protected boolean paused;
 
-  public BaseOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+  protected BaseOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;

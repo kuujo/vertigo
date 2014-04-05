@@ -48,7 +48,7 @@ public class OrderedOutputConnection extends BaseOutputConnection {
     return new OrderedOutputConnection(vertx, context, cluster);
   }
 
-  public OrderedOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+  private OrderedOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

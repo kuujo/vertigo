@@ -21,6 +21,8 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.data.AsyncMap;
+import net.kuujo.vertigo.eventbus.AdaptiveEventBus;
+import net.kuujo.vertigo.eventbus.impl.WrappedAdaptiveEventBus;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
@@ -39,6 +41,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class AtLeastOnceOutputConnection extends BaseOutputConnection {
+  private final AdaptiveEventBus eventBus;
   private final AsyncMap<String, String> messages;
   private int currentQueueSize;
 
@@ -49,6 +52,7 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
 
   protected AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
+    this.eventBus = new WrappedAdaptiveEventBus(vertx);
     this.messages = Factories.createObject(context.storage(), vertx, context).getMap(context.address());
   }
 
@@ -124,7 +128,7 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
 
     for (final String address : addresses) {
       final JsonMessage child = createCopy(message);
-      vertx.eventBus().sendWithTimeout(address, serializer.serializeToString(child), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
+      eventBus.sendWithAdaptiveTimeout(address, serializer.serializeToString(child), 5, new Handler<AsyncResult<Message<Boolean>>>() {
         @Override
         public void handle(AsyncResult<Message<Boolean>> result) {
           if (result.failed()) {
@@ -150,7 +154,7 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
     for (final String address : addresses) {
       final JsonMessage child = createCopy(message);
       parent.anchor(child);
-      vertx.eventBus().sendWithTimeout(address, serializer.serializeToString(child), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
+      eventBus.sendWithAdaptiveTimeout(address, serializer.serializeToString(child), 5, new Handler<AsyncResult<Message<Boolean>>>() {
         @Override
         public void handle(AsyncResult<Message<Boolean>> result) {
           if (result.failed()) {

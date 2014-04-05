@@ -24,8 +24,10 @@ import java.util.Set;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.data.AsyncQueue;
+import net.kuujo.vertigo.data.DataStore;
+import net.kuujo.vertigo.eventbus.AdaptiveEventBus;
+import net.kuujo.vertigo.eventbus.impl.WrappedAdaptiveEventBus;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
@@ -44,6 +46,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
+  private final AdaptiveEventBus eventBus;
   private final Map<String, AsyncQueue<String>> messages = new HashMap<>();
   private final Map<String, Integer> queueSizes = new HashMap<>();
   private final Set<String> processing = new HashSet<>();
@@ -56,6 +59,7 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
 
   private OrderedExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
+    this.eventBus = new WrappedAdaptiveEventBus(vertx);
     DataStore data = Factories.createObject(context.storage(), vertx, context);
     for (String address : targets) {
       messages.put(address, data.<String>getQueue(String.format("%s.%s", context.address(), address)));
@@ -206,7 +210,7 @@ public class OrderedExactlyOnceOutputConnection extends BaseOutputConnection {
    * Sends a message.
    */
   private void doSend(final String address, final JsonMessage message) {
-    vertx.eventBus().sendWithTimeout(address, serializer.serializeToString(message), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
+    eventBus.sendWithAdaptiveTimeout(address, serializer.serializeToString(message), 5, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed() || !result.result().body()) {

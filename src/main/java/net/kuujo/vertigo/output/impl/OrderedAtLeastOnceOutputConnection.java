@@ -21,6 +21,8 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.data.AsyncQueue;
+import net.kuujo.vertigo.eventbus.AdaptiveEventBus;
+import net.kuujo.vertigo.eventbus.impl.WrappedAdaptiveEventBus;
 import net.kuujo.vertigo.message.JsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -38,6 +40,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnection {
+  private final AdaptiveEventBus eventBus;
   private final AsyncQueue<String> messages;
   private int currentQueueSize;
   private boolean processing;
@@ -49,6 +52,7 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
 
   private OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
+    this.eventBus = new WrappedAdaptiveEventBus(vertx);
     this.messages = Factories.createObject(context.storage(), vertx, context).getQueue(context.address());
   }
 
@@ -127,8 +131,7 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
 
       for (String address : addresses) {
         final JsonMessage child = createCopy(message);
-        // TODO Use adaptive timeouts for message replies.
-        vertx.eventBus().sendWithTimeout(address, serializer.serializeToString(child), 30000, new Handler<AsyncResult<Message<Boolean>>>() {
+        eventBus.sendWithAdaptiveTimeout(address, serializer.serializeToString(child), 5, new Handler<AsyncResult<Message<Boolean>>>() {
           @Override
           public void handle(AsyncResult<Message<Boolean>> result) {
             if (result.failed()) {

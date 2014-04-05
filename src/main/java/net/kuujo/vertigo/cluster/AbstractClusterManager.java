@@ -35,9 +35,9 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * Abstract cluster manager implementation.
+ * Base class for cluster manager implementations.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 abstract class AbstractClusterManager implements VertigoClusterManager {
   protected final Vertx vertx;
@@ -94,6 +94,12 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
         }
       }
     });
+    return this;
+  }
+
+  @Override
+  public VertigoClusterManager isRunning(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
+    cluster.isDeployed(name, resultHandler);
     return this;
   }
 

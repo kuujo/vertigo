@@ -25,9 +25,18 @@ import net.kuujo.vertigo.data.WatchableAsyncMap;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
 /**
- * Vertigo cluster coordinator.
+ * The Vertigo cluster is a low level API for deployments and shared data access.<p>
+ *
+ * In opposition to core Vert.x {@link Container} behavior, Vertigo cluster deployments
+ * support absolute deployment identifiers. This allows deployments to be referenced
+ * through faults. Additionally, clusters must follow the Vert.x HA grouping method,
+ * allowing modules and verticles to be deployed remotely to HA groups.<p>
+ *
+ * Vertigo clusters also expose asynchronous data structures for synchronization. See
+ * cluster implementations for specifics regarding how data structures are implemented.
  *
  * @author Jordan Halterman
  */

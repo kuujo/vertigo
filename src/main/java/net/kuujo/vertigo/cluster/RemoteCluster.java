@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
@@ -38,10 +39,16 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * Remote cluster client implementation.
+ * Remote cluster implementation.<p>
  *
- * @author Jordan Halterman
+ * The remote cluster is backed by the custom Xync platform manager
+ * and Hazelcast data structures via the Vert.x event bus. When running
+ * the remote cluster the Vert.x instance <b>must</b> have been run with
+ * the custom Xync platform manager.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@ClusterType
 public class RemoteCluster implements VertigoCluster {
   private final XyncCluster cluster;
 

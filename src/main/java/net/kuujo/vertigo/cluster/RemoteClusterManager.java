@@ -15,15 +15,23 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.annotations.ClusterType;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Remote cluster implementation.
+ * Remote cluster manager implementation.<p>
  *
- * @author Jordan Halterman
+ * The remote cluster manager is backed by {@link RemoteCluster} which relies
+ * upon the Xync event bus API for fault-tolerant deployments and Hazelcast
+ * data structure access. This means the remote cluster manager depends upon
+ * the Xync platform manager or a similar event bus API for operation.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@ClusterType
 public class RemoteClusterManager extends AbstractClusterManager {
 
   public RemoteClusterManager(Verticle verticle) {

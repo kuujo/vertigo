@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
@@ -38,10 +39,14 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 
 /**
- * Local cluster client implementation.
+ * Local cluster implementation.<p>
  *
- * @author Jordan Halterman
+ * The local cluster simply uses the Vert.x {@link Container} for deployments
+ * and {@link SharedData} for synchronization data structures.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@LocalType
 public class LocalCluster implements VertigoCluster {
   private final Vertx vertx;
   private final Container container;

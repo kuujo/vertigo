@@ -15,15 +15,24 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.annotations.LocalType;
+
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.shareddata.SharedData;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Local cluster implementation.
+ * Local cluster manager implementation.<p>
  *
- * @author Jordan Halterman
+ * The local cluster manager is backed by {@link LocalCluster} which is simply
+ * an interface to the Vert.x {@link Container} and {@link SharedData}. Thus,
+ * deployments and coordination via the <code>LocalClusterManager</code> is
+ * is inherently done within a single Vert.x instance.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@LocalType
 public class LocalClusterManager extends AbstractClusterManager {
 
   public LocalClusterManager(Verticle verticle) {

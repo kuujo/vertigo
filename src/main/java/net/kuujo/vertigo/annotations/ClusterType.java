@@ -21,9 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotates a handler as being available in cluster mode.
+ * Annotates a handler as being available in cluster mode.<p>
  *
- * @author Jordan Halterman
+ * This annotation should be used for identifying types available within
+ * Vertigo components as being available when clustering (e.g. in remote mode).
+ * When a network is being run in cluster mode, Vertigo synchronization types
+ * must be supported by clustering. If clustering is not supported by a type
+ * then Vertigo will automatically fall back to a type that is supported.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

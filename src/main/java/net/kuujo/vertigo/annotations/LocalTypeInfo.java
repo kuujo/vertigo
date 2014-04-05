@@ -21,9 +21,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotates a handler as only being available in local mode.
+ * Annotates a handler as only being available in local mode.<p>
  *
- * @author Jordan Halterman
+ * This annotation allows Vertigo synchronization types to specify defaults
+ * when running in local mode. If a network is deployed in local mode but
+ * requires a cluster-only data type, Vertigo factories will automatically
+ * fall back to the default local type specified by this annotation.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

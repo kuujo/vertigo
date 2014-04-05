@@ -21,9 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotates a handler as being available in local mode.
+ * Annotates a handler as being available in local mode.<p>
  *
- * @author Jordan Halterman
+ * This annotation should be used for identifying types available within
+ * Vertigo components as being available within local deployments (e.g. in local mode).
+ * When a network is being run in local mode, Vertigo synchronization types
+ * must be supported within a single Vert.x instance. If local mode is not supported
+ * by a type then Vertigo will automatically fall back to a type that is supported.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

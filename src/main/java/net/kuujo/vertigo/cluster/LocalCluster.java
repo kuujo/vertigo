@@ -37,6 +37,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
 
 /**
  * Local cluster implementation.<p>
@@ -55,6 +56,10 @@ public class LocalCluster implements VertigoCluster {
   @Factory
   public static VertigoCluster factory(Vertx vertx, Container container) {
     return new LocalCluster(vertx, container);
+  }
+
+  public LocalCluster(Verticle verticle) {
+    this(verticle.getVertx(), verticle.getContainer());
   }
 
   public LocalCluster(Vertx vertx, Container container) {

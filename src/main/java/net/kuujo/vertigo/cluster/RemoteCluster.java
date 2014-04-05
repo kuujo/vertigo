@@ -37,6 +37,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
 
 /**
  * Remote cluster implementation.<p>
@@ -55,6 +56,10 @@ public class RemoteCluster implements VertigoCluster {
   @Factory
   public static VertigoCluster factory(Vertx vertx, Container container) {
     return new RemoteCluster(vertx);
+  }
+
+  public RemoteCluster(Verticle verticle) {
+    this(verticle.getVertx());
   }
 
   public RemoteCluster(Vertx vertx) {

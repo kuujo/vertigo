@@ -29,6 +29,8 @@ import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
+import net.kuujo.vertigo.logging.PortLogger;
+import net.kuujo.vertigo.logging.PortLoggerFactory;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
 import net.kuujo.vertigo.state.Snapshot;
@@ -39,7 +41,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -52,19 +53,18 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultComponent implements StatefulComponent {
   protected final Vertx vertx;
-  protected final EventBus eventBus;
   protected final Container container;
-  protected final Logger logger;
   protected final VertigoCluster cluster;
   private final ComponentCoordinator coordinator;
-  protected final String address;
+  protected Logger logger;
+  private final String address;
   protected InstanceContext context;
   protected InputCollector input;
   protected OutputCollector output;
-  protected List<ComponentHook> hooks = new ArrayList<>();
-  protected Snapshot snapshot;
-  protected Handler<Snapshot> checkpointHandler;
-  protected Handler<Snapshot> installHandler;
+  private List<ComponentHook> hooks = new ArrayList<>();
+  private Snapshot snapshot;
+  private Handler<Snapshot> checkpointHandler;
+  private Handler<Snapshot> installHandler;
   private boolean started;
 
   private final InputHook inputHook = new InputHook() {
@@ -88,11 +88,12 @@ public class DefaultComponent implements StatefulComponent {
   protected DefaultComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
     this.address = address;
     this.vertx = vertx;
-    this.eventBus = vertx.eventBus();
     this.container = container;
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address));
     this.cluster = cluster;
     this.coordinator = new DefaultComponentCoordinator(network, address, cluster);
+    // Until the component is started, create a Vert.x logger. Once the component has
+    // been started a port-based logger will be created.
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address));
   }
 
   @Override
@@ -186,12 +187,20 @@ public class DefaultComponent implements StatefulComponent {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           context = result.result();
+
+          // Set up input and output collectors and add hooks for each.
           input = new DefaultInputCollector(vertx, context.input(), cluster);
           output = new DefaultOutputCollector(vertx, context.output(), cluster);
           for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
             addHook(hook);
           }
+
+          // Set up a port-based logger.
+          logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output.port(PortLogger.LOGGER_PORT));
+
+          // Set up the component snapshot handler.
           snapshot = new Snapshot(Factories.<StatePersistor>createObject(context.component().persistor(), context.component().options()));
+
           output.open(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {

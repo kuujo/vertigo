@@ -15,21 +15,15 @@
  */
 package net.kuujo.vertigo.data.impl;
 
-import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.annotations.ClusterType;
-import net.kuujo.vertigo.data.DataStore;
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
 import net.kuujo.vertigo.data.AsyncMap;
 import net.kuujo.vertigo.data.AsyncQueue;
 import net.kuujo.vertigo.data.AsyncSet;
-import net.kuujo.xync.data.impl.XyncAsyncIdGenerator;
-import net.kuujo.xync.data.impl.XyncAsyncList;
-import net.kuujo.xync.data.impl.XyncAsyncLock;
-import net.kuujo.xync.data.impl.XyncAsyncMap;
-import net.kuujo.xync.data.impl.XyncAsyncQueue;
-import net.kuujo.xync.data.impl.XyncAsyncSet;
+import net.kuujo.vertigo.data.DataStore;
 
 import org.vertx.java.core.Vertx;
 
@@ -47,38 +41,38 @@ public class HazelcastDataStore implements DataStore {
     return new HazelcastDataStore(vertx);
   }
 
-  public HazelcastDataStore(Vertx vertx) {
+  private HazelcastDataStore(Vertx vertx) {
     this.vertx = vertx;
   }
 
   @Override
   public <K, V> AsyncMap<K, V> getMap(String name) {
-    return new XyncMap<K, V>(new XyncAsyncMap<K, V>(name, vertx.eventBus()));
+    return XyncMap.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return new XyncList<T>(new XyncAsyncList<T>(name, vertx.eventBus()));
+    return XyncList.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return new XyncSet<T>(new XyncAsyncSet<T>(name, vertx.eventBus()));
+    return XyncSet.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return new XyncQueue<T>(new XyncAsyncQueue<T>(name, vertx.eventBus()));
+    return XyncQueue.factory(name, vertx);
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return new XyncLock(new XyncAsyncLock(name, vertx.eventBus()));
+    return XyncLock.factory(name, vertx);
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return new XyncIdGenerator(new XyncAsyncIdGenerator(name, vertx.eventBus()));
+    return XyncIdGenerator.factory(name, vertx);
   }
 
 }

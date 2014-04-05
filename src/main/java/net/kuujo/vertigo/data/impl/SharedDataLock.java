@@ -44,7 +44,7 @@ public class SharedDataLock implements AsyncLock {
     return new SharedDataLock(name, vertx);
   }
 
-  public SharedDataLock(String name, Vertx vertx) {
+  private SharedDataLock(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(LOCK_MAP_NAME);

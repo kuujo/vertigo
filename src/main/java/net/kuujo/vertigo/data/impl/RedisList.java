@@ -46,7 +46,7 @@ public class RedisList<T> implements AsyncList<T> {
     return new RedisList<T>(name, address, vertx);
   }
 
-  public RedisList(String name, String address, Vertx vertx) {
+  private RedisList(String name, String address, Vertx vertx) {
     this.name = name;
     this.address = address;
     this.vertx = vertx;

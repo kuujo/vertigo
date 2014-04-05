@@ -19,7 +19,6 @@ import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.data.impl.XyncMap;
 import net.kuujo.vertigo.state.StatePersistor;
-import net.kuujo.xync.data.impl.XyncAsyncMap;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -38,7 +37,7 @@ public class HazelcastStatePersistor implements StatePersistor {
 
   @Factory
   public static HazelcastStatePersistor factory(JsonObject config, Vertx vertx) {
-    return new HazelcastStatePersistor(new XyncMap<String, String>(new XyncAsyncMap<String, String>(config.getString("name"), vertx.eventBus())));
+    return new HazelcastStatePersistor(XyncMap.<String, String>factory(config.getString("name"), vertx));
   }
 
   public HazelcastStatePersistor(XyncMap<String, String> map) {

@@ -40,7 +40,7 @@ public class XyncQueue<T> implements AsyncQueue<T> {
     return new XyncQueue<T>(new XyncAsyncQueue<T>(name, vertx.eventBus()));
   }
 
-  public XyncQueue(net.kuujo.xync.data.AsyncQueue<T> queue) {
+  private XyncQueue(net.kuujo.xync.data.AsyncQueue<T> queue) {
     this.queue = queue;
   }
 

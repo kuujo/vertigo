@@ -55,7 +55,7 @@ public class RedisMap<K, V> implements AsyncMap<K, V> {
     return new RedisMap<K, V>(name, address, vertx);
   }
 
-  public RedisMap(String name, String address, Vertx vertx) {
+  private RedisMap(String name, String address, Vertx vertx) {
     this.name = name;
     this.address = address;
     this.vertx = vertx;

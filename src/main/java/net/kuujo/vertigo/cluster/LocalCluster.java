@@ -249,32 +249,32 @@ public class LocalCluster implements VertigoCluster {
 
   @Override
   public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    return new SharedDataMap<K, V>(name, vertx);
+    return SharedDataMap.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return new SharedDataList<T>(name, vertx);
+    return SharedDataList.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return new SharedDataSet<T>(name, vertx);
+    return SharedDataSet.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return new SharedDataQueue<T>(name, vertx);
+    return SharedDataQueue.factory(name, vertx);
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return new SharedDataIdGenerator(name, vertx);
+    return SharedDataIdGenerator.factory(name, vertx);
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return new SharedDataLock(name, vertx);
+    return SharedDataLock.factory(name, vertx);
   }
 
 }

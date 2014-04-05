@@ -46,7 +46,7 @@ public class RedisQueue<T> implements AsyncQueue<T> {
     return new RedisQueue<T>(name, address, vertx);
   }
 
-  public RedisQueue(String name, String address, Vertx vertx) {
+  private RedisQueue(String name, String address, Vertx vertx) {
     this.name = name;
     this.address = address;
     this.vertx = vertx;

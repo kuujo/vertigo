@@ -40,7 +40,7 @@ public class XyncList<T> implements AsyncList<T> {
     return new XyncList<T>(new XyncAsyncList<T>(name, vertx.eventBus()));
   }
 
-  public XyncList(net.kuujo.xync.data.AsyncList<T> list) {
+  private XyncList(net.kuujo.xync.data.AsyncList<T> list) {
     this.list = list;
   }
 

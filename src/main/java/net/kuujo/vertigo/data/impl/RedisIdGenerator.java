@@ -46,7 +46,7 @@ public class RedisIdGenerator implements AsyncIdGenerator {
     return new RedisIdGenerator(name, address, vertx);
   }
 
-  public RedisIdGenerator(String name, String address, Vertx vertx) {
+  private RedisIdGenerator(String name, String address, Vertx vertx) {
     this.name = name;
     this.address = address;
     this.vertx = vertx;

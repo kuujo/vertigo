@@ -51,6 +51,7 @@ import org.vertx.java.platform.Verticle;
  */
 @ClusterType
 public class RemoteCluster implements VertigoCluster {
+  private final Vertx vertx;
   private final XyncCluster cluster;
 
   @Factory
@@ -63,6 +64,7 @@ public class RemoteCluster implements VertigoCluster {
   }
 
   public RemoteCluster(Vertx vertx) {
+    this.vertx = vertx;
     this.cluster = new DefaultXyncCluster(vertx);
   }
 
@@ -122,32 +124,32 @@ public class RemoteCluster implements VertigoCluster {
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return new XyncList<T>(cluster.<T>getList(name));
+    return XyncList.factory(name, vertx);
   }
 
   @Override
   public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    return new XyncMap<K, V>(cluster.<K, V>getMap(name));
+    return XyncMap.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return new XyncSet<T>(cluster.<T>getSet(name));
+    return XyncSet.factory(name, vertx);
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return new XyncQueue<T>(cluster.<T>getQueue(name));
+    return XyncQueue.factory(name, vertx);
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return new XyncIdGenerator(cluster.getIdGenerator(name));
+    return XyncIdGenerator.factory(name, vertx);
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return new XyncLock(cluster.getLock(name));
+    return XyncLock.factory(name, vertx);
   }
 
 }

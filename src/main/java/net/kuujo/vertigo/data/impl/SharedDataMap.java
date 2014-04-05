@@ -61,7 +61,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
     return new SharedDataMap<K, V>(name, vertx);
   }
 
-  public SharedDataMap(String name, Vertx vertx) {
+  private SharedDataMap(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(name);

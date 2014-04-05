@@ -40,7 +40,7 @@ public class XyncSet<T> implements AsyncSet<T> {
     return new XyncSet<T>(new XyncAsyncSet<T>(name, vertx.eventBus()));
   }
 
-  public XyncSet(net.kuujo.xync.data.AsyncSet<T> set) {
+  private XyncSet(net.kuujo.xync.data.AsyncSet<T> set) {
     this.set = set;
   }
 

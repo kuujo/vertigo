@@ -50,7 +50,7 @@ public class XyncMap<K, V> implements WatchableAsyncMap<K, V> {
     return new XyncMap<K, V>(new XyncAsyncMap<K, V>(name, vertx.eventBus()));
   }
 
-  public XyncMap(net.kuujo.xync.data.WatchableAsyncMap<K, V> map) {
+  private XyncMap(net.kuujo.xync.data.WatchableAsyncMap<K, V> map) {
     this.map = map;
   }
 

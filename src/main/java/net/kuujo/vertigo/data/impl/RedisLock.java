@@ -39,7 +39,7 @@ public class RedisLock implements AsyncLock {
     return new RedisLock(name, address, vertx);
   }
 
-  public RedisLock(String name, String address, Vertx vertx) {
+  private RedisLock(String name, String address, Vertx vertx) {
     this.name = name;
   }
 

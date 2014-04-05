@@ -52,39 +52,39 @@ public class RedisDataStore implements DataStore {
     return new RedisDataStore(config.getString("address"), vertx);
   }
 
-  public RedisDataStore(String address, Vertx vertx) {
+  private RedisDataStore(String address, Vertx vertx) {
     this.address = address;
     this.vertx = vertx;
   }
 
   @Override
   public <K, V> AsyncMap<K, V> getMap(String name) {
-    return new RedisMap<K, V>(name, address, vertx);
+    return RedisMap.factory(name, address, vertx);
   }
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return new RedisList<T>(name, address, vertx);
+    return RedisList.factory(name, address, vertx);
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return new RedisSet<T>(name, address, vertx);
+    return RedisSet.factory(name, address, vertx);
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return new RedisQueue<T>(name, address, vertx);
+    return RedisQueue.factory(name, address, vertx);
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return new RedisLock(name, address, vertx);
+    return RedisLock.factory(name, address, vertx);
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return new RedisIdGenerator(name, address, vertx);
+    return RedisIdGenerator.factory(name, address, vertx);
   }
 
 }

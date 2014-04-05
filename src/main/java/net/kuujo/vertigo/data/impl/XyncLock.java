@@ -38,7 +38,7 @@ public class XyncLock implements AsyncLock {
     return new XyncLock(new XyncAsyncLock(name, vertx.eventBus()));
   }
 
-  public XyncLock(net.kuujo.xync.data.AsyncLock lock) {
+  private XyncLock(net.kuujo.xync.data.AsyncLock lock) {
     this.lock = lock;
   }
 

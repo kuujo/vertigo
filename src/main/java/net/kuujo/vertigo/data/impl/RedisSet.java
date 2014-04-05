@@ -46,7 +46,7 @@ public class RedisSet<T> implements AsyncSet<T> {
     return new RedisSet<T>(name, address, vertx);
   }
 
-  public RedisSet(String name, String address, Vertx vertx) {
+  private RedisSet(String name, String address, Vertx vertx) {
     this.name = name;
     this.address = address;
     this.vertx = vertx;

@@ -46,7 +46,7 @@ public class SharedDataSet<T> implements AsyncSet<T> {
     return new SharedDataSet<T>(name, vertx);
   }
 
-  public SharedDataSet(String name, Vertx vertx) {
+  private SharedDataSet(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.set = vertx.sharedData().getSet(name);

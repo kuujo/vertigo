@@ -44,7 +44,7 @@ public class SharedDataIdGenerator implements AsyncIdGenerator {
     return new SharedDataIdGenerator(name, vertx);
   }
 
-  public SharedDataIdGenerator(String name, Vertx vertx) {
+  private SharedDataIdGenerator(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(ID_MAP_NAME);

@@ -48,7 +48,7 @@ public class SharedDataList<T> implements AsyncList<T> {
     return new SharedDataList<T>(name, vertx);
   }
 
-  public SharedDataList(String name, Vertx vertx) {
+  private SharedDataList(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(LIST_MAP_NAME);

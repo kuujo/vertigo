@@ -50,7 +50,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     return new SharedDataQueue<T>(name, vertx);
   }
 
-  public SharedDataQueue(String name, Vertx vertx) {
+  private SharedDataQueue(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(QUEUE_MAP_NAME);

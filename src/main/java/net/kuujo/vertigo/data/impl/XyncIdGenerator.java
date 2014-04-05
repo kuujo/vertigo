@@ -38,7 +38,7 @@ public class XyncIdGenerator implements AsyncIdGenerator {
     return new XyncIdGenerator(new XyncAsyncIdGenerator(name, vertx.eventBus()));
   }
 
-  public XyncIdGenerator(net.kuujo.xync.data.AsyncIdGenerator generator) {
+  private XyncIdGenerator(net.kuujo.xync.data.AsyncIdGenerator generator) {
     this.generator = generator;
   }
 

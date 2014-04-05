@@ -47,7 +47,7 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
     return new AtLeastOnceOutputConnection(vertx, context, cluster);
   }
 
-  private AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
+  protected AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
     this.messages = Factories.createObject(context.storage(), vertx, context).getMap(context.address());
   }

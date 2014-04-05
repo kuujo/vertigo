@@ -21,7 +21,10 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Component coordinator.
+ * The component coordinator handles coordination of component startup and
+ * shutdown between multiple components within a network. This is necessary
+ * to ensure that messages are not lost by components sending or receiving
+ * messages prior to completion of startup.
  *
  * @author Jordan Halterman
  */
@@ -35,7 +38,11 @@ public interface ComponentCoordinator {
   String address();
 
   /**
-   * Starts the coordinator.
+   * Starts the coordinator.<p>
+   *
+   * When the coordinator is started the instance context is retrieved from
+   * the fault-tolerant cluster. Prior to setup, the component only knows its
+   * own address, thus starting the coordinator is essential to component setup.
    *
    * @param doneHandler An asynchronous handler to be called once complete.
    *                    The handler will be called with the current instance context.

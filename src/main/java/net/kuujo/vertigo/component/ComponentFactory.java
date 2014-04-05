@@ -21,7 +21,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
 /**
- * A component instance factory.
+ * Component factory type.
  *
  * @author Jordan Halterman
  */

@@ -39,7 +39,7 @@ public class AtLeastOnceInputConnection extends BaseInputConnection {
     return new AtLeastOnceInputConnection(vertx, context, cluster);
   }
 
-  public AtLeastOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  private AtLeastOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

@@ -39,7 +39,7 @@ public class OrderedExactlyOnceInputConnection extends BaseInputConnection {
     return new OrderedExactlyOnceInputConnection(vertx, context, cluster);
   }
 
-  public OrderedExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  private OrderedExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

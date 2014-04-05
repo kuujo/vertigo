@@ -48,7 +48,7 @@ public abstract class BaseInputConnection implements InputConnection, Observer<I
     }
   };
 
-  public BaseInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  protected BaseInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     this.vertx = vertx;
     this.context = context;
     this.cluster = cluster;

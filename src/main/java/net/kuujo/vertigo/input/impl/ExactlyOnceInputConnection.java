@@ -39,7 +39,7 @@ public class ExactlyOnceInputConnection extends BaseInputConnection {
     return new ExactlyOnceInputConnection(vertx, context, cluster);
   }
 
-  public ExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  private ExactlyOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

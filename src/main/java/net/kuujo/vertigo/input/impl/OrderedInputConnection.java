@@ -39,7 +39,7 @@ public class OrderedInputConnection extends BaseInputConnection {
     return new OrderedInputConnection(vertx, context, cluster);
   }
 
-  public OrderedInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  private OrderedInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

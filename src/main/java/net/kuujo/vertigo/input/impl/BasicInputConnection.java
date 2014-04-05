@@ -58,7 +58,7 @@ public class BasicInputConnection extends BaseInputConnection {
     }
   };
 
-  public BasicInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  private BasicInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

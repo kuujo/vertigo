@@ -39,7 +39,7 @@ public class OrderedAtLeastOnceInputConnection extends BaseInputConnection {
     return new OrderedAtLeastOnceInputConnection(vertx, context, cluster);
   }
 
-  public OrderedAtLeastOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+  private OrderedAtLeastOnceInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
   }
 

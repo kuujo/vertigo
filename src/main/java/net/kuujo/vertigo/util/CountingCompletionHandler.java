@@ -25,7 +25,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  *
  * @author Jordan Halterman
  */
-public class CountingCompletionHandler<T> {
+public class CountingCompletionHandler<T> implements Handler<AsyncResult<T>> {
   private int count;
   private int required;
   private Handler<AsyncResult<T>> doneHandler;
@@ -34,6 +34,15 @@ public class CountingCompletionHandler<T> {
 
   public CountingCompletionHandler(int required) {
     this.required = required;
+  }
+
+  @Override
+  public void handle(AsyncResult<T> result) {
+    if (result.failed()) {
+      fail(result.cause());
+    } else {
+      succeed();
+    }
   }
 
   /**
@@ -65,9 +74,10 @@ public class CountingCompletionHandler<T> {
    *
    * @param doneHandler An asynchronous handler to be called once all calls have completed.
    */
-  public void setHandler(Handler<AsyncResult<T>> doneHandler) {
+  public CountingCompletionHandler<T> setHandler(Handler<AsyncResult<T>> doneHandler) {
     this.doneHandler = doneHandler;
     checkDone();
+    return this;
   }
 
   /**

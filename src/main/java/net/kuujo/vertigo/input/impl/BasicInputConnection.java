@@ -15,59 +15,104 @@
  */
 package net.kuujo.vertigo.input.impl;
 
-import java.util.List;
-
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
+import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
 import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.util.Observer;
+import net.kuujo.vertigo.util.serializer.Serializer;
+import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 
 /**
- * Basic input connection implementation.
+ * Base input connection.
  *
  * @author Jordan Halterman
  */
-public class BasicInputConnection extends BaseInputConnection {
+public class BasicInputConnection implements InputConnection, Observer<InputConnectionContext> {
+  protected static final Serializer serializer = SerializerFactory.getSerializer(JsonMessage.class);
+  protected final Vertx vertx;
+  protected final InputConnectionContext context;
+  protected final VertigoCluster cluster;
+  protected Handler<ReliableJsonMessage> messageHandler;
+
+  private final Handler<Message<String>> internalHandler = new Handler<Message<String>>() {
+    @Override
+    public void handle(Message<String> message) {
+      handleMessage(serializer.deserializeString(message.body(), ReliableJsonMessage.class), message);
+    }
+  };
 
   @Factory
   public static BasicInputConnection factory(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
     return new BasicInputConnection(vertx, context, cluster);
   }
 
-  private final MessageAcker emptyAcker = new MessageAcker() {
-    @Override
-    public void anchor(JsonMessage child) {
-      
-    }
-    @Override
-    public void anchor(List<JsonMessage> children) {
-      
-    }
-    @Override
-    public void ack() {
-      
-    }
-    @Override
-    public void timeout() {
-      
-    }
-  };
-
-  private BasicInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
-    super(vertx, context, cluster);
+  protected BasicInputConnection(Vertx vertx, InputConnectionContext context, VertigoCluster cluster) {
+    this.vertx = vertx;
+    this.context = context;
+    this.cluster = cluster;
   }
 
   @Override
-  protected void handleMessage(ReliableJsonMessage message, final Message<String> sourceMessage) {
+  public InputConnectionContext context() {
+    return context;
+  }
+
+  @Override
+  public void update(InputConnectionContext update) {
+  }
+
+  @Override
+  public InputConnection messageHandler(Handler<ReliableJsonMessage> handler) {
+    this.messageHandler = handler;
+    return this;
+  }
+
+  /**
+   * Handles a message.
+   */
+  protected void handleMessage(ReliableJsonMessage message, Message<String> sourceMessage) {
     if (messageHandler != null) {
-      message.setAcker(emptyAcker);
       messageHandler.handle(message);
     }
+  }
+
+  @Override
+  public InputConnection open() {
+    return open(null);
+  }
+
+  @Override
+  public InputConnection open(Handler<AsyncResult<Void>> doneHandler) {
+    vertx.eventBus().registerHandler(context.address(), internalHandler, doneHandler);
+    return this;
+  }
+
+  @Override
+  public void close() {
+    close(null);
+  }
+
+  @Override
+  public void close(Handler<AsyncResult<Void>> doneHandler) {
+    vertx.eventBus().unregisterHandler(context.address(), internalHandler, doneHandler);
+  }
+
+  @Override
+  public String toString() {
+    return context.address();
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    return getClass().isAssignableFrom(object.getClass()) && ((InputConnection) object).context().address().equals(context.address());
   }
 
 }

@@ -19,15 +19,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Output connection context.
@@ -35,8 +32,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * @author Jordan Halterman
  */
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
-  private ConnectionContext.Delivery delivery;
-  private ConnectionContext.Order order;
   private List<String> targets = new ArrayList<>();
   private MessageGrouping grouping = new RoundGrouping();
   @JsonIgnore
@@ -50,36 +45,6 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
   @Override
   public String address() {
     return address;
-  }
-
-  @Override
-  public ConnectionContext.Delivery delivery() {
-    return delivery;
-  }
-
-  @JsonSetter("delivery")
-  private void setDeliveryMethod(String delivery) {
-    this.delivery = Delivery.parse(delivery);
-  }
-
-  @JsonGetter("delivery")
-  private String getDeliveryMethod() {
-    return this.delivery.toString();
-  }
-
-  @Override
-  public ConnectionContext.Order order() {
-    return order;
-  }
-
-  @JsonSetter("order")
-  private void setOrderMethod(boolean ordered) {
-    this.order = Order.parse(ordered);
-  }
-
-  @JsonGetter("order")
-  private boolean getOrderMethod() {
-    return this.order.isOrdered();
   }
 
   @Override
@@ -137,28 +102,6 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      */
     public static Builder newBuilder(DefaultOutputConnectionContext context) {
       return new Builder(context);
-    }
-
-    /**
-     * Sets the message delivery method.
-     *
-     * @param delivery The message delivery method.
-     * @return The context builder.
-     */
-    public Builder setDelivery(ConnectionContext.Delivery delivery) {
-      context.delivery = delivery;
-      return this;
-    }
-
-    /**
-     * Sets the message order.
-     *
-     * @param order The message order.
-     * @return The context builder.
-     */
-    public Builder setOrder(ConnectionContext.Order order) {
-      context.order = order;
-      return this;
     }
 
     /**

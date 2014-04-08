@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputPortHook;
@@ -281,38 +280,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
       }
 
       if (!exists) {
-        OutputConnection connection = null;
-
-        // Basic at-most-once delivery.
-        if (output.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
-          if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = BasicOutputConnection.factory(vertx, output, cluster);
-          } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedOutputConnection.factory(vertx, output, cluster);
-          }
-        // Required at-least-once delivery.
-        } else if (output.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
-          if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = AtLeastOnceOutputConnection.factory(vertx, output, cluster);
-          } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedAtLeastOnceOutputConnection.factory(vertx, output, cluster);
-          }
-        // Required exactly-once delivery.
-        } else if (output.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
-          if (output.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = ExactlyOnceOutputConnection.factory(vertx, output, cluster);
-          } else if (output.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedExactlyOnceOutputConnection.factory(vertx, output, cluster);
-          }
-        }
-
-        if (connection != null) {
-          connection.setSendQueueMaxSize(maxQueueSize);
-          connection.fullHandler(connectionFullHandler);
-          connection.drainHandler(connectionDrainHandler);
-
-          connections.add(connection.open());
-        }
+        OutputConnection connection = BasicOutputConnection.factory(vertx, output, cluster);
+        connection.setSendQueueMaxSize(maxQueueSize);
+        connection.fullHandler(connectionFullHandler);
+        connection.drainHandler(connectionDrainHandler);
+        connections.add(connection.open());
       }
     }
   }
@@ -329,49 +301,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
       startCounter.setHandler(doneHandler);
 
       for (OutputConnectionContext connectionContext : context.connections()) {
-        OutputConnection connection = null;
-
-        // Basic at-most-once delivery.
-        if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
-          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = BasicOutputConnection.factory(vertx, connectionContext, cluster);
-          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedOutputConnection.factory(vertx, connectionContext, cluster);
-          }
-        // Required at-least-once delivery.
-        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
-          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = AtLeastOnceOutputConnection.factory(vertx, connectionContext, cluster);
-          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedAtLeastOnceOutputConnection.factory(vertx, connectionContext, cluster);
-          }
-        // Required exactly-once delivery.
-        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
-          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = ExactlyOnceOutputConnection.factory(vertx, connectionContext, cluster);
-          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedExactlyOnceOutputConnection.factory(vertx, connectionContext, cluster);
-          }
-        }
-
-        if (connection != null) {
-          connection.setSendQueueMaxSize(maxQueueSize);
-          connection.fullHandler(connectionFullHandler);
-          connection.drainHandler(connectionDrainHandler);
-
-          connections.add(connection.open(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                startCounter.fail(result.cause());
-              } else {
-                startCounter.succeed();
-              }
-            }
-          }));
-        } else {
-          startCounter.succeed();
-        }
+        OutputConnection connection = BasicOutputConnection.factory(vertx, connectionContext, cluster);
+        connection.setSendQueueMaxSize(maxQueueSize);
+        connection.fullHandler(connectionFullHandler);
+        connection.drainHandler(connectionDrainHandler);
+        connections.add(connection.open(startCounter));
       }
     }
     return this;
@@ -398,16 +332,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     });
 
     for (OutputConnection connection : connections) {
-      connection.close(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            stopCounter.fail(result.cause());
-          } else {
-            stopCounter.succeed();
-          }
-        }
-      });
+      connection.close(stopCounter);
     }
   }
 

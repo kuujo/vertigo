@@ -15,13 +15,10 @@
  */
 package net.kuujo.vertigo.context.impl;
 
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Input connection context.
@@ -29,8 +26,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * @author Jordan Halterman
  */
 public class DefaultInputConnectionContext extends DefaultConnectionContext<InputConnectionContext> implements InputConnectionContext {
-  private ConnectionContext.Delivery delivery = ConnectionContext.Delivery.AT_MOST_ONCE;
-  private ConnectionContext.Order order = ConnectionContext.Order.NO_ORDER;
   private String source;
   @JsonIgnore
   private InputPortContext port;
@@ -43,36 +38,6 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
   @Override
   public String address() {
     return address;
-  }
-
-  @Override
-  public ConnectionContext.Delivery delivery() {
-    return delivery;
-  }
-
-  @JsonSetter("delivery")
-  private void setDeliveryMethod(String delivery) {
-    this.delivery = Delivery.parse(delivery);
-  }
-
-  @JsonGetter("delivery")
-  private String getDeliveryMethod() {
-    return this.delivery.toString();
-  }
-
-  @Override
-  public ConnectionContext.Order order() {
-    return order;
-  }
-
-  @JsonSetter("order")
-  private void setOrderMethod(boolean ordered) {
-    this.order = Order.parse(ordered);
-  }
-
-  @JsonGetter("order")
-  private boolean getOrderMethod() {
-    return this.order.isOrdered();
   }
 
   @Override
@@ -117,28 +82,6 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
      */
     public static Builder newBuilder(DefaultInputConnectionContext context) {
       return new Builder(context);
-    }
-
-    /**
-     * Sets the message delivery method.
-     *
-     * @param delivery The message delivery method.
-     * @return The context builder.
-     */
-    public Builder setDelivery(ConnectionContext.Delivery delivery) {
-      context.delivery = delivery;
-      return this;
-    }
-
-    /**
-     * Sets the message order.
-     *
-     * @param order The message order.
-     * @return The context builder.
-     */
-    public Builder setOrder(ConnectionContext.Order order) {
-      context.order = order;
-      return this;
     }
 
     /**

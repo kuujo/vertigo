@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.hooks.InputPortHook;
@@ -106,34 +105,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       }
 
       if (!exists) {
-        InputConnection connection = null;
-
-        // Basic at-most-once delivery.
-        if (input.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
-          if (input.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = BasicInputConnection.factory(vertx, input, cluster);
-          } else if (input.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedInputConnection.factory(vertx, input, cluster);
-          }
-        // Required at-least-once delivery.
-        } else if (input.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
-          if (input.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = AtLeastOnceInputConnection.factory(vertx, input, cluster);
-          } else if (input.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedAtLeastOnceInputConnection.factory(vertx, input, cluster);
-          }
-        // Required exactly-once delivery.
-        } else if (input.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
-          if (input.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = ExactlyOnceInputConnection.factory(vertx, input, cluster);
-          } else if (input.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedExactlyOnceInputConnection.factory(vertx, input, cluster);
-          }
-        }
-
-        if (connection != null) {
-          connections.put(input.address(), connection.open());
-        }
+        connections.put(input.address(), BasicInputConnection.factory(vertx, input, cluster).open());
       }
     }
   }
@@ -173,46 +145,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       startCounter.setHandler(doneHandler);
 
       for (InputConnectionContext connectionContext : context.connections()) {
-        InputConnection connection = null;
-
-        // Basic at-most-once delivery.
-        if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_MOST_ONCE)) {
-          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = BasicInputConnection.factory(vertx, connectionContext, cluster);
-          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedInputConnection.factory(vertx, connectionContext, cluster);
-          }
-        // Required at-least-once delivery.
-        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.AT_LEAST_ONCE)) {
-          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = AtLeastOnceInputConnection.factory(vertx, connectionContext, cluster);
-          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedAtLeastOnceInputConnection.factory(vertx, connectionContext, cluster);
-          }
-        // Required exactly-once delivery.
-        } else if (connectionContext.delivery().equals(ConnectionContext.Delivery.EXACTLY_ONCE)) {
-          if (connectionContext.order().equals(ConnectionContext.Order.NO_ORDER)) {
-            connection = ExactlyOnceInputConnection.factory(vertx, connectionContext, cluster);
-          } else if (connectionContext.order().equals(ConnectionContext.Order.STRONG_ORDER)) {
-            connection = OrderedExactlyOnceInputConnection.factory(vertx, connectionContext, cluster);
-          }
-        }
-
-        if (connection != null) {
-          connection.messageHandler(messageHandler);
-          connections.put(connectionContext.address(), connection.open(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                startCounter.fail(result.cause());
-              } else {
-                startCounter.succeed();
-              }
-            }
-          }));
-        } else {
-          startCounter.succeed();
-        }
+        InputConnection connection = BasicInputConnection.factory(vertx, connectionContext, cluster);
+        connection.messageHandler(messageHandler);
+        connections.put(connectionContext.address(), connection.open(startCounter));
       }
     }
     return this;
@@ -239,16 +174,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
     });
 
     for (InputConnection connection : connections.values()) {
-      connection.close(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            stopCounter.fail(result.cause());
-          } else {
-            stopCounter.succeed();
-          }
-        }
-      });
+      connection.close(stopCounter);
     }
   }
 

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.context.ComponentContext;
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -161,8 +160,6 @@ public final class ContextBuilder {
           // Add an output connection to the output port.
           DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
           outConnection.setAddress(String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name()));
-          outConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
-          outConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
           outConnection.setGrouping(connection.getGrouping());
 
           // For each target instance, add a unique input connection for the output.
@@ -191,8 +188,6 @@ public final class ContextBuilder {
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
             String address = String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number());
             inConnection.setAddress(address);
-            inConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
-            inConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
             inConnection.setSource(address);
 
             // Add the new input connection as an output target. This creates a one-to-many

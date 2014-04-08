@@ -28,9 +28,7 @@ import net.kuujo.vertigo.network.VerticleConfig;
 
 import org.vertx.java.core.json.JsonObject;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Default connection configuration implementation.
@@ -43,8 +41,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
-  private Delivery delivery = Delivery.AT_MOST_ONCE;
-  private Order order = Order.NO_ORDER;
   private MessageGrouping grouping;
   @JsonIgnore
   private NetworkConfig network;
@@ -86,48 +82,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   @Override
   public Target getTarget() {
     return target;
-  }
-
-  @Override
-  public ConnectionConfig setDelivery(Delivery delivery) {
-    this.delivery = delivery;
-    return this;
-  }
-
-  @JsonSetter("delivery")
-  private void setDeliveryMethod(String delivery) {
-    this.delivery = Delivery.parse(delivery);
-  }
-
-  @JsonGetter("delivery")
-  private String getDeliveryMethod() {
-    return this.delivery.toString();
-  }
-
-  @Override
-  public Delivery getDelivery() {
-    return delivery;
-  }
-
-  @Override
-  public ConnectionConfig setOrder(Order order) {
-    this.order = order;
-    return this;
-  }
-
-  @JsonSetter("order")
-  private void setOrderMethod(boolean ordered) {
-    this.order = Order.parse(ordered);
-  }
-
-  @JsonGetter("order")
-  private boolean getOrderMethod() {
-    return this.order.isOrdered();
-  }
-
-  @Override
-  public Order getOrder() {
-    return order;
   }
 
   @Override

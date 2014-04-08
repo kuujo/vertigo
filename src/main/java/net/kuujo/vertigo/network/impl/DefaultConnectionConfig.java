@@ -15,10 +15,6 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.grouping.AllGrouping;
 import net.kuujo.vertigo.input.grouping.FieldsGrouping;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
@@ -49,7 +45,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   private Target target = new DefaultTarget();
   private Delivery delivery = Delivery.AT_MOST_ONCE;
   private Order order = Order.NO_ORDER;
-  private Map<String, Object> storage = new HashMap<>();
   private MessageGrouping grouping;
   @JsonIgnore
   private NetworkConfig network;
@@ -133,27 +128,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   @Override
   public Order getOrder() {
     return order;
-  }
-
-  @Override
-  public ConnectionConfig setDataStore(Class<? extends DataStore> store) {
-    storage.put("type", store);
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig setDataStore(Class<? extends DataStore> store, JsonObject config) {
-    storage.put("type", store);
-    for (String fieldName : config.getFieldNames()) {
-      storage.put(fieldName, config.getValue(fieldName));
-    }
-    return this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public Class<? extends DataStore> getDataStore() {
-    return (Class<? extends DataStore>) storage.get("type");
   }
 
   @Override

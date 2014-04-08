@@ -164,7 +164,6 @@ public final class ContextBuilder {
           outConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
           outConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
           outConnection.setGrouping(connection.getGrouping());
-          outConnection.setDataStore(connection.getDataStore());
 
           // For each target instance, add a unique input connection for the output.
           for (InstanceContext targetInstance : target.instances()) {
@@ -195,7 +194,6 @@ public final class ContextBuilder {
             inConnection.setDelivery(ConnectionContext.Delivery.parse(connection.getDelivery().toString()));
             inConnection.setOrder(ConnectionContext.Order.parse(connection.getOrder().isOrdered()));
             inConnection.setSource(address);
-            inConnection.setDataStore(connection.getDataStore());
 
             // Add the new input connection as an output target. This creates a one-to-many
             // relationship between output connections and input connections, and input

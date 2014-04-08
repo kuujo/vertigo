@@ -18,7 +18,6 @@ package net.kuujo.vertigo.context.impl;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
-import net.kuujo.vertigo.data.DataStore;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 public class DefaultInputConnectionContext extends DefaultConnectionContext<InputConnectionContext> implements InputConnectionContext {
   private ConnectionContext.Delivery delivery = ConnectionContext.Delivery.AT_MOST_ONCE;
   private ConnectionContext.Order order = ConnectionContext.Order.NO_ORDER;
-  private Class<? extends DataStore> storage;
   private String source;
   @JsonIgnore
   private InputPortContext port;
@@ -75,11 +73,6 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
   @JsonGetter("order")
   private boolean getOrderMethod() {
     return this.order.isOrdered();
-  }
-
-  @Override
-  public Class<? extends DataStore> storage() {
-    return storage;
   }
 
   @Override
@@ -145,17 +138,6 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
      */
     public Builder setOrder(ConnectionContext.Order order) {
       context.order = order;
-      return this;
-    }
-
-    /**
-     * Sets the connection data store.
-     *
-     * @param storage The connection data store.
-     * @return The context builder.
-     */
-    public Builder setDataStore(Class<? extends DataStore> storage) {
-      context.storage = storage;
       return this;
     }
 

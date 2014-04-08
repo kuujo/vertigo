@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.data.DataStore;
 
 /**
  * Connection contexts represent a direct connection between
@@ -38,13 +37,6 @@ public interface ConnectionContext<T extends ConnectionContext<T>> extends Conte
    * @return The connection order method.
    */
   Order order();
-
-  /**
-   * Returns the connection data store backing.
-   *
-   * @return The connection's backing data store type.
-   */
-  Class<? extends DataStore> storage();
 
   /**
    * Defines connection message delivery requirements.

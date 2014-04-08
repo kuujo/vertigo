@@ -57,7 +57,7 @@ public class ExactlyOnceOutputConnection extends BaseOutputConnection {
   private ExactlyOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
     this.eventBus = new WrappedAdaptiveEventBus(vertx);
-    DataStore data = Factories.createObject(context.storage(), vertx, context);
+    DataStore data = Factories.createObject(null, vertx, context);
     for (String address : targets) {
       messages.put(address, data.<String, String>getMap(String.format("%s.%s", context.address(), address)));
       queueSizes.put(address, 0);

@@ -53,7 +53,7 @@ public class OrderedAtLeastOnceOutputConnection extends AtLeastOnceOutputConnect
   private OrderedAtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
     this.eventBus = new WrappedAdaptiveEventBus(vertx);
-    this.messages = Factories.createObject(context.storage(), vertx, context).getQueue(context.address());
+    this.messages = ((VertigoCluster) Factories.createObject(null, vertx, context)).getQueue(context.address());
   }
 
   @Override

@@ -22,7 +22,6 @@ import java.util.List;
 import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
@@ -38,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
   private ConnectionContext.Delivery delivery;
   private ConnectionContext.Order order;
-  private Class<? extends DataStore> storage;
   private List<String> targets = new ArrayList<>();
   private MessageGrouping grouping = new RoundGrouping();
   @JsonIgnore
@@ -82,11 +80,6 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
   @JsonGetter("order")
   private boolean getOrderMethod() {
     return this.order.isOrdered();
-  }
-
-  @Override
-  public Class<? extends DataStore> storage() {
-    return storage;
   }
 
   @Override
@@ -165,17 +158,6 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      */
     public Builder setOrder(ConnectionContext.Order order) {
       context.order = order;
-      return this;
-    }
-
-    /**
-     * Sets the connection data store.
-     *
-     * @param storage The connection data store.
-     * @return The context builder.
-     */
-    public Builder setDataStore(Class<? extends DataStore> storage) {
-      context.storage = storage;
       return this;
     }
 

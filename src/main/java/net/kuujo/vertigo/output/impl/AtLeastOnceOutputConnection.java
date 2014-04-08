@@ -53,7 +53,7 @@ public class AtLeastOnceOutputConnection extends BaseOutputConnection {
   protected AtLeastOnceOutputConnection(Vertx vertx, OutputConnectionContext context, VertigoCluster cluster) {
     super(vertx, context, cluster);
     this.eventBus = new WrappedAdaptiveEventBus(vertx);
-    this.messages = Factories.createObject(context.storage(), vertx, context).getMap(context.address());
+    this.messages = ((VertigoCluster) Factories.createObject(null, vertx, context)).getMap(context.address());
   }
 
   @Override

@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
-
-import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -187,30 +184,6 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @return The connection order requirements.
    */
   Order getOrder();
-
-  /**
-   * Sets the connection backing data store.
-   *
-   * @param store A data store implementing class.
-   * @return The connection configuration.
-   */
-  ConnectionConfig setDataStore(Class<? extends DataStore> store);
-
-  /**
-   * Returns the connection backing data store.
-   *
-   * @return A data store implementing class.
-   */
-  Class<? extends DataStore> getDataStore();
-
-  /**
-   * Sets the connection backing data store.
-   *
-   * @param store A data store implementing class.
-   * @param config The data store configuration.
-   * @return The connection configuration.
-   */
-  ConnectionConfig setDataStore(Class<? extends DataStore> store, JsonObject config);
 
   /**
    * Returns the connection grouping.

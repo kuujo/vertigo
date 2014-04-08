@@ -20,7 +20,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
@@ -40,12 +40,12 @@ public class BasicInputConnection implements InputConnection, Observer<InputConn
   protected final Vertx vertx;
   protected final InputConnectionContext context;
   protected final VertigoCluster cluster;
-  protected Handler<ReliableJsonMessage> messageHandler;
+  protected Handler<DefaultJsonMessage> messageHandler;
 
   private final Handler<Message<String>> internalHandler = new Handler<Message<String>>() {
     @Override
     public void handle(Message<String> message) {
-      handleMessage(serializer.deserializeString(message.body(), ReliableJsonMessage.class), message);
+      handleMessage(serializer.deserializeString(message.body(), DefaultJsonMessage.class), message);
     }
   };
 
@@ -70,7 +70,7 @@ public class BasicInputConnection implements InputConnection, Observer<InputConn
   }
 
   @Override
-  public InputConnection messageHandler(Handler<ReliableJsonMessage> handler) {
+  public InputConnection messageHandler(Handler<DefaultJsonMessage> handler) {
     this.messageHandler = handler;
     return this;
   }
@@ -78,7 +78,7 @@ public class BasicInputConnection implements InputConnection, Observer<InputConn
   /**
    * Handles a message.
    */
-  protected void handleMessage(ReliableJsonMessage message, Message<String> sourceMessage) {
+  protected void handleMessage(DefaultJsonMessage message, Message<String> sourceMessage) {
     if (messageHandler != null) {
       messageHandler.handle(message);
     }

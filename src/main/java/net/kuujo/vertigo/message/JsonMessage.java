@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.message;
 
-import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import org.vertx.java.core.json.JsonObject;
@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   use=JsonTypeInfo.Id.CLASS,
   include=JsonTypeInfo.As.PROPERTY,
   property="type",
-  defaultImpl=ReliableJsonMessage.class
+  defaultImpl=DefaultJsonMessage.class
 )
 public interface JsonMessage extends JsonSerializable {
 
@@ -48,20 +48,6 @@ public interface JsonMessage extends JsonSerializable {
    * @return The message body.
    */
   JsonObject body();
-
-  /**
-   * Returns the parent message ID.
-   *
-   * @return The parent message ID.
-   */
-  String parent();
-
-  /**
-   * Returns the root message ID in the message tree.
-   *
-   * @return The root message ID in the message tree.
-   */
-  String root();
 
   /**
    * Copies the message.

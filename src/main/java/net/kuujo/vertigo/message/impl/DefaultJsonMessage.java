@@ -18,43 +18,19 @@ package net.kuujo.vertigo.message.impl;
 import java.util.Map;
 
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.MessageAcker;
 
 import org.vertx.java.core.json.JsonObject;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A default JSON message implementation.
  *
  * @author Jordan Halterman
  */
-public class ReliableJsonMessage implements JsonMessage {
-  @JsonIgnore
-  private MessageAcker acker;
+public class DefaultJsonMessage implements JsonMessage {
   private String id;
   private Map<String, Object> body;
-  private String parent;
-  private String root;
 
-  private ReliableJsonMessage() {
-  }
-
-  public ReliableJsonMessage setAcker(MessageAcker acker) {
-    this.acker = acker;
-    return this;
-  }
-
-  public void anchor(JsonMessage child) {
-    acker.anchor(child);
-  }
-
-  public void ack() {
-    acker.ack();
-  }
-
-  public void timeout() {
-    acker.timeout();
+  private DefaultJsonMessage() {
   }
 
   @Override
@@ -68,22 +44,10 @@ public class ReliableJsonMessage implements JsonMessage {
   }
 
   @Override
-  public String parent() {
-    return parent;
-  }
-
-  @Override
-  public String root() {
-    return root;
-  }
-
-  @Override
-  public ReliableJsonMessage copy(String id) {
+  public DefaultJsonMessage copy(String id) {
     return Builder.newBuilder()
         .setId(id)
         .setBody(body)
-        .setParent(parent)
-        .setRoot(root)
         .build();
   }
 
@@ -93,7 +57,7 @@ public class ReliableJsonMessage implements JsonMessage {
    * @author Jordan Halterman
    */
   public static class Builder {
-    private ReliableJsonMessage message = new ReliableJsonMessage();
+    private DefaultJsonMessage message = new DefaultJsonMessage();
 
     /**
      * Creates a new message builder.
@@ -138,33 +102,11 @@ public class ReliableJsonMessage implements JsonMessage {
     }
 
     /**
-     * Sets the parent message ID.
-     *
-     * @param parent The parent message ID.
-     * @return The message builder.
-     */
-    public Builder setParent(String parent) {
-      message.parent = parent;
-      return this;
-    }
-
-    /**
-     * Sets the root message ID.
-     *
-     * @param root The root message ID.
-     * @return The message builder.
-     */
-    public Builder setRoot(String root) {
-      message.root = root;
-      return this;
-    }
-
-    /**
      * Builds the message.
      *
      * @return A new message.
      */
-    public ReliableJsonMessage build() {
+    public DefaultJsonMessage build() {
       return message;
     }
 

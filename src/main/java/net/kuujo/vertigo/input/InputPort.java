@@ -60,14 +60,6 @@ public interface InputPort {
   InputPort messageHandler(Handler<JsonMessage> handler);
 
   /**
-   * Acknowledges a message.
-   * 
-   * @param message The message to ack.
-   * @return The input port.
-   */
-  InputPort ack(JsonMessage message);
-
-  /**
    * Opens the input port.
    *
    * @return The input port.

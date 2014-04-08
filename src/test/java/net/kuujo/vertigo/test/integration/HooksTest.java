@@ -22,8 +22,8 @@ import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
-import net.kuujo.vertigo.testtools.TestAckingComponent;
 import net.kuujo.vertigo.testtools.TestPeriodicFeeder;
+import net.kuujo.vertigo.testtools.TestPumpingComponent;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -79,7 +79,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentStartHook() {
     NetworkConfig network = new DefaultNetworkConfig("test1");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("start"));
+    network.addVerticle("worker", TestPumpingComponent.class.getName(), 2).addHook(new TestComponentHook("start"));
     network.createConnection("feeder", "worker");
     deploy(network);
   }
@@ -88,7 +88,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentSendHook() {
     NetworkConfig network = new DefaultNetworkConfig("test2");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body"))).addHook(new TestComponentHook("send"));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2);
+    network.addVerticle("worker", TestPumpingComponent.class.getName(), 2);
     network.createConnection("feeder", "worker");
     deploy(network);
   }
@@ -97,7 +97,7 @@ public class HooksTest extends TestVerticle {
   public void testComponentReceiveHook() {
     NetworkConfig network = new DefaultNetworkConfig("test3");
     network.addVerticle("feeder", TestPeriodicFeeder.class.getName(), new JsonObject().putArray("fields", new JsonArray().add("body")));
-    network.addVerticle("worker", TestAckingComponent.class.getName(), 2).addHook(new TestComponentHook("receive"));
+    network.addVerticle("worker", TestPumpingComponent.class.getName(), 2).addHook(new TestComponentHook("receive"));
     network.createConnection("feeder", "worker");
     deploy(network);
   }

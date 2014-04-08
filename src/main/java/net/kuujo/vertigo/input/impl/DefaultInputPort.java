@@ -28,7 +28,7 @@ import net.kuujo.vertigo.hooks.InputPortHook;
 import net.kuujo.vertigo.input.InputConnection;
 import net.kuujo.vertigo.input.InputPort;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 
@@ -48,7 +48,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private final VertigoCluster cluster;
   private final List<InputPortHook> hooks = new ArrayList<>();
   private final Map<String, InputConnection> connections = new HashMap<>();
-  private Handler<ReliableJsonMessage> messageHandler;
+  private Handler<DefaultJsonMessage> messageHandler;
 
   public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster) {
     this.vertx = vertx;
@@ -112,9 +112,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public InputPort messageHandler(final Handler<JsonMessage> handler) {
-    this.messageHandler = new Handler<ReliableJsonMessage>() {
+    this.messageHandler = new Handler<DefaultJsonMessage>() {
       @Override
-      public void handle(ReliableJsonMessage message) {
+      public void handle(DefaultJsonMessage message) {
         handler.handle(message);
         for (InputPortHook hook : hooks) {
           hook.handleReceive(message.id());
@@ -124,12 +124,6 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
     for (InputConnection connection : connections.values()) {
       connection.messageHandler(messageHandler);
     }
-    return this;
-  }
-
-  @Override
-  public InputPort ack(JsonMessage message) {
-    ((ReliableJsonMessage) message).ack();
     return this;
   }
 

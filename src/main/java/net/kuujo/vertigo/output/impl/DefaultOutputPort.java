@@ -23,8 +23,7 @@ import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputPortHook;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
+import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -46,27 +45,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   private OutputPortContext context;
   private final VertigoCluster cluster;
   private final List<OutputPortHook> hooks = new ArrayList<>();
-  private int maxQueueSize = 10000;
-  private boolean full;
-  private Handler<Void> drainHandler;
   private final List<OutputConnection> connections = new ArrayList<>();
-
-  private final Handler<Void> connectionFullHandler = new Handler<Void>() {
-    @Override
-    public void handle(Void _) {
-      full = true;
-    }
-  };
-
-  private final Handler<Void> connectionDrainHandler = new Handler<Void>() {
-    @Override
-    public void handle(Void _) {
-      full = false;
-      if (drainHandler != null) {
-        drainHandler.handle((Void) null);
-      }
-    }
-  };
 
   public DefaultOutputPort(Vertx vertx, OutputPortContext context, VertigoCluster cluster) {
     this.vertx = vertx;
@@ -96,28 +75,8 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort setSendQueueMaxSize(int maxSize) {
-    this.maxQueueSize = maxSize;
-    for (OutputConnection connection : connections) {
-      connection.setSendQueueMaxSize(maxSize);
-    }
-    return this;
-  }
-
-  @Override
-  public boolean sendQueueFull() {
-    return full;
-  }
-
-  @Override
-  public OutputPort drainHandler(Handler<Void> handler) {
-    this.drainHandler = handler;
-    return this;
-  }
-
-  @Override
   public String send(JsonObject body) {
-    final ReliableJsonMessage message = createNewMessage(body);
+    final DefaultJsonMessage message = createNewMessage(body);
     for (OutputConnection connection : connections) {
       connection.send(createChildMessage(body, message));
     }
@@ -127,95 +86,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     return message.id();
   }
 
-  @Override
-  public String send(JsonObject body, final Handler<AsyncResult<Void>> doneHandler) {
-    final ReliableJsonMessage message = createNewMessage(body);
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
-    counter.setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        doneHandler.handle(result);
-        if (result.succeeded()) {
-          for (OutputPortHook hook : hooks) {
-            hook.handleSend(message.id());
-          }
-        }
-      }
-    });
-
-    for (OutputConnection connection : connections) {
-      connection.send(createChildMessage(body, message), new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else {
-            counter.succeed();
-          }
-        }
-      });
-    }
-    return message.id();
-  }
-
-  @Override
-  public String send(JsonObject body, JsonMessage parent) {
-    final ReliableJsonMessage message = createChildMessage(body, (ReliableJsonMessage) parent);
-    for (OutputConnection connection : connections) {
-      connection.send(createCopy(message), (ReliableJsonMessage) parent);
-    }
-    for (OutputPortHook hook : hooks) {
-      hook.handleSend(message.id());
-    }
-    return message.id();
-  }
-
-  @Override
-  public String send(JsonObject body, JsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
-    final ReliableJsonMessage message = createChildMessage(body, (ReliableJsonMessage) parent);
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
-    counter.setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        doneHandler.handle(result);
-        if (result.succeeded()) {
-          for (OutputPortHook hook : hooks) {
-            hook.handleSend(message.id());
-          }
-        }
-      }
-    });
-
-    for (OutputConnection connection : connections) {
-      connection.send(createCopy(message), (ReliableJsonMessage) parent, new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else {
-            counter.succeed();
-          }
-        }
-      });
-    }
-    return message.id();
-  }
-
-  @Override
-  public String send(JsonMessage message) {
-    return send(message.body(), message);
-  }
-
-  @Override
-  public String send(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
-    return send(message.body(), message, doneHandler);
-  }
-
   /**
    * Creates a new message.
    */
-  protected ReliableJsonMessage createNewMessage(JsonObject body) {
-    return ReliableJsonMessage.Builder.newBuilder()
+  protected DefaultJsonMessage createNewMessage(JsonObject body) {
+    return DefaultJsonMessage.Builder.newBuilder()
         .setId(createUniqueId())
         .setBody(body)
         .build();
@@ -224,12 +99,10 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   /**
    * Creates a child message.
    */
-  protected ReliableJsonMessage createChildMessage(JsonObject body, ReliableJsonMessage parent) {
-    ReliableJsonMessage message = ReliableJsonMessage.Builder.newBuilder()
+  protected DefaultJsonMessage createChildMessage(JsonObject body, DefaultJsonMessage parent) {
+    DefaultJsonMessage message = DefaultJsonMessage.Builder.newBuilder()
         .setId(createUniqueId())
         .setBody(body)
-        .setParent(parent.id())
-        .setRoot(parent.root() != null ? parent.root() : parent.id())
         .build();
     return message;
   }
@@ -237,7 +110,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   /**
    * Creates a copy of a message.
    */
-  protected ReliableJsonMessage createCopy(ReliableJsonMessage message) {
+  protected DefaultJsonMessage createCopy(DefaultJsonMessage message) {
     return message.copy(createUniqueId());
   }
 
@@ -281,9 +154,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
       if (!exists) {
         OutputConnection connection = BasicOutputConnection.factory(vertx, output, cluster);
-        connection.setSendQueueMaxSize(maxQueueSize);
-        connection.fullHandler(connectionFullHandler);
-        connection.drainHandler(connectionDrainHandler);
         connections.add(connection.open());
       }
     }
@@ -302,9 +172,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
       for (OutputConnectionContext connectionContext : context.connections()) {
         OutputConnection connection = BasicOutputConnection.factory(vertx, connectionContext, cluster);
-        connection.setSendQueueMaxSize(maxQueueSize);
-        connection.fullHandler(connectionFullHandler);
-        connection.drainHandler(connectionDrainHandler);
         connections.add(connection.open(startCounter));
       }
     }

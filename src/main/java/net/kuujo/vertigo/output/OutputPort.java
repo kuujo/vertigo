@@ -17,7 +17,6 @@ package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.hooks.OutputPortHook;
-import net.kuujo.vertigo.message.JsonMessage;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -53,96 +52,12 @@ public interface OutputPort {
   OutputPort addHook(OutputPortHook hook);
 
   /**
-   * Sets the output queue max size.
-   *
-   * @param maxSize The output queue max size.
-   * @return The output port.
-   */
-  OutputPort setSendQueueMaxSize(int maxSize);
-
-  /**
-   * Returns a boolean indicating whether the send queue is full.
-   *
-   * @return Indicates whether the send queue is full.
-   */
-  boolean sendQueueFull();
-
-  /**
-   * Sets a handler to be called when the port is prepared to accept new messages.
-   *
-   * @param handler A drain handler.
-   * @return The output port.
-   */
-  OutputPort drainHandler(Handler<Void> handler);
-
-  /**
    * Sends a message to the output port.
    *
    * @param body The body of the message to send.
    * @return The emitted message identifier.
    */
   String send(JsonObject body);
-
-  /**
-   * Sends a message to the output port.
-   *
-   * @param body The body of the message to send.
-   * @param doneHandler An asynchronous handler to be called once the message has been sent.
-   * @return The sent message identifier.
-   */
-  String send(JsonObject body, Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Sends a child message to the output port.
-   * 
-   * Sending data as the child of an existing message creates a new node in the parent
-   * message's message tree. When the new message is sent, the auditor assigned to the
-   * parent message will be notified of the change, and the new message will be tracked as
-   * a child. This means that the parent message will not be considered fully processed
-   * until all of its children have been acked and are considered fully processed (their
-   * children are acked... etc). It is strongly recommended that users use this API
-   * whenever possible.
-   *
-   * @param body The body of the message to send.
-   * @param parent The parent of the message being sent.
-   * @return The sent message identifier.
-   */
-  String send(JsonObject body, JsonMessage parent);
-
-  /**
-   * Sends a child message to the output port.
-   * 
-   * Sending data as the child of an existing message creates a new node in the parent
-   * message's message tree. When the new message is emitted, the auditor assigned to the
-   * parent message will be notified of the change, and the new message will be tracked as
-   * a child. This means that the parent message will not be considered fully processed
-   * until all of its children have been acked and are considered fully processed (their
-   * children are acked... etc). It is strongly recommended that users use this API
-   * whenever possible.
-   *
-   * @param body The body of the message to send.
-   * @param parent The parent of the message being sent.
-   * @param doneHandler An asynchronous handler to be called once the message has been sent.
-   * @return The sent message identifier.
-   */
-  String send(JsonObject body, JsonMessage parent, Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Sends a message to the output port.
-   *
-   * @param message The message to send.
-   * @return The sent message identifier.
-   */
-  String send(JsonMessage message);
-
-  /**
-   * Sends a message to the output port.
-   *
-   * @param message The message to send.
-   * @param doneHandler An asynchronous handler to be called once the message has been sent.
-   * @return The sent message identifier.
-   */
-  String send(JsonMessage message, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Opens the output port.

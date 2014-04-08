@@ -21,7 +21,6 @@ import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.ReliableJsonMessage;
 import net.kuujo.vertigo.network.ConnectionException;
 import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.selector.MessageSelector;
@@ -98,46 +97,8 @@ public class BasicOutputConnection implements OutputConnection, Observer<OutputC
   }
 
   @Override
-  public OutputConnection setSendQueueMaxSize(int maxSize) {
-    this.maxQueueSize = maxSize;
-    return this;
-  }
-
-  @Override
-  public boolean sendQueueFull() {
-    return false;
-  }
-
-  @Override
-  public OutputConnection fullHandler(Handler<Void> handler) {
-    this.fullHandler = handler;
-    return this;
-  }
-
-  @Override
-  public OutputConnection drainHandler(Handler<Void> handler) {
-    this.drainHandler = handler;
-    return this;
-  }
-
-  @Override
   public String send(JsonMessage message) {
     return doSend(message, null);
-  }
-
-  @Override
-  public String send(JsonMessage message, Handler<AsyncResult<Void>> doneHandler) {
-    return doSend(message, doneHandler);
-  }
-
-  @Override
-  public String send(JsonMessage message, ReliableJsonMessage parent) {
-    return doSend(message, null);
-  }
-
-  @Override
-  public String send(JsonMessage message, ReliableJsonMessage parent, final Handler<AsyncResult<Void>> doneHandler) {
-    return doSend(message, doneHandler);
   }
 
   /**
@@ -183,30 +144,6 @@ public class BasicOutputConnection implements OutputConnection, Observer<OutputC
    */
   protected void checkOpen() {
     if (!open) throw new ConnectionException("Output connection is closed.");
-  }
-
-  /**
-   * Checks whether the drain handler needs to be triggered.
-   */
-  protected void checkPause() {
-    if (paused && !sendQueueFull()) {
-      paused = false;
-      if (drainHandler != null) {
-        drainHandler.handle((Void) null);
-      }
-    } else if (!paused && sendQueueFull()) {
-      paused = true;
-      if (fullHandler != null) {
-        fullHandler.handle((Void) null);
-      }
-    }
-  }
-
-  /**
-   * Checks if the send queue is full.
-   */
-  protected void checkFull() {
-    if (sendQueueFull()) throw new ConnectionException("Send queue full.");
   }
 
   @Override

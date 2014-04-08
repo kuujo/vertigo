@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.grouping.MessageGrouping;
 import net.kuujo.vertigo.network.ComponentConfig;
@@ -83,6 +84,11 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   public static final String COMPONENT_GROUP = "group";
 
   /**
+   * <code>storage</code> is an object describing the component storage facility.
+   */
+  public static final String COMPONENT_STORAGE = "storage";
+
+  /**
    * <code>hooks</code> is an array of hook configurations. Each hook configuration must
    * contain at least a <code>type</code> key which indicates the fully qualified name of
    * the hook class. Other configuration options depend on the specific hook
@@ -98,6 +104,7 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
   private String group = DEFAULT_GROUP;
+  private Map<String, Object> storage = new HashMap<>();
   private List<ComponentHook> hooks = new ArrayList<>();
   @JsonIgnore
   private NetworkConfig network;
@@ -152,6 +159,36 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   @Override
   public String getGroup() {
     return group;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setStorage(Class<? extends DataStore> storage) {
+    this.storage.clear();
+    this.storage.put("class", storage);
+    return (T) this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Class<? extends DataStore> getStorageType() {
+    return (Class<? extends DataStore>) this.storage.get("class");
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setStorageType(Class<? extends DataStore> storage, JsonObject config) {
+    this.storage.clear();
+    this.storage.put("class", storage);
+    for (String fieldName : config.getFieldNames()) {
+      this.storage.put(fieldName, config.getValue(fieldName));
+    }
+    return (T) this;
+  }
+
+  @Override
+  public JsonObject getStorageConfig() {
+    return new JsonObject(storage);
   }
 
   @Override

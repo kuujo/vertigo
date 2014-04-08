@@ -23,6 +23,7 @@ import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.hooks.OutputHook;
@@ -32,6 +33,7 @@ import net.kuujo.vertigo.logging.PortLogger;
 import net.kuujo.vertigo.logging.PortLoggerFactory;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
+import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -57,6 +59,7 @@ public class DefaultComponent implements Component {
   protected InstanceContext context;
   protected InputCollector input;
   protected OutputCollector output;
+  protected DataStore storage;
   private List<ComponentHook> hooks = new ArrayList<>();
   private boolean started;
 
@@ -120,6 +123,11 @@ public class DefaultComponent implements Component {
   }
 
   @Override
+  public DataStore storage() {
+    return storage;
+  }
+
+  @Override
   public Logger logger() {
     return logger;
   }
@@ -159,6 +167,7 @@ public class DefaultComponent implements Component {
   private void setup(final Handler<AsyncResult<Void>> doneHandler) {
     coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
+      @SuppressWarnings("unchecked")
       public void handle(AsyncResult<InstanceContext> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
@@ -171,6 +180,9 @@ public class DefaultComponent implements Component {
           for (ComponentHook hook : context.<ComponentContext<?>>component().hooks()) {
             addHook(hook);
           }
+
+          // Set up the component storage facility.
+          storage = Factories.createObject(context.component().storageType(), context.component().storageConfig(), vertx);
 
           // Set up a port-based logger.
           logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output.port(PortLogger.LOGGER_PORT));

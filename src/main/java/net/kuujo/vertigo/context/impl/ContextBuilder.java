@@ -72,6 +72,8 @@ public final class ContextBuilder {
         module.setConfig(component.getConfig());
         module.setHooks(component.getHooks());
         module.setGroup(component.getGroup());
+        module.setStorageType(component.getStorageType());
+        module.setStorageConfig(component.getStorageConfig());
 
         // Set up module instances.
         List<DefaultInstanceContext> instances = new ArrayList<>();
@@ -99,6 +101,8 @@ public final class ContextBuilder {
         verticle.setConfig(component.getConfig());
         verticle.setHooks(component.getHooks());
         verticle.setGroup(component.getGroup());
+        verticle.setStorageType(component.getStorageType());
+        verticle.setStorageConfig(component.getStorageConfig());
 
         // Set up module instances.
         List<DefaultInstanceContext> instances = new ArrayList<>();

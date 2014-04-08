@@ -21,7 +21,6 @@ import java.util.Map;
 
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.state.StatePersistor;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -151,28 +150,6 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      */
     public Builder setGroup(String group) {
       context.group = group;
-      return this;
-    }
-
-    /**
-     * Sets whether the component is stateful.
-     *
-     * @param isStateful Whether the component is stateful.
-     * @return The context builder.
-     */
-    public Builder setStateful(boolean isStateful) {
-      context.stateful = isStateful;
-      return this;
-    }
-
-    /**
-     * Sets the component state persistor type.
-     *
-     * @param persistor The state persistor type.
-     * @return The context builder.
-     */
-    public Builder setStatePersistor(Class<? extends StatePersistor> persistor) {
-      context.persistor = persistor;
       return this;
     }
 

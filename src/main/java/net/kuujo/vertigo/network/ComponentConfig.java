@@ -20,7 +20,6 @@ import java.util.List;
 import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
 import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
-import net.kuujo.vertigo.state.StatePersistor;
 import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import org.vertx.java.core.json.JsonObject;
@@ -137,45 +136,6 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>
    * @return The component deployment group.
    */
   String getGroup();
-
-  /**
-   * Sets whether the component is stateful.
-   *
-   * @param isStateful Whether the component is stateful.
-   * @return The component configuration.
-   */
-  T setStateful(boolean isStateful);
-
-  /**
-   * Returns a boolean value indicating whether the component is stateful.
-   *
-   * @return Indicates whether the component is stateful.
-   */
-  boolean isStateful();
-
-  /**
-   * Sets the component state persistor.
-   *
-   * @param type The component state persistor implementation.
-   * @return The component configuration.
-   */
-  T setStatePersistor(Class<? extends StatePersistor> type);
-
-  /**
-   * Sets the component state persistor.
-   *
-   * @param type The component state persistor implementation.
-   * @param config The component state persistor configuration.
-   * @return The component configuration.
-   */
-  T setStatePersistor(Class<? extends StatePersistor> type, JsonObject config);
-
-  /**
-   * Returns the component state persistor.
-   *
-   * @return The component state persistor class.
-   */
-  Class<? extends StatePersistor> getStatePersistor();
 
   /**
    * Adds a component hook to the component.

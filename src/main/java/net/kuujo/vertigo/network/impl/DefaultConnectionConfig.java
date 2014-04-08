@@ -157,38 +157,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig setOptions(JsonObject config) {
-    for (String fieldName : config.getFieldNames()) {
-      storage.put(fieldName, config.getValue(fieldName));
-    }
-    return this;
-  }
-
-  @Override
-  public JsonObject getOptions() {
-    return new JsonObject(storage);
-  }
-
-  @Override
-  public ConnectionConfig setOption(String option, Object value) {
-    storage.put(option, value);
-    return this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getOption(String option) {
-    return (T) storage.get(option);
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getOption(String option, T defaultValue) {
-    T value = (T) storage.get(option);
-    return value != null ? value : defaultValue;
-  }
-
-  @Override
   public MessageGrouping getGrouping() {
     return grouping;
   }
@@ -389,7 +357,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   public static class DefaultSource implements Source {
     private String component;
     private String port;
-    private Map<String, Object> options = new HashMap<>();
 
     private DefaultSource() {
     }
@@ -416,36 +383,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
       return this;
     }
 
-    @Override
-    public Source setOptions(JsonObject options) {
-      this.options = options.toMap();
-      return this;
-    }
-
-    @Override
-    public JsonObject getOptions() {
-      return new JsonObject(options);
-    }
-
-    @Override
-    public Source setOption(String option, Object value) {
-      options.put(option, value);
-      return this;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getOption(String option) {
-      return (T) options.get(option);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getOption(String option, T defaultValue) {
-      T value = (T) options.get(option);
-      return value != null ? value : defaultValue;
-    }
-
   }
 
   /**
@@ -456,7 +393,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   public static class DefaultTarget implements Target {
     private String component;
     private String port;
-    private Map<String, Object> options = new HashMap<>();
 
     private DefaultTarget() {
     }
@@ -481,36 +417,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     public Target setPort(String port) {
       this.port = port;
       return this;
-    }
-
-    @Override
-    public Target setOptions(JsonObject options) {
-      this.options = options.toMap();
-      return this;
-    }
-
-    @Override
-    public JsonObject getOptions() {
-      return new JsonObject(options);
-    }
-
-    @Override
-    public Target setOption(String option, Object value) {
-      options.put(option, value);
-      return this;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getOption(String option) {
-      return (T) options.get(option);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getOption(String option, T defaultValue) {
-      T value = (T) options.get(option);
-      return value != null ? value : defaultValue;
     }
 
   }

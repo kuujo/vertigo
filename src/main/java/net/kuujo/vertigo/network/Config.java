@@ -17,56 +17,10 @@ package net.kuujo.vertigo.network;
 
 import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * Base configuration.
  *
  * @author Jordan Halterman
  */
 public interface Config<T extends Config<T>> extends JsonSerializable {
-
-  /**
-   * Sets arbitrary configuration options.
-   *
-   * @param options A json object of configuration options.
-   * @return The configuration instance.
-   */
-  T setOptions(JsonObject options);
-
-  /**
-   * Returns arbitrary configuration options.
-   *
-   * @return A json object of configuration options.
-   */
-  JsonObject getOptions();
-
-  /**
-   * Sets an arbitrary configuration option.
-   *
-   * @param option The option name.
-   * @param value The option value.
-   * @return The configuration instance.
-   */
-  T setOption(String option, Object value);
-
-  /**
-   * Returns an arbitrary configuration option.
-   *
-   * @param option The option name.
-   * @return The configured option value.
-   */
-  @SuppressWarnings("hiding")
-  <T> T getOption(String option);
-
-  /**
-   * Returns an arbitrary configuration option.
-   *
-   * @param option The option name.
-   * @param defaultValue The default option value.
-   * @return The configured option value.
-   */
-  @SuppressWarnings("hiding")
-  <T> T getOption(String option, T defaultValue);
-
 }

@@ -15,12 +15,8 @@
  */
 package net.kuujo.vertigo.context.impl;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-
-import org.vertx.java.core.json.JsonObject;
 
 import net.kuujo.vertigo.context.Context;
 import net.kuujo.vertigo.util.Observer;
@@ -39,7 +35,6 @@ abstract class BaseContext<T extends Context<T>> implements Context<T> {
   @JsonIgnore
   protected final Set<Observer<T>> observers = new HashSet<>();
   protected String address;
-  protected final Map<String, Object> options = new HashMap<>();
 
   @Override
   @SuppressWarnings("unchecked")
@@ -61,24 +56,6 @@ abstract class BaseContext<T extends Context<T>> implements Context<T> {
       object.registerObserver(observer);
       observer.update(object);
     }
-  }
-
-  @Override
-  public JsonObject options() {
-    return new JsonObject(options);
-  }
-
-  @Override
-  @SuppressWarnings({"hiding", "unchecked"})
-  public <T> T option(String option) {
-    return (T) options.get(option);
-  }
-
-  @Override
-  @SuppressWarnings({"hiding", "unchecked"})
-  public <T> T option(String option, T defaultValue) {
-    T value = (T) options.get(option);
-    return value != null ? value : defaultValue;
   }
 
   @Override
@@ -128,33 +105,6 @@ abstract class BaseContext<T extends Context<T>> implements Context<T> {
     @SuppressWarnings("unchecked")
     public T setAddress(String address) {
       context.address = address;
-      return (T) this;
-    }
-
-    /**
-     * Sets context options.
-     *
-     * @param options A json object of context options.
-     * @return The context builder.
-     */
-    @SuppressWarnings("unchecked")
-    public T setOptions(JsonObject options) {
-      for (String fieldName : options.getFieldNames()) {
-        context.options.put(fieldName, options.getValue(fieldName));
-      }
-      return (T) this;
-    }
-
-    /**
-     * Sets a context options.
-     *
-     * @param option The option name.
-     * @param value The option value.
-     * @return The context builder.
-     */
-    @SuppressWarnings("unchecked")
-    public T setOption(String option, Object value) {
-      context.options.put(option, value);
       return (T) this;
     }
 

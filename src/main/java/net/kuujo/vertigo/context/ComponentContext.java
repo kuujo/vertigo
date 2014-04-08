@@ -20,7 +20,6 @@ import java.util.List;
 import net.kuujo.vertigo.context.impl.DefaultModuleContext;
 import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
 import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.state.StatePersistor;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -123,20 +122,6 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
    * @return The component HA group.
    */
   String group();
-
-  /**
-   * Returns a boolean indicating whether the component is stateful.
-   *
-   * @return Indicates whether the component is stateful.
-   */
-  boolean isStateful();
-
-  /**
-   * Returns the component state persistor.
-   *
-   * @return The component state persitor class.
-   */
-  Class<? extends StatePersistor> persistor();
 
   /**
    * Gets a list of component hooks.

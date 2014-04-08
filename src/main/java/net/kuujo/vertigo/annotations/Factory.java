@@ -15,21 +15,16 @@
  */
 package net.kuujo.vertigo.annotations;
 
-import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.state.StatePersistor;
-
-import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Annotates an object factory method.<p>
  *
- * This annotation is required for many Vertigo synchronization types,
- * including {@link Component}, {@link DataStore}, and {@link StatePersistor}
- * implementations. When component or synchronization types are created by
+ * This annotation is required for many Vertigo synchronization types.
+ * When component or synchronization types are created by
  * Vertigo, the annotated factory method is used. The factory method must
  * be a <code>public</code> and <code>static</code> method that returns the
  * same type as the defining class. The method can accept any arguments in

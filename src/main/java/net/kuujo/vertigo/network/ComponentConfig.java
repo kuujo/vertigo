@@ -15,13 +15,9 @@
  */
 package net.kuujo.vertigo.network;
 
-import java.util.List;
-
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
 import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
-import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -168,30 +164,5 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>
    * @return The component storage configuration.
    */
   JsonObject getStorageConfig();
-
-  /**
-   * Adds a component hook to the component.
-   * 
-   * The output hook can be used to receive notifications on events that occur within the
-   * component instance's inputs and outputs. Hooks should implement the
-   * {@link ComponentHook} interface. Hook state will be automatically serialized to json
-   * using an internal <code>Serializer</code>. By default, this means that any
-   * primitives, primitive wrappers, collections, or {@link JsonSerializable} fields will be
-   * serialized. Finer grained control over serialization of hooks can be provided by
-   * either using Jackson annotations within the hook implementation or by providing a
-   * custom serializer for the hook.
-   * 
-   * @param hook A component hook.
-   * @return The component configuration.
-   * @see ComponentHook
-   */
-  T addHook(ComponentHook hook);
-
-  /**
-   * Returns a list of all component hooks.
-   * 
-   * @return A list of component hooks.
-   */
-  List<ComponentHook> getHooks();
 
 }

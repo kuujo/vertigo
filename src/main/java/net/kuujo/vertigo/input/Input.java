@@ -13,41 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.util.time;
+package net.kuujo.vertigo.input;
+
+import org.vertx.java.core.Handler;
 
 /**
- * Simple Lamport clock.
+ * Basic input interface.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The input type.
  */
-public class LamportClock {
-  private long value = 1;
+public interface Input<T extends Input<T>> {
 
   /**
-   * Returns the current clock value.
+   * Registers a message handler on the input.
    *
-   * @return The current clock value.
+   * @param handler A handler to be called when a message is received.
+   * @return The input instance.
    */
-  public long value() {
-    return value;
-  }
+  @SuppressWarnings("rawtypes")
+  T messageHandler(Handler handler);
 
   /**
-   * Increments the current clock value.
-   */
-  public void increment() {
-    value++;
-  }
-
-  /**
-   * Updates the current clock value.
+   * Registers a group handler on the input.
    *
-   * @param value The clock with which to update the value.
-   * @return The updated clock.
+   * @param group The name of the group for which to register the handler.
+   * @param handler A handler to be called when the group is received.
+   * @return The input instance.
    */
-  public LamportClock update(LamportClock value) {
-    this.value = Math.max(this.value, value.value) + 1;
-    return this;
-  }
+  T groupHandler(String group, Handler<InputGroup> handler);
 
 }

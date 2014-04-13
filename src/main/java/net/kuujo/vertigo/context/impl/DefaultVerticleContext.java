@@ -21,7 +21,6 @@ import java.util.Map;
 
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.hooks.ComponentHook;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -211,50 +210,6 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
       for (String fieldName : config.getFieldNames()) {
         context.storage.put(fieldName, config.getValue(fieldName));
       }
-      return this;
-    }
-
-    /**
-     * Sets component hooks.
-     *
-     * @param hooks An array of component hooks.
-     * @return The context builder.
-     */
-    public Builder setHooks(ComponentHook... hooks) {
-      context.hooks = Arrays.asList(hooks);
-      return this;
-    }
-
-    /**
-     * Sets the component hooks.
-     *
-     * @param hooks A list of component hooks.
-     * @return The context builder.
-     */
-    public Builder setHooks(List<ComponentHook> hooks) {
-      context.hooks = hooks;
-      return this;
-    }
-
-    /**
-     * Adds a hook to the component.
-     *
-     * @param hook A component hook instance.
-     * @return The context builder.
-     */
-    public Builder addHook(ComponentHook hook) {
-      context.hooks.add(hook);
-      return this;
-    }
-
-    /**
-     * Removes a hook from the component.
-     *
-     * @param hook A component hook instance.
-     * @return The context builder.
-     */
-    public Builder removeHook(ComponentHook hook) {
-      context.hooks.remove(hook);
       return this;
     }
 

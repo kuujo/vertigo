@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,19 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
+import net.kuujo.vertigo.network.ConnectionConfig;
+import net.kuujo.vertigo.output.OutputConnection;
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
  * An output selector.
  *
  * Output selectors are the counterparts to input groupings. When an input is
  * used to subscribe to the output of another component, the input's grouping
- * is converted to an output {@link MessageSelector}. Each time a message is emitted
+ * is converted to an output {@link Selector}. Each time a message is emitted
  * to the resulting output channel, the selector is used to select which
  * {@link ConnectionConfig}s to which to send the message.
  *
@@ -38,10 +39,11 @@ import net.kuujo.vertigo.util.serializer.JsonSerializable;
 @JsonSubTypes({
   @JsonSubTypes.Type(value=RandomSelector.class, name="random"),
   @JsonSubTypes.Type(value=RoundSelector.class, name="round"),
-  @JsonSubTypes.Type(value=FieldsSelector.class, name="fields"),
+  @JsonSubTypes.Type(value=HashSelector.class, name="fields"),
+  @JsonSubTypes.Type(value=FairSelector.class, name="fair"),
   @JsonSubTypes.Type(value=AllSelector.class, name="all")
 })
-public interface MessageSelector extends JsonSerializable {
+public interface Selector extends JsonSerializable {
 
   /**
    * Selects a list of connections to which to emit messages.
@@ -49,10 +51,10 @@ public interface MessageSelector extends JsonSerializable {
    * @param message
    *   The message being emitted.
    * @param targets
-   *   A list of targets from which to select.
+   *   A list of connections from which to select.
    * @return
    *   A list of selected connections.
    */
-  List<String> select(JsonMessage message, List<String> targets);
+  List<OutputConnection> select(Object message, List<OutputConnection> connections);
 
 }

@@ -16,22 +16,24 @@
 package net.kuujo.vertigo.input.grouping;
 
 import net.kuujo.vertigo.network.ConnectionConfig;
-import net.kuujo.vertigo.output.selector.RandomSelector;
+import net.kuujo.vertigo.output.selector.HashSelector;
 import net.kuujo.vertigo.output.selector.Selector;
 
 /**
- * The <code>random</code> grouping dispatches messages to component workers randomly.<p>
+ * The <code>fields</code> grouping is a hashing based grouping. Given a set of
+ * fields on which to hash, this grouping guarantees that workers will always
+ * receive messages with the same field values.<p>
  *
- * Note that users should use the <code>randomGrouping</code> {@link ConnectionConfig} method
+ * Note that users should use the <code>fieldsGrouping</code> {@link ConnectionConfig} method
  * rather than constructing this grouping directly.
  *
  * @author Jordan Halterman
  */
-public class RandomGrouping implements Grouping {
+public class HashGrouping implements Grouping {
 
   @Override
   public Selector createSelector() {
-    return new RandomSelector();
+    return new HashSelector();
   }
 
 }

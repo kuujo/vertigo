@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.hooks;
+package net.kuujo.vertigo.input.grouping;
+
+import net.kuujo.vertigo.output.selector.FairSelector;
+import net.kuujo.vertigo.output.selector.Selector;
 
 /**
- * An output hook.
+ * The <code>fair</code> grouping dispatches messages to connections
+ * according to current connection queue sizes. This means that messages
+ * are less likely to be sent to instances that are responding slowly
+ * to messages, potentially improving performance.
  *
  * @author Jordan Halterman
  */
-public interface OutputHook extends Hook {
+public class FairGrouping implements Grouping {
 
-  /**
-   * Called when a message is sent on a port.
-   *
-   * @param port The port on which the message was sent.
-   * @param messageId The unique message identifier.
-   */
-  void handleSend(String port, String messageId);
+  @Override
+  public Selector createSelector() {
+    return new FairSelector();
+  }
 
 }

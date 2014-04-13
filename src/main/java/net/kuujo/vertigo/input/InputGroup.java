@@ -15,27 +15,37 @@
  */
 package net.kuujo.vertigo.input;
 
-import net.kuujo.vertigo.context.InputPortContext;
+import org.vertx.java.core.Handler;
 
 /**
- * An input port.
+ * Input groups allow incoming messages to be separated into groups. Groups are
+ * named structures of messages that are defined by the component outputting messages.
  *
  * @author Jordan Halterman
  */
-public interface InputPort extends InputBuffer<InputPort> {
+public interface InputGroup extends Input<InputGroup> {
 
   /**
-   * Returns the port name.
+   * Returns the input group name.
    *
-   * @return The port name.
+   * @return The group name.
    */
   String name();
 
   /**
-   * Returns the input port context.
+   * Registers a start handler on the group.
    *
-   * @return The input port context.
+   * @param handler A handler to be called when the group is started.
+   * @return The input group.
    */
-  InputPortContext context();
+  InputGroup startHandler(Handler<Void> handler);
+
+  /**
+   * Registers an end handler on the group.
+   *
+   * @param handler A handler to be called when the group is ended.
+   * @return The input group.
+   */
+  InputGroup endHandler(Handler<Void> handler);
 
 }

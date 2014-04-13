@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.input.grouping.MessageGrouping;
+import net.kuujo.vertigo.input.grouping.Grouping;
 
 /**
  * Connection contatiner.
@@ -49,7 +49,7 @@ public interface ConnectionConfigurable {
    * @param grouping The connection grouping.
    * @return A new connection instance.
    */
-  ConnectionConfig createConnection(String source, String target, MessageGrouping grouping);
+  ConnectionConfig createConnection(String source, String target, Grouping grouping);
 
   /**
    * Creates a connection between two components.
@@ -72,7 +72,7 @@ public interface ConnectionConfigurable {
    * @param grouping The connection grouping.
    * @return A new connection instance.
    */
-  ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping);
+  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping);
 
   /**
    * Destroys a connection between two components.

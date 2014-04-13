@@ -15,32 +15,27 @@
  */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
 
 /**
- * Output connection.<p>
+ * Output stream.<p>
  *
- * Output connections represent a direct connection between two instances
- * of separate components. Each output connection points to a single
- * input connection which receives messages from this connection and this
- * connection only.
+ * The output stream represents a group of connections between the current
+ * component intance and multiple instances of another component. Each stream
+ * uses an internal {@link net.kuujo.vertigo.output.selector.Selector} to select
+ * connections to which to send each message. Each message sent on a stream
+ * can be sent to a single connection or it can be copied to multiple connections
+ * based on the selector implementation.
  *
  * @author Jordan Halterman
  */
-public interface OutputConnection extends OutputBuffer<OutputConnection> {
+public interface OutputStream extends OutputBuffer<OutputStream> {
 
   /**
-   * Returns the output connection context.
+   * Returns the stream context.
    *
-   * @return The output connection context.
+   * @return The stream context.
    */
-  OutputConnectionContext context();
-
-  /**
-   * Returns the current connection send queue size.
-   *
-   * @return The current connection send queue size.
-   */
-  int getSendQueueSize();
+  OutputStreamContext context();
 
 }

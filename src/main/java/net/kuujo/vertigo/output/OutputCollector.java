@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,16 @@ package net.kuujo.vertigo.output;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputContext;
-import net.kuujo.vertigo.hooks.OutputHook;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * An output collector.
- * <p>
- * 
- * The output collector is the primary interface for emitting new messages from a
- * component. When a new component instance is started, the output collector registers an
- * event bus handler at the component address. This is the address at which other
- * components publish listen requests. When a new listen request is received, the output
- * collector sets up an output port and any new messages emitted from the
- * component will be sent to the new channel as well.
- * 
+ * Output collector.<p>
+ *
+ * The output collector exposes a simple interface to {@link OutputPort} instances
+ * through which messages can be sent.
+ *
  * @author Jordan Halterman
  */
 public interface OutputCollector {
@@ -44,14 +38,6 @@ public interface OutputCollector {
    * @return The current component output context.
    */
   OutputContext context();
-
-  /**
-   * Adds a hook to the output collector.
-   *
-   * @param hook The output hook to add.
-   * @return The output collector.
-   */
-  OutputCollector addHook(OutputHook hook);
 
   /**
    * Returns a collection of output ports.

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.output.selector;
 
 import java.util.List;
 
-import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.output.OutputConnection;
 
 /**
  * An *all* selector.
@@ -28,14 +28,14 @@ import net.kuujo.vertigo.message.JsonMessage;
  *
  * @author Jordan Halterman
  */
-public class AllSelector implements MessageSelector {
+public class AllSelector implements Selector {
 
   public AllSelector() {
   }
 
   @Override
-  public List<String> select(JsonMessage message, List<String> targets) {
-    return targets;
+  public List<OutputConnection> select(Object message, List<OutputConnection> connections) {
+    return connections;
   }
 
 }

@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.input.grouping.MessageGrouping;
+import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -53,7 +53,7 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @return The connection grouping. Defaults to round grouping if no grouping
    *         was set on the connection.
    */
-  MessageGrouping getGrouping();
+  Grouping getGrouping();
 
   /**
    * Sets the connection grouping.
@@ -61,7 +61,7 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @param grouping The connection grouping.
    * @return The connection configuration.
    */
-  ConnectionConfig groupBy(MessageGrouping grouping);
+  ConnectionConfig groupBy(Grouping grouping);
 
   /**
    * Sets a random connection grouping on the input.
@@ -78,12 +78,18 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
   ConnectionConfig roundGrouping();
 
   /**
-   * Sets a fields grouping on the connection.
-   * 
-   * @param fields The fields on which to hash.
+   * Sets a fair grouping on the connection.
+   *
    * @return The connection instance.
    */
-  ConnectionConfig fieldsGrouping(String... fields);
+  ConnectionConfig fairGrouping();
+
+  /**
+   * Sets a hash grouping on the connection.
+   * 
+   * @return The connection instance.
+   */
+  ConnectionConfig hashGrouping();
 
   /**
    * Sets an all grouping on the connection.

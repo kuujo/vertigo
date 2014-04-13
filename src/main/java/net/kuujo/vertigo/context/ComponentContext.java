@@ -20,7 +20,6 @@ import java.util.List;
 import net.kuujo.vertigo.context.impl.DefaultModuleContext;
 import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.hooks.ComponentHook;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -137,13 +136,6 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
    * @return The component storage configuration.
    */
   JsonObject storageConfig();
-
-  /**
-   * Gets a list of component hooks.
-   * 
-   * @return A list of component hooks.
-   */
-  List<ComponentHook> hooks();
 
   /**
    * Returns the component context as a module context.

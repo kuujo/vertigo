@@ -18,7 +18,6 @@ package net.kuujo.vertigo.component;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.output.OutputCollector;
@@ -124,14 +123,6 @@ public interface Component {
    * @return The logger for the component instance.
    */
   Logger logger();
-
-  /**
-   * Adds a hook to the component.
-   *
-   * @param hook The hook to add.
-   * @return The called component instance.
-   */
-  Component addHook(ComponentHook hook);
 
   /**
    * Starts the component.

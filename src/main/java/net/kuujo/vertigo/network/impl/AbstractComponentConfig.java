@@ -15,14 +15,11 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.hooks.ComponentHook;
-import net.kuujo.vertigo.input.grouping.MessageGrouping;
+import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
@@ -105,7 +102,6 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   private int instances = DEFAULT_NUM_INSTANCES;
   private String group = DEFAULT_GROUP;
   private Map<String, Object> storage = new HashMap<>();
-  private List<ComponentHook> hooks = new ArrayList<>();
   @JsonIgnore
   private NetworkConfig network;
 
@@ -189,18 +185,6 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   @Override
   public JsonObject getStorageConfig() {
     return new JsonObject(storage);
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T addHook(ComponentHook hook) {
-    hooks.add(hook);
-    return (T) this;
-  }
-
-  @Override
-  public List<ComponentHook> getHooks() {
-    return hooks;
   }
 
   @Override
@@ -320,7 +304,7 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping) {
+  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
     return network.createConnection(source, target, grouping);
   }
 
@@ -330,7 +314,7 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
     return network.createConnection(source, out, target, in, grouping);
   }
 

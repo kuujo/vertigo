@@ -17,7 +17,7 @@ package net.kuujo.vertigo.input.grouping;
 
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.AllSelector;
-import net.kuujo.vertigo.output.selector.MessageSelector;
+import net.kuujo.vertigo.output.selector.Selector;
 
 /**
  * The <code>all</code> grouping dispatches messages to all instances of each
@@ -30,10 +30,10 @@ import net.kuujo.vertigo.output.selector.MessageSelector;
  *
  * @author Jordan Halterman
  */
-public class AllGrouping implements MessageGrouping {
+public class AllGrouping implements Grouping {
 
   @Override
-  public MessageSelector createSelector() {
+  public Selector createSelector() {
     return new AllSelector();
   }
 

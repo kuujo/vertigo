@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class DefaultOutputPortContext extends BaseContext<OutputPortContext> implements OutputPortContext {
   private static final String DEFAULT_PORT = "default";
   private String port = DEFAULT_PORT;
-  private Collection<OutputConnectionContext> connections = new ArrayList<>();
+  private Collection<OutputStreamContext> streams = new ArrayList<>();
   @JsonIgnore
   private OutputContext output;
 
@@ -66,27 +66,27 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
    *
    * @return A collection of connections in the port.
    */
-  public Collection<OutputConnectionContext> connections() {
-    for (OutputConnectionContext connection : connections) {
-      ((DefaultOutputConnectionContext) connection).setPort(this);
+  public Collection<OutputStreamContext> streams() {
+    for (OutputStreamContext stream : streams) {
+      ((DefaultOutputStreamContext) stream).setPort(this);
     }
-    return connections;
+    return streams;
   }
 
   @Override
   public void notify(OutputPortContext update) {
     super.notify(update);
-    for (OutputConnectionContext connection : connections) {
+    for (OutputStreamContext stream : streams) {
       boolean updated = false;
-      for (OutputConnectionContext c : update.connections()) {
-        if (connection.equals(c)) {
-          connection.notify(c);
+      for (OutputStreamContext s : update.streams()) {
+        if (stream.equals(s)) {
+          stream.notify(s);
           updated = true;
           break;
         }
       }
       if (!updated) {
-        connection.notify(null);
+        stream.notify(null);
       }
     }
   }
@@ -142,8 +142,8 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connections An array of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(OutputConnectionContext... connections) {
-      context.connections = Arrays.asList(connections);
+    public Builder setStreams(OutputStreamContext... streams) {
+      context.streams = Arrays.asList(streams);
       return this;
     }
 
@@ -153,8 +153,8 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connections A collection of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(Collection<OutputConnectionContext> connections) {
-      context.connections = connections;
+    public Builder setStreams(Collection<OutputStreamContext> streams) {
+      context.streams = streams;
       return this;
     }
 
@@ -164,8 +164,8 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connection A port connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(OutputConnectionContext connection) {
-      context.connections.add(connection);
+    public Builder addStream(OutputStreamContext stream) {
+      context.streams.add(stream);
       return this;
     }
 
@@ -175,8 +175,8 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connection A port connection to remove.
      * @return The context builder.
      */
-    public Builder removeConnection(OutputConnectionContext connection) {
-      context.connections.remove(connection);
+    public Builder removeStream(OutputStreamContext stream) {
+      context.streams.remove(stream);
       return this;
     }
   }

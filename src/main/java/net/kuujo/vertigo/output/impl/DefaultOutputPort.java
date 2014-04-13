@@ -19,20 +19,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
-import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.hooks.OutputPortHook;
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
-import net.kuujo.vertigo.output.OutputConnection;
+import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.output.OutputGroup;
 import net.kuujo.vertigo.output.OutputPort;
+import net.kuujo.vertigo.output.OutputStream;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -41,16 +41,22 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext> {
+  private static final int DEFAULT_SEND_QUEUE_MAX_SIZE = 10000;
   private final Vertx vertx;
   private OutputPortContext context;
-  private final VertigoCluster cluster;
-  private final List<OutputPortHook> hooks = new ArrayList<>();
-  private final List<OutputConnection> connections = new ArrayList<>();
+  private final List<OutputStream> streams = new ArrayList<>();
+  private int maxQueueSize = DEFAULT_SEND_QUEUE_MAX_SIZE;
+  private Handler<Void> drainHandler;
+  private boolean open;
 
-  public DefaultOutputPort(Vertx vertx, OutputPortContext context, VertigoCluster cluster) {
+  public DefaultOutputPort(Vertx vertx, OutputPortContext context) {
     this.vertx = vertx;
     this.context = context;
-    this.cluster = cluster;
+  }
+
+  DefaultOutputPort setContext(OutputPortContext context) {
+    this.context = context;
+    return this;
   }
 
   @Override
@@ -63,100 +69,71 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     return context;
   }
 
-  DefaultOutputPort setContext(OutputPortContext context) {
-    this.context = context;
-    return this;
-  }
-
-  @Override
-  public OutputPort addHook(OutputPortHook hook) {
-    hooks.add(hook);
-    return this;
-  }
-
-  @Override
-  public String send(JsonObject body) {
-    final DefaultJsonMessage message = createNewMessage(body);
-    for (OutputConnection connection : connections) {
-      connection.send(createChildMessage(body, message));
-    }
-    for (OutputPortHook hook : hooks) {
-      hook.handleSend(message.id());
-    }
-    return message.id();
-  }
-
-  /**
-   * Creates a new message.
-   */
-  protected DefaultJsonMessage createNewMessage(JsonObject body) {
-    return DefaultJsonMessage.Builder.newBuilder()
-        .setId(createUniqueId())
-        .setBody(body)
-        .build();
-  }
-
-  /**
-   * Creates a child message.
-   */
-  protected DefaultJsonMessage createChildMessage(JsonObject body, DefaultJsonMessage parent) {
-    DefaultJsonMessage message = DefaultJsonMessage.Builder.newBuilder()
-        .setId(createUniqueId())
-        .setBody(body)
-        .build();
-    return message;
-  }
-
-  /**
-   * Creates a copy of a message.
-   */
-  protected DefaultJsonMessage createCopy(DefaultJsonMessage message) {
-    return message.copy(createUniqueId());
-  }
-
-  /**
-   * Creates a unique message ID.
-   */
-  private String createUniqueId() {
-    return new StringBuilder()
-      .append(context.address())
-      .append(":")
-      .append(OutputCounter.incrementAndGet())
-      .toString();
-  }
-
   @Override
   public void update(OutputPortContext update) {
-    Iterator<OutputConnection> iter = connections.iterator();
+    Iterator<OutputStream> iter = streams.iterator();
     while (iter.hasNext()) {
-      OutputConnection connection = iter.next();
+      OutputStream stream = iter.next();
       boolean exists = false;
-      for (OutputConnectionContext output : update.connections()) {
-        if (output.equals(connection.context())) {
+      for (OutputStreamContext output : update.streams()) {
+        if (output.equals(stream.context())) {
           exists = true;
           break;
         }
       }
       if (!exists) {
-        connection.close();
+        stream.close();
         iter.remove();
       }
     }
 
-    for (OutputConnectionContext output : update.connections()) {
+    for (OutputStreamContext output : update.streams()) {
       boolean exists = false;
-      for (OutputConnection connection : connections) {
-        if (connection.context().equals(output)) {
+      for (OutputStream stream : streams) {
+        if (stream.context().equals(output)) {
           exists = true;
           break;
         }
       }
 
       if (!exists) {
-        OutputConnection connection = BasicOutputConnection.factory(vertx, output, cluster);
-        connections.add(connection.open());
+        OutputStream stream = new DefaultOutputStream(vertx, output);
+        streams.add(stream.open());
       }
     }
+  }
+
+  @Override
+  public OutputPort setSendQueueMaxSize(int maxSize) {
+    this.maxQueueSize = maxSize;
+    for (OutputStream stream : streams) {
+      stream.setSendQueueMaxSize(Math.round(maxQueueSize / streams.size()));
+    }
+    return this;
+  }
+
+  @Override
+  public int getSendQueueMaxSize() {
+    return maxQueueSize;
+  }
+
+  @Override
+  public boolean sendQueueFull() {
+    for (OutputStream stream : streams) {
+      if (stream.sendQueueFull()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public OutputPort drainHandler(Handler<Void> handler) {
+    this.drainHandler = handler;
+    for (OutputStream stream : streams) {
+      stream.drainHandler(handler);
+    }
+    return this;
   }
 
   @Override
@@ -166,13 +143,14 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public OutputPort open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (connections.isEmpty()) {
-      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
-      startCounter.setHandler(doneHandler);
-
-      for (OutputConnectionContext connectionContext : context.connections()) {
-        OutputConnection connection = BasicOutputConnection.factory(vertx, connectionContext, cluster);
-        connections.add(connection.open(startCounter));
+    if (!open) {
+      streams.clear();
+      open = true;
+      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(context.streams().size()).setHandler(doneHandler);
+      for (OutputStreamContext stream : context.streams()) {
+        streams.add(new DefaultOutputStream(vertx, stream)
+          .setSendQueueMaxSize(Math.round(maxQueueSize / context.streams().size()))
+          .drainHandler(drainHandler).open(counter));
       }
     }
     return this;
@@ -185,22 +163,156 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(connections.size());
-    stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
+    if (open) {
+      List<OutputStream> streams = new ArrayList<>(this.streams);
+      this.streams.clear();
+      open = false;
+      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(streams.size()).setHandler(doneHandler);
+      for (OutputStream stream : streams) {
+        stream.close(counter);
+      }
+    }
+  }
+
+  @Override
+  public OutputPort group(final String name, final Handler<AsyncResult<OutputGroup>> handler) {
+    final List<OutputGroup> groups = new ArrayList<>();
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(streams.size());
+    counter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<OutputGroup>(result.cause()).setHandler(handler);
         } else {
-          connections.clear();
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          new DefaultFutureResult<OutputGroup>(new BaseOutputGroup(name, groups)).setHandler(handler);
         }
       }
     });
-
-    for (OutputConnection connection : connections) {
-      connection.close(stopCounter);
+    for (OutputStream stream : streams) {
+      stream.group(name, new Handler<AsyncResult<OutputGroup>>() {
+        @Override
+        public void handle(AsyncResult<OutputGroup> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          } else {
+            counter.succeed();
+          }
+        }
+      });
     }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Object message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(String message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Boolean message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Character message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Short message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Integer message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Long message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Double message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Float message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Buffer message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(JsonObject message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(JsonArray message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Byte message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort send(byte[] message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    return this;
   }
 
 }

@@ -16,8 +16,9 @@
 package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.input.grouping.AllGrouping;
-import net.kuujo.vertigo.input.grouping.FieldsGrouping;
-import net.kuujo.vertigo.input.grouping.MessageGrouping;
+import net.kuujo.vertigo.input.grouping.FairGrouping;
+import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.input.grouping.HashGrouping;
 import net.kuujo.vertigo.input.grouping.RandomGrouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 import net.kuujo.vertigo.network.ComponentConfig;
@@ -41,7 +42,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
-  private MessageGrouping grouping;
+  private Grouping grouping;
   @JsonIgnore
   private NetworkConfig network;
 
@@ -55,7 +56,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
         new RoundGrouping(), network);
   }
 
-  public DefaultConnectionConfig(String source, String target, MessageGrouping grouping, NetworkConfig network) {
+  public DefaultConnectionConfig(String source, String target, Grouping grouping, NetworkConfig network) {
     this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
         parseComponent(target), parsePort(target, DEFAULT_IN_PORT), grouping,
         network);
@@ -65,7 +66,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     this(source, out, target, in, new RoundGrouping(), network);
   }
 
-  public DefaultConnectionConfig(String source, String out, String target, String in, MessageGrouping grouping, NetworkConfig network) {
+  public DefaultConnectionConfig(String source, String out, String target, String in, Grouping grouping, NetworkConfig network) {
     this.source.setComponent(source);
     this.source.setPort(out);
     this.target.setComponent(target);
@@ -85,12 +86,12 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public MessageGrouping getGrouping() {
+  public Grouping getGrouping() {
     return grouping;
   }
 
   @Override
-  public ConnectionConfig groupBy(MessageGrouping grouping) {
+  public ConnectionConfig groupBy(Grouping grouping) {
     this.grouping = grouping;
     return this;
   }
@@ -108,8 +109,14 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig fieldsGrouping(String... fields) {
-    this.grouping = new FieldsGrouping(fields);
+  public ConnectionConfig fairGrouping() {
+    this.grouping = new FairGrouping();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig hashGrouping() {
+    this.grouping = new HashGrouping();
     return this;
   }
 
@@ -236,7 +243,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, MessageGrouping grouping) {
+  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
     return network.createConnection(source, target, grouping);
   }
 
@@ -246,7 +253,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping) {
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
     return network.createConnection(source, out, target, in, grouping);
   }
 

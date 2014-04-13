@@ -17,7 +17,7 @@ package net.kuujo.vertigo.input.grouping;
 
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.output.selector.RoundSelector;
-import net.kuujo.vertigo.output.selector.MessageSelector;
+import net.kuujo.vertigo.output.selector.Selector;
 
 /**
  * The round grouping dispatches messages to workers in a round-robin
@@ -28,10 +28,10 @@ import net.kuujo.vertigo.output.selector.MessageSelector;
  *
  * @author Jordan Halterman
  */
-public class RoundGrouping implements MessageGrouping {
+public class RoundGrouping implements Grouping {
 
   @Override
-  public MessageSelector createSelector() {
+  public Selector createSelector() {
     return new RoundSelector();
   }
 

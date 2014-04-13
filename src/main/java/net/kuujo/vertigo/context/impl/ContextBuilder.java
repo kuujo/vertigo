@@ -69,7 +69,6 @@ public final class ContextBuilder {
         module.setStatusAddress(String.format("%s.__status", address));
         module.setModule(((ModuleConfig) component).getModule());
         module.setConfig(component.getConfig());
-        module.setHooks(component.getHooks());
         module.setGroup(component.getGroup());
         module.setStorageType(component.getStorageType());
         module.setStorageConfig(component.getStorageConfig());
@@ -98,7 +97,6 @@ public final class ContextBuilder {
         verticle.setWorker(((VerticleConfig) component).isWorker());
         verticle.setMultiThreaded(((VerticleConfig) component).isMultiThreaded());
         verticle.setConfig(component.getConfig());
-        verticle.setHooks(component.getHooks());
         verticle.setGroup(component.getGroup());
         verticle.setStorageType(component.getStorageType());
         verticle.setStorageConfig(component.getStorageConfig());
@@ -157,10 +155,10 @@ public final class ContextBuilder {
             output = DefaultOutputPortContext.Builder.newBuilder(port);
           }
 
-          // Add an output connection to the output port.
-          DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
-          outConnection.setAddress(String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name()));
-          outConnection.setGrouping(connection.getGrouping());
+          // Set up an output stream from the output port.
+          DefaultOutputStreamContext.Builder outStream = DefaultOutputStreamContext.Builder.newBuilder();
+          outStream.setAddress(String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name()));
+          outStream.setGrouping(connection.getGrouping());
 
           // For each target instance, add a unique input connection for the output.
           for (InstanceContext targetInstance : target.instances()) {
@@ -188,19 +186,20 @@ public final class ContextBuilder {
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
             String address = String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number());
             inConnection.setAddress(address);
-            inConnection.setSource(address);
-
-            // Add the new input connection as an output target. This creates a one-to-many
-            // relationship between output connections and input connections, and input
-            // connections maintain a many-to-one relationship with output connections.
-            outConnection.addTarget(address);
 
             // Add the connection to the target input port.
             input.addConnection(inConnection.build()).build();
+
+            // Add the new output connection to the output stream. This creates a one-to-many
+            // relationship between output connections and input connections, and input
+            // connections maintain a many-to-one relationship with output connections.
+            DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
+            outConnection.setAddress(address);
+            outStream.addConnection(outConnection.build());
           }
 
           // Add the connection to the source instance's out port.
-          output.addConnection(outConnection.build()).build();
+          output.addStream(outStream.build()).build();
         }
       }
     }

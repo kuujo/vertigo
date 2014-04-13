@@ -16,11 +16,11 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
@@ -31,13 +31,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @author Jordan Halterman
  */
-public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
-  private List<String> targets = new ArrayList<>();
+public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext> implements OutputStreamContext {
+  private List<OutputConnectionContext> connections = new ArrayList<>();
   private Grouping grouping = new RoundGrouping();
   @JsonIgnore
   private OutputPortContext port;
 
-  DefaultOutputConnectionContext setPort(OutputPortContext port) {
+  DefaultOutputStreamContext setPort(OutputPortContext port) {
     this.port = port;
     return this;
   }
@@ -52,22 +52,14 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
     return port;
   }
 
-  /**
-   * Returns a list of output addresses.
-   *
-   * @return A list of output addresses.
-   */
-  public List<String> targets() {
-    return targets;
-  }
-
-  /**
-   * Returns the output connection grouping.
-   *
-   * @return The output connection grouping.
-   */
+  @Override
   public Grouping grouping() {
     return grouping;
+  }
+
+  @Override
+  public List<OutputConnectionContext> connections() {
+    return connections;
   }
 
   /**
@@ -75,13 +67,13 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
    *
    * @author Jordan Halterman
    */
-  public static class Builder extends BaseContext.Builder<Builder, DefaultOutputConnectionContext> {
+  public static class Builder extends BaseContext.Builder<Builder, DefaultOutputStreamContext> {
 
     private Builder() {
-      super(new DefaultOutputConnectionContext());
+      super(new DefaultOutputStreamContext());
     }
 
-    private Builder(DefaultOutputConnectionContext context) {
+    private Builder(DefaultOutputStreamContext context) {
       super(context);
     }
 
@@ -100,51 +92,29 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      * @param context A starting connection context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultOutputConnectionContext context) {
+    public static Builder newBuilder(DefaultOutputStreamContext context) {
       return new Builder(context);
     }
 
     /**
-     * Sets the connection targets.
+     * Adds a connection to the component.
      *
-     * @param targets The connection targets.
+     * @param connection The connection to add.
      * @return The context builder.
      */
-    public Builder setTargets(String... targets) {
-      context.targets = Arrays.asList(targets);
+    public Builder addConnection(OutputConnectionContext connection) {
+      context.connections.add(connection);
       return this;
     }
 
     /**
-     * Sets the connection targets.
+     * Removes a connection from the component.
      *
-     * @param targets The connection targets.
+     * @param connection The connection to remove.
      * @return The context builder.
      */
-    public Builder setTargets(List<String> targets) {
-      context.targets = targets;
-      return this;
-    }
-
-    /**
-     * Adds a target to the component.
-     *
-     * @param target The target to add.
-     * @return The context builder.
-     */
-    public Builder addTarget(String target) {
-      context.targets.add(target);
-      return this;
-    }
-
-    /**
-     * Removes a target from the component.
-     *
-     * @param target The target to remove.
-     * @return The context builder.
-     */
-    public Builder removeTarget(String target) {
-      context.targets.remove(target);
+    public Builder removeConnection(OutputConnectionContext connection) {
+      context.connections.remove(connection);
       return this;
     }
 

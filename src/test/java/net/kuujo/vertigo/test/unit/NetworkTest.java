@@ -17,14 +17,9 @@ package net.kuujo.vertigo.test.unit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.List;
-
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.Configs;
 import net.kuujo.vertigo.network.ConnectionConfig;
@@ -64,7 +59,6 @@ public class NetworkTest {
     assertEquals("__DEFAULT__", verticle.getGroup());
     assertFalse(verticle.isWorker());
     assertFalse(verticle.isMultiThreaded());
-    assertEquals(0, verticle.getHooks().size());
   }
 
   @Test
@@ -114,7 +108,6 @@ public class NetworkTest {
     assertEquals(new JsonObject(), module.getConfig());
     assertEquals(1, module.getInstances());
     assertEquals("__DEFAULT__", module.getGroup());
-    assertEquals(0, module.getHooks().size());
   }
 
   @Test
@@ -510,7 +503,6 @@ public class NetworkTest {
     assertEquals("bar", module.getConfig().getString("foo"));
     assertEquals(2, module.getInstances());
     assertTrue(module.getType().equals(ComponentConfig.Type.MODULE));
-    assertEquals(0, module.getHooks().size());
   }
 
   @Test
@@ -535,7 +527,6 @@ public class NetworkTest {
     assertTrue(verticle.getType().equals(ComponentConfig.Type.VERTICLE));
     assertTrue(verticle.isWorker());
     assertTrue(verticle.isMultiThreaded());
-    assertEquals(0, verticle.getHooks().size());
   }
 
   @Test
@@ -556,7 +547,6 @@ public class NetworkTest {
     assertEquals("bar", module.getConfig().getString("foo"));
     assertEquals(2, module.getInstances());
     assertTrue(module.getType().equals(ComponentConfig.Type.MODULE));
-    assertEquals(0, module.getHooks().size());
   }
 
   @Test
@@ -581,7 +571,6 @@ public class NetworkTest {
     assertTrue(verticle.getType().equals(ComponentConfig.Type.VERTICLE));
     assertTrue(verticle.isWorker());
     assertTrue(verticle.isMultiThreaded());
-    assertEquals(0, verticle.getHooks().size());
   }
 
   @Test
@@ -599,44 +588,6 @@ public class NetworkTest {
     assertEquals("notout", connection.getSource().getPort());
     assertEquals("bar", connection.getTarget().getComponent());
     assertEquals("notin", connection.getTarget().getPort());
-  }
-
-  @Test
-  public void testAddHookFromJson() {
-    JsonObject json = new JsonObject().putString(DefaultNetworkConfig.NETWORK_NAME, "test");
-    JsonObject jsonFeeder = new JsonObject()
-        .putString(DefaultVerticleConfig.COMPONENT_NAME, "feeder")
-        .putString(DefaultVerticleConfig.COMPONENT_TYPE, DefaultVerticleConfig.Type.VERTICLE.getName())
-        .putString(DefaultVerticleConfig.VERTICLE_MAIN, "test.py");
-    JsonObject jsonHook = new JsonObject().putString("type", TestHook.class.getName());
-    jsonFeeder.putArray(DefaultVerticleConfig.COMPONENT_HOOKS, new JsonArray().add(jsonHook));
-    json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
-    assertEquals("test", network.getName());
-    DefaultVerticleConfig feeder = network.getComponent("feeder");
-    assertNotNull(feeder);
-    List<ComponentHook> hooks = feeder.getHooks();
-    assertEquals(1, hooks.size());
-    assertTrue(hooks.get(0) instanceof TestHook);
-  }
-
-  public static class TestHook implements ComponentHook {
-    @Override
-    public void handleStart(net.kuujo.vertigo.component.Component subject) {
-      
-    }
-    @Override
-    public void handleStop(net.kuujo.vertigo.component.Component subject) {
-      
-    }
-    @Override
-    public void handleReceive(String port, String String) {
-      
-    }
-    @Override
-    public void handleSend(String port, String String) {
-      
-    }
   }
 
 }

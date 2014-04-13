@@ -49,10 +49,10 @@ public interface OutputPortContext extends Context<OutputPortContext> {
   OutputContext output();
 
   /**
-   * Returns a collection of port connections.
+   * Returns a collection of port streams.
    *
-   * @return A collection of connections in the port.
+   * @return A collection of streams in the port.
    */
-  Collection<OutputConnectionContext> connections();
+  Collection<OutputStreamContext> streams();
 
 }

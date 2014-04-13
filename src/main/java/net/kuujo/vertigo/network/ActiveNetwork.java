@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.input.grouping.MessageGrouping;
+import net.kuujo.vertigo.input.grouping.Grouping;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -467,7 +467,7 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    * @param grouping The connection grouping.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String target, MessageGrouping grouping);
+  ConnectionConfig createConnection(String source, String target, Grouping grouping);
 
   /**
    * Creates a connection between two components in the network.
@@ -490,7 +490,7 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    * @param grouping The connection grouping.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping);
+  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping);
 
   /**
    * Creates a connection between two components in the network.
@@ -511,7 +511,7 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    * @param doneHandler An asynchronous handler to be called once complete.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String target, MessageGrouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler);
+  ConnectionConfig createConnection(String source, String target, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Creates a connection between two components in the network.
@@ -536,7 +536,7 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    * @param doneHandler An asynchronous handler to be called once complete.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String out, String target, String in, MessageGrouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler);
+  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Destroys a connection between two components in the network.

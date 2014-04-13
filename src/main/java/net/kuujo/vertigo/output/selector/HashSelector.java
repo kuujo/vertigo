@@ -13,25 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.input.grouping;
+package net.kuujo.vertigo.output.selector;
 
-import net.kuujo.vertigo.network.ConnectionConfig;
-import net.kuujo.vertigo.output.selector.RandomSelector;
-import net.kuujo.vertigo.output.selector.Selector;
+import java.util.List;
+
+import net.kuujo.vertigo.output.OutputConnection;
 
 /**
- * The <code>random</code> grouping dispatches messages to component workers randomly.<p>
+ * A hash selector.
  *
- * Note that users should use the <code>randomGrouping</code> {@link ConnectionConfig} method
- * rather than constructing this grouping directly.
+ * The *hash* selector is a consistent-hashing based grouping. Given
+ * a value on which to hash, this grouping guarantees that workers will
+ * always receive messages with the same values.
  *
  * @author Jordan Halterman
  */
-public class RandomGrouping implements Grouping {
+public class HashSelector implements Selector {
 
   @Override
-  public Selector createSelector() {
-    return new RandomSelector();
+  public List<OutputConnection> select(Object message, List<OutputConnection> connections) {
+    int index = Math.abs(message.hashCode() % connections.size());
+    return connections.subList(index, index+1);
   }
 
 }

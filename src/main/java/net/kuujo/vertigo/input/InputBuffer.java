@@ -13,58 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.output;
-
-import net.kuujo.vertigo.context.OutputPortContext;
+package net.kuujo.vertigo.input;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * An input port.
+ * Input buffer interface.<p>
+ *
+ * This interface exposes an API intentionally similar to that of the
+ * Vert.x {@link org.vertx.java.core.streams.ReadStream} interface. Users
+ * can use the interface to control the flow of messages into the input.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The input type.
  */
-public interface OutputPort extends OutputBuffer<OutputPort> {
+public interface InputBuffer<T extends InputBuffer<T>> extends Input<T> {
 
   /**
-   * Returns the output port name.
+   * Opens the input.
    *
-   * @return The output port name.
+   * @return The input.
    */
-  String name();
+  T open();
 
   /**
-   * Returns the output port context.
+   * Opens the input.
    *
-   * @return The output port context.
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The input.
    */
-  OutputPortContext context();
+  T open(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Opens the output port.
+   * Pauses the input.
    *
-   * @return The output port.
+   * @return The input.
    */
-  OutputPort open();
+  T pause();
 
   /**
-   * Opens the output port.
+   * Resumes the input.
    *
-   * @param doneHandler An asynchronous handler to be called once opened.
-   * @return The output port.
+   * @return The input.
    */
-  OutputPort open(Handler<AsyncResult<Void>> doneHandler);
+  T resume();
 
   /**
-   * Closes the output port.
+   * Closes the input.
    */
   void close();
 
   /**
-   * Closes the output port.
+   * Closes the input.
    *
-   * @param doneHandler An asynchronous handler to be called once closed.
+   * @param doneHandler An asynchronous handler to be called once complete.
    */
   void close(Handler<AsyncResult<Void>> doneHandler);
 

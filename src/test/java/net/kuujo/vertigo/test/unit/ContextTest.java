@@ -24,7 +24,6 @@ import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
-import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
@@ -83,7 +82,6 @@ public class ContextTest {
     assertEquals(1, verticleContext.numInstances());
     assertFalse(verticleContext.isWorker());
     assertFalse(verticleContext.isMultiThreaded());
-    assertEquals(0, verticleContext.hooks().size());
     assertNotNull(verticleContext.network());
   }
 
@@ -111,7 +109,6 @@ public class ContextTest {
     assertTrue(verticleContext.isWorker());
     assertTrue(verticleContext.isMultiThreaded());
     assertEquals("test", verticleContext.group());
-    assertEquals(0, verticleContext.hooks().size());
     assertNotNull(verticleContext.network());
   }
 
@@ -129,7 +126,6 @@ public class ContextTest {
     assertTrue(moduleContext.isModule());
     assertEquals(new JsonObject(), moduleContext.config());
     assertEquals(1, moduleContext.numInstances());
-    assertEquals(0, moduleContext.hooks().size());
     assertNotNull(moduleContext.network());
   }
 
@@ -153,7 +149,6 @@ public class ContextTest {
     assertEquals(2, moduleContext.numInstances());
     assertEquals(2, moduleContext.instances().size());
     assertEquals("test", moduleContext.group());
-    assertEquals(0, moduleContext.hooks().size());
     assertNotNull(moduleContext.network());
   }
 
@@ -173,7 +168,6 @@ public class ContextTest {
     assertEquals(1, verticleContext.numInstances());
     assertFalse(verticleContext.isWorker());
     assertFalse(verticleContext.isMultiThreaded());
-    assertEquals(0, verticleContext.hooks().size());
     assertNotNull(verticleContext.network());
   }
 
@@ -201,7 +195,6 @@ public class ContextTest {
     assertTrue(verticleContext.isWorker());
     assertTrue(verticleContext.isMultiThreaded());
     assertEquals("test", verticleContext.group());
-    assertEquals(0, verticleContext.hooks().size());
     assertNotNull(verticleContext.network());
   }
 
@@ -219,7 +212,6 @@ public class ContextTest {
     assertTrue(moduleContext.isModule());
     assertEquals(new JsonObject(), moduleContext.config());
     assertEquals(1, moduleContext.numInstances());
-    assertEquals(0, moduleContext.hooks().size());
     assertNotNull(moduleContext.network());
   }
 
@@ -243,20 +235,7 @@ public class ContextTest {
     assertEquals(2, moduleContext.numInstances());
     assertEquals(2, moduleContext.instances().size());
     assertEquals("test", moduleContext.group());
-    assertEquals(0, moduleContext.hooks().size());
     assertNotNull(moduleContext.network());
-  }
-
-  @Test
-  public void testHookContext() {
-    DefaultNetworkConfig network = new DefaultNetworkConfig("test");
-    VerticleConfig verticle = network.addVerticle("feeder", "feeder.py");
-    verticle.addHook(new TestHook());
-    NetworkContext context = ContextBuilder.buildContext(network);
-    assertEquals("test", context.address());
-    VerticleContext verticleContext = context.component("feeder");
-    assertEquals(1, verticleContext.hooks().size());
-    assertTrue(verticleContext.hooks().get(0) instanceof TestHook);
   }
 
   @Test
@@ -273,25 +252,6 @@ public class ContextTest {
     assertEquals("test.feeder-1", verticleContext.instances().get(0).address());
     assertEquals("test.feeder-2", verticleContext.instances().get(1).address());
     assertNotNull(verticleContext.instances().get(0).component());
-  }
-
-  public static class TestHook implements ComponentHook {
-    @Override
-    public void handleStart(net.kuujo.vertigo.component.Component subject) {
-      
-    }
-    @Override
-    public void handleStop(net.kuujo.vertigo.component.Component subject) {
-      
-    }
-    @Override
-    public void handleReceive(String port, String String) {
-      
-    }
-    @Override
-    public void handleSend(String port, String String) {
-      
-    }
   }
 
 }

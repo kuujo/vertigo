@@ -21,14 +21,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
-import net.kuujo.vertigo.hooks.InputPortHook;
 import net.kuujo.vertigo.input.InputConnection;
+import net.kuujo.vertigo.input.InputGroup;
 import net.kuujo.vertigo.input.InputPort;
-import net.kuujo.vertigo.message.JsonMessage;
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 
@@ -45,15 +42,14 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private final Vertx vertx;
   private InputPortContext context;
-  private final VertigoCluster cluster;
-  private final List<InputPortHook> hooks = new ArrayList<>();
-  private final Map<String, InputConnection> connections = new HashMap<>();
-  private Handler<DefaultJsonMessage> messageHandler;
+  private final List<InputConnection> connections = new ArrayList<>();
+  @SuppressWarnings("rawtypes")
+  private Handler messageHandler;
+  private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
 
-  public DefaultInputPort(Vertx vertx, InputPortContext context, VertigoCluster cluster) {
+  public DefaultInputPort(Vertx vertx, InputPortContext context) {
     this.vertx = vertx;
     this.context = context;
-    this.cluster = cluster;
   }
 
   DefaultInputPort setContext(InputPortContext context) {
@@ -72,16 +68,10 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
-  public InputPort addHook(InputPortHook hook) {
-    hooks.add(hook);
-    return this;
-  }
-
-  @Override
   public void update(InputPortContext update) {
-    Iterator<Map.Entry<String, InputConnection>> iter = connections.entrySet().iterator();
+    Iterator<InputConnection> iter = connections.iterator();
     while (iter.hasNext()) {
-      InputConnection connection = iter.next().getValue();
+      InputConnection connection = iter.next();
       boolean exists = false;
       for (InputConnectionContext input : update.connections()) {
         if (input.equals(connection.context())) {
@@ -97,7 +87,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
     for (InputConnectionContext input : update.connections()) {
       boolean exists = false;
-      for (InputConnection connection : connections.values()) {
+      for (InputConnection connection : connections) {
         if (connection.context().equals(input)) {
           exists = true;
           break;
@@ -105,24 +95,47 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       }
 
       if (!exists) {
-        connections.put(input.address(), BasicInputConnection.factory(vertx, input, cluster).open());
+        InputConnection newConnection = new DefaultInputConnection(vertx, input).open();
+        newConnection.messageHandler(messageHandler);
+        for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
+          newConnection.groupHandler(entry.getKey(), entry.getValue());
+        }
+        connections.add(newConnection);
       }
     }
   }
 
   @Override
-  public InputPort messageHandler(final Handler<JsonMessage> handler) {
-    this.messageHandler = new Handler<DefaultJsonMessage>() {
-      @Override
-      public void handle(DefaultJsonMessage message) {
-        handler.handle(message);
-        for (InputPortHook hook : hooks) {
-          hook.handleReceive(message.id());
-        }
-      }
-    };
-    for (InputConnection connection : connections.values()) {
+  public InputPort pause() {
+    for (InputConnection connection : connections) {
+      connection.pause();
+    }
+    return this;
+  }
+
+  @Override
+  public InputPort resume() {
+    for (InputConnection connection : connections) {
+      connection.resume();
+    }
+    return this;
+  }
+
+  @Override
+  @SuppressWarnings("rawtypes")
+  public InputPort messageHandler(Handler handler) {
+    this.messageHandler = handler;
+    for (InputConnection connection : connections) {
       connection.messageHandler(messageHandler);
+    }
+    return this;
+  }
+
+  @Override
+  public InputPort groupHandler(String group, Handler<InputGroup> handler) {
+    this.groupHandlers.put(group, handler);
+    for (InputConnection connection : connections) {
+      connection.groupHandler(group, handler);
     }
     return this;
   }
@@ -139,9 +152,12 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       startCounter.setHandler(doneHandler);
 
       for (InputConnectionContext connectionContext : context.connections()) {
-        InputConnection connection = BasicInputConnection.factory(vertx, connectionContext, cluster);
+        InputConnection connection = new DefaultInputConnection(vertx, connectionContext);
         connection.messageHandler(messageHandler);
-        connections.put(connectionContext.address(), connection.open(startCounter));
+        for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
+          connection.groupHandler(entry.getKey(), entry.getValue());
+        }
+        connections.add(connection.open(startCounter));
       }
     }
     return this;
@@ -167,7 +183,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       }
     });
 
-    for (InputConnection connection : connections.values()) {
+    for (InputConnection connection : connections) {
       connection.close(stopCounter);
     }
   }

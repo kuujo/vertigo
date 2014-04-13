@@ -16,17 +16,13 @@
 package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 
 /**
  * A component-to-component input connection.
  *
  * @author Jordan Halterman
  */
-public interface InputConnection {
+public interface InputConnection extends InputBuffer<InputConnection> {
  
   /**
    * Returns the input connection context.
@@ -34,40 +30,5 @@ public interface InputConnection {
    * @return The input connection context.
    */
   InputConnectionContext context();
-
-  /**
-   * Registers a message handler on the connection.
-   *
-   * @param handler A message handler.
-   * @return The input connection.
-   */
-  InputConnection messageHandler(Handler<DefaultJsonMessage> handler);
-
-  /**
-   * Opens the connection.
-   *
-   * @return The input connection.
-   */
-  InputConnection open();
-
-  /**
-   * Opens the connection.
-   *
-   * @param doneHandler An asynchronous handler to be called once opened.
-   * @return The input connection.
-   */
-  InputConnection open(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Closes the connection.
-   */
-  void close();
-
-  /**
-   * Closes the connection.
-   *
-   * @param doneHandler An asynchronous handler to be called once the connection is closed.
-   */
-  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

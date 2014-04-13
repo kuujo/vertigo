@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,47 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.message;
+package net.kuujo.vertigo.context;
 
-import net.kuujo.vertigo.message.impl.DefaultJsonMessage;
-import net.kuujo.vertigo.util.serializer.JsonSerializable;
+import java.util.List;
 
-import org.vertx.java.core.json.JsonObject;
+import net.kuujo.vertigo.context.impl.DefaultOutputStreamContext;
+import net.kuujo.vertigo.input.grouping.Grouping;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * A Vertigo message.
- * 
+ * Output stream context.
+ *
  * @author Jordan Halterman
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,
   include=JsonTypeInfo.As.PROPERTY,
-  property="type",
-  defaultImpl=DefaultJsonMessage.class
+  property="class",
+  defaultImpl=DefaultOutputStreamContext.class
 )
-public interface JsonMessage extends JsonSerializable {
+public interface OutputStreamContext extends Context<OutputStreamContext> {
 
   /**
-   * Returns the unique message ID.
-   * 
-   * @return The unique message ID.
-   */
-  String id();
-
-  /**
-   * Returns the message body.
-   * 
-   * @return The message body.
-   */
-  JsonObject body();
-
-  /**
-   * Copies the message.
+   * Returns the parent output port context.
    *
-   * @return A new copy of the message.
+   * @return The parent port context.
    */
-  JsonMessage copy(String id);
+  OutputPortContext port();
+
+  /**
+   * Returns the stream grouping.
+   *
+   * @return The stream grouping.
+   */
+  Grouping grouping();
+
+  /**
+   * Returns a list of output connections.
+   *
+   * @return A list of output connections.
+   */
+  List<OutputConnectionContext> connections();
 
 }

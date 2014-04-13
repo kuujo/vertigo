@@ -18,19 +18,15 @@ package net.kuujo.vertigo.input;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.InputContext;
-import net.kuujo.vertigo.hooks.InputHook;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * An input collector.
- * <p>
+ * An input collector.<p>
  * 
  * The input collector is the primary interface for receiving input within a component
- * instance. Input collectors are essentially wrappers around multiple {@link Listener}
- * instances. With each component being able to listen to output from multiple addresses,
- * the input collector joins data from each of those sources with a single interface.
+ * instance. Input collectors are simple wrappers around {@link InputPort} instances.
  * 
  * @author Jordan Halterman
  */
@@ -42,14 +38,6 @@ public interface InputCollector {
    * @return The input context.
    */
   InputContext context();
-
-  /**
-   * Adds a hook to the input.
-   *
-   * @param hook The hook to add.
-   * @return The input collector.
-   */
-  InputCollector addHook(InputHook hook);
 
   /**
    * Returns a collection of input ports.

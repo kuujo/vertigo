@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,31 @@
  */
 package net.kuujo.vertigo.output.selector;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import net.kuujo.vertigo.output.OutputConnection;
 
 /**
- * A *random* selector.
+ * a *fair* selector.
  *
- * The *random* selector dispatches messages to component workers randomly.
+ * The fair selector selects connections based on their current output queue
+ * sizes. This means the if one connection's queue is backed up, the fair
+ * selector will evenly dispatch messages to connections with shorter queues.
  *
  * @author Jordan Halterman
  */
-public class RandomSelector implements Selector {
-  private Random rand = new Random();
-
-  public RandomSelector() {
-  }
+public class FairSelector implements Selector {
 
   @Override
   public List<OutputConnection> select(Object message, List<OutputConnection> connections) {
-    int index = rand.nextInt(connections.size());
-    return connections.subList(index, index+1);
+    OutputConnection lowest = null;
+    for (OutputConnection connection : connections) {
+      if (lowest == null || connection.getSendQueueSize() < lowest.getSendQueueSize()) {
+        lowest = connection;
+      }
+    }
+    return Arrays.asList(lowest);
   }
 
 }

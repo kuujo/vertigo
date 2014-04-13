@@ -25,7 +25,8 @@ package net.kuujo.vertigo.output;
  * the messages within the group. Additionally, sub-groups may be created,
  * and Vertigo guarantees that sub-groups are sent and ended prior to parent
  * groups ending. This allows for logical grouping of messages. Note that
- * messages within groups are not guaranteed to be ordered.
+ * while groups are guaranteed to be strongly ordered, messages within groups
+ * are not guaranteed to be ordered.
  *
  * @author Jordan Halterman
  */

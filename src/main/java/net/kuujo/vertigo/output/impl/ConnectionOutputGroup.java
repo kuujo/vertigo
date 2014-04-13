@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.output.impl;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
@@ -44,16 +42,17 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class ConnectionOutputGroup implements OutputGroup {
-  private final String id;
-  private final String name;
+  final String id;
+  final String name;
   private final Vertx vertx;
   private final OutputConnectionContext context;
   private final String address;
   private final AdaptiveEventBus eventBus;
-  private final Set<ConnectionOutputGroup> children = new HashSet<>();
   private Handler<Void> endHandler;
+  private ConnectionOutputGroup lastGroup;
   private int sentCount;
   private int ackedCount;
+  private boolean childrenComplete = true;
   private boolean ended;
 
   public ConnectionOutputGroup(String id, String name, Vertx vertx, OutputConnectionContext context) {
@@ -70,14 +69,14 @@ public class ConnectionOutputGroup implements OutputGroup {
    * Checks whether the group is complete.
    */
   private void checkEnd() {
-    if (ended && ackedCount == sentCount && children.isEmpty()) {
+    if (ended && ackedCount == sentCount && childrenComplete) {
       if (endHandler != null) {
         endHandler.handle((Void) null);
       }
     }
   }
 
-  private ConnectionOutputGroup endHandler(Handler<Void> handler) {
+  ConnectionOutputGroup endHandler(Handler<Void> handler) {
     this.endHandler = handler;
     return this;
   }
@@ -97,16 +96,26 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup group(String name, Handler<AsyncResult<OutputGroup>> handler) {
-    final ConnectionOutputGroup child = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, context);
-    children.add(child);
-    child.endHandler(new Handler<Void>() {
+  public OutputGroup group(String name, final Handler<AsyncResult<OutputGroup>> handler) {
+    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, context);
+    childrenComplete = false;
+    group.endHandler(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        children.remove(child);
+        childrenComplete = true;
       }
     });
-    doStartGroup(child, handler);
+    if (lastGroup != null) {
+      lastGroup.endHandler(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
+          doStartGroup(group, handler);
+        }
+      });
+    } else {
+      doStartGroup(group, handler);
+    }
+    lastGroup = group;
     return this;
   }
 

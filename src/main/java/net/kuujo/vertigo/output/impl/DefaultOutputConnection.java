@@ -48,6 +48,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private int currentQueueSize;
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
+  private ConnectionOutputGroup lastGroup;
   private boolean open;
   private boolean paused;
 
@@ -118,19 +119,36 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection group(final String name, final Handler<AsyncResult<OutputGroup>> handler) {
-    final String groupID = UUID.randomUUID().toString();
-    eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", groupID).putString("group", name), 30000, new Handler<AsyncResult<Message<Void>>>() {
+  public OutputConnection group(String name, final Handler<AsyncResult<OutputGroup>> handler) {
+    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, context);
+    if (lastGroup != null) {
+      lastGroup.endHandler(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
+          doStartGroup(group, handler);
+        }
+      });
+    } else {
+      doStartGroup(group, handler);
+    }
+    lastGroup = group;
+    return this;
+  }
+
+  /**
+   * Starts a new output group.
+   */
+  private void doStartGroup(final ConnectionOutputGroup group, final Handler<AsyncResult<OutputGroup>> handler) {
+    eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", group.id).putString("name", group.name), 30000, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {
         if (result.failed()) {
-          group(name, handler);
+          doStartGroup(group, handler);
         } else {
-          new DefaultFutureResult<OutputGroup>(new ConnectionOutputGroup(groupID, name, vertx, context)).setHandler(handler);
+          new DefaultFutureResult<OutputGroup>(group).setHandler(handler);
         }
       }
     });
-    return this;
   }
 
   @Override

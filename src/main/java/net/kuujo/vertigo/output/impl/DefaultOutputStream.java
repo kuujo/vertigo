@@ -50,7 +50,7 @@ public class DefaultOutputStream implements OutputStream {
     for (OutputConnectionContext connection : context.connections()) {
       connections.add(new DefaultOutputConnection(vertx, connection));
     }
-    this.selector = null; // TODO context.grouping().createSelector();
+    this.selector = context.grouping().createSelector();
   }
 
   @Override

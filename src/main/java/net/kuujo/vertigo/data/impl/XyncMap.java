@@ -120,31 +120,31 @@ public class XyncMap<K, V> implements WatchableAsyncMap<K, V> {
   }
 
   @Override
-  public void watch(String key, Handler<MapEvent<K, V>> handler) {
+  public void watch(K key, Handler<MapEvent<K, V>> handler) {
     final Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = wrapHandler(handler);
     handlers.put(handler, wrappedHandler);
-    map.watch(key, wrappedHandler);
+    map.watch((String) key, wrappedHandler);
   }
 
   @Override
-  public void watch(String key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
+  public void watch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
     final Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = wrapHandler(handler);
     handlers.put(handler, wrappedHandler);
-    map.watch(key, wrappedHandler, doneHandler);
+    map.watch((String) key, wrappedHandler, doneHandler);
   }
 
   @Override
-  public void watch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
+  public void watch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
     final Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = wrapHandler(handler);
     handlers.put(handler, wrappedHandler);
-    map.watch(key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler);
+    map.watch((String) key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler);
   }
 
   @Override
-  public void watch(final String key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public void watch(final K key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
     final Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = wrapHandler(handler);
     handlers.put(handler, wrappedHandler);
-    map.watch(key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler, doneHandler);
+    map.watch((String) key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler, doneHandler);
   }
 
   private Handler<net.kuujo.xync.data.MapEvent<K, V>> wrapHandler(final Handler<MapEvent<K, V>> handler) {
@@ -157,36 +157,36 @@ public class XyncMap<K, V> implements WatchableAsyncMap<K, V> {
   }
 
   @Override
-  public void unwatch(String key, Handler<MapEvent<K, V>> handler) {
+  public void unwatch(K key, Handler<MapEvent<K, V>> handler) {
     Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = handlers.get(handler);
     if (wrappedHandler != null) {
-      map.unwatch(key, wrappedHandler);
+      map.unwatch((String) key, wrappedHandler);
     }
   }
 
   @Override
-  public void unwatch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
+  public void unwatch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
     Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = handlers.get(handler);
     if (wrappedHandler != null) {
-      map.unwatch(key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler);
+      map.unwatch((String) key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler);
     }
   }
 
   @Override
-  public void unwatch(String key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
+  public void unwatch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
     Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = handlers.get(handler);
     if (wrappedHandler != null) {
-      map.unwatch(key, wrappedHandler);
+      map.unwatch((String) key, wrappedHandler);
     } else {
       new DefaultFutureResult<Void>(new DataException("Handler not registered.")).setHandler(doneHandler);
     }
   }
 
   @Override
-  public void unwatch(final String key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public void unwatch(final K key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
     Handler<net.kuujo.xync.data.MapEvent<K, V>> wrappedHandler = handlers.get(handler);
     if (wrappedHandler != null) {
-      map.unwatch(key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler);
+      map.unwatch((String) key, net.kuujo.xync.data.MapEvent.Type.parse(event.name()), wrappedHandler);
     } else {
       new DefaultFutureResult<Void>(new DataException("Handler not registered.")).setHandler(doneHandler);
     }

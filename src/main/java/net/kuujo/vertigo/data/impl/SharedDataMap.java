@@ -52,7 +52,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<K, V> map;
-  private final ConcurrentSharedMap<String, String> watchers;
+  private final ConcurrentSharedMap<K, String> watchers;
   private final Map<Handler<MapEvent<K, V>>, String> watchAddresses = new HashMap<>();
   private final Map<String, Handler<Message<JsonObject>>> messageHandlers = new HashMap<>();
 
@@ -83,16 +83,18 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        if (!map.containsKey(key)) {
-          map.put(key, value);
-          triggerEvent(MapEvent.Type.CHANGE, key, value);
-          triggerEvent(MapEvent.Type.CREATE, key, value);
-          new DefaultFutureResult<V>((V) null).setHandler(doneHandler);
-        } else {
-          V result = map.put(key, value);
-          triggerEvent(MapEvent.Type.CHANGE, key, value);
-          triggerEvent(MapEvent.Type.UPDATE, key, value);
-          new DefaultFutureResult<V>(result).setHandler(doneHandler);
+        synchronized (map) {
+          if (!map.containsKey(key)) {
+            map.put(key, value);
+            triggerEvent(MapEvent.Type.CHANGE, key, value);
+            triggerEvent(MapEvent.Type.CREATE, key, value);
+            new DefaultFutureResult<V>((V) null).setHandler(doneHandler);
+          } else {
+            V result = map.put(key, value);
+            triggerEvent(MapEvent.Type.CHANGE, key, value);
+            triggerEvent(MapEvent.Type.UPDATE, key, value);
+            new DefaultFutureResult<V>(result).setHandler(doneHandler);
+          }
         }
       }
     });
@@ -193,22 +195,22 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
   }
 
   @Override
-  public void watch(String key, Handler<MapEvent<K, V>> handler) {
+  public void watch(K key, Handler<MapEvent<K, V>> handler) {
     watch(key, null, handler, null);
   }
 
   @Override
-  public void watch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
+  public void watch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
     watch(key, event, handler, null);
   }
 
   @Override
-  public void watch(String key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
+  public void watch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
     watch(key, null, handler, doneHandler);
   }
 
   @Override
-  public void watch(final String key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public void watch(final K key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
     final String address = UUID.randomUUID().toString();
     if (event == null) {
       addWatcher(MapEvent.Type.CREATE, key, address);
@@ -243,40 +245,42 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
   /**
    * Adds a watcher to a key.
    */
-  private void addWatcher(MapEvent.Type event, String key, String address) {
-    String swatchers = this.watchers.get(key);
-    JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
-    if (swatchers == null) {
-      watchers = new JsonObject();
+  private void addWatcher(MapEvent.Type event, K key, String address) {
+    synchronized (watchers) {
+      String swatchers = this.watchers.get(key);
+      JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
+      if (swatchers == null) {
+        watchers = new JsonObject();
+      }
+      JsonArray addresses = watchers.getArray(event.toString());
+      if (addresses == null) {
+        addresses = new JsonArray();
+        watchers.putArray(event.toString(), addresses);
+      }
+      if (!addresses.contains(address)) {
+        addresses.add(address);
+      }
+      this.watchers.put(key, watchers.encode());
     }
-    JsonArray addresses = watchers.getArray(event.toString());
-    if (addresses == null) {
-      addresses = new JsonArray();
-      watchers.putArray(event.toString(), addresses);
-    }
-    if (!addresses.contains(address)) {
-      addresses.add(address);
-    }
-    this.watchers.put(key, watchers.encode());
   }
 
   @Override
-  public void unwatch(String key, Handler<MapEvent<K, V>> handler) {
+  public void unwatch(K key, Handler<MapEvent<K, V>> handler) {
     unwatch(key, null, handler, null);
   }
 
   @Override
-  public void unwatch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
+  public void unwatch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
     unwatch(key, event, handler, null);
   }
 
   @Override
-  public void unwatch(String key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
+  public void unwatch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
     unwatch(key, null, handler, doneHandler);
   }
 
   @Override
-  public void unwatch(final String key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
+  public void unwatch(final K key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
     if (watchAddresses.containsKey(handler)) {
       String address = watchAddresses.remove(handler);
 
@@ -318,22 +322,27 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
     }
   }
 
+  /**
+   * Removes a watcher from a key.
+   */
   private void removeWatcher(JsonObject watchers, MapEvent.Type event, String address) {
-    JsonArray addresses = watchers.getArray(event.toString());
-    if (addresses == null) {
-      addresses = new JsonArray();
-      watchers.putArray(event.toString(), addresses);
-    }
-
-    Iterator<Object> iter = addresses.iterator();
-    while (iter.hasNext()) {
-      if (iter.next().equals(address)) {
-        iter.remove();
+    synchronized (watchers) {
+      JsonArray addresses = watchers.getArray(event.toString());
+      if (addresses == null) {
+        addresses = new JsonArray();
+        watchers.putArray(event.toString(), addresses);
       }
-    }
-
-    if (addresses.size() == 0) {
-      watchers.removeField(event.toString());
+  
+      Iterator<Object> iter = addresses.iterator();
+      while (iter.hasNext()) {
+        if (iter.next().equals(address)) {
+          iter.remove();
+        }
+      }
+  
+      if (addresses.size() == 0) {
+        watchers.removeField(event.toString());
+      }
     }
   }
 

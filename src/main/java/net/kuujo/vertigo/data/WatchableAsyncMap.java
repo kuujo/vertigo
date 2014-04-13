@@ -34,7 +34,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param key The key to watch.
    * @param handler The handler to call when an event occurs.
    */
-  void watch(String key, Handler<MapEvent<K, V>> handler);
+  void watch(K key, Handler<MapEvent<K, V>> handler);
 
   /**
    * Watches a key for changes.
@@ -43,7 +43,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param handler The handler to call when an event occurs.
    * @param doneHandler An asynchronous handler to be called once the key is being watched.
    */
-  void watch(String key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
+  void watch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Watches a key for changes.
@@ -52,7 +52,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param event The event type to watch.
    * @param handler The handler to call when an event occurs.
    */
-  void watch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler);
+  void watch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler);
 
   /**
    * Watches a key for changes.
@@ -62,7 +62,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param handler The handler to call when an event occurs.
    * @param doneHandler An asynchronous handler to be called once the key is being watched.
    */
-  void watch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
+  void watch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops watching a key for changes.
@@ -70,7 +70,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param key The key to unwatch.
    * @param handler The handler that was watching the key/event.
    */
-  void unwatch(String key, Handler<MapEvent<K, V>> handler);
+  void unwatch(K key, Handler<MapEvent<K, V>> handler);
 
   /**
    * Stops watching a key for changes.
@@ -79,7 +79,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param handler The handler that was watching the key/event.
    * @param doneHandler An asynchronous handler to be called once the key is no longer being watched.
    */
-  void unwatch(String key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
+  void unwatch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops watching a key for changes.
@@ -88,7 +88,7 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param event The event type to unwatch.
    * @param handler The handler that was watching the key/event.
    */
-  void unwatch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler);
+  void unwatch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler);
 
   /**
    * Stops watching a key for changes.
@@ -98,6 +98,6 @@ public interface WatchableAsyncMap<K, V> extends AsyncMap<K, V> {
    * @param handler The handler that was watching the key/event.
    * @param doneHandler An asynchronous handler to be called once the key is no longer being watched.
    */
-  void unwatch(String key, MapEvent.Type event, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
+  void unwatch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler);
 
 }

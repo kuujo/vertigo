@@ -39,6 +39,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   private InstanceContext currentContext;
   private Handler<Void> resumeHandler;
   private Handler<Void> pauseHandler;
+  private boolean paused = true;
 
   private final Handler<MapEvent<String, String>> instanceHandler = new Handler<MapEvent<String, String>>() {
     @Override
@@ -53,14 +54,12 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     @Override
     public void handle(MapEvent<String, String> event) {
       if (event.type().equals(MapEvent.Type.CREATE)) {
-        if (resumeHandler != null) {
-          resumeHandler.handle((Void) null);
-        }
+        paused = false;
+        checkResume();
       }
       if (event.type().equals(MapEvent.Type.DELETE)) {
-        if (pauseHandler != null) {
-          pauseHandler.handle((Void) null);
-        }
+        paused = true;
+        checkPause();
       }
     }
   };
@@ -161,13 +160,33 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public ComponentCoordinator resumeHandler(Handler<Void> handler) {
     resumeHandler = handler;
+    checkResume();
     return this;
+  }
+
+  /**
+   * Checks and triggers the resume handler.
+   */
+  private void checkResume() {
+    if (!paused && resumeHandler != null) {
+      resumeHandler.handle((Void) null);
+    }
   }
 
   @Override
   public ComponentCoordinator pauseHandler(Handler<Void> handler) {
     pauseHandler = handler;
+    checkPause();
     return this;
+  }
+
+  /**
+   * Checks and triggers the pause handler.
+   */
+  private void checkPause() {
+    if (paused && pauseHandler != null) {
+      pauseHandler.handle((Void) null);
+    }
   }
 
   @Override

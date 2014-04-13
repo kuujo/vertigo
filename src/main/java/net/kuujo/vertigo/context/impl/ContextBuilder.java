@@ -78,6 +78,7 @@ public final class ContextBuilder {
         for (int i = 1; i <= component.getInstances(); i++) {
           DefaultInstanceContext.Builder instance = DefaultInstanceContext.Builder.newBuilder();
           instance.setAddress(String.format("%s-%d", address, i));
+          instance.setStatusAddress(String.format("%s-%d.__status", address, i));
           instance.setNumber(i);
           instance.setInput(DefaultInputContext.Builder.newBuilder().build());
           instance.setOutput(DefaultOutputContext.Builder.newBuilder().build());

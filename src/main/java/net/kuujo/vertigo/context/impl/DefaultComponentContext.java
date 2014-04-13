@@ -25,6 +25,7 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.data.DataStore;
+import net.kuujo.vertigo.data.impl.HazelcastDataStore;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -54,7 +55,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class DefaultComponentContext<T extends ComponentContext<T>> extends BaseContext<T> implements ComponentContext<T> {
   private static final String DEFAULT_GROUP = "__DEFAULT__";
   protected String name;
-  protected String address;
   protected String status;
   protected String group = DEFAULT_GROUP;
   protected Map<String, Object> config;
@@ -179,7 +179,15 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   @Override
   @SuppressWarnings("unchecked")
   public Class<? extends DataStore> storageType() {
-    return (Class<? extends DataStore>) storage.get("class");
+    String storage = (String) this.storage.get("class");
+    if (storage == null) {
+      return HazelcastDataStore.class;
+    }
+    try {
+      return (Class<? extends DataStore>) Class.forName(storage);
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
   }
 
   @Override

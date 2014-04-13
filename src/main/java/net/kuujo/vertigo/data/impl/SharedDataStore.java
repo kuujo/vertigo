@@ -27,6 +27,7 @@ import net.kuujo.vertigo.data.AsyncQueue;
 import net.kuujo.vertigo.data.AsyncSet;
 
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Shared data-based data store.
@@ -39,7 +40,7 @@ public class SharedDataStore implements DataStore {
   private final Vertx vertx;
 
   @Factory
-  public static SharedDataStore factory(Vertx vertx) {
+  public static SharedDataStore factory(JsonObject config, Vertx vertx) {
     return new SharedDataStore(vertx);
   }
 

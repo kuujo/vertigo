@@ -26,6 +26,7 @@ import net.kuujo.vertigo.data.AsyncSet;
 import net.kuujo.vertigo.data.DataStore;
 
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Xync-based hazelcast cluster data store.
@@ -37,7 +38,7 @@ public class HazelcastDataStore implements DataStore {
   private final Vertx vertx;
 
   @Factory
-  public static HazelcastDataStore factory(Vertx vertx) {
+  public static HazelcastDataStore factory(JsonObject config, Vertx vertx) {
     return new HazelcastDataStore(vertx);
   }
 

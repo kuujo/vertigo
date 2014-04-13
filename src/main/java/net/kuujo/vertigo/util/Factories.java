@@ -4,8 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashSet;
-import java.util.Set;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.Vertigo.Mode;
@@ -36,19 +34,6 @@ public final class Factories {
         // The method return type must be a Class<T> instance.
         if (!method.getReturnType().isAssignableFrom(type)) {
           throw new IllegalArgumentException("Factory method " + method.getName() + " in " + type.getCanonicalName() + " must return a " + type.getCanonicalName() + " instance.");
-        }
-
-        // Set up the factory arguments.
-        Class<?>[] types = method.getParameterTypes();
-        Object[] params = new Object[types.length];
-        final Set<Integer> used = new HashSet<>();
-        for (int i = 0; i < types.length; i++) {
-          for (int j = 0; j < args.length; j++) {
-            if (!used.contains(j) && args[j].getClass().isAssignableFrom(types[i])) {
-              params[i] = args[j];
-              used.add(j);
-            }
-          }
         }
 
         // Invoke the factory method.
@@ -127,6 +112,11 @@ public final class Factories {
       if (current.isAnnotationPresent(annotation)) {
         return true;
       }
+      for (Class<?> iface : current.getInterfaces()) {
+        if (iface.isAnnotationPresent(annotation)) {
+          return true;
+        }
+      }
       current = current.getSuperclass();
     }
     return false;
@@ -145,6 +135,11 @@ public final class Factories {
     while (current != Object.class) {
       if (current.isAnnotationPresent(annotation)) {
         return (T) current.getAnnotation(annotation);
+      }
+      for (Class<?> iface : current.getInterfaces()) {
+        if (iface.isAnnotationPresent(annotation)) {
+          return (T) iface.getAnnotation(annotation);
+        }
       }
       current = current.getSuperclass();
     }

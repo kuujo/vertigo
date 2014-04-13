@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.data.DataStore;
+import net.kuujo.vertigo.data.impl.HazelcastDataStore;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
@@ -161,14 +162,22 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   @SuppressWarnings("unchecked")
   public T setStorage(Class<? extends DataStore> storage) {
     this.storage.clear();
-    this.storage.put("class", storage);
+    this.storage.put("class", storage.toString());
     return (T) this;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public Class<? extends DataStore> getStorageType() {
-    return (Class<? extends DataStore>) this.storage.get("class");
+    String storage = (String) this.storage.get("class");
+    if (storage == null) {
+      return HazelcastDataStore.class;
+    }
+    try {
+      return (Class<? extends DataStore>) Class.forName(storage);
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
   }
 
   @Override

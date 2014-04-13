@@ -16,13 +16,15 @@
 package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.context.InputPortContext;
+import net.kuujo.vertigo.streams.Closeable;
+import net.kuujo.vertigo.streams.Openable;
 
 /**
  * An input port.
  *
  * @author Jordan Halterman
  */
-public interface InputPort extends InputBuffer<InputPort> {
+public interface InputPort extends Input<InputPort>, Openable<InputPort>, Closeable<InputPort> {
 
   /**
    * Returns the port name.

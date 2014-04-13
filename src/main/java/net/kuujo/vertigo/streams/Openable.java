@@ -13,63 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.input;
+package net.kuujo.vertigo.streams;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Input buffer interface.<p>
- *
- * This interface exposes an API intentionally similar to that of the
- * Vert.x {@link org.vertx.java.core.streams.ReadStream} interface. Users
- * can use the interface to control the flow of messages into the input.
+ * An openable type.
  *
  * @author Jordan Halterman
  *
- * @param <T> The input type.
+ * @param <T> The openable type.
  */
-public interface InputBuffer<T extends InputBuffer<T>> extends Input<T> {
+public interface Openable<T extends Openable<T>> {
 
   /**
-   * Opens the input.
+   * Opens the stream.
    *
-   * @return The input.
+   * @return The stream.
    */
   T open();
 
   /**
-   * Opens the input.
+   * Opens the stream.
    *
    * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The input.
+   * @return The stream.
    */
   T open(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Pauses the input.
-   *
-   * @return The input.
-   */
-  T pause();
-
-  /**
-   * Resumes the input.
-   *
-   * @return The input.
-   */
-  T resume();
-
-  /**
-   * Closes the input.
-   */
-  void close();
-
-  /**
-   * Closes the input.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   */
-  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

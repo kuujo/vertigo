@@ -15,11 +15,10 @@
  */
 package net.kuujo.vertigo.output;
 
+import net.kuujo.vertigo.streams.SendStream;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * Output interface.<p>
@@ -29,7 +28,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public interface Output<T extends Output<T>> {
+public interface Output<T extends Output<T>> extends SendStream<T> {
 
   /**
    * Creates an output group.
@@ -39,117 +38,5 @@ public interface Output<T extends Output<T>> {
    * @return The output buffer.
    */
   T group(String name, Handler<AsyncResult<OutputGroup>> handler);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Object message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(String message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Boolean message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Character message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Short message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Integer message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Long message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Double message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Float message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Buffer message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(JsonObject message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(JsonArray message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(Byte message);
-
-  /**
-   * Sends a message through the output.
-   *
-   * @param message The message to send.
-   * @return The output instance.
-   */
-  T send(byte[] message);
 
 }

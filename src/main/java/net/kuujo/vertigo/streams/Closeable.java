@@ -13,24 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.input;
+package net.kuujo.vertigo.streams;
 
-import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.streams.Closeable;
-import net.kuujo.vertigo.streams.Openable;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 
 /**
- * A component-to-component input connection.
+ * Closeable type.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The closeable type.
  */
-public interface InputConnection extends Input<InputConnection>, Openable<InputConnection>, Closeable<InputConnection> {
- 
+public interface Closeable<T extends Closeable<T>> {
+
   /**
-   * Returns the input connection context.
-   *
-   * @return The input connection context.
+   * Closes the stream.
    */
-  InputConnectionContext context();
+  void close();
+
+  /**
+   * Closes the stream.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   */
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

@@ -17,9 +17,9 @@ package net.kuujo.vertigo.output.impl;
 
 import java.util.UUID;
 
-import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.eventbus.AdaptiveEventBus;
 import net.kuujo.vertigo.eventbus.impl.WrappedAdaptiveEventBus;
+import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputGroup;
 
 import org.vertx.java.core.AsyncResult;
@@ -42,10 +42,11 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class ConnectionOutputGroup implements OutputGroup {
-  final String id;
-  final String name;
+  private final String id;
+  private final String parent;
+  private final String name;
   private final Vertx vertx;
-  private final OutputConnectionContext context;
+  private final OutputConnection connection;
   private final String address;
   private final AdaptiveEventBus eventBus;
   private Handler<Void> endHandler;
@@ -55,12 +56,24 @@ public class ConnectionOutputGroup implements OutputGroup {
   private boolean childrenComplete = true;
   private boolean ended;
 
-  public ConnectionOutputGroup(String id, String name, Vertx vertx, OutputConnectionContext context) {
+  public ConnectionOutputGroup(String id, String name, Vertx vertx, OutputConnection connection) {
     this.id = id;
     this.name = name;
+    this.parent = null;
     this.vertx = vertx;
-    this.context = context;
-    this.address = context.address();
+    this.connection = connection;
+    this.address = connection.context().address();
+    this.eventBus = new WrappedAdaptiveEventBus(vertx);
+    eventBus.setDefaultAdaptiveTimeout(5.0f);
+  }
+
+  public ConnectionOutputGroup(String id, String name, String parent, Vertx vertx, OutputConnection connection) {
+    this.id = id;
+    this.name = name;
+    this.parent = parent;
+    this.vertx = vertx;
+    this.connection = connection;
+    this.address = connection.context().address();
     this.eventBus = new WrappedAdaptiveEventBus(vertx);
     eventBus.setDefaultAdaptiveTimeout(5.0f);
   }
@@ -81,23 +94,53 @@ public class ConnectionOutputGroup implements OutputGroup {
     return this;
   }
 
-  /**
-   * Returns the unique connection group ID.
-   *
-   * @return The unique group ID.
-   */
-  public String id() {
-    return id;
-  }
-
   @Override
   public String name() {
     return name;
   }
 
+  /**
+   * Starts the output group.
+   */
+  public OutputGroup start(final Handler<AsyncResult<OutputGroup>> doneHandler) {
+    eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", id).putString("name", name).putString("parent", parent), 30000, new Handler<AsyncResult<Message<Void>>>() {
+      @Override
+      public void handle(AsyncResult<Message<Void>> result) {
+        if (result.failed()) {
+          start(doneHandler);
+        } else {
+          new DefaultFutureResult<OutputGroup>(ConnectionOutputGroup.this).setHandler(doneHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public OutputGroup setSendQueueMaxSize(int maxSize) {
+    connection.setSendQueueMaxSize(maxSize);
+    return this;
+  }
+
+  @Override
+  public int getSendQueueMaxSize() {
+    return connection.getSendQueueMaxSize();
+  }
+
+  @Override
+  public boolean sendQueueFull() {
+    return (sentCount - ackedCount) + connection.getSendQueueSize() >= connection.getSendQueueMaxSize();
+  }
+
+  @Override
+  public OutputGroup drainHandler(Handler<Void> handler) {
+    connection.drainHandler(handler);
+    return this;
+  }
+
   @Override
   public OutputGroup group(String name, final Handler<AsyncResult<OutputGroup>> handler) {
-    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, context);
+    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this.id, vertx, connection);
     childrenComplete = false;
     group.endHandler(new Handler<Void>() {
       @Override
@@ -109,30 +152,14 @@ public class ConnectionOutputGroup implements OutputGroup {
       lastGroup.endHandler(new Handler<Void>() {
         @Override
         public void handle(Void _) {
-          doStartGroup(group, handler);
+          group.start(handler);
         }
       });
     } else {
-      doStartGroup(group, handler);
+      group.start(handler);
     }
     lastGroup = group;
     return this;
-  }
-
-  /**
-   * Starts a new output group.
-   */
-  private void doStartGroup(final ConnectionOutputGroup group, final Handler<AsyncResult<OutputGroup>> handler) {
-    eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", group.id).putString("name", group.name).putString("parent", id), 30000, new Handler<AsyncResult<Message<Void>>>() {
-      @Override
-      public void handle(AsyncResult<Message<Void>> result) {
-        if (result.failed()) {
-          doStartGroup(group, handler);
-        } else {
-          new DefaultFutureResult<OutputGroup>(group).setHandler(handler);
-        }
-      }
-    });
   }
 
   /**

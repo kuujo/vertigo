@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.streams.Closeable;
+import net.kuujo.vertigo.streams.Openable;
 
 /**
  * Output connection.<p>
@@ -27,7 +29,7 @@ import net.kuujo.vertigo.context.OutputConnectionContext;
  *
  * @author Jordan Halterman
  */
-public interface OutputConnection extends OutputBuffer<OutputConnection> {
+public interface OutputConnection extends Output<OutputConnection>, Openable<OutputConnection>, Closeable<OutputConnection> {
 
   /**
    * Returns the output connection context.

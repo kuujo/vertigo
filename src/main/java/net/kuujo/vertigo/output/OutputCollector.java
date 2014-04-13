@@ -18,9 +18,8 @@ package net.kuujo.vertigo.output;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputContext;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import net.kuujo.vertigo.streams.Closeable;
+import net.kuujo.vertigo.streams.Openable;
 
 /**
  * Output collector.<p>
@@ -30,7 +29,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface OutputCollector {
+public interface OutputCollector extends Openable<OutputCollector>, Closeable<OutputCollector> {
 
   /**
    * Returns the component output context.
@@ -54,34 +53,5 @@ public interface OutputCollector {
    * @return An output port.
    */
   OutputPort port(String name);
-
-  /**
-   * Opens the output.
-   * 
-   * @return The output instance.
-   */
-  OutputCollector open();
-
-  /**
-   * Opens the output collector.
-   * 
-   * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          opened.
-   * @return The output instance.
-   */
-  OutputCollector open(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Closes the output collector.
-   */
-  void close();
-
-  /**
-   * Closes the output collector.
-   * 
-   * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          closed.
-   */
-  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

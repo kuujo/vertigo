@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.output;
 
+
 /**
  * Output group.<p>
  *

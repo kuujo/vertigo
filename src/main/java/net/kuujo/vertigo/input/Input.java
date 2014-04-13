@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.input;
 
+import net.kuujo.vertigo.streams.ReceiveStream;
+
 import org.vertx.java.core.Handler;
 
 /**
@@ -24,7 +26,7 @@ import org.vertx.java.core.Handler;
  *
  * @param <T> The input type.
  */
-public interface Input<T extends Input<T>> {
+public interface Input<T extends Input<T>> extends ReceiveStream<T> {
 
   /**
    * Registers a message handler on the input.

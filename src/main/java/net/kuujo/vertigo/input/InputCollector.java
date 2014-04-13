@@ -18,9 +18,8 @@ package net.kuujo.vertigo.input;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.InputContext;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import net.kuujo.vertigo.streams.Closeable;
+import net.kuujo.vertigo.streams.Openable;
 
 /**
  * An input collector.<p>
@@ -30,7 +29,7 @@ import org.vertx.java.core.Handler;
  * 
  * @author Jordan Halterman
  */
-public interface InputCollector {
+public interface InputCollector extends Openable<InputCollector>, Closeable<InputCollector> {
 
   /**
    * Returns the component input context.
@@ -54,34 +53,5 @@ public interface InputCollector {
    * @return The input port.
    */
   InputPort port(String name);
-
-  /**
-   * Opens the input collector.
-   * 
-   * @return The input collector instance.
-   */
-  InputCollector open();
-
-  /**
-   * Opens the input collector.
-   * 
-   * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          opened.
-   * @return The input collector instance.
-   */
-  InputCollector open(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Closes the input collector.
-   */
-  void close();
-
-  /**
-   * Closes the input collector.
-   * 
-   * @param doneHandler An asynchronous handler to be invoked once the collector is
-   *          closed.
-   */
-  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

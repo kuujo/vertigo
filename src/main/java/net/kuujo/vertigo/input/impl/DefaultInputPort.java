@@ -46,6 +46,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
+  private boolean paused;
 
   public DefaultInputPort(Vertx vertx, InputPortContext context) {
     this.vertx = vertx;
@@ -100,6 +101,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
         for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
           newConnection.groupHandler(entry.getKey(), entry.getValue());
         }
+        if (paused) {
+          newConnection.pause();
+        }
         connections.add(newConnection);
       }
     }
@@ -107,6 +111,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public InputPort pause() {
+    paused = true;
     for (InputConnection connection : connections) {
       connection.pause();
     }
@@ -115,6 +120,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public InputPort resume() {
+    paused = false;
     for (InputConnection connection : connections) {
       connection.resume();
     }
@@ -156,6 +162,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
         connection.messageHandler(messageHandler);
         for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
           connection.groupHandler(entry.getKey(), entry.getValue());
+        }
+        if (paused) {
+          connection.pause();
         }
         connections.add(connection.open(startCounter));
       }

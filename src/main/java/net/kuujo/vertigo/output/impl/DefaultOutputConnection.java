@@ -120,35 +120,19 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public OutputConnection group(String name, final Handler<AsyncResult<OutputGroup>> handler) {
-    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, context);
+    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, this);
     if (lastGroup != null) {
       lastGroup.endHandler(new Handler<Void>() {
         @Override
         public void handle(Void _) {
-          doStartGroup(group, handler);
+          group.start(handler);
         }
       });
     } else {
-      doStartGroup(group, handler);
+      group.start(handler);
     }
     lastGroup = group;
     return this;
-  }
-
-  /**
-   * Starts a new output group.
-   */
-  private void doStartGroup(final ConnectionOutputGroup group, final Handler<AsyncResult<OutputGroup>> handler) {
-    eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", group.id).putString("name", group.name), 30000, new Handler<AsyncResult<Message<Void>>>() {
-      @Override
-      public void handle(AsyncResult<Message<Void>> result) {
-        if (result.failed()) {
-          doStartGroup(group, handler);
-        } else {
-          new DefaultFutureResult<OutputGroup>(group).setHandler(handler);
-        }
-      }
-    });
   }
 
   @Override

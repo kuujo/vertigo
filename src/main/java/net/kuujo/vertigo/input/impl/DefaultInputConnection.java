@@ -15,8 +15,10 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.input.InputConnection;
@@ -39,8 +41,10 @@ public class DefaultInputConnection implements InputConnection {
   private final InputConnectionContext context;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private final Map<String, DefaultInputGroup> groups = new HashMap<>();
+  private final Queue<Object> queue = new ArrayDeque<>();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
+  private boolean paused;
 
   private final Handler<Message<JsonObject>> internalStartHandler = new Handler<Message<JsonObject>>() {
     @Override
@@ -50,6 +54,7 @@ public class DefaultInputConnection implements InputConnection {
       DefaultInputGroup group = new DefaultInputGroup(name);
       groups.put(id, group);
       Handler<InputGroup> handler = groupHandlers.get(name);
+      if (paused) group.pause();
       if (handler != null) {
         handler.handle(group);
       }
@@ -86,7 +91,10 @@ public class DefaultInputConnection implements InputConnection {
     @Override
     @SuppressWarnings("unchecked")
     public void handle(Message<Object> message) {
-      if (messageHandler != null) {
+      if (paused) {
+        queue.add(message.body());
+      }
+      else if (messageHandler != null) {
         messageHandler.handle(message.body());
       }
       message.reply();
@@ -120,11 +128,26 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection pause() {
+    paused = true;
+    for (DefaultInputGroup group : groups.values()) {
+      group.pause();
+    }
     return this;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public InputConnection resume() {
+    paused = false;
+    if (messageHandler != null) {
+      for (Object message : queue) {
+        messageHandler.handle(message);
+      }
+    }
+    queue.clear();
+    for (DefaultInputGroup group : groups.values()) {
+      group.resume();
+    }
     return this;
   }
 

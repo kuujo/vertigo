@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.streams.Closeable;
+import net.kuujo.vertigo.streams.Openable;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -25,7 +27,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface OutputPort extends OutputBuffer<OutputPort> {
+public interface OutputPort extends Output<OutputPort>, Openable<OutputPort>, Closeable<OutputPort> {
 
   /**
    * Returns the output port name.

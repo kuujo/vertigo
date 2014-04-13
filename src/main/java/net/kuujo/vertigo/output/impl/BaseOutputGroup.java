@@ -53,6 +53,41 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup setSendQueueMaxSize(int maxSize) {
+    for (OutputGroup group : connections) {
+      group.setSendQueueMaxSize(maxSize);
+    }
+    return this;
+  }
+
+  @Override
+  public int getSendQueueMaxSize() {
+    int maxSize = 0;
+    for (OutputGroup group : connections) {
+      maxSize += group.getSendQueueMaxSize();
+    }
+    return maxSize;
+  }
+
+  @Override
+  public boolean sendQueueFull() {
+    for (OutputGroup group : connections) {
+      if (group.sendQueueFull()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public OutputGroup drainHandler(Handler<Void> handler) {
+    for (OutputGroup group : connections) {
+      group.drainHandler(handler);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup group(final String name, final Handler<AsyncResult<OutputGroup>> handler) {
     final List<OutputGroup> children = new ArrayList<>();
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());

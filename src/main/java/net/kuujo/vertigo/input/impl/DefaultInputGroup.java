@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.input.impl;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 import net.kuujo.vertigo.input.InputGroup;
 
 import org.vertx.java.core.Handler;
@@ -31,6 +34,9 @@ public class DefaultInputGroup implements InputGroup {
   private Handler messageHandler;
   private Handler<Void> endHandler;
   private Handler<InputGroup> groupHandler;
+  private Queue<Object> queue = new ArrayDeque<>();
+  private boolean paused;
+  private boolean ended;
 
   public DefaultInputGroup(String name) {
     this.name = name;
@@ -39,6 +45,28 @@ public class DefaultInputGroup implements InputGroup {
   @Override
   public String name() {
     return name;
+  }
+
+  @Override
+  public InputGroup pause() {
+    paused = true;
+    return this;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public InputGroup resume() {
+    paused = false;
+    if (messageHandler != null) {
+      for (Object message : queue) {
+        messageHandler.handle(message);
+      }
+    }
+    queue.clear();
+    if (ended && endHandler != null) {
+      endHandler.handle((Void) null);
+    }
+    return this;
   }
 
   @Override
@@ -60,7 +88,10 @@ public class DefaultInputGroup implements InputGroup {
   }
 
   void handleEnd() {
-    if (endHandler != null) {
+    if (paused) {
+      ended = true;
+    }
+    else if (endHandler != null) {
       endHandler.handle((Void) null);
     }
   }
@@ -74,7 +105,10 @@ public class DefaultInputGroup implements InputGroup {
 
   @SuppressWarnings("unchecked")
   void handleMessage(Object message) {
-    if (messageHandler != null) {
+    if (paused) {
+      queue.add(message);
+    }
+    else if (messageHandler != null) {
       messageHandler.handle(message);
     }
   }

@@ -13,24 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.input;
+package net.kuujo.vertigo.streams;
 
-import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.streams.Closeable;
-import net.kuujo.vertigo.streams.Openable;
+import org.vertx.java.core.Handler;
 
 /**
- * A component-to-component input connection.
+ * Data receive stream.
  *
  * @author Jordan Halterman
+ *
+ * @param <T> The receive stream type.
  */
-public interface InputConnection extends Input<InputConnection>, Openable<InputConnection>, Closeable<InputConnection> {
- 
+public interface ReceiveStream<T extends ReceiveStream<T>> {
+
   /**
-   * Returns the input connection context.
+   * Pauses the receive stream.
    *
-   * @return The input connection context.
+   * @return The stream.
    */
-  InputConnectionContext context();
+  T pause();
+
+  /**
+   * Resumes receiving data on the stream.
+   *
+   * @return The stream.
+   */
+  T resume();
+
+  /**
+   * Registers a message handler.
+   *
+   * @param handler A message handler.
+   * @return The stream.
+   */
+  @SuppressWarnings("rawtypes")
+  T messageHandler(Handler handler);
 
 }

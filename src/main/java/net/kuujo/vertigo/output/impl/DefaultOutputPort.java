@@ -195,6 +195,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
+            groups.add(result.result());
             counter.succeed();
           }
         }

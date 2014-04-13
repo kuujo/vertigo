@@ -62,7 +62,7 @@ public class DefaultInputConnection implements InputConnection {
     @Override
     public void handle(Message<JsonObject> message) {
       String id = message.body().getString("id");
-      String name = message.body().getString("group");
+      String name = message.body().getString("name");
       DefaultInputGroup group = new DefaultInputGroup(name);
       groups.put(id, group);
       Handler<InputGroup> handler = groupHandlers.get(name);

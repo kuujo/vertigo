@@ -126,6 +126,7 @@ public class DefaultOutputStream implements OutputStream {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
+            groups.add(result.result());
             counter.succeed();
           }
         }

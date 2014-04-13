@@ -41,13 +41,24 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  */
 public class DefaultInputCollector implements InputCollector, Observer<InputContext> {
   private final Vertx vertx;
-  private final InputContext context;
+  private InputContext context;
   private final Map<String, InputPort> ports = new HashMap<>();
   private boolean started;
+
+  public DefaultInputCollector(Vertx vertx) {
+    this.vertx = vertx;
+  }
 
   public DefaultInputCollector(Vertx vertx, InputContext context) {
     this.vertx = vertx;
     this.context = context;
+    context.registerObserver(this);
+  }
+
+  public DefaultInputCollector setContext(InputContext context) {
+    this.context = context;
+    context.registerObserver(this);
+    return this;
   }
 
   @Override

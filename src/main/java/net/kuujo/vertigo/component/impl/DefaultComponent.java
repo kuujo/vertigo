@@ -22,7 +22,6 @@ import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.input.impl.DefaultInputCollector;
-import net.kuujo.vertigo.logging.PortLogger;
 import net.kuujo.vertigo.logging.PortLoggerFactory;
 import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
@@ -34,7 +33,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 /**
@@ -50,8 +48,8 @@ public class DefaultComponent implements Component {
   protected Logger logger;
   private final String address;
   protected InstanceContext context;
-  protected InputCollector input;
-  protected OutputCollector output;
+  protected final DefaultInputCollector input;
+  protected final DefaultOutputCollector output;
   protected DataStore storage;
   private boolean started;
 
@@ -61,9 +59,9 @@ public class DefaultComponent implements Component {
     this.container = container;
     this.cluster = cluster;
     this.coordinator = new DefaultComponentCoordinator(network, address, cluster);
-    // Until the component is started, create a Vert.x logger. Once the component has
-    // been started a port-based logger will be created.
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address));
+    this.input = new DefaultInputCollector(vertx);
+    this.output = new DefaultOutputCollector(vertx);
+    this.logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output);
   }
 
   @Override
@@ -119,15 +117,15 @@ public class DefaultComponent implements Component {
         } else {
           context = result.result();
 
-          // Set up input and output collectors and add hooks for each.
-          input = new DefaultInputCollector(vertx, context.input());
-          output = new DefaultOutputCollector(vertx, context.output());
+          // Set up input and output contexts.
+          input.setContext(context.input());
+          output.setContext(context.output());
 
           // Set up the component storage facility.
           storage = Factories.createObject(context.component().storageType(), context.component().storageConfig(), vertx);
 
           // Set up a port-based logger.
-          logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output.port(PortLogger.LOGGER_PORT));
+          logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output);
 
           output.open(new Handler<AsyncResult<Void>>() {
             @Override

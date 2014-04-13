@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.logging;
 
+import net.kuujo.vertigo.output.OutputCollector;
 import net.kuujo.vertigo.output.OutputPort;
 
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
 /**
@@ -32,17 +32,52 @@ import org.vertx.java.core.logging.Logger;
 public class PortLogger extends Logger {
 
   /**
-   * The logger port name.
+   * <code>fatal</code> is the output port for logging fatal messages.
    */
-  public static final String LOGGER_PORT = "__log__";
+  public static final String FATAL_PORT = "fatal";
+
+  /**
+   * <code>error</code> is the output port for logging error messages.
+   */
+  public static final String ERROR_PORT = "error";
+
+  /**
+   * <code>warn</code> is the output port for logging warning messages.
+   */
+  public static final String WARN_PORT = "warn";
+
+  /**
+   * <code>info</code> is the output port for logging info messages.
+   */
+  public static final String INFO_PORT = "info";
+
+  /**
+   * <code>debug</code> is the output port for logging debug messages.
+   */
+  public static final String DEBUG_PORT = "debug";
+
+  /**
+   * <code>trace</code> is the output port for logging trace messages.
+   */
+  public static final String TRACE_PORT = "trace";
 
   private final Logger logger;
-  private final OutputPort port;
+  private final OutputPort fatal;
+  private final OutputPort error;
+  private final OutputPort warn;
+  private final OutputPort info;
+  private final OutputPort debug;
+  private final OutputPort trace;
 
-  PortLogger(Logger logger, OutputPort port) {
+  PortLogger(Logger logger, OutputCollector output) {
     super(null);
     this.logger = logger;
-    this.port = port;
+    this.fatal = output.port(FATAL_PORT);
+    this.error = output.port(ERROR_PORT);
+    this.warn = output.port(WARN_PORT);
+    this.info = output.port(INFO_PORT);
+    this.debug = output.port(DEBUG_PORT);
+    this.trace = output.port(TRACE_PORT);
   }
 
   @Override
@@ -63,73 +98,73 @@ public class PortLogger extends Logger {
   @Override
   public void fatal(final Object message) {
     logger.fatal(message);
-    port.send(new JsonObject().putString("level", "fatal").putValue("message", message));
+    fatal.send(message);
   }
 
   @Override
   public void fatal(final Object message, final Throwable t) {
     logger.fatal(message, t);
-    port.send(new JsonObject().putString("level", "fatal").putValue("message", message));
+    fatal.send(message);
   }
 
   @Override
   public void error(final Object message) {
     logger.error(message);
-    port.send(new JsonObject().putString("level", "error").putValue("message", message));
+    error.send(message);
   }
 
   @Override
   public void error(final Object message, final Throwable t) {
     logger.error(message, t);
-    port.send(new JsonObject().putString("level", "error").putValue("message", message));
+    error.send(message);
   }
 
   @Override
   public void warn(final Object message) {
     logger.warn(message);
-    port.send(new JsonObject().putString("level", "warn").putValue("message", message));
+    warn.send(message);
   }
 
   @Override
   public void warn(final Object message, final Throwable t) {
     logger.warn(message, t);
-    port.send(new JsonObject().putString("level", "warn").putValue("message", message));
+    warn.send(message);
   }
 
   @Override
   public void info(final Object message) {
     logger.info(message);
-    port.send(new JsonObject().putString("level", "info").putValue("message", message));
+    info.send(message);
   }
 
   @Override
   public void info(final Object message, final Throwable t) {
     logger.info(message, t);
-    port.send(new JsonObject().putString("level", "info").putValue("message", message));
+    info.send(message);
   }
 
   @Override
   public void debug(final Object message) {
     logger.debug(message);
-    port.send(new JsonObject().putString("level", "debug").putValue("message", message));
+    debug.send(message);
   }
 
   @Override
   public void debug(final Object message, final Throwable t) {
     logger.debug(message, t);
-    port.send(new JsonObject().putString("level", "debug").putValue("message", message));
+    debug.send(message);
   }
 
   @Override
   public void trace(final Object message) {
     logger.trace(message);
-    port.send(new JsonObject().putString("level", "trace").putValue("message", message));
+    trace.send(message);
   }
 
   @Override
   public void trace(final Object message, final Throwable t) {
     logger.trace(message, t);
-    port.send(new JsonObject().putString("level", "trace").putValue("message", message));
+    trace.send(message);
   }
 
 }

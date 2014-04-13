@@ -41,14 +41,24 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  */
 public class DefaultOutputCollector implements OutputCollector, Observer<OutputContext> {
   private final Vertx vertx;
-  private final OutputContext context;
+  private OutputContext context;
   private final Map<String, OutputPort> ports = new HashMap<>();
   private boolean started;
+
+  public DefaultOutputCollector(Vertx vertx) {
+    this.vertx = vertx;
+  }
 
   public DefaultOutputCollector(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
     this.context = context;
     context.registerObserver(this);
+  }
+
+  public DefaultOutputCollector setContext(OutputContext context) {
+    this.context = context;
+    context.registerObserver(this);
+    return this;
   }
 
   @Override

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.logging;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.output.OutputPort;
+import net.kuujo.vertigo.output.OutputCollector;
 
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
@@ -28,7 +28,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class PortLoggerFactory {
-  private static final Map<String, Map<OutputPort, PortLogger>> loggers = new HashMap<>();
+  private static final Map<String, Map<OutputCollector, PortLogger>> loggers = new HashMap<>();
 
   /**
    * Creates an output port logger for the given type.
@@ -37,28 +37,28 @@ public class PortLoggerFactory {
    * @param port The output port to which to log messages.
    * @return An output port logger.
    */
-  public static PortLogger getLogger(Class<?> clazz, OutputPort port) {
-    return getLogger(clazz.getCanonicalName(), port);
+  public static PortLogger getLogger(Class<?> clazz, OutputCollector output) {
+    return getLogger(clazz.getCanonicalName(), output);
   }
 
   /**
    * Creates an output port logger with the given name.
    *
    * @param name The logger name.
-   * @param port The output port to which to log messages.
+   * @param port The output collector to which to log messages.
    * @return An output port logger.
    */
-  public static PortLogger getLogger(String name, OutputPort port) {
-    Map<OutputPort, PortLogger> loggers = PortLoggerFactory.loggers.get(name);
+  public static PortLogger getLogger(String name, OutputCollector output) {
+    Map<OutputCollector, PortLogger> loggers = PortLoggerFactory.loggers.get(name);
     if (loggers == null) {
       loggers = new HashMap<>();
       PortLoggerFactory.loggers.put(name, loggers);
     }
 
-    PortLogger logger = loggers.get(port);
+    PortLogger logger = loggers.get(output);
     if (logger == null) {
-      logger = new PortLogger(LoggerFactory.getLogger(name), port);
-      loggers.put(port, logger);
+      logger = new PortLogger(LoggerFactory.getLogger(name), output);
+      loggers.put(output, logger);
     }
     return logger;
   }

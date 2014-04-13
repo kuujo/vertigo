@@ -29,6 +29,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -44,7 +45,18 @@ public class DefaultInputConnection implements InputConnection {
   private final Queue<Object> queue = new ArrayDeque<>();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
+  private boolean open;
   private boolean paused;
+
+  private final Handler<Message<Boolean>> internalOpenHandler = new Handler<Message<Boolean>>() {
+    @Override
+    public void handle(Message<Boolean> message) {
+      if (open) {
+        groups.clear();
+        message.reply(true);
+      }
+    }
+  };
 
   private final Handler<Message<JsonObject>> internalStartHandler = new Handler<Message<JsonObject>>() {
     @Override
@@ -101,6 +113,16 @@ public class DefaultInputConnection implements InputConnection {
     }
   };
 
+  private final Handler<Message<Boolean>> internalCloseHandler = new Handler<Message<Boolean>>() {
+    @Override
+    public void handle(Message<Boolean> message) {
+      if (open) {
+        groups.clear();
+        message.reply(true);
+      }
+    }
+  };
+
   public DefaultInputConnection(Vertx vertx, InputConnectionContext context) {
     this.vertx = vertx;
     this.context = context;
@@ -117,11 +139,23 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
-  public InputConnection open(Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(4).setHandler(doneHandler);
+  public InputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(4).setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          open = true;
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
+    vertx.eventBus().registerHandler(String.format("%s.open", context.address()), internalOpenHandler, counter);
     vertx.eventBus().registerHandler(String.format("%s.start", context.address()), internalStartHandler, counter);
     vertx.eventBus().registerHandler(String.format("%s.group", context.address()), internalGroupHandler, counter);
     vertx.eventBus().registerHandler(String.format("%s.end", context.address()), internalEndHandler, counter);
+    vertx.eventBus().registerHandler(String.format("%s.close", context.address()), internalCloseHandler, counter);
     vertx.eventBus().registerHandler(context.address(), internalMessageHandler, counter);
     return this;
   }
@@ -170,11 +204,19 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
-  public void close(Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(4).setHandler(doneHandler);
+  public void close(final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(4).setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        open = false;
+        doneHandler.handle(result);
+      }
+    });
+    vertx.eventBus().unregisterHandler(String.format("%s.open", context.address()), internalOpenHandler, counter);
     vertx.eventBus().unregisterHandler(String.format("%s.start", context.address()), internalStartHandler, counter);
     vertx.eventBus().unregisterHandler(String.format("%s.group", context.address()), internalGroupHandler, counter);
     vertx.eventBus().unregisterHandler(String.format("%s.end", context.address()), internalEndHandler, counter);
+    vertx.eventBus().unregisterHandler(String.format("%s.close", context.address()), internalCloseHandler, counter);
     vertx.eventBus().unregisterHandler(context.address(), internalMessageHandler, counter);
   }
 

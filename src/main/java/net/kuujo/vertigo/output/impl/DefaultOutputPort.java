@@ -106,7 +106,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   public OutputPort setSendQueueMaxSize(int maxSize) {
     this.maxQueueSize = maxSize;
     for (OutputStream stream : streams) {
-      stream.setSendQueueMaxSize(Math.round(maxQueueSize / streams.size()));
+      stream.setSendQueueMaxSize(maxQueueSize);
     }
     return this;
   }

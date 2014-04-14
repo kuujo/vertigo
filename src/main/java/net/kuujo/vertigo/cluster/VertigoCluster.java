@@ -56,12 +56,163 @@ public interface VertigoCluster {
    *
    * @param deploymentID The unique module deployment ID.
    * @param moduleName The module name.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName, int instances);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModule(String deploymentID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param moduleName The module name.
    * @param config The module configuration.
    * @param instances The number of instances to deploy.
    * @param doneHandler An asynchronous handler to be called once deployment is complete.
    * @return The cluster client.
    */
   VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param config The module configuration.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to a specific HA group in the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
+   * @param groupID The group to which to deploy the module.
+   * @param moduleName The module name.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Deploys a module to a specific HA group in the cluster.
@@ -81,12 +232,163 @@ public interface VertigoCluster {
    *
    * @param deploymentID The unique verticle deployment ID.
    * @param main The verticle main.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main, int instances);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, int instances);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
    * @param config The module configuration.
    * @param instances The number of instances to deploy.
    * @param doneHandler An asynchronous handler to be called once deployment is complete.
    * @return The cluster client.
    */
   VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, int instances);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Deploys a verticle to the cluster.
@@ -106,6 +408,79 @@ public interface VertigoCluster {
    *
    * @param deploymentID The unique verticle deployment ID.
    * @param main The verticle main.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main, int instances);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param multiThreaded Indicates whether the verticle is multi-threaded.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param main The verticle main.
    * @param config The module configuration.
    * @param instances The number of instances to deploy.
    * @param multiThreaded Indicates whether the verticle is multi-threaded.
@@ -113,6 +488,86 @@ public interface VertigoCluster {
    * @return The cluster client.
    */
   VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param multiThreaded Indicates whether the verticle is multi-threaded.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param config The module configuration.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @param groupID The group to which to deploy the verticle.
+   * @param main The verticle main.
+   * @param instances The number of instances to deploy.
+   * @param doneHandler An asynchronous handler to be called once deployment is complete.
+   * @return The cluster client.
+   */
+  VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Deploys a worker verticle to the cluster.

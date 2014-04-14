@@ -1,5 +1,10 @@
 package net.kuujo.vertigo.util;
 
+import static net.kuujo.vertigo.util.Config.parseAddress;
+import static net.kuujo.vertigo.util.Config.parseCluster;
+import static net.kuujo.vertigo.util.Config.parseNetwork;
+import static net.kuujo.vertigo.util.Config.populateConfig;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,6 +17,12 @@ import net.kuujo.vertigo.annotations.ClusterTypeInfo;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.annotations.LocalTypeInfo;
+import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
+
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 /**
  * Factory utility.<p>
@@ -25,6 +36,17 @@ import net.kuujo.vertigo.annotations.LocalTypeInfo;
  * @author Jordan Halterman
  */
 public final class Factories {
+
+  /**
+   * Creates a component instance for the current Vert.x instance.
+   */
+  public static Component createComponent(Vertx vertx, Container container) {
+    VertigoCluster cluster = parseCluster(container.config(), vertx, container);
+    String network = parseNetwork(container.config());
+    String address = parseAddress(container.config());
+    populateConfig(container.config());
+    return new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(network, address, cluster);
+  }
 
   @SuppressWarnings("unchecked")
   public static <T> T createObject(Class<? extends T> clazz, Object... args) {

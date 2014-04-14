@@ -15,14 +15,10 @@
  */
 package net.kuujo.vertigo.java;
 
-import static net.kuujo.vertigo.util.Config.parseAddress;
-import static net.kuujo.vertigo.util.Config.parseCluster;
-import static net.kuujo.vertigo.util.Config.parseNetwork;
-import static net.kuujo.vertigo.util.Config.populateConfig;
+import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
@@ -41,7 +37,6 @@ import org.vertx.java.platform.Verticle;
 public abstract class ComponentVerticle extends Verticle {
   protected Vertigo vertigo;
   protected VertigoCluster cluster;
-  protected String address;
   protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
@@ -57,13 +52,9 @@ public abstract class ComponentVerticle extends Verticle {
    */
   @Override
   public void start() {
-    logger = container.logger();
-    cluster = parseCluster(container.config(), vertx, container);
-    String network = parseNetwork(container.config());
-    address = parseAddress(container.config());
-    populateConfig(container.config());
-    config = container.config();
-    component = new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(network, address, cluster);
+    component = createComponent(vertx, container);
+    cluster = component.cluster();
+    logger = component.logger();
     input = component.input();
     output = component.output();
     vertigo = new Vertigo(this);

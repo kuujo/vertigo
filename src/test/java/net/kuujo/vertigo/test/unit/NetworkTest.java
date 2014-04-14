@@ -481,7 +481,7 @@ public class NetworkTest {
     JsonObject json = new JsonObject()
         .putString(DefaultNetworkConfig.NETWORK_NAME, "test")
         .putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject());
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetwork(json);
     assertEquals("test", network.getName());
   }
 
@@ -495,7 +495,7 @@ public class NetworkTest {
         .putObject(DefaultModuleConfig.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(DefaultModuleConfig.COMPONENT_NUM_INSTANCES, 2);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetwork(json);
     assertEquals("test", network.getName());
     DefaultModuleConfig module = network.getComponent("feeder");
     assertEquals("feeder", module.getName());
@@ -517,7 +517,7 @@ public class NetworkTest {
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_WORKER, true)
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_MULTI_THREADED, true);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("feeder", jsonFeeder));
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetwork(json);
     assertEquals("test", network.getName());
     DefaultVerticleConfig verticle = network.getComponent("feeder");
     assertEquals("feeder", verticle.getName());
@@ -539,7 +539,7 @@ public class NetworkTest {
         .putObject(DefaultModuleConfig.COMPONENT_CONFIG, new JsonObject().putString("foo", "bar"))
         .putNumber(DefaultModuleConfig.COMPONENT_NUM_INSTANCES, 2);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("worker", jsonWorker));
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetwork(json);
     assertEquals("test", network.getName());
     DefaultModuleConfig module = network.getComponent("worker");
     assertEquals("worker", module.getName());
@@ -561,7 +561,7 @@ public class NetworkTest {
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_WORKER, true)
         .putBoolean(DefaultVerticleConfig.VERTICLE_IS_MULTI_THREADED, true);
     json.putObject(DefaultNetworkConfig.NETWORK_COMPONENTS, new JsonObject().putObject("worker", jsonWorker));
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetwork(json);
     assertEquals("test", network.getName());
     DefaultVerticleConfig verticle = network.getComponent("worker");
     assertEquals("worker", verticle.getName());
@@ -581,7 +581,7 @@ public class NetworkTest {
         .putObject("target", new JsonObject().putString("component", "bar").putString("port", "notin"))
         .putObject("grouping", new JsonObject().putString("type", "random"));
     json.putArray("connections", new JsonArray().add(jsonConnection));
-    NetworkConfig network = new Vertigo(null, null).createNetworkFromJson(json);
+    NetworkConfig network = new Vertigo(null, null).createNetwork(json);
     assertEquals("test", network.getName());
     ConnectionConfig connection = network.getConnections().iterator().next();
     assertEquals("foo", connection.getSource().getComponent());

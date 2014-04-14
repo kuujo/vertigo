@@ -111,7 +111,7 @@ public final class Vertigo {
    * @param json A json network configuration.
    * @return A network configuration.
    */
-  public NetworkConfig createNetworkFromJson(JsonObject json) {
+  public NetworkConfig createNetwork(JsonObject json) {
     return Configs.createNetwork(json);
   }
 

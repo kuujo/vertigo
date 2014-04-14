@@ -124,8 +124,10 @@ public class SharedDataLock implements AsyncLock {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        if (map.containsKey(name)) {
-          map.remove(name);
+        synchronized (map) {
+          if (map.containsKey(name)) {
+            map.remove(name);
+          }
         }
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
@@ -133,9 +135,11 @@ public class SharedDataLock implements AsyncLock {
   }
 
   private boolean checkLock() {
-    if (!map.containsKey(name)) {
-      map.put(name, null);
-      return true;
+    synchronized (map) {
+      if (!map.containsKey(name)) {
+        map.put(name, null);
+        return true;
+      }
     }
     return false;
   }

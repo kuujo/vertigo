@@ -194,15 +194,17 @@ public class SharedDataList<T> implements AsyncList<T> {
         if (index > currentSize-1) {
           new DefaultFutureResult<T>(new IndexOutOfBoundsException("Index out of bounds.")).setHandler(doneHandler);
         } else {
-          T value = (T) map.remove(index);
-          int i = index+1;
-          while (map.containsKey(i)) {
-            map.put(i-1, map.remove(i));
-            i++;
+          synchronized (map) {
+            T value = (T) map.remove(index);
+            int i = index+1;
+            while (map.containsKey(i)) {
+              map.put(i-1, map.remove(i));
+              i++;
+            }
+            currentSize--;
+            map.put(-1, currentSize);
+            new DefaultFutureResult<T>(value).setHandler(doneHandler);
           }
-          currentSize--;
-          map.put(-1, currentSize);
-          new DefaultFutureResult<T>(value).setHandler(doneHandler);
         }
       }
     });

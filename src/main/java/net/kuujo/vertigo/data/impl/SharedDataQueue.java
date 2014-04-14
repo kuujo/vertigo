@@ -89,21 +89,23 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        Iterator<Map.Entry<Integer, Object>> iter = map.entrySet().iterator();
-        while (iter.hasNext()) {
-          Map.Entry<Integer, Object> entry = iter.next();
-          if (entry.getValue().equals(value)) {
-            iter.remove();
-            int index = entry.getKey()+1;
-            while (map.containsKey(index)) {
-              map.put(index-1, map.remove(index));
-              index++;
+        synchronized (map) {
+          Iterator<Map.Entry<Integer, Object>> iter = map.entrySet().iterator();
+          while (iter.hasNext()) {
+            Map.Entry<Integer, Object> entry = iter.next();
+            if (entry.getValue().equals(value)) {
+              iter.remove();
+              int index = entry.getKey()+1;
+              while (map.containsKey(index)) {
+                map.put(index-1, map.remove(index));
+                index++;
+              }
+              new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
+              return;
             }
-            new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
-            return;
           }
+          new DefaultFutureResult<Boolean>(false).setHandler(doneHandler);
         }
-        new DefaultFutureResult<Boolean>(false).setHandler(doneHandler);
       }
     });
   }
@@ -222,13 +224,15 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        if (map.containsKey(currentIndex)) {
-          T value = (T) map.remove(currentIndex);
-          currentIndex++;
-          map.put(-1, currentIndex);
-          new DefaultFutureResult<T>(value).setHandler(resultHandler);
-        } else {
-          new DefaultFutureResult<T>(new IllegalStateException("Queue is empty.")).setHandler(resultHandler);
+        synchronized (map) {
+          if (map.containsKey(currentIndex)) {
+            T value = (T) map.remove(currentIndex);
+            currentIndex++;
+            map.put(-1, currentIndex);
+            new DefaultFutureResult<T>(value).setHandler(resultHandler);
+          } else {
+            new DefaultFutureResult<T>(new IllegalStateException("Queue is empty.")).setHandler(resultHandler);
+          }
         }
       }
     });

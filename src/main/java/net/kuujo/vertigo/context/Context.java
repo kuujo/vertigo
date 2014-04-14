@@ -19,7 +19,14 @@ import net.kuujo.vertigo.util.Observable;
 import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
- * Base context.
+ * Base type for all contexts.<p>
+ *
+ * Contexts are immutable network/component/instance configurations that
+ * are used by Vertigo to construct networks, components, and their connections.
+ * All contexts are ultimately derived from a {@link net.kuujo.vertigo.network.NetworkConfig}
+ * instance. Contexts are observable through Vertigo's clustering mechanisms,
+ * allowing networks and components to monitor configurations for changes
+ * internally and update their state at runtime.
  * 
  * @author Jordan Halterman
  */

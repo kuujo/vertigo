@@ -22,7 +22,8 @@ import net.kuujo.vertigo.context.impl.DefaultOutputPortContext;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Output port context.
+ * Output port context represents a set of output connections for a single
+ * port within a single instance of a component.
  *
  * @author Jordan Halterman
  */

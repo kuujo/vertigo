@@ -23,7 +23,8 @@ import net.kuujo.vertigo.context.impl.DefaultOutputConnectionContext;
 import net.kuujo.vertigo.input.grouping.Grouping;
 
 /**
- * Output connection context.
+ * Output connection context represents a single instance's output to
+ * an instance of another component.
  *
  * @author Jordan Halterman
  */

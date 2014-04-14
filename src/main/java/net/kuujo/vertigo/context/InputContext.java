@@ -22,10 +22,8 @@ import net.kuujo.vertigo.context.impl.DefaultInputContext;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Input context represents output information between a
- * source component and a target component. This information
- * is used to indicate where the component should listen
- * for messages.
+ * Input context is a wrapper around input port information for
+ * a single component instance.
  *
  * @author Jordan Halterman
  */

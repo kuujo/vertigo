@@ -21,7 +21,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A component instance context which contains information regarding a specific component
- * (module or verticle) instance within a network.
+ * (module or verticle) instance within a network.<p>
+ *
+ * The instance context is the primary immutable configuration used by
+ * each instance of a component verticle or module to construct its input
+ * and output ports/connections. Note that the context is observable, and
+ * component instance observe the context for changes within the cluster
+ * in order to support runtime network configuration changes by automatically
+ * updating their input and output connections when the context changes.
  * 
  * @author Jordan Halterman
  */
@@ -41,14 +48,22 @@ public interface InstanceContext extends Context<InstanceContext> {
   int number();
 
   /**
-   * Returns the instance address.
+   * Returns the instance address.<p>
+   *
+   * This is simply a unique identifier used to identify the component
+   * across all networks.
    *
    * @return The instance address.
    */
   String address();
 
   /**
-   * Returns the instance status address.
+   * Returns the instance status address.<p>
+   *
+   * The status address is used by the component instance to notify
+   * the network and other components within the network of its current
+   * status. This is used by the network manager to coordinate startup
+   * of components across a network.
    *
    * @return The instance status address.
    */

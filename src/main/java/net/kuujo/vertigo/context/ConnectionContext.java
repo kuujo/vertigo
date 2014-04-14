@@ -15,10 +15,9 @@
  */
 package net.kuujo.vertigo.context;
 
-
 /**
- * Connection contexts represent a direct connection between
- * one component and another component.
+ * Connection contexts represent a direct connection between two instances
+ * of separate components.<p>
  *
  * @author Jordan Halterman
  */

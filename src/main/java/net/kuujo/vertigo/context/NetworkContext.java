@@ -24,8 +24,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A network context which contains information regarding the complete structure of a
- * deployed network. Network contexts are immutable as they are constructed after a
- * network is deployed.
+ * deployed network.<p>
+ *
+ * Network contexts are immutable as they are constructed after a network
+ * is deployed.
  * 
  * @author Jordan Halterman
  */
@@ -38,21 +40,30 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface NetworkContext extends Context<NetworkContext> {
 
   /**
-   * Returns the network name.
+   * Returns the network name.<p>
+   *
+   * The network name is unique to the network within a Vertigo cluster.
    *
    * @return The network name.
    */
   String name();
 
   /**
-   * Returns the network configuration.
+   * Returns the network configuration from which the context was built.
    *
    * @return The network configuration.
    */
   NetworkConfig config();
 
   /**
-   * Returns the network status address.
+   * Returns the network status address.<p>
+   *
+   * This is the address of a shared-data key that is monitored by all component
+   * instances in the cluster. When the key is set, components know that the
+   * network is considered stable. During a network configuration change, the
+   * network manager will unset the status address, notifying components that
+   * the network is no longer stable until the key is reset. This is the mechanism
+   * used by Vertigo to perform coordination between components.
    *
    * @return The network status address.
    */

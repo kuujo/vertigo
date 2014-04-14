@@ -23,8 +23,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Verticle component context.
  * 
  * @author Jordan Halterman
- * 
- * @param <T> The component type
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

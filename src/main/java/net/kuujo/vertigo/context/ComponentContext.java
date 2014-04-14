@@ -28,8 +28,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * A component context which contains information regarding each component instance within
- * a single network component. Contexts are immutable as they are constructed once a
- * network has been deployed.
+ * a single network component.<p>
+ *
+ * Contexts are immutable as they are constructed once a network has been deployed.
+ * The component context is not actually used by any Vertigo object, but is a
+ * wrapper around multiple {@link InstanceContext} instances, with each instance
+ * representing an instance of the component - a Vert.x verticle or module.<p>
+ *
+ * See {@link ModuleContext} and {@link VerticleContext} for module and verticle
+ * specific configuration options respectively.
  * 
  * @author Jordan Halterman
  */

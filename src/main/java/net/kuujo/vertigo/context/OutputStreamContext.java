@@ -23,7 +23,10 @@ import net.kuujo.vertigo.input.grouping.Grouping;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Output stream context.
+ * The output stream context represents a set of output connections
+ * from one component instance to all instances of another component.
+ * The context contains information about how to dispatch messages
+ * between the group of target component instances.
  *
  * @author Jordan Halterman
  */

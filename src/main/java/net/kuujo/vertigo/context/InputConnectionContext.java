@@ -20,7 +20,8 @@ import net.kuujo.vertigo.context.impl.DefaultInputConnectionContext;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Input connection context.
+ * Input connection context represents a single instance's input from
+ * an instance of another component.
  *
  * @author Jordan Halterman
  */

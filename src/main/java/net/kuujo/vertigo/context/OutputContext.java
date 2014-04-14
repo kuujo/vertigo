@@ -22,9 +22,8 @@ import net.kuujo.vertigo.context.impl.DefaultOutputContext;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Output context represents output information between a
- * source component and a target component. This information
- * is used to indicate where the component should send messages.
+ * Output context is a wrapper around output port information for
+ * a single component instance.
  *
  * @author Jordan Halterman
  */

@@ -22,7 +22,8 @@ import net.kuujo.vertigo.context.impl.DefaultInputPortContext;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Input port context.
+ * Input port context represents a set of input connections for a single
+ * port within a single instance of a component.
  *
  * @author Jordan Halterman
  */

@@ -3,11 +3,11 @@ Vertigo
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
-**[Java User Manual](https://github.com/kuujo/vertigo/wiki/Java-User-Manual) | [Javadoc](http://vertigo.kuujo.net/java/)**
+**[Java User Manual](#java-user-manual) | Javadoc (Unavailable for Vertigo 0.7.x)**
 
-**[Javascript API][vertigo-js]**
+**[Javascript API][vertigo-js] for Vertigo 0.7.x is still under development**
 
-**[Python API][vertigo-python]**
+**[Python API][vertigo-python] for Vertigo 0.7.x is still under development**
 
 Vertigo is a fast, reliable, fault-tolerant event processing framework built on
 the [Vert.x](http://vertx.io/) application platform. Combining concepts of
@@ -24,9 +24,7 @@ time focusing on application code.
 * Supports deployment of networks within a single Vert.x instance or across a Vert.x cluster.
 * **Promotes reusability** by abstracting communication details from verticle implementations,
   allowing components to be arbitrarily connected to form complex networks.
-* **Guarantees message processing** through ack/fail/timeout mechanisms, tracking
-  complex message trees through multiple Vert.x verticle instances and providing
-  data sources with feedback on the status of processing.
+* Handles buffering of messages and automatic retries on failures.
 * Facilitates distribution of messages between multiple verticle instances using
   **random, round-robin, mod hashing, or fanout** methods.
 * Network components can be written in **any Vert.x supported language**, with
@@ -101,20 +99,17 @@ custom Vert.x platform manager that integrates remote deployments with the Vert.
 mechanism. This allows Vertigo to deploy components across a Vert.x cluster and still
 failover those deployments when a Vert.x instance dies.
 
-#### Fault-tolerant data streams
-Vertigo 0.7 will automatically batch and replicate data streams so that data sources
-no longer have to be fault-tolerant/persistent in order to ensure reliability within
-networks. Fault-tolerant data streams will be handled entirely within Vertigo.
-
-#### Stateful components
-In conjuction with stream batching, Vertigo will support stateful components through
-per-batch checkpointing.
-
 #### Cluster-wide shared data structures
 Vertigo 0.7 supports cluster-wide shared data structures like `map`, `list`, `set`,
 `queue`, `lock`, and `id` (a unique ID generator). These data structures can be used
 for coordination between components and are available both regarless of whether Vert.x
 is in clustering mode.
+
+#### Stateful components
+Vertigo provides an API for component state persistence through several facilities,
+e.g. Hazelcast, Redis, or Vert.x shared data. Component data storage facilities can
+be defined in the network configuration, so storage details are separate from component
+implementations.
 
 #### Streams to ports
 Vertigo 0.7 has adopted the concept of ports from the flow-based programming model. This

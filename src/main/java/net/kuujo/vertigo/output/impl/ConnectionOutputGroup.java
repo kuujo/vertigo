@@ -29,7 +29,6 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.eventbus.ReplyException;
 import org.vertx.java.core.eventbus.ReplyFailure;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -83,9 +82,16 @@ public class ConnectionOutputGroup implements OutputGroup {
    */
   private void checkEnd() {
     if (ended && ackedCount == sentCount && childrenComplete) {
-      if (endHandler != null) {
-        endHandler.handle((Void) null);
-      }
+      eventBus.sendWithTimeout(String.format("%s.end", address), new JsonObject().putString("id", id), 30000, new Handler<AsyncResult<Message<Void>>>() {
+        @Override
+        public void handle(AsyncResult<Message<Void>> result) {
+          if (result.failed()) {
+            checkEnd();
+          } else if (endHandler != null) {
+            endHandler.handle((Void) null);
+          }
+        }
+      });
     }
   }
 
@@ -102,14 +108,14 @@ public class ConnectionOutputGroup implements OutputGroup {
   /**
    * Starts the output group.
    */
-  public OutputGroup start(final Handler<AsyncResult<OutputGroup>> doneHandler) {
+  public OutputGroup start(final Handler<OutputGroup> doneHandler) {
     eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", id).putString("name", name).putString("parent", parent), 30000, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {
         if (result.failed()) {
           start(doneHandler);
         } else {
-          new DefaultFutureResult<OutputGroup>(ConnectionOutputGroup.this).setHandler(doneHandler);
+          doneHandler.handle(ConnectionOutputGroup.this);
         }
       }
     });
@@ -139,13 +145,14 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup group(String name, final Handler<AsyncResult<OutputGroup>> handler) {
+  public OutputGroup group(String name, final Handler<OutputGroup> handler) {
     final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this.id, vertx, connection);
     childrenComplete = false;
     group.endHandler(new Handler<Void>() {
       @Override
       public void handle(Void _) {
         childrenComplete = true;
+        checkEnd();
       }
     });
     if (lastGroup != null) {
@@ -253,17 +260,8 @@ public class ConnectionOutputGroup implements OutputGroup {
 
   @Override
   public OutputGroup end() {
-    eventBus.sendWithTimeout(String.format("%s.end", address), new JsonObject().putString("id", id), 30000, new Handler<AsyncResult<Message<Void>>>() {
-      @Override
-      public void handle(AsyncResult<Message<Void>> result) {
-        if (result.failed()) {
-          end();
-        } else {
-          ended = true;
-          checkEnd();
-        }
-      }
-    });
+    ended = true;
+    checkEnd();
     return this;
   }
 

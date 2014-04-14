@@ -119,7 +119,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection group(String name, final Handler<AsyncResult<OutputGroup>> handler) {
+  public OutputConnection group(String name, final Handler<OutputGroup> handler) {
     final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, this);
     if (lastGroup != null) {
       lastGroup.endHandler(new Handler<Void>() {

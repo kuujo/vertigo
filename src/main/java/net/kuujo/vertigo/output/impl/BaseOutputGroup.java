@@ -20,12 +20,9 @@ import java.util.Collection;
 import java.util.List;
 
 import net.kuujo.vertigo.output.OutputGroup;
-import net.kuujo.vertigo.util.CountingCompletionHandler;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -88,28 +85,16 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup group(final String name, final Handler<AsyncResult<OutputGroup>> handler) {
-    final List<OutputGroup> children = new ArrayList<>();
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
-    counter.setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<OutputGroup>(result.cause()).setHandler(handler);
-        } else {
-          new DefaultFutureResult<OutputGroup>(new BaseOutputGroup(name, children)).setHandler(handler);
-        }
-      }
-    });
+  public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
+    final List<OutputGroup> groups = new ArrayList<>();
+    final int connectionsSize = connections.size();
     for (OutputGroup connection : connections) {
-      connection.group(name, new Handler<AsyncResult<OutputGroup>>() {
+      connection.group(name, new Handler<OutputGroup>() {
         @Override
-        public void handle(AsyncResult<OutputGroup> result) {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else {
-            children.add(result.result());
-            counter.succeed();
+        public void handle(OutputGroup group) {
+          groups.add(group);
+          if (groups.size() == connectionsSize) {
+            handler.handle(new BaseOutputGroup(name, groups));
           }
         }
       });

@@ -61,14 +61,23 @@ public class DefaultInputConnection implements InputConnection {
   private final Handler<Message<JsonObject>> internalStartHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
-      String id = message.body().getString("id");
-      String name = message.body().getString("name");
+      JsonObject body = message.body();
+      String id = body.getString("id");
+      String name = body.getString("name");
+      String parentId = body.getString("parent");
       DefaultInputGroup group = new DefaultInputGroup(name);
       groups.put(id, group);
-      Handler<InputGroup> handler = groupHandlers.get(name);
       if (paused) group.pause();
-      if (handler != null) {
-        handler.handle(group);
+      if (parentId != null) {
+        DefaultInputGroup parent = groups.get(parentId);
+        if (parent != null) {
+          parent.handleGroup(group);
+        }
+      } else {
+        Handler<InputGroup> handler = groupHandlers.get(name);
+        if (handler != null) {
+          handler.handle(group);
+        }
       }
       group.handleStart();
       message.reply();

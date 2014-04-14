@@ -31,7 +31,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -175,28 +174,16 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort group(final String name, final Handler<AsyncResult<OutputGroup>> handler) {
+  public OutputPort group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(streams.size());
-    counter.setHandler(new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<OutputGroup>(result.cause()).setHandler(handler);
-        } else {
-          new DefaultFutureResult<OutputGroup>(new BaseOutputGroup(name, groups)).setHandler(handler);
-        }
-      }
-    });
+    final int streamSize = streams.size();
     for (OutputStream stream : streams) {
-      stream.group(name, new Handler<AsyncResult<OutputGroup>>() {
+      stream.group(name, new Handler<OutputGroup>() {
         @Override
-        public void handle(AsyncResult<OutputGroup> result) {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else {
-            groups.add(result.result());
-            counter.succeed();
+        public void handle(OutputGroup group) {
+          groups.add(group);
+          if (groups.size() == streamSize) {
+            handler.handle(new BaseOutputGroup(name, groups));
           }
         }
       });

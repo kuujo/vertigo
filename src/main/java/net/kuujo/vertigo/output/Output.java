@@ -17,7 +17,6 @@ package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.streams.SendStream;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
@@ -37,6 +36,6 @@ public interface Output<T extends Output<T>> extends SendStream<T> {
    * @param handler A handler to be called once the output group is created.
    * @return The output buffer.
    */
-  T group(String name, Handler<AsyncResult<OutputGroup>> handler);
+  T group(String name, Handler<OutputGroup> handler);
 
 }

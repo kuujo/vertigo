@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.input.impl;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 
 import net.kuujo.vertigo.input.InputGroup;
@@ -33,7 +35,7 @@ public class DefaultInputGroup implements InputGroup {
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
   private Handler<Void> endHandler;
-  private Handler<InputGroup> groupHandler;
+  private Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private Queue<Object> queue = new ArrayDeque<>();
   private boolean paused;
   private boolean ended;
@@ -115,13 +117,14 @@ public class DefaultInputGroup implements InputGroup {
 
   @Override
   public InputGroup groupHandler(String group, Handler<InputGroup> handler) {
-    this.groupHandler = handler;
+    this.groupHandlers.put(group, handler);
     return this;
   }
 
   void handleGroup(InputGroup group) {
-    if (groupHandler != null) {
-      groupHandler.handle(group);
+    Handler<InputGroup> handler = groupHandlers.get(group.name());
+    if (handler != null) {
+      handler.handle(group);
     }
   }
 

@@ -22,7 +22,12 @@ import net.kuujo.vertigo.data.impl.RedisDataStore;
 import net.kuujo.vertigo.data.impl.SharedDataStore;
 
 /**
- * Asynchronous data store.
+ * Asynchronous data store.<p>
+ *
+ * This provides a common interface for state persistence in Vertigo.
+ * Network configurations may specify data store types underlying
+ * each component instance, abstracting storage details from component
+ * implementations.
  *
  * @author Jordan Halterman
  */

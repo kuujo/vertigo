@@ -24,7 +24,14 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Adaptive event bus.
+ * Event bus implementation that supports adaptive timeouts.<p>
+ *
+ * The adaptive event bus allows Vertigo to detect event bus reply
+ * timeouts more quickly by periodically calculating the average
+ * response time for a given event bus address. Given a delay threshold,
+ * the event bus automatically adjusts the current reply timeout
+ * based on brief historical data. This is used to help empty output
+ * queues more quickly in the event of a temporary event bus failure.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

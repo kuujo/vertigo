@@ -82,7 +82,7 @@ public class ConnectionOutputGroup implements OutputGroup {
    */
   private void checkEnd() {
     if (ended && ackedCount == sentCount && childrenComplete) {
-      eventBus.sendWithTimeout(String.format("%s.end", address), new JsonObject().putString("id", id), 30000, new Handler<AsyncResult<Message<Void>>>() {
+      eventBus.sendWithAdaptiveTimeout(String.format("%s.end", address), new JsonObject().putString("id", id), 5, new Handler<AsyncResult<Message<Void>>>() {
         @Override
         public void handle(AsyncResult<Message<Void>> result) {
           if (result.failed()) {
@@ -109,7 +109,7 @@ public class ConnectionOutputGroup implements OutputGroup {
    * Starts the output group.
    */
   public OutputGroup start(final Handler<OutputGroup> doneHandler) {
-    eventBus.sendWithTimeout(String.format("%s.start", address), new JsonObject().putString("id", id).putString("name", name).putString("parent", parent), 30000, new Handler<AsyncResult<Message<Void>>>() {
+    eventBus.sendWithAdaptiveTimeout(String.format("%s.start", address), new JsonObject().putString("id", id).putString("name", name).putString("parent", parent), 5, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {
         if (result.failed()) {
@@ -174,7 +174,7 @@ public class ConnectionOutputGroup implements OutputGroup {
    */
   private OutputGroup doSend(final Object message) {
     sentCount++;
-    eventBus.sendWithTimeout(String.format("%s.group", address), new JsonObject().putString("id", id).putValue("message", message), 30000, new Handler<AsyncResult<Message<Void>>>() {
+    eventBus.sendWithAdaptiveTimeout(String.format("%s.group", address), new JsonObject().putString("id", id).putValue("message", message), 5, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {
         if (result.failed() && (!((ReplyException) result.cause()).failureType().equals(ReplyFailure.RECIPIENT_FAILURE))) {

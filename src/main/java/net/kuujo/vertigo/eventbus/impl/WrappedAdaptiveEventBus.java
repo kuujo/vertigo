@@ -81,8 +81,8 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
    * Gets an average weighted reply time.
    */
   private long getReplyTime(String address, float weight) {
-    long average = replyTimeouts.get(address);
-    return average > 0 ? Math.round(average * weight) : DEFAULT_REPLY_TIME;
+    Long average = replyTimeouts.get(address);
+    return average != null ? Math.max(Math.round(average * weight), 500) : DEFAULT_REPLY_TIME;
   }
 
   /**

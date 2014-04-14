@@ -72,7 +72,7 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public OutputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.sendWithTimeout(String.format("%s.open", address), true, 5000, new Handler<AsyncResult<Message<Boolean>>>() {
+    eventBus.sendWithAdaptiveTimeout(String.format("%s.open", address), true, 5, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {
@@ -142,7 +142,7 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.sendWithTimeout(String.format("%s.close"), true, 5000, new Handler<AsyncResult<Message<Boolean>>>() {
+    eventBus.sendWithAdaptiveTimeout(String.format("%s.close"), true, 5, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {
@@ -194,7 +194,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private OutputConnection doSend(final Object message) {
     checkOpen();
     currentQueueSize++;
-    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<Void>>>() {
+    eventBus.sendWithAdaptiveTimeout(address, message, 5, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {
         currentQueueSize--;

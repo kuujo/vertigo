@@ -127,15 +127,23 @@ public interface Component {
   /**
    * Starts the component.
    *
-   * @return The called component instance.
+   * When the component is started, the component will use a {@link ComponentCoordinator}
+   * to retrieve its context from the current cluster context. This means that
+   * input and output connections are not set up until the component has been started.
+   *
+   * @return The component instance.
    */
   Component start();
 
   /**
-   * Starts the component.
+   * Starts the component.<p>
    *
-   * @param doneHandler An asynchronous handler to be invoked once the component is started.
-   * @return The called component instance.
+   * When the component is started, the component will use a {@link ComponentCoordinator}
+   * to retrieve its context from the current cluster context. This means that
+   * input and output connections are not set up until the component has been started.
+   *
+   * @param doneHandler An asynchronous handler to be called once the component is started.
+   * @return The component instance.
    */
   Component start(Handler<AsyncResult<Component>> doneHandler);
 

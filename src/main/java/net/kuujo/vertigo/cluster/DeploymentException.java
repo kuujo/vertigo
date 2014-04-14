@@ -17,7 +17,6 @@ package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.VertigoException;
 
-
 /**
  * Deployment exception.
  *

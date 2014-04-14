@@ -108,6 +108,7 @@ public class DefaultComponent implements Component {
    * Sets up the component.
    */
   private void setup(final Handler<AsyncResult<Void>> doneHandler) {
+    // Retrieve the component context from the coordinator (the current cluster).
     coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
       @SuppressWarnings("unchecked")

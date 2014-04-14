@@ -32,6 +32,11 @@ import net.kuujo.vertigo.util.serializer.impl.JacksonSerializerFactory;
  * JsonObject json = SerializerFactory.getSerializer(MyClass.class).serialize(myClassObj);
  * </pre>
  * <p>
+ *
+ * Note that when loading a serializer for a class, the factory will load the serializer
+ * for the first class that implements {@link JsonSerializable} in the class hierarchy.
+ * If no class in the hierarchy implements {@link JsonSerializable} then the default
+ * serializer will be used.<p>
  * 
  * In order to serialize an object with the default serializer, classes must implement the
  * {@link JsonSerializable} interface. In most cases, the default serializer will

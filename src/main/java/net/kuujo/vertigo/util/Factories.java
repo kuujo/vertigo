@@ -14,7 +14,13 @@ import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.annotations.LocalTypeInfo;
 
 /**
- * Factory utility.
+ * Factory utility.<p>
+ *
+ * This helper class should be used with the {@link net.kuujo.vertigo.annotations.Factory}
+ * annotation to construct types from annotated factory methods. Specifically,
+ * when constructing types that are specific to different cluster modes, the factory
+ * utility will automatically fall back to the appropriate default local- or cluster-
+ * type according to the current Vertigo cluster mode.
  *
  * @author Jordan Halterman
  */

@@ -15,14 +15,8 @@
  */
 package net.kuujo.vertigo.context.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.context.OutputStreamContext;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -32,13 +26,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
-  private List<String> targets = new ArrayList<>();
-  private Grouping grouping = new RoundGrouping();
   @JsonIgnore
-  private OutputPortContext port;
+  private OutputStreamContext stream;
 
-  DefaultOutputConnectionContext setPort(OutputPortContext port) {
-    this.port = port;
+  DefaultOutputConnectionContext setStream(OutputStreamContext stream) {
+    this.stream = stream;
     return this;
   }
 
@@ -48,26 +40,8 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
   }
 
   @Override
-  public OutputPortContext port() {
-    return port;
-  }
-
-  /**
-   * Returns a list of output addresses.
-   *
-   * @return A list of output addresses.
-   */
-  public List<String> targets() {
-    return targets;
-  }
-
-  /**
-   * Returns the output connection grouping.
-   *
-   * @return The output connection grouping.
-   */
-  public Grouping grouping() {
-    return grouping;
+  public OutputStreamContext stream() {
+    return stream;
   }
 
   /**
@@ -104,60 +78,6 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
       return new Builder(context);
     }
 
-    /**
-     * Sets the connection targets.
-     *
-     * @param targets The connection targets.
-     * @return The context builder.
-     */
-    public Builder setTargets(String... targets) {
-      context.targets = Arrays.asList(targets);
-      return this;
-    }
-
-    /**
-     * Sets the connection targets.
-     *
-     * @param targets The connection targets.
-     * @return The context builder.
-     */
-    public Builder setTargets(List<String> targets) {
-      context.targets = targets;
-      return this;
-    }
-
-    /**
-     * Adds a target to the component.
-     *
-     * @param target The target to add.
-     * @return The context builder.
-     */
-    public Builder addTarget(String target) {
-      context.targets.add(target);
-      return this;
-    }
-
-    /**
-     * Removes a target from the component.
-     *
-     * @param target The target to remove.
-     * @return The context builder.
-     */
-    public Builder removeTarget(String target) {
-      context.targets.remove(target);
-      return this;
-    }
-
-    /**
-     * Sets the connection grouping.
-     *
-     * @param grouping The connection grouping.
-     * @return The context builder.
-     */
-    public Builder setGrouping(Grouping grouping) {
-      context.grouping = grouping;
-      return this;
-    }
   }
 
 }

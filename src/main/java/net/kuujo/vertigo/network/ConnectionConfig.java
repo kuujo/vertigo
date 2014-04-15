@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
+import net.kuujo.vertigo.input.grouping.CustomGrouping;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 
@@ -97,6 +98,14 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @return The connection configuration.
    */
   ConnectionConfig allGrouping();
+
+  /**
+   * Sets a custom grouping on the connection.
+   *
+   * @param grouping The grouping to set.
+   * @return The connection configuration.
+   */
+  ConnectionConfig customGrouping(CustomGrouping grouping);
 
   /**
    * Connection source.

@@ -40,11 +40,4 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
    */
   InputPortContext port();
 
-  /**
-   * Returns the connection source.
-   *
-   * @return The connection source.
-   */
-  String source();
-
 }

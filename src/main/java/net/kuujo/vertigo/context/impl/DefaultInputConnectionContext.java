@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Jordan Halterman
  */
 public class DefaultInputConnectionContext extends DefaultConnectionContext<InputConnectionContext> implements InputConnectionContext {
-  private String source;
   @JsonIgnore
   private InputPortContext port;
 
@@ -43,11 +42,6 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
   @Override
   public InputPortContext port() {
     return port;
-  }
-
-  @Override
-  public String source() {
-    return source;
   }
 
   /**
@@ -82,17 +76,6 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
      */
     public static Builder newBuilder(DefaultInputConnectionContext context) {
       return new Builder(context);
-    }
-
-    /**
-     * Sets the connection source.
-     *
-     * @param source The connection source.
-     * @return The context builder.
-     */
-    public Builder setSource(String source) {
-      context.source = source;
-      return this;
     }
   }
 

@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.input.grouping.AllGrouping;
+import net.kuujo.vertigo.input.grouping.CustomGrouping;
 import net.kuujo.vertigo.input.grouping.FairGrouping;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.HashGrouping;
@@ -30,6 +31,7 @@ import net.kuujo.vertigo.network.VerticleConfig;
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Default connection configuration implementation.
@@ -43,6 +45,8 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
   private Grouping grouping;
+  @JsonProperty("custom-grouping")
+  private CustomGrouping customGrouping;
   @JsonIgnore
   private NetworkConfig network;
 
@@ -71,7 +75,13 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     this.source.setPort(out);
     this.target.setComponent(target);
     this.target.setPort(in);
-    this.grouping = grouping != null ? grouping : new RoundGrouping();
+    if (grouping == null) {
+      grouping = new RoundGrouping();
+    }
+    this.grouping = grouping;
+    if (grouping instanceof CustomGrouping) {
+      this.customGrouping = (CustomGrouping) grouping;
+    }
     this.network = network;
   }
 
@@ -87,12 +97,16 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   @Override
   public Grouping getGrouping() {
-    return grouping;
+    return customGrouping != null ? customGrouping : grouping;
   }
 
   @Override
   public ConnectionConfig groupBy(Grouping grouping) {
-    this.grouping = grouping;
+    if (grouping instanceof CustomGrouping) {
+      customGrouping((CustomGrouping) grouping);
+    } else {
+      this.grouping = grouping;
+    }
     return this;
   }
 
@@ -123,6 +137,13 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   @Override
   public ConnectionConfig allGrouping() {
     this.grouping = new AllGrouping();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig customGrouping(CustomGrouping grouping) {
+    this.grouping = grouping;
+    this.customGrouping = grouping;
     return this;
   }
 

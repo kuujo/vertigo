@@ -21,10 +21,12 @@ import java.util.List;
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.input.grouping.CustomGrouping;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.input.grouping.RoundGrouping;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Output connection context.
@@ -34,6 +36,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext> implements OutputStreamContext {
   private List<OutputConnectionContext> connections = new ArrayList<>();
   private Grouping grouping = new RoundGrouping();
+  @JsonProperty("custom-grouping")
+  private CustomGrouping customGrouping;
   @JsonIgnore
   private OutputPortContext port;
 
@@ -54,11 +58,14 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
 
   @Override
   public Grouping grouping() {
-    return grouping;
+    return customGrouping != null ? customGrouping : grouping;
   }
 
   @Override
   public List<OutputConnectionContext> connections() {
+    for (OutputConnectionContext connection : connections) {
+      ((DefaultOutputConnectionContext) connection).setStream(this);
+    }
     return connections;
   }
 
@@ -126,6 +133,9 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
      */
     public Builder setGrouping(Grouping grouping) {
       context.grouping = grouping;
+      if (grouping instanceof CustomGrouping) {
+        context.customGrouping = (CustomGrouping) grouping;
+      }
       return this;
     }
   }

@@ -13,31 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.context;
-
-import net.kuujo.vertigo.context.impl.DefaultOutputConnectionContext;
+package net.kuujo.vertigo.input.grouping;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Output connection context represents a single instance's output to
- * an instance of another component.
+ * Custom grouping interface.
+ *
+ * Custom grouping implementations should implement this interface rather
+ * than the basic {@link Grouping} interface to indicate that a grouping
+ * is a custom implementation for serialization.
  *
  * @author Jordan Halterman
  */
-@JsonTypeInfo(
-  use=JsonTypeInfo.Id.CLASS,
-  include=JsonTypeInfo.As.PROPERTY,
-  property="class",
-  defaultImpl=DefaultOutputConnectionContext.class
-)
-public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
-
-  /**
-   * Returns the parent output stream context.
-   *
-   * @return The parent stream context.
-   */
-  OutputStreamContext stream();
-
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="type")
+public interface CustomGrouping extends Grouping {
 }

@@ -215,17 +215,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Object message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(String message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(String message, String key) {
     return doSend(message);
   }
 
@@ -235,17 +225,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Boolean message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(Character message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(Character message, String key) {
     return doSend(message);
   }
 
@@ -255,17 +235,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Short message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(Integer message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(Integer message, String key) {
     return doSend(message);
   }
 
@@ -275,17 +245,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Long message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(Double message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(Double message, String key) {
     return doSend(message);
   }
 
@@ -295,17 +255,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Float message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(Buffer message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(Buffer message, String key) {
     return doSend(message);
   }
 
@@ -315,17 +265,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(JsonObject message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(JsonArray message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(JsonArray message, String key) {
     return doSend(message);
   }
 
@@ -335,17 +275,7 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Byte message, String key) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(byte[] message) {
-    return doSend(message);
-  }
-
-  @Override
-  public OutputConnection send(byte[] message, String key) {
     return doSend(message);
   }
 

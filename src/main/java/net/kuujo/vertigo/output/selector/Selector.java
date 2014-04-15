@@ -54,14 +54,4 @@ public interface Selector extends JsonSerializable {
    */
   List<OutputConnection> select(Object message, List<OutputConnection> connections);
 
-  /**
-   * Selects a list of connections to which to send a message.
-   *
-   * @param message The message being sent.
-   * @param key A message routing key.
-   * @param connections A list of connections from which to select.
-   * @return A list of selected connections.
-   */
-  List<OutputConnection> select(Object message, String key, List<OutputConnection> connections);
-
 }

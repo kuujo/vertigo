@@ -38,9 +38,4 @@ public class AllSelector implements Selector {
     return connections;
   }
 
-  @Override
-  public List<OutputConnection> select(Object message, String key, List<OutputConnection> connections) {
-    return connections;
-  }
-
 }

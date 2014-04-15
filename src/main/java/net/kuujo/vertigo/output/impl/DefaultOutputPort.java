@@ -200,26 +200,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Object message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(String message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-
-  @Override
-  public OutputPort send(String message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }
@@ -233,25 +216,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Boolean message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(Character message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-  @Override
-  public OutputPort send(Character message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }
@@ -265,25 +232,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Short message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(Integer message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-  @Override
-  public OutputPort send(Integer message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }
@@ -297,25 +248,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Long message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(Double message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-  @Override
-  public OutputPort send(Double message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }
@@ -329,25 +264,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Float message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(Buffer message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-  @Override
-  public OutputPort send(Buffer message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }
@@ -361,25 +280,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(JsonObject message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(JsonArray message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-  @Override
-  public OutputPort send(JsonArray message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }
@@ -393,25 +296,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Byte message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
-    }
-    return this;
-  }
-
-  @Override
   public OutputPort send(byte[] message) {
     for (OutputStream stream : streams) {
       stream.send(message);
-    }
-    return this;
-  }
-
-  @Override
-  public OutputPort send(byte[] message, String key) {
-    for (OutputStream stream : streams) {
-      stream.send(message, key);
     }
     return this;
   }

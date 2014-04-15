@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.streams;
+package net.kuujo.vertigo.util;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

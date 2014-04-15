@@ -13,40 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.streams;
+package net.kuujo.vertigo.util;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Data receive stream.
+ * Closeable type.
  *
  * @author Jordan Halterman
  *
- * @param <T> The receive stream type.
+ * @param <T> The closeable type.
  */
-public interface ReceiveStream<T extends ReceiveStream<T>> {
+public interface Closeable<T extends Closeable<T>> {
 
   /**
-   * Pauses the receive stream.
-   *
-   * @return The stream.
+   * Closes the stream.
    */
-  T pause();
+  void close();
 
   /**
-   * Resumes receiving data on the stream.
+   * Closes the stream.
    *
-   * @return The stream.
+   * @param doneHandler An asynchronous handler to be called once complete.
    */
-  T resume();
-
-  /**
-   * Registers a message handler.
-   *
-   * @param handler A message handler.
-   * @return The stream.
-   */
-  @SuppressWarnings("rawtypes")
-  T messageHandler(Handler handler);
+  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

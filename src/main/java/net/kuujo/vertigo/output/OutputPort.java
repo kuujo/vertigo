@@ -16,11 +16,8 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.streams.Closeable;
-import net.kuujo.vertigo.streams.Openable;
-
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * An input port.
@@ -42,32 +39,5 @@ public interface OutputPort extends Output<OutputPort>, Openable<OutputPort>, Cl
    * @return The output port context.
    */
   OutputPortContext context();
-
-  /**
-   * Opens the output port.
-   *
-   * @return The output port.
-   */
-  OutputPort open();
-
-  /**
-   * Opens the output port.
-   *
-   * @param doneHandler An asynchronous handler to be called once opened.
-   * @return The output port.
-   */
-  OutputPort open(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Closes the output port.
-   */
-  void close();
-
-  /**
-   * Closes the output port.
-   *
-   * @param doneHandler An asynchronous handler to be called once closed.
-   */
-  void close(Handler<AsyncResult<Void>> doneHandler);
 
 }

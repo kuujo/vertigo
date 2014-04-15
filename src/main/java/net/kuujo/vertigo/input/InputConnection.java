@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.input;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.streams.Closeable;
-import net.kuujo.vertigo.streams.Openable;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * A component-to-component input connection.

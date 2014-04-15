@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.streams.Closeable;
-import net.kuujo.vertigo.streams.Openable;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * Output connection.<p>

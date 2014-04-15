@@ -15,9 +15,10 @@
  */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.streams.SendStream;
-
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Output interface.<p>
@@ -27,7 +28,150 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface Output<T extends Output<T>> extends SendStream<T> {
+public interface Output<T extends Output<T>> {
+
+  /**
+   * Sets the send queue max size.
+   *
+   * @param maxSize The send queue max size.
+   * @return The send stream.
+   */
+  T setSendQueueMaxSize(int maxSize);
+
+  /**
+   * Returns the send queue max size.
+   *
+   * @return The send queue max size.
+   */
+  int getSendQueueMaxSize();
+
+  /**
+   * Returns a boolean indicating whether the send queue is full.
+   *
+   * @return Indicates whether the send queue is full.
+   */
+  boolean sendQueueFull();
+
+  /**
+   * Sets a drain handler on the stream.
+   *
+   * @param handler A handler to be called when the stream is prepared to accept
+   *        new messages.
+   * @return The send stream.
+   */
+  T drainHandler(Handler<Void> handler);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Object message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(String message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Short message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Integer message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Long message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Float message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Double message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Boolean message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Byte message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(byte[] message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Character message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(Buffer message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(JsonArray message);
+
+  /**
+   * Sends a message on the stream.
+   *
+   * @param message The message to send.
+   * @return The stream.
+   */
+  T send(JsonObject message);
 
   /**
    * Creates an output group.

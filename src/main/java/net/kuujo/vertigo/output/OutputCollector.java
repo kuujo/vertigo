@@ -18,8 +18,8 @@ package net.kuujo.vertigo.output;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputContext;
-import net.kuujo.vertigo.streams.Closeable;
-import net.kuujo.vertigo.streams.Openable;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * Output collector.<p>

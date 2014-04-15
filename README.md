@@ -244,7 +244,31 @@ network.createConnection("foo", "out", "bar", "in");
 The connection port names default to `out` and `in` respectively if no port names
 are specified.
 
-### Logger port names
+### Connection groupings
+When connecting together two components, often time one or both components at either
+end of the connection will consist of several component instances. Normally, the Vert.x
+event bus provides basic round-robin routing of messages to multiple handlers at the
+same address, but Vertigo provides additional routing methods through its *grouping*
+concept. When a message is sent on a component's output port to a component that
+consists of more than one instance, Vertigo will use the grouping to determine which
+instance(s) of that component will receive the message.
+
+To set a grouping on a connection call one of the grouping specific methods:
+* `roundGrouping()` - round-robin based grouping
+* `randomGrouping()` - random grouping
+* `hashGrouping()` - message hash based grouping
+* `fairGrouping()` - sends the message to the connection with the shortest queue
+* `allGrouping()` - sends a message to *all* instances of a connected component
+* `customGrouping(CustomGrouping grouping)` - facilitates custom grouping implementations
+
+```java
+network.addVerticle("foo", "foo,js", 2)
+    .addVerticle("bar", "bar.js", 4)
+    .createConnection("foo", "out", "bar", "in")
+    .hashGrouping();
+```
+
+### Logger ports
 Vertigo reserves some port names for logging. Reserved logging port
 names match the methods of the Vert.x logger interface:
 * `fatal`
@@ -266,11 +290,101 @@ of Vertigo networks across a cluster of Vert.x instances.
 * `deployRemoteNetwork(NetworkConfig network)`
 * `deployRemoteNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler)`
 
+```java
+vertigo.deployRemoteNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    if (result.succeeded()) {
+      // The network was deployed and started successfully.
+    }
+  }
+});
+```
+
+### Undeploying networks
+Networks can similarly be undeployed by calling the `undeploy*` method, passing
+either a network configuration or network name to the cluster.
+
+```java
+vertigo.undeployRemoteNetwork("my_network", new Handler<AysncResult<Void>>() {
+  public void handle(AsyncResult<Void> result) {
+    if (result.succeeded()) {
+      // Undeployment was successful.
+    }
+  }
+});
+```
+
+When running Vert.x in a cluster, Vertigo automatically replicates network information
+across the cluster, meaning networks don't have to be undeployed from the same instance
+from which they were deployed.
+
+### Network configuration changes
+Another feature of Vertigo network deployment is that Vertigo networks can be reconfigured
+at runtime. This means that verticles, modules, and the connections between them can be
+deployed or undeployed without shutting down an entire network. This helps improve uptime
+for Vertigo networks, but there are some very important caviats to this process.
+
+Live network configuration changes should be used with caution for obvious reasons.
+Modifying a network's structure at runtime can potentially cause unexpected side-effects
+depending on your network's configuration. For this reason, Vertigo only allows complete
+components and connections to be deployed and undeployed; it does not allow component
+or connection configurations to be updated (for instance, adding component instances)
+in order to ensure consistency is maintained for hash-based routing for example.
+
+Network configuration changes are performed using the same network deployment API. *This
+is where network names become important.* When a network configuration is deployed,
+Vertigo will check whether any networks with the same name are running. If a network
+with the same name is already running in the cluster, Vertigo will *merge* the new
+configuration with the existing network's configuration and deploy any added components
+or connections. Networks can be partially undeployed in the same manner. When a network
+is undeployed using a configuration, Vertigo will unmerge the given configuration from
+the running configuration and, if components or connections remain in the leftover
+configuration, the network will continue to run.
+
+Let's take a look at a brief example for clarity.
+
+```java
+// Create and deploy a two component network.
+NetworkConfig network = vertigo.createNetwork("test");
+network.addVerticle("foo", "foo.js", 2);
+network.addVerticle("bar", "bar.py", 4);
+
+// Deploy the network to the cluster.
+vertigo.deployRemoteNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+
+    // Create and deploy a connection between the two components.
+    NetworkConfig network = vertigo.createNetwork("test"); // Note the same network name.
+    network.createConnection("foo", "out", "bar", "in");
+    vertigo.deployRemoteNetwork(network);
+
+  }
+});
+```
+
+Expect a more in-depth explanation of how Vertigo coordinates network configuration
+changes and monitors component statuses in the near future.
+
+### Empty network deployment
+With Vertigo's runtime network configuration support, it's possible also to deploy
+empty networks and configure them after startup. To do so, simply pass a string
+network name to the `deploy*` method.
+
+```java
+vertigo.deployLocalNetwork("my_network", new Handler<AsyncResult<ActiveNetwork>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    // Deploy a verticle to the already running "my_network" network.
+    vertigo.deployLocalNetwork(vertigo.createNetwork("my_network").addVerticle("foo", "foo.js"));
+  }
+});
+```
+
 ### Active networks
-When deploying a network, the asynchronous handler will be called once the network
-has completed startup. The handler will be called with an `ActiveNetwork` object
-that exposes an interface similar to that of the `NetworkConfig`. The `ActiveNetwork`
-object can be used to alter the configuration of the network in real time.
+You probably noticed the `ActiveNetwork` that is provided when deploying a Vertigo
+network. The `ActiveNetwork` is essentially a `NetworkConfig` like object that
+handles live network configuration changes for you. So, rather than constructing
+and deploying or undeploying partial network configurations, users can use the
+`ActiveNetwork` object returned by the initial deployment to reconfigure the network.
 
 ```java
 // Create a network with a single component.
@@ -283,40 +397,9 @@ vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
     if (result.succeeded()) {
       // Add another component to the network and create a connection between the two components.
       ActiveNetwork network = result.result();
-      network.addVerticle("bar", "bar.js", 2);
+      network.addVerticle("bar", "bar.py", 2);
       network.createConnection("foo", "out", "bar", "in");
     }
-  }
-});
-```
-
-### Partial network deployment
-Vertigo also supports partial network deployments. When a network is deployed,
-Vertigo checks to see if a network with the same name is already running in the
-cluster. *This is where network names become important.* If a network with the
-same name is running in the cluster, Vertigo will *merge* the new network configuration
-with the deployed network configuration and automatically update the network's deployed
-modules, verticles, and their connections.
-
-We can acheive the same results as the `ActiveNetwork` example above by doing the following:
-
-```java
-// Create a network with a single component.
-NetworkConfig network = vertigo.createNetwork("test");
-network.addVerticle("foo", "foo.js", 2);
-
-// Deploy the network.
-vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-  public void handle(AsyncResult<ActiveNetwork> result) {
-
-    // Create a second network with the same name and deploy it.
-    NetworkConfig network = vertigo.createNetwork("test");
-    network.addVerticle("bar", "bar.js", 2);
-    network.createConnection("foo", "out", "bar", "in");
-
-    // Deploy the new configuration, causing the two configurations to be merged.
-    vertigo.deployLocalNetwork(network);
-
   }
 });
 ```
@@ -360,6 +443,10 @@ to be delivered in any specific order. Internally, Vertigo uses adaptive event b
 to help detect failures quickly by monitoring the response time for each individual event
 bus address. From a user's perspective, you need only send the message on an output port
 and Vertigo will handle routing and delivering it to the appripriate component(s).
+
+```java
+output.port("out").send(12345, "foobar");
+```
 
 ### Message groups
 While Vertigo messages are not guaranteed to be delivered in any specific order, Vertigo

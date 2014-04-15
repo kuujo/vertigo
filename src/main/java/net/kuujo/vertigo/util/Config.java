@@ -18,7 +18,6 @@ package net.kuujo.vertigo.util;
 import java.util.HashSet;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.VertigoUtils;
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.cluster.VertigoCluster;
@@ -74,9 +73,9 @@ public final class Config {
 
     // Check the cluster type and set the current cluster mode appropriately.
     if (clusterClass.isAnnotationPresent(LocalType.class)) {
-      VertigoUtils.init(Vertigo.Mode.LOCAL);
+      Vertigo.init(Vertigo.Mode.LOCAL);
     } else if (clusterClass.isAnnotationPresent(ClusterType.class)) {
-      VertigoUtils.init(Vertigo.Mode.CLUSTER);
+      Vertigo.init(Vertigo.Mode.CLUSTER);
     } else {
       throw new IllegalArgumentException("Invalid cluster type. No type annotation found.");
     }

@@ -77,7 +77,7 @@ public final class Vertigo {
 
   }
 
-  static void init(Mode mode) {
+  public static void init(Mode mode) {
     if (!initialized) {
       currentMode = mode;
       initialized = true;

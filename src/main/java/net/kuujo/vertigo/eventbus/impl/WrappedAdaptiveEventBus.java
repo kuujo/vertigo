@@ -37,6 +37,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
+  private static final long BASE_REPLY_TIME = 500;
   private static final long DEFAULT_REPLY_TIME = 5000;
   private static final long CALCULATE_INTERVAL = 1000;
   private static final int WINDOW_SIZE = 5;
@@ -64,9 +65,13 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
             total += time;
           }
         }
-        long average = Math.round(total / count);
-        replyTimeouts.put(address, average);
-        allTimes.add(new ArrayList<Long>());
+        if (total > 0 && count > 0) {
+          long average = Math.round(total / count);
+          replyTimeouts.put(address, average);
+          allTimes.add(new ArrayList<Long>());
+        } else {
+          replyTimeouts.put(address, DEFAULT_REPLY_TIME);
+        }
       }
     }
   };
@@ -74,7 +79,7 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
   public WrappedAdaptiveEventBus(Vertx vertx) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    timerID = vertx.setTimer(CALCULATE_INTERVAL, timer);
+    timerID = vertx.setPeriodic(CALCULATE_INTERVAL, timer);
   }
 
   /**
@@ -82,7 +87,7 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
    */
   private long getReplyTime(String address, float weight) {
     Long average = replyTimeouts.get(address);
-    return average != null ? Math.max(Math.round(average * weight), 500) : DEFAULT_REPLY_TIME;
+    return average != null ? Math.max(Math.round(average * weight), BASE_REPLY_TIME) : DEFAULT_REPLY_TIME;
   }
 
   /**

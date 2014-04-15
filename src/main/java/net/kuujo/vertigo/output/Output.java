@@ -68,7 +68,12 @@ public interface Output<T extends Output<T>> {
   boolean sendQueueFull();
 
   /**
-   * Sets a drain handler on The output.
+   * Sets a drain handler on the output.<p>
+   *
+   * When the output's send queue becomes full, the output will be temporarily
+   * paused while its output queue is empty. Once the queue size decreases
+   * back to 50% of the maximum queue size the drain handler will be called
+   * so that normal operation can resume.
    *
    * @param handler A handler to be called when the stream is prepared to accept
    *        new messages.
@@ -77,7 +82,7 @@ public interface Output<T extends Output<T>> {
   T drainHandler(Handler<Void> handler);
 
   /**
-   * Sends a message on The output.
+   * Sends a message on the output.
    *
    * @param message The message to send.
    * @return The output.
@@ -189,7 +194,13 @@ public interface Output<T extends Output<T>> {
   T send(JsonObject message);
 
   /**
-   * Creates an output group.
+   * Creates a named output group.<p>
+   *
+   * When creating an output group, the output will synchronize with any
+   * inputs to which it is connected prior to calling the group handler. This
+   * means that once the group handler has been called, messages sent to the
+   * group will be immediately sent to any output connections rather than
+   * queueing messages.
    *
    * @param name The output group name.
    * @param handler A handler to be called once the output group is created.

@@ -35,30 +35,52 @@ public interface Input<T extends Input<T>> {
   Vertx vertx();
 
   /**
-   * Pauses the input.
+   * Pauses the input.<p>
+   *
+   * When the input is paused, messages received by the input will be buffered,
+   * so it is important that inputs not be paused for too long if messages
+   * continue to flow.
    *
    * @return The input.
    */
   T pause();
 
   /**
-   * Resumes receiving data on the input.
+   * Resumes receiving data on the input.<p>
+   *
+   * When the input is resumed, any messages that were buffered during the pause
+   * will be processed first. Once the input's buffer is empty it will resume
+   * normal operation.
    *
    * @return The input.
    */
   T resume();
 
   /**
-   * Registers a message handler on the input.
+   * Registers a message handler on the input.<p>
+   *
+   * The message handler can accept any message type that is supported by
+   * the Vert.x event bus. Vertigo messages cannot be replied to and do not
+   * need to be acked. The input handles communicating and coordinating with
+   * outputs internally.
    *
    * @param handler A message handler.
-   * @return The stream.
+   * @return The input.
    */
   @SuppressWarnings("rawtypes")
   T messageHandler(Handler handler);
 
   /**
-   * Registers a group handler on the input.
+   * Registers a group handler on the input.<p>
+   *
+   * The group handler will be called any time a group with the given name
+   * is received on the input on which the handler was registered. That means
+   * if the handler was registered on a port, the handler will only be called
+   * for a group that is received by the port. Alternatively, if the handler
+   * was registered on a group then the handler will only be called for a group
+   * that was received by the group on which the handler was registered. This
+   * means that group handlers are inherently hierarchical, and its important
+   * that users take care in how handlers are registered.
    *
    * @param group The name of the group for which to register the handler.
    * @param handler A handler to be called when the group is received.

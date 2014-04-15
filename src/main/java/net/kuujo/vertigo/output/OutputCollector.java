@@ -46,10 +46,13 @@ public interface OutputCollector extends Openable<OutputCollector>, Closeable<Ou
   Collection<OutputPort> ports();
 
   /**
-   * Returns an output port. The port will be automatically created if
-   * it doesn't already exist.
+   * Returns an output port.<p>
    *
-   * @param name The output port name.
+   * If the port doesn't already exist then the input collector will lazily
+   * create the port. Ports can be referenced prior to the output event starting
+   * up, and once the output starts ports will be properly configured.
+   *
+   * @param name The name of the port to load.
    * @return An output port.
    */
   OutputPort port(String name);

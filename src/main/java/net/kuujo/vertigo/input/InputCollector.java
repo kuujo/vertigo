@@ -46,10 +46,13 @@ public interface InputCollector extends Openable<InputCollector>, Closeable<Inpu
   Collection<InputPort> ports();
 
   /**
-   * Returns an input port. The port will be automatically created if it doesn't
-   * already exist.
+   * Returns an input port.<p>
    *
-   * @param name The name of the port to get.
+   * If the port doesn't already exist then the input collector will lazily
+   * create the port. Ports can be referenced prior to the input event starting
+   * up, and once the input starts ports will be properly configured.
+   *
+   * @param name The name of the port to load.
    * @return The input port.
    */
   InputPort port(String name);

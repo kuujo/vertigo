@@ -65,7 +65,7 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
             total += time;
           }
         }
-        if (total > 0 && count > 0) {
+        if (total > 0 && count > 100) {
           long average = Math.round(total / count);
           replyTimeouts.put(address, average);
           allTimes.add(new ArrayList<Long>());
@@ -94,13 +94,15 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
    * Adds a reply time for future calculation.
    */
   private void addReplyTime(String address, long time) {
-    List<List<Long>> allTimes = replyTimes.get(address);
-    if (allTimes == null) {
-      allTimes = new ArrayList<>();
-      replyTimes.put(address, allTimes);
+    if (time % 5 == 0) {
+      List<List<Long>> allTimes = replyTimes.get(address);
+      if (allTimes == null) {
+        allTimes = new ArrayList<>();
+        replyTimes.put(address, allTimes);
+      }
+      if (allTimes.isEmpty()) allTimes.add(new ArrayList<Long>());
+      allTimes.get(allTimes.size()-1).add(time);
     }
-    if (allTimes.isEmpty()) allTimes.add(new ArrayList<Long>());
-    allTimes.get(allTimes.size()-1).add(time);
   }
 
   @Override

@@ -65,7 +65,7 @@ public class DefaultInputConnection implements InputConnection {
       String id = body.getString("id");
       String name = body.getString("name");
       String parentId = body.getString("parent");
-      DefaultInputGroup group = new DefaultInputGroup(name);
+      DefaultInputGroup group = new DefaultInputGroup(name, vertx);
       groups.put(id, group);
       if (paused) group.pause();
       if (parentId != null) {
@@ -135,6 +135,11 @@ public class DefaultInputConnection implements InputConnection {
   public DefaultInputConnection(Vertx vertx, InputConnectionContext context) {
     this.vertx = vertx;
     this.context = context;
+  }
+
+  @Override
+  public Vertx vertx() {
+    return vertx;
   }
 
   @Override

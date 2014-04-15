@@ -23,6 +23,7 @@ import java.util.Queue;
 import net.kuujo.vertigo.input.InputGroup;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 
 /**
  * Default input group implementation.
@@ -31,6 +32,7 @@ import org.vertx.java.core.Handler;
  */
 public class DefaultInputGroup implements InputGroup {
   private final String name;
+  private final Vertx vertx;
   private Handler<Void> startHandler;
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
@@ -40,13 +42,19 @@ public class DefaultInputGroup implements InputGroup {
   private boolean paused;
   private boolean ended;
 
-  public DefaultInputGroup(String name) {
+  public DefaultInputGroup(String name, Vertx vertx) {
     this.name = name;
+    this.vertx = vertx;
   }
 
   @Override
   public String name() {
     return name;
+  }
+
+  @Override
+  public Vertx vertx() {
+    return vertx;
   }
 
   @Override

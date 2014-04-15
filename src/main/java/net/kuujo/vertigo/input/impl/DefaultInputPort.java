@@ -64,6 +64,11 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
+  public Vertx vertx() {
+    return vertx;
+  }
+
+  @Override
   public InputPortContext context() {
     return context;
   }

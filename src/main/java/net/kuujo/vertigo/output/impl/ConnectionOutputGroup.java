@@ -105,6 +105,11 @@ public class ConnectionOutputGroup implements OutputGroup {
     return name;
   }
 
+  @Override
+  public Vertx vertx() {
+    return vertx;
+  }
+
   /**
    * Starts the output group.
    */
@@ -131,6 +136,11 @@ public class ConnectionOutputGroup implements OutputGroup {
   @Override
   public int getSendQueueMaxSize() {
     return connection.getSendQueueMaxSize();
+  }
+
+  @Override
+  public int getSendQueueSize() {
+    return connection.getSendQueueSize();
   }
 
   @Override

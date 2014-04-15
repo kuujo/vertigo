@@ -39,17 +39,24 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultOutputStream implements OutputStream {
+  private final Vertx vertx;
   private final OutputStreamContext context;
   private final List<OutputConnection> connections = new ArrayList<>();
   private int maxQueueSize;
   private Selector selector;
 
   public DefaultOutputStream(Vertx vertx, OutputStreamContext context) {
+    this.vertx = vertx;
     this.context = context;
     for (OutputConnectionContext connection : context.connections()) {
       connections.add(new DefaultOutputConnection(vertx, connection));
     }
     this.selector = context.grouping().createSelector();
+  }
+
+  @Override
+  public Vertx vertx() {
+    return vertx;
   }
 
   @Override
@@ -86,6 +93,15 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public int getSendQueueSize() {
+    int highest = 0;
+    for (OutputConnection connection : connections) {
+      highest = Math.max(highest, connection.getSendQueueSize());
+    }
+    return highest;
+  }
+
+  @Override
   public boolean sendQueueFull() {
     for (OutputConnection connection : connections) {
       if (connection.sendQueueFull()) {
@@ -114,7 +130,7 @@ public class DefaultOutputStream implements OutputStream {
         public void handle(OutputGroup group) {
           groups.add(group);
           if (groups.size() == connectionsSize) {
-            handler.handle(new BaseOutputGroup(name, groups));
+            handler.handle(new BaseOutputGroup(name, vertx, groups));
           }
         }
       });

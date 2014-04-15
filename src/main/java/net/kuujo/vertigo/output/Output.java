@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.output;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -29,6 +30,20 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public interface Output<T extends Output<T>> {
+
+  /**
+   * Returns the output's Vertx instance.
+   *
+   * @return A vertx instance.
+   */
+  Vertx vertx();
+
+  /**
+   * Returns the current connection send queue size.
+   *
+   * @return The current connection send queue size.
+   */
+  int getSendQueueSize();
 
   /**
    * Sets the send queue max size.

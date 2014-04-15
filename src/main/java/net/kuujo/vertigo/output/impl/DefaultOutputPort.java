@@ -64,6 +64,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
+  public Vertx vertx() {
+    return vertx;
+  }
+
+  @Override
   public OutputPortContext context() {
     return context;
   }
@@ -114,6 +119,15 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   @Override
   public int getSendQueueMaxSize() {
     return maxQueueSize;
+  }
+
+  @Override
+  public int getSendQueueSize() {
+    int highest = 0;
+    for (OutputStream stream : streams) {
+      highest = Math.max(highest, stream.getSendQueueSize());
+    }
+    return highest;
   }
 
   @Override
@@ -183,7 +197,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         public void handle(OutputGroup group) {
           groups.add(group);
           if (groups.size() == streamSize) {
-            handler.handle(new BaseOutputGroup(name, groups));
+            handler.handle(new BaseOutputGroup(name, vertx, groups));
           }
         }
       });

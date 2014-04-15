@@ -61,6 +61,11 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
+  public Vertx vertx() {
+    return vertx;
+  }
+
+  @Override
   public OutputConnectionContext context() {
     return context;
   }

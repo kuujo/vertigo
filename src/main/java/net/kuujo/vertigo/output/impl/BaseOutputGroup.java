@@ -22,6 +22,7 @@ import java.util.List;
 import net.kuujo.vertigo.output.OutputGroup;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -37,16 +38,23 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class BaseOutputGroup implements OutputGroup {
   private final String name;
+  private final Vertx vertx;
   private final Collection<OutputGroup> connections;
 
-  public BaseOutputGroup(String name, Collection<OutputGroup> connections) {
+  public BaseOutputGroup(String name, Vertx vertx, Collection<OutputGroup> connections) {
     this.name = name;
+    this.vertx = vertx;
     this.connections = connections;
   }
 
   @Override
   public String name() {
     return name;
+  }
+
+  @Override
+  public Vertx vertx() {
+    return vertx;
   }
 
   @Override
@@ -64,6 +72,15 @@ public class BaseOutputGroup implements OutputGroup {
       maxSize += group.getSendQueueMaxSize();
     }
     return maxSize;
+  }
+
+  @Override
+  public int getSendQueueSize() {
+    int highest = 0;
+    for (OutputGroup group : connections) {
+      highest = Math.max(highest, group.getSendQueueSize());
+    }
+    return highest;
   }
 
   @Override
@@ -94,7 +111,7 @@ public class BaseOutputGroup implements OutputGroup {
         public void handle(OutputGroup group) {
           groups.add(group);
           if (groups.size() == connectionsSize) {
-            handler.handle(new BaseOutputGroup(name, groups));
+            handler.handle(new BaseOutputGroup(name, vertx, groups));
           }
         }
       });

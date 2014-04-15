@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.input;
 
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 
 /**
  * Basic input interface.
@@ -25,6 +26,13 @@ import org.vertx.java.core.Handler;
  * @param <T> The input type.
  */
 public interface Input<T extends Input<T>> {
+
+  /**
+   * Returns the input's vertx instance.
+   *
+   * @return The inputs Vert.x instance.
+   */
+  Vertx vertx();
 
   /**
    * Pauses the input.

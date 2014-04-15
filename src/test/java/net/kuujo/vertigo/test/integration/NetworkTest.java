@@ -17,15 +17,20 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.input.InputGroup;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.output.OutputGroup;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -302,6 +307,319 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("many");
     network.addVerticle("sender", TestManySender.class.getName());
     network.addVerticle("receiver", TestManyReceiver.class.getName());
+    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestBasicGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestBasicGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testBasicGroup() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("basic-group");
+    network.addVerticle("sender", TestBasicGroupSender.class.getName());
+    network.addVerticle("receiver", TestBasicGroupReceiver.class.getName());
+    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestNestedGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.group("bar", new Handler<OutputGroup>() {
+            @Override
+            public void handle(OutputGroup group) {
+              group.send("bar");
+              group.send("bar");
+              group.send("bar");
+              group.end();
+            }
+          });
+          group.group("bar", new Handler<OutputGroup>() {
+            @Override
+            public void handle(OutputGroup group) {
+              group.send("bar");
+              group.send("bar");
+              group.send("bar");
+              group.end();
+            }
+          });
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestNestedGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          group.groupHandler("bar", new Handler<InputGroup>() {
+            @Override
+            public void handle(InputGroup group) {
+              group.messageHandler(new Handler<String>() {
+                @Override
+                public void handle(String message) {
+                  assertEquals("bar", message);
+                  messages.add(message);
+                }
+              });
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(9, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testNestedGroups() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("nested-group");
+    network.addVerticle("sender", TestNestedGroupSender.class.getName());
+    network.addVerticle("receiver", TestNestedGroupReceiver.class.getName());
+    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestOrderedGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send(1).send(1).send(1).send(1).send(1).end();
+        }
+      });
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send(2).send(2).send(2).send(2).send(2).end();
+        }
+      });
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send(3).send(3).send(3).send(3).send(3).end();
+        }
+      });
+    }
+  }
+
+  public static class TestOrderedGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      final Set<Integer> numbers = new HashSet<>();
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          group.messageHandler(new Handler<Integer>() {
+            @Override
+            public void handle(Integer number) {
+              for (Integer num : numbers) {
+                if (num > number) {
+                  fail();
+                }
+              }
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              numbers.add(numbers.size()+1);
+              if (numbers.size() == 3) {
+                testComplete();
+              }
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testGroupOrder() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("group-order");
+    network.addVerticle("sender", TestOrderedGroupSender.class.getName());
+    network.addVerticle("receiver", TestOrderedGroupReceiver.class.getName());
+    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestOrderedNestedGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.group("bar", new Handler<OutputGroup>() {
+            @Override
+            public void handle(OutputGroup group) {
+              group.send(1).send(1).send(1).send(1).send(1).end();
+            }
+          });
+          group.group("bar", new Handler<OutputGroup>() {
+            @Override
+            public void handle(OutputGroup group) {
+              group.send(2).send(2).send(2).send(2).send(2).end();
+            }
+          });
+          group.group("bar", new Handler<OutputGroup>() {
+            @Override
+            public void handle(OutputGroup group) {
+              group.send(3).send(3).send(3).send(3).send(3).end();
+            }
+          });
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestOrderedNestedGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final Set<Integer> numbers = new HashSet<>();
+          group.groupHandler("bar", new Handler<InputGroup>() {
+            @Override
+            public void handle(InputGroup group) {
+              group.messageHandler(new Handler<Integer>() {
+                @Override
+                public void handle(Integer number) {
+                  for (Integer num : numbers) {
+                    if (num > number) {
+                      fail();
+                    }
+                  }
+                }
+              });
+              group.endHandler(new Handler<Void>() {
+                @Override
+                public void handle(Void _) {
+                  numbers.add(numbers.size()+1);
+                }
+              });
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, numbers.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testNestedGroupsOrder() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("nested-group-order");
+    network.addVerticle("sender", TestOrderedNestedGroupSender.class.getName());
+    network.addVerticle("receiver", TestOrderedNestedGroupReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
     vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override

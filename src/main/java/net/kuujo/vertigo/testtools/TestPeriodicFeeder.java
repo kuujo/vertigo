@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.java.ComponentVerticle;
 
 import org.vertx.java.core.Handler;
@@ -28,11 +27,11 @@ import org.vertx.java.core.Handler;
 public class TestPeriodicFeeder extends ComponentVerticle {
 
   @Override
-  public void start(final Component component) {
+  public void start() {
     vertx.setPeriodic(1000, new Handler<Long>() {
       @Override
       public void handle(Long timerID) {
-        component.output().port("out").send(context.component().config());
+        output.port("out").send(container.config());
       }
     });
   }

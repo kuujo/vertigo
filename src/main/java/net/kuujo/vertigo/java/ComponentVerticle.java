@@ -19,11 +19,11 @@ import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.VertigoCluster;
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -37,21 +37,14 @@ import org.vertx.java.platform.Verticle;
 public abstract class ComponentVerticle extends Verticle {
   protected Vertigo vertigo;
   protected VertigoCluster cluster;
-  protected InstanceContext context;
   protected JsonObject config;
   protected Logger logger;
   protected Component component;
   protected InputCollector input;
   protected OutputCollector output;
 
-  /**
-   * Because of the method by which Vertigo coordinates starting of component instances,
-   * we do not use the future-based start method here. Instead, we simply allow the
-   * Vertigo coordinator to do its job and then provide a separate start method for when
-   * the component is actually started (which differs from when the verticle is started).
-   */
   @Override
-  public void start() {
+  public void start(final Future<Void> startResult) {
     component = createComponent(vertx, container);
     cluster = component.cluster();
     logger = component.logger();
@@ -62,26 +55,13 @@ public abstract class ComponentVerticle extends Verticle {
     component.start(new Handler<AsyncResult<Component>>() {
       @Override
       public void handle(AsyncResult<Component> result) {
-        if (result.succeeded()) {
-          input = component.input();
-          output = component.output();
-          context = component.context();
-          start(component);
+        if (result.failed()) {
+          startResult.setFailure(result.cause());
+        } else {
+          ComponentVerticle.super.start(startResult);
         }
       }
     });
-  }
-
-  /**
-   * Called when the component has been started.
-   * 
-   * This method differs from the normal {@link #start()} method in that this method will
-   * be called *after* all other start methods. This is because this method is actually
-   * called once the component has connected to all of its interested trading partners.
-   * 
-   * @param component The component that was started.
-   */
-  protected void start(Component component) {
   }
 
 }

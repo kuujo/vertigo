@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.testtools;
 
-import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.java.ComponentVerticle;
 
 import org.vertx.java.core.Handler;
@@ -29,11 +28,11 @@ import org.vertx.java.core.json.JsonObject;
 public class TestPumpingComponent extends ComponentVerticle {
 
   @Override
-  public void start(final Component component) {
-    component.input().port("in").messageHandler(new Handler<JsonObject>() {
+  public void start() {
+    input.port("in").messageHandler(new Handler<JsonObject>() {
       @Override
       public void handle(JsonObject message) {
-        component.output().port("out").send(message);
+        output.port("out").send(message);
       }
     });
   }

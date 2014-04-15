@@ -66,35 +66,35 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
   /**
    * Sets a random connection grouping on the input.
    * 
-   * @return The connection instance.
+   * @return The connection configuration.
    */
   ConnectionConfig randomGrouping();
 
   /**
    * Sets a round-robin connection grouping on the input.
    * 
-   * @return The connection instance.
+   * @return The connection configuration.
    */
   ConnectionConfig roundGrouping();
 
   /**
    * Sets a fair grouping on the connection.
    *
-   * @return The connection instance.
+   * @return The connection configuration.
    */
   ConnectionConfig fairGrouping();
 
   /**
    * Sets a hash grouping on the connection.
    * 
-   * @return The connection instance.
+   * @return The connection configuration.
    */
   ConnectionConfig hashGrouping();
 
   /**
    * Sets an all grouping on the connection.
    * 
-   * @return The connection instance.
+   * @return The connection configuration.
    */
   ConnectionConfig allGrouping();
 

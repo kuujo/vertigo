@@ -194,7 +194,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(final Object message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(String message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(String message, String key) {
     return doSend(message);
   }
 
@@ -204,7 +214,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Boolean message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(Character message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(Character message, String key) {
     return doSend(message);
   }
 
@@ -214,7 +234,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Short message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(Integer message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(Integer message, String key) {
     return doSend(message);
   }
 
@@ -224,7 +254,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Long message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(Double message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(Double message, String key) {
     return doSend(message);
   }
 
@@ -234,7 +274,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Float message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(Buffer message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(Buffer message, String key) {
     return doSend(message);
   }
 
@@ -244,7 +294,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(JsonObject message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(JsonArray message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(JsonArray message, String key) {
     return doSend(message);
   }
 
@@ -254,7 +314,17 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Byte message, String key) {
+    return doSend(message);
+  }
+
+  @Override
   public OutputGroup send(byte[] message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(byte[] message, String key) {
     return doSend(message);
   }
 

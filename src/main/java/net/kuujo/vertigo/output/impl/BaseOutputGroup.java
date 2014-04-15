@@ -111,9 +111,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Object message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(String message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(String message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }
@@ -127,9 +143,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Boolean message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(Character message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(Character message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }
@@ -143,9 +175,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Short message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(Integer message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(Integer message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }
@@ -159,9 +207,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Long message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(Double message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(Double message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }
@@ -175,9 +239,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Float message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(Buffer message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(Buffer message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }
@@ -191,9 +271,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(JsonObject message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(JsonArray message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(JsonArray message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }
@@ -207,9 +303,25 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup send(Byte message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
+    }
+    return this;
+  }
+
+  @Override
   public OutputGroup send(byte[] message) {
     for (OutputGroup output : connections) {
       output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(byte[] message, String key) {
+    for (OutputGroup output : connections) {
+      output.send(message, key);
     }
     return this;
   }

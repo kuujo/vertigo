@@ -53,7 +53,7 @@ public interface Output<T extends Output<T>> {
   boolean sendQueueFull();
 
   /**
-   * Sets a drain handler on the stream.
+   * Sets a drain handler on The output.
    *
    * @param handler A handler to be called when the stream is prepared to accept
    *        new messages.
@@ -62,116 +62,242 @@ public interface Output<T extends Output<T>> {
   T drainHandler(Handler<Void> handler);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on The output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @return The output.
    */
   T send(Object message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Object message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(String message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(String message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Short message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Short message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Integer message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Integer message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Long message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Long message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Float message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Float message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Double message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Double message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Boolean message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Boolean message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Byte message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Byte message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(byte[] message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(byte[] message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Character message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Character message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(Buffer message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(Buffer message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(JsonArray message);
 
   /**
-   * Sends a message on the stream.
+   * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The stream.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(JsonArray message, String key);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
    */
   T send(JsonObject message);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @param key A key with which to route the message.
+   * @return The output.
+   */
+  T send(JsonObject message, String key);
 
   /**
    * Creates an output group.

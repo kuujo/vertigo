@@ -46,15 +46,22 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface Selector extends JsonSerializable {
 
   /**
-   * Selects a list of connections to which to emit messages.
+   * Selects a list of connections to which to send a message.
    *
-   * @param message
-   *   The message being emitted.
-   * @param targets
-   *   A list of connections from which to select.
-   * @return
-   *   A list of selected connections.
+   * @param message The message being sent.
+   * @param targets A list of connections from which to select.
+   * @return A list of selected connections.
    */
   List<OutputConnection> select(Object message, List<OutputConnection> connections);
+
+  /**
+   * Selects a list of connections to which to send a message.
+   *
+   * @param message The message being sent.
+   * @param key A message routing key.
+   * @param connections A list of connections from which to select.
+   * @return A list of selected connections.
+   */
+  List<OutputConnection> select(Object message, String key, List<OutputConnection> connections);
 
 }

@@ -42,4 +42,9 @@ public class FairSelector implements Selector {
     return Arrays.asList(lowest);
   }
 
+  @Override
+  public List<OutputConnection> select(Object message, String key, List<OutputConnection> connections) {
+    return select(message, connections);
+  }
+
 }

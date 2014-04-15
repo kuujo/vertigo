@@ -106,7 +106,7 @@ public class DefaultOutputStream implements OutputStream {
   @Override
   public OutputStream group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
-    List<OutputConnection> connections = selector.select(name, this.connections);
+    List<OutputConnection> connections = selector.select(name, name, this.connections);
     final int connectionsSize = connections.size();
     for (OutputConnection connection : connections) {
       connection.group(name, new Handler<OutputGroup>() {
@@ -131,8 +131,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(Object message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(String message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(String message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;
@@ -147,8 +163,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(Boolean message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(Character message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(Character message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;
@@ -163,8 +195,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(Short message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(Integer message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(Integer message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;
@@ -179,8 +227,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(Long message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(Double message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(Double message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;
@@ -195,8 +259,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(Float message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(Buffer message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(Buffer message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;
@@ -211,8 +291,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(JsonObject message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(JsonArray message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(JsonArray message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;
@@ -227,8 +323,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream send(Byte message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
   public OutputStream send(byte[] message) {
     for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(byte[] message, String key) {
+    for (OutputConnection connection : selector.select(message, key, connections)) {
       connection.send(message);
     }
     return this;

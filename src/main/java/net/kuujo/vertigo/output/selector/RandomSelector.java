@@ -39,4 +39,9 @@ public class RandomSelector implements Selector {
     return connections.subList(index, index+1);
   }
 
+  @Override
+  public List<OutputConnection> select(Object message, String key, List<OutputConnection> connections) {
+    return select(message, connections);
+  }
+
 }

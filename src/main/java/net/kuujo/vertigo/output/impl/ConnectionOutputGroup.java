@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.output.impl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.eventbus.AdaptiveEventBus;
@@ -49,10 +51,11 @@ public class ConnectionOutputGroup implements OutputGroup {
   private final String address;
   private final AdaptiveEventBus eventBus;
   private Handler<Void> endHandler;
-  private ConnectionOutputGroup lastGroup;
+  private final Map<String, ConnectionOutputGroup> groups = new HashMap<>();
   private int sentCount;
   private int ackedCount;
-  private boolean childrenComplete = true;
+  private int groupCount;
+  private int completeCount;
   private boolean ended;
 
   public ConnectionOutputGroup(String id, String name, Vertx vertx, OutputConnection connection) {
@@ -81,7 +84,7 @@ public class ConnectionOutputGroup implements OutputGroup {
    * Checks whether the group is complete.
    */
   private void checkEnd() {
-    if (ended && ackedCount == sentCount && childrenComplete) {
+    if (ended && ackedCount == sentCount && groupCount == completeCount) {
       eventBus.sendWithAdaptiveTimeout(String.format("%s.end", address), new JsonObject().putString("id", id), 5, new Handler<AsyncResult<Message<Void>>>() {
         @Override
         public void handle(AsyncResult<Message<Void>> result) {
@@ -155,27 +158,43 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup group(String name, final Handler<OutputGroup> handler) {
+  public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
     final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this.id, vertx, connection);
-    childrenComplete = false;
-    group.endHandler(new Handler<Void>() {
-      @Override
-      public void handle(Void _) {
-        childrenComplete = true;
-        checkEnd();
-      }
-    });
+    groupCount++;
+
+    // Get the last group for the given group name.
+    ConnectionOutputGroup lastGroup = groups.get(name);
     if (lastGroup != null) {
+      // Override the default group end handler with a handler that started the
+      // next group once the previous group has completed. This guarantees ordering
+      // between groups with the same name.
       lastGroup.endHandler(new Handler<Void>() {
         @Override
         public void handle(Void _) {
+          completeCount++;
           group.start(handler);
         }
       });
     } else {
+      // If there is no previous group then start the group immediately.
       group.start(handler);
     }
-    lastGroup = group;
+
+    // Set an end handler on the group that removes the group from the groups map.
+    // If this group is not the last group in the groups set for the given group,
+    // the end handler will be overridden. If this group is the last group, however,
+    // once it's complete we need to check whether the parent group has completed.
+    group.endHandler(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        completeCount++;
+        groups.remove(name);
+        checkEnd();
+      }      
+    });
+
+    // Set this as the last group in for the given group name.
+    groups.put(name, group);
     return this;
   }
 

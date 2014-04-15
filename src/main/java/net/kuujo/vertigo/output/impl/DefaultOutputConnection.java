@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.output.impl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
@@ -48,7 +50,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private int currentQueueSize;
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
-  private ConnectionOutputGroup lastGroup;
+  private final Map<String, ConnectionOutputGroup> groups = new HashMap<>();
   private boolean open;
   private boolean paused;
 
@@ -124,9 +126,15 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection group(String name, final Handler<OutputGroup> handler) {
+  public OutputConnection group(final String name, final Handler<OutputGroup> handler) {
     final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, this);
+
+    // Get the last group that was created for this group name.
+    ConnectionOutputGroup lastGroup = groups.get(name);
     if (lastGroup != null) {
+      // Override the default end handler for the group to start the following
+      // group once the last group as completed. This guarantees ordering of
+      // groups with the same name.
       lastGroup.endHandler(new Handler<Void>() {
         @Override
         public void handle(Void _) {
@@ -134,9 +142,22 @@ public class DefaultOutputConnection implements OutputConnection {
         }
       });
     } else {
+      // If there is no previous group then start the group immediately.
       group.start(handler);
     }
-    lastGroup = group;
+
+    // Set an end handler on the group that will remove it from the groups
+    // list if the group is completed before any new groups with the same
+    // name are created.
+    group.endHandler(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        groups.remove(name);
+      }      
+    });
+
+    // Add the group as the last created group.
+    groups.put(name, group);
     return this;
   }
 

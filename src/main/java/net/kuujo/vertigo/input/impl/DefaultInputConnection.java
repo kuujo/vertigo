@@ -52,6 +52,7 @@ public class DefaultInputConnection implements InputConnection {
     @Override
     public void handle(Message<Boolean> message) {
       if (open) {
+        queue.clear();
         groups.clear();
         message.reply(true);
       }
@@ -126,6 +127,7 @@ public class DefaultInputConnection implements InputConnection {
     @Override
     public void handle(Message<Boolean> message) {
       if (open) {
+        queue.clear();
         groups.clear();
         message.reply(true);
       }

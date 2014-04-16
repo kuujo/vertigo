@@ -44,31 +44,26 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
   private final Vertx vertx;
   private final EventBus eventBus;
   private float defaultTimeout;
-  private final Map<String, List<List<Long>>> replyTimes = new HashMap<>();
+  private final Map<String, List<Long>> replyTimes = new HashMap<>();
   private final Map<String, Long> replyTimeouts = new HashMap<>();
   private long timerID;
 
   private Handler<Long> timer = new Handler<Long>() {
     @Override
     public void handle(Long timerID) {
-      for (Map.Entry<String, List<List<Long>>> entry : replyTimes.entrySet()) {
+      for (Map.Entry<String, List<Long>> entry : replyTimes.entrySet()) {
         String address = entry.getKey();
-        List<List<Long>> allTimes = entry.getValue();
-        if (allTimes.size() > WINDOW_SIZE) {
-          allTimes.remove(0);
-        }
-        int count = 0;
-        long total = 0;
-        for (List<Long> times : allTimes) {
+        List<Long> times = entry.getValue();
+        if (!times.isEmpty()) {
+          if (times.size() > WINDOW_SIZE) {
+            times.remove(0);
+          }
+          int total = 0;
           for (long time : times) {
-            count++;
             total += time;
           }
-        }
-        if (total > 0 && count > 100) {
-          long average = Math.round(total / count);
+          long average = Math.round(total / times.size());
           replyTimeouts.put(address, average);
-          allTimes.add(new ArrayList<Long>());
         } else {
           replyTimeouts.put(address, DEFAULT_REPLY_TIME);
         }
@@ -94,14 +89,15 @@ public class WrappedAdaptiveEventBus implements AdaptiveEventBus {
    * Adds a reply time for future calculation.
    */
   private void addReplyTime(String address, long time) {
-    if (time % 5 == 0) {
-      List<List<Long>> allTimes = replyTimes.get(address);
-      if (allTimes == null) {
-        allTimes = new ArrayList<>();
-        replyTimes.put(address, allTimes);
-      }
-      if (allTimes.isEmpty()) allTimes.add(new ArrayList<Long>());
-      allTimes.get(allTimes.size()-1).add(time);
+    List<Long> times = replyTimes.get(address);
+    if (times == null) {
+      times = new ArrayList<>();
+      replyTimes.put(address, times);
+    }
+    if (!times.isEmpty()) {
+      times.add((times.remove(times.size()-1) + time) / 2);
+    } else {
+      times.add(time);
     }
   }
 

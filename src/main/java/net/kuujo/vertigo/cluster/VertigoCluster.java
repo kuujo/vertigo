@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.annotations.ClusterTypeInfo;
+import net.kuujo.vertigo.annotations.LocalTypeInfo;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
@@ -40,6 +42,8 @@ import org.vertx.java.platform.Container;
  *
  * @author Jordan Halterman
  */
+@LocalTypeInfo(defaultImpl=LocalCluster.class)
+@ClusterTypeInfo(defaultImpl=RemoteCluster.class)
 public interface VertigoCluster {
 
   /**

@@ -20,7 +20,7 @@ import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.RemoteCluster;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
 
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testDeployVerticle() {
-    final VertigoCluster client = new RemoteCluster(vertx);
+    final Cluster client = new RemoteCluster(vertx);
     client.deployVerticle("test-verticle1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -64,7 +64,7 @@ public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testUndeployVerticle() {
-    final VertigoCluster client = new RemoteCluster(vertx);
+    final Cluster client = new RemoteCluster(vertx);
     client.deployVerticle("test-verticle2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -83,7 +83,7 @@ public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testVerticleIsDeployed() {
-    final VertigoCluster client = new RemoteCluster(vertx);
+    final Cluster client = new RemoteCluster(vertx);
     client.deployVerticle("test-verticle3", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -103,7 +103,7 @@ public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testVerticleIsNotDeployed() {
-    final VertigoCluster client = new RemoteCluster(vertx);
+    final Cluster client = new RemoteCluster(vertx);
     client.deployVerticle("test-verticle4", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -129,7 +129,7 @@ public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testDeployWorkerVerticle() {
-    final VertigoCluster client = new RemoteCluster(vertx);
+    final Cluster client = new RemoteCluster(vertx);
     client.deployWorkerVerticle("test-worker1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -141,7 +141,7 @@ public class RemoteClusterTest extends XyncTestVerticle {
 
   @Test
   public void testUndeployWorkerVerticle() {
-    final VertigoCluster client = new RemoteCluster(vertx);
+    final Cluster client = new RemoteCluster(vertx);
     client.deployWorkerVerticle("test-worker2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {

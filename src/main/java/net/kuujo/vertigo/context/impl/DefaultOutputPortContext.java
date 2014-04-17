@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputContext;
@@ -67,9 +66,6 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
    * @return A collection of connections in the port.
    */
   public Collection<OutputStreamContext> streams() {
-    for (OutputStreamContext stream : streams) {
-      ((DefaultOutputStreamContext) stream).setPort(this);
-    }
     return streams;
   }
 
@@ -142,8 +138,11 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connections An array of port connections.
      * @return The context builder.
      */
-    public Builder setStreams(OutputStreamContext... streams) {
-      context.streams = Arrays.asList(streams);
+    public Builder setStreams(DefaultOutputStreamContext... streams) {
+      context.streams = new ArrayList<>();
+      for (DefaultOutputStreamContext stream : streams) {
+        context.streams.add(stream.setPort(context));
+      }
       return this;
     }
 
@@ -153,8 +152,11 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connections A collection of port connections.
      * @return The context builder.
      */
-    public Builder setStreams(Collection<OutputStreamContext> streams) {
-      context.streams = streams;
+    public Builder setStreams(Collection<DefaultOutputStreamContext> streams) {
+      context.streams = new ArrayList<>();
+      for (DefaultOutputStreamContext stream : streams) {
+        context.streams.add(stream.setPort(context));
+      }
       return this;
     }
 
@@ -164,8 +166,8 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connection A port connection to add.
      * @return The context builder.
      */
-    public Builder addStream(OutputStreamContext stream) {
-      context.streams.add(stream);
+    public Builder addStream(DefaultOutputStreamContext stream) {
+      context.streams.add(stream.setPort(context));
       return this;
     }
 

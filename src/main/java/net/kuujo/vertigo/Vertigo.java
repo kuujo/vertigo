@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.cluster.LocalClusterManager;
-import net.kuujo.vertigo.cluster.RemoteClusterManager;
-import net.kuujo.vertigo.cluster.VertigoClusterManager;
+import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.ClusterManagerFactory;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.Configs;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -26,74 +25,34 @@ import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * The primary Vertigo API.
+ * The Vertigo API.
  * <p>
  * 
- * This is the primary interface for creating and deploying Vertigo
- * networks.
+ * This is the primary interface for creating and deploying Vertigo networks.<p>
+ *
+ * Vertigo provides its own cluster abstraction that allows cluster modes to
+ * be separated from network configurations. When deploying, undeploying, or
+ * otherwise operating on Vertigo networks, Vertigo will attempt to automatically
+ * detect and use the current Vert.x cluster state. See method documentation
+ * for more information.
  * 
  * @author Jordan Halterman
  */
 public final class Vertigo {
-  private static boolean initialized;
-  private static Mode currentMode;
-  private final Vertx vertx;
-  private final Container container;
+  private final ClusterManagerFactory clusterFactory;
 
   public Vertigo(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
   public Vertigo(Vertx vertx, Container container) {
-    this.vertx = vertx;
-    this.container = container;
-  }
-
-  /**
-   * Vertigo cluster mode.
-   *
-   * @author Jordan Halterman
-   */
-  public static enum Mode {
-
-    /**
-     * Indicates local mode.
-     */
-    LOCAL,
-
-    /**
-     * Indicates cluster mode.
-     */
-    CLUSTER;
-
-  }
-
-  public static void init(Mode mode) {
-    if (!initialized) {
-      currentMode = mode;
-      initialized = true;
-    } else if (!mode.equals(currentMode)) {
-      throw new IllegalStateException("Cannot alter immutable Vertigo cluster mode.");
-    }
-  }
-
-  /**
-   * Returns the current Vertigo cluster mode.<p>
-   *
-   * The cluster mode will only be available within component instances.
-   * If the current verticle was deployed as a component instance, Vertigo
-   * will initialize the Vertigo cluster mode based on how the component
-   * and the network to which it belongs were deployed.
-   *
-   * @return The current Vertigo mode.
-   */
-  public static Mode currentMode() {
-    return currentMode;
+    this.clusterFactory = new ClusterManagerFactory(vertx, container);
   }
 
   /**
@@ -101,6 +60,7 @@ public final class Vertigo {
    * 
    * @param name The network name.
    * @return A new network instance.
+   * @see Vertigo#createNetwork(JsonObject)
    */
   public NetworkConfig createNetwork(String name) {
     return new DefaultNetworkConfig(name);
@@ -111,342 +71,284 @@ public final class Vertigo {
    *
    * @param json A json network configuration.
    * @return A network configuration.
+   * @see Vertigo#createNetwork(String)
    */
   public NetworkConfig createNetwork(JsonObject json) {
     return Configs.createNetwork(json);
   }
 
   /**
-   * Deploys a bare network within the current Vert.x instance.
-   * <p>
-   * 
-   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
-   * deploy network verticles and modules using the current Vert.x {@link Container}
-   * instance.
-   * 
-   * @param name The name of the network to deploy.
-   * @return The called Vertigo instance.
+   * Checks whether a network is deployed in the cluster.
+   *
+   * @param name The name of the network to check.
+   * @param resultHandler An asynchronous handler to be called with the result.
+   * @return The Vertigo instance.
+   * @see Vertigo#isDeployed(NetworkConfig, Handler)
    */
-  public Vertigo deployLocalNetwork(String name) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.deployNetwork(name);
+  public Vertigo isDeployed(String name, Handler<AsyncResult<Boolean>> resultHandler) {
+    return isDeployed(createNetwork(name), resultHandler);
+  }
+
+  /**
+   * Checks whether a network is deployed in the cluster.<p>
+   *
+   * Though a network configuration is provided to this method, the check only
+   * consists of checking the network named against current deployments. The
+   * structure of the given network configuration has no effect on the result.
+   *
+   * @param network The network to check.
+   * @param resultHandler An asynchronous handler to be called with the result
+   * @return The Vertigo instance.
+   * @see Vertigo#isDeployed(String, Handler)
+   */
+  public Vertigo isDeployed(final NetworkConfig network, final Handler<AsyncResult<Boolean>> resultHandler) {
+    // The status of a network is checked by checking the current cluster manager.
+    // Even if the current scope is CLUSTER, but the network was deployed as a LOCAL
+    // network, the network's configuration will be stored in the CLUSTER.
+    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+        } else {
+          result.result().isRunning(network.getName(), resultHandler);
+        }
+      }
+    });
     return this;
   }
 
   /**
-   * Deploys a bare network within the current Vert.x instance.
-   * <p>
-   * 
-   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
-   * deploy network verticles and modules using the current Vert.x {@link Container}
-   * instance.
-   * 
-   * @param name The name of the network to deploy.
-   * @param doneHandler An asynchronous handler to be called once deployment is complete.
-   *          The handler will be called with the deployed network context which contains
-   *          information about the network's component locations and event bus addresses.
-   * @return The called Vertigo instance.
+   * Deploys a bare network to the Vertigo cluster.<p>
+   *
+   * This method will deploy an empty network to the current Vertigo cluster.
+   * The current cluster is determined by whether the Vert.x instance was
+   * deployed as a clustered Xync instance. If the current Vert.x cluster is
+   * a Xync backed cluster, the network will be deployed as a remote network.
+   * This means that any runtime configuration changes to the network will
+   * result in components being deployed on various nodes within the Vert.x
+   * cluster rather than within the current Vert.x instance.
+   *
+   * @param name The name of the network to deploy. If a network with the
+   *        given name is already deployed in the current cluster then the
+   *        deployment will simply have no effect.
+   * @return The Vertigo instance.
+   * @see Vertigo#deployNetwork(String, Handler)
+   * @see Vertigo#deployNetwork(NetworkConfig)
+   * @see Vertigo#deployNetwork(NetworkConfig, Handler)
    */
-  public Vertigo deployLocalNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.deployNetwork(name, doneHandler);
+  public Vertigo deployNetwork(String name) {
+    return deployNetwork(createNetwork(name));
+  }
+
+  /**
+   * Deploys a bare network to the Vertigo cluster.<p>
+   *
+   * This method will deploy an empty network to the current Vertigo cluster.
+   * The current cluster is determined by whether the Vert.x instance was
+   * deployed as a clustered Xync instance. If the current Vert.x cluster is
+   * a Xync backed cluster, the network will be deployed as a remote network.
+   * This means that any runtime configuration changes to the network will
+   * result in components being deployed on various nodes within the Vert.x
+   * cluster rather than within the current Vert.x instance.
+   *
+   * @param name The name of the network to deploy. if a network with the
+   *        given name is already deployed in the current cluster then the
+   *        deployment will simply have no effect.
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The Vertigo instance.
+   * @see Vertigo#deployNetwork(String)
+   * @see Vertigo#deployNetwork(NetworkConfig)
+   * @see Vertigo#deployNetwork(NetworkConfig, Handler)
+   */
+  public Vertigo deployNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+        } else {
+          result.result().deployNetwork(name, doneHandler);
+        }
+      }
+    });
     return this;
   }
 
   /**
-   * Deploys a network within the current Vert.x instance.
-   * <p>
+   * Deploys a complete or partial network to the Vertigo cluster.<p>
    *
-   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
-   * deploy network verticles and modules using the current Vert.x {@link Container}
-   * instance.<p>
+   * If the given network's name matches the name of a network that's already
+   * running within the cluster then the configuration will be merged with the
+   * existing network's configuration. This allows components or connections to
+   * be added to existing networks by deploying separate configurations.<p>
    *
-   * If the name given network configuration matches the name of a network
-   * that is already running in the local cluster, the given configuration
-   * will be merged with the running network configuration and the network
-   * structure will be updated asynchronously. This allows networks to be
-   * reconfigured using this API by deploying or undeploying partial configurations.
+   * If the network is not already running, Vertigo will resolve the network's
+   * cluster scope by evaluating the current Vert.x instance and the network
+   * configuration. If the current Vert.x instance is a clustered Xync instance
+   * then Vertigo will attempt to deploy the network as a clustered network.
+   * This means that components will be deployed on various nodes within the
+   * Vert.x cluster. This feature can be optionally overridden by specifying
+   * the cluster scope in the network configuration.<p>
    *
-   * @param network The network to deploy.
-   * @return The called Vertigo instance.
+   * If the current Vert.x instance is not a Xync clustered instance then all
+   * networks will fall back to local deployment.
+   *
+   * @param network The network configuration to deploy.
+   * @return The Vertigo instance.
+   * @see Vertigo#deployNetwork(String)
+   * @see Vertigo#deployNetwork(String, Handler)
+   * @see Vertigo#deployNetwork(NetworkConfig)
    */
-  public Vertigo deployLocalNetwork(NetworkConfig network) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.deployNetwork(network);
+  public Vertigo deployNetwork(NetworkConfig network) {
+    return deployNetwork(network, null);
+  }
+
+  /**
+   * Deploys a complete or partial network to the Vertigo cluster.<p>
+   *
+   * If the given network's name matches the name of a network that's already
+   * running within the cluster then the configuration will be merged with the
+   * existing network's configuration. This allows components or connections to
+   * be added to existing networks by deploying separate configurations.<p>
+   *
+   * If the network is not already running, Vertigo will resolve the network's
+   * cluster scope by evaluating the current Vert.x instance and the network
+   * configuration. If the current Vert.x instance is a clustered Xync instance
+   * then Vertigo will attempt to deploy the network as a clustered network.
+   * This means that components will be deployed on various nodes within the
+   * Vert.x cluster. This feature can be optionally overridden by specifying
+   * the cluster scope in the network configuration.<p>
+   *
+   * If the network is already running then the network configuration change
+   * will occur within the deployed network's cluster scope regardless of the
+   * given network configuration.<p>
+   *
+   * If the current Vert.x instance is not a Xync clustered instance then all
+   * networks will fall back to local deployment.<p>
+   *
+   * @param network The network configuration to deploy.
+   * @param doneHandler An asynchronous handler to be called once complete. If
+   *        the network is successfully deployed, the handler will be passed an
+   *        {@link ActiveNetwork} which can be used to reconfigure the network
+   *        asynchronously without shutdown.
+   * @return The Vertigo instance.
+   * @see Vertigo#deployNetwork(String)
+   * @see Vertigo#deployNetwork(String, Handler)
+   * @see Vertigo#deployNetwork(NetworkConfig)
+   */
+  public Vertigo deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+        } else {
+          result.result().deployNetwork(network, doneHandler);
+        }
+      }
+    });
     return this;
   }
 
   /**
-   * Deploys a network within the current Vert.x instance.
-   * <p>
-   * 
-   * This deployment method uses the basic {@link LocalClusterManager} cluster implementation to
-   * deploy network verticles and modules using the current Vert.x {@link Container}
-   * instance.<p>
+   * Undeploys a complete network from the Vertigo cluster.<p>
    *
-   * If the name given network configuration matches the name of a network
-   * that is already running in the local cluster, the given configuration
-   * will be merged with the running network configuration and the network
-   * structure will be updated asynchronously. This allows networks to be
-   * reconfigured using this API by deploying or undeploying partial configurations.
-   * 
-   * @param network The network to deploy.
-   * @param doneHandler An asynchronous handler to be called once deployment is complete.
-   *          The handler will be called with the deployed network context which contains
-   *          information about the network's component locations and event bus addresses.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo deployLocalNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.deployNetwork(network, doneHandler);
-    return this;
-  }
-
-  /**
-   * Undeploys a complete local network.<p>
-   *
-   * This method will undeploy all components of the named network.
-   * When undeploying a network with a network <code>name</code>, the network
-   * does not have to have been deployed from the current verticle instance.
-   * Vertigo will use cluster shared data to reference and undeploy the network.
+   * The network will be undeployed in its entirety from the scope in
+   * which it is currently deployed.
    *
    * @param name The name of the network to undeploy.
    * @return The Vertigo instance.
+   * @see Vertigo#undeployNetwork(String, Handler)
+   * @see Vertigo#undeployNetwork(NetworkConfig)
+   * @see Vertigo#undeployNetwork(NetworkConfig, Handler)
    */
-  public Vertigo undeployLocalNetwork(String name) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.undeployNetwork(name);
-    return this;
+  public Vertigo undeployNetwork(String name) {
+    return undeployNetwork(createNetwork(name));
   }
 
   /**
-   * Undeploys a local network.<p>
+   * Undeploys a complete network from the Vertigo cluster.<p>
    *
-   * This method will undeploy all components of the named network.
-   * When undeploying a network with a network <code>name</code>, the network
-   * does not have to have been deployed from the current verticle instance.
-   * Vertigo will use cluster shared data to reference and undeploy the network.
+   * The network will be undeployed in its entirety from the scope in
+   * which it is currently deployed. If the network is not currently deployed
+   * then the undeployment will fail.
    *
    * @param name The name of the network to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the network has been undeployed.
+   * @param doneHandler An asynchronous handler to be called once complete.
    * @return The Vertigo instance.
+   * @see Vertigo#undeployNetwork(String)
+   * @see Vertigo#undeployNetwork(NetworkConfig)
+   * @see Vertigo#undeployNetwork(NetworkConfig, Handler)
    */
-  public Vertigo undeployLocalNetwork(String name, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.undeployNetwork(name, doneHandler);
+  public Vertigo undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) { 
+    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          result.result().undeployNetwork(name, doneHandler);
+        }
+      }
+    });
     return this;
   }
 
   /**
-   * Undeploys a local network configuration.<p>
+   * Undeploys a complete or partial network from the Vertigo cluster.<p>
    *
-   * The given network configuration must have the name of the network that
-   * is being undeployed. If the given configuration does not identify all
-   * components and connections of the deployed network, the network will
-   * only be partially undeployed using the components and connections defined
-   * in the configuration.
-   * 
-   * @param network The network to undeploy.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo undeployLocalNetwork(NetworkConfig network) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.undeployNetwork(network);
-    return this;
-  }
-
-  /**
-   * Undeploys a local network.<p>
+   * The network will be undeployed from the scope in which it is currently
+   * deployed.<p>
    *
-   * The given network configuration must have the name of the network that
-   * is being undeployed. If the given configuration does not identify all
-   * components and connections of the deployed network, the network will
-   * only be partially undeployed using the components and connections defined
-   * in the configuration.
-   * 
-   * @param network The network to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the network has been undeployed.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo undeployLocalNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoClusterManager cluster = new LocalClusterManager(vertx, container);
-    cluster.undeployNetwork(network, doneHandler);
-    return this;
-  }
-
-  /**
-   * Deploys a bare network to a Xync cluster.<p>
+   * If the configuration is a complete match to the configuration of the deployed
+   * network, the complete network will be undeployed. Alternatively, if the
+   * given configuration is only a partial configuration compared to the complete
+   * deployed configuration, only the components and connections defined in the
+   * given configuration will be undeployed from the running network. This allows the
+   * network to be asynchronously reconfigured without undeploying the network.
    *
-   * This deployment method uses the {@link RemoteClusterManager} to deploy
-   * the network to a Xync cluster. To deploy a remote network, the current
-   * Vert.x instance must be a clustered instance with the Xync platform
-   * manager being available. If the Xync cluster is not available then
-   * deployment will automatically fail back to {@link LocalClusterManager}<p>
-   *
-   * If the name given network configuration matches the name of a network
-   * that is already running in the local cluster, the given configuration
-   * will be merged with the running network configuration and the network
-   * structure will be updated asynchronously. This allows networks to be
-   * reconfigured using this API by deploying or undeploying partial configurations.
-   *
-   * @param name The name of the network to deploy.
-   * @return The Vertigo instance.
-   */
-  public Vertigo deployRemoteNetwork(String name) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.deployNetwork(name);
-    return this;
-  }
-
-  /**
-   * Deploys a bare network to a Xync cluster.<p>
-   *
-   * This deployment method uses the {@link RemoteClusterManager} to deploy
-   * the network to a Xync cluster. To deploy a remote network, the current
-   * Vert.x instance must be a clustered instance with the Xync platform
-   * manager being available. If the Xync cluster is not available then
-   * deployment will automatically fail back to {@link LocalClusterManager}<p>
-   *
-   * If the name given network configuration matches the name of a network
-   * that is already running in the local cluster, the given configuration
-   * will be merged with the running network configuration and the network
-   * structure will be updated asynchronously. This allows networks to be
-   * reconfigured using this API by deploying or undeploying partial configurations.
-   *
-   * @param name The name of the network to deploy.
-   * @param doneHandler An asynchronous handler to be called once deployment is complete.
-   *          The handler will be called with the deployed network context which contains
-   *          information about the network's component locations and event bus addresses.
-   * @return The Vertigo instance.
-   */
-  public Vertigo deployRemoteNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.deployNetwork(name, doneHandler);
-    return this;
-  }
-
-  /**
-   * Deploys a network to a Xync cluster.
-   *
-   * This deployment method uses the {@link RemoteClusterManager} to deploy
-   * the network to a Xync cluster. To deploy a remote network, the current
-   * Vert.x instance must be a clustered instance with the Xync platform
-   * manager being available. If the Xync cluster is not available then
-   * deployment will automatically fail back to {@link LocalClusterManager}<p>
-   *
-   * If the name given network configuration matches the name of a network
-   * that is already running in the remote cluster, the given configuration
-   * will be merged with the running network configuration and the network
-   * structure will be updated asynchronously. This allows networks to be
-   * reconfigured using this API by deploying or undeploying partial configurations.
-   * 
-   * @param network The network to deploy.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo deployRemoteNetwork(NetworkConfig network) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.deployNetwork(network);
-    return this;
-  }
-
-  /**
-   * Deploys a network via the Vert.x event bus.
-   *
-   * This deployment method uses the {@link RemoteClusterManager} to deploy
-   * the network to a Xync cluster. To deploy a remote network, the current
-   * Vert.x instance must be a clustered instance with the Xync platform
-   * manager being available. If the Xync cluster is not available then
-   * deployment will automatically fail back to {@link LocalClusterManager}<p>
-   *
-   * If the name given network configuration matches the name of a network
-   * that is already running in the remote cluster, the given configuration
-   * will be merged with the running network configuration and the network
-   * structure will be updated asynchronously. This allows networks to be
-   * reconfigured using this API by deploying or undeploying partial configurations.
-   * 
-   * @param network The network to deploy.
-   * @param doneHandler An asynchronous handler to be called once deployment is complete.
-   *          The handler will be called with the deployed network context which contains
-   *          information about the network's component locations and event bus addresses.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo deployRemoteNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.deployNetwork(network, doneHandler);
-    return this;
-  }
-
-  /**
-   * Undeploys a network via the Vert.x event bus.<p>
-   *
-   * This method will undeploy all components of the named network.
-   * When undeploying a network with a network <code>name</code>, the network
-   * does not have to have been deployed from the current verticle instance.
-   * Vertigo will use cluster shared data to reference and undeploy the network.
-   * 
-   * @param name The name of the network to undeploy.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo undeployRemoteNetwork(String name) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.undeployNetwork(name);
-    return this;
-  }
-
-  /**
-   * Undeploys a network via the Vert.x event bus.<p>
-   *
-   * This method will undeploy all components of the named network.
-   * When undeploying a network with a network <code>name</code>, the network
-   * does not have to have been deployed from the current verticle instance.
-   * Vertigo will use cluster shared data to reference and undeploy the network.
-   * 
-   * @param name The name of the network to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the network has been
-   *          undeployed.
-   * @return The called Vertigo instance.
-   */
-  public Vertigo undeployRemoteNetwork(String name, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.undeployNetwork(name, doneHandler);
-    return this;
-  }
-
-  /**
-   * Undeploys a network via the Vert.x event bus.<p>
-   *
-   * The given network configuration must have the name of the network that
-   * is being undeployed. If the given configuration does not identify all
-   * components and connections of the deployed network, the network will
-   * only be partially undeployed using the components and connections defined
-   * in the configuration.
-   * 
    * @param network The network configuration to undeploy.
-   * @return The called Vertigo instance.
+   * @return The Vertigo instance.
+   * @see Vertigo#undeployNetwork(String)
+   * @see Vertigo#undeployNetwork(String, Handler)
+   * @see Vertigo#undeployNetwork(NetworkConfig, Handler)
    */
-  public Vertigo undeployRemoteNetwork(NetworkConfig network) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.undeployNetwork(network);
-    return this;
+  public Vertigo undeployNetwork(NetworkConfig network) {
+    return undeployNetwork(network, null);
   }
 
   /**
-   * Undeploys a network via the Vert.x event bus.<p>
+   * Undeploys a complete or partial network from the Vertigo cluster.<p>
    *
-   * The given network configuration must have the name of the network that
-   * is being undeployed. If the given configuration does not identify all
-   * components and connections of the deployed network, the network will
-   * only be partially undeployed using the components and connections defined
-   * in the configuration.
-   * 
+   * The network will be undeployed from the scope in which it is currently
+   * deployed. If the network is not currently deployed then the undeployment will
+   * fail.<p>
+   *
+   * If the configuration is a complete match to the configuration of the deployed
+   * network, the complete network will be undeployed. Alternatively, if the
+   * given configuration is only a partial configuration compared to the complete
+   * deployed configuration, only the components and connections defined in the
+   * given configuration will be undeployed from the running network. This allows the
+   * network to be asynchronously reconfigured without undeploying the network.
+   *
    * @param network The network configuration to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the network has been
-   *          undeployed.
-   * @return The called Vertigo instance.
+   * @return The Vertigo instance.
+   * @see Vertigo#undeployNetwork(String)
+   * @see Vertigo#undeployNetwork(String, Handler)
+   * @see Vertigo#undeployNetwork(NetworkConfig)
    */
-  public Vertigo undeployRemoteNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler) {
-    VertigoClusterManager cluster = new RemoteClusterManager(vertx, container);
-    cluster.undeployNetwork(network, doneHandler);
+  public Vertigo undeployNetwork(final NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
+    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          result.result().undeployNetwork(network, doneHandler);
+        }
+      }
+    });
     return this;
   }
 

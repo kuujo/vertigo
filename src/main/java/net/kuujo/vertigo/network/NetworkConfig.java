@@ -18,6 +18,7 @@ package net.kuujo.vertigo.network;
 import java.util.Collection;
 import java.util.List;
 
+import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -44,6 +45,21 @@ public interface NetworkConfig extends Config<NetworkConfig>, ComponentConfigura
    * @return The network name.
    */
   String getName();
+
+  /**
+   * Sets the network scope.
+   *
+   * @param scope The network scope.
+   * @return The network configuration.
+   */
+  NetworkConfig setScope(ClusterScope scope);
+
+  /**
+   * Returns the network scope.
+   *
+   * @return The network scope. Defaults to <code>CLUSTER</code>
+   */
+  ClusterScope getScope();
 
   /**
    * Gets a list of network components.

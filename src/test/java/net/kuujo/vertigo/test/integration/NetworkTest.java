@@ -73,7 +73,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestSender.class.getName());
     network.addVerticle("receiver", TestReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in");
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -134,7 +134,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestOneToManySender.class.getName());
     network.addVerticle("receiver", TestOneToManyReceiver.class.getName(), 4);
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -177,7 +177,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestManyToOneSender.class.getName(), 4);
     network.addVerticle("receiver", TestManyToOneReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -250,7 +250,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestManyToManySender.class.getName(), 4);
     network.addVerticle("receiver", TestManyToManyReceiver.class.getName(), 4);
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -308,7 +308,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestManySender.class.getName());
     network.addVerticle("receiver", TestManyReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -368,7 +368,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestBasicGroupSender.class.getName());
     network.addVerticle("receiver", TestBasicGroupReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -458,7 +458,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestNestedGroupSender.class.getName());
     network.addVerticle("receiver", TestNestedGroupReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -532,7 +532,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestOrderedGroupSender.class.getName());
     network.addVerticle("receiver", TestOrderedGroupReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
@@ -621,7 +621,7 @@ public class NetworkTest extends TestVerticle {
     network.addVerticle("sender", TestOrderedNestedGroupSender.class.getName());
     network.addVerticle("receiver", TestOrderedNestedGroupReceiver.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundGrouping();
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {

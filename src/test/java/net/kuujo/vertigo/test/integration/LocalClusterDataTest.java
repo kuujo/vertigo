@@ -21,7 +21,7 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.data.MapEvent;
 import net.kuujo.vertigo.data.WatchableAsyncMap;
 
@@ -39,7 +39,7 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetGetDelete() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.put("foo", "bar", new Handler<AsyncResult<String>>() {
       @Override
@@ -72,7 +72,7 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testWatchCreate() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.watch("test1", new Handler<MapEvent<String, String>>() {
       @Override
@@ -98,7 +98,7 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testWatchUpdate() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.watch("test2", new Handler<MapEvent<String, String>>() {
       @Override
@@ -133,7 +133,7 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testWatchDelete() {
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.watch("test3", new Handler<MapEvent<String, String>>() {
       @Override

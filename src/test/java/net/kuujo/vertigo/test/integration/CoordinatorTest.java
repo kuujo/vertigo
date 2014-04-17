@@ -19,7 +19,7 @@ import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.impl.DefaultComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -44,6 +44,7 @@ public class CoordinatorTest extends TestVerticle {
   @Test
   public void testStartWithExistingContext() {
     final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
+        .setName("test")
         .setAddress("test")
         .setStatusAddress("test.__status")
         .addComponent(DefaultVerticleContext.Builder.newBuilder()
@@ -53,7 +54,7 @@ public class CoordinatorTest extends TestVerticle {
             .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
 
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
@@ -62,7 +63,7 @@ public class CoordinatorTest extends TestVerticle {
         if (result.failed()) {
           fail(result.cause().getMessage());
         } else {
-          final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
+          final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, container);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
@@ -83,6 +84,7 @@ public class CoordinatorTest extends TestVerticle {
   @Test
   public void testPauseHandler() {
     final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
+        .setName("test")
         .setAddress("test")
         .setStatusAddress("test.__status")
         .addComponent(DefaultVerticleContext.Builder.newBuilder()
@@ -92,7 +94,7 @@ public class CoordinatorTest extends TestVerticle {
             .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
 
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
@@ -101,7 +103,7 @@ public class CoordinatorTest extends TestVerticle {
         if (result.failed()) {
           fail(result.cause().getMessage());
         } else {
-          final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
+          final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, container);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {
@@ -128,6 +130,7 @@ public class CoordinatorTest extends TestVerticle {
   @Test
   public void testResumeHandler() {
     final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
+        .setName("test")
         .setAddress("test")
         .setStatusAddress("test.__status")
         .addComponent(DefaultVerticleContext.Builder.newBuilder()
@@ -137,7 +140,7 @@ public class CoordinatorTest extends TestVerticle {
             .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
-    final VertigoCluster cluster = new LocalCluster(vertx, container);
+    final Cluster cluster = new LocalCluster(vertx, container);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
 
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
@@ -146,7 +149,7 @@ public class CoordinatorTest extends TestVerticle {
         if (result.failed()) {
           fail(result.cause().getMessage());
         } else {
-          final ComponentCoordinator coordinator = new DefaultComponentCoordinator("test", instance.address(), cluster);
+          final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, container);
           coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
             @Override
             public void handle(AsyncResult<InstanceContext> result) {

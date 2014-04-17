@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.annotations.LocalType;
 
 import org.vertx.java.core.Vertx;
@@ -35,12 +36,22 @@ import org.vertx.java.platform.Verticle;
 @LocalType
 public class LocalClusterManager extends AbstractClusterManager {
 
+  @Factory
+  public static LocalClusterManager factory(Vertx vertx, Container container) {
+    return new LocalClusterManager(vertx, container);
+  }
+
   public LocalClusterManager(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
   public LocalClusterManager(Vertx vertx, Container container) {
     super(vertx, container, new LocalCluster(vertx, container));
+  }
+
+  @Override
+  public ClusterScope scope() {
+    return ClusterScope.LOCAL;
   }
 
 }

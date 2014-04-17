@@ -52,6 +52,7 @@ public final class ContextBuilder {
 
     // Set basic network configuration options.
     context.setName(network.getName());
+    context.setScope(network.getScope());
     context.setAddress(network.getName());
     context.setConfig(network);
     context.setStatusAddress(String.format("%s.__status", network.getName()));

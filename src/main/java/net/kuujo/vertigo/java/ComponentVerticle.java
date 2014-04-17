@@ -17,7 +17,7 @@ package net.kuujo.vertigo.java;
 
 import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
@@ -36,7 +36,7 @@ import org.vertx.java.platform.Verticle;
  */
 public abstract class ComponentVerticle extends Verticle {
   protected Vertigo vertigo;
-  protected VertigoCluster cluster;
+  protected Cluster cluster;
   protected JsonObject config;
   protected Logger logger;
   protected Component component;

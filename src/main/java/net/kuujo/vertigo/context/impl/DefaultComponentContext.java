@@ -58,7 +58,7 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   protected String status;
   protected String group = DEFAULT_GROUP;
   protected Map<String, Object> config;
-  protected List<DefaultInstanceContext> instances = new ArrayList<>();
+  protected List<InstanceContext> instances = new ArrayList<>();
   protected Map<String, Object> storage = new HashMap<>();
   private @JsonIgnore
   DefaultNetworkContext network;
@@ -139,9 +139,8 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public List<InstanceContext> instances() {
-    List<InstanceContext> instances = new ArrayList<>();
-    for (DefaultInstanceContext instance : this.instances) {
-      instances.add(instance.setComponentContext(this));
+    for (InstanceContext instance : instances) {
+      ((DefaultInstanceContext) instance).setComponentContext(this);
     }
     return instances;
   }
@@ -153,9 +152,9 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public InstanceContext instance(int instanceNumber) {
-    for (DefaultInstanceContext instance : instances) {
+    for (InstanceContext instance : instances) {
       if (instance.number() == instanceNumber) {
-        return instance.setComponentContext(this);
+        return instance;
       }
     }
     return null;
@@ -163,9 +162,9 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public InstanceContext instance(String address) {
-    for (DefaultInstanceContext instance : instances) {
+    for (InstanceContext instance : instances) {
       if (instance.address().equals(address)) {
-        return instance.setComponentContext(this);
+        return instance;
       }
     }
     return null;

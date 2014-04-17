@@ -76,7 +76,7 @@ an `ActiveNetwork` object that allows networks to be reconfigured by directly al
 network configurations.
 
 ```java
-vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
     ActiveNetwork network = result.result();
     network.addComponent("baz", "baz.py", 3); // Add a component.
@@ -282,30 +282,63 @@ You can use these ports to receive log messages from other components. Each
 Vertigo component contains a logger that logs to these special output ports.
 
 ## Network deployment
-Vertigo supports two forms of network deployment - *local* and *remote*.
-Remote deployment requires [Xync](http://github.com/kuujo/xync) and supports deployment
-of Vertigo networks across a cluster of Vert.x instances.
-* `deployLocalNetwork(NetworkConfig network)`
-* `deployLocalNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler)`
-* `deployRemoteNetwork(NetworkConfig network)`
-* `deployRemoteNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler)`
+To deploy a Vertigo network simply call one of the `deployNetwork` methods on
+a `Vertigo` instance.
 
 ```java
-vertigo.deployRemoteNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-  public void handle(AsyncResult<ActiveNetwork> result) {
-    if (result.succeeded()) {
-      // The network was deployed and started successfully.
-    }
-  }
-});
+vertigo.deployNetwork(network);
 ```
 
+The `Vertigo` API provides a couple of different methods for deploying networks.
+The most common method is to deploy a network configuration.
+
+```java
+NetworkConfig network = vertigo.createNetwork("test");
+vertigo.deployNetwork(network);
+```
+
+But Vertigo also supports deploying bare networks.
+
+```java
+vertigo.deployNetwork("test");
+```
+
+Deploying a bare network will simply create and deploy an empty network
+configuration. Users can then add components and connections to the network
+once it's deployed. For more on network reconfiguration see below.
+
+### Network clustering
+Vertigo supports either local or clustered network deployments. By default,
+Vertigo will automatically detect the current Vert.x cluster status and deploy
+networks either locally or remotely according to how the Vert.x instance was
+started. Vertigo clustering requires [Xync](http://github.com/kuujo/xync) for
+remote deployments. If the current Vert.x instance was started as a Xync
+clustered Vert.x instance, networks will, by default, be deployed across the
+Vert.x cluster. Otherwise, networks will be deployed locally.
+
+The local/cluster option can optionally be overridde in the network configuration.
+To force a network to be deployed locally even in a Xync cluster, set the
+`scope` option on the network by calling `setScope`
+
+```java
+network.setScope(ClusterScope.LOCAL);
+```
+
+This will force Vertigo to deploy the network only within the local Vert.x
+instance regardless of the cluster status. But there are some interesting
+points to note about this feature. Even if a network is deployed locally,
+Vertigo will still attempt to use the Xync cluster (if available) to coordinate
+networks across the cluster. This means that even though a network was deployed
+within the local Vert.x instance, other instances within the cluster can still
+reference, change, or undeploy the network. This helps ensure that local networks
+do not conflict with one another within a Xync-based Vert.x cluster.
+
 ### Undeploying networks
-Networks can similarly be undeployed by calling the `undeploy*` method, passing
+Networks can similarly be undeployed by calling the `undeployNetwork` method, passing
 either a network configuration or network name to the cluster.
 
 ```java
-vertigo.undeployRemoteNetwork("my_network", new Handler<AysncResult<Void>>() {
+vertigo.undeployNetwork("my_network", new Handler<AysncResult<Void>>() {
   public void handle(AsyncResult<Void> result) {
     if (result.succeeded()) {
       // Undeployment was successful.
@@ -350,13 +383,13 @@ network.addVerticle("foo", "foo.js", 2);
 network.addVerticle("bar", "bar.py", 4);
 
 // Deploy the network to the cluster.
-vertigo.deployRemoteNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
 
     // Create and deploy a connection between the two components.
     NetworkConfig network = vertigo.createNetwork("test"); // Note the same network name.
     network.createConnection("foo", "out", "bar", "in");
-    vertigo.deployRemoteNetwork(network);
+    vertigo.deployNetwork(network);
 
   }
 });
@@ -371,10 +404,10 @@ empty networks and configure them after startup. To do so, simply pass a string
 network name to the `deploy*` method.
 
 ```java
-vertigo.deployLocalNetwork("my_network", new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork("my_network", new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
     // Deploy a verticle to the already running "my_network" network.
-    vertigo.deployLocalNetwork(vertigo.createNetwork("my_network").addVerticle("foo", "foo.js"));
+    vertigo.deployNetwork(vertigo.createNetwork("my_network").addVerticle("foo", "foo.js"));
   }
 });
 ```
@@ -392,7 +425,7 @@ NetworkConfig network = vertigo.createNetwork("test");
 network.addVerticle("foo", "foo.js", 2);
 
 // Deploy the network.
-vertigo.deployLocalNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
     if (result.succeeded()) {
       // Add another component to the network and create a connection between the two components.

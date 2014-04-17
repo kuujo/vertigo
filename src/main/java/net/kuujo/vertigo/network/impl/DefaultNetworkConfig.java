@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
@@ -33,6 +34,9 @@ import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Default network configuration implementation.
@@ -57,6 +61,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   public static final String NETWORK_COMPONENTS = "components";
 
   private String name;
+  private ClusterScope scope = ClusterScope.CLUSTER;
   private Map<String, ComponentConfig<?>> components = new HashMap<String, ComponentConfig<?>>();
   private List<ConnectionConfig> connections = new ArrayList<>();
 
@@ -71,6 +76,27 @@ public class DefaultNetworkConfig implements NetworkConfig {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public NetworkConfig setScope(ClusterScope scope) {
+    this.scope = scope;
+    return this;
+  }
+
+  @JsonSetter("scope")
+  private void setScopeName(String name) {
+    this.scope = ClusterScope.parse(name);
+  }
+
+  @Override
+  public ClusterScope getScope() {
+    return scope;
+  }
+
+  @JsonGetter("scope")
+  private String getScopeName() {
+    return scope.toString();
   }
 
   @Override

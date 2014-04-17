@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
@@ -66,9 +65,6 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
    * @return A list of input connections.
    */
   public Collection<InputConnectionContext> connections() {
-    for (InputConnectionContext connection : connections) {
-      ((DefaultInputConnectionContext) connection).setPort(this);
-    }
     return connections;
   }
 
@@ -141,8 +137,11 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param connections An array of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(InputConnectionContext... connections) {
-      context.connections = Arrays.asList(connections);
+    public Builder setConnections(DefaultInputConnectionContext... connections) {
+      context.connections = new ArrayList<>();
+      for (DefaultInputConnectionContext connection : connections) {
+        context.connections.add(connection.setPort(context));
+      }
       return this;
     }
 
@@ -152,8 +151,11 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param connections A collection of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(Collection<InputConnectionContext> connections) {
-      context.connections = connections;
+    public Builder setConnections(Collection<DefaultInputConnectionContext> connections) {
+      context.connections = new ArrayList<>();
+      for (DefaultInputConnectionContext connection : connections) {
+        context.connections.add(connection.setPort(context));
+      }
       return this;
     }
 
@@ -163,8 +165,8 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param connection A port connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(InputConnectionContext connection) {
-      context.connections.add(connection);
+    public Builder addConnection(DefaultInputConnectionContext connection) {
+      context.connections.add(connection.setPort(context));
       return this;
     }
 

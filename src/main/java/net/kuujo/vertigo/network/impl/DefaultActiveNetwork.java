@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import net.kuujo.vertigo.cluster.VertigoClusterManager;
+import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.input.grouping.Grouping;
 import net.kuujo.vertigo.network.ActiveNetwork;
@@ -38,9 +38,9 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkContext> {
   private NetworkConfig network;
-  private VertigoClusterManager cluster;
+  private ClusterManager cluster;
 
-  public DefaultActiveNetwork(NetworkConfig network, VertigoClusterManager cluster) {
+  public DefaultActiveNetwork(NetworkConfig network, ClusterManager cluster) {
     this.network = network;
     this.cluster = cluster;
   }

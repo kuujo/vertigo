@@ -48,13 +48,13 @@ import org.vertx.java.platform.Verticle;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalType
-public class LocalCluster implements VertigoCluster {
+public class LocalCluster implements Cluster {
   private final Vertx vertx;
   private final Container container;
   private final ConcurrentSharedMap<String, String> deployments;
 
   @Factory
-  public static VertigoCluster factory(Vertx vertx, Container container) {
+  public static Cluster factory(Vertx vertx, Container container) {
     return new LocalCluster(vertx, container);
   }
 
@@ -69,7 +69,12 @@ public class LocalCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster isDeployed(final String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterScope scope() {
+    return ClusterScope.LOCAL;
+  }
+
+  @Override
+  public Cluster isDeployed(final String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
@@ -80,42 +85,42 @@ public class LocalCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName) {
+  public Cluster deployModule(String deploymentID, String moduleName) {
     return deployModule(deploymentID, moduleName, null, 1, null);
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config) {
+  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config) {
     return deployModule(deploymentID, moduleName, config, 1, null);
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, int instances) {
+  public Cluster deployModule(String deploymentID, String moduleName, int instances) {
     return deployModule(deploymentID, moduleName, null, instances, null);
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances) {
+  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances) {
     return deployModule(deploymentID, moduleName, config, instances, null);
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModule(String deploymentID, String moduleName, Handler<AsyncResult<String>> doneHandler) {
     return deployModule(deploymentID, moduleName, null, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
     return deployModule(deploymentID, moduleName, config, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployModule(String deploymentID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModule(String deploymentID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployModule(deploymentID, moduleName, null, instances, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployModule(final String deploymentID, String moduleName, JsonObject config,
+  public Cluster deployModule(final String deploymentID, String moduleName, JsonObject config,
       int instances, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -152,82 +157,82 @@ public class LocalCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName) {
     return deployModuleTo(deploymentID, groupID, moduleName, null, 1, null);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config) {
     return deployModuleTo(deploymentID, groupID, moduleName, config, 1, null);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances) {
     return deployModuleTo(deploymentID, groupID, moduleName, null, instances, null);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances) {
     return deployModuleTo(deploymentID, groupID, moduleName, config, instances, null);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, Handler<AsyncResult<String>> doneHandler) {
     return deployModuleTo(deploymentID, groupID, moduleName, null, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
     return deployModuleTo(deploymentID, groupID, moduleName, config, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployModuleTo(deploymentID, groupID, moduleName, null, instances, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployModule(deploymentID, moduleName, config, instances, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main) {
+  public Cluster deployVerticle(String deploymentID, String main) {
     return deployVerticle(deploymentID, main, null, 1, null);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config) {
+  public Cluster deployVerticle(String deploymentID, String main, JsonObject config) {
     return deployVerticle(deploymentID, main, config, 1, null);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, int instances) {
+  public Cluster deployVerticle(String deploymentID, String main, int instances) {
     return deployVerticle(deploymentID, main, null, instances, null);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, int instances) {
+  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, int instances) {
     return deployVerticle(deploymentID, main, config, instances, null);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticle(deploymentID, main, null, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticle(deploymentID, main, config, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticle(deploymentID, main, null, instances, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticle(final String deploymentID, String main,
+  public Cluster deployVerticle(final String deploymentID, String main,
       JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -264,82 +269,82 @@ public class LocalCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main) {
     return deployVerticleTo(deploymentID, groupID, main, null, 1, null);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config) {
     return deployVerticleTo(deploymentID, groupID, main, config, 1, null);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, int instances) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, int instances) {
     return deployVerticleTo(deploymentID, groupID, main, null, instances, null);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances) {
     return deployVerticleTo(deploymentID, groupID, main, config, instances, null);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticleTo(deploymentID, groupID, main, null, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticleTo(deploymentID, groupID, main, config, 1, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticleTo(deploymentID, groupID, main, null, instances, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployVerticle(deploymentID, main, config, instances, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main) {
     return deployWorkerVerticle(deploymentID, main, null, 1, false, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config) {
     return deployWorkerVerticle(deploymentID, main, config, 1, false, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, int instances) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main, int instances) {
     return deployWorkerVerticle(deploymentID, main, null, instances, false, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded) {
     return deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticle(deploymentID, main, null, 1, false, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticle(deploymentID, main, config, 1, false, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticle(deploymentID, main, null, instances, false, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticle(final String deploymentID, String main,
+  public Cluster deployWorkerVerticle(final String deploymentID, String main,
       JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -378,47 +383,47 @@ public class LocalCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, null, 1, false, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, config, 1, false, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, null, instances, false, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, config, instances, multiThreaded, null);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, null, 1, false, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, config, 1, false, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, null, instances, false, doneHandler);
   }
 
   @Override
-  public VertigoCluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, doneHandler);
   }
 
   @Override
-  public VertigoCluster undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
+  public Cluster undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     if (!deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override
@@ -438,7 +443,7 @@ public class LocalCluster implements VertigoCluster {
   }
 
   @Override
-  public VertigoCluster undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
+  public Cluster undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     if (!deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override

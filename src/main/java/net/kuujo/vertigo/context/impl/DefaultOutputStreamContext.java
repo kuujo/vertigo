@@ -63,9 +63,6 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
 
   @Override
   public List<OutputConnectionContext> connections() {
-    for (OutputConnectionContext connection : connections) {
-      ((DefaultOutputConnectionContext) connection).setStream(this);
-    }
     return connections;
   }
 
@@ -109,8 +106,8 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
      * @param connection The connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(OutputConnectionContext connection) {
-      context.connections.add(connection);
+    public Builder addConnection(DefaultOutputConnectionContext connection) {
+      context.connections.add(connection.setStream(context));
       return this;
     }
 

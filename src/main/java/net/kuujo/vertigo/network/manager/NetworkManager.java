@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.network.manager;
 
 import static net.kuujo.vertigo.util.Config.buildConfig;
-import static net.kuujo.vertigo.util.Config.parseCluster;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterFactory;
+import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
@@ -53,7 +54,9 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 public class NetworkManager extends BusModBase {
   private static final Logger log = LoggerFactory.getLogger(NetworkManager.class);
   private String name;
-  private VertigoCluster cluster;
+  private ClusterFactory clusterFactory;
+  private Cluster cluster;
+  private Cluster contextCluster;
   private WatchableAsyncMap<String, String> data;
   private Set<String> ready = new HashSet<>();
   private NetworkContext currentContext;
@@ -79,49 +82,65 @@ public class NetworkManager extends BusModBase {
       return;
     }
 
-    try {
-      cluster = parseCluster(container.config(), vertx, container);
-    } catch (Exception e) {
-      startResult.setFailure(e);
-      return;
-    }
-
-    data = cluster.getMap(name);
-
-    data.watch(name, watchHandler, new Handler<AsyncResult<Void>>() {
+    // Load the current cluster. Regardless of the network's cluster scope,
+    // we use the CLUSTER for coordination if it's available. This ensures
+    // that identical networks cannot be deployed from separate clustered
+    // Vert.x instances.
+    clusterFactory = new ClusterFactory(vertx, container);
+    clusterFactory.getCurrentCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
+      public void handle(AsyncResult<Cluster> result) {
         if (result.failed()) {
           startResult.setFailure(result.cause());
         } else {
-          // In the event that the manager failed, the current network context
-          // will be persisted in the cluster. Attempt to retrieve it.
-          data.get(name, new Handler<AsyncResult<String>>() {
+          cluster = result.result();
+          data = cluster.getMap(name);
+          data.watch(name, watchHandler, new Handler<AsyncResult<Void>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 startResult.setFailure(result.cause());
-              } else if (result.result() != null) {
-                currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
-                // Try to determine the current status of the network.
-                for (ComponentContext<?> component : currentContext.components()) {
-                  for (InstanceContext instance : component.instances()) {
-                    data.containsKey(instance.status(), new Handler<AsyncResult<Boolean>>() {
-                      @Override
-                      public void handle(AsyncResult<Boolean> result) {
-                        if (result.failed()) {
-                          log.error(result.cause());
-                        } else if (result.result()) {
-                          handleReady(name);
-                        } else {
-                          handleUnready(name);
+              } else {
+                // In the event that the manager failed, the current network context
+                // will be persisted in the cluster. Attempt to retrieve it.
+                data.get(name, new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    if (result.failed()) {
+                      startResult.setFailure(result.cause());
+                    } else if (result.result() != null) {
+                      currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+
+                      // Set up the network's cluster. This differs from the coordination
+                      // cluster and is used for deploying/undeploying network components.
+                      if (cluster.scope().equals(ClusterScope.CLUSTER) && currentContext.scope().equals(ClusterScope.CLUSTER)) {
+                        contextCluster = clusterFactory.createCluster(ClusterScope.CLUSTER);
+                      } else {
+                        contextCluster = clusterFactory.createCluster(ClusterScope.LOCAL);
+                      }
+
+                      // Try to determine the current status of the network.
+                      for (ComponentContext<?> component : currentContext.components()) {
+                        for (InstanceContext instance : component.instances()) {
+                          data.containsKey(instance.status(), new Handler<AsyncResult<Boolean>>() {
+                            @Override
+                            public void handle(AsyncResult<Boolean> result) {
+                              if (result.failed()) {
+                                log.error(result.cause());
+                              } else if (result.result()) {
+                                handleReady(name);
+                              } else {
+                                handleUnready(name);
+                              }
+                            }
+                          });
                         }
                       }
-                    });
+                    } else {
+                      NetworkManager.super.start(startResult);
+                    }
                   }
-                }
-              } else {
-                NetworkManager.super.start(startResult);
+                });
               }
             }
           });
@@ -135,6 +154,11 @@ public class NetworkManager extends BusModBase {
    */
   private void handleCreate(final NetworkContext context) {
     currentContext = context;
+    if (cluster.scope().equals(ClusterScope.CLUSTER) && currentContext.scope().equals(ClusterScope.CLUSTER)) {
+      contextCluster = clusterFactory.createCluster(ClusterScope.CLUSTER);
+    } else {
+      contextCluster = clusterFactory.createCluster(ClusterScope.LOCAL);
+    }
     deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
       @Override
       public void handle(AsyncResult<NetworkContext> result) {
@@ -211,6 +235,8 @@ public class NetworkManager extends BusModBase {
     else {
       // Just deploy the entire network if it wasn't already deployed.
       currentContext = context;
+      contextCluster = clusterFactory.createCluster(currentContext.scope());
+
       deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
         @Override
         public void handle(AsyncResult<NetworkContext> result) {
@@ -331,7 +357,9 @@ public class NetworkManager extends BusModBase {
    */
   private void deployInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      cluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
+      // Before deploying the instance, check if the instance is already deployed in
+      // the network's cluster.
+      contextCluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
           if (result.failed()) {
@@ -361,6 +389,8 @@ public class NetworkManager extends BusModBase {
    * Deploys a single component instance.
    */
   private void deployInstance(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
+    // Set the instance context in the cluster. This context will be loaded
+    // and referenced by the instance once it's deployed.
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -378,6 +408,10 @@ public class NetworkManager extends BusModBase {
                 }
               }
             };
+            // Watch the instance's status for changes. Once the instance has started
+            // up, the component coordinator will set the instance's status key in the
+            // cluster, indicating that the instance has completed started. Once all
+            // instances in the network have completed startup the network will be started.
             data.watch(instance.status(), watchHandler, new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -410,10 +444,10 @@ public class NetworkManager extends BusModBase {
   }
 
   /**
-   * Deploys a module component instance.
+   * Deploys a module component instance in the network's cluster.
    */
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    contextCluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -426,10 +460,10 @@ public class NetworkManager extends BusModBase {
   }
 
   /**
-   * Deploys a verticle component instance.
+   * Deploys a verticle component instance in the network's cluster.
    */
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(),  buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    contextCluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(),  buildConfig(instance), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -442,10 +476,10 @@ public class NetworkManager extends BusModBase {
   }
 
   /**
-   * Deploys a worker verticle deployment instance.
+   * Deploys a worker verticle component instance in the network's cluster.
    */
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+    contextCluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance), 1, instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -487,6 +521,7 @@ public class NetworkManager extends BusModBase {
           if (result.failed()) {
             complete.fail(result.cause());
           } else {
+            // Remove the component's context from the cluster.
             data.remove(component.address(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
@@ -509,7 +544,7 @@ public class NetworkManager extends BusModBase {
    */
   private void undeployInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      cluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
+      contextCluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
         @Override
         public void handle(AsyncResult<Boolean> result) {
           if (result.failed()) {
@@ -529,7 +564,7 @@ public class NetworkManager extends BusModBase {
   }
 
   /**
-   * Unwatches a component instance.
+   * Unwatches a component instance's status and context.
    */
   private void unwatchInstance(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
     Handler<MapEvent<String, String>> watchHandler = watchHandlers.remove(instance.address());
@@ -567,7 +602,7 @@ public class NetworkManager extends BusModBase {
    * Undeploys a module component instance.
    */
   private void undeployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.undeployModule(instance.address(), new Handler<AsyncResult<Void>>() {
+    contextCluster.undeployModule(instance.address(), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         unwatchInstance(instance, counter);
@@ -579,7 +614,7 @@ public class NetworkManager extends BusModBase {
    * Undeploys a verticle component instance.
    */
   private void undeployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.undeployVerticle(instance.address(), new Handler<AsyncResult<Void>>() {
+    contextCluster.undeployVerticle(instance.address(), new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         unwatchInstance(instance, counter);

@@ -21,12 +21,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * A network context which contains information regarding the complete structure of a
@@ -37,6 +41,7 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultNetworkContext extends BaseContext<NetworkContext> implements NetworkContext {
   private String name;
+  private ClusterScope scope = ClusterScope.CLUSTER;
   private NetworkConfig config;
   private String status;
   private Map<String, DefaultComponentContext<?>> components = new HashMap<>();
@@ -73,6 +78,21 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   @Override
   public NetworkConfig config() {
     return config;
+  }
+
+  @Override
+  public ClusterScope scope() {
+    return scope;
+  }
+
+  @JsonGetter("scope")
+  private String getClusterScopeName() {
+    return scope.toString();
+  }
+
+  @JsonSetter("scope")
+  private void setClusterScopeName(String name) {
+    this.scope = ClusterScope.parse(name);
   }
 
   @Override
@@ -195,13 +215,24 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
     }
 
     /**
+     * Sets the network cluster scope.
+     *
+     * @param scope The network's cluster scope.
+     * @return The context builder.
+     */
+    public Builder setScope(ClusterScope scope) {
+      context.scope = scope;
+      return this;
+    }
+
+    /**
      * Sets the network address.
      *
      * @param address The network address.
      * @return The context builder.
      */
     public Builder setAddress(String address) {
-      context.name = address;
+      context.address = address;
       return this;
     }
 
@@ -225,6 +256,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
     public Builder setComponents(Collection<DefaultComponentContext<?>> components) {
       context.components = new HashMap<>();
       for (DefaultComponentContext<?> component : components) {
+        component.setNetworkContext(context);
         context.components.put(component.name(), component);
       }
       return this;
@@ -237,6 +269,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      * @return The context builder.
      */
     public Builder addComponent(DefaultComponentContext<?> component) {
+      component.setNetworkContext(context);
       if (context.components == null) {
         context.components = new HashMap<>();
       }

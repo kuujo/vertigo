@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.OutputContext;
@@ -73,9 +72,6 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
    * @return A collection of output port contexts.
    */
   public Collection<OutputPortContext> ports() {
-    for (OutputPortContext port : ports) {
-      ((DefaultOutputPortContext) port).setOutput(this);
-    }
     return ports;
   }
 
@@ -137,8 +133,11 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param ports An array of output port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(OutputPortContext... ports) {
-      context.ports = Arrays.asList(ports);
+    public Builder setPorts(DefaultOutputPortContext... ports) {
+      context.ports = new ArrayList<>();
+      for (DefaultOutputPortContext port : ports) {
+        context.ports.add(port.setOutput(context));
+      }
       return this;
     }
 
@@ -148,8 +147,11 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param ports A collection of output port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(Collection<OutputPortContext> ports) {
-      context.ports = ports;
+    public Builder setPorts(Collection<DefaultOutputPortContext> ports) {
+      context.ports = new ArrayList<>();
+      for (DefaultOutputPortContext port : ports) {
+        context.ports.add(port.setOutput(context));
+      }
       return this;
     }
 
@@ -159,8 +161,8 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param port An output port context.
      * @return The context builder.
      */
-    public Builder addPort(OutputPortContext port) {
-      context.ports.add(port);
+    public Builder addPort(DefaultOutputPortContext port) {
+      context.ports.add(port.setOutput(context));
       return this;
     }
 

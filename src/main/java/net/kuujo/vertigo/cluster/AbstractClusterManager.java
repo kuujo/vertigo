@@ -39,13 +39,13 @@ import org.vertx.java.platform.Container;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-abstract class AbstractClusterManager implements VertigoClusterManager {
+abstract class AbstractClusterManager implements ClusterManager {
   protected final Vertx vertx;
   protected final Container container;
   protected final EventBus eventBus;
-  protected final VertigoCluster cluster;
+  protected final Cluster cluster;
 
-  protected AbstractClusterManager(Vertx vertx, Container container, VertigoCluster cluster) {
+  protected AbstractClusterManager(Vertx vertx, Container container, Cluster cluster) {
     this.vertx = vertx;
     this.container = container;
     this.eventBus = vertx.eventBus();
@@ -53,7 +53,7 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
   }
 
   @Override
-  public VertigoClusterManager getNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
+  public ClusterManager getNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
     cluster.isDeployed(name, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
@@ -98,28 +98,28 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
   }
 
   @Override
-  public VertigoClusterManager isRunning(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterManager isRunning(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
     cluster.isDeployed(name, resultHandler);
     return this;
   }
 
   @Override
-  public VertigoClusterManager deployNetwork(String name) {
+  public ClusterManager deployNetwork(String name) {
     return deployNetwork(name, null);
   }
 
   @Override
-  public VertigoClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+  public ClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     return deployNetwork(new DefaultNetworkConfig(name), doneHandler);
   }
 
   @Override
-  public VertigoClusterManager deployNetwork(NetworkConfig network) {
+  public ClusterManager deployNetwork(NetworkConfig network) {
     return deployNetwork(network, null);
   }
 
   @Override
-  public VertigoClusterManager deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+  public ClusterManager deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     cluster.isDeployed(network.getName(), new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
@@ -134,10 +134,20 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
               } else {
-                JsonObject config = new JsonObject()
-                    .putString("name", network.getName())
-                    .putString("cluster", cluster.getClass().getName());
-                cluster.deployVerticle(network.getName(), NetworkManager.class.getName(), config, 1, new Handler<AsyncResult<String>>() {
+                // Deploy the network manager according to the network cluster type. If the
+                // current Vertigo scope is CLUSTER *and* the network's scope is CLUSTER then
+                // deploy the manager as a cluster. Otherwise, the network is local since either
+                // local scope was specified on the network or the current instance is local.
+                // All coordination is done in the current Vertigo scope regarless of the
+                // network configuration.
+                Cluster contextCluster;
+                if (network.getScope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
+                  contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.CLUSTER);
+                } else {
+                  contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.LOCAL);
+                }
+                JsonObject config = new JsonObject().putString("name", network.getName());
+                contextCluster.deployVerticle(network.getName(), NetworkManager.class.getName(), config, 1, new Handler<AsyncResult<String>>() {
                   @Override
                   public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
@@ -210,12 +220,12 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
   }
 
   @Override
-  public VertigoClusterManager undeployNetwork(String name) {
+  public ClusterManager undeployNetwork(String name) {
     return undeployNetwork(name, null);
   }
 
   @Override
-  public VertigoClusterManager undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterManager undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) {
     cluster.isDeployed(name, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {
@@ -250,12 +260,12 @@ abstract class AbstractClusterManager implements VertigoClusterManager {
   }
 
   @Override
-  public VertigoClusterManager undeployNetwork(NetworkConfig network) {
+  public ClusterManager undeployNetwork(NetworkConfig network) {
     return undeployNetwork(network, null);
   }
 
   @Override
-  public VertigoClusterManager undeployNetwork(final NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
+  public ClusterManager undeployNetwork(final NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
     cluster.isDeployed(network.getName(), new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {

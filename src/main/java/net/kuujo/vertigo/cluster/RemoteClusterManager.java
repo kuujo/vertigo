@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.annotations.ClusterType;
+import net.kuujo.vertigo.annotations.Factory;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
@@ -34,12 +35,22 @@ import org.vertx.java.platform.Verticle;
 @ClusterType
 public class RemoteClusterManager extends AbstractClusterManager {
 
+  @Factory
+  public static RemoteClusterManager factory(Vertx vertx, Container container) {
+    return new RemoteClusterManager(vertx, container);
+  }
+
   public RemoteClusterManager(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
   public RemoteClusterManager(Vertx vertx, Container container) {
     super(vertx, container, new RemoteCluster(vertx));
+  }
+
+  @Override
+  public ClusterScope scope() {
+    return ClusterScope.CLUSTER;
   }
 
 }

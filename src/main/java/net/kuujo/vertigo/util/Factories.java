@@ -1,23 +1,33 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.util;
 
-import static net.kuujo.vertigo.util.Config.parseAddress;
-import static net.kuujo.vertigo.util.Config.parseCluster;
-import static net.kuujo.vertigo.util.Config.parseNetwork;
-import static net.kuujo.vertigo.util.Config.populateConfig;
+import static net.kuujo.vertigo.util.Config.parseContext;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.Vertigo.Mode;
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.ClusterTypeInfo;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.annotations.LocalTypeInfo;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 
@@ -41,27 +51,77 @@ public final class Factories {
    * Creates a component instance for the current Vert.x instance.
    */
   public static Component createComponent(Vertx vertx, Container container) {
-    VertigoCluster cluster = parseCluster(container.config(), vertx, container);
-    String network = parseNetwork(container.config());
-    String address = parseAddress(container.config());
-    populateConfig(container.config());
-    return new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(network, address, cluster);
+    return new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(parseContext(container.config()));
   }
 
+  /**
+   * Creates an object for the current cluster scope.<p>
+   *
+   * This method will create a cluster-scope specific object based on an abstract
+   * type. The abstract type must define its concrete local and cluster implementations
+   * using annotations.
+   *
+   * @param scope The scope in which to create the object.
+   * @param clazz The abstract type from which to create the object. This type should
+   *        define concrete implementations for each cluster scope.
+   * @param args Factory method arguments.
+   * @return The created object.
+   */
   @SuppressWarnings("unchecked")
-  public static <T> T createObject(Class<? extends T> clazz, Object... args) {
-    Class<?> type = resolveType(clazz);
+  public static <T> T createObject(ClusterScope scope, Class<T> clazz, Object... args) {
+    if (scope.equals(ClusterScope.LOCAL)) {
+      if (!clazz.isAnnotationPresent(LocalTypeInfo.class)) {
+        throw new IllegalArgumentException("No local type info available.");
+      }
+      LocalTypeInfo info = clazz.getAnnotation(LocalTypeInfo.class);
+      return createObjectFromFactoryMethod((Class<? extends T>) info.defaultImpl(), args);
+    } else if (scope.equals(ClusterScope.CLUSTER)) {
+      if (!clazz.isAnnotationPresent(ClusterTypeInfo.class)) {
+        throw new IllegalArgumentException("No cluster type info available.");
+      }
+      ClusterTypeInfo info = clazz.getAnnotation(ClusterTypeInfo.class);
+      return createObjectFromFactoryMethod((Class<? extends T>) info.defaultImpl(), args);
+    }
+    return null;
+  }
 
+  /**
+   * Creates an object for the current cluster scope.<p>
+   *
+   * This method will create a cluster-scope specific object based on a concrete type.
+   * If the concrete type is not supported by the given cluster scope then the
+   * factory will fall back to the default implementation for the current cluster scope.
+   *
+   * @param scope The current cluster scope.
+   * @param clazz The concrete type to attempt to construct. If the type is not valid
+   *        for the current cluster scope then a different type may be constructed.
+   * @param args Factory method arguments.
+   * @return The created object.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T resolveObject(ClusterScope scope, Class<? extends T> clazz, Object... args) {
+    return createObjectFromFactoryMethod((Class<? extends T>) resolveType(scope, clazz), args);
+  }
+
+  /**
+   * Creates an object from a factory method on the given class.
+   *
+   * @param clazz The class to instantiate.
+   * @param args Factory method arguments.
+   * @return The created object.
+   */
+  @SuppressWarnings("unchecked")
+  private static <T> T createObjectFromFactoryMethod(Class<? extends T> clazz, Object... args) {
     // Search the class for a factory method.
-    for (Method method : type.getDeclaredMethods()) {
+    for (Method method : clazz.getDeclaredMethods()) {
       if (method.isAnnotationPresent(Factory.class)) {
          // The method must be public static.
         if (!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) {
-          throw new IllegalArgumentException("Factory method " + method.getName() + " in " + type.getCanonicalName() + " must be public and static.");
+          throw new IllegalArgumentException("Factory method " + method.getName() + " in " + clazz.getCanonicalName() + " must be public and static.");
         }
         // The method return type must be a Class<T> instance.
-        if (!method.getReturnType().isAssignableFrom(type)) {
-          throw new IllegalArgumentException("Factory method " + method.getName() + " in " + type.getCanonicalName() + " must return a " + type.getCanonicalName() + " instance.");
+        if (!method.getReturnType().isAssignableFrom(clazz)) {
+          throw new IllegalArgumentException("Factory method " + method.getName() + " in " + clazz.getCanonicalName() + " must return a " + clazz.getCanonicalName() + " instance.");
         }
 
         // Invoke the factory method.
@@ -89,9 +149,8 @@ public final class Factories {
    * @param clazz The class to check.
    * @return The resolved type to instantiate.
    */
-  private static Class<?> resolveType(Class<?> clazz) {
-    Mode mode = Vertigo.currentMode();
-    if (mode.equals(Mode.LOCAL)) {
+  private static Class<?> resolveType(ClusterScope scope, Class<?> clazz) {
+    if (scope.equals(ClusterScope.LOCAL)) {
       if (isAnnotationPresentInHierarchy(clazz, LocalType.class)
           || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
               && !isAnnotationPresentInHierarchy(clazz, ClusterType.class))) {
@@ -106,7 +165,7 @@ public final class Factories {
         }
         return info.defaultImpl();
       }
-    } else if (mode.equals(Mode.CLUSTER)) {
+    } else if (scope.equals(ClusterScope.CLUSTER)) {
       if (isAnnotationPresentInHierarchy(clazz, ClusterType.class)
           || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
               && !isAnnotationPresentInHierarchy(clazz, ClusterType.class))) {

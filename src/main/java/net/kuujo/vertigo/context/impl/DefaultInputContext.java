@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import net.kuujo.vertigo.context.InputContext;
@@ -65,9 +64,6 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
 
   @Override
   public Collection<InputPortContext> ports() {
-    for (InputPortContext port : ports) {
-      ((DefaultInputPortContext) port).setInput(this);
-    }
     return ports;
   }
 
@@ -134,8 +130,11 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param ports An array of input port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(InputPortContext... ports) {
-      context.ports = Arrays.asList(ports);
+    public Builder setPorts(DefaultInputPortContext... ports) {
+      context.ports = new ArrayList<>();
+      for (DefaultInputPortContext port : ports) {
+        context.ports.add(port.setInput(context));
+      }
       return this;
     }
 
@@ -145,8 +144,11 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param ports A collection of input port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(Collection<InputPortContext> ports) {
-      context.ports = ports;
+    public Builder setPorts(Collection<DefaultInputPortContext> ports) {
+      context.ports = new ArrayList<>();
+      for (DefaultInputPortContext port : ports) {
+        context.ports.add(port.setInput(context));
+      }
       return this;
     }
 
@@ -156,8 +158,8 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param port An input port context.
      * @return The context builder.
      */
-    public Builder addPort(InputPortContext port) {
-      context.ports.add(port);
+    public Builder addPort(DefaultInputPortContext port) {
+      context.ports.add(port.setInput(context));
       return this;
     }
 

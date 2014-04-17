@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.component;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.InputCollector;
@@ -100,7 +100,7 @@ public interface Component {
    *
    * @return The cluster to which the component belongs.
    */
-  VertigoCluster cluster();
+  Cluster cluster();
 
   /**
    * Returns the component data storage facility.<p>

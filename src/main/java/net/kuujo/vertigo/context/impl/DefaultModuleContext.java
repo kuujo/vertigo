@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.context.impl;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -184,7 +184,10 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @return The context builder.
      */
     public Builder setInstances(DefaultInstanceContext... instances) {
-      context.instances = Arrays.asList(instances);
+      context.instances = new ArrayList<>();
+      for (DefaultInstanceContext instance : instances) {
+        context.instances.add(instance.setComponentContext(context));
+      }
       return this;
     }
 
@@ -195,7 +198,10 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @return The context builder.
      */
     public Builder setInstances(List<DefaultInstanceContext> instances) {
-      context.instances = instances;
+      context.instances = new ArrayList<>();
+      for (DefaultInstanceContext instance : instances) {
+        context.instances.add(instance.setComponentContext(context));
+      }
       return this;
     }
 
@@ -206,7 +212,7 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @return The context builder.
      */
     public Builder addInstance(DefaultInstanceContext instance) {
-      context.instances.add(instance);
+      context.instances.add(instance.setComponentContext(context));
       return this;
     }
 

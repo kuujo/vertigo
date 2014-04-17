@@ -21,7 +21,7 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.RemoteCluster;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.data.MapEvent;
 import net.kuujo.vertigo.data.WatchableAsyncMap;
 import net.kuujo.xync.test.integration.XyncTestVerticle;
@@ -39,7 +39,7 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
 
   @Test
   public void testSetGetDelete() {
-    final VertigoCluster cluster = new RemoteCluster(vertx);
+    final Cluster cluster = new RemoteCluster(vertx);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.put("foo", "bar", new Handler<AsyncResult<String>>() {
       @Override
@@ -72,7 +72,7 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
 
   @Test
   public void testWatchCreate() {
-    final VertigoCluster cluster = new RemoteCluster(vertx);
+    final Cluster cluster = new RemoteCluster(vertx);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.watch("test1", new Handler<MapEvent<String, String>>() {
       @Override
@@ -98,7 +98,7 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
 
   @Test
   public void testWatchUpdate() {
-    final VertigoCluster cluster = new RemoteCluster(vertx);
+    final Cluster cluster = new RemoteCluster(vertx);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.watch("test2", new Handler<MapEvent<String, String>>() {
       @Override
@@ -133,7 +133,7 @@ public class RemoteClusterDataTest extends XyncTestVerticle {
 
   @Test
   public void testWatchDelete() {
-    final VertigoCluster cluster = new RemoteCluster(vertx);
+    final Cluster cluster = new RemoteCluster(vertx);
     final WatchableAsyncMap<String, String> data = cluster.getMap("test");
     data.watch("test3", new Handler<MapEvent<String, String>>() {
       @Override

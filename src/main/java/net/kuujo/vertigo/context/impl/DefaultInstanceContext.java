@@ -37,10 +37,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public final class DefaultInstanceContext extends BaseContext<InstanceContext> implements InstanceContext {
   private int number;
   private String status;
-  private DefaultInputContext input;
-  private DefaultOutputContext output;
+  private InputContext input;
+  private OutputContext output;
   @JsonIgnore
-  private DefaultComponentContext<?> component;
+  private ComponentContext<?> component;
 
   private DefaultInstanceContext() {
   }
@@ -97,12 +97,12 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
 
   @Override
   public InputContext input() {
-    return input.setInstanceContext(this);
+    return input;
   }
 
   @Override
   public OutputContext output() {
-    return output.setInstanceContext(this);
+    return output;
   }
 
   @Override
@@ -186,7 +186,7 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
      * @return The context builder.
      */
     public Builder setInput(DefaultInputContext input) {
-      context.input = input;
+      context.input = input.setInstanceContext(context);
       return this;
     }
 
@@ -197,7 +197,7 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
      * @return The context builder.
      */
     public Builder setOutput(DefaultOutputContext output) {
-      context.output = output;
+      context.output = output.setInstanceContext(context);
       return this;
     }
   }

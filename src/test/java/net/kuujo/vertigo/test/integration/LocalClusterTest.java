@@ -20,7 +20,7 @@ import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.LocalCluster;
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -52,7 +52,7 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testDeployVerticle() {
-    final VertigoCluster client = new LocalCluster(vertx, container);
+    final Cluster client = new LocalCluster(vertx, container);
     client.deployVerticle("test-verticle1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -64,7 +64,7 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testUndeployVerticle() {
-    final VertigoCluster client = new LocalCluster(vertx, container);
+    final Cluster client = new LocalCluster(vertx, container);
     client.deployVerticle("test-verticle2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -83,7 +83,7 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testVerticleIsDeployed() {
-    final VertigoCluster client = new LocalCluster(vertx, container);
+    final Cluster client = new LocalCluster(vertx, container);
     client.deployVerticle("test-verticle3", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -103,7 +103,7 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testVerticleIsNotDeployed() {
-    final VertigoCluster client = new LocalCluster(vertx, container);
+    final Cluster client = new LocalCluster(vertx, container);
     client.deployVerticle("test-verticle4", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -129,7 +129,7 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testDeployWorkerVerticle() {
-    final VertigoCluster client = new LocalCluster(vertx, container);
+    final Cluster client = new LocalCluster(vertx, container);
     client.deployWorkerVerticle("test-worker1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -141,7 +141,7 @@ public class LocalClusterTest extends TestVerticle {
 
   @Test
   public void testUndeployWorkerVerticle() {
-    final VertigoCluster client = new LocalCluster(vertx, container);
+    final Cluster client = new LocalCluster(vertx, container);
     client.deployWorkerVerticle("test-worker2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {

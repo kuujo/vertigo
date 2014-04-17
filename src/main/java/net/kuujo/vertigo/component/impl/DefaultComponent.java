@@ -15,7 +15,8 @@
  */
 package net.kuujo.vertigo.component.impl;
 
-import net.kuujo.vertigo.cluster.VertigoCluster;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -43,9 +44,9 @@ import org.vertx.java.platform.Container;
 public class DefaultComponent implements Component {
   protected final Vertx vertx;
   protected final Container container;
-  protected final VertigoCluster cluster;
+  protected final Cluster cluster;
+  protected final Logger logger;
   private final ComponentCoordinator coordinator;
-  protected Logger logger;
   private final String address;
   protected InstanceContext context;
   protected final DefaultInputCollector input;
@@ -53,12 +54,12 @@ public class DefaultComponent implements Component {
   protected DataStore storage;
   private boolean started;
 
-  protected DefaultComponent(String network, String address, Vertx vertx, Container container, VertigoCluster cluster) {
-    this.address = address;
+  protected DefaultComponent(InstanceContext context, Vertx vertx, Container container) {
+    this.address = context.address();
     this.vertx = vertx;
     this.container = container;
-    this.cluster = cluster;
-    this.coordinator = new DefaultComponentCoordinator(network, address, cluster);
+    this.cluster = new ClusterFactory(vertx, container).createCluster(context.component().network().scope());
+    this.coordinator = new DefaultComponentCoordinator(context, vertx, container);
     this.input = new DefaultInputCollector(vertx);
     this.output = new DefaultOutputCollector(vertx);
     this.logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output);
@@ -90,7 +91,7 @@ public class DefaultComponent implements Component {
   }
 
   @Override
-  public VertigoCluster cluster() {
+  public Cluster cluster() {
     return cluster;
   }
 
@@ -123,10 +124,7 @@ public class DefaultComponent implements Component {
           output.setContext(context.output());
 
           // Set up the component storage facility.
-          storage = Factories.createObject(context.component().storageType(), context.component().storageConfig(), vertx);
-
-          // Set up a port-based logger.
-          logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output);
+          storage = Factories.resolveObject(cluster.scope(), context.component().storageType(), context.component().storageConfig(), vertx);
 
           output.open(new Handler<AsyncResult<Void>>() {
             @Override

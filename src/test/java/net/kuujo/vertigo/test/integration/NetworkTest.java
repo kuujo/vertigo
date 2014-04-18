@@ -121,7 +121,7 @@ public class NetworkTest extends TestVerticle {
         @Override
         public void handle(String message) {
           assertEquals("Hello world!", message);
-          vertx.eventBus().send("test", component.context().address());
+          vertx.eventBus().send("test", context.address());
         }
       });
     }
@@ -149,7 +149,7 @@ public class NetworkTest extends TestVerticle {
   public static class TestManyToOneSender extends ComponentVerticle {
     @Override
     public void start() {
-      output.port("out").send(component.context().address());
+      output.port("out").send(context.address());
     }
   }
 
@@ -218,10 +218,10 @@ public class NetworkTest extends TestVerticle {
     @Override
     public void start() {
       for (int i = 0; i < count; i++) {
-        output.port("out").send(component.context().address());
-        output.port("out").send(component.context().address());
-        output.port("out").send(component.context().address());
-        output.port("out").send(component.context().address());
+        output.port("out").send(context.address());
+        output.port("out").send(context.address());
+        output.port("out").send(context.address());
+        output.port("out").send(context.address());
       }
     }
   }
@@ -236,7 +236,7 @@ public class NetworkTest extends TestVerticle {
         public void handle(String message) {
           received.add(message);
           if (received.size() == count) {
-            vertx.eventBus().publish("test", component.context().address());
+            vertx.eventBus().publish("test", context.address());
           }
         }
       });

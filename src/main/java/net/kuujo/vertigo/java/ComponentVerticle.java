@@ -19,6 +19,7 @@ import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
@@ -35,10 +36,11 @@ import org.vertx.java.platform.Verticle;
  * @author Jordan Halterman
  */
 public abstract class ComponentVerticle extends Verticle {
+  private Component component;
   protected Vertigo vertigo;
+  protected InstanceContext context;
   protected Cluster cluster;
   protected Logger logger;
-  private Component component;
   protected InputCollector input;
   protected OutputCollector output;
   protected DataStore storage;
@@ -46,6 +48,7 @@ public abstract class ComponentVerticle extends Verticle {
   @Override
   public void start(final Future<Void> startResult) {
     component = createComponent(vertx, container);
+    context = component.context();
     cluster = component.cluster();
     logger = component.logger();
     input = component.input();

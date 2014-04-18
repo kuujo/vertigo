@@ -127,10 +127,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   @Override
   @SuppressWarnings("unchecked")
   public <T extends ComponentContext<T>> T component(String name) {
-    if (components.containsKey(name)) {
-      return (T) components.get(name).setNetworkContext(this);
-    }
-    throw new IllegalArgumentException(name + " is not a valid component in " + address());
+    return (T) (components.containsKey(name) ? components.get(name).setNetworkContext(this) : null);
   }
 
   @Override

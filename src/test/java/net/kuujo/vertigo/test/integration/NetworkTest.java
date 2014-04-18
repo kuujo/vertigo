@@ -633,4 +633,143 @@ public class NetworkTest extends TestVerticle {
     });
   }
 
+  public static class TestReconfigureSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      vertx.setPeriodic(1000, new Handler<Long>() {
+        @Override
+        public void handle(Long timerID) {
+          output.port("out").send("Hello world!");
+        }
+      });
+    }
+  }
+
+  public static class TestReconfigureReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").messageHandler(new Handler<String>() {
+        @Override
+        public void handle(String message) {
+          assertEquals("Hello world!", message);
+          testComplete();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testReconfigureAddComponent() {
+    final Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("reconfigure-add-component");
+    network.addVerticle("sender", TestReconfigureSender.class.getName());
+    network.createConnection("sender", "out", "receiver", "in");
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          NetworkConfig network = vertigo.createNetwork("reconfigure-add-component");
+          network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
+          vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+            @Override
+            public void handle(AsyncResult<ActiveNetwork> result) {
+              if (result.failed()) {
+                assertTrue(result.cause().getMessage(), result.succeeded());
+              } else {
+                assertTrue(result.succeeded());
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testActiveAddComponent() {
+    final Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("active-add-component");
+    network.addVerticle("sender", TestReconfigureSender.class.getName());
+    network.createConnection("sender", "out", "receiver", "in");
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          ActiveNetwork network = result.result();
+          network.addVerticle("receiver", TestReconfigureReceiver.class.getName(), new Handler<AsyncResult<ActiveNetwork>>() {
+            @Override
+            public void handle(AsyncResult<ActiveNetwork> result) {
+              if (result.failed()) {
+                assertTrue(result.cause().getMessage(), result.succeeded());
+              } else {
+                assertTrue(result.succeeded());
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testReconfigureCreateConnection() {
+    final Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("reconfigure-create-connection");
+    network.addVerticle("sender", TestReconfigureSender.class.getName());
+    network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          NetworkConfig network = vertigo.createNetwork("reconfigure-create-connection");
+          network.createConnection("sender", "out", "receiver", "in");
+          vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+            @Override
+            public void handle(AsyncResult<ActiveNetwork> result) {
+              if (result.failed()) {
+                assertTrue(result.cause().getMessage(), result.succeeded());
+              } else {
+                assertTrue(result.succeeded());
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
+  @Test
+  public void testActiveCreateConnection() {
+    final Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("active-create-connection");
+    network.addVerticle("sender", TestReconfigureSender.class.getName());
+    network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          ActiveNetwork network = result.result();
+          network.createConnection("sender", "out", "receiver", "in", new Handler<AsyncResult<ActiveNetwork>>() {
+            @Override
+            public void handle(AsyncResult<ActiveNetwork> result) {
+              if (result.failed()) {
+                assertTrue(result.cause().getMessage(), result.succeeded());
+              } else {
+                assertTrue(result.succeeded());
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
 }

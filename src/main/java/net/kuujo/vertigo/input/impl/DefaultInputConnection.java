@@ -43,6 +43,7 @@ public class DefaultInputConnection implements InputConnection {
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private final Map<String, DefaultInputGroup> groups = new HashMap<>();
   private final Queue<Object> queue = new ArrayDeque<>();
+  private final InputDeserializer deserializer = new InputDeserializer();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
   private boolean open;
@@ -91,7 +92,10 @@ public class DefaultInputConnection implements InputConnection {
       String id = message.body().getString("id");
       DefaultInputGroup group = groups.get(id);
       if (group != null) {
-        group.handleMessage(message.body().getValue("message"));
+        Object value = deserializer.deserialize(message.body());
+        if (value != null) {
+          group.handleMessage(value);
+        }
       }
       message.reply();
     }
@@ -109,15 +113,18 @@ public class DefaultInputConnection implements InputConnection {
     }
   };
 
-  private final Handler<Message<Object>> internalMessageHandler = new Handler<Message<Object>>() {
+  private final Handler<Message<JsonObject>> internalMessageHandler = new Handler<Message<JsonObject>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public void handle(Message<Object> message) {
-      if (paused) {
-        queue.add(message.body());
-      }
-      else if (messageHandler != null) {
-        messageHandler.handle(message.body());
+    public void handle(Message<JsonObject> message) {
+      Object value = deserializer.deserialize(message.body());
+      if (value != null) {
+        if (paused) {
+          queue.add(message.body());
+        }
+        else if (messageHandler != null) {
+          messageHandler.handle(value);
+        }
       }
       message.reply();
     }

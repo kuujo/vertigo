@@ -47,6 +47,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private final AdaptiveEventBus eventBus;
   private final OutputConnectionContext context;
   private final String address;
+  final OutputSerializer serializer = new OutputSerializer();
   private int currentQueueSize;
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
@@ -217,9 +218,10 @@ public class DefaultOutputConnection implements OutputConnection {
   /**
    * Sends a message.
    */
-  private OutputConnection doSend(final Object message) {
+  private OutputConnection doSend(final Object value) {
     checkOpen();
     currentQueueSize++;
+    final JsonObject message = serializer.serialize(value);
     eventBus.sendWithAdaptiveTimeout(address, message, 5, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {

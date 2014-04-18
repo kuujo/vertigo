@@ -297,16 +297,6 @@ NetworkConfig network = vertigo.createNetwork("test");
 vertigo.deployNetwork(network);
 ```
 
-But Vertigo also supports deploying bare networks.
-
-```java
-vertigo.deployNetwork("test");
-```
-
-Deploying a bare network will simply create and deploy an empty network
-configuration. Users can then add components and connections to the network
-once it's deployed. For more on network reconfiguration see below.
-
 ### Network clustering
 Vertigo supports either local or clustered network deployments. By default,
 Vertigo will automatically detect the current Vert.x cluster status and deploy

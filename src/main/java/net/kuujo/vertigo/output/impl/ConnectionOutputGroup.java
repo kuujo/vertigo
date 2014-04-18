@@ -21,7 +21,6 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.eventbus.AdaptiveEventBus;
 import net.kuujo.vertigo.eventbus.impl.WrappedAdaptiveEventBus;
-import net.kuujo.vertigo.output.OutputConnection;
 import net.kuujo.vertigo.output.OutputGroup;
 
 import org.vertx.java.core.AsyncResult;
@@ -47,7 +46,7 @@ public class ConnectionOutputGroup implements OutputGroup {
   private final String parent;
   private final String name;
   private final Vertx vertx;
-  private final OutputConnection connection;
+  private final DefaultOutputConnection connection;
   private final String address;
   private final AdaptiveEventBus eventBus;
   private Handler<Void> endHandler;
@@ -58,7 +57,7 @@ public class ConnectionOutputGroup implements OutputGroup {
   private int completeCount;
   private boolean ended;
 
-  public ConnectionOutputGroup(String id, String name, Vertx vertx, OutputConnection connection) {
+  public ConnectionOutputGroup(String id, String name, Vertx vertx, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
     this.parent = null;
@@ -69,7 +68,7 @@ public class ConnectionOutputGroup implements OutputGroup {
     eventBus.setDefaultAdaptiveTimeout(5.0f);
   }
 
-  public ConnectionOutputGroup(String id, String name, String parent, Vertx vertx, OutputConnection connection) {
+  public ConnectionOutputGroup(String id, String name, String parent, Vertx vertx, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
     this.parent = parent;
@@ -201,8 +200,9 @@ public class ConnectionOutputGroup implements OutputGroup {
   /**
    * Sends a message.
    */
-  private OutputGroup doSend(final Object message) {
+  private OutputGroup doSend(final Object value) {
     sentCount++;
+    final JsonObject message = connection.serializer.serialize(value);
     eventBus.sendWithAdaptiveTimeout(String.format("%s.group", address), new JsonObject().putString("id", id).putValue("message", message), 5, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {

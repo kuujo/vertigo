@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.VerticleContext;
@@ -44,12 +43,6 @@ public class ContextTest {
     NetworkContext context = ContextBuilder.buildContext(network);
     assertEquals("test", context.address());
     assertEquals(0, context.components().size());
-    try {
-      context.component("foo");
-      fail();
-    }
-    catch (Exception e) {
-    }
   }
 
   @Test
@@ -58,12 +51,6 @@ public class ContextTest {
     NetworkContext context = ContextBuilder.buildContext(network);
     assertEquals("test", context.address());
     assertEquals(0, context.components().size());
-    try {
-      context.component("foo");
-      fail();
-    }
-    catch (Exception e) {
-    }
   }
 
   @Test

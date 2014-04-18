@@ -58,6 +58,7 @@ public class DefaultComponent implements Component {
     this.address = context.address();
     this.vertx = vertx;
     this.container = container;
+    this.context = context;
     this.cluster = new ClusterFactory(vertx, container).createCluster(context.component().network().scope());
     this.coordinator = new DefaultComponentCoordinator(context, vertx, container);
     this.input = new DefaultInputCollector(vertx);

@@ -202,8 +202,8 @@ public class ConnectionOutputGroup implements OutputGroup {
    */
   private OutputGroup doSend(final Object value) {
     sentCount++;
-    final JsonObject message = connection.serializer.serialize(value);
-    eventBus.sendWithAdaptiveTimeout(String.format("%s.group", address), new JsonObject().putString("id", id).putValue("message", message), 5, new Handler<AsyncResult<Message<Void>>>() {
+    final JsonObject message = connection.serializer.serialize(value).putString("id", id);
+    eventBus.sendWithAdaptiveTimeout(String.format("%s.group", address), message, 5, new Handler<AsyncResult<Message<Void>>>() {
       @Override
       public void handle(AsyncResult<Message<Void>> result) {
         if (result.failed() && (!((ReplyException) result.cause()).failureType().equals(ReplyFailure.RECIPIENT_FAILURE))) {

@@ -53,6 +53,12 @@ public class DefaultNetworkConfig implements NetworkConfig {
   public static final String NETWORK_NAME = "name";
 
   /**
+   * <code>scope</code> is a string indicating the network cluster scope. The value
+   * can be either <code>local</code> or <code>cluster</code>.
+   */
+  public static final String NETWORK_SCOPE = "scope";
+
+  /**
    * <code>components</code> is an object defining network component configurations. Each
    * item in the object must be keyed by the unique component address, with each item
    * being an object containing the component configuration. See the {@link ComponentConfig}

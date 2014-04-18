@@ -86,15 +86,6 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
    */
   public static final String COMPONENT_STORAGE = "storage";
 
-  /**
-   * <code>hooks</code> is an array of hook configurations. Each hook configuration must
-   * contain at least a <code>type</code> key which indicates the fully qualified name of
-   * the hook class. Other configuration options depend on the specific hook
-   * implementation. In most cases, json properties are directly correlated to fields
-   * within the hook class.
-   */
-  public static final String COMPONENT_HOOKS = "hooks";
-
   private static final int DEFAULT_NUM_INSTANCES = 1;
   private static final String DEFAULT_GROUP = "__DEFAULT__";
 

@@ -150,221 +150,274 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 }
 ```
 
+
 # Java User Manual
+1. [Introduction](#introduction)
+1. [Networks](#networks)
+  * [Creating a new network](#creating-a-new-network)
+  * [Adding components to a network](#adding-components-to-a-network)
+  * [Creating connections between components](#)
+  * [Routing messages between multiple component instances](#routing-messages-between-multiple-component-instances)
+  * [Creating networks from JSON](#creating-networks-from-json)
+1. [Deployment](#deployment)
+  * [Deploying a network](#deploying-a-network)
+  * [Undeploying a network](#undeploying-a-network)
+  * [Reconfiguring a network](#reconfiguring-a-network)
+  * [Deploying a bare network](#deploying-a-bare-network)
+  * [Working with active networks](#working-with-active-networks)
+1. [Clustering](#clustering)
+  * [Configuring cluster scopes](#configuring-cluster-scopes)
+1. [Components](#components)
+  * [Creating a component](#creating-a-component)
+  * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
+1. [Messaging](#messaging)
+  * [Sending messages on an output port](#sending-messages-on-an-output-port)
+  * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
+  * [Working with message groups](#working-with-message-groups)
+  * [Providing serializeable messages](#providing-serializeable-messages)
+1. [Logging](#logging)
+  * [Logging messages to output ports](#logging-messages-to-output-ports)
+  * [Reading log messages](#reading-log-messages)
 
 ## Introduction
-Vertigo is a multi-step event processing framework built on top of the Vert.x application
-platform. It provides an API that abstracts event bus details from Vert.x verticle implementations,
-promoting reusability of your verticles. Vertigo handles messaging between components, ensuring
-messages are delivered in particular order.
-
-Vertigo networks - collections of Vert.x modules and verticles and the relationships between
-them - are defined and deployed externally to individual verticle implementations. Vertigo
-*components* communicate using named input and output ports rather than explicit event bus
-addresses.
-
-## The core API
-In most cases, users should operate using an instance of the `Vertigo` class. The `Vertigo` class
-is the primary API for creating and deploying Vertigo networks.
-
-```java
-public class MyVerticle extends Verticle {
-
-  @Override
-  public void start() {
-    Vertigo vertigo = new Vertigo(this);
-  }
-
-}
-```
+Vertigo is a multi-step event processing framework built on Vert.x. It exposes a
+very simple yet powerful API defines networks of Vert.x verticles and the relationships
+between them in a manner that abstracts communication details from implementations, making
+Vertigo components reusable. It supports deployment of networks within a single Vert.x
+instance or across a cluster of Vert.x instances and performs setup and coordination
+internally. Vertigo also provides for advanced messaging requirements such as strong
+ordering and exactly-once semantics.
 
 ## Networks
-Networks are collections of Vert.x verticles and modules between which connections are defined
-externally to the verticle code. Users define and deploy networks using the network configuration
-API.
+Vertigo networks are collections of Vert.x verticles and modules that are connected
+together by the Vert.x event bus. Networks and the relationships therein are defined
+externally to their components, promoting reusability.
 
 ### Creating a network
-To create a new network, call the `createNetwork` method on a `Vertigo` instance:
+To create a new network, create a new `Vertigo` instance and call the `createNetwork` method.
 
 ```java
 Vertigo vertigo = new Vertigo(this);
-NetworkConfig network = vertigo.createNetwork("test");
+NetworkConfig network = vertigo.createNetwork("my-network");
 ```
 
-Note that the network is given a name. This name is very important as Vertigo as it can be
-used to reference running networks from anywhere within a Vert.x cluster, but more on that
-later.
+All Vertigo networks have an explicit, unique name. This name is very important to
+Vertigo as it can be used to reference networks from anywhere within a Vert.x cluster,
+but more on that later.
 
-Networks can also be constructed from a `JsonObject`.
+### Adding components to a network
+To add a component to the network, use one of the `addVerticle` or `addModule` methods.
 
 ```java
-NetworkConfig network = vertigo.createNetwork(json);
+network.addVerticle("foo", "foo.js");
 ```
 
-### Adding components
-Networks can consist of any number of Vert.x verticles or modules, known as *components*
-in Vertigo. To add a component to the network simply call the `addVerticle` or `addModule`
-method on the network configuraiton. These methods have the following signatures:
+The `addVerticle` and `addModuld` methods have the following signatures:
 
+* `addModule(String name, String moduleName)`
+* `addModule(String name, String moduleName, JsonObject config)`
+* `addModule(String name, String moduleName, int instances)`
+* `addModule(String name, String moduleName, JsonObject config, int instances)`
 * `addVerticle(String name, String main)`
 * `addVerticle(String name, String main, JsonObject config)`
 * `addVerticle(String name, String main, int instances)`
 * `addVerticle(String name, String main, JsonObject config, int instances)`
-* `addModule(String name, String main)`
-* `addModule(String name, String main, JsonObject config)`
-* `addModule(String name, String main, int instances)`
-* `addModule(String name, String main, JsonObject config, int instances)`
 
-Once you add the module or verticle, a `ModuleConfig` or `VerticleConfig` instance
-will be returned respectively.
+Just as with networks, Vertigo components are explicitly named. The component name
+*must be unique within the network to which the component belongs*.
 
-```java
-network.addVerticle("foo", "foo.js").setConfig(new JsonObject().putString("foo", "bar"));
-```
+The `NetworkConfig` API also exposes an abstract `addComponent` method which detects
+whether the added component is a module or a verticle based on module naming conventions.
 
-The `config` and `instances` options are the same as those expected by the Vert.x
-`Container` interface - verticle configuration and number of instances to deploy.
+* `addComponent(String name, String moduleOrMain)`
+* `addComponent(String name, String moduleOrMain, JsonObject config)`
+* `addComponent(String name, String moduleOrMain, int instances)`
+* `addComponent(String name, String moduleOrMain, JsonObject config, int instances)`
 
-### Creating connections
-In order to facilitate messaging between components within the network, you must create
-connections between them. Each component may have any number of named input and output
-ports, but input and output ports should agree with the code within each component.
+Once a component has been added to the network, the component configuration will
+be returned. Users can set additional options on the component configuration. The
+most important of these options is the `group` option. When deploying networks within
+a Vert.x cluster, the `group` indicates the HA group to which to deploy the module or verticle.
 
-To create a connection use the `createConnection` method.
-* `createConnection(String source, String outPort, String target, String inPort)`
+### Creating connections between components
+A set of components is not a network until connections are created between those
+components. Vertigo uses a concept of *ports* to abstract input and output from
+each component instance. When creating connections between components, you must
+specify a component and port to which the connection connects. Each connection
+binds one component's output port with another component's input port.
 
-Note that the connection API uses string component and port names rather than object
-references because it's possible to create connections between components that
-either don't exist or are not available in the current scope, but more on that later.
+To create a connectoin between two components use the `createConnection` method.
 
 ```java
 network.createConnection("foo", "out", "bar", "in");
 ```
 
-The connection port names default to `out` and `in` respectively if no port names
-are specified.
+The arguments to the `createConnection` method are, in order:
+* The source component's name
+* The source component's output port to connect
+* The target component's name
+* The target component's input port to connect
 
-### Connection groupings
-When connecting together two components, often time one or both components at either
-end of the connection will consist of several component instances. Normally, the Vert.x
-event bus provides basic round-robin routing of messages to multiple handlers at the
-same address, but Vertigo provides additional routing methods through its *grouping*
-concept. When a message is sent on a component's output port to a component that
-consists of more than one instance, Vertigo will use the grouping to determine which
-instance(s) of that component will receive the message.
+You may wonder why components and ports are specified by strings rather than
+objects. Vertigo supports reconfiguring live networks with partial configurations,
+so objects may not necessarily be available within the network configuration
+when a partial configuration is created. More on partial network deployment
+and runtime configuration changes in the [deployment](#deployment) section.
 
-To set a grouping on a connection call one of the grouping specific methods:
-* `roundGrouping()` - round-robin based grouping
-* `randomGrouping()` - random grouping
-* `hashGrouping()` - message hash based grouping
-* `fairGrouping()` - sends the message to the connection with the shortest queue
-* `allGrouping()` - sends a message to *all* instances of a connected component
-* `customGrouping(CustomGrouping grouping)` - facilitates custom grouping implementations
+### Routing messages between multiple component instances
+Just as with Vert.x verticles and modules, each Vertigo component can support
+any number of instances. But connections are created between components and
+not component instances. This means that a single connection can reference
+multiple instances of each component. By default, the Vert.x event bus routes
+messages to event bus handlers in a round-robin fashion. But Vertigo provides
+additional routing methods known as *groupings*. Groupings indicate how messages
+should be routed between multiple instances of a component.
 
-```java
-network.addVerticle("foo", "foo,js", 2)
-    .addVerticle("bar", "bar.js", 4)
-    .createConnection("foo", "out", "bar", "in")
-    .hashGrouping();
+Vertigo provides several grouping types by default and supports custom groupings
+as well.
+
+* Round grouping - selects targets in a round-robin fashion
+* Random grouping - selects a random target to which to send each message
+* Hash grouping - uses a simple mod hash algorithm to select a target for each message
+* Fair grouping - selects the target with the least number of messages in the queue
+* All grouping - sends each message to all target instances
+* Custom grouping - user provided custom grouping implementation
+
+The `ConnectionConfig` API provides several methods for setting groupings
+on a connection.
+* `roundGrouping()` - sets a round-robin grouping on the connection
+* `randomGrouping()` - sets a random grouping on the connection
+* `hashGrouping()` - sets a mod hash based grouping on the connection
+* `fairGrouping()` - sets a fair grouping on the connection
+* `allGrouping()` - sets an all grouping on the connection
+* `customGrouping(CustomGrouping grouping)` - sets a custom grouping on the connection
+
+### Creating networks from JSON
+Vertigo supports creating networks from json configurations. To create a network
+from json call the `Vertigo.createNetwork(JsonObject)` method.
+
+The JSON configuration format is as follows:
+
+* `name` - the network name
+* `scope` - the network cluster scope, e.g. `local` or `cluster`. See [configuring cluster scopes](#configuring-cluster-scopes)
+* `components` - an object of network components, keyed by component names
+   * `name` - the component name
+   * `type` - the component type, either `module` or `verticle`
+   * `main` - the verticle main (if the component is a verticle)
+   * `module` - the module name (if the component is a module)
+   * `config` - the module or verticle configuration
+   * `instances` - the number of component instances
+   * `group` - the component deployment group (Vert.x HA group for clustering)
+   * `storage` - an object defining the component data storage facility
+      * `type` - the component data storage type. This is a fully qualified `DataStore` class name
+      * `...` - additional data store configuration options
+* `connections` - an array of network connections
+   * `source` - an object defining the connection source
+      * `component` - the source component name
+      * `port` - the source component's output port
+   * `target` - an object defining the connection target
+      * `component` - the target component name
+      * `port` - the target component's input port
+   * `grouping` - an object defining the connection grouping
+      * `type` - the connection grouping type, e.g. `round`, `random`, `hash`, `fair`, or `all`
+   * `custom-grouping` - an object defining a custom grouping for the connection
+
+For example...
+
+```
+{
+  "name": "my-network",
+  "scope": "local",
+  "components": {
+    "foo": {
+      "name": "foo",
+      "type": "verticle",
+      "main": "foo.js",
+      "config": {
+        "foo": "bar"
+      },
+      "instances": 2
+    },
+    "bar": {
+      "name": "bar",
+      "type": "module",
+      "module": "com.foo~bar~1.0",
+      "instances": 4
+    }
+  },
+  "connections": [
+    {
+      "source": {
+        "component": "foo",
+        "port": "out"
+      },
+      "target": {
+        "component": "bar",
+        "port": "in"
+      },
+      "grouping": {
+        "type": "fair"
+      }
+    }
+  ]
+}
 ```
 
-### Logger ports
-Vertigo reserves some port names for logging. Reserved logging port
-names match the methods of the Vert.x logger interface:
-* `fatal`
-* `error`
-* `warn`
-* `info`
-* `debug`
-* `trace`
+## Deployment
+One of the most important tasks of Vertigo is to support dpeloyment and startup
+of networks in a consistent and reliable manner. Vertigo supports network deployment
+either within a single Vert.x instance (local) or across a cluster of Vert.x instances.
+When a Vertigo network is deployed, a special verticle known as the *network manager*
+is deployed. The network manager is tasked with managing and monitoring components
+within the network, handling runtime configuration changes, and coordinating startup
+and shutdown of networks.
 
-You can use these ports to receive log messages from other components. Each
-Vertigo component contains a logger that logs to these special output ports.
+Vertigo clustering is supported by [Xync](http://github.com/kuujo/xync)
 
-## Network deployment
-To deploy a Vertigo network simply call one of the `deployNetwork` methods on
-a `Vertigo` instance.
-
-```java
-vertigo.deployNetwork(network);
-```
-
-The `Vertigo` API provides a couple of different methods for deploying networks.
-The most common method is to deploy a network configuration.
+### Deploying a network
+To deploy a network, simply use the `deployNetwork` method.
 
 ```java
 NetworkConfig network = vertigo.createNetwork("test");
+network.addVerticle("foo", "foo.js", 2);
+network.addVerticle("bar", "bar.py", 4);
+network.createConnection("foo", "out", "bar", "in");
+
 vertigo.deployNetwork(network);
 ```
 
-### Network clustering
-Vertigo supports either local or clustered network deployments. By default,
-Vertigo will automatically detect the current Vert.x cluster status and deploy
-networks either locally or remotely according to how the Vert.x instance was
-started. Vertigo clustering requires [Xync](http://github.com/kuujo/xync) for
-remote deployments. If the current Vert.x instance was started as a Xync
-clustered Vert.x instance, networks will, by default, be deployed across the
-Vert.x cluster. Otherwise, networks will be deployed locally.
+When Vertigo deploys the network, it will automatically detect the current Vert.x
+cluster scope. If the current Vert.x instance is a member of a Xync cluster then
+the network will be deployed across the Xync cluster. Otherwise, the network will
+be deployed within the current Vert.x instance using the Vert.x `Container`.
 
-The local/cluster option can optionally be overridde in the network configuration.
-To force a network to be deployed locally even in a Xync cluster, set the
-`scope` option on the network by calling `setScope`
+### Undeploying a network
+To undeploy a network, use the `undeployNetwork` method.
 
 ```java
-network.setScope(ClusterScope.LOCAL);
-```
-
-This will force Vertigo to deploy the network only within the local Vert.x
-instance regardless of the cluster status. But there are some interesting
-points to note about this feature. Even if a network is deployed locally,
-Vertigo will still attempt to use the Xync cluster (if available) to coordinate
-networks across the cluster. This means that even though a network was deployed
-within the local Vert.x instance, other instances within the cluster can still
-reference, change, or undeploy the network. This helps ensure that local networks
-do not conflict with one another within a Xync-based Vert.x cluster.
-
-### Undeploying networks
-Networks can similarly be undeployed by calling the `undeployNetwork` method, passing
-either a network configuration or network name to the cluster.
-
-```java
-vertigo.undeployNetwork("my_network", new Handler<AysncResult<Void>>() {
+vertigo.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
   public void handle(AsyncResult<Void> result) {
     if (result.succeeded()) {
-      // Undeployment was successful.
+      // Successfully undeployed the network
     }
   }
 });
 ```
 
-When running Vert.x in a cluster, Vertigo automatically replicates network information
-across the cluster, meaning networks don't have to be undeployed from the same instance
-from which they were deployed.
+Passing a string network name to the method will cause the entire network to
+be undeployed. The method also supports a network configuration which can be
+used to undeploy portions of the network without undeploying the entire network.
+More on that in a minute.
 
-### Network configuration changes
-Another feature of Vertigo network deployment is that Vertigo networks can be reconfigured
-at runtime. This means that verticles, modules, and the connections between them can be
-deployed or undeployed without shutting down an entire network. This helps improve uptime
-for Vertigo networks, but there are some very important caviats to this process.
-
-Live network configuration changes should be used with caution for obvious reasons.
-Modifying a network's structure at runtime can potentially cause unexpected side-effects
-depending on your network's configuration. For this reason, Vertigo only allows complete
-components and connections to be deployed and undeployed; it does not allow component
-or connection configurations to be updated (for instance, adding component instances)
-in order to ensure consistency is maintained for hash-based routing for example.
-
-Network configuration changes are performed using the same network deployment API. *This
-is where network names become important.* When a network configuration is deployed,
-Vertigo will check whether any networks with the same name are running. If a network
-with the same name is already running in the cluster, Vertigo will *merge* the new
-configuration with the existing network's configuration and deploy any added components
-or connections. Networks can be partially undeployed in the same manner. When a network
-is undeployed using a configuration, Vertigo will unmerge the given configuration from
-the running configuration and, if components or connections remain in the leftover
-configuration, the network will continue to run.
-
-Let's take a look at a brief example for clarity.
+### Reconfiguring a network
+Vertigo networks can be reconfigured even after deployment. This is where network
+names become particularly important. When a user deploys a network, Vertigo first
+determines whether the network is already deployed within the current Vertigo cluster.
+If a network with the same name is already deployed, *the given network configuration
+will be merged with the existing network configuration* and Vertigo will update
+components and connections within the network rather than deploying a new network.
+This means that Vertigo networks can be deployed one component or connection at
+a time.
 
 ```java
 // Create and deploy a two component network.
@@ -385,29 +438,34 @@ vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
 });
 ```
 
-Expect a more in-depth explanation of how Vertigo coordinates network configuration
-changes and monitors component statuses in the near future.
-
-### Empty network deployment
-With Vertigo's runtime network configuration support, it's possible also to deploy
-empty networks and configure them after startup. To do so, simply pass a string
-network name to the `deploy*` method.
+### Deploying a bare network
+Since networks can be reconfigured *after* deployment, Vertigo provides a simple
+helper method for deploying empty networks that will be reconfigured after deployment.
+To deploy an empty network simply deploy a string network name.
 
 ```java
-vertigo.deployNetwork("my_network", new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork("test");
+```
+
+Note that this method can also be used to reference an existing network and retrieve
+an `ActiveNetwork` instance (more on active networks below):
+
+```java
+vertigo.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
-    // Deploy a verticle to the already running "my_network" network.
-    vertigo.deployNetwork(vertigo.createNetwork("my_network").addVerticle("foo", "foo.js"));
+    NetworkConfig network = result.result().getConfig();
   }
 });
 ```
 
-### Active networks
-You probably noticed the `ActiveNetwork` that is provided when deploying a Vertigo
-network. The `ActiveNetwork` is essentially a `NetworkConfig` like object that
-handles live network configuration changes for you. So, rather than constructing
-and deploying or undeploying partial network configurations, users can use the
-`ActiveNetwork` object returned by the initial deployment to reconfigure the network.
+### Working with active networks
+Vertigo provides a helper API for reconfiguring netowrks known as *active networks*.
+The `ActiveNetwork` is a `NetworkConfig` like object that exposes methods that directly
+update the running network when called. Obviously, the name is taken from the active
+record pattern.
+
+When deploying any network an `ActiveNetwork` instance for the deployed network will
+be returned once the deployment is complete.
 
 ```java
 // Create a network with a single component.
@@ -427,58 +485,142 @@ vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
 });
 ```
 
+The `ActiveNetwork` instance contains a reference to the *entire* network configuration,
+even if the configuration that was deployed was only a partial network configuration.
+
+## Clustering
+Vertigo clustering is currently only supported by [Xync](http://github.com/kuujo/xync).
+Xync allows Vertigo to remotely deploy Vert.x verticles and modules and provides
+cluster-wide data structures for synchronization. This allows Vertigo to spread deployments
+out across the cluster and synchronize local and clustered networks that are deployed
+within the same Vert.x cluster.
+
+When deploying a network, Vertigo will *automatically detect the current cluster state*.
+If the current Vert.x cluster is a Xync-backed cluster, Vertigo networks will be deployed
+across the cluster by default. In Vertigo, this is known as the cluster scope.
+
+### Configuring cluster scopes
+Users can optionally configure the cluster scope for individual Vertigo networks.
+To configure the cluster scope for a network simple use the `setScope` method on the
+network configuration.
+
+```java
+NetworkConfig network = vertigo.createNetwork("test");
+network.setScope(ClusterScope.LOCAL);
+```
+
+The network scope defaults to `CLUSTER`, but if the current Vert.x cluster is
+not a Xync cluster then the network will automatically fall back to `LOCAL`.
+
+It's important to note that while configuring the cluster scope on a network will
+cause the network to be *deployed* in that scope, the network's scope configuration
+*does not impact Vertigo's synchronization*. In other words, even if a network is
+deployed locally, if the current Vert.x cluster is a Xync cluster, Vertigo will still
+coordinate with other Vert.x instances using Xync. This allows locally deployed networks
+to be referenced and reconfigured event outside of the instance in which it was deployed.
+For instance, users can deploy one component of the `foo` network locally in one Vert.x
+instance and deploy a separate component of the `foo` network locally in another Vert.x
+instance and both components will still become a part of the same network event though
+the network is `LOCAL`.
+
 ## Components
-Vertigo components are simply Vert.x verticle instances that extend the base
-`ComponentVerticle` class. Each component instance contains the following
-members that are relevant to component operation:
+Components are "black box" Vert.x verticles that communicate with other components within
+the same network through named *input* and *output* ports.
 
-* `VertigoCluster cluster` - the Vertigo cluster to which the component belongs.
-  This can be used to deploy modules or verticles within the same cluster as the network.
-* `Logger logger` - a special component logger that logs messages to output ports
-* `InputCollector input` - component input ports API
-* `OutputCollector output` - component output ports API
+### Creating a component
+Components are defined by extending the base `ComponentVerticle` class.
 
-Most important of these fields are the `input` and `output` fields.
+```java
+public class MyComponent extends ComponentVerticle {
 
-### Managing ports
-Components don't have to do anything special to create ports. Simply call
-the `port(String name)` method on an input or output and the input or output
-collector will lazy create the port if it doesn't already exist. There is always
-potential that messages will never be received on an input port or never sent
-on an output port - that's a detail that is left to the network configuration.
+  @Override
+  public void start() {
+  
+  }
+
+}
+```
+
+Components behave exactly like normal Vert.x verticles. Once the component has been
+started and synchronized with other components within its network, the `start()` method
+will be called.
+
+### The elements of a Vertigo component
+Each Java component has several additional fields:
+* `vertigo` - a `Vertigo` instance
+* `cluster` - the Vertigo `Cluster` to which the component belongs
+* `input` - the component's `InputCollector`, an interface to input ports
+* `output`- the component's `OutputCollector`, an interface to output ports
+* `logger` - the component's `PortLogger`, a special logger that logs messages to output ports
+* `storage` - the component's storage facility. This is configured in the component configuration
+
+## Messaging
+Messaging between Vertigo components is done directly on the Vert.x event bus.
+Vertigo messages are not sent through any central router. Rather, Vertigo uses
+network configurations to create direct event bus connections between components.
+Vertigo components send and receive messages using only output and input *ports*
+and are hidden from event bus address details which are defined in network configurations.
+This is the element that makes Vertigo components reusable.
+
+While Vertigo does use an acking mechanism internally, Vertigo messages are
+not guaranteed to arrive in order. However, Vertigo does provide an API for
+logical grouping and ordering of messages called [groups](#working-with-message-groups).
+
+### Sending messages on an output port
+To reference an output port, use the `output.port(String name)` method.
 
 ```java
 OutputPort port = output.port("out");
 ```
 
-### Sending messages
-Vertigo supports sending any message that is supported by the Vert.x event bus.
+If the referenced output port is not defined in the network configuration, the
+port will be lazily created, though it will not actually reference any connections.
+
+Any message that can be sent on the Vert.x event bus can be sent on the output port.
+To send a message on the event bus, simply call the `send` method.
 
 ```java
 output.port("out").send("Hello world!");
-output.port("out").send(12345);
-output.port("out").send(new JsonObject().putString("foo", "bar"));
 ```
 
-If a message fails to be delivered to a receiving connection, Vertigo will automatically
-re-attempt to send the failed message. This means that Vertigo messages are not guaranteed
-to be delivered in any specific order. Internally, Vertigo uses adaptive event bus timeouts
-to help detect failures quickly by monitoring the response time for each individual event
-bus address. From a user's perspective, you need only send the message on an output port
-and Vertigo will handle routing and delivering it to the appripriate component(s).
+Internally, Vertigo will route the message to any connections as defined in the
+network configuration.
+
+Output ports also support custom message serialization.
+See [providing serializeable messages](#providing-serializeable-messages)
+
+### Receiving messages on an input port
+Input ports are referenced in the same was as output ports.
 
 ```java
-output.port("out").send(12345, "foobar");
+InputPort port = input.port("in");
 ```
 
-### Message groups
-While Vertigo messages are not guaranteed to be delivered in any specific order, Vertigo
-does provide an API for logically grouping and ordering sets of messages. Message groups
-are named logical collections of messages. When a component send a set of messages as
-part of an output group, the same messages will be received as part of an input group
-of the same name, with Vertigo maintaining order across groups.
+To receive messages on an input port, register a message handler on the port.
 
-### Working with output groups
+```java
+input.port("in").messageHandler(new Handler<String>() {
+  public void handle(String message) {
+    output.port("out").send(message);
+  }
+});
+```
+
+Note that Vertigo messages arrive in plain format and not in any sort of `Message`
+wrapper. This is because Vertigo messages are inherently uni-directional, and message
+acking is handled internally.
+
+### Working with message groups
+The base Vertigo messaging system does not guarantee ordering of messages.
+But Vertigo does provide a mechanism for logically grouping and ordering
+messages known as *groups*. Groups are named logical collections of messages.
+Groups can be nested and groups of the same name are guaranteed to be delivered
+in order. Before any given group can start, each of the groups of the same name
+at the same level that preceeded it must have been received by the target.
+Additionally, messages within a group are guaranteed to be delivered to the
+same instance of each target component. In other words, routing is performed
+per-group rather than per-message.
+
 When a new output group is created, Vertigo will await the completion of all groups
 that were created prior to the new group before sending the new group's messages.
 
@@ -531,20 +673,7 @@ output.port("out").group("foo", new Handler<OutputGroup>() {
 });
 ```
 
-### Receiving messages
-To receive messages on an input port, register a message handler using the
-`messageHandler` method. Remember, Vertigo supports any type that is supported
-by the Vert.x event bus.
 
-```java
-input.port("in").messageHandler(new Handler<String>() {
-  public void handle(String message) {
-    output.port("out").send(message);
-  }
-});
-```
-
-### Working with input groups
 As with receiving messages, to receive message groups register a handler on an
 input port using the `groupHandler` method, passing a group name as the first
 argument.
@@ -615,26 +744,103 @@ input.port("in").groupHandler("foo", new Handler<InputGroup>() {
 });
 ```
 
+### Providing serializeable messages
+The Vertigo messaging system supports custom serialization of messages for
+Java. Serializable messages must implement the `JsonSerializeable` interface.
 
+```java
+public class MyMessage implements JsonSerializeable {
+  private String foo;
+  private int bar;
 
+  // An empty constructor must be provided for serialization.
+  public MyMessage() {
+  }
 
+  public MyMessage(String foo, int bar) {
+    this.foo = foo;
+    this.bar = bar;
+  }
+}
+```
 
+In most cases, Vertigo's Jackson-based serializer will work with no custom
+configuration necessary. Vertigo's default serializer automatically serializes
+any basic fields (primitive types, strings, and collections), but Jackson annotations
+can be used to provide custom serialization of `JsonSerializeable` objects.
 
+## Logging
+Ecah Vertigo component contains a special `PortLogger` which logs messages
+to component output ports in addition to standard Vert.x log files. This allows
+other components to listen for log messages on input ports.
 
+The `PortLogger` logs to ports named for each logger method:
+* `fatal`
+* `error`
+* `warn`
+* `info`
+* `debug`
+* `trace`
 
+### Logging messages to output ports
+The `PortLogger` simple implements the standard Vert.x `Logger` interface.
+So, to log a message to an output port simply call the appropriate log method:
 
+```java
+public class MyComponent extends ComponentVerticle {
 
+  @Override
+  public void start() {
+    logger.info("Component started successfully!");
+  }
 
+}
+```
 
+### Reading log messages
+To listen for log messages from a component, simply add a connection to a network
+configuration listening on the necessary output port. For instance, you could
+aggregate and count log messages from one component by connecting each log port to
+a single input port on another component.
 
+```java
+NetworkConfig network = vertigo.createNetwork("log-test");
+network.addVerticle("logger", "logger.js", 2);
+network.addVerticle("log-reader", LogReader.class.getName(), 2);
+network.createConnection("logger", "fatal", "log-reader", "log").hashGrouping();
+network.createConnection("logger", "error", "log-reader", "log").hashGrouping();
+network.createConnection("logger", "warn", "log-reader", "log").hashGrouping();
+network.createConnection("logger", "info", "log-reader", "log").hashGrouping();
+network.createConnection("logger", "debug", "log-reader", "log").hashGrouping();
+network.createConnection("logger", "trace", "log-reader", "log").hashGrouping();
+```
 
+With a hash grouping on each connection, we guarantee that the same log message
+will always go to the same `log-reader` instance.
 
+Log messages will arrive as simple strings:
 
+```java
+public class LogReader extends ComponentVerticle {
+  private final Map<String, Integer> counts = new HashMap<>();
 
+  @Override
+  public void start() {
+    input.port("log").messageHandler(new Handler<String>() {
+      public void handle(String message) {
+        // Update the log message count.
+        if (!counts.containsKey(message)) {
+          counts.put(message, 1);
+        } else {
+          counts.put(message, counts.get(message) + 1);
+        }
+        output.port("count").send(counts.get(message)); // Send the updated count.
+      }
+    });
+  }
 
-
-
-
+}
+```
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 

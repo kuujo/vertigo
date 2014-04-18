@@ -19,13 +19,13 @@ import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.input.InputCollector;
 import net.kuujo.vertigo.output.OutputCollector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
@@ -37,11 +37,11 @@ import org.vertx.java.platform.Verticle;
 public abstract class ComponentVerticle extends Verticle {
   protected Vertigo vertigo;
   protected Cluster cluster;
-  protected JsonObject config;
   protected Logger logger;
-  protected Component component;
+  private Component component;
   protected InputCollector input;
   protected OutputCollector output;
+  protected DataStore storage;
 
   @Override
   public void start(final Future<Void> startResult) {
@@ -50,6 +50,7 @@ public abstract class ComponentVerticle extends Verticle {
     logger = component.logger();
     input = component.input();
     output = component.output();
+    storage = component.storage();
     vertigo = new Vertigo(this);
 
     component.start(new Handler<AsyncResult<Component>>() {

@@ -148,8 +148,10 @@ public class DefaultComponent implements Component {
     coordinator.resumeHandler(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        started = true;
-        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        if (!started) {
+          started = true;
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
       }
     });
   }

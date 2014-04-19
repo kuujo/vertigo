@@ -29,11 +29,15 @@ import net.kuujo.vertigo.io.group.InputGroup;
 import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
+import net.kuujo.vertigo.util.Task;
+import net.kuujo.vertigo.util.TaskRunner;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default input port implementation.
@@ -41,9 +45,11 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
+  private static final Logger log = LoggerFactory.getLogger(DefaultInputPort.class);
   private final Vertx vertx;
   private InputPortContext context;
   private final List<InputConnection> connections = new ArrayList<>();
+  private final TaskRunner tasks = new TaskRunner();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
@@ -53,6 +59,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   public DefaultInputPort(Vertx vertx, InputPortContext context) {
     this.vertx = vertx;
     this.context = context;
+    context.registerObserver(this);
   }
 
   @Override
@@ -71,47 +78,93 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
-  public void update(InputPortContext update) {
-    Iterator<InputConnection> iter = connections.iterator();
-    while (iter.hasNext()) {
-      InputConnection connection = iter.next();
-      boolean exists = false;
-      for (InputConnectionContext input : update.connections()) {
-        if (input.equals(connection.context())) {
-          exists = true;
-          break;
+  public void update(final InputPortContext update) {
+    // All updates are run sequentially to prevent race conditions
+    // during configuration changes. Without essentially locking the
+    // object, it could be possible that connections are simultaneously
+    // added and removed or opened and closed on the object.
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        Iterator<InputConnection> iter = connections.iterator();
+        while (iter.hasNext()) {
+          final InputConnection connection = iter.next();
+          boolean exists = false;
+          for (InputConnectionContext input : update.connections()) {
+            if (input.equals(connection.context())) {
+              exists = true;
+              break;
+            }
+          }
+          if (!exists) {
+            connection.close(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.error("Failed to close input connection " + connection.address());
+                }
+              }
+            });
+            iter.remove();
+          }
         }
-      }
-      if (!exists) {
-        connection.close();
-        iter.remove();
-      }
-    }
 
-    for (InputConnectionContext input : update.connections()) {
-      boolean exists = false;
-      for (InputConnection connection : connections) {
-        if (connection.context().equals(input)) {
-          exists = true;
-          break;
+        final List<InputConnection> newConnections = new ArrayList<>();
+        for (InputConnectionContext input : update.connections()) {
+          boolean exists = false;
+          for (InputConnection connection : connections) {
+            if (connection.context().equals(input)) {
+              exists = true;
+              break;
+            }
+          }
+          if (!exists) {
+            newConnections.add(new DefaultInputConnection(vertx, input));
+          }
         }
-      }
 
-      if (!exists) {
-        InputConnection newConnection = new DefaultInputConnection(vertx, input);
         if (open) {
-          newConnection.open();
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(newConnections.size());
+          counter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              task.complete();
+            }
+          });
+          for (final InputConnection connection : newConnections) {
+            connection.messageHandler(messageHandler);
+            for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
+              connection.groupHandler(entry.getKey(), entry.getValue());
+            }
+            if (paused) {
+              connection.pause();
+            }
+            connection.open(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.error("Failed to open input connection " + connection.address());
+                } else {
+                  connections.add(connection);
+                }
+              }
+            });
+          }
+        } else {
+          for (InputConnection connection : newConnections) {
+            connection.messageHandler(messageHandler);
+            for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
+              connection.groupHandler(entry.getKey(), entry.getValue());
+            }
+            if (paused) {
+              connection.pause();
+            }
+            connections.add(connection);
+          }
+          task.complete();
         }
-        newConnection.messageHandler(messageHandler);
-        for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
-          newConnection.groupHandler(entry.getKey(), entry.getValue());
-        }
-        if (paused) {
-          newConnection.pause();
-        }
-        connections.add(newConnection);
       }
-    }
+    });
   }
 
   @Override
@@ -158,35 +211,55 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public InputPort open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (!open) {
-      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
-      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          } else {
-            open = true;
-            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-          }
-        }
-      });
+    // Prevent the object from being opened and closed simultaneously
+    // by queueing open/close operations as tasks.
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        if (!open) {
+          final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
+          startCounter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              } else {
+                open = true;
+                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+              }
+              task.complete();
+            }
+          });
 
-      connections.clear();
-      for (InputConnectionContext connectionContext : context.connections()) {
-        InputConnection connection = new DefaultInputConnection(vertx, connectionContext);
-        connection.messageHandler(messageHandler);
-        for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
-          connection.groupHandler(entry.getKey(), entry.getValue());
+          connections.clear();
+          for (InputConnectionContext connectionContext : context.connections()) {
+            final InputConnection connection = new DefaultInputConnection(vertx, connectionContext);
+            connection.messageHandler(messageHandler);
+            for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
+              connection.groupHandler(entry.getKey(), entry.getValue());
+            }
+            if (paused) {
+              connection.pause();
+            }
+            connection.open(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.error("Failed to open input connection " + connection.address());
+                  startCounter.fail(result.cause());
+                } else {
+                  connections.add(connection);
+                  startCounter.succeed();
+                }
+              }
+            });
+          }
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          task.complete();
         }
-        if (paused) {
-          connection.pause();
-        }
-        connections.add(connection.open(startCounter));
       }
-    } else {
-      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-    }
+    });
     return this;
   }
 
@@ -197,22 +270,35 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(connections.size());
-    stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
+    // Prevent the object from being opened and closed simultaneously
+    // by queueing open/close operations as tasks.
+    tasks.runTask(new Handler<Task>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+      public void handle(final Task task) {
+        if (open) {
+          final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(connections.size());
+          stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              } else {
+                connections.clear();
+                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+              }
+              task.complete();
+            }
+          });
+
+          for (InputConnection connection : connections) {
+            connection.close(stopCounter);
+          }
         } else {
-          connections.clear();
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          task.complete();
         }
       }
     });
-
-    for (InputConnection connection : connections) {
-      connection.close(stopCounter);
-    }
   }
 
 }

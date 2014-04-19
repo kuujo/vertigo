@@ -30,11 +30,11 @@ public class TaskRunner {
   private Task currentTask;
 
   /**
-   * Starts a task.
+   * Runs a sequential task.
    *
    * @param task A handler to be called once the task is started.
    */
-  public void startTask(Handler<Task> task) {
+  public void runTask(Handler<Task> task) {
     if (currentTask == null) {
       currentTask = new Task(this);
       task.handle(currentTask);

@@ -15,16 +15,28 @@
  */
 package net.kuujo.vertigo.util;
 
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
+
 /**
  * A running task.
  *
  * @author Jordan Halterman
  */
 public class Task {
+  private static final Logger log = LoggerFactory.getLogger(Task.class);
   private final TaskRunner runner;
 
   public Task(TaskRunner runner) {
     this.runner = runner;
+  }
+
+  /**
+   * Fails the task.
+   */
+  public void fail(Throwable t) {
+    log.error(t);
+    runner.complete(this);
   }
 
   /**

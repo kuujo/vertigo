@@ -91,7 +91,7 @@ public class NetworkManager extends BusModBase {
     // we use the CLUSTER for coordination if it's available. This ensures
     // that identical networks cannot be deployed from separate clustered
     // Vert.x instances.
-    tasks.startTask(new Handler<Task>() {
+    tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
         clusterFactory = new ClusterFactory(vertx, container);
@@ -190,7 +190,7 @@ public class NetworkManager extends BusModBase {
    * Handles the creation of the network.
    */
   private void handleCreate(final NetworkContext context) {
-    tasks.startTask(new Handler<Task>() {
+    tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
         currentContext = context;
@@ -199,14 +199,27 @@ public class NetworkManager extends BusModBase {
         } else {
           contextCluster = clusterFactory.createCluster(ClusterScope.LOCAL);
         }
-        deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
+
+        // Any time the network is being reconfigured, unready the network.
+        // This will cause components to pause during the reconfiguration.
+        unready(new Handler<AsyncResult<Void>>() {
           @Override
-          public void handle(AsyncResult<NetworkContext> result) {
+          public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
-              log.error(result.cause());
+              logger.error(result.cause());
             } else {
-              log.info("Successfully deployed network " + context.address());
-              task.complete();
+              deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
+                @Override
+                public void handle(AsyncResult<NetworkContext> result) {
+                  if (result.failed()) {
+                    log.error(result.cause());
+                  } else {
+                    log.info("Successfully deployed network " + context.address());
+                    task.complete();
+                    checkReady();
+                  }
+                }
+              });
             }
           }
         });
@@ -218,40 +231,49 @@ public class NetworkManager extends BusModBase {
    * Handles the update of the network.
    */
   private void handleUpdate(final NetworkContext context) {
-    tasks.startTask(new Handler<Task>() {
+    tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
-        if (currentContext != null) {
-          final NetworkContext runningContext = currentContext;
-          currentContext = context;
-          
+        // Any time the network is being reconfigured, unready the network.
+        // This will cause components to pause during the reconfiguration.
+        unready(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            if (result.failed()) {
+              logger.error(result.cause());
+            } else {
+              if (currentContext != null) {
+                final NetworkContext runningContext = currentContext;
+                currentContext = context;
+                
 
-          // We have to update all instance contexts before deploying
-          // any new components in order to ensure connections are
-          // available for startup.
-          log.info("Updating network contexts");
-          updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                log.error(result.cause());
-              } else {
-                log.info("Successfully updated network contexts for " + name);
-                undeployRemovedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
+                // We have to update all instance contexts before deploying
+                // any new components in order to ensure connections are
+                // available for startup.
+                log.info("Updating network " + name);
+                updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       log.error(result.cause());
                     } else {
-                      log.info("Successfully removed components from " + name);
-                      deployAddedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
+                      undeployRemovedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
                             log.error(result.cause());
                           } else {
-                            log.info("Successfully deployed added components to " + name);
-                            task.complete();
+                            deployAddedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
+                              @Override
+                              public void handle(AsyncResult<Void> result) {
+                                if (result.failed()) {
+                                  log.error(result.cause());
+                                } else {
+                                  task.complete();
+                                  checkReady();
+                                }
+                              }
+                            });
                           }
                         }
                       });
@@ -259,26 +281,27 @@ public class NetworkManager extends BusModBase {
                   }
                 });
               }
-            }
-          });
-        }
-        else {
-          // Just deploy the entire network if it wasn't already deployed.
-          currentContext = context;
-          contextCluster = clusterFactory.createCluster(currentContext.scope());
+              else {
+                // Just deploy the entire network if it wasn't already deployed.
+                currentContext = context;
+                contextCluster = clusterFactory.createCluster(currentContext.scope());
 
-          deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
-            @Override
-            public void handle(AsyncResult<NetworkContext> result) {
-              if (result.failed()) {
-                log.error(result.cause());
-              } else {
-                log.info("Successfully deployed network " + context.address());
-                task.complete();
+                deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
+                  @Override
+                  public void handle(AsyncResult<NetworkContext> result) {
+                    if (result.failed()) {
+                      log.error(result.cause());
+                    } else {
+                      log.info("Successfully deployed network " + context.address());
+                      task.complete();
+                      checkReady();
+                    }
+                  }
+                });
               }
             }
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -296,7 +319,18 @@ public class NetworkManager extends BusModBase {
     }
 
     if (!removedComponents.isEmpty()) {
-      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(removedComponents.size()).setHandler(doneHandler);
+      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(removedComponents.size());
+      counter.setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          } else {
+            log.info(String.format("Removed %s components from %s", removedComponents.size(), name));
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          }
+        }
+      });
       undeployComponents(removedComponents, counter);
     } else {
       new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -306,7 +340,7 @@ public class NetworkManager extends BusModBase {
   /**
    * Deploys components that were added to the network.
    */
-  private void deployAddedComponents(NetworkContext context, NetworkContext runningContext, Handler<AsyncResult<Void>> doneHandler) {
+  private void deployAddedComponents(NetworkContext context, NetworkContext runningContext, final Handler<AsyncResult<Void>> doneHandler) {
     // Deploy any components that were added to the network.
     final List<ComponentContext<?>> addedComponents = new ArrayList<>();
     for (ComponentContext<?> component : context.components()) {
@@ -315,7 +349,18 @@ public class NetworkManager extends BusModBase {
       }
     }
     if (!addedComponents.isEmpty()) {
-      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(addedComponents.size()).setHandler(doneHandler);
+      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(addedComponents.size());
+      counter.setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          } else {
+            log.info(String.format("Added %s components to %s", addedComponents.size(), name));
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          }
+        }
+      });
       deployComponents(addedComponents, counter);
     } else {
       new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -326,18 +371,26 @@ public class NetworkManager extends BusModBase {
    * Handles the deletion of the network.
    */
   private void handleDelete(final NetworkContext context) {
-    tasks.startTask(new Handler<Task>() {
+    tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
-        undeployNetwork(context, new Handler<AsyncResult<Void>>() {
+        unready(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
-              log.error(result.cause());
-            } else {
-              log.info("Successfully undeployed network " + context.address());
-              task.complete();
+              logger.error(result.cause());
             }
+            undeployNetwork(context, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.error(result.cause());
+                } else {
+                  log.info("Successfully undeployed network " + context.address());
+                  task.complete();
+                }
+              }
+            });
           }
         });
       }
@@ -345,10 +398,35 @@ public class NetworkManager extends BusModBase {
   }
 
   /**
+   * Unreadies the netowrk.
+   */
+  private void unready(final Handler<AsyncResult<Void>> doneHandler) {
+    if (currentContext != null && data != null) {
+      data.remove(currentContext.status(), new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          } else {
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          }
+        }
+      });
+    }
+  }
+
+  /**
    * Called when a component instance is ready.
    */
   private void handleReady(String address) {
     ready.add(address);
+    checkReady();
+  }
+
+  /**
+   * Checks whether the network is ready.
+   */
+  private void checkReady() {
     if (allReady()) {
       data.put(currentContext.status(), "ready", new Handler<AsyncResult<String>>() {
         @Override
@@ -366,6 +444,13 @@ public class NetworkManager extends BusModBase {
    */
   private void handleUnready(String address) {
     ready.remove(address);
+    checkUnready();
+  }
+
+  /**
+   * Checks whether the network is unready.
+   */
+  private void checkUnready() {
     if (!allReady()) {
       data.remove(currentContext.address(), new Handler<AsyncResult<String>>() {
         @Override
@@ -483,6 +568,7 @@ public class NetworkManager extends BusModBase {
   private void deployInstance(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
     // Set the instance context in the cluster. This context will be loaded
     // and referenced by the instance once it's deployed.
+    log.info(String.format("Deploying instance %d of %s", instance.number(), instance.component().name()));
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {

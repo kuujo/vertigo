@@ -80,7 +80,7 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
       InputPortContext port = iter.next();
       InputPortContext match = null;
       for (InputPortContext p : update.ports()) {
-        if (port.equals(p)) {
+        if (port.name().equals(p.name())) {
           match = p;
           break;
         }

@@ -15,8 +15,10 @@
  */
 package net.kuujo.vertigo.io.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,11 +31,15 @@ import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.impl.DefaultOutputPort;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
+import net.kuujo.vertigo.util.Task;
+import net.kuujo.vertigo.util.TaskRunner;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default output collector implementation.
@@ -41,9 +47,11 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * @author Jordan Halterman
  */
 public class DefaultOutputCollector implements OutputCollector, Observer<OutputContext> {
+  private static final Logger log = LoggerFactory.getLogger(DefaultOutputCollector.class);
   private final Vertx vertx;
   private OutputContext context;
   private final Map<String, OutputPort> ports = new HashMap<>();
+  private final TaskRunner tasks = new TaskRunner();
   private boolean started;
 
   public DefaultOutputCollector(Vertx vertx) {
@@ -70,35 +78,88 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   public OutputPort port(String name) {
     OutputPort port = ports.get(name);
     if (port == null) {
-      OutputPortContext context = DefaultOutputPortContext.Builder.newBuilder()
-          .setAddress(UUID.randomUUID().toString())
-          .setName(name)
-          .build();
-      DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) this.context).addPort((DefaultOutputPortContext) context);
-      port = new DefaultOutputPort(vertx, context);
-      ports.put(name, port);
+      // Attempt to search for the port in the existing context. If the
+      // port isn't an explicitly configured port then lazily create
+      // and open the port. The lazy port will be empty.
+      OutputPortContext portContext = null;
+      for (OutputPortContext output : context.ports()) {
+        if (output.name().equals(name)) {
+          portContext = output;
+          break;
+        }
+      }
+      if (portContext == null) {
+        portContext = DefaultOutputPortContext.Builder.newBuilder()
+            .setAddress(UUID.randomUUID().toString())
+            .setName(name)
+            .build();
+        DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) context).addPort((DefaultOutputPortContext) portContext);
+      }
+      port = new DefaultOutputPort(vertx, portContext);
+      ports.put(name, port.open());
     }
     return port;
   }
 
   @Override
-  public void update(OutputContext update) {
-    for (OutputPortContext output : update.ports()) {
-      boolean exists = false;
-      for (OutputPort port : ports.values()) {
-        if (port.context().equals(output)) {
-          exists = true;
-          break;
+  public void update(final OutputContext update) {
+    // All updates are run sequentially to prevent race conditions
+    // during configuration changes. Without essentially locking the
+    // object, it could be possible that connections are simultaneously
+    // added and removed or opened and closed on the object.
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        final List<OutputPort> newPorts = new ArrayList<>();
+        for (OutputPortContext output : update.ports()) {
+          boolean exists = false;
+          for (OutputPort port : ports.values()) {
+            if (port.name().equals(output.name())) {
+              exists = true;
+              break;
+            }
+          }
+          if (!exists) {
+            newPorts.add(new DefaultOutputPort(vertx, output));
+          }
         }
-      }
-      if (!exists) {
-        OutputPort port = new DefaultOutputPort(vertx, output);
+
+        // If the output has already been started, add each output port
+        // only once the port has been started. This ensures that messages
+        // cannot be sent on the output port until connections have opened.
         if (started) {
-          port.open();
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(newPorts.size());
+          counter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              task.complete();
+            }
+          });
+
+          // Iterate through each new output port and open and add the port.
+          for (final OutputPort port : newPorts) {
+            port.open(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.error("Failed to open output port " + port.name());
+                } else {
+                  ports.put(port.name(), port);
+                }
+                counter.succeed();
+              }
+            });
+          }
+        } else {
+          // If the output is not already started, simply open and add the ports.
+          // The ports will be open once the output is started.
+          for (OutputPort port : newPorts) {
+            ports.put(port.name(), port);
+          }
+          task.complete();
         }
-        ports.put(output.name(), port);
       }
-    }
+    });
   }
 
   @Override
@@ -108,30 +169,49 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
 
   @Override
   public OutputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (!started) {
-      final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
-      startCounter.setHandler(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          } else {
-            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-          }
-        }
-      });
+    // Prevent the object from being opened and closed simultaneously
+    // by queueing open/close operations as tasks.
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        if (!started) {
+          final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
+          startCounter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              } else {
+                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+              }
+              task.complete();
+            }
+          });
 
-      for (OutputPortContext port : context.ports()) {
-        if (ports.containsKey(port.name())) {
-          ((DefaultOutputPort) ports.get(port.name())).open(startCounter);
+          for (OutputPortContext output : context.ports()) {
+            if (ports.containsKey(output.name())) {
+              ((DefaultOutputPort) ports.get(output.name())).open(startCounter);
+            } else {
+              final OutputPort port = new DefaultOutputPort(vertx, output);
+              port.open(new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  if (result.failed()) {
+                    log.error("Failed to open output port " + port.name());
+                  } else {
+                    ports.put(port.name(), port);
+                  }
+                }
+              });
+            }
+          }
+          started = true;
         } else {
-          ports.put(port.name(), new DefaultOutputPort(vertx, port).open(startCounter));
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          task.complete();
         }
       }
-      started = true;
-    } else {
-      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-    }
+    });
     return this;
   }
 
@@ -142,27 +222,36 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    if (started) {
-      final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
-      stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
-        @Override
-        public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-          } else {
-            ports.clear();
-            started = false;
-            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+    // Prevent the object from being opened and closed simultaneously
+    // by queueing open/close operations as tasks.
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        if (started) {
+          final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
+          stopCounter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              } else {
+                ports.clear();
+                started = false;
+                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+              }
+              task.complete();
+            }
+          });
+      
+          for (OutputPort output : ports.values()) {
+            output.close(stopCounter);
           }
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+          task.complete();
         }
-      });
-  
-      for (OutputPort output : ports.values()) {
-        output.close(stopCounter);
       }
-    } else {
-      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-    }
+    });
   }
 
 }

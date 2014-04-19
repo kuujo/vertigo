@@ -83,7 +83,7 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
       OutputPortContext port = iter.next();
       OutputPortContext match = null;
       for (OutputPortContext p : update.ports()) {
-        if (port.equals(p)) {
+        if (port.name().equals(p.name())) {
           match = p;
           break;
         }
@@ -96,7 +96,14 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
     }
 
     for (OutputPortContext port : update.ports()) {
-      if (!ports.contains(port)) {
+      boolean exists = false;
+      for (OutputPortContext p : ports) {
+        if (p.name().equals(port.name())) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
         ports.add(port);
       }
     }

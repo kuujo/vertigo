@@ -16,17 +16,16 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.OutputStreamContext;
-import net.kuujo.vertigo.input.grouping.CustomGrouping;
-import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.io.selector.RoundRobinSelector;
+import net.kuujo.vertigo.io.selector.Selector;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Output connection context.
@@ -35,9 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext> implements OutputStreamContext {
   private List<OutputConnectionContext> connections = new ArrayList<>();
-  private Grouping grouping = new RoundGrouping();
-  @JsonProperty("custom-grouping")
-  private CustomGrouping customGrouping;
+  private Selector selector = new RoundRobinSelector();
   @JsonIgnore
   private OutputPortContext port;
 
@@ -57,13 +54,40 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
   }
 
   @Override
-  public Grouping grouping() {
-    return customGrouping != null ? customGrouping : grouping;
+  public Selector selector() {
+    return selector;
   }
 
   @Override
   public List<OutputConnectionContext> connections() {
     return connections;
+  }
+
+  @Override
+  public void notify(OutputStreamContext update) {
+    Iterator<OutputConnectionContext> iter = connections.iterator();
+    while (iter.hasNext()) {
+      OutputConnectionContext connection = iter.next();
+      OutputConnectionContext match = null;
+      for (OutputConnectionContext c : update.connections()) {
+        if (connection.equals(c)) {
+          match = c;
+          break;
+        }
+      }
+      if (match != null) {
+        connection.notify(match);
+      } else {
+        iter.remove();
+      }
+    }
+
+    for (OutputConnectionContext connection : update.connections()) {
+      if (!connections.contains(connection)) {
+        connections.add(connection);
+      }
+    }
+    super.notify(this);
   }
 
   /**
@@ -123,16 +147,13 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
     }
 
     /**
-     * Sets the connection grouping.
+     * Sets the connection selector.
      *
-     * @param grouping The connection grouping.
+     * @param selector The connection selector.
      * @return The context builder.
      */
-    public Builder setGrouping(Grouping grouping) {
-      context.grouping = grouping;
-      if (grouping instanceof CustomGrouping) {
-        context.customGrouping = (CustomGrouping) grouping;
-      }
+    public Builder setSelector(Selector selector) {
+      context.selector = selector;
       return this;
     }
   }

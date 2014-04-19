@@ -17,6 +17,7 @@ package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputContext;
@@ -70,20 +71,29 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
 
   @Override
   public void notify(InputPortContext update) {
-    super.notify(update);
-    for (InputConnectionContext connection : connections) {
-      boolean updated = false;
+    Iterator<InputConnectionContext> iter = connections.iterator();
+    while (iter.hasNext()) {
+      InputConnectionContext connection = iter.next();
+      InputConnectionContext match = null;
       for (InputConnectionContext c : update.connections()) {
         if (connection.equals(c)) {
-          connection.notify(c);
-          updated = true;
+          match = c;
           break;
         }
       }
-      if (!updated) {
-        connection.notify(null);
+      if (match != null) {
+        connection.notify(match);
+      } else {
+        iter.remove();
       }
     }
+
+    for (InputConnectionContext connection : update.connections()) {
+      if (!connections.contains(connection)) {
+        connections.add(connection);
+      }
+    }
+    super.notify(this);
   }
 
   /**

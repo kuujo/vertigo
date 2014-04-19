@@ -24,6 +24,7 @@ import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.VerticleContext;
 import net.kuujo.vertigo.context.impl.ContextBuilder;
 import net.kuujo.vertigo.network.ModuleConfig;
+import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 
@@ -239,6 +240,19 @@ public class ContextTest {
     assertEquals("test.feeder-1", verticleContext.instances().get(0).address());
     assertEquals("test.feeder-2", verticleContext.instances().get(1).address());
     assertNotNull(verticleContext.instances().get(0).component());
+  }
+
+  @Test
+  public void testUpdateContext() {
+    NetworkConfig network = new DefaultNetworkConfig("test");
+    network.addVerticle("sender", "sender.py", 2);
+    NetworkContext context = ContextBuilder.buildContext(network);
+    NetworkConfig network2 = new DefaultNetworkConfig("test");
+    network2.addVerticle("receiver", "receiver.py", 2);
+    NetworkContext context2 = ContextBuilder.buildContext(network2);
+    assertNotNull(context2.component("receiver"));
+    context.notify(context2);
+    assertNotNull(context.component("receiver"));
   }
 
 }

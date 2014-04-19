@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -464,10 +464,10 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    *
    * @param source The connection source and port.
    * @param target The connection target and port.
-   * @param grouping The connection grouping.
+   * @param selector The connection selector.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String target, Grouping grouping);
+  ConnectionConfig createConnection(String source, String target, Selector selector);
 
   /**
    * Creates a connection between two components in the network.
@@ -487,10 +487,10 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    * @param out The connection source out port.
    * @param target The connection target.
    * @param in The connection target in port.
-   * @param grouping The connection grouping.
+   * @param selector The connection selector.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping);
+  ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector);
 
   /**
    * Creates a connection between two components in the network.
@@ -507,11 +507,11 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    *
    * @param source The connection source and port.
    * @param target The connection target and port.
-   * @param grouping The connection grouping.
+   * @param selector The connection selector.
    * @param doneHandler An asynchronous handler to be called once complete.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String target, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler);
+  ConnectionConfig createConnection(String source, String target, Selector selector, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Creates a connection between two components in the network.
@@ -532,11 +532,11 @@ public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
    * @param out The connection source out port.
    * @param target The connection target.
    * @param in The connection target in port.
-   * @param grouping The connection grouping.
+   * @param selector The connection selector.
    * @param doneHandler An asynchronous handler to be called once complete.
    * @return The new connection configuration.
    */
-  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler);
+  ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Destroys a connection between two components in the network.

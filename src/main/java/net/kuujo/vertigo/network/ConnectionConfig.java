@@ -15,8 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.input.grouping.CustomGrouping;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -49,63 +48,62 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
   Target getTarget();
 
   /**
-   * Returns the connection grouping.
+   * Returns the connection selector.
    *
-   * @return The connection grouping. Defaults to round grouping if no grouping
-   *         was set on the connection.
+   * @return The connection selector.
    */
-  Grouping getGrouping();
+  Selector getSelector();
 
   /**
-   * Sets the connection grouping.
+   * Sets the connection selector.
    *
-   * @param grouping The connection grouping.
+   * @param selector The selector with which to select individual connections.
    * @return The connection configuration.
    */
-  ConnectionConfig groupBy(Grouping grouping);
+  ConnectionConfig setSelector(Selector selector);
 
   /**
-   * Sets a random connection grouping on the input.
-   * 
-   * @return The connection configuration.
-   */
-  ConnectionConfig randomGrouping();
-
-  /**
-   * Sets a round-robin connection grouping on the input.
-   * 
-   * @return The connection configuration.
-   */
-  ConnectionConfig roundGrouping();
-
-  /**
-   * Sets a fair grouping on the connection.
+   * Sets a round-robin selector on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionConfig fairGrouping();
+  ConnectionConfig roundSelect();
 
   /**
-   * Sets a hash grouping on the connection.
-   * 
-   * @return The connection configuration.
-   */
-  ConnectionConfig hashGrouping();
-
-  /**
-   * Sets an all grouping on the connection.
-   * 
-   * @return The connection configuration.
-   */
-  ConnectionConfig allGrouping();
-
-  /**
-   * Sets a custom grouping on the connection.
+   * Sets a random selector on the connection.
    *
-   * @param grouping The grouping to set.
    * @return The connection configuration.
    */
-  ConnectionConfig customGrouping(CustomGrouping grouping);
+  ConnectionConfig randomSelect();
+
+  /**
+   * Sets a mod-hash based selector on the connection.
+   *
+   * @return The connection configuration.
+   */
+  ConnectionConfig hashSelect();
+
+  /**
+   * Sets a fair selector on the connection.
+   *
+   * @return The connection configuration.
+   */
+  ConnectionConfig fairSelect();
+
+  /**
+   * Sets an all selector on the connection.
+   *
+   * @return The connection configuration.
+   */
+  ConnectionConfig allSelect();
+
+  /**
+   * Sets a custom selector on the connection.
+   *
+   * @param selector The custom selector to set.
+   * @return The connection configuration.
+   */
+  ConnectionConfig customSelect(Selector selector);
 
   /**
    * Connection source.

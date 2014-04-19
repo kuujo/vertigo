@@ -270,27 +270,27 @@ any number of instances. But connections are created between components and
 not component instances. This means that a single connection can reference
 multiple instances of each component. By default, the Vert.x event bus routes
 messages to event bus handlers in a round-robin fashion. But Vertigo provides
-additional routing methods known as *groupings*. Groupings indicate how messages
+additional routing methods known as *selectors*. Selectors indicate how messages
 should be routed between multiple instances of a component.
 
-Vertigo provides several grouping types by default and supports custom groupings
+Vertigo provides several selector types by default and supports custom selectors
 as well.
 
-* Round grouping - selects targets in a round-robin fashion
-* Random grouping - selects a random target to which to send each message
-* Hash grouping - uses a simple mod hash algorithm to select a target for each message
-* Fair grouping - selects the target with the least number of messages in the queue
-* All grouping - sends each message to all target instances
-* Custom grouping - user provided custom grouping implementation
+* Round robin selector - selects targets in a round-robin fashion
+* Random selector - selects a random target to which to send each message
+* Hash selector - uses a simple mod hash algorithm to select a target for each message
+* Fair selector - selects the target with the least number of messages in the queue
+* All selector - sends each message to all target instances
+* Custom selector - user provided custom selector implementation
 
-The `ConnectionConfig` API provides several methods for setting groupings
+The `ConnectionConfig` API provides several methods for setting selectors
 on a connection.
-* `roundGrouping()` - sets a round-robin grouping on the connection
-* `randomGrouping()` - sets a random grouping on the connection
-* `hashGrouping()` - sets a mod hash based grouping on the connection
-* `fairGrouping()` - sets a fair grouping on the connection
-* `allGrouping()` - sets an all grouping on the connection
-* `customGrouping(CustomGrouping grouping)` - sets a custom grouping on the connection
+* `roundSelect()` - sets a round-robin selector on the connection
+* `randomSelect()` - sets a random selector on the connection
+* `hashSelect()` - sets a mod hash based selector on the connection
+* `fairSelect()` - sets a fair selector on the connection
+* `allSelect()` - sets an all selector on the connection
+* `customSelect(Selector selector)` - sets a custom selector on the connection
 
 ### Creating networks from JSON
 Vertigo supports creating networks from json configurations. To create a network
@@ -318,9 +318,10 @@ The JSON configuration format is as follows:
    * `target` - an object defining the connection target
       * `component` - the target component name
       * `port` - the target component's input port
-   * `grouping` - an object defining the connection grouping
-      * `type` - the connection grouping type, e.g. `round`, `random`, `hash`, `fair`, or `all`
-   * `custom-grouping` - an object defining a custom grouping for the connection
+   * `selector`- an object defining the connection selector
+      * `type` - the selector type, e.g. `round-robin`, `random`, `hash`, `fair`, `all`, or `custom`
+      * `selector` - for custom selectors, the selector class
+      * `...` - additional selector options
 
 For example...
 
@@ -355,7 +356,7 @@ For example...
         "component": "bar",
         "port": "in"
       },
-      "grouping": {
+      "selector": {
         "type": "fair"
       }
     }
@@ -371,6 +372,11 @@ When a Vertigo network is deployed, a special verticle known as the *network man
 is deployed. The network manager is tasked with managing and monitoring components
 within the network, handling runtime configuration changes, and coordinating startup
 and shutdown of networks.
+
+Networks can be deployed and configured from any verticle within any node in a Vert.x
+cluster. If a network is deployed from another verticle, the network can still be
+referenced and updated from anywhere in the cluster. Vertigo's internal coordination
+mechanisms ensure consistency for deployments across all nodes in a cluster.
 
 Vertigo clustering is supported by [Xync](http://github.com/kuujo/xync)
 
@@ -807,15 +813,15 @@ a single input port on another component.
 NetworkConfig network = vertigo.createNetwork("log-test");
 network.addVerticle("logger", "logger.js", 2);
 network.addVerticle("log-reader", LogReader.class.getName(), 2);
-network.createConnection("logger", "fatal", "log-reader", "log").hashGrouping();
-network.createConnection("logger", "error", "log-reader", "log").hashGrouping();
-network.createConnection("logger", "warn", "log-reader", "log").hashGrouping();
-network.createConnection("logger", "info", "log-reader", "log").hashGrouping();
-network.createConnection("logger", "debug", "log-reader", "log").hashGrouping();
-network.createConnection("logger", "trace", "log-reader", "log").hashGrouping();
+network.createConnection("logger", "fatal", "log-reader", "log").hashSelect();
+network.createConnection("logger", "error", "log-reader", "log").hashSelect();
+network.createConnection("logger", "warn", "log-reader", "log").hashSelect();
+network.createConnection("logger", "info", "log-reader", "log").hashSelect();
+network.createConnection("logger", "debug", "log-reader", "log").hashSelect();
+network.createConnection("logger", "trace", "log-reader", "log").hashSelect();
 ```
 
-With a hash grouping on each connection, we guarantee that the same log message
+With a hash selector on each connection, we guarantee that the same log message
 will always go to the same `log-reader` instance.
 
 Log messages will arrive as simple strings:

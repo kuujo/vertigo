@@ -21,8 +21,8 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.io.InputCollector;
+import net.kuujo.vertigo.io.OutputCollector;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

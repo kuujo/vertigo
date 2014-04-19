@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.kuujo.vertigo.cluster.ClusterScope;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
@@ -261,8 +261,8 @@ public class DefaultNetworkConfig implements NetworkConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
-    ConnectionConfig connection = new DefaultConnectionConfig(source, target, grouping, this);
+  public ConnectionConfig createConnection(String source, String target, Selector selector) {
+    ConnectionConfig connection = new DefaultConnectionConfig(source, target, selector, this);
     connections.add(connection);
     return connection;
   }
@@ -275,8 +275,8 @@ public class DefaultNetworkConfig implements NetworkConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
-    ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in, grouping, this);
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector) {
+    ConnectionConfig connection = new DefaultConnectionConfig(source, out, target, in, selector, this);
     connections.add(connection);
     return connection;
   }

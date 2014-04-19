@@ -18,6 +18,7 @@ package net.kuujo.vertigo.context.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   private ClusterScope scope = ClusterScope.CLUSTER;
   private NetworkConfig config;
   private String status;
-  private Map<String, DefaultComponentContext<?>> components = new HashMap<>();
+  private Map<String, ComponentContext<?>> components = new HashMap<>();
 
   private DefaultNetworkContext() {
   }
@@ -106,10 +107,11 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   }
 
   @Override
+  @SuppressWarnings("rawtypes")
   public List<ComponentContext<?>> components() {
     List<ComponentContext<?>> components = new ArrayList<>();
-    for (DefaultComponentContext<?> component : this.components.values()) {
-      components.add(component.setNetworkContext(this));
+    for (ComponentContext<?> component : this.components.values()) {
+      components.add(((DefaultComponentContext) component).setNetworkContext(this));
     }
     return components;
   }
@@ -125,28 +127,37 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public <T extends ComponentContext<T>> T component(String name) {
-    return (T) (components.containsKey(name) ? components.get(name).setNetworkContext(this) : null);
+    return (T) (components.containsKey(name) ? ((DefaultComponentContext) components.get(name)).setNetworkContext(this) : null);
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void notify(NetworkContext update) {
-    super.notify(update);
-    for (@SuppressWarnings("rawtypes") ComponentContext component : components.values()) {
-      boolean updated = false;
-      for (@SuppressWarnings("rawtypes") ComponentContext c : update.components()) {
+    Iterator<Map.Entry<String, ComponentContext<?>>> iter = components.entrySet().iterator();
+    while (iter.hasNext()) {
+      ComponentContext component = iter.next().getValue();
+      ComponentContext match = null;
+      for (ComponentContext c : update.components()) {
         if (component.equals(c)) {
-          component.notify(c);
-          updated = true;
+          match = c;
           break;
         }
       }
-      if (!updated) {
-        component.notify(null);
+      if (match != null) {
+        component.notify(match);
+      } else {
+        iter.remove();
       }
     }
+
+    for (ComponentContext component : update.components()) {
+      if (!components.values().contains(component)) {
+        components.put(component.name(), component);
+      }
+    }
+    super.notify(this);
   }
 
   @Override

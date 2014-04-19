@@ -33,14 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   property="class",
   defaultImpl=DefaultInputPortContext.class
 )
-public interface InputPortContext extends Context<InputPortContext> {
-
-  /**
-   * Returns the port name.
-   *
-   * @return The input port name.
-   */
-  String name();
+public interface InputPortContext extends PortContext<InputPortContext> {
 
   /**
    * Returns the parent input context.

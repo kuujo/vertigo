@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 
 /**
  * Connection contatiner.
@@ -46,10 +46,10 @@ public interface ConnectionConfigurable {
    *
    * @param source The source component.
    * @param target The target component.
-   * @param grouping The connection grouping.
+   * @param selector The connection selector.
    * @return A new connection instance.
    */
-  ConnectionConfig createConnection(String source, String target, Grouping grouping);
+  ConnectionConfig createConnection(String source, String target, Selector selector);
 
   /**
    * Creates a connection between two components.
@@ -69,10 +69,10 @@ public interface ConnectionConfigurable {
    * @param out The source output port.
    * @param target The target component.
    * @param in The target output port.
-   * @param grouping The connection grouping.
+   * @param selector The connection selector.
    * @return A new connection instance.
    */
-  ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping);
+  ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector);
 
   /**
    * Destroys a connection between two components.

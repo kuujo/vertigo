@@ -49,7 +49,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   private final Handler<MapEvent<String, String>> instanceHandler = new Handler<MapEvent<String, String>>() {
     @Override
     public void handle(MapEvent<String, String> event) {
-      if (currentContext != null) {
+      if (currentContext != null && !event.type().equals(MapEvent.Type.CHANGE)) {
         currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(event.value())));
       }
     }
@@ -96,7 +96,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
               if (result.failed()) {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
               } else {
-                currentContext = DefaultInstanceContext.fromJson(new JsonObject(result.result()));
+                currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
                 data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {

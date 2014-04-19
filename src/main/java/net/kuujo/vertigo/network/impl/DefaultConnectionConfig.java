@@ -15,13 +15,13 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import net.kuujo.vertigo.input.grouping.AllGrouping;
-import net.kuujo.vertigo.input.grouping.CustomGrouping;
-import net.kuujo.vertigo.input.grouping.FairGrouping;
-import net.kuujo.vertigo.input.grouping.Grouping;
-import net.kuujo.vertigo.input.grouping.HashGrouping;
-import net.kuujo.vertigo.input.grouping.RandomGrouping;
-import net.kuujo.vertigo.input.grouping.RoundGrouping;
+import net.kuujo.vertigo.io.selector.AllSelector;
+import net.kuujo.vertigo.io.selector.CustomSelector;
+import net.kuujo.vertigo.io.selector.FairSelector;
+import net.kuujo.vertigo.io.selector.HashSelector;
+import net.kuujo.vertigo.io.selector.RandomSelector;
+import net.kuujo.vertigo.io.selector.RoundRobinSelector;
+import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
@@ -31,7 +31,6 @@ import net.kuujo.vertigo.network.VerticleConfig;
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Default connection configuration implementation.
@@ -44,44 +43,39 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
-  private Grouping grouping;
-  @JsonProperty("custom-grouping")
-  private CustomGrouping customGrouping;
+  private Selector selector;
   @JsonIgnore
   private NetworkConfig network;
 
   public DefaultConnectionConfig() {
-    grouping = new RoundGrouping();
+    selector = new RoundRobinSelector();
   }
 
   public DefaultConnectionConfig(String source, String target, NetworkConfig network) {
     this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
         parseComponent(target), parsePort(target, DEFAULT_IN_PORT),
-        new RoundGrouping(), network);
+        new RoundRobinSelector(), network);
   }
 
-  public DefaultConnectionConfig(String source, String target, Grouping grouping, NetworkConfig network) {
+  public DefaultConnectionConfig(String source, String target, Selector selector, NetworkConfig network) {
     this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
-        parseComponent(target), parsePort(target, DEFAULT_IN_PORT), grouping,
+        parseComponent(target), parsePort(target, DEFAULT_IN_PORT), selector,
         network);
   }
 
   public DefaultConnectionConfig(String source, String out, String target, String in, NetworkConfig network) {
-    this(source, out, target, in, new RoundGrouping(), network);
+    this(source, out, target, in, new RoundRobinSelector(), network);
   }
 
-  public DefaultConnectionConfig(String source, String out, String target, String in, Grouping grouping, NetworkConfig network) {
+  public DefaultConnectionConfig(String source, String out, String target, String in, Selector selector, NetworkConfig network) {
     this.source.setComponent(source);
     this.source.setPort(out);
     this.target.setComponent(target);
     this.target.setPort(in);
-    if (grouping == null) {
-      grouping = new RoundGrouping();
+    if (selector == null) {
+      selector = new RoundRobinSelector();
     }
-    this.grouping = grouping;
-    if (grouping instanceof CustomGrouping) {
-      this.customGrouping = (CustomGrouping) grouping;
-    }
+    this.selector = selector;
     this.network = network;
   }
 
@@ -96,54 +90,53 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public Grouping getGrouping() {
-    return customGrouping != null ? customGrouping : grouping;
+  public Selector getSelector() {
+    return selector;
   }
 
   @Override
-  public ConnectionConfig groupBy(Grouping grouping) {
-    if (grouping instanceof CustomGrouping) {
-      customGrouping((CustomGrouping) grouping);
+  public ConnectionConfig setSelector(Selector selector) {
+    return customSelect(selector);
+  }
+
+  @Override
+  public ConnectionConfig roundSelect() {
+    this.selector = new RoundRobinSelector();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig randomSelect() {
+    this.selector = new RandomSelector();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig hashSelect() {
+    this.selector = new HashSelector();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig fairSelect() {
+    this.selector = new FairSelector();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig allSelect() {
+    this.selector = new AllSelector();
+    return this;
+  }
+
+  @Override
+  public ConnectionConfig customSelect(Selector selector) {
+    if (selector instanceof RoundRobinSelector || selector instanceof RandomSelector || selector instanceof HashSelector
+        || selector instanceof FairSelector || selector instanceof AllSelector) {
+      this.selector = selector;
     } else {
-      this.grouping = grouping;
+      this.selector = new CustomSelector(selector);
     }
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig randomGrouping() {
-    this.grouping = new RandomGrouping();
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig roundGrouping() {
-    this.grouping = new RoundGrouping();
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig fairGrouping() {
-    this.grouping = new FairGrouping();
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig hashGrouping() {
-    this.grouping = new HashGrouping();
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig allGrouping() {
-    this.grouping = new AllGrouping();
-    return this;
-  }
-
-  @Override
-  public ConnectionConfig customGrouping(CustomGrouping grouping) {
-    this.grouping = grouping;
-    this.customGrouping = grouping;
     return this;
   }
 
@@ -264,8 +257,8 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
-    return network.createConnection(source, target, grouping);
+  public ConnectionConfig createConnection(String source, String target, Selector selector) {
+    return network.createConnection(source, target, selector);
   }
 
   @Override
@@ -274,8 +267,8 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
-    return network.createConnection(source, out, target, in, grouping);
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector) {
+    return network.createConnection(source, out, target, in, selector);
   }
 
   @Override

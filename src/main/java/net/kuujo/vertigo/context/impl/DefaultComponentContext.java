@@ -17,6 +17,7 @@ package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -214,21 +215,25 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void notify(T update) {
-    super.notify(update);
-    for (InstanceContext instance : instances) {
-      boolean updated = false;
+    Iterator<InstanceContext> iter = instances.iterator();
+    while (iter.hasNext()) {
+      InstanceContext instance = iter.next();
+      InstanceContext match = null;
       for (InstanceContext i : update.instances()) {
         if (instance.equals(i)) {
-          instance.notify(i);
-          updated = true;
+          match = i;
           break;
         }
       }
-      if (!updated) {
-        instance.notify(null);
+      if (match != null) {
+        instance.notify(match);
+      } else {
+        iter.remove();
       }
     }
+    super.notify((T) this);
   }
 
   @Override

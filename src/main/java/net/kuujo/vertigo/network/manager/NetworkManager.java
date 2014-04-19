@@ -178,59 +178,23 @@ public class NetworkManager extends BusModBase {
     if (currentContext != null) {
       final NetworkContext runningContext = currentContext;
       currentContext = context;
+      
 
-      // Undeploy any components that were removed from the network.
-      final List<ComponentContext<?>> removedComponents = new ArrayList<>();
-      for (ComponentContext<?> runningComponent : runningContext.components()) {
-        if (context.component(runningComponent.name()) == null) {
-          removedComponents.add(runningComponent);
-        }
-      }
-
-      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(removedComponents.size());
-      counter.setHandler(new Handler<AsyncResult<Void>>() {
+      // We have to update all instance contexts before deploying
+      // any new components in order to ensure connections are
+      // available for startup.
+      log.info("Updating network contexts");
+      updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
             log.error(result.cause());
           } else {
-            log.info("Successfully undeployed " + removedComponents.size() + " components");
+            log.info("Successfully updated network contexts for " + name);
+            undeployRemovedComponents(currentContext, runningContext);
           }
-
-          // Deploy any components that were added to the network.
-          final List<ComponentContext<?>> addedComponents = new ArrayList<>();
-          for (ComponentContext<?> component : context.components()) {
-            if (runningContext.component(component.name()) == null) {
-              addedComponents.add(component);
-            }
-          }
-
-          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(addedComponents.size());
-          counter.setHandler(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                log.error(result.cause());
-              } else {
-                log.info("Successfully deployed " + addedComponents.size() + " components");
-                log.info("Updating network contexts");
-                updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    if (result.failed()) {
-                      log.error(result.cause());
-                    } else {
-                      log.info("Successfully updated network contexts for " + name);
-                    }
-                  }
-                });
-              }
-            }
-          });
-          deployComponents(addedComponents, counter);
         }
       });
-      undeployComponents(removedComponents, counter);
     }
     else {
       // Just deploy the entire network if it wasn't already deployed.
@@ -248,6 +212,63 @@ public class NetworkManager extends BusModBase {
         }
       });
     }
+  }
+
+  /**
+   * Undeploys components that were removed from the network.
+   */
+  private void undeployRemovedComponents(final NetworkContext context, final NetworkContext runningContext) {
+    // Undeploy any components that were removed from the network.
+    final List<ComponentContext<?>> removedComponents = new ArrayList<>();
+    for (ComponentContext<?> runningComponent : runningContext.components()) {
+      if (context.component(runningComponent.name()) == null) {
+        removedComponents.add(runningComponent);
+      }
+    }
+
+    if (!removedComponents.isEmpty()) {
+      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(removedComponents.size());
+      counter.setHandler(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            log.error(result.cause());
+          } else {
+            log.info("Successfully undeployed " + removedComponents.size() + " components");
+          }
+          deployAddedComponents(context, runningContext);
+        }
+      });
+      undeployComponents(removedComponents, counter);
+    } else {
+      deployAddedComponents(context, runningContext);
+    }
+  }
+
+  /**
+   * Deploys components that were added to the network.
+   */
+  private void deployAddedComponents(NetworkContext context, NetworkContext runningContext) {
+    // Deploy any components that were added to the network.
+    final List<ComponentContext<?>> addedComponents = new ArrayList<>();
+    for (ComponentContext<?> component : context.components()) {
+      if (runningContext.component(component.name()) == null) {
+        addedComponents.add(component);
+      }
+    }
+
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(addedComponents.size());
+    counter.setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          log.error(result.cause());
+        } else {
+          log.info("Successfully deployed " + addedComponents.size() + " components");
+        }
+      }
+    });
+    deployComponents(addedComponents, counter);
   }
 
   /**
@@ -463,7 +484,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a verticle component instance in the network's cluster.
    */
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    contextCluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(),  buildConfig(instance), 1, new Handler<AsyncResult<String>>() {
+    contextCluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {

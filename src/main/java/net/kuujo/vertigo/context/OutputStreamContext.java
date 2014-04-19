@@ -18,7 +18,7 @@ package net.kuujo.vertigo.context;
 import java.util.List;
 
 import net.kuujo.vertigo.context.impl.DefaultOutputStreamContext;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -46,11 +46,11 @@ public interface OutputStreamContext extends Context<OutputStreamContext> {
   OutputPortContext port();
 
   /**
-   * Returns the stream grouping.
+   * Returns the stream connection selector.
    *
-   * @return The stream grouping.
+   * @return The stream connection selector.
    */
-  Grouping grouping();
+  Selector selector();
 
   /**
    * Returns a list of output connections.

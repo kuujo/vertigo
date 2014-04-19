@@ -160,7 +160,7 @@ public final class ContextBuilder {
           // Set up an output stream from the output port.
           DefaultOutputStreamContext.Builder outStream = DefaultOutputStreamContext.Builder.newBuilder();
           outStream.setAddress(String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name()));
-          outStream.setGrouping(connection.getGrouping());
+          outStream.setSelector(connection.getSelector());
 
           // For each target instance, add a unique input connection for the output.
           for (InstanceContext targetInstance : target.instances()) {

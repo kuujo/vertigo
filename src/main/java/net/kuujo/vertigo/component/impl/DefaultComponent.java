@@ -21,11 +21,11 @@ import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.input.impl.DefaultInputCollector;
+import net.kuujo.vertigo.io.InputCollector;
+import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.io.impl.DefaultInputCollector;
+import net.kuujo.vertigo.io.impl.DefaultOutputCollector;
 import net.kuujo.vertigo.logging.PortLoggerFactory;
-import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.output.impl.DefaultOutputCollector;
 import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
@@ -61,8 +61,8 @@ public class DefaultComponent implements Component {
     this.context = context;
     this.cluster = new ClusterFactory(vertx, container).createCluster(context.component().network().scope());
     this.coordinator = new DefaultComponentCoordinator(context, vertx, container);
-    this.input = new DefaultInputCollector(vertx);
-    this.output = new DefaultOutputCollector(vertx);
+    this.input = new DefaultInputCollector(vertx, context.input());
+    this.output = new DefaultOutputCollector(vertx, context.output());
     this.logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output);
   }
 
@@ -119,10 +119,6 @@ public class DefaultComponent implements Component {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           context = result.result();
-
-          // Set up input and output contexts.
-          input.setContext(context.input());
-          output.setContext(context.output());
 
           // Set up the component storage facility.
           storage = Factories.resolveObject(cluster.scope(), context.component().storageType(), context.component().storageConfig(), vertx);

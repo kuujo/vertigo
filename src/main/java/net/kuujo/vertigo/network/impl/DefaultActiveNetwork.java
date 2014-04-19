@@ -17,7 +17,7 @@ package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
@@ -338,8 +338,8 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
-    return createConnection(source, target, grouping, null);
+  public ConnectionConfig createConnection(String source, String target, Selector selector) {
+    return createConnection(source, target, selector, null);
   }
 
   @Override
@@ -348,8 +348,8 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
-    return createConnection(source, out, target, in, grouping, null);
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector) {
+    return createConnection(source, out, target, in, selector, null);
   }
 
   @Override
@@ -365,8 +365,8 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    ConnectionConfig connection = network.createConnection(source, target, grouping);
+  public ConnectionConfig createConnection(String source, String target, Selector selector, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    ConnectionConfig connection = network.createConnection(source, target, selector);
     cluster.deployNetwork(network, doneHandler);
     return connection;
   }
@@ -377,8 +377,8 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    ConnectionConfig connection = network.createConnection(source, out, target, in, grouping);
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    ConnectionConfig connection = network.createConnection(source, out, target, in, selector);
     cluster.deployNetwork(network, doneHandler);
     return connection;
   }

@@ -310,7 +310,7 @@
             <version>${maven.javadoc.plugin.version}</version>
             <configuration>
               <show>public</show>
-              <excludePackageNames>net.kuujo.vertigo.network.manager:*.impl.*</excludePackageNames>
+              <excludePackageNames>net.kuujo.vertigo.network.manager:*.impl.*:net.kuujo.vertigo.io.eventbus</excludePackageNames>
               <reportOutputDirectory>docs</reportOutputDirectory>
               <destDir>java</destDir>
             </configuration>

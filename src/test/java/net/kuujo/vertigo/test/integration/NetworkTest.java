@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Set;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.input.InputGroup;
+import net.kuujo.vertigo.io.group.InputGroup;
+import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
-import net.kuujo.vertigo.output.OutputGroup;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -133,7 +133,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("one-to-many");
     network.addVerticle("sender", TestOneToManySender.class.getName());
     network.addVerticle("receiver", TestOneToManyReceiver.class.getName(), 4);
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -176,7 +176,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("many-to-one");
     network.addVerticle("sender", TestManyToOneSender.class.getName(), 4);
     network.addVerticle("receiver", TestManyToOneReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -249,7 +249,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("many-to-many");
     network.addVerticle("sender", TestManyToManySender.class.getName(), 4);
     network.addVerticle("receiver", TestManyToManyReceiver.class.getName(), 4);
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -307,7 +307,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("many");
     network.addVerticle("sender", TestManySender.class.getName());
     network.addVerticle("receiver", TestManyReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -367,7 +367,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("basic-group");
     network.addVerticle("sender", TestBasicGroupSender.class.getName());
     network.addVerticle("receiver", TestBasicGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -457,7 +457,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("nested-group");
     network.addVerticle("sender", TestNestedGroupSender.class.getName());
     network.addVerticle("receiver", TestNestedGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -531,7 +531,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("group-order");
     network.addVerticle("sender", TestOrderedGroupSender.class.getName());
     network.addVerticle("receiver", TestOrderedGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {
@@ -620,7 +620,7 @@ public class NetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork("nested-group-order");
     network.addVerticle("sender", TestOrderedNestedGroupSender.class.getName());
     network.addVerticle("receiver", TestOrderedNestedGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundGrouping();
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
       public void handle(AsyncResult<ActiveNetwork> result) {

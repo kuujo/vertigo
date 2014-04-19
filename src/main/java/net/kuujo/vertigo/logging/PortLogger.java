@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.logging;
 
-import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.output.OutputPort;
+import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.io.port.OutputPort;
 
 import org.vertx.java.core.logging.Logger;
 

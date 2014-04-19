@@ -17,6 +17,7 @@ package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
@@ -71,20 +72,29 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
 
   @Override
   public void notify(OutputPortContext update) {
-    super.notify(update);
-    for (OutputStreamContext stream : streams) {
-      boolean updated = false;
+    Iterator<OutputStreamContext> iter = streams.iterator();
+    while (iter.hasNext()) {
+      OutputStreamContext stream = iter.next();
+      OutputStreamContext match = null;
       for (OutputStreamContext s : update.streams()) {
         if (stream.equals(s)) {
-          stream.notify(s);
-          updated = true;
+          match = s;
           break;
         }
       }
-      if (!updated) {
-        stream.notify(null);
+      if (match != null) {
+        stream.notify(match);
+      } else {
+        iter.remove();
       }
     }
+
+    for (OutputStreamContext stream : update.streams()) {
+      if (!streams.contains(stream)) {
+        streams.add(stream);
+      }
+    }
+    super.notify(this);
   }
 
   /**

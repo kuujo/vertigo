@@ -20,7 +20,7 @@ import java.util.Map;
 
 import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.data.impl.HazelcastDataStore;
-import net.kuujo.vertigo.input.grouping.Grouping;
+import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.ModuleConfig;
@@ -304,8 +304,8 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String target, Grouping grouping) {
-    return network.createConnection(source, target, grouping);
+  public ConnectionConfig createConnection(String source, String target, Selector selector) {
+    return network.createConnection(source, target, selector);
   }
 
   @Override
@@ -314,8 +314,8 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   }
 
   @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Grouping grouping) {
-    return network.createConnection(source, out, target, in, grouping);
+  public ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector) {
+    return network.createConnection(source, out, target, in, selector);
   }
 
   @Override

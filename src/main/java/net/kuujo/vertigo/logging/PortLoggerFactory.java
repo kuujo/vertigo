@@ -18,7 +18,7 @@ package net.kuujo.vertigo.logging;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.output.OutputCollector;
+import net.kuujo.vertigo.io.OutputCollector;
 
 import org.vertx.java.core.logging.impl.LoggerFactory;
 

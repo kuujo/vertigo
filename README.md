@@ -30,6 +30,8 @@ time focusing on application code.
 * Network components can be written in **any Vert.x supported language**, with
   APIs for Vertigo 0.6 in [Javascript][vertigo-js] and [Python][vertigo-python]
 
+For an in-depth explaination of how Vertigo works, see [how it works](#how-it-works)
+
 ### New in Vertigo 0.7
 Vertigo 0.7 represents a significant directional shift for Vertigo. In my view, Vertigo
 is finally gaining an identity of its own. We have now adopted many concepts of
@@ -86,6 +88,12 @@ vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
   }
 });
 ```
+
+#### Distributed deployments
+Vertigo 0.7. provides significantly improved support for distributed network deployments
+using [Xync](http://github.com/kuujo/xync). Xync allows Vertigo to distribute network
+components across a cluster of Vert.x instances and integrates closely with the Vert.x
+HA mechanism.
 
 #### Reliable connections
 Vertigo's internal messaging framework has been redesigned to remove potential reliability
@@ -154,30 +162,34 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 # Java User Manual
 1. [Introduction](#introduction)
 1. [Networks](#networks)
-  * [Creating a new network](#creating-a-new-network)
-  * [Adding components to a network](#adding-components-to-a-network)
-  * [Creating connections between components](#)
-  * [Routing messages between multiple component instances](#routing-messages-between-multiple-component-instances)
-  * [Creating networks from JSON](#creating-networks-from-json)
+   * [Creating a new network](#creating-a-new-network)
+   * [Adding components to a network](#adding-components-to-a-network)
+   * [Creating connections between components](#)
+   * [Routing messages between multiple component instances](#routing-messages-between-multiple-component-instances)
+   * [Creating networks from JSON](#creating-networks-from-json)
 1. [Deployment](#deployment)
-  * [Deploying a network](#deploying-a-network)
-  * [Undeploying a network](#undeploying-a-network)
-  * [Reconfiguring a network](#reconfiguring-a-network)
-  * [Deploying a bare network](#deploying-a-bare-network)
-  * [Working with active networks](#working-with-active-networks)
+   * [Deploying a network](#deploying-a-network)
+   * [Undeploying a network](#undeploying-a-network)
+   * [Reconfiguring a network](#reconfiguring-a-network)
+   * [Deploying a bare network](#deploying-a-bare-network)
+   * [Working with active networks](#working-with-active-networks)
 1. [Clustering](#clustering)
-  * [Configuring cluster scopes](#configuring-cluster-scopes)
+   * [Configuring cluster scopes](#configuring-cluster-scopes)
 1. [Components](#components)
-  * [Creating a component](#creating-a-component)
-  * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
+   * [Creating a component](#creating-a-component)
+   * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
 1. [Messaging](#messaging)
-  * [Sending messages on an output port](#sending-messages-on-an-output-port)
-  * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
-  * [Working with message groups](#working-with-message-groups)
-  * [Providing serializeable messages](#providing-serializeable-messages)
+   * [Sending messages on an output port](#sending-messages-on-an-output-port)
+   * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
+   * [Working with message groups](#working-with-message-groups)
+   * [Providing serializeable messages](#providing-serializeable-messages)
 1. [Logging](#logging)
-  * [Logging messages to output ports](#logging-messages-to-output-ports)
-  * [Reading log messages](#reading-log-messages)
+   * [Logging messages to output ports](#logging-messages-to-output-ports)
+   * [Reading log messages](#reading-log-messages)
+1. [How it works](#how-it-works)
+   * [How Vertigo handles messaging](#how-vertigo-handles-messaging)
+   * [How Vertigo performs deployments](#how-vertigo-performs-deployments)
+   * [How Vertigo coordinates networks](#how-vertigo-coordinates-networks)
 
 ## Introduction
 Vertigo is a multi-step event processing framework built on Vert.x. It exposes a
@@ -380,6 +392,8 @@ mechanisms ensure consistency for deployments across all nodes in a cluster.
 
 Vertigo clustering is supported by [Xync](http://github.com/kuujo/xync)
 
+For more information on network deployment and coordination see [how it works](#how-it-works)
+
 ### Deploying a network
 To deploy a network, simply use the `deployNetwork` method.
 
@@ -505,6 +519,8 @@ When deploying a network, Vertigo will *automatically detect the current cluster
 If the current Vert.x cluster is a Xync-backed cluster, Vertigo networks will be deployed
 across the cluster by default. In Vertigo, this is known as the cluster scope.
 
+For more information on Vertigo clustering see [how Vertigo coordinates networks](#how-vertigo-coordinates-networks)
+
 ### Configuring cluster scopes
 Users can optionally configure the cluster scope for individual Vertigo networks.
 To configure the cluster scope for a network simple use the `setScope` method on the
@@ -532,6 +548,9 @@ the network is `LOCAL`.
 ## Components
 Components are "black box" Vert.x verticles that communicate with other components within
 the same network through named *input* and *output* ports.
+
+For detailed information on component startup and coordination see
+[how Vertigo coordinates networks](#how-vertigo-coordinates-networks)
 
 ### Creating a component
 Components are defined by extending the base `ComponentVerticle` class.
@@ -571,6 +590,8 @@ This is the element that makes Vertigo components reusable.
 While Vertigo does use an acking mechanism internally, Vertigo messages are
 not guaranteed to arrive in order. However, Vertigo does provide an API for
 logical grouping and ordering of messages called [groups](#working-with-message-groups).
+
+For more information on messaging see [how Vertigo handles messaging](#how-vertigo-handles-messaging)
 
 ### Sending messages on an output port
 To reference an output port, use the `output.port(String name)` method.
@@ -847,6 +868,133 @@ public class LogReader extends ComponentVerticle {
 
 }
 ```
+
+## How it works
+This section is a more in-depth examination of how Vertigo deploys and manages
+networks and the communication between them. It is written with the intention
+of assisting users in making practical decisions when working with Vertigo.
+
+### How Vertigo handles messaging
+All Vertigo messaging is done over the event bus. The Vertigo IO API provides
+an API very similar to the Vert.x `ReadStream` and `WriteStream` APIs for event
+bus flow control. When a message is sent on an output port, the message will either
+be queued or immediately sent. Internally, Vertigo uses *streams* to model connections
+between an output port and the input port of another component. This means that each
+output port can contain any number of output streams, and each output stream can
+contain any number of connections (equal to the number of instances of the
+target component). Connection selectors are used at the stream level to select
+a set of connections to which to send each message for the stream.
+
+(See `net.kuujo.vertigo.io`)
+
+Vertigo ensures exactly-once semantics by communicating using request-reply with
+each target component. When a message is sent to a specific target instance, the
+output connection will await a reply from that component before removing the message
+from its internal queue. Since Vertigo messages are not ordered, messages can continue
+to flow even if a response is not immediately received.
+
+(See `net.kuujo.vertigo.io.connection.OutputConnection` and `net.kuujo.vertigo.io.conneciton.InputConnection`)
+
+In order to improve failure detection for any given message, Vertigo uses a custom
+*adpative event bus timeout* system. Adaptive timeouts allow Vertigo to calculate
+the expected reply time for each event bus address from historical data (using a window
+of several seconds) and thus timeout and resend failed messages more quickly. This
+helps ensure that output queues are not backed up during a long and unnecessary timeout.
+
+(See `net.kuujo.vertigo.io.eventbus.AdaptiveEventBus`)
+
+### How Vertigo performs deployments
+Vertigo provides two mechanisms for deployment - local and cluster. The *local*
+deployment method simply uses the Vert.x `Container` for deployments. However, Vertigo's
+internal deployment API is designed in such a way that each deployment is *assigned*
+a unique ID rather than using Vert.x's internal deployment IDs. This allows Vertigo
+to reference and evealuate deployments after failures. In the case of local deployments,
+deployment information is stored in Vert.x's `SharedData` structures.
+
+Vertigo also supports clustered deployments using Xync. Xync exposes user-defined
+deployment IDs in its own API.
+
+(See `net.kuujo.vertigo.cluster.Cluster` and `net.kuujo.vertigo.cluster.ClusterManager`)
+
+When Vertigo begins deploying a network, it first determines the current cluster scope.
+If the current Vert.x instance is a member of a Xync-based Vert.x cluster, Vertigo will
+attempt to deploy the network across the cluster. This behavior can be configured in the
+network configuration.
+
+Once the cluster scope has been determined, Vertigo will check the cluster (e.g. `SharedData`
+or Xync) to determine whether the network is already deployed. If the network has not
+been deployed (a deployment with the ID of the netowrk name is not deployed) then
+Vertigo simply deploys a new `NetworkManager` verticle to manage the network. Actual
+component deployments are performed within the network manager through the coordination
+system. For more information on the network manager and coordination see
+[how vertigo coordinates networks](#how-vertigo-coordinates-networks).
+
+### How Vertigo coordinates networks
+Vertigo uses a very unique and flexible system for coordinating network deployment,
+startup, and configuration. The Vertigo coordination system is built on a distributed
+observer implementation. Vertigo will always use the highest cluster scope available
+for coordination. That is, if the current Vert.x cluster is a Xync cluster then Vertigo
+will use the Xync cluster for coordination. This ensures that Vertigo can coordinate
+all networks within a cluster, even if they are deployed as local networks.
+
+The distributed observer pattern is implemented as map events for both Vert.x `SharedData`
+and Xync's Hazelcast-based maps. Events for any given key in a Vertigo cluster can be
+watched by simply registering an event bus address to which to send events. The Vertigo
+`NetworkManager` and components both use this mechanism for coordination with one another.
+
+(See `net.kuujo.vertigo.data.WatchableAsyncMap`)
+
+The `NetworkManager` is a special verticle that is tasked with starting, configuring,
+and stopping a single network and its components. When a network is deployed, Vertigo
+simply deploys a network manager and sets the network configuration in the cluster. The
+network manager completes the rest of the process.
+
+When the network manager first starts up, it registers to receive events for the
+network's configuration key in the cluster. Once the key has been set, the manager will
+be notified of the configuration change through the event system, load the network
+configuration, and deploy the necessary components.
+
+(See `net.kuujo.vertigo.network.manager.NetworkManager`)
+
+This is the mechanism that makes runtime network configurations possible in Vertigo.
+Since the network manager already receives notifications of configuration changes for
+the network, all we need to do is set the network's configuration key to a new configuration
+and the network will be automatically notified and updated asynchronously.
+
+But deployment is only one part of the equation. Often times network reconfigurations
+may consist only of new connections between components. For this reason, each Vertigo
+component also watches its own configuration key in the cluster. When the network
+configuration changes, the network manager will update each component's key in the
+cluster, causing running components to be notified of their new configurations.
+Whenever such a configuration is detected by a component, the component will automatically
+update its internal input and output connections asynchronously.
+
+(See `net.kuujo.vertigo.component.ComponentCoordinator`)
+
+Finally, cluster keys are used to coordinate startup, pausing, resuming, and shutdown
+of all components within a network. When a component is deployed and completes setting
+up its input and output connections, it will set a special status key in the cluster.
+The network manager watches status keys for each component in the network. Once the
+status keys have been set for all components in the cluster, the network will be
+considered ready to start. The network manager will then set a special network-wide
+status key which each component in turn watches. Once the components see the network
+status key has been set they will finish startup and call the `start()` method.
+
+During configuration changes, the network manager will unset the network-wide status
+key, causing components to optionally pause during the configuration change.
+
+It's important to note that each of these updates is essentially atomic. The network
+manager, components, and connections each use internal queues to enqueue and process
+updates atomically in the order in which they occur. This has practically no impact on
+performance since configuration changes should be rare and it ensures that rapid configuration
+changes (through an `ActiveNetwork` object for instance) do not cause race conditions.
+
+One of the most important properties of this coordination system is that it is completely
+fault-tolerant. Since configurations are stored in the cluster, even if a component fails
+it can reload its last existing configuration from the cluster once failover occurs.
+If the network manager fails, the rest of the network can continue to run as normal.
+Only configuration changes will be unavailable. Once the manager comes back online, it
+will fetch the last known configuration for the network and continue normal operation.
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 

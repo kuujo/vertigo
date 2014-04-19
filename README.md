@@ -54,7 +54,7 @@ one another without component type limitations.
 #### Redesigned network configuration API
 The network configuration API has been completely redesigned for Vertigo 0.7. The design is
 loosely based on common flow-based programming APIs, but more importantly it allows for
-partial network configurations to be interpreted by Vertigo in order to support runtime
+partial network configurations to be interpreted by Vertigo in order to support live
 network configuration changes (see below).
 
 ```java
@@ -64,16 +64,16 @@ NetworkConfig network = vertigo.createNetwork("wordcount")
   .createConnection("foo", "out", "bar", "in");
 ```
 
-#### Runtime network configuration changes
+#### Live network configuration changes
 One of the primary focuses in Vertigo 0.7 was the ability to support adding and removing
 components and connections from networks while running. To accomplish this, the entire
 coordination framework underlying Vertigo was rewritten to use a distributed implementation
 of the observer pattern to allow components and networks to watch their own configurations
 for changes and update themselves asynchronously. This allows Vertigo networks to be
-restructured at runtime by simply deploying and undeploying partial networks.
+restructured after deployment by simply deploying and undeploying partial networks.
 
 #### Active networks
-In conjunction with support for runtime network configuration changes, Vertigo now provides
+In conjunction with support for active network configuration changes, Vertigo now provides
 an `ActiveNetwork` object that allows networks to be reconfigured by directly altering
 network configurations.
 
@@ -308,6 +308,11 @@ on a connection.
 Vertigo supports creating networks from json configurations. To create a network
 from json call the `Vertigo.createNetwork(JsonObject)` method.
 
+```java
+JsonObject json = new JsonObject().putString("name", "test-network");
+vertigo.createNetwork(json);
+```
+
 The JSON configuration format is as follows:
 
 * `name` - the network name
@@ -523,7 +528,7 @@ For more information on Vertigo clustering see [how Vertigo coordinates networks
 
 ### Configuring cluster scopes
 Users can optionally configure the cluster scope for individual Vertigo networks.
-To configure the cluster scope for a network simple use the `setScope` method on the
+To configure the cluster scope for a network simply use the `setScope` method on the
 network configuration.
 
 ```java
@@ -539,7 +544,7 @@ cause the network to be *deployed* in that scope, the network's scope configurat
 *does not impact Vertigo's synchronization*. In other words, even if a network is
 deployed locally, if the current Vert.x cluster is a Xync cluster, Vertigo will still
 coordinate with other Vert.x instances using Xync. This allows locally deployed networks
-to be referenced and reconfigured event outside of the instance in which it was deployed.
+to be referenced and reconfigured even outside of the instance in which it was deployed.
 For instance, users can deploy one component of the `foo` network locally in one Vert.x
 instance and deploy a separate component of the `foo` network locally in another Vert.x
 instance and both components will still become a part of the same network event though
@@ -580,7 +585,7 @@ Each Java component has several additional fields:
 * `storage` - the component's storage facility. This is configured in the component configuration
 
 ## Messaging
-Messaging between Vertigo components is done directly on the Vert.x event bus.
+The Vertigo messaging API is simply a wrapper around the Vert.x event bus.
 Vertigo messages are not sent through any central router. Rather, Vertigo uses
 network configurations to create direct event bus connections between components.
 Vertigo components send and receive messages using only output and input *ports*
@@ -588,8 +593,15 @@ and are hidden from event bus address details which are defined in network confi
 This is the element that makes Vertigo components reusable.
 
 While Vertigo does use an acking mechanism internally, Vertigo messages are
-not guaranteed to arrive in order. However, Vertigo does provide an API for
-logical grouping and ordering of messages called [groups](#working-with-message-groups).
+not guaranteed to arrive in order. When a message is sent on an output port,
+the message will be immediately sent to all connected components. Once each component
+replies to the message indicating that it has received the message successfully,
+the message will be removed from the output queue. Vertigo uses adaptive event
+bus timeouts to quickly detect failures and resend lost messages.
+
+Vertigo also provides an API that allows for logical grouping and ordering of messages
+known as [groups](#working-with-message-groups). Groups are strongly ordered named
+batches of messages that can be nested.
 
 For more information on messaging see [how Vertigo handles messaging](#how-vertigo-handles-messaging)
 
@@ -956,7 +968,7 @@ configuration, and deploy the necessary components.
 
 (See `net.kuujo.vertigo.network.manager.NetworkManager`)
 
-This is the mechanism that makes runtime network configurations possible in Vertigo.
+This is the mechanism that makes live network configurations possible in Vertigo.
 Since the network manager already receives notifications of configuration changes for
 the network, all we need to do is set the network's configuration key to a new configuration
 and the network will be automatically notified and updated asynchronously.

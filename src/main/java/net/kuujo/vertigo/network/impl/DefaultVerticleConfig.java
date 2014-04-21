@@ -15,6 +15,14 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.vertx.java.core.json.JsonObject;
+
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
 
@@ -25,7 +33,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultVerticleConfig extends AbstractComponentConfig<VerticleConfig> implements VerticleConfig {
+public class DefaultVerticleConfig extends BaseConfig implements VerticleConfig {
+  private static final int DEFAULT_NUM_INSTANCES = 1;
+  private static final String DEFAULT_GROUP = "__DEFAULT__";
+
+  private String name;
+  private Map<String, Object> config;
+  private int instances = DEFAULT_NUM_INSTANCES;
+  private String group = DEFAULT_GROUP;
+  private List<ComponentHook> hooks = new ArrayList<>();
   private String main;
   private boolean worker = false;
   @JsonProperty("multi-threaded")
@@ -36,13 +52,66 @@ public class DefaultVerticleConfig extends AbstractComponentConfig<VerticleConfi
   }
 
   public DefaultVerticleConfig(String name, String main, NetworkConfig network) {
-    super(name, network);
+    super(network);
+    this.name = name;
     this.main = main;
   }
 
   @Override
   public Type getType() {
     return Type.VERTICLE;
+  }
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public JsonObject getConfig() {
+    return config != null ? new JsonObject(config) : new JsonObject();
+  }
+
+  @Override
+  public VerticleConfig setConfig(JsonObject config) {
+    this.config = config != null ? config.toMap() : new HashMap<String, Object>();
+    return this;
+  }
+
+  @Override
+  public int getInstances() {
+    return instances;
+  }
+
+  @Override
+  public VerticleConfig setInstances(int instances) {
+    if (instances < 1) {
+      throw new IllegalArgumentException("Instances must be a positive integer.");
+    }
+    this.instances = instances;
+    return this;
+  }
+
+  @Override
+  public VerticleConfig setGroup(String group) {
+    this.group = group != null ? group : DEFAULT_GROUP;
+    return this;
+  }
+
+  @Override
+  public String getGroup() {
+    return group;
+  }
+
+  @Override
+  public VerticleConfig addHook(ComponentHook hook) {
+    this.hooks.add(hook);
+    return this;
+  }
+
+  @Override
+  public List<ComponentHook> getHooks() {
+    return hooks;
   }
 
   @Override

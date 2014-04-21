@@ -15,15 +15,11 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ComponentConfig;
+import net.kuujo.vertigo.network.ComponentConfigurable;
 import net.kuujo.vertigo.network.ConnectionConfig;
+import net.kuujo.vertigo.network.ConnectionConfigurable;
 import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.VerticleConfig;
@@ -33,86 +29,19 @@ import org.vertx.java.core.json.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Base component configuration.
+ * Base configuration.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The component type interface.
  */
-abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements ComponentConfig<T> {
-  private static final int DEFAULT_NUM_INSTANCES = 1;
-  private static final String DEFAULT_GROUP = "__DEFAULT__";
-
-  private String name;
-  private Map<String, Object> config;
-  private int instances = DEFAULT_NUM_INSTANCES;
-  private String group = DEFAULT_GROUP;
-  private List<ComponentHook> hooks = new ArrayList<>();
+abstract class BaseConfig implements ComponentConfigurable, ConnectionConfigurable {
   @JsonIgnore
   private NetworkConfig network;
 
-  protected AbstractComponentConfig() {
+  protected BaseConfig() {
   }
 
-  protected AbstractComponentConfig(String name, NetworkConfig network) {
-    this.name = name;
+  protected BaseConfig(NetworkConfig network) {
     this.network = network;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public JsonObject getConfig() {
-    return config != null ? new JsonObject(config) : new JsonObject();
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T setConfig(JsonObject config) {
-    this.config = config != null ? config.toMap() : new HashMap<String, Object>();
-    return (T) this;
-  }
-
-  @Override
-  public int getInstances() {
-    return instances;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T setInstances(int instances) {
-    if (instances < 1) {
-      throw new IllegalArgumentException("Instances must be a positive integer.");
-    }
-    this.instances = instances;
-    return (T) this;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T setGroup(String group) {
-    this.group = group != null ? group : DEFAULT_GROUP;
-    return (T) this;
-  }
-
-  @Override
-  public String getGroup() {
-    return group;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public T addHook(ComponentHook hook) {
-    this.hooks.add(hook);
-    return (T) this;
-  }
-
-  @Override
-  public List<ComponentHook> getHooks() {
-    return hooks;
   }
 
   @Override
@@ -259,11 +188,6 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   @Override
   public NetworkConfig destroyConnection(String source, String out, String target, String in) {
     return network.destroyConnection(source, out, target, in);
-  }
-
-  @Override
-  public String toString() {
-    return name;
   }
 
 }

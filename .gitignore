@@ -5,3 +5,5 @@ release.properties
 .classpath
 .settings/
 .DS_Store
+/target
+/target

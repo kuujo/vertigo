@@ -28,22 +28,15 @@ import net.kuujo.vertigo.io.selector.HashSelector;
 import net.kuujo.vertigo.io.selector.RandomSelector;
 import net.kuujo.vertigo.io.selector.RoundRobinSelector;
 import net.kuujo.vertigo.io.selector.Selector;
-import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
-import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
-import net.kuujo.vertigo.network.VerticleConfig;
-
-import org.vertx.java.core.json.JsonObject;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Default connection configuration implementation.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultConnectionConfig implements ConnectionConfig {
+public class DefaultConnectionConfig extends BaseConfig implements ConnectionConfig {
   private static final String DEFAULT_OUT_PORT = "out";
   private static final String DEFAULT_IN_PORT = "in";
 
@@ -51,10 +44,9 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   private Target target = new DefaultTarget();
   private List<IOHook> hooks = new ArrayList<>();
   private Selector selector;
-  @JsonIgnore
-  private NetworkConfig network;
 
   public DefaultConnectionConfig() {
+    super();
     selector = new RoundRobinSelector();
   }
 
@@ -75,6 +67,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   public DefaultConnectionConfig(String source, String out, String target, String in, Selector selector, NetworkConfig network) {
+    super(network);
     this.source.setComponent(source);
     this.source.setPort(out);
     this.target.setComponent(target);
@@ -83,7 +76,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
       selector = new RoundRobinSelector();
     }
     this.selector = selector;
-    this.network = network;
   }
 
   @Override
@@ -156,152 +148,6 @@ public class DefaultConnectionConfig implements ConnectionConfig {
       this.selector = new CustomSelector(selector);
     }
     return this;
-  }
-
-  @Override
-  @SuppressWarnings("rawtypes")
-  public <T extends ComponentConfig> T addComponent(T component) {
-    return network.addComponent(component);
-  }
-
-  @Override
-  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain) {
-    return network.addComponent(name, moduleOrMain);
-  }
-
-  @Override
-  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config) {
-    return network.addComponent(name, moduleOrMain, config);
-  }
-
-  @Override
-  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances) {
-    return network.addComponent(name, moduleOrMain, instances);
-  }
-
-  @Override
-  public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, int instances) {
-    return network.addComponent(name, moduleOrMain, config, instances);
-  }
-
-  @Override
-  public <T extends ComponentConfig<T>> T removeComponent(T component) {
-    return network.removeComponent(component);
-  }
-
-  @Override
-  public <T extends ComponentConfig<T>> T removeComponent(String name) {
-    return network.removeComponent(name);
-  }
-
-  @Override
-  public ModuleConfig addModule(ModuleConfig module) {
-    return network.addModule(module);
-  }
-
-  @Override
-  public ModuleConfig addModule(String name, String moduleName) {
-    return network.addModule(name, moduleName);
-  }
-
-  @Override
-  public ModuleConfig addModule(String name, String moduleName, JsonObject config) {
-    return network.addModule(name, moduleName, config);
-  }
-
-  @Override
-  public ModuleConfig addModule(String name, String moduleName, int instances) {
-    return network.addModule(name, moduleName, instances);
-  }
-
-  @Override
-  public ModuleConfig addModule(String name, String moduleName, JsonObject config, int instances) {
-    return network.addModule(name, moduleName, config, instances);
-  }
-
-  @Override
-  public ModuleConfig removeModule(ModuleConfig module) {
-    return network.removeModule(module);
-  }
-
-  @Override
-  public ModuleConfig removeModule(String name) {
-    return network.removeModule(name);
-  }
-
-  @Override
-  public VerticleConfig addVerticle(VerticleConfig verticle) {
-    return network.addVerticle(verticle);
-  }
-
-  @Override
-  public VerticleConfig addVerticle(String name, String main) {
-    return network.addVerticle(name, main);
-  }
-
-  @Override
-  public VerticleConfig addVerticle(String name, String main, JsonObject config) {
-    return network.addVerticle(name, main, config);
-  }
-
-  @Override
-  public VerticleConfig addVerticle(String name, String main, int instances) {
-    return network.addVerticle(name, main, instances);
-  }
-
-  @Override
-  public VerticleConfig addVerticle(String name, String main, JsonObject config, int instances) {
-    return network.addVerticle(name, main, config, instances);
-  }
-
-  @Override
-  public VerticleConfig removeVerticle(VerticleConfig verticle) {
-    return network.removeVerticle(verticle);
-  }
-
-  @Override
-  public VerticleConfig removeVerticle(String name) {
-    return network.removeVerticle(name);
-  }
-
-  @Override
-  public ConnectionConfig createConnection(ConnectionConfig connection) {
-    return network.createConnection(connection);
-  }
-
-  @Override
-  public ConnectionConfig createConnection(String source, String target) {
-    return network.createConnection(source, target);
-  }
-
-  @Override
-  public ConnectionConfig createConnection(String source, String target, Selector selector) {
-    return network.createConnection(source, target, selector);
-  }
-
-  @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in) {
-    return network.createConnection(source, out, target, in);
-  }
-
-  @Override
-  public ConnectionConfig createConnection(String source, String out, String target, String in, Selector selector) {
-    return network.createConnection(source, out, target, in, selector);
-  }
-
-  @Override
-  public NetworkConfig destroyConnection(ConnectionConfig connection) {
-    return network.destroyConnection(connection);
-  }
-
-  @Override
-  public NetworkConfig destroyConnection(String source, String target) {
-    return network.destroyConnection(source, target);
-  }
-
-  @Override
-  public NetworkConfig destroyConnection(String source, String out, String target, String in) {
-    return network.destroyConnection(source, out, target, in);
   }
 
   @Override

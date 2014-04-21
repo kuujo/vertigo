@@ -21,17 +21,11 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.io.OutputSerializer;
 import net.kuujo.vertigo.io.connection.impl.DefaultOutputConnection;
-import net.kuujo.vertigo.io.eventbus.AdaptiveEventBus;
-import net.kuujo.vertigo.io.eventbus.impl.WrappedAdaptiveEventBus;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.eventbus.ReplyException;
-import org.vertx.java.core.eventbus.ReplyFailure;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -50,15 +44,11 @@ public class ConnectionOutputGroup implements OutputGroup {
   private final Vertx vertx;
   private final DefaultOutputConnection connection;
   private final String address;
-  private final AdaptiveEventBus eventBus;
   private final OutputSerializer serializer;
   private Handler<Void> endHandler;
   private final Map<String, ConnectionOutputGroup> groups = new HashMap<>();
-  private int sentCount;
-  private int ackedCount;
-  private int groupCount;
-  private int completeCount;
   private boolean ended;
+  private boolean closed;
 
   public ConnectionOutputGroup(String id, String name, Vertx vertx, DefaultOutputConnection connection, OutputSerializer serializer) {
     this.id = id;
@@ -67,9 +57,7 @@ public class ConnectionOutputGroup implements OutputGroup {
     this.vertx = vertx;
     this.connection = connection;
     this.address = connection.context().address();
-    this.eventBus = new WrappedAdaptiveEventBus(vertx);
     this.serializer = serializer;
-    eventBus.setDefaultAdaptiveTimeout(5.0f);
   }
 
   public ConnectionOutputGroup(String id, String name, String parent, Vertx vertx, DefaultOutputConnection connection, OutputSerializer serializer) {
@@ -79,31 +67,25 @@ public class ConnectionOutputGroup implements OutputGroup {
     this.vertx = vertx;
     this.connection = connection;
     this.address = connection.context().address();
-    this.eventBus = new WrappedAdaptiveEventBus(vertx);
     this.serializer = serializer;
-    eventBus.setDefaultAdaptiveTimeout(5.0f);
   }
 
   /**
    * Checks whether the group is complete.
    */
   private void checkEnd() {
-    if (ended && ackedCount == sentCount && groupCount == completeCount) {
-      eventBus.sendWithAdaptiveTimeout(String.format("%s.end", address), new JsonObject().putString("id", id), 5, new Handler<AsyncResult<Message<Void>>>() {
-        @Override
-        public void handle(AsyncResult<Message<Void>> result) {
-          if (result.failed()) {
-            checkEnd();
-          } else if (endHandler != null) {
-            endHandler.handle((Void) null);
-          }
-        }
-      });
+    if (ended && !closed && groups.isEmpty()) {
+      closed = true;
+      connection.doSend(String.format("%s.end", address), new JsonObject().putString("group", id));
+      if (endHandler != null) {
+        endHandler.handle((Void) null);
+      }
     }
   }
 
   public ConnectionOutputGroup endHandler(Handler<Void> handler) {
     this.endHandler = handler;
+    checkEnd();
     return this;
   }
 
@@ -121,16 +103,8 @@ public class ConnectionOutputGroup implements OutputGroup {
    * Starts the output group.
    */
   public OutputGroup start(final Handler<OutputGroup> doneHandler) {
-    eventBus.sendWithAdaptiveTimeout(String.format("%s.start", address), new JsonObject().putString("id", id).putString("name", name).putString("parent", parent), 5, new Handler<AsyncResult<Message<Void>>>() {
-      @Override
-      public void handle(AsyncResult<Message<Void>> result) {
-        if (result.failed()) {
-          start(doneHandler);
-        } else {
-          doneHandler.handle(ConnectionOutputGroup.this);
-        }
-      }
-    });
+    connection.doSend(String.format("%s.start", address), new JsonObject().putString("group", id).putString("name", name).putString("parent", parent));
+    doneHandler.handle(this);
     return this;
   }
 
@@ -152,7 +126,7 @@ public class ConnectionOutputGroup implements OutputGroup {
 
   @Override
   public boolean sendQueueFull() {
-    return (sentCount - ackedCount) + connection.size() >= connection.getSendQueueMaxSize();
+    return connection.sendQueueFull();
   }
 
   @Override
@@ -162,43 +136,34 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
+  public ConnectionOutputGroup group(final String name, final Handler<OutputGroup> handler) {
     final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this.id, vertx, connection, serializer);
-    groupCount++;
 
-    // Get the last group for the given group name.
-    ConnectionOutputGroup lastGroup = groups.get(name);
+    // Set an end handler on the group that will remove the group
+    // from the groups list and complete the group set.
+    group.endHandler(new Handler<Void>() {
+      @Override
+      public void handle(Void _) {
+        groups.remove(name);
+        checkEnd();
+      }
+    });
+
+    // If there's already a group with this name in the groups list
+    // then set the previous group's end handler to start this group.
+    final ConnectionOutputGroup lastGroup = groups.get(name);
     if (lastGroup != null) {
-      // Override the default group end handler with a handler that started the
-      // next group once the previous group has completed. This guarantees ordering
-      // between groups with the same name.
       lastGroup.endHandler(new Handler<Void>() {
         @Override
         public void handle(Void _) {
-          completeCount++;
+          groups.put(name, group);
           group.start(handler);
         }
       });
     } else {
-      // If there is no previous group then start the group immediately.
+      groups.put(name, group);
       group.start(handler);
     }
-
-    // Set an end handler on the group that removes the group from the groups map.
-    // If this group is not the last group in the groups set for the given group,
-    // the end handler will be overridden. If this group is the last group, however,
-    // once it's complete we need to check whether the parent group has completed.
-    group.endHandler(new Handler<Void>() {
-      @Override
-      public void handle(Void _) {
-        completeCount++;
-        groups.remove(name);
-        checkEnd();
-      }      
-    });
-
-    // Set this as the last group in for the given group name.
-    groups.put(name, group);
     return this;
   }
 
@@ -206,19 +171,9 @@ public class ConnectionOutputGroup implements OutputGroup {
    * Sends a message.
    */
   private OutputGroup doSend(final Object value) {
-    sentCount++;
-    final JsonObject message = serializer.serialize(value).putString("id", id);
-    eventBus.sendWithAdaptiveTimeout(String.format("%s.group", address), message, 5, new Handler<AsyncResult<Message<Void>>>() {
-      @Override
-      public void handle(AsyncResult<Message<Void>> result) {
-        if (result.failed() && (!((ReplyException) result.cause()).failureType().equals(ReplyFailure.RECIPIENT_FAILURE))) {
-          send(message);
-        } else {
-          ackedCount++;
-          checkEnd();
-        }
-      }
-    });
+    if (!ended) {
+      connection.doSend(String.format("%s.group", address), serializer.serialize(value).putString("group", id));
+    }
     return this;
   }
 

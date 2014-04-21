@@ -200,6 +200,19 @@ instance or across a cluster of Vert.x instances and performs setup and coordina
 internally. Vertigo also provides for advanced messaging requirements such as strong
 ordering and exactly-once semantics.
 
+Let's look at a brief example of a small Vertigo network
+
+```java
+public class WordFeeder extends ComponentVerticle {
+
+  @Override
+  public void start() {
+  
+  }
+
+}
+```
+
 ## Networks
 Vertigo networks are collections of Vert.x verticles and modules that are connected
 together by the Vert.x event bus. Networks and the relationships therein are defined
@@ -887,33 +900,37 @@ networks and the communication between them. It is written with the intention
 of assisting users in making practical decisions when working with Vertigo.
 
 ### How Vertigo handles messaging
-All Vertigo messaging is done over the event bus. The Vertigo IO API provides
-an API very similar to the Vert.x `ReadStream` and `WriteStream` APIs for event
-bus flow control. When a message is sent on an output port, the message will either
-be queued or immediately sent. Internally, Vertigo uses *streams* to model connections
-between an output port and the input port of another component. This means that each
-output port can contain any number of output streams, and each output stream can
-contain any number of connections (equal to the number of instances of the
-target component). Connection selectors are used at the stream level to select
-a set of connections to which to send each message for the stream.
+All Vertigo messaging is done over the Vert.x event bus. Vertigo messaging is
+designed to provide guaranteed ordering and exactly-once processing semantics.
+Internally, Vertigo uses *streams* to model connections between an output port
+on one set of component instances and an input port on another set of component
+instances. Each output port can contain any number of output streams, and each
+output stream can contain any number of output connections (equal to the number
+of instances of the target component). Connections represent a single event bus
+address connection between two instances of two components on a single Vertigo
+connection. Connection selectors are used at the stream level to select a set
+of connections to which to send each message for the stream.
 
 (See `net.kuujo.vertigo.io`)
 
-Vertigo ensures exactly-once semantics by communicating using request-reply with
-each target component. When a message is sent to a specific target instance, the
-output connection will await a reply from that component before removing the message
-from its internal queue. Since Vertigo messages are not ordered, messages can continue
-to flow even if a response is not immediately received.
+Vertigo ensures exactly-once semantics by batching messages for each connection.
+Each message that is sent on a single output connection will be tagged with a
+monotonically increasing ID for that connection. The input connection that receives
+messages from the specific output connection will keep track of the last seen
+monitonically increasing ID for the connection. When a new message is received,
+the input connection checks to ensure that it is the next message in the sequence
+according to its ID. If a message is received out of order, the input connection
+immediately sends a message to the output connection indicating the last sequential
+ID that it received. The output connection will then begin resending messages from
+that point. Even if a message is not received out of order, input connections will
+periodically send a message to their corresponding output connection notifying it
+of the last message received. This essentially acts as a *ack* for a batch of
+messages and allows the output connection to clear its output queue.
 
-(See `net.kuujo.vertigo.io.connection.OutputConnection` and `net.kuujo.vertigo.io.conneciton.InputConnection`)
-
-In order to improve failure detection for any given message, Vertigo uses a custom
-*adpative event bus timeout* system. Adaptive timeouts allow Vertigo to calculate
-the expected reply time for each event bus address from historical data (using a window
-of several seconds) and thus timeout and resend failed messages more quickly. This
-helps ensure that output queues are not backed up during a long and unnecessary timeout.
-
-(See `net.kuujo.vertigo.io.eventbus.AdaptiveEventBus`)
+In the future, this batching algorithm will be the basis for state persistence.
+By coordinating batches between multiple input connections, components can
+checkpoint their state after each batch and notify data sources that it's safe
+to clear persisted messages.
 
 ### How Vertigo performs deployments
 Vertigo provides two mechanisms for deployment - local and cluster. The *local*

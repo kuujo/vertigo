@@ -15,10 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.io.InputDeserializer;
@@ -30,6 +28,7 @@ import net.kuujo.vertigo.util.CountingCompletionHandler;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
@@ -40,22 +39,25 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 public class DefaultInputConnection implements InputConnection {
+  private static final long BATCH_SIZE = 1000;
   private final Vertx vertx;
+  private final EventBus eventBus;
   private final InputConnectionContext context;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private final Map<String, DefaultInputGroup> groups = new HashMap<>();
-  private final Queue<Object> queue = new ArrayDeque<>();
   private final InputDeserializer deserializer = new InputDeserializer();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
+  private String feedbackAddress;
+  private long lastReceived;
   private boolean open;
   private boolean paused;
 
-  private final Handler<Message<Boolean>> internalOpenHandler = new Handler<Message<Boolean>>() {
+  private final Handler<Message<String>> internalOpenHandler = new Handler<Message<String>>() {
     @Override
-    public void handle(Message<Boolean> message) {
+    public void handle(Message<String> message) {
       if (open) {
-        queue.clear();
+        feedbackAddress = message.body();
         groups.clear();
         message.reply(true);
       }
@@ -65,53 +67,66 @@ public class DefaultInputConnection implements InputConnection {
   private final Handler<Message<JsonObject>> internalStartHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
-      JsonObject body = message.body();
-      String id = body.getString("id");
-      String name = body.getString("name");
-      String parentId = body.getString("parent");
-      DefaultInputGroup group = new DefaultInputGroup(name, vertx);
-      groups.put(id, group);
-      if (paused) group.pause();
-      if (parentId != null) {
-        DefaultInputGroup parent = groups.get(parentId);
-        if (parent != null) {
-          parent.handleGroup(group);
-        }
-      } else {
-        Handler<InputGroup> handler = groupHandlers.get(name);
-        if (handler != null) {
-          handler.handle(group);
+      if (!paused) {
+        long id = message.body().getLong("id");
+        if (checkID(id)) {
+          JsonObject body = message.body();
+          String groupID = body.getString("group");
+          String name = body.getString("name");
+          String parentId = body.getString("parent");
+          DefaultInputGroup group = new DefaultInputGroup(name, vertx);
+          groups.put(groupID, group);
+          if (parentId != null) {
+            DefaultInputGroup parent = groups.get(parentId);
+            if (parent != null) {
+              parent.handleGroup(group);
+            }
+          } else {
+            Handler<InputGroup> handler = groupHandlers.get(name);
+            if (handler != null) {
+              handler.handle(group);
+            }
+          }
+          group.handleStart();
         }
       }
-      group.handleStart();
-      message.reply();
     }
   };
 
   private final Handler<Message<JsonObject>> internalGroupHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
-      String id = message.body().getString("id");
-      DefaultInputGroup group = groups.get(id);
-      if (group != null) {
-        Object value = deserializer.deserialize(message.body());
-        if (value != null) {
-          group.handleMessage(value);
+      if (!paused) {
+        long id = message.body().getLong("id");
+        if (checkID(id)) {
+          lastReceived = id;
+          String groupID = message.body().getString("group");
+          DefaultInputGroup group = groups.get(groupID);
+          if (group != null) {
+            Object value = deserializer.deserialize(message.body());
+            if (value != null) {
+              group.handleMessage(value);
+            }
+          }
         }
       }
-      message.reply();
     }
   };
 
   private final Handler<Message<JsonObject>> internalEndHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
-      String id = message.body().getString("id");
-      DefaultInputGroup group = groups.remove(id);
-      if (group != null) {
-        group.handleEnd();
+      if (!paused) {
+        long id = message.body().getLong("id");
+        if (checkID(id)) {
+          lastReceived = id;
+          String groupID = message.body().getString("group");
+          DefaultInputGroup group = groups.remove(groupID);
+          if (group != null) {
+            group.handleEnd();
+          }
+        }
       }
-      message.reply();
     }
   };
 
@@ -119,16 +134,16 @@ public class DefaultInputConnection implements InputConnection {
     @Override
     @SuppressWarnings("unchecked")
     public void handle(Message<JsonObject> message) {
-      Object value = deserializer.deserialize(message.body());
-      if (value != null) {
-        if (paused) {
-          queue.add(message.body());
-        }
-        else if (messageHandler != null) {
-          messageHandler.handle(value);
+      if (!paused) {
+        long id = message.body().getLong("id");
+        if (checkID(id)) {
+          lastReceived = id;
+          Object value = deserializer.deserialize(message.body());
+          if (value != null && messageHandler != null) {
+            messageHandler.handle(value);
+          }
         }
       }
-      message.reply();
     }
   };
 
@@ -136,7 +151,6 @@ public class DefaultInputConnection implements InputConnection {
     @Override
     public void handle(Message<Boolean> message) {
       if (open) {
-        queue.clear();
         groups.clear();
         message.reply(true);
       }
@@ -145,6 +159,7 @@ public class DefaultInputConnection implements InputConnection {
 
   public DefaultInputConnection(Vertx vertx, InputConnectionContext context) {
     this.vertx = vertx;
+    this.eventBus = vertx.eventBus();
     this.context = context;
   }
 
@@ -165,7 +180,7 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public int size() {
-    return queue.size();
+    return 0;
   }
 
   @Override
@@ -195,27 +210,41 @@ public class DefaultInputConnection implements InputConnection {
     return this;
   }
 
+  /**
+   * Checks that the given ID is valid.
+   */
+  private boolean checkID(long id) {
+    // Ensure that the given ID is a monotonically increasing ID.
+    // If the ID is less than the last received ID then reset the
+    // last received ID since the connection must have been reset.
+    if (lastReceived == 0 || id == lastReceived + 1 || id < lastReceived) {
+      lastReceived = id;
+      // If the ID reaches the end of the current batch then tell the data
+      // source that it's okay to remove all previous messages.
+      if (lastReceived % BATCH_SIZE == 0 && open && feedbackAddress != null) {
+        eventBus.send(feedbackAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
+      }
+      return true;
+    } else if (open && feedbackAddress != null) {
+      eventBus.send(feedbackAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
+    }
+    return false;
+  }
+
   @Override
   public InputConnection pause() {
     paused = true;
-    for (DefaultInputGroup group : groups.values()) {
-      group.pause();
+    if (open && feedbackAddress != null) {
+      eventBus.send(feedbackAddress, new JsonObject().putString("action", "pause").putNumber("id", lastReceived));
     }
     return this;
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public InputConnection resume() {
     paused = false;
-    if (messageHandler != null) {
-      for (Object message : queue) {
-        messageHandler.handle(message);
-      }
-    }
-    queue.clear();
-    for (DefaultInputGroup group : groups.values()) {
-      group.resume();
+    if (open && feedbackAddress != null) {
+      eventBus.send(feedbackAddress, new JsonObject().putString("action", "resume").putNumber("id", lastReceived));
     }
     return this;
   }

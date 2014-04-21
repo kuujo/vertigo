@@ -15,6 +15,12 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.kuujo.vertigo.hooks.IOHook;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.io.selector.AllSelector;
 import net.kuujo.vertigo.io.selector.CustomSelector;
 import net.kuujo.vertigo.io.selector.FairSelector;
@@ -43,6 +49,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   private Source source = new DefaultSource();
   private Target target = new DefaultTarget();
+  private List<IOHook> hooks = new ArrayList<>();
   private Selector selector;
   @JsonIgnore
   private NetworkConfig network;
@@ -87,6 +94,17 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   @Override
   public Target getTarget() {
     return target;
+  }
+
+  @Override
+  public ConnectionConfig addHook(IOHook hook) {
+    this.hooks.add(hook);
+    return this;
+  }
+
+  @Override
+  public List<IOHook> getHooks() {
+    return hooks;
   }
 
   @Override
@@ -306,6 +324,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   public static class DefaultSource implements Source {
     private String component;
     private String port;
+    private List<OutputHook> hooks = new ArrayList<>();
 
     private DefaultSource() {
     }
@@ -332,6 +351,17 @@ public class DefaultConnectionConfig implements ConnectionConfig {
       return this;
     }
 
+    @Override
+    public Source addHook(OutputHook hook) {
+      this.hooks.add(hook);
+      return this;
+    }
+
+    @Override
+    public List<OutputHook> getHooks() {
+      return hooks;
+    }
+
   }
 
   /**
@@ -342,6 +372,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   public static class DefaultTarget implements Target {
     private String component;
     private String port;
+    private List<InputHook> hooks = new ArrayList<>();
 
     private DefaultTarget() {
     }
@@ -366,6 +397,17 @@ public class DefaultConnectionConfig implements ConnectionConfig {
     public Target setPort(String port) {
       this.port = port;
       return this;
+    }
+
+    @Override
+    public Target addHook(InputHook hook) {
+      this.hooks.add(hook);
+      return this;
+    }
+
+    @Override
+    public List<InputHook> getHooks() {
+      return hooks;
     }
 
   }

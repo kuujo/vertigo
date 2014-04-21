@@ -15,9 +15,12 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
@@ -37,48 +40,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @param <T> The component type interface.
  */
 abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements ComponentConfig<T> {
-
-  /**
-   * <code>name</code> is a string indicating the network unique component name. This
-   * name is used as the basis for generating unique event bus addresses.
-   */
-  public static final String COMPONENT_NAME = "name";
-
-  /**
-   * <code>type</code> is a string indicating the type of component that will be deployed.
-   * This can be either <code>module</code> or <code>verticle</code>. This field is required.
-   */
-  public static final String COMPONENT_TYPE = "type";
-
-  /**
-   * <code>module</code> is the module component type.
-   */
-  public static final String COMPONENT_TYPE_MODULE = "module";
-
-  /**
-   * <code>verticle</code> is the verticle component type.
-   */
-  public static final String COMPONENT_TYPE_VERTICLE = "verticle";
-
-  /**
-   * <code>config</code> is an object defining the configuration to pass to each instance
-   * of the component. If no configuration is provided then an empty configuration will be
-   * passed to component instances.
-   */
-  public static final String COMPONENT_CONFIG = "config";
-
-  /**
-   * <code>instances</code> is a number indicating the number of instances of the
-   * component to deploy. Defaults to <code>1</code>
-   */
-  public static final String COMPONENT_NUM_INSTANCES = "instances";
-
-  /**
-   * <code>group</code> is a component deployment group for HA. This option applies when
-   * deploying the network to a cluster.
-   */
-  public static final String COMPONENT_GROUP = "group";
-
   private static final int DEFAULT_NUM_INSTANCES = 1;
   private static final String DEFAULT_GROUP = "__DEFAULT__";
 
@@ -86,6 +47,7 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
   private String group = DEFAULT_GROUP;
+  private List<ComponentHook> hooks = new ArrayList<>();
   @JsonIgnore
   private NetworkConfig network;
 
@@ -139,6 +101,18 @@ abstract class AbstractComponentConfig<T extends ComponentConfig<T>> implements 
   @Override
   public String getGroup() {
     return group;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T addHook(ComponentHook hook) {
+    this.hooks.add(hook);
+    return (T) this;
+  }
+
+  @Override
+  public List<ComponentHook> getHooks() {
+    return hooks;
   }
 
   @Override

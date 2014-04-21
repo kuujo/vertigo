@@ -23,6 +23,7 @@ import java.util.Map;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputPortContext;
+import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.connection.impl.DefaultInputConnection;
 import net.kuujo.vertigo.io.group.InputGroup;
@@ -49,6 +50,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private final Vertx vertx;
   private InputPortContext context;
   private final List<InputConnection> connections = new ArrayList<>();
+  private List<InputHook> hooks = new ArrayList<>();
   private final TaskRunner tasks = new TaskRunner();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
@@ -59,6 +61,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   public DefaultInputPort(Vertx vertx, InputPortContext context) {
     this.vertx = vertx;
     this.context = context;
+    this.hooks = context.hooks();
     context.registerObserver(this);
   }
 
@@ -128,6 +131,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           counter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
+              DefaultInputPort.this.hooks = update.hooks();
               task.complete();
             }
           });
@@ -161,6 +165,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
             }
             connections.add(connection);
           }
+          DefaultInputPort.this.hooks = update.hooks();
           task.complete();
         }
       }
@@ -186,9 +191,17 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public InputPort messageHandler(Handler handler) {
-    this.messageHandler = handler;
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  public InputPort messageHandler(final Handler handler) {
+    this.messageHandler = new Handler() {
+      @Override
+      public void handle(Object message) {
+        handler.handle(message);
+        for (InputHook hook : hooks) {
+          hook.handleReceive(message);
+        }
+      }
+    };
     for (InputConnection connection : connections) {
       connection.messageHandler(messageHandler);
     }

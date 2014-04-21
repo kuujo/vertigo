@@ -15,11 +15,14 @@
  */
 package net.kuujo.vertigo.component.impl;
 
+import java.util.List;
+
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.DefaultInputCollector;
@@ -135,9 +138,14 @@ public class DefaultComponent implements Component {
     });
     coordinator.resumeHandler(new Handler<Void>() {
       @Override
+      @SuppressWarnings("unchecked")
       public void handle(Void _) {
         if (!started) {
           started = true;
+          List<ComponentHook> hooks = context.component().hooks();
+          for (ComponentHook hook : hooks) {
+            hook.handleStart(DefaultComponent.this);
+          }
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
       }

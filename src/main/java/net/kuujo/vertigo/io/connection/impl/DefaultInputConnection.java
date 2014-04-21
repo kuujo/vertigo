@@ -15,10 +15,13 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
+import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.io.InputDeserializer;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.group.InputGroup;
@@ -43,6 +46,7 @@ public class DefaultInputConnection implements InputConnection {
   private final Vertx vertx;
   private final EventBus eventBus;
   private final InputConnectionContext context;
+  private List<InputHook> hooks = new ArrayList<>();
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private final Map<String, DefaultInputGroup> groups = new HashMap<>();
   private final InputDeserializer deserializer = new InputDeserializer();
@@ -99,7 +103,6 @@ public class DefaultInputConnection implements InputConnection {
       if (!paused) {
         long id = message.body().getLong("id");
         if (checkID(id)) {
-          lastReceived = id;
           String groupID = message.body().getString("group");
           DefaultInputGroup group = groups.get(groupID);
           if (group != null) {
@@ -119,7 +122,6 @@ public class DefaultInputConnection implements InputConnection {
       if (!paused) {
         long id = message.body().getLong("id");
         if (checkID(id)) {
-          lastReceived = id;
           String groupID = message.body().getString("group");
           DefaultInputGroup group = groups.remove(groupID);
           if (group != null) {
@@ -137,10 +139,12 @@ public class DefaultInputConnection implements InputConnection {
       if (!paused) {
         long id = message.body().getLong("id");
         if (checkID(id)) {
-          lastReceived = id;
           Object value = deserializer.deserialize(message.body());
           if (value != null && messageHandler != null) {
             messageHandler.handle(value);
+          }
+          for (InputHook hook : hooks) {
+            hook.handleReceive(value);
           }
         }
       }
@@ -161,6 +165,7 @@ public class DefaultInputConnection implements InputConnection {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
+    this.hooks = context.hooks();
   }
 
   @Override

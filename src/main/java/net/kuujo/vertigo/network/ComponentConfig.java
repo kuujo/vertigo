@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.network;
 
+import java.util.List;
+
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
 import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
 
@@ -38,6 +41,54 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value=DefaultVerticleConfig.class, name="verticle")
 })
 public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>, ComponentConfigurable, ConnectionConfigurable {
+
+  /**
+   * <code>name</code> is a string indicating the network unique component name. This
+   * name is used as the basis for generating unique event bus addresses.
+   */
+  public static final String COMPONENT_NAME = "name";
+
+  /**
+   * <code>type</code> is a string indicating the type of component that will be deployed.
+   * This can be either <code>module</code> or <code>verticle</code>. This field is required.
+   */
+  public static final String COMPONENT_TYPE = "type";
+
+  /**
+   * <code>module</code> is the module component type.
+   */
+  public static final String COMPONENT_TYPE_MODULE = "module";
+
+  /**
+   * <code>verticle</code> is the verticle component type.
+   */
+  public static final String COMPONENT_TYPE_VERTICLE = "verticle";
+
+  /**
+   * <code>config</code> is an object defining the configuration to pass to each instance
+   * of the component. If no configuration is provided then an empty configuration will be
+   * passed to component instances.
+   */
+  public static final String COMPONENT_CONFIG = "config";
+
+  /**
+   * <code>instances</code> is a number indicating the number of instances of the
+   * component to deploy. Defaults to <code>1</code>
+   */
+  public static final String COMPONENT_NUM_INSTANCES = "instances";
+
+  /**
+   * <code>group</code> is a component deployment group for HA. This option applies when
+   * deploying the network to a cluster.
+   */
+  public static final String COMPONENT_GROUP = "group";
+
+  /**
+   * <code>hooks</code> is an array defining component hooks. Each element in the array
+   * must be an object containing a <code>hook</code> field which indicates the hook
+   * class name.
+   */
+  public static final String COMPONENT_HOOKS = "hooks";
 
   /**
    * Component type.
@@ -132,5 +183,20 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>
    * @return The component deployment group.
    */
   String getGroup();
+
+  /**
+   * Adds a hook to the component.
+   *
+   * @param hook The hook to add.
+   * @return The component configuration.
+   */
+  T addHook(ComponentHook hook);
+
+  /**
+   * Returns a list of component hooks.
+   *
+   * @return A list of component hooks.
+   */
+  List<ComponentHook> getHooks();
 
 }

@@ -21,6 +21,7 @@ import java.util.List;
 
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
 import net.kuujo.vertigo.io.port.OutputPort;
@@ -52,6 +53,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   private final Vertx vertx;
   private OutputPortContext context;
   private final List<OutputStream> streams = new ArrayList<>();
+  private List<OutputHook> hooks = new ArrayList<>();
   private final TaskRunner tasks = new TaskRunner();
   private int maxQueueSize = DEFAULT_SEND_QUEUE_MAX_SIZE;
   private Handler<Void> drainHandler;
@@ -60,6 +62,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   public DefaultOutputPort(Vertx vertx, OutputPortContext context) {
     this.vertx = vertx;
     this.context = context;
+    this.hooks = context.hooks();
     context.registerObserver(this);
   }
 
@@ -137,6 +140,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           counter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
+              DefaultOutputPort.this.hooks = update.hooks();
               task.complete();
             }
           });
@@ -156,6 +160,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           for (OutputStream stream : newStreams) {
             streams.add(stream);
           }
+          DefaultOutputPort.this.hooks = update.hooks();
           task.complete();
         }
       }
@@ -310,11 +315,21 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     return this;
   }
 
+  /**
+   * Triggers send hooks.
+   */
+  private void triggerSend(Object message) {
+    for (OutputHook hook : hooks) {
+      hook.handleSend(message);
+    }
+  }
+
   @Override
   public OutputPort send(Object message) {
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 

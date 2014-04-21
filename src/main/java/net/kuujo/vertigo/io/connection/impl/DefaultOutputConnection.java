@@ -15,12 +15,15 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.io.OutputSerializer;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
@@ -50,7 +53,8 @@ public class DefaultOutputConnection implements OutputConnection {
   private final OutputConnectionContext context;
   private final String address;
   private final String feedbackAddress = UUID.randomUUID().toString();
-  final OutputSerializer serializer = new OutputSerializer();
+  private final OutputSerializer serializer = new OutputSerializer();
+  private List<OutputHook> hooks = new ArrayList<>();
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
   private long currentMessage = 1;
@@ -88,6 +92,7 @@ public class DefaultOutputConnection implements OutputConnection {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
+    this.hooks = context.hooks();
     this.address = context.address();
   }
 
@@ -326,6 +331,9 @@ public class DefaultOutputConnection implements OutputConnection {
    */
   private OutputConnection doSend(final Object value) {
     doSend(address, serializer.serialize(value));
+    for (OutputHook hook : hooks) {
+      hook.handleSend(value);
+    }
     return this;
   }
 

@@ -25,6 +25,8 @@ import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
 import net.kuujo.vertigo.context.OutputPortContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.hooks.IOHook;
 import net.kuujo.vertigo.network.ComponentConfig;
 import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.network.MalformedNetworkException;
@@ -71,6 +73,7 @@ public final class ContextBuilder {
         module.setModule(((ModuleConfig) component).getModule());
         module.setConfig(component.getConfig());
         module.setGroup(component.getGroup());
+        module.setHooks(component.getHooks());
 
         // Set up module instances.
         List<DefaultInstanceContext> instances = new ArrayList<>();
@@ -98,6 +101,7 @@ public final class ContextBuilder {
         verticle.setMultiThreaded(((VerticleConfig) component).isMultiThreaded());
         verticle.setConfig(component.getConfig());
         verticle.setGroup(component.getGroup());
+        verticle.setHooks(component.getHooks());
 
         // Set up module instances.
         List<DefaultInstanceContext> instances = new ArrayList<>();
@@ -151,6 +155,9 @@ public final class ContextBuilder {
             DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) sourceInstance.output())
                 .addPort(port).build();
             output = DefaultOutputPortContext.Builder.newBuilder(port);
+            for (ComponentHook hook : source.hooks()) {
+              output.addHook(hook);
+            }
           }
 
           // Set up an output stream from the output port.
@@ -178,12 +185,23 @@ public final class ContextBuilder {
               DefaultInputContext.Builder.newBuilder((DefaultInputContext) targetInstance.input())
                   .addPort(port).build();
               input = DefaultInputPortContext.Builder.newBuilder(port);
+              for (ComponentHook hook : target.hooks()) {
+                input.addHook(hook);
+              }
             }
 
             // Add an input connection to the input port.
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
             String address = String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number());
             inConnection.setAddress(address);
+
+            // Add input level hooks to the input.
+            inConnection.setHooks(connection.getTarget().getHooks());
+
+            // Add connection level hooks to the input.
+            for (IOHook hook : connection.getHooks()) {
+              inConnection.addHook(hook);
+            }
 
             // Add the connection to the target input port.
             input.addConnection(inConnection.build()).build();
@@ -193,6 +211,14 @@ public final class ContextBuilder {
             // connections maintain a many-to-one relationship with output connections.
             DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
             outConnection.setAddress(address);
+
+            // Add output level hooks to the output.
+            outConnection.setHooks(connection.getSource().getHooks());
+
+            // Add connection level hooks to the output.
+            for (IOHook hook : connection.getHooks()) {
+              outConnection.addHook(hook);
+            }
             outStream.addConnection(outConnection.build());
           }
 

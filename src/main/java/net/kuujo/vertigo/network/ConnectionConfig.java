@@ -15,6 +15,11 @@
  */
 package net.kuujo.vertigo.network;
 
+import java.util.List;
+
+import net.kuujo.vertigo.hooks.IOHook;
+import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 
@@ -34,6 +39,35 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentConfigurable, ConnectionConfigurable {
 
   /**
+   * <code>source</code> is an object defining the connection source. See the
+   * {@link Source} documentation for details on the source structure.
+   */
+  public static final String CONNECTION_SOURCE = "source";
+
+  /**
+   * <code>target</code> is an object defining the connection target. See the
+   * {@link Target} documentation for details on the target structure.
+   */
+  public static final String CONNECTION_TARGET = "target";
+
+  /**
+   * <code>hooks</code> is an array defining connection hooks. Each element in the array
+   * must be an object containing a <code>hook</code> field which indicates the hook
+   * class name.
+   */
+  public static final String CONNECTION_HOOKS = "hooks";
+
+  /**
+   * <code>selector</code> is an object defining the connection selector. The selector
+   * definition should contain a <code>type</code> which indicates the selector type,
+   * e.g. <code>round-robin</code>, <code>random</code>, <code>hash</code>, <code>fair</code>,
+   * <code>all</code>, or <code>custom</code>. If a <code>custom</code> selector is indicated
+   * then an additional <code>selector</code> field must be provided which indicates the
+   * custom selector class.
+   */
+  public static final String CONNECTION_SELECTOR = "selector";
+
+  /**
    * Returns the connection source.
    *
    * @return The connection source info.
@@ -46,6 +80,21 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
    * @return The connection target info.
    */
   Target getTarget();
+
+  /**
+   * Adds an input/output hook to the connection.
+   *
+   * @param hook The hook to add.
+   * @return The connection configuration.
+   */
+  ConnectionConfig addHook(IOHook hook);
+
+  /**
+   * Returns a list of connection hooks.
+   *
+   * @return A list of hooks for the connection.
+   */
+  List<IOHook> getHooks();
 
   /**
    * Returns the connection selector.
@@ -119,6 +168,16 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
   public static interface Source extends Config<Source> {
 
     /**
+     * <code>component</code> indicates the source component name.
+     */
+    public static final String SOURCE_COMPONENT = "component";
+
+    /**
+     * <code>port</code> indicates the source output port.
+     */
+    public static final String SOURCE_PORT = "port";
+
+    /**
      * Returns the connection source component.
      *
      * @return The source component name.
@@ -148,6 +207,21 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
      */
     Source setPort(String port);
 
+    /**
+     * Adds an output hook to the source.
+     *
+     * @param hook The hook to add.
+     * @return The source instance.
+     */
+    Source addHook(OutputHook hook);
+
+    /**
+     * Returns a list of output hooks.
+     *
+     * @return A list of hooks for the output.
+     */
+    List<OutputHook> getHooks();
+
   }
 
   /**
@@ -162,6 +236,16 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
     defaultImpl=DefaultConnectionConfig.DefaultTarget.class
   )
   public static interface Target extends Config<Target> {
+
+    /**
+     * <code>component</code> indicates the target component name.
+     */
+    public static final String SOURCE_COMPONENT = "component";
+
+    /**
+     * <code>port</code> indicates the target output port.
+     */
+    public static final String SOURCE_PORT = "port";
 
     /**
      * Returns the connection target component.
@@ -192,6 +276,21 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
      * @return The target instance.
      */
     Target setPort(String port);
+
+    /**
+     * Adds an input hook to the target.
+     *
+     * @param hook The hook to add.
+     * @return The target instance.
+     */
+    Target addHook(InputHook hook);
+
+    /**
+     * Returns a list of input hooks.
+     *
+     * @return A list of hooks for the input.
+     */
+    List<InputHook> getHooks();
 
   }
 

@@ -24,6 +24,7 @@ import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.VerticleContext;
+import net.kuujo.vertigo.hooks.ComponentHook;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -57,6 +58,7 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   protected String group = DEFAULT_GROUP;
   protected Map<String, Object> config;
   protected List<InstanceContext> instances = new ArrayList<>();
+  protected List<ComponentHook> hooks = new ArrayList<>();
   private @JsonIgnore
   DefaultNetworkContext network;
 
@@ -170,6 +172,11 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   @Override
   public String group() {
     return group;
+  }
+
+  @Override
+  public List<ComponentHook> hooks() {
+    return hooks;
   }
 
   @Override

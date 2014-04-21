@@ -15,7 +15,10 @@
  */
 package net.kuujo.vertigo.context;
 
+import java.util.List;
+
 import net.kuujo.vertigo.context.impl.DefaultInputConnectionContext;
+import net.kuujo.vertigo.hooks.InputHook;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -39,5 +42,12 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
    * @return The parent port context.
    */
   InputPortContext port();
+
+  /**
+   * Returns a list of input hooks.
+   *
+   * @return A list of input hooks.
+   */
+  List<InputHook> hooks();
 
 }

@@ -13,14 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.context;
+package net.kuujo.vertigo.hooks;
 
+import net.kuujo.vertigo.component.Component;
 
 /**
- * Connection contexts represent a direct connection between two instances
- * of separate components.<p>
+ * Component hook.
  *
  * @author Jordan Halterman
  */
-public interface ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
+public interface ComponentHook extends IOHook {
+
+  /**
+   * Called when the component has started.
+   *
+   * @param component The component that was started.
+   */
+  void handleStart(Component component);
+
+  /**
+   * Called when the component has stopped.
+   *
+   * @param component The component that was stopped.
+   */
+  void handleStop(Component component);
+
 }

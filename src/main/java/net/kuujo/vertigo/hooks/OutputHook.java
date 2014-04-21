@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.context;
-
+package net.kuujo.vertigo.hooks;
 
 /**
- * Connection contexts represent a direct connection between two instances
- * of separate components.<p>
+ * Output hook.
  *
  * @author Jordan Halterman
  */
-public interface ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
+public interface OutputHook extends Hook {
+
+  /**
+   * Called when a message has been sent on the output.
+   *
+   * @param message The message that was sent.
+   */
+  void handleSend(Object message);
+
 }

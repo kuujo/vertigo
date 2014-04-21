@@ -16,12 +16,15 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.context.InputContext;
 import net.kuujo.vertigo.context.InputPortContext;
+import net.kuujo.vertigo.hooks.InputHook;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -33,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class DefaultInputPortContext extends BaseContext<InputPortContext> implements InputPortContext {
   private String port;
   private Collection<InputConnectionContext> connections = new ArrayList<>();
+  private List<InputHook> hooks = new ArrayList<>();
   @JsonIgnore
   private InputContext input;
 
@@ -60,13 +64,14 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
     return address;
   }
 
-  /**
-   * Returns a collection of input port connections.
-   *
-   * @return A list of input connections.
-   */
+  @Override
   public Collection<InputConnectionContext> connections() {
     return connections;
+  }
+
+  @Override
+  public List<InputHook> hooks() {
+    return hooks;
   }
 
   @Override
@@ -196,6 +201,50 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      */
     public Builder removeConnection(InputConnectionContext connection) {
       context.connections.remove(connection);
+      return this;
+    }
+
+    /**
+     * Sets the input hooks.
+     *
+     * @param hooks An array of hooks.
+     * @return The context builder.
+     */
+    public Builder setHooks(InputHook... hooks) {
+      context.hooks = Arrays.asList(hooks);
+      return this;
+    }
+
+    /**
+     * Sets the input hooks.
+     *
+     * @param hooks A list of hooks.
+     * @return The context builder.
+     */
+    public Builder setHooks(List<InputHook> hooks) {
+      context.hooks = hooks;
+      return this;
+    }
+
+    /**
+     * Adds a hook to the input.
+     *
+     * @param hook The hook to add.
+     * @return The context builder.
+     */
+    public Builder addHook(InputHook hook) {
+      context.hooks.add(hook);
+      return this;
+    }
+
+    /**
+     * Removes a hook from the input.
+     *
+     * @param hook The hook to remove.
+     * @return The context builder.
+     */
+    public Builder removeHook(InputHook hook) {
+      context.hooks.remove(hook);
       return this;
     }
   }

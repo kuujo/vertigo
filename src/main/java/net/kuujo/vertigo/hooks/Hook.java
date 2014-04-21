@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.context;
+package net.kuujo.vertigo.hooks;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 /**
- * Connection contexts represent a direct connection between two instances
- * of separate components.<p>
+ * Base type for hooks.
  *
  * @author Jordan Halterman
  */
-public interface ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="hook")
+public interface Hook extends JsonSerializable {
 }

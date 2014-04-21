@@ -15,7 +15,10 @@
  */
 package net.kuujo.vertigo.context;
 
+import java.util.List;
+
 import net.kuujo.vertigo.context.impl.DefaultOutputConnectionContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -39,5 +42,12 @@ public interface OutputConnectionContext extends ConnectionContext<OutputConnect
    * @return The parent stream context.
    */
   OutputStreamContext stream();
+
+  /**
+   * Returns a list of output hooks.
+   *
+   * @return A list of output hooks.
+   */
+  List<OutputHook> hooks();
 
 }

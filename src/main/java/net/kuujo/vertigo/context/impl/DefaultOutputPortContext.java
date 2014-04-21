@@ -16,12 +16,15 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.context.OutputStreamContext;
+import net.kuujo.vertigo.hooks.OutputHook;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -34,6 +37,7 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
   private static final String DEFAULT_PORT = "default";
   private String port = DEFAULT_PORT;
   private Collection<OutputStreamContext> streams = new ArrayList<>();
+  private List<OutputHook> hooks = new ArrayList<>();
   @JsonIgnore
   private OutputContext output;
 
@@ -61,13 +65,14 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
     return address;
   }
 
-  /**
-   * Returns a collection of port connections.
-   *
-   * @return A collection of connections in the port.
-   */
+  @Override
   public Collection<OutputStreamContext> streams() {
     return streams;
+  }
+
+  @Override
+  public List<OutputHook> hooks() {
+    return hooks;
   }
 
   @Override
@@ -197,6 +202,50 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      */
     public Builder removeStream(OutputStreamContext stream) {
       context.streams.remove(stream);
+      return this;
+    }
+
+    /**
+     * Sets the output hooks.
+     *
+     * @param hooks An array of hooks.
+     * @return The context builder.
+     */
+    public Builder setHooks(OutputHook... hooks) {
+      context.hooks = Arrays.asList(hooks);
+      return this;
+    }
+
+    /**
+     * Sets the output hooks.
+     *
+     * @param hooks A list of hooks.
+     * @return The context builder.
+     */
+    public Builder setHooks(List<OutputHook> hooks) {
+      context.hooks = hooks;
+      return this;
+    }
+
+    /**
+     * Adds a hook to the output.
+     *
+     * @param hook The hook to add.
+     * @return The context builder.
+     */
+    public Builder addHook(OutputHook hook) {
+      context.hooks.add(hook);
+      return this;
+    }
+
+    /**
+     * Removes a hook from the output.
+     *
+     * @param hook The hook to remove.
+     * @return The context builder.
+     */
+    public Builder removeHook(OutputHook hook) {
+      context.hooks.remove(hook);
       return this;
     }
   }

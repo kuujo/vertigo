@@ -24,8 +24,10 @@ import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.impl.DefaultComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.context.impl.DefaultInputContext;
 import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.context.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.context.impl.DefaultOutputContext;
 import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
 import net.kuujo.vertigo.data.WatchableAsyncMap;
 
@@ -51,7 +53,11 @@ public class CoordinatorTest extends TestVerticle {
             .setName("test")
             .setAddress("test.test")
             .setStatusAddress("test.test.__status")
-            .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
+            .addInstance(DefaultInstanceContext.Builder.newBuilder()
+                .setAddress("test.test-1")
+                .setStatusAddress("test.test-1.__status")
+                .setInput(DefaultInputContext.Builder.newBuilder().build())
+                .setOutput(DefaultOutputContext.Builder.newBuilder().build()).build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final Cluster cluster = new LocalCluster(vertx, container);
@@ -91,7 +97,11 @@ public class CoordinatorTest extends TestVerticle {
             .setName("test")
             .setAddress("test.test")
             .setStatusAddress("test.test.__status")
-            .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
+            .addInstance(DefaultInstanceContext.Builder.newBuilder()
+                .setAddress("test.test-1")
+                .setStatusAddress("test.test-1.__status")
+                .setInput(DefaultInputContext.Builder.newBuilder().build())
+                .setOutput(DefaultOutputContext.Builder.newBuilder().build()).build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final Cluster cluster = new LocalCluster(vertx, container);
@@ -137,7 +147,11 @@ public class CoordinatorTest extends TestVerticle {
             .setName("test")
             .setAddress("test.test")
             .setStatusAddress("test.test.__status")
-            .addInstance(DefaultInstanceContext.Builder.newBuilder().setAddress("test.test-1").setStatusAddress("test.test-1.__status").build()).build()).build();
+            .addInstance(DefaultInstanceContext.Builder.newBuilder()
+                .setAddress("test.test-1")
+                .setStatusAddress("test.test-1.__status")
+                .setInput(DefaultInputContext.Builder.newBuilder().build())
+                .setOutput(DefaultOutputContext.Builder.newBuilder().build()).build()).build()).build();
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final Cluster cluster = new LocalCluster(vertx, container);

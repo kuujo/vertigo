@@ -19,7 +19,6 @@ import java.util.List;
 
 import net.kuujo.vertigo.context.impl.DefaultModuleContext;
 import net.kuujo.vertigo.context.impl.DefaultVerticleContext;
-import net.kuujo.vertigo.data.DataStore;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -129,20 +128,6 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
    * @return The component HA group.
    */
   String group();
-
-  /**
-   * Returns the component storage type.
-   *
-   * @return The component storage type.
-   */
-  Class<? extends DataStore> storageType();
-
-  /**
-   * Returns the component storage configuration.
-   *
-   * @return The component storage configuration.
-   */
-  JsonObject storageConfig();
 
   /**
    * Returns the component context as a module context.

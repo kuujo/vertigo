@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.network;
 
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.network.impl.DefaultModuleConfig;
 import net.kuujo.vertigo.network.impl.DefaultVerticleConfig;
 
@@ -133,36 +132,5 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>
    * @return The component deployment group.
    */
   String getGroup();
-
-  /**
-   * Sets the component storage facility.
-   *
-   * @param storage The component storage type.
-   * @return The component configuration.
-   */
-  T setStorage(Class<? extends DataStore> storage);
-
-  /**
-   * Sets the component storage facility.
-   *
-   * @param storage The component storage type.
-   * @param config The storage configuration.
-   * @return The component configuration.
-   */
-  T setStorageType(Class<? extends DataStore> storage, JsonObject config);
-
-  /**
-   * Returns the component storage facility.
-   *
-   * @return The component storage type.
-   */
-  Class<? extends DataStore> getStorageType();
-
-  /**
-   * Returns the component storage configuration.
-   *
-   * @return The component storage configuration.
-   */
-  JsonObject getStorageConfig();
 
 }

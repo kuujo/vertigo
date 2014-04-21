@@ -20,13 +20,11 @@ import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.DefaultInputCollector;
 import net.kuujo.vertigo.io.impl.DefaultOutputCollector;
 import net.kuujo.vertigo.logging.PortLoggerFactory;
-import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -51,7 +49,6 @@ public class DefaultComponent implements Component {
   protected InstanceContext context;
   protected final DefaultInputCollector input;
   protected final DefaultOutputCollector output;
-  protected DataStore storage;
   private boolean started;
 
   protected DefaultComponent(InstanceContext context, Vertx vertx, Container container) {
@@ -97,11 +94,6 @@ public class DefaultComponent implements Component {
   }
 
   @Override
-  public DataStore storage() {
-    return storage;
-  }
-
-  @Override
   public Logger logger() {
     return logger;
   }
@@ -113,15 +105,11 @@ public class DefaultComponent implements Component {
     // Retrieve the component context from the coordinator (the current cluster).
     coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
-      @SuppressWarnings("unchecked")
       public void handle(AsyncResult<InstanceContext> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           context = result.result();
-
-          // Set up the component storage facility.
-          storage = Factories.resolveObject(cluster.scope(), context.component().storageType(), context.component().storageConfig(), vertx);
 
           output.open(new Handler<AsyncResult<Void>>() {
             @Override

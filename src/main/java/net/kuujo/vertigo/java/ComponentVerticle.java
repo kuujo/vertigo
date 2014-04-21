@@ -20,7 +20,6 @@ import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 
@@ -43,7 +42,6 @@ public abstract class ComponentVerticle extends Verticle {
   protected Logger logger;
   protected InputCollector input;
   protected OutputCollector output;
-  protected DataStore storage;
 
   @Override
   public void start(final Future<Void> startResult) {
@@ -53,7 +51,6 @@ public abstract class ComponentVerticle extends Verticle {
     logger = component.logger();
     input = component.input();
     output = component.output();
-    storage = component.storage();
     vertigo = new Vertigo(this);
 
     component.start(new Handler<AsyncResult<Component>>() {

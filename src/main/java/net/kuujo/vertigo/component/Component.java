@@ -17,7 +17,6 @@ package net.kuujo.vertigo.component;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.data.DataStore;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -101,19 +100,6 @@ public interface Component {
    * @return The cluster to which the component belongs.
    */
   Cluster cluster();
-
-  /**
-   * Returns the component data storage facility.<p>
-   *
-   * Component data storage is configured in the component configuration within
-   * the network definition. This allows network configurations to specify
-   * component data storage facilities separate from the implementation and
-   * depending on how the network is deployed. Data storage APIs can be used
-   * for synchronization or state persistence.
-   *
-   * @return The component data storage facility.
-   */
-  DataStore storage();
 
   /**
    * Returns the instance logger. This is a special logger that references the

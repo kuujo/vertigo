@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.context.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +24,6 @@ import net.kuujo.vertigo.context.ComponentContext;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.ModuleContext;
 import net.kuujo.vertigo.context.VerticleContext;
-import net.kuujo.vertigo.data.DataStore;
-import net.kuujo.vertigo.data.impl.HazelcastDataStore;
 import net.kuujo.vertigo.util.serializer.Serializer;
 import net.kuujo.vertigo.util.serializer.SerializerFactory;
 
@@ -60,7 +57,6 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   protected String group = DEFAULT_GROUP;
   protected Map<String, Object> config;
   protected List<InstanceContext> instances = new ArrayList<>();
-  protected Map<String, Object> storage = new HashMap<>();
   private @JsonIgnore
   DefaultNetworkContext network;
 
@@ -174,25 +170,6 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   @Override
   public String group() {
     return group;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public Class<? extends DataStore> storageType() {
-    String storage = (String) this.storage.get("class");
-    if (storage == null) {
-      return HazelcastDataStore.class;
-    }
-    try {
-      return (Class<? extends DataStore>) Class.forName(storage);
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
-  }
-
-  @Override
-  public JsonObject storageConfig() {
-    return new JsonObject(storage);
   }
 
   @Override

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.context.ModuleContext;
-import net.kuujo.vertigo.data.DataStore;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -150,30 +149,6 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      */
     public Builder setGroup(String group) {
       context.group = group;
-      return this;
-    }
-
-    /**
-     * Sets the component storage type.
-     *
-     * @param storage The component storage type.
-     * @return The ccontext builder.
-     */
-    public Builder setStorageType(Class<? extends DataStore> storage) {
-      context.storage.put("class", storage);
-      return this;
-    }
-
-    /**
-     * Sets the component storage configuration.
-     *
-     * @param config The component storage configuration.
-     * @return The context builder.
-     */
-    public Builder setStorageConfig(JsonObject config) {
-      for (String fieldName : config.getFieldNames()) {
-        context.storage.put(fieldName, config.getValue(fieldName));
-      }
       return this;
     }
 

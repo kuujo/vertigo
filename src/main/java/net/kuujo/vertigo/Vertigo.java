@@ -42,7 +42,7 @@ import org.vertx.java.platform.Verticle;
  * detect and use the current Vert.x cluster state. See method documentation
  * for more information.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class Vertigo {
   private final ClusterManagerFactory clusterFactory;
@@ -150,7 +150,13 @@ public final class Vertigo {
    * a Xync backed cluster, the network will be deployed as a remote network.
    * This means that any runtime configuration changes to the network will
    * result in components being deployed on various nodes within the Vert.x
-   * cluster rather than within the current Vert.x instance.
+   * cluster rather than within the current Vert.x instance.<p>
+   *
+   * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
+   * The active network can be used to reconfigure the live network just like
+   * a normal network configuration. When active network configurations change,
+   * the live network is notified and asynchronously reconfigures itself to
+   * handle the configuration changes.
    *
    * @param name The name of the network to deploy. if a network with the
    *        given name is already deployed in the current cluster then the
@@ -226,6 +232,12 @@ public final class Vertigo {
    *
    * If the current Vert.x instance is not a Xync clustered instance then all
    * networks will fall back to local deployment.<p>
+   *
+   * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
+   * The active network can be used to reconfigure the live network just like
+   * a normal network configuration. When active network configurations change,
+   * the live network is notified and asynchronously reconfigures itself to
+   * handle the configuration changes.
    *
    * @param network The network configuration to deploy.
    * @param doneHandler An asynchronous handler to be called once complete. If

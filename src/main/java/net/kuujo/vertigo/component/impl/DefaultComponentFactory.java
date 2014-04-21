@@ -23,9 +23,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
 /**
- * A default component factory implementation.
+ * Default component factory implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultComponentFactory implements ComponentFactory {
   private Vertx vertx;

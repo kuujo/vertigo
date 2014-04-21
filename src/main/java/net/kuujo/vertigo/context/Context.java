@@ -28,7 +28,7 @@ import net.kuujo.vertigo.util.serializer.JsonSerializable;
  * allowing networks and components to monitor configurations for changes
  * internally and update their state at runtime.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Context<T extends Context<T>> extends Observable<T>, JsonSerializable {
 

@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 /**
  * Network configuration.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,
@@ -35,6 +35,26 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   defaultImpl=DefaultNetworkConfig.class
 )
 public interface NetworkConfig extends Config<NetworkConfig>, ComponentConfigurable, ConnectionConfigurable {
+
+  /**
+   * <code>name</code> is a string indicating the unique network name. This is the
+   * address at which the network will monitor network components. This field is required.
+   */
+  public static final String NETWORK_NAME = "name";
+
+  /**
+   * <code>scope</code> is a string indicating the network cluster scope. The value
+   * can be either <code>local</code> or <code>cluster</code>.
+   */
+  public static final String NETWORK_SCOPE = "scope";
+
+  /**
+   * <code>components</code> is an object defining network component configurations. Each
+   * item in the object must be keyed by the unique component address, with each item
+   * being an object containing the component configuration. See the {@link ComponentConfig}
+   * class for component configuration options.
+   */
+  public static final String NETWORK_COMPONENTS = "components";
 
   /**
    * Returns the network name.

@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Component configuration.
+ * Components are synonymous with Vert.x modules and verticles.
+ * Each component can have its own configuration and any number
+ * of instances.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.NAME,
@@ -93,7 +95,7 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>
   /**
    * Component type.
    *
-   * @author Jordan Halterman
+   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
    */
   public static enum Type {
     MODULE("module"),

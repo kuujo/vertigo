@@ -29,7 +29,7 @@ import org.vertx.java.core.json.JsonObject;
  * This is the base interface for all output interfaces. It exposes basic
  * methods for grouping and sending messages.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Output<T extends Output<T>> {
 

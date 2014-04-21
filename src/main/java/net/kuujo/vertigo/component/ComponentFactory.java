@@ -21,9 +21,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 
 /**
- * Component factory type.
+ * Component factory.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ComponentFactory {
 

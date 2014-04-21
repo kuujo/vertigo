@@ -32,9 +32,13 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * Default coordinator implementation.
+ * Default coordinator implementation.<p>
  *
- * @author Jordan Halterman
+ * This coordinator implementation uses the current Vertigo cluster
+ * facility to coordinate with the network manager using event-based
+ * cluster-wide shared data keys.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultComponentCoordinator implements ComponentCoordinator {
   private final String address;

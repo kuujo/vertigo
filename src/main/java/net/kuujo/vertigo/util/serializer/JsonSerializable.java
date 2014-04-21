@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * class to serialize. To implement more advanced serialization features see the Jackson
  * annotations documentation or provide a custom serializer.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.ALWAYS)

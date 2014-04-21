@@ -23,7 +23,7 @@ import org.vertx.java.core.Vertx;
 /**
  * Basic input interface.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The input type.
  */

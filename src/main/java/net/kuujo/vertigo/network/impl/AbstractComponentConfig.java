@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Base component configuration.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The component type interface.
  */

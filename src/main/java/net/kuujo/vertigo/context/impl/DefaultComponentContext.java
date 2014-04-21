@@ -40,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * a single network component. Contexts are immutable as they are constructed once a
  * network has been deployed.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.NAME,

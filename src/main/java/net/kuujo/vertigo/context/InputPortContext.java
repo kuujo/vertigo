@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Input port context represents a set of input connections for a single
  * port within a single instance of a component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.io.group;
 /**
  * Input/output group.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Group<T extends Group<T>> {
 

@@ -44,7 +44,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 /**
  * Default input collector implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputCollector implements InputCollector, Observer<InputContext> {
   private static final Logger log = LoggerFactory.getLogger(DefaultInputCollector.class);

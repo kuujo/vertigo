@@ -34,7 +34,7 @@ import org.vertx.java.core.json.JsonObject;
  * However, internally it wraps {@link ConnectionOutputGroup} instances
  * which handle grouping logic for individual output connections.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class BaseOutputGroup implements OutputGroup {
   private final String name;

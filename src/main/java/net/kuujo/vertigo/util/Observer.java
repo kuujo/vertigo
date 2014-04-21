@@ -18,7 +18,7 @@ package net.kuujo.vertigo.util;
 /**
  * An object observer. This is the counter-part to the {@link Observable}.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Observer<T extends Observable<T>> {
 

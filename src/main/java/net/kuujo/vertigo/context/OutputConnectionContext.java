@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Output connection context represents a single instance's output to
  * an instance of another component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

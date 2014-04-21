@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * A Jackson-based serializer implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class JacksonSerializer implements Serializer {
   private final ObjectMapper mapper;

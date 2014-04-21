@@ -30,7 +30,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 /**
  * Shared data based set implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The set data type.
  */

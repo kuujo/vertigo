@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Base context.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 abstract class BaseContext<T extends Context<T>> implements Context<T> {
   private static final Serializer serializer = SerializerFactory.getSerializer(BaseContext.class);

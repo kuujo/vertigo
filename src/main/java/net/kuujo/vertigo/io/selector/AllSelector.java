@@ -26,7 +26,7 @@ import net.kuujo.vertigo.io.connection.Connection;
  * Thus, if a component has four instances, all four component workers will
  * receive every message emitted to that component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class AllSelector implements Selector {
 

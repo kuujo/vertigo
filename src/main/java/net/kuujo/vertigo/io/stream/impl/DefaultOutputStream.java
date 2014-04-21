@@ -38,7 +38,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Default output stream implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputStream implements OutputStream {
   private final Vertx vertx;

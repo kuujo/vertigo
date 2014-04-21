@@ -31,7 +31,7 @@ import net.kuujo.vertigo.io.Output;
  * while groups are guaranteed to be strongly ordered, messages within groups
  * are not guaranteed to be ordered.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputGroup extends Group<OutputGroup>, Output<OutputGroup> {
 

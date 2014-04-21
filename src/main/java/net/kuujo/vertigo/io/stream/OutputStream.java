@@ -30,7 +30,7 @@ import net.kuujo.vertigo.io.Output;
  * can be sent to a single connection or it can be copied to multiple connections
  * based on the selector implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputStream extends Output<OutputStream>, Openable<OutputStream>, Closeable<OutputStream> {
 

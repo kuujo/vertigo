@@ -43,7 +43,7 @@ import org.vertx.java.platform.Container;
  * utility will automatically fall back to the appropriate default local- or cluster-
  * type according to the current Vertigo cluster mode.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class Factories {
 

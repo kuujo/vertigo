@@ -28,7 +28,7 @@ import org.vertx.java.platform.Container;
 /**
  * Cluster factory.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ClusterFactory {
   private static Cluster currentCluster;
@@ -67,7 +67,13 @@ public class ClusterFactory {
   }
 
   /**
-   * Loads the current cluster scope.
+   * Loads the current cluster scope.<p>
+   *
+   * The current scope is determined based on whether the Xync cluster is
+   * available. The Xync API will check whether any handlers for the Xync
+   * <code>__CLUSTER__</code> address exist on the event bus using a short
+   * timeout, and if so then the current cluster scope will be set to
+   * <code>CLUSTER</code>, otherwise the cluster scope will be <code>LOCAL</code>.
    *
    * @param doneHandler An asynchronous handler to be called once the scope is loaded.
    */

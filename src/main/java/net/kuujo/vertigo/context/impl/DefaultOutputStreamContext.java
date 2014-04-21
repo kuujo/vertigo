@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Output connection context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext> implements OutputStreamContext {
   private List<OutputConnectionContext> connections = new ArrayList<>();

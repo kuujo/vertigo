@@ -20,7 +20,7 @@ import net.kuujo.vertigo.io.selector.Selector;
 /**
  * Connection contatiner.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ConnectionConfigurable {
 

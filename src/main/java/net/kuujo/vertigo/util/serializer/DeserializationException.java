@@ -21,7 +21,7 @@ package net.kuujo.vertigo.util.serializer;
  * 
  * This exception is thrown when an error occurs in deserialization.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
 public class DeserializationException extends SerializationException {

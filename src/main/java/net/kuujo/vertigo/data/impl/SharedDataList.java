@@ -32,7 +32,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 /**
  * Shared data-based list implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalType
 @ClusterType

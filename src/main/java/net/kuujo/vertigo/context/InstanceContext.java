@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * in order to support runtime network configuration changes by automatically
  * updating their input and output connections when the context changes.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

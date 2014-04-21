@@ -26,7 +26,7 @@ import org.vertx.java.core.Handler;
  * to ensure that messages are not lost by components sending or receiving
  * messages prior to completion of startup.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ComponentCoordinator {
 
@@ -81,7 +81,12 @@ public interface ComponentCoordinator {
   ComponentCoordinator pause(Handler<AsyncResult<Void>> doneHandler);
 
   /**
-   * Sets a resume handler on the coordinator.
+   * Sets a resume handler on the coordinator.<p>
+   *
+   * This handler will be called when all components in the network
+   * are setup and ready to begin processing messages. The network
+   * coordinator will make this determination by evaluating component
+   * status keys in the cluster.
    *
    * @param handler A handler to be called when the component should resume operation.
    * @return The component coordinator.
@@ -89,7 +94,12 @@ public interface ComponentCoordinator {
   ComponentCoordinator resumeHandler(Handler<Void> handler);
 
   /**
-   * Sets a pause hadler on the coordinator.
+   * Sets a pause handler on the coordinator.<p>
+   *
+   * This handler will be called when some component somewhere in the
+   * network has been paused. When a component is paused, the network
+   * manager will notify all component instances that the network is
+   * paused until resume.
    *
    * @param handler A handler to be called when the component should pause operation.
    * @return The component coordinator.

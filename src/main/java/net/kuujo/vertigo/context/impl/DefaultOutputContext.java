@@ -31,7 +31,7 @@ import org.vertx.java.core.json.JsonObject;
  * source component and a target component. This information
  * is used to indicate where the component should send messages.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputContext extends DefaultIOContext<OutputContext> implements OutputContext {
   private Collection<OutputPortContext> ports = new ArrayList<>();

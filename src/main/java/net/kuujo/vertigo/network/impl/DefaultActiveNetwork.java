@@ -34,7 +34,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Default active network implementation.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkContext> {
   private NetworkConfig network;

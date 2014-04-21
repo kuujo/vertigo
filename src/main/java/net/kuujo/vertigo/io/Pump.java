@@ -20,7 +20,7 @@ import org.vertx.java.core.Handler;
 /**
  * A Vertigo message pump similar to the Vert.x stream pump.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class Pump {
   private final Input<?> input;

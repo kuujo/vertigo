@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Input connection context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputConnectionContext extends DefaultConnectionContext<InputConnectionContext> implements InputConnectionContext {
   @JsonIgnore

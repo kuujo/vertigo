@@ -18,7 +18,7 @@ package net.kuujo.vertigo.context;
 /**
  * Base context for input and output port contexts.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The port type.
  */

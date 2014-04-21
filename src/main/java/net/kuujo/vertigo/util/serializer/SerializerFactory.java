@@ -44,7 +44,7 @@ import net.kuujo.vertigo.util.serializer.impl.JacksonSerializerFactory;
  * properties within the serializable object. For more advanced serialization, look at the
  * Jackson annotations documentation.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class SerializerFactory {
   private static final String SERIALIZER_FACTORY_CLASS_NAME = "net.kuujo.vertigo.serializer-factory";

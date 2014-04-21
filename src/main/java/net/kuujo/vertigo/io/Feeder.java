@@ -22,7 +22,7 @@ import org.vertx.java.core.Vertx;
  * Provides an interface for feeding outputs using a handler that will
  * be called whenever the given output is prepared to accept a single message.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The output type.
  */

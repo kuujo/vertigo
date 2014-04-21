@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Output connection context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputConnectionContext extends DefaultConnectionContext<OutputConnectionContext> implements OutputConnectionContext {
   @JsonIgnore

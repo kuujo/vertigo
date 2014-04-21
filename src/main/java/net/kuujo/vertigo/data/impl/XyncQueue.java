@@ -27,7 +27,7 @@ import org.vertx.java.core.Vertx;
 /**
  * An event bus queue implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The queue data type.
  */

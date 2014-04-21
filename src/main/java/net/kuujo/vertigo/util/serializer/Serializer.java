@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * Vertigo serializers serialize objects to Vert.x {@link JsonObject} instances for easy
  * passage over the Vert.x event bus.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Serializer {
 

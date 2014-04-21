@@ -20,7 +20,7 @@ import net.kuujo.vertigo.component.Component;
 /**
  * Component hook.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ComponentHook extends IOHook {
 

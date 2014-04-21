@@ -26,7 +26,7 @@ import net.kuujo.vertigo.io.port.OutputPort;
  * The output collector exposes a simple interface to {@link OutputPort} instances
  * through which messages can be sent.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputCollector extends IOCollector<OutputCollector> {
 

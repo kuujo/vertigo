@@ -44,7 +44,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Default output connection implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputConnection implements OutputConnection {
   private static final int DEFAULT_MAX_QUEUE_SIZE = 1000;

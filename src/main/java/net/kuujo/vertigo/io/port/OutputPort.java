@@ -21,7 +21,7 @@ import net.kuujo.vertigo.io.Output;
 /**
  * An input port.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputPort extends Port<OutputPort>, Output<OutputPort> {
 

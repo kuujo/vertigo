@@ -32,7 +32,7 @@ import org.vertx.java.platform.Verticle;
 /**
  * Base class for Java vertigo component verticle implementations.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class ComponentVerticle extends Verticle {
   private Component component;

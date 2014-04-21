@@ -18,7 +18,7 @@ package net.kuujo.vertigo.data;
 /**
  * Asynchronous set.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The set data type.
  */

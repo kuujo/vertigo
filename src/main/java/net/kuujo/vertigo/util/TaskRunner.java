@@ -23,7 +23,7 @@ import org.vertx.java.core.Handler;
 /**
  * Runs handlers sequentially to prevent race conditions in asynchronous coordination.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class TaskRunner {
   private final Queue<Handler<Task>> queue = new ArrayDeque<>();

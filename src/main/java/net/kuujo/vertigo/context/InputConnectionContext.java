@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Input connection context represents a single instance's input from
  * an instance of another component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

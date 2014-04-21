@@ -16,9 +16,9 @@
 package net.kuujo.vertigo.hooks;
 
 /**
- * Input/output hook hook.
+ * Input/output hook.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface IOHook extends InputHook, OutputHook {
 }

@@ -45,7 +45,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 /**
  * Default output port implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext> {
   private static final Logger log = LoggerFactory.getLogger(DefaultOutputPort.class);

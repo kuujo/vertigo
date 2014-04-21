@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 /**
  * Module component configuration.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,
@@ -31,6 +31,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   defaultImpl=DefaultModuleConfig.class
 )
 public interface ModuleConfig extends ComponentConfig<ModuleConfig> {
+
+  /**
+   * <code>module</code> is a string indicating the module name. This field is required
+   * for all module components.
+   */
+  public static final String MODULE_NAME = "module";
 
   /**
    * Sets the module name.

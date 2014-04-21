@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Input port context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputPortContext extends BaseContext<InputPortContext> implements InputPortContext {
   private String port;

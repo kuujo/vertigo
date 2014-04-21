@@ -38,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * See {@link ModuleContext} and {@link VerticleContext} for module and verticle
  * specific configuration options respectively.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.NAME,

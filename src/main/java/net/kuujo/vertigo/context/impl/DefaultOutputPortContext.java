@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Output port context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputPortContext extends BaseContext<OutputPortContext> implements OutputPortContext {
   private static final String DEFAULT_PORT = "default";

@@ -49,9 +49,39 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
- * Vertigo network manager.
+ * Vertigo network manager.<p>
  *
- * @author Jordan Halterman
+ * The manager is at the core of all Vertigo networks. Its responsibilities
+ * are to handle deployment, undeployment, reconfiguration, and coordination
+ * of components within a network. Each network has its own network manager.
+ * The manager will be deployed to the network's cluster scope using the
+ * network name as the user-assigned deployment ID.<p>
+ *
+ * The manager uses the highest level cluster scope available to coordinate
+ * networks. When the manager deploys a component, it will set a key in the
+ * cluster for that component containing the component's configuration. Once
+ * the component has been deployed, the component will then watch that key
+ * for changes. If the network's configuration changes - e.g. through an
+ * active network configuration change - the network will automatically
+ * notify all running components by updating their individual configurations
+ * in the cluster.<p>
+ *
+ * Once a component has completed startup, it will set a status key in the
+ * cluster. The manager watches status keys for each component instance in
+ * the network and once all status keys have been set the manager sets a
+ * network-wide status key indicating that the network is ready, e.g. all
+ * instances in the network are running and their connections are open.
+ * When a configuration change occurs, the manager will unset the network-wide
+ * status key, indicating to deployed instances that a configuration change
+ * is taking place. This allows components to potentially take action preventing
+ * data loss prior to configuration changes.<p>
+ *
+ * Note that configuration changes are essentially atomic. When a configuration
+ * change is detected, if the manager is already processing a configuration change
+ * then the change will be queued for processing once the current configuration
+ * change is complete.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkManager extends BusModBase {
   private static final Logger log = LoggerFactory.getLogger(NetworkManager.class);

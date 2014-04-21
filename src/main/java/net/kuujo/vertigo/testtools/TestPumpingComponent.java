@@ -23,7 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Pumping test component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class TestPumpingComponent extends ComponentVerticle {
 

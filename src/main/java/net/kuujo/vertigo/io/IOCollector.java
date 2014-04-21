@@ -23,7 +23,7 @@ import net.kuujo.vertigo.io.port.Port;
  *
  * Collectors are simple interfaces to collections of ports.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The collector type.
  */

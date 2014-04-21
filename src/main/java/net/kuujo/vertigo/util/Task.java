@@ -21,7 +21,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 /**
  * A running task.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class Task {
   private static final Logger log = LoggerFactory.getLogger(Task.class);

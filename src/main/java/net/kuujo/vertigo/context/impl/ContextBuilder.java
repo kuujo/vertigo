@@ -37,7 +37,7 @@ import net.kuujo.vertigo.network.VerticleConfig;
 /**
  * A context builder.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class ContextBuilder {
   private static final String COMPONENT_ADDRESS_PATTERN = System.getProperty("vertigo.component.address", "%1$s.%2$s");

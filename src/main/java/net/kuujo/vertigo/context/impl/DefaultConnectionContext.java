@@ -17,12 +17,11 @@ package net.kuujo.vertigo.context.impl;
 
 import net.kuujo.vertigo.context.ConnectionContext;
 
-
 /**
  * Connection contexts represent a direct connection between
  * one component and another component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class DefaultConnectionContext<T extends ConnectionContext<T>> extends BaseContext<T> {
 }

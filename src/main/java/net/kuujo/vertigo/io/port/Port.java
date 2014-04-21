@@ -29,7 +29,7 @@ import net.kuujo.vertigo.io.Openable;
  * to one another. Instead, connections between ports on different components
  * are defined in network configurations.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Port<T extends Port<T>> extends Openable<T>, Closeable<T> {
 

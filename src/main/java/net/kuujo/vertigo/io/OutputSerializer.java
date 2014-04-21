@@ -30,7 +30,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Handles serialization of output messages.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class OutputSerializer {
   private final Map<Class<?>, Serializer> serializers = new HashMap<>();

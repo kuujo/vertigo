@@ -41,7 +41,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Default connection configuration implementation.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultConnectionConfig implements ConnectionConfig {
   private static final String DEFAULT_OUT_PORT = "out";
@@ -319,7 +319,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   /**
    * Default source implementation.
    * 
-   * @author Jordan Halterman
+   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
    */
   public static class DefaultSource implements Source {
     private String component;
@@ -367,7 +367,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   /**
    * Default target implementation.
    * 
-   * @author Jordan Halterman
+   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
    */
   public static class DefaultTarget implements Target {
     private String component;

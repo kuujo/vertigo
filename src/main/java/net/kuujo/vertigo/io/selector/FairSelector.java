@@ -27,7 +27,7 @@ import net.kuujo.vertigo.io.connection.Connection;
  * sizes. This means the if one connection's queue is backed up, the fair
  * selector will evenly dispatch messages to connections with shorter queues.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class FairSelector implements Selector {
 

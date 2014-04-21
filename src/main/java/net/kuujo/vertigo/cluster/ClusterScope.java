@@ -28,7 +28,7 @@ package net.kuujo.vertigo.cluster;
  * Vertigo can synchronize local networks across the cluster and prevent
  * event bus address clashes.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public enum ClusterScope {
 

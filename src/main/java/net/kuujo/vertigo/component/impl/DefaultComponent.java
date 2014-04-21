@@ -38,9 +38,12 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Container;
 
 /**
- * A default component implementation.
+ * A default component implementation.<p>
  *
- * @author Jordan Halterman
+ * This component implementation simply handles startup of component
+ * inputs and outputs and provides an interface to access messaging APIs.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultComponent implements Component {
   protected final Vertx vertx;

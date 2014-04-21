@@ -40,7 +40,7 @@ import org.vertx.java.platform.Container;
  * Vertigo clusters also expose asynchronous data structures for synchronization. See
  * cluster implementations for specifics regarding how data structures are implemented.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalTypeInfo(defaultImpl=LocalCluster.class)
 @ClusterTypeInfo(defaultImpl=RemoteCluster.class)

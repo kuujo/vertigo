@@ -1,7 +1,5 @@
-package net.kuujo.vertigo.io.selector;
-
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +13,8 @@ package net.kuujo.vertigo.io.selector;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.kuujo.vertigo.io.selector;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
  * selectors. To implement a custom selector, simply extend the base
  * {@link Selector} class.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class CustomSelector implements Selector {
   private Map<String, Object> properties = new HashMap<>();

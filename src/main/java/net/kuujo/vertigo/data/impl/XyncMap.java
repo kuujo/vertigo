@@ -35,7 +35,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 /**
  * An event bus map implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <K> The map key type.
  * @param <V> The map value type.

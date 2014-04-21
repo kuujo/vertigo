@@ -21,7 +21,7 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
 /**
  * A Jackson json serializer factory implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class JacksonSerializerFactory extends SerializerFactory {
 

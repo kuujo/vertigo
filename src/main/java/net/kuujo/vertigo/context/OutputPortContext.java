@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Output port context represents a set of output connections for a single
  * port within a single instance of a component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

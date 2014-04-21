@@ -26,9 +26,14 @@ import net.kuujo.vertigo.network.impl.DefaultConnectionConfig;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Connection configuration.
+ * A connection represents a link between two components within a network.<p>
  *
- * @author Jordan Halterman
+ * When a connection is created, each instance of the source component
+ * will be setup to send messages to each instance of the target component.
+ * How messages are routed to multiple target instances can be configured
+ * using selectors.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,
@@ -157,7 +162,7 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
   /**
    * Connection source.
    *
-   * @author Jordan Halterman
+   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
    */
   @JsonTypeInfo(
     use=JsonTypeInfo.Id.CLASS,
@@ -227,7 +232,7 @@ public interface ConnectionConfig extends Config<ConnectionConfig>, ComponentCon
   /**
    * Connection target.
    *
-   * @author Jordan Halterman
+   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
    */
   @JsonTypeInfo(
     use=JsonTypeInfo.Id.CLASS,

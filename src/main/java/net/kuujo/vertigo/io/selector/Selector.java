@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * to the resulting output channel, the selector is used to select which
  * {@link ConnectionConfig}s to which to send the message.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type", defaultImpl=CustomSelector.class)
 @JsonSubTypes({

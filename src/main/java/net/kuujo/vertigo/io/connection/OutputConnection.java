@@ -26,7 +26,7 @@ import net.kuujo.vertigo.io.Output;
  * input connection which receives messages from this connection and this
  * connection only.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputConnection extends Connection<OutputConnection>, Output<OutputConnection> {
 

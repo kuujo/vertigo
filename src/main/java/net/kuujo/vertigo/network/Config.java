@@ -20,7 +20,7 @@ import net.kuujo.vertigo.util.serializer.JsonSerializable;
 /**
  * Base configuration.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Config<T extends Config<T>> extends JsonSerializable {
 }

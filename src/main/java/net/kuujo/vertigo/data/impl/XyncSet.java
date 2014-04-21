@@ -27,7 +27,7 @@ import org.vertx.java.core.Vertx;
 /**
  * An event bus set implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The set data type.
  */

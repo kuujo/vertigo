@@ -26,7 +26,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Handles deserialization of input objects.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class InputDeserializer {
   private final Map<String, Class<?>> classes = new HashMap<>();

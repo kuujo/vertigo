@@ -20,7 +20,7 @@ import org.vertx.java.platform.impl.ModuleIdentifier;
 /**
  * Component helper methods.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class Components {
 

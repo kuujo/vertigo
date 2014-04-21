@@ -20,7 +20,7 @@ package net.kuujo.vertigo.util;
  * observable in that it allows immutable objects to be "updated"
  * by replacing them with a new updated immutable.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Observable<T extends Observable<T>> {
 

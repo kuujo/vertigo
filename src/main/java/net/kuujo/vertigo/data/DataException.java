@@ -21,7 +21,7 @@ import net.kuujo.vertigo.VertigoException;
 /**
  * Data exception.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
 public class DataException extends VertigoException {

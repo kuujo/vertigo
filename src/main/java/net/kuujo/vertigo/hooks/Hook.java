@@ -22,7 +22,7 @@ import net.kuujo.vertigo.util.serializer.JsonSerializable;
 /**
  * Base type for hooks.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="hook")
 public interface Hook extends JsonSerializable {

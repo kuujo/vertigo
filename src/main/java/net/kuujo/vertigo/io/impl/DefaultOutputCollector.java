@@ -44,7 +44,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 /**
  * Default output collector implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputCollector implements OutputCollector, Observer<OutputContext> {
   private static final Logger log = LoggerFactory.getLogger(DefaultOutputCollector.class);

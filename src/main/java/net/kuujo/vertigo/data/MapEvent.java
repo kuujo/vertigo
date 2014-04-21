@@ -20,14 +20,14 @@ import net.kuujo.vertigo.util.serializer.JsonSerializable;
 /**
  * Map event.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class MapEvent<K, V> implements JsonSerializable {
 
   /**
    * Map event type.
    *
-   * @author Jordan Halterman
+   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
    */
   public static enum Type {
 

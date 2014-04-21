@@ -21,7 +21,7 @@ import org.vertx.java.core.Handler;
 /**
  * An openable type.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The openable type.
  */

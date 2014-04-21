@@ -21,7 +21,7 @@ import net.kuujo.vertigo.io.Input;
 /**
  * A component-to-component input connection.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputConnection extends Connection<InputConnection>, Input<InputConnection> {
  

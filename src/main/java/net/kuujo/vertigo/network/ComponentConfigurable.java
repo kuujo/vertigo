@@ -20,7 +20,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Component container.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ComponentConfigurable {
 

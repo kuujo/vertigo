@@ -20,7 +20,7 @@ import net.kuujo.vertigo.VertigoException;
 /**
  * A connection exception.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
 public class ConnectionException extends VertigoException {

@@ -20,7 +20,7 @@ import net.kuujo.vertigo.VertigoException;
 /**
  * A malformed definition exception.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
 public class MalformedNetworkException extends VertigoException {

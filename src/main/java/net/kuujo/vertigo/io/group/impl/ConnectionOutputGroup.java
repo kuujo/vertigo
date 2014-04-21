@@ -35,7 +35,7 @@ import org.vertx.java.core.json.JsonObject;
  * This is the output group that handles actually sending grouped messages on the
  * connection.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ConnectionOutputGroup implements OutputGroup {
   private final String id;

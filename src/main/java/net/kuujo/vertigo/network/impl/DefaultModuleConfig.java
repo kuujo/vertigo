@@ -23,16 +23,9 @@ import org.vertx.java.platform.impl.ModuleIdentifier;
 /**
  * Default module configuration implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultModuleConfig extends AbstractComponentConfig<ModuleConfig> implements ModuleConfig {
-
-  /**
-   * <code>module</code> is a string indicating the module name. This field is required
-   * for all module components.
-   */
-  public static final String MODULE_NAME = "module";
-
   private String module;
 
   public DefaultModuleConfig() {

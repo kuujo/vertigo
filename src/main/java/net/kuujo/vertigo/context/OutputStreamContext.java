@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * The context contains information about how to dispatch messages
  * between the group of target component instances.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

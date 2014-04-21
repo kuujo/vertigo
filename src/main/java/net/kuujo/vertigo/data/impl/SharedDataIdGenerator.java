@@ -29,7 +29,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 /**
  * Shared data based ID generator.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalType
 @ClusterType

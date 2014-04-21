@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Network contexts are immutable as they are constructed after a network
  * is deployed.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

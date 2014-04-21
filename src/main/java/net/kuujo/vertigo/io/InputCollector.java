@@ -26,7 +26,7 @@ import net.kuujo.vertigo.io.port.InputPort;
  * The input collector is the primary interface for receiving input within a component
  * instance. Input collectors are simple wrappers around {@link InputPort} instances.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputCollector extends IOCollector<InputCollector> {
 

@@ -21,7 +21,7 @@ import org.vertx.java.core.Handler;
 /**
  * Watchable asynchronous map.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <K> The map key type.
  * @param <V> The map value type.

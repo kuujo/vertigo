@@ -38,7 +38,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * deployed network. Network contexts are immutable as they are constructed after a
  * network is deployed.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultNetworkContext extends BaseContext<NetworkContext> implements NetworkContext {
   private String name;

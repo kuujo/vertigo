@@ -20,7 +20,7 @@ import net.kuujo.vertigo.VertigoException;
 /**
  * A network exception.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
 public class NetworkException extends VertigoException {

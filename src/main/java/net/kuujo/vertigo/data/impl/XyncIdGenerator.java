@@ -27,7 +27,7 @@ import org.vertx.java.core.Vertx;
 /**
  * An event bus ID generator implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @ClusterType
 public class XyncIdGenerator implements AsyncIdGenerator {

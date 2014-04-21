@@ -20,7 +20,7 @@ import org.vertx.java.core.VertxException;
 /**
  * A base Vert.igo exception.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
 public class VertigoException extends VertxException {

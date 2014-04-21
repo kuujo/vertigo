@@ -32,7 +32,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 /**
  * A shared data based queue implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The queue data type.
  */

@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Verticle component context.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  * 
  * @param <T> The component type
  */

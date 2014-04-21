@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
  * This allows all Vertigo serializables to be automatically serialized by the
  * default serializer. 
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class InclusiveAnnotationIntrospector extends JacksonAnnotationIntrospector {
   private static final long serialVersionUID = 1L;

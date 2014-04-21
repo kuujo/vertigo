@@ -41,7 +41,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 /**
  * Shared data based map implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <K> The map key type.
  * @param <V> The map value type.

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.context;
 /**
  * Input/output context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface IOContext<T extends IOContext<T>> extends Context<T> {
 

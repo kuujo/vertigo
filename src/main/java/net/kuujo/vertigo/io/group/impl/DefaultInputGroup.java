@@ -28,7 +28,7 @@ import org.vertx.java.core.Vertx;
 /**
  * Default input group implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputGroup implements InputGroup {
   private final String name;

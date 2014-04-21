@@ -22,9 +22,22 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Active network.
+ * The active network is an interface to reconfiguring live networks.
+ * When a network is deployed or reconfigured, an {@link ActiveNetwork} will
+ * be returned by Vertigo. The active network can be used to asynchronously
+ * reconfigure the network by calling normal configuration methods similar
+ * to those available on the {@link NetworkConfig} and related APIs.<p>
  *
- * @author Jordan Halterman
+ * When a network configuration is updated via an active network, the network
+ * will automatically pick up the changes and perform deployments or
+ * create or destroy internal connections as necessary. Because Vertigo
+ * networks are fault-tolerant, the networks may not necessarily be
+ * reconfigured immediately. If a network manager has failed, the network
+ * will not be reconfigured until the manager has been redeployed, but
+ * the reconfiguration will still occur at some point as long as all
+ * instances in the Vert.x cluster are not lost.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ActiveNetwork extends ActiveConfig<NetworkConfig> {
 

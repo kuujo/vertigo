@@ -22,7 +22,7 @@ import org.vertx.java.core.Handler;
 /**
  * Periodic feeder test component.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class TestPeriodicFeeder extends ComponentVerticle {
 

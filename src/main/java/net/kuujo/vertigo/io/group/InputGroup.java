@@ -23,7 +23,7 @@ import org.vertx.java.core.Handler;
  * Input groups allow incoming messages to be separated into groups. Groups are
  * named structures of messages that are defined by the component outputting messages.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputGroup extends Group<InputGroup>, Input<InputGroup> {
 

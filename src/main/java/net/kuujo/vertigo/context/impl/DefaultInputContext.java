@@ -32,7 +32,7 @@ import org.vertx.java.core.json.JsonObject;
  * is used to indicate where the component should listen
  * for messages.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputContext extends DefaultIOContext<InputContext> implements InputContext {
   private Collection<InputPortContext> ports = new ArrayList<>();

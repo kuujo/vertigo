@@ -22,7 +22,7 @@ import net.kuujo.vertigo.io.Openable;
 /**
  * Base connection interface.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The connection type.
  */

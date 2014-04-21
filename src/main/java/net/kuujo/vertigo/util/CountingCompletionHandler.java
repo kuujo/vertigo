@@ -23,7 +23,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  * A copy of the Vert.x core counting completion handler for handling
  * multiple remote calls asynchronously.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class CountingCompletionHandler<T> implements Handler<AsyncResult<T>> {
   private int count;

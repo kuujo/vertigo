@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Input/output context.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 abstract class DefaultIOContext<T extends IOContext<T>> extends BaseContext<T> {
   protected Collection<DefaultOutputPortContext> streams = new ArrayList<>();

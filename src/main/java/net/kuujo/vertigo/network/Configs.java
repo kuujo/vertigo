@@ -23,7 +23,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Configuration helper methods.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class Configs {
   private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);

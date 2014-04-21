@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * A component instance context which contains information regarding a specific component
  * (module or verticle) instance within a network.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class DefaultInstanceContext extends BaseContext<InstanceContext> implements InstanceContext {
   private int number;

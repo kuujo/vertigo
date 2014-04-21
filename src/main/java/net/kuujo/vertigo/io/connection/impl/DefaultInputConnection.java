@@ -39,7 +39,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Default input connection implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputConnection implements InputConnection {
   private static final long BATCH_SIZE = 1000;

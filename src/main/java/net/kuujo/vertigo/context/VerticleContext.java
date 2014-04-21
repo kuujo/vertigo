@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 /**
  * Verticle component context.
  * 
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

@@ -43,7 +43,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 /**
  * Default input port implementation.
  *
- * @author Jordan Halterman
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private static final Logger log = LoggerFactory.getLogger(DefaultInputPort.class);

@@ -5,18 +5,15 @@ Vertigo
 
 **[Java User Manual](#java-user-manual) | Javadoc (Unavailable for Vertigo 0.7.x)**
 
-**[Javascript API][vertigo-js] for Vertigo 0.7.x is still under development**
+**[Javascript API][vertigo-js]**
 
-**[Python API][vertigo-python] for Vertigo 0.7.x is still under development**
+**[Python API][vertigo-python]**
 
-Vertigo is a fast, reliable, fault-tolerant event processing framework built on
-the [Vert.x](http://vertx.io/) application platform. Combining concepts of
-cutting-edge [real-time systems](http://storm.incubator.apache.org/) and
-[flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
+Vertigo is a fast event processing framework built on the [Vert.x](http://vertx.io/)
+application platform. Combining concepts of cutting-edge [real-time systems](http://storm.incubator.apache.org/)
+and [flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
 Vertigo allows real-time problems to be broken down into smaller tasks (as
-Vert.x verticles) and distributed across a Vert.x cluster. Vertigo provides
-fault-tolerance for data streams and components, allowing developers to spend more
-time focusing on application code.
+Vert.x verticles) and distributed across a Vert.x cluster.
 
 * Manages multi-step event processing systems, from simple pipelines to
   **complex networks of Vert.x modules/verticles**, including **remote procedure
@@ -24,11 +21,11 @@ time focusing on application code.
 * Supports deployment of networks within a single Vert.x instance or across a Vert.x cluster.
 * **Promotes reusability** by abstracting communication details from verticle implementations,
   allowing components to be arbitrarily connected to form complex networks.
-* Guarantees strong ordering and exactly-once processing.
-* Handles buffering of messages and automatic retries on failures.
+* Guarantees **strong ordering** and **exactly-once** processing of messages.
+* Handles event bus **flow control** and **automatic retries** on failures.
 * Facilitates distribution of messages between multiple verticle instances using
-  **random, round-robin, mod hashing, or fanout** methods.
-* Network components can be written in **any Vert.x supported language**, with
+  **random, round-robin, mod hashing, fair, or fanout** methods.
+* Components can be written in **any Vert.x supported language**, with
   APIs for Vertigo 0.6 in [Javascript][vertigo-js] and [Python][vertigo-python]
 
 For an in-depth explaination of how Vertigo works, see [how it works](#how-it-works)
@@ -79,18 +76,20 @@ an `ActiveNetwork` object that allows networks to be reconfigured by directly al
 network configurations.
 
 ```java
-vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
-    ActiveNetwork network = result.result();
-    network.addComponent("baz", "baz.py", 3); // Add a component.
-    network.removeComponent("foo"); // Remove a component.
-    network.createConnection("bar", "baz"); // Create a connection.
-    network.destroyConnection("foo", "bar"); // Destroy a connection.
+    if (result.succeeded()) {
+      ActiveNetwork network = result.result();
+      network.addComponent("baz", "baz.py", 3); // Add a component.
+      network.removeComponent("foo"); // Remove a component.
+      network.createConnection("bar", "baz"); // Create a connection.
+      network.destroyConnection("foo", "bar"); // Destroy a connection.
+    }
   }
 });
 ```
 
-#### Distributed deployments
+#### Distributed, fault-tolerant deployments
 Vertigo 0.7. provides significantly improved support for distributed network deployments
 using [Xync](http://github.com/kuujo/xync). Xync allows Vertigo to distribute network
 components across a cluster of Vert.x instances and integrates closely with the Vert.x
@@ -102,29 +101,22 @@ issues in cases where the Vert.x event loop is blocked. Previously, Vertigo's pu
 messaging was dependent upon a timout mechanism which could fail under certain circumstances,
 but Vertigo is now guaranteed not to temporarily drop connections in those cases.
 
+#### Significant performance improvements
+Vertigo 0.7 acheives significant gains in the area of performance. Memory usage has been
+significantly reduced, and a redesigned message acking algorithm supports throughput
+about 6x greater than its predecessor, Vertigo 0.6.
+
 #### Strong ordering
 Vertigo connections now guarantee strong ordering of messages. Output messagesa are
 tagged with a monotonically increasing identifier for each connection. If a receiving
 input connection receives a message out of order, it notifies the message source, causing
 the source to replay lost messages in order.
 
-#### Fault-tolerant components
-Vertigo's clustering support is now backed by [Xync](http://github.com/kuujo/xync), a
-custom Vert.x platform manager that integrates remote deployments with the Vert.x HA
-mechanism. This allows Vertigo to deploy components across a Vert.x cluster and still
-failover those deployments when a Vert.x instance dies.
-
 #### Cluster-wide shared data structures
 Vertigo 0.7 supports cluster-wide shared data structures like `map`, `list`, `set`,
 `queue`, `lock`, and `id` (a unique ID generator). These data structures can be used
 for coordination between components and are available both regarless of whether Vert.x
 is in clustering mode.
-
-#### Stateful components
-Vertigo provides an API for component state persistence through several facilities,
-e.g. Hazelcast, Redis, or Vert.x shared data. Component data storage facilities can
-be defined in the network configuration, so storage details are separate from component
-implementations.
 
 #### Streams to ports
 Vertigo 0.7 has adopted the concept of ports from the flow-based programming model. This
@@ -143,31 +135,10 @@ the Vert.x command line interface.
 vertx run wordcount.network.json
 ```
 
-### Adding Vertigo as a Maven dependency
-
-```
-<dependency>
-  <groupId>net.kuujo</groupId>
-  <artifactId>vertigo</artifactId>
-  <version>0.7.0-SNAPSHOT</version>
-</dependency>
-```
-
-### Including Vertigo in a Vert.x module
-
-To use the Vertigo Java API, you can include the Vertigo module in your module's
-`mod.json` file. This will make Vertigo classes available within your module.
-
-```
-{
-  "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.7.0-SNAPSHOT"
-}
-```
-
-
 # Java User Manual
 1. [Introduction](#introduction)
+   * [Adding Vertigo as a Maven dependency](#adding-vertigo-as-a-maven-dependency)
+   * [Including Vertigo in a Vert.x module](#including-vertigo-in-a-vertx-module)
 1. [Networks](#networks)
    * [Creating a new network](#creating-a-new-network)
    * [Adding components to a network](#adding-components-to-a-network)
@@ -207,10 +178,40 @@ instance or across a cluster of Vert.x instances and performs setup and coordina
 internally. Vertigo also provides for advanced messaging requirements such as strong
 ordering and exactly-once semantics.
 
+### Adding Vertigo as a Maven dependency
+
+```
+<dependency>
+  <groupId>net.kuujo</groupId>
+  <artifactId>vertigo</artifactId>
+  <version>0.7.0-SNAPSHOT</version>
+</dependency>
+```
+
+### Including Vertigo in a Vert.x module
+
+To use the Vertigo Java API, you can include the Vertigo module in your module's
+`mod.json` file. This will make Vertigo classes available within your module.
+
+```
+{
+  "main": "com.mycompany.myproject.MyVerticle",
+  "includes": "net.kuujo~vertigo~0.7.0-SNAPSHOT"
+}
+```
+
 ## Networks
 Vertigo networks are collections of Vert.x verticles and modules that are connected
 together by the Vert.x event bus. Networks and the relationships therein are defined
 externally to their components, promoting reusability.
+
+Each Vertigo network must have a unique name within the Vert.x cluster in which it
+is deployed. Vertigo uses the network name to coordinate deployments and configuration
+changes for the network.
+
+Networks are made up of any number of components which can be arbitrarily connected
+by input and output ports. A Vertigo component is simple a Vert.x module or verticle,
+and can thus have any number of instances associated with it.
 
 ### Creating a network
 To create a new network, create a new `Vertigo` instance and call the `createNetwork` method.
@@ -245,6 +246,12 @@ The `addVerticle` and `addModule` methods have the following signatures:
 Just as with networks, Vertigo components are explicitly named. The component name
 *must be unique within the network to which the component belongs*.
 
+```java
+NetworkConfig network = vertigo.createNetwork("test");
+network.addVerticle("foo", "foo.js", 2);
+network.addModule("bar", "com.bar~bar~1.0", 4);
+```
+
 The `NetworkConfig` API also exposes an abstract `addComponent` method which detects
 whether the added component is a module or a verticle based on module naming conventions.
 
@@ -252,6 +259,11 @@ whether the added component is a module or a verticle based on module naming con
 * `addComponent(String name, String moduleOrMain, JsonObject config)`
 * `addComponent(String name, String moduleOrMain, int instances)`
 * `addComponent(String name, String moduleOrMain, JsonObject config, int instances)`
+
+```java
+network.addComponent("foo", "foo.js", 2); // Adds a verticle component.
+network.addComponent("bar", "com.bar~bar~1.0", 4); // Adds a module component.
+```
 
 Once a component has been added to the network, the component configuration will
 be returned. Users can set additional options on the component configuration. The
@@ -332,9 +344,6 @@ The JSON configuration format is as follows:
    * `config` - the module or verticle configuration
    * `instances` - the number of component instances
    * `group` - the component deployment group (Vert.x HA group for clustering)
-   * `storage` - an object defining the component data storage facility
-      * `type` - the component data storage type. This is a fully qualified `DataStore` class name
-      * `...` - additional data store configuration options
 * `connections` - an array of network connections
    * `source` - an object defining the connection source
       * `component` - the source component name
@@ -589,7 +598,6 @@ Each Java component has several additional fields:
 * `input` - the component's `InputCollector`, an interface to input ports
 * `output`- the component's `OutputCollector`, an interface to output ports
 * `logger` - the component's `PortLogger`, a special logger that logs messages to output ports
-* `storage` - the component's storage facility. This is configured in the component configuration
 
 ## Messaging
 The Vertigo messaging API is simply a wrapper around the Vert.x event bus.
@@ -599,12 +607,10 @@ Vertigo components send and receive messages using only output and input *ports*
 and are hidden from event bus address details which are defined in network configurations.
 This is the element that makes Vertigo components reusable.
 
-Vertigo messages are guaranteed to arrive in order. See [how it works](#how-it-works)
-for more information.
-
-Vertigo also provides an API that allows for logical grouping and ordering of messages
-known as [groups](#working-with-message-groups). Groups are strongly ordered named
-batches of messages that can be nested.
+Vertigo messages are guaranteed to arrive in order. Vertigo also provides an API
+that allows for logical grouping and ordering of collections of messages known as
+[groups](#working-with-message-groups). Groups are strongly ordered named batches
+of messages that can be nested.
 
 For more information on messaging see [how Vertigo handles messaging](#how-vertigo-handles-messaging)
 
@@ -653,18 +659,16 @@ wrapper. This is because Vertigo messages are inherently uni-directional, and me
 acking is handled internally.
 
 ### Working with message groups
-The base Vertigo messaging system does not guarantee ordering of messages.
-But Vertigo does provide a mechanism for logically grouping and ordering
-messages known as *groups*. Groups are named logical collections of messages.
-Groups can be nested and groups of the same name are guaranteed to be delivered
-in order. Before any given group can start, each of the groups of the same name
-at the same level that preceeded it must have been received by the target.
-Additionally, messages within a group are guaranteed to be delivered to the
-same instance of each target component. In other words, routing is performed
-per-group rather than per-message.
+Vertigo provides a mechanism for logically grouping messages appropriately
+named *groups*. Groups are logical collections of messsages that are strongly
+ordered by name. Before any given group can stat, each of the groups of the same
+name at the same level that preceeded it must have been completed. Additionally,
+messages within a group are *guaranteed to be delivered to the same instance* of each
+target component. In other words, routing is performed per-group rather than per-message.
 
 When a new output group is created, Vertigo will await the completion of all groups
-that were created prior to the new group before sending the new group's messages.
+of the same name that were created prior to the new group before sending the new group's
+messages.
 
 ```java
 output.port("out").group("foo", new Handler<OutputGroup>() {
@@ -675,7 +679,7 @@ output.port("out").group("foo", new Handler<OutputGroup>() {
 ```
 
 Note that the group's `end()` method *must* be called in order to indicate completion of
-the group. Groups are fully asynchronous, meaning they support asynchronous calls to other
+the group. *Groups are fully asynchronous*, meaning they support asynchronous calls to other
 APIs, and this step is crucial to that functionality.
 
 ```java
@@ -1017,6 +1021,6 @@ will fetch the last known configuration for the network and continue normal oper
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
-[vertigo-python]: https://github.com/kuujo/vertigo-python
-[vertigo-js]: https://github.com/kuujo/vertigo-js
+[vertigo-python]: https://github.com/kuujo/vertigo-python/tree/0.7.0
+[vertigo-js]: https://github.com/kuujo/vertigo-js/tree/0.7.0
 [google-group]: https://groups.google.com/forum/#!forum/vertx-vertigo

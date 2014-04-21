@@ -24,6 +24,7 @@ time focusing on application code.
 * Supports deployment of networks within a single Vert.x instance or across a Vert.x cluster.
 * **Promotes reusability** by abstracting communication details from verticle implementations,
   allowing components to be arbitrarily connected to form complex networks.
+* Guarantees strong ordering and exactly-once processing.
 * Handles buffering of messages and automatic retries on failures.
 * Facilitates distribution of messages between multiple verticle instances using
   **random, round-robin, mod hashing, or fanout** methods.
@@ -100,6 +101,12 @@ Vertigo's internal messaging framework has been redesigned to remove potential r
 issues in cases where the Vert.x event loop is blocked. Previously, Vertigo's pub-sub style
 messaging was dependent upon a timout mechanism which could fail under certain circumstances,
 but Vertigo is now guaranteed not to temporarily drop connections in those cases.
+
+#### Strong ordering
+Vertigo connections now guarantee strong ordering of messages. Output messagesa are
+tagged with a monotonically increasing identifier for each connection. If a receiving
+input connection receives a message out of order, it notifies the message source, causing
+the source to replay lost messages in order.
 
 #### Fault-tolerant components
 Vertigo's clustering support is now backed by [Xync](http://github.com/kuujo/xync), a
@@ -200,19 +207,6 @@ instance or across a cluster of Vert.x instances and performs setup and coordina
 internally. Vertigo also provides for advanced messaging requirements such as strong
 ordering and exactly-once semantics.
 
-Let's look at a brief example of a small Vertigo network
-
-```java
-public class WordFeeder extends ComponentVerticle {
-
-  @Override
-  public void start() {
-  
-  }
-
-}
-```
-
 ## Networks
 Vertigo networks are collections of Vert.x verticles and modules that are connected
 together by the Vert.x event bus. Networks and the relationships therein are defined
@@ -237,7 +231,7 @@ To add a component to the network, use one of the `addVerticle` or `addModule` m
 network.addVerticle("foo", "foo.js");
 ```
 
-The `addVerticle` and `addModuld` methods have the following signatures:
+The `addVerticle` and `addModule` methods have the following signatures:
 
 * `addModule(String name, String moduleName)`
 * `addModule(String name, String moduleName, JsonObject config)`
@@ -605,12 +599,8 @@ Vertigo components send and receive messages using only output and input *ports*
 and are hidden from event bus address details which are defined in network configurations.
 This is the element that makes Vertigo components reusable.
 
-While Vertigo does use an acking mechanism internally, Vertigo messages are
-not guaranteed to arrive in order. When a message is sent on an output port,
-the message will be immediately sent to all connected components. Once each component
-replies to the message indicating that it has received the message successfully,
-the message will be removed from the output queue. Vertigo uses adaptive event
-bus timeouts to quickly detect failures and resend lost messages.
+Vertigo messages are guaranteed to arrive in order. See [how it works](#how-it-works)
+for more information.
 
 Vertigo also provides an API that allows for logical grouping and ordering of messages
 known as [groups](#working-with-message-groups). Groups are strongly ordered named

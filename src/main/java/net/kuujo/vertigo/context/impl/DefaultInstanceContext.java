@@ -113,9 +113,14 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
 
   @Override
   public void notify(InstanceContext update) {
-    super.notify(update);
-    input.notify(update.input());
-    output.notify(update.output());
+    if (update == null) {
+      input.notify(null);
+      output.notify(null);
+    } else {
+      input.notify(update.input());
+      output.notify(update.output());
+    }
+    super.notify(this);
   }
 
   @Override

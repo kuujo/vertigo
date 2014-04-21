@@ -75,26 +75,34 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
 
   @Override
   public void notify(InputContext update) {
-    Iterator<InputPortContext> iter = ports.iterator();
-    while (iter.hasNext()) {
-      InputPortContext port = iter.next();
-      InputPortContext match = null;
-      for (InputPortContext p : update.ports()) {
-        if (port.name().equals(p.name())) {
-          match = p;
-          break;
+    if (update == null) {
+      for (InputPortContext port : ports) {
+        port.notify(null);
+      }
+      ports.clear();
+    } else {
+      Iterator<InputPortContext> iter = ports.iterator();
+      while (iter.hasNext()) {
+        InputPortContext port = iter.next();
+        InputPortContext match = null;
+        for (InputPortContext p : update.ports()) {
+          if (port.name().equals(p.name())) {
+            match = p;
+            break;
+          }
+        }
+        if (match != null) {
+          port.notify(match);
+        } else {
+          port.notify(null);
+          iter.remove();
         }
       }
-      if (match != null) {
-        port.notify(match);
-      } else {
-        iter.remove();
-      }
-    }
-
-    for (InputPortContext port : update.ports()) {
-      if (!ports.contains(port)) {
-        ports.add(port);
+  
+      for (InputPortContext port : update.ports()) {
+        if (!ports.contains(port)) {
+          ports.add(port);
+        }
       }
     }
     super.notify(this);

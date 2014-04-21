@@ -217,20 +217,28 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   @Override
   @SuppressWarnings("unchecked")
   public void notify(T update) {
-    Iterator<InstanceContext> iter = instances.iterator();
-    while (iter.hasNext()) {
-      InstanceContext instance = iter.next();
-      InstanceContext match = null;
-      for (InstanceContext i : update.instances()) {
-        if (instance.equals(i)) {
-          match = i;
-          break;
-        }
+    if (update == null) {
+      for (InstanceContext instance : instances) {
+        instance.notify(null);
       }
-      if (match != null) {
-        instance.notify(match);
-      } else {
-        iter.remove();
+      instances.clear();
+    } else {
+      Iterator<InstanceContext> iter = instances.iterator();
+      while (iter.hasNext()) {
+        InstanceContext instance = iter.next();
+        InstanceContext match = null;
+        for (InstanceContext i : update.instances()) {
+          if (instance.equals(i)) {
+            match = i;
+            break;
+          }
+        }
+        if (match != null) {
+          instance.notify(match);
+        } else {
+          instance.notify(null);
+          iter.remove();
+        }
       }
     }
     super.notify((T) this);

@@ -78,33 +78,41 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
 
   @Override
   public void notify(OutputContext update) {
-    Iterator<OutputPortContext> iter = ports.iterator();
-    while (iter.hasNext()) {
-      OutputPortContext port = iter.next();
-      OutputPortContext match = null;
-      for (OutputPortContext p : update.ports()) {
-        if (port.name().equals(p.name())) {
-          match = p;
-          break;
+    if (update == null) {
+      for (OutputPortContext port : ports) {
+        port.notify(null);
+      }
+      ports.clear();
+    } else {
+      Iterator<OutputPortContext> iter = ports.iterator();
+      while (iter.hasNext()) {
+        OutputPortContext port = iter.next();
+        OutputPortContext match = null;
+        for (OutputPortContext p : update.ports()) {
+          if (port.name().equals(p.name())) {
+            match = p;
+            break;
+          }
+        }
+        if (match != null) {
+          port.notify(match);
+        } else {
+          port.notify(null);
+          iter.remove();
         }
       }
-      if (match != null) {
-        port.notify(match);
-      } else {
-        iter.remove();
-      }
-    }
-
-    for (OutputPortContext port : update.ports()) {
-      boolean exists = false;
-      for (OutputPortContext p : ports) {
-        if (p.name().equals(port.name())) {
-          exists = true;
-          break;
+  
+      for (OutputPortContext port : update.ports()) {
+        boolean exists = false;
+        for (OutputPortContext p : ports) {
+          if (p.name().equals(port.name())) {
+            exists = true;
+            break;
+          }
         }
-      }
-      if (!exists) {
-        ports.add(port);
+        if (!exists) {
+          ports.add(port);
+        }
       }
     }
     super.notify(this);

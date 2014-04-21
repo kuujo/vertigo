@@ -65,26 +65,34 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
 
   @Override
   public void notify(OutputStreamContext update) {
-    Iterator<OutputConnectionContext> iter = connections.iterator();
-    while (iter.hasNext()) {
-      OutputConnectionContext connection = iter.next();
-      OutputConnectionContext match = null;
-      for (OutputConnectionContext c : update.connections()) {
-        if (connection.equals(c)) {
-          match = c;
-          break;
+    if (update == null) {
+      for (OutputConnectionContext connection : connections) {
+        connection.notify(null);
+      }
+      connections.clear();
+    } else {
+      Iterator<OutputConnectionContext> iter = connections.iterator();
+      while (iter.hasNext()) {
+        OutputConnectionContext connection = iter.next();
+        OutputConnectionContext match = null;
+        for (OutputConnectionContext c : update.connections()) {
+          if (connection.equals(c)) {
+            match = c;
+            break;
+          }
+        }
+        if (match != null) {
+          connection.notify(match);
+        } else {
+          connection.notify(null);
+          iter.remove();
         }
       }
-      if (match != null) {
-        connection.notify(match);
-      } else {
-        iter.remove();
-      }
-    }
-
-    for (OutputConnectionContext connection : update.connections()) {
-      if (!connections.contains(connection)) {
-        connections.add(connection);
+  
+      for (OutputConnectionContext connection : update.connections()) {
+        if (!connections.contains(connection)) {
+          connections.add(connection);
+        }
       }
     }
     super.notify(this);

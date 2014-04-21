@@ -71,26 +71,34 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
 
   @Override
   public void notify(InputPortContext update) {
-    Iterator<InputConnectionContext> iter = connections.iterator();
-    while (iter.hasNext()) {
-      InputConnectionContext connection = iter.next();
-      InputConnectionContext match = null;
-      for (InputConnectionContext c : update.connections()) {
-        if (connection.equals(c)) {
-          match = c;
-          break;
+    if (update == null) {
+      for (InputConnectionContext connection : connections) {
+        connection.notify(null);
+      }
+      connections.clear();
+    } else {
+      Iterator<InputConnectionContext> iter = connections.iterator();
+      while (iter.hasNext()) {
+        InputConnectionContext connection = iter.next();
+        InputConnectionContext match = null;
+        for (InputConnectionContext c : update.connections()) {
+          if (connection.equals(c)) {
+            match = c;
+            break;
+          }
+        }
+        if (match != null) {
+          connection.notify(match);
+        } else {
+          connection.notify(null);
+          iter.remove();
         }
       }
-      if (match != null) {
-        connection.notify(match);
-      } else {
-        iter.remove();
-      }
-    }
-
-    for (InputConnectionContext connection : update.connections()) {
-      if (!connections.contains(connection)) {
-        connections.add(connection);
+  
+      for (InputConnectionContext connection : update.connections()) {
+        if (!connections.contains(connection)) {
+          connections.add(connection);
+        }
       }
     }
     super.notify(this);

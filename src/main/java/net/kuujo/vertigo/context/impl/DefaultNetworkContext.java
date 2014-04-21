@@ -135,26 +135,34 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
   public void notify(NetworkContext update) {
-    Iterator<Map.Entry<String, ComponentContext<?>>> iter = components.entrySet().iterator();
-    while (iter.hasNext()) {
-      ComponentContext component = iter.next().getValue();
-      ComponentContext match = null;
-      for (ComponentContext c : update.components()) {
-        if (component.equals(c)) {
-          match = c;
-          break;
+    if (update == null) {
+      for (ComponentContext<?> component : components.values()) {
+        component.notify(null);
+      }
+      components.clear();
+    } else {
+      Iterator<Map.Entry<String, ComponentContext<?>>> iter = components.entrySet().iterator();
+      while (iter.hasNext()) {
+        ComponentContext component = iter.next().getValue();
+        ComponentContext match = null;
+        for (ComponentContext c : update.components()) {
+          if (component.equals(c)) {
+            match = c;
+            break;
+          }
+        }
+        if (match != null) {
+          component.notify(match);
+        } else {
+          component.notify(null);
+          iter.remove();
         }
       }
-      if (match != null) {
-        component.notify(match);
-      } else {
-        iter.remove();
-      }
-    }
-
-    for (ComponentContext component : update.components()) {
-      if (!components.values().contains(component)) {
-        components.put(component.name(), component);
+  
+      for (ComponentContext component : update.components()) {
+        if (!components.values().contains(component)) {
+          components.put(component.name(), component);
+        }
       }
     }
     super.notify(this);

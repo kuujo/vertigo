@@ -72,26 +72,34 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
 
   @Override
   public void notify(OutputPortContext update) {
-    Iterator<OutputStreamContext> iter = streams.iterator();
-    while (iter.hasNext()) {
-      OutputStreamContext stream = iter.next();
-      OutputStreamContext match = null;
-      for (OutputStreamContext s : update.streams()) {
-        if (stream.equals(s)) {
-          match = s;
-          break;
+    if (update == null) {
+      for (OutputStreamContext stream : streams) {
+        stream.notify(null);
+      }
+      streams.clear();
+    } else {
+      Iterator<OutputStreamContext> iter = streams.iterator();
+      while (iter.hasNext()) {
+        OutputStreamContext stream = iter.next();
+        OutputStreamContext match = null;
+        for (OutputStreamContext s : update.streams()) {
+          if (stream.equals(s)) {
+            match = s;
+            break;
+          }
+        }
+        if (match != null) {
+          stream.notify(match);
+        } else {
+          stream.notify(null);
+          iter.remove();
         }
       }
-      if (match != null) {
-        stream.notify(match);
-      } else {
-        iter.remove();
-      }
-    }
-
-    for (OutputStreamContext stream : update.streams()) {
-      if (!streams.contains(stream)) {
-        streams.add(stream);
+  
+      for (OutputStreamContext stream : update.streams()) {
+        if (!streams.contains(stream)) {
+          streams.add(stream);
+        }
       }
     }
     super.notify(this);

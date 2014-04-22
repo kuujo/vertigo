@@ -99,7 +99,9 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
               if (result.failed()) {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
               } else {
-                currentContext.notify(result.result() != null ? DefaultInstanceContext.fromJson(new JsonObject(result.result())) : null);
+                if (result.result() != null) {
+                  currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
+                }
                 data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {

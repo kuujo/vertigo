@@ -38,7 +38,7 @@ public class LocalClusterManagerTest extends TestVerticle {
 
   @Test
   public void testLocalDeploy() {
-    NetworkConfig network = new DefaultNetworkConfig("test1");
+    NetworkConfig network = new DefaultNetworkConfig("test-local-deploy");
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
     network.createConnection("feeder", "stream1", "worker", "stream1");
@@ -56,7 +56,7 @@ public class LocalClusterManagerTest extends TestVerticle {
 
   @Test
   public void testLocalShutdown() {
-    NetworkConfig network = new DefaultNetworkConfig("test2");
+    NetworkConfig network = new DefaultNetworkConfig("test-local-shutdown");
     network.addVerticle("feeder", TestFeeder.class.getName());
     network.addVerticle("worker1", TestWorker.class.getName(), 2);
     network.createConnection("feeder", "stream1", "worker", "stream1");
@@ -71,7 +71,7 @@ public class LocalClusterManagerTest extends TestVerticle {
         vertx.setTimer(2000, new Handler<Long>() {
           @Override
           public void handle(Long timerID) {
-            cluster.undeployNetwork("test2", new Handler<AsyncResult<Void>>() {
+            cluster.undeployNetwork("test-local-shutdown", new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());

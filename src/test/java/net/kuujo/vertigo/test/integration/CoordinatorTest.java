@@ -46,7 +46,7 @@ public class CoordinatorTest extends TestVerticle {
   @Test
   public void testStartWithExistingContext() {
     final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
-        .setName("test")
+        .setName("test-coordinator-start")
         .setAddress("test")
         .setStatusAddress("test.__status")
         .addComponent(DefaultVerticleContext.Builder.newBuilder()
@@ -90,7 +90,7 @@ public class CoordinatorTest extends TestVerticle {
   @Test
   public void testPauseHandler() {
     final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
-        .setName("test")
+        .setName("test-coordinator-pause")
         .setAddress("test")
         .setStatusAddress("test.__status")
         .addComponent(DefaultVerticleContext.Builder.newBuilder()
@@ -140,7 +140,7 @@ public class CoordinatorTest extends TestVerticle {
   @Test
   public void testResumeHandler() {
     final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
-        .setName("test")
+        .setName("test-coordinator-resume")
         .setAddress("test")
         .setStatusAddress("test.__status")
         .addComponent(DefaultVerticleContext.Builder.newBuilder()

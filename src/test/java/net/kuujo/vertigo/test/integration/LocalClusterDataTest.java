@@ -40,7 +40,7 @@ public class LocalClusterDataTest extends TestVerticle {
   @Test
   public void testSetGetDelete() {
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test-set-get");
     data.put("foo", "bar", new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -73,7 +73,7 @@ public class LocalClusterDataTest extends TestVerticle {
   @Test
   public void testWatchCreate() {
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test-watch-create");
     data.watch("test1", new Handler<MapEvent<String, String>>() {
       @Override
       public void handle(MapEvent<String, String> event) {
@@ -99,7 +99,7 @@ public class LocalClusterDataTest extends TestVerticle {
   @Test
   public void testWatchUpdate() {
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test-watch-update");
     data.watch("test2", new Handler<MapEvent<String, String>>() {
       @Override
       public void handle(MapEvent<String, String> event) {
@@ -134,7 +134,7 @@ public class LocalClusterDataTest extends TestVerticle {
   @Test
   public void testWatchDelete() {
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = cluster.getMap("test-watch-delete");
     data.watch("test3", new Handler<MapEvent<String, String>>() {
       @Override
       public void handle(MapEvent<String, String> event) {

@@ -51,15 +51,11 @@ public class DefaultConnectionConfig extends BaseConfig implements ConnectionCon
   }
 
   public DefaultConnectionConfig(String source, String target, NetworkConfig network) {
-    this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
-        parseComponent(target), parsePort(target, DEFAULT_IN_PORT),
-        new RoundRobinSelector(), network);
+    this(source, DEFAULT_OUT_PORT, target, DEFAULT_IN_PORT, new RoundRobinSelector(), network);
   }
 
   public DefaultConnectionConfig(String source, String target, Selector selector, NetworkConfig network) {
-    this(parseComponent(source), parsePort(source, DEFAULT_OUT_PORT),
-        parseComponent(target), parsePort(target, DEFAULT_IN_PORT), selector,
-        network);
+    this(source, DEFAULT_OUT_PORT, target, DEFAULT_IN_PORT, selector, network);
   }
 
   public DefaultConnectionConfig(String source, String out, String target, String in, NetworkConfig network) {
@@ -256,24 +252,6 @@ public class DefaultConnectionConfig extends BaseConfig implements ConnectionCon
       return hooks;
     }
 
-  }
-
-  /**
-   * Parses a component name from the connection address.
-   */
-  private static String parseComponent(String address) {
-    return !address.contains(":") ? address : address.substring(0,
-        address.indexOf(":"));
-  }
-
-  /**
-   * Parses a port name from the connection address.
-   */
-  private static String parsePort(String address, String def) {
-    if (!address.contains(":")) {
-      return def;
-    }
-    return address.substring(address.indexOf(":") + 1);
   }
 
 }

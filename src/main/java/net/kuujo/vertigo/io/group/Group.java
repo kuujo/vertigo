@@ -23,6 +23,13 @@ package net.kuujo.vertigo.io.group;
 public interface Group<T extends Group<T>> {
 
   /**
+   * Returns the unique group identifier.
+   *
+   * @return The unique group identifier.
+   */
+  String id();
+
+  /**
    * Returns the group name.
    *
    * @return The group name.

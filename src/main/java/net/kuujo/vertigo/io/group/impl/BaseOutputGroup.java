@@ -18,6 +18,7 @@ package net.kuujo.vertigo.io.group.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import net.kuujo.vertigo.io.group.OutputGroup;
 
@@ -37,6 +38,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class BaseOutputGroup implements OutputGroup {
+  private final String id = UUID.randomUUID().toString();
   private final String name;
   private final Vertx vertx;
   private final Collection<OutputGroup> connections;
@@ -45,6 +47,11 @@ public class BaseOutputGroup implements OutputGroup {
     this.name = name;
     this.vertx = vertx;
     this.connections = connections;
+  }
+
+  @Override
+  public String id() {
+    return id;
   }
 
   @Override

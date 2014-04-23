@@ -31,6 +31,7 @@ import org.vertx.java.core.Vertx;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputGroup implements InputGroup {
+  private final String id;
   private final String name;
   private final Vertx vertx;
   private Handler<Void> startHandler;
@@ -42,9 +43,15 @@ public class DefaultInputGroup implements InputGroup {
   private boolean paused;
   private boolean ended;
 
-  public DefaultInputGroup(String name, Vertx vertx) {
+  public DefaultInputGroup(String id, String name, Vertx vertx) {
+    this.id = id;
     this.name = name;
     this.vertx = vertx;
+  }
+
+  @Override
+  public String id() {
+    return id;
   }
 
   @Override

@@ -90,6 +90,11 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
+  public String id() {
+    return id;
+  }
+
+  @Override
   public String name() {
     return name;
   }

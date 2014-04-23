@@ -78,7 +78,7 @@ public class DefaultInputConnection implements InputConnection {
           String groupID = body.getString("group");
           String name = body.getString("name");
           String parentId = body.getString("parent");
-          DefaultInputGroup group = new DefaultInputGroup(name, vertx);
+          DefaultInputGroup group = new DefaultInputGroup(groupID, name, vertx);
           groups.put(groupID, group);
           if (parentId != null) {
             DefaultInputGroup parent = groups.get(parentId);

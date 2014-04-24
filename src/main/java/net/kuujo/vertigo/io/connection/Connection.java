@@ -20,7 +20,12 @@ import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 
 /**
- * Base connection interface.
+ * Connection between two instances of two components.<p>
+ *
+ * When a connection is created between two components, each component
+ * instance will create a single connection for each instance of the
+ * component to which it is connected. Connections are inherently
+ * uni-directional, so each connection has an input and an output side.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

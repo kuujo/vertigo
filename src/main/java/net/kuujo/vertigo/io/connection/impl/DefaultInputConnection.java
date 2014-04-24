@@ -22,9 +22,9 @@ import java.util.Map;
 
 import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.hooks.InputHook;
-import net.kuujo.vertigo.io.InputDeserializer;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.group.InputGroup;
+import net.kuujo.vertigo.io.impl.InputDeserializer;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

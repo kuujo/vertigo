@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.io.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,12 @@ import net.kuujo.vertigo.util.serializer.SerializerFactory;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Handles deserialization of input objects.
+ * Handles deserialization of input objects.<p>
+ *
+ * The deserializer deserializes {@link JsonObject} messages to any
+ * type that is supported by the format. If a message was serialized
+ * using the Vertigo serializer, it can deserialize the message
+ * back to the original object.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

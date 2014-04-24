@@ -24,7 +24,11 @@ import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Network configuration.
+ * Network configuration.<p>
+ *
+ * The network configuration defines a collection of components
+ * (Vert.x modules and verticles) that can be connected together in
+ * a meaningful way.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

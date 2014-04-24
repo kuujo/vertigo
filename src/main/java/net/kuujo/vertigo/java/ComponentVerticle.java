@@ -30,7 +30,38 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Base class for Java vertigo component verticle implementations.
+ * Base class for Java vertigo component verticle implementations.<p>
+ *
+ * To create a Vertigo component simply extend this base class.<p>
+ *
+ * <pre>
+ * {@code
+ * public class MyComponent extends ComponentVerticle {
+ * 
+ *   public void start() {
+ *     output.port("out").send("Hello world!");
+ *   }
+ * 
+ * }
+ * </pre>
+ * 
+ * The component verticle works exactly the same way as all normal Vert.x
+ * verticles. When the {@link ComponentVerticle#start()} method is called,
+ * the <em>the component and the network to which it belongs have been
+ * completely started</em>, so it's perfectly fine to begin sending messages.<p>
+ *
+ * The component also contains a reference to the cluster in which the
+ * network is deployed. The <code>cluster</code> can be used to deploy
+ * additional modules or verticles or access cluster-wide shared data.
+ * For instance, if the network was deployed to a Xync cluster, the
+ * <code>cluster</code> will be a {@link net.kuujo.vertigo.cluster.RemoteCluster}
+ * which can be used to access Hazelcast data structures.<p>
+ *
+ * The component also has a special <code>logger</code> which is a
+ * {@link net.kuujo.vertigo.logger.PortLogger} that is specific to
+ * the component instance. The port logger will log any messages to
+ * the underlying Vert.x {@link org.vertx.java.core.logging.Logger}
+ * as well as the corresponding output port.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

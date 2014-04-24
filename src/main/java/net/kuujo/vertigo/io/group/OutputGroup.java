@@ -17,9 +17,8 @@ package net.kuujo.vertigo.io.group;
 
 import net.kuujo.vertigo.io.Output;
 
-
 /**
- * Output group are collections of messages.<p>
+ * Output group represent collections of output messages.<p>
  *
  * Output groups represent structured groups of output messages. Users can
  * use output groups to batch messages in a manner that will be similarly

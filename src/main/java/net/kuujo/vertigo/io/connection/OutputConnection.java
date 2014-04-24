@@ -24,7 +24,21 @@ import net.kuujo.vertigo.io.Output;
  * Output connections represent a direct connection between two instances
  * of separate components. Each output connection points to a single
  * input connection which receives messages from this connection and this
- * connection only.
+ * connection only.<p>
+ *
+ * When the connection is opened, it will attempt to connect to the
+ * corresponding input connection (the other side of the connection) by
+ * periodically sending <code>connect</code> messages to the input connection.
+ * Once the input connection replies to the output connection, the connection
+ * is opened.<p>
+ *
+ * The output connection sends messages for the connection and on behalf
+ * of any groups created on the connection. Each message that is sent
+ * by the output connection is tagged with a monotonically increasing
+ * number. The connection listens for messages indicating that a message
+ * was received out of order. If a message was received out of order, the
+ * output connection will begin resending messages from the last known
+ * correct message.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

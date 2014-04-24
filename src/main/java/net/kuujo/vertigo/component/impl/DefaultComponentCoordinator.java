@@ -85,6 +85,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
 
   @Override
   public ComponentCoordinator start(final Handler<AsyncResult<InstanceContext>> doneHandler) {
+    // Coordination is always performed at the highest cluster level.
     clusterFactory.getCurrentCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
@@ -93,21 +94,27 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
         } else {
           cluster = result.result();
           data = cluster.getMap(currentContext.component().network().address());
-          data.get(address, new Handler<AsyncResult<String>>() {
+
+          // Start watching the component's context. It's important that this
+          // happens in a certain order in order to prevent race conditions. First
+          // we watch the component's configuration, then we attempt to load the
+          // existing component configuration. Otherwise, the component's configuration
+          // could potentially be set between get() and watch().
+          data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
               } else {
-                if (result.result() != null) {
-                  currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
-                }
-                data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
+                data.get(address, new Handler<AsyncResult<String>>() {
                   @Override
-                  public void handle(AsyncResult<Void> result) {
+                  public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
                     } else {
+                      if (result.result() != null) {
+                        currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
+                      }
                       data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {

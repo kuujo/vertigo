@@ -170,12 +170,16 @@ abstract class AbstractClusterManager implements ClusterManager {
    * Handles deployment of a network.
    */
   private void doDeployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    // Attempt to find an existing configuration for the given network.
     cluster.<String, String>getMap(network.getName()).get(network.getName(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
         } else {
+          // If the network's configuration already exists, merge the new
+          // configuration with the existing configuration and update the
+          // network context.
           NetworkContext updatedContext;
           if (result.result() != null) {
             NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
@@ -185,6 +189,10 @@ abstract class AbstractClusterManager implements ClusterManager {
             updatedContext = ContextBuilder.buildContext(network);
           }
 
+          // Once the updated context has been set in the cluster, the network's manager
+          // verticle (which should be watching the configuration) will be notified and
+          // will asynchronously update component configurations and deploy/undeploy
+          // any components as necessary.
           final NetworkContext context = updatedContext;
           cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
             @Override
@@ -192,6 +200,8 @@ abstract class AbstractClusterManager implements ClusterManager {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
               } else {
+                // Create an active network. The active network should watch the configuration
+                // in the cluster as well so we can update the active network's configuration.
                 final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
                 cluster.<String, String>getMap(network.getName()).watch(network.getName(), new Handler<MapEvent<String, String>>() {
                   @Override
@@ -226,6 +236,10 @@ abstract class AbstractClusterManager implements ClusterManager {
 
   @Override
   public ClusterManager undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) {
+    // The network's manager should be deployed under a deployment ID
+    // of the same name as the network. If the network's manager is deployed
+    // then unset the network's context, indicating that the manager should
+    // undeploy the network.
     cluster.isDeployed(name, new Handler<AsyncResult<Boolean>>() {
       @Override
       public void handle(AsyncResult<Boolean> result) {

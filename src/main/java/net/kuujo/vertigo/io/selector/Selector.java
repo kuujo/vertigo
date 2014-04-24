@@ -18,20 +18,21 @@ package net.kuujo.vertigo.io.selector;
 import java.util.List;
 
 import net.kuujo.vertigo.io.connection.Connection;
-import net.kuujo.vertigo.network.ConnectionConfig;
 import net.kuujo.vertigo.util.serializer.JsonSerializable;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * An output selector.
+ * Connection selector.<p>
  *
- * Output selectors are the counterparts to input groupings. When an input is
- * used to subscribe to the output of another component, the input's grouping
- * is converted to an output {@link Selector}. Each time a message is emitted
- * to the resulting output channel, the selector is used to select which
- * {@link ConnectionConfig}s to which to send the message.
+ * Connection selectors are used to route messages between multiple instances
+ * of a component. When a message is sent on an output stream, the stream's
+ * selector will select a connection or set of connections to which to copy
+ * the message.<p>
+ *
+ * Vertigo supports custom selector implementations. To implement a custom
+ * selector, simply implement the {@link Selector} interface.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

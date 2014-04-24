@@ -109,6 +109,8 @@ public class DefaultComponent implements Component {
    */
   private void setup(final Handler<AsyncResult<Void>> doneHandler) {
     // Retrieve the component context from the coordinator (the current cluster).
+    // If the context has changed due to a network configuration change, the
+    // internal context and input/output connections will be automatically updated.
     coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
       public void handle(AsyncResult<InstanceContext> result) {

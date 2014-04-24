@@ -25,7 +25,15 @@ import org.vertx.java.core.logging.Logger;
  *
  * The component port logger provides a basic Vert.x logger that
  * sends messages to an output port. This allows components to
- * potentially subscribe to error logs from other components.
+ * potentially subscribe to error logs from other components.<p>
+ *
+ * The {@link PortLogger} extends the Vert.x {@link Logger}, and
+ * all messages logged to the port are logged to an underlying Vert.x
+ * {@link Logger} as well, so there's no need to use two loggers in
+ * order to log messages to log files.<p>
+ *
+ * Port loggers are a core element of each component, so users
+ * should never need to contstruct port loggers themselves.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

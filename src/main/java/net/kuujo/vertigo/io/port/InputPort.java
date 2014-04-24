@@ -19,7 +19,12 @@ import net.kuujo.vertigo.context.InputPortContext;
 import net.kuujo.vertigo.io.Input;
 
 /**
- * An input port.
+ * Input port on which messages are received.<p>
+ *
+ * The input port can contain any number of {@link net.kuujo.vertigo.io.connection.InputConnection}
+ * on which it receives input messages. Connections are constructed based
+ * on current network configuration information. When the network configuration
+ * is updated, the port will automatically update its internal connections.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

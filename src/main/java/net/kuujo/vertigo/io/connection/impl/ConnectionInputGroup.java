@@ -24,9 +24,12 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
 /**
- * Connection level input group.
+ * Connection level input group.<p>
  *
- * @author Jordan Halterman
+ * This input group is created directly by a {@link DefaultInputConnection} when
+ * the connection receives a new group message.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ConnectionInputGroup implements InputGroup {
   private final String id;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.io.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +28,12 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Handles serialization of output messages.
+ * Handles serialization of output messages.<p>
+ *
+ * The serializer serializes all messages to a {@link JsonObject} which
+ * can be read and deserialized by input connections. If the message is
+ * not an event bus supported type, the serializer will attempt to
+ * serialize the message using the default Vertigo serializer.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

@@ -90,6 +90,8 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
+        // Iterate through existing streams and try to determine
+        // whether any of them have been removed from the network.
         Iterator<OutputStream> iter = streams.iterator();
         while (iter.hasNext()) {
           final OutputStream stream = iter.next();
@@ -100,6 +102,10 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               break;
             }
           }
+
+          // If a stream was removed from the network, close
+          // and remove the connection regardless of whether the
+          // close is actually successful.
           if (!exists) {
             stream.close(new Handler<AsyncResult<Void>>() {
               @Override
@@ -113,6 +119,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           }
         }
 
+        // Now try to determine whether any streams were added to the network.
         final List<OutputStream> newStreams = new ArrayList<>();
         for (OutputStreamContext output : update.streams()) {
           boolean exists = false;
@@ -135,6 +142,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           }
         }
 
+        // If the port is open then that means streams have already
+        // been set up. We need to add the new streams carefully
+        // because it's possible that user code may be sending messages
+        // on the port. If messages are sent to a stream that's not
+        // yet open then an exception will be thrown.
         if (open) {
           final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(newStreams.size());
           counter.setHandler(new Handler<AsyncResult<Void>>() {
@@ -144,6 +156,12 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               task.complete();
             }
           });
+
+          // Start each stream and add the stream to the streams
+          // list only once the stream has been successfully opened.
+          // The update lock by the task runner will ensure that we don't
+          // accidentally open up two of the same stream even if the
+          // configuration is updated again.
           for (final OutputStream stream : newStreams) {
             stream.open(new Handler<AsyncResult<Void>>() {
               @Override
@@ -157,6 +175,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
             });
           }
         } else {
+          // If the port's not even open yet then it's okay to just add the
+          // connection to the connections list. Once the port is opened it
+          // will open the connections.
           for (OutputStream stream : newStreams) {
             streams.add(stream);
           }
@@ -234,6 +255,10 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               task.complete();
             }
           });
+
+          // Only add streams to the stream list once the stream has been
+          // opened. This helps ensure that we don't attempt to send messages
+          // on a closed stream.
           for (OutputStreamContext output : context.streams()) {
             final OutputStream stream = new DefaultOutputStream(vertx, output);
             stream.setSendQueueMaxSize(maxQueueSize);

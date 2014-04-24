@@ -89,6 +89,8 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
+        // Iterate through existing connections and try to determine
+        // whether any of them have been removed from the network.
         Iterator<InputConnection> iter = connections.iterator();
         while (iter.hasNext()) {
           final InputConnection connection = iter.next();
@@ -99,6 +101,10 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
               break;
             }
           }
+
+          // If a connection was removed from the network, close
+          // and remove the connection regardless of whether the
+          // close is actually successful.
           if (!exists) {
             connection.close(new Handler<AsyncResult<Void>>() {
               @Override
@@ -112,6 +118,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           }
         }
 
+        // Now try to determine whether any connections were added to the network.
         final List<InputConnection> newConnections = new ArrayList<>();
         for (InputConnectionContext input : update.connections()) {
           boolean exists = false;
@@ -126,6 +133,11 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           }
         }
 
+        // If the port is open then that means connections have already
+        // been set up. We need to add the new connections carefully
+        // because it's possible that user code may be sending messages
+        // on the port. If messages are sent to a connection that's not
+        // yet open then an exception will be thrown.
         if (open) {
           final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(newConnections.size());
           counter.setHandler(new Handler<AsyncResult<Void>>() {
@@ -135,6 +147,12 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
               task.complete();
             }
           });
+
+          // Start each connection and add the connection to the connections
+          // list only once the connection has been successfully opened.
+          // The update lock by the task runner will ensure that we don't
+          // accidentally open up two of the same connection even if the
+          // configuration is updated again.
           for (final InputConnection connection : newConnections) {
             connection.messageHandler(messageHandler);
             for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
@@ -155,6 +173,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
             });
           }
         } else {
+          // If the port's not even open yet then it's okay to just add the
+          // connection to the connections list. Once the port is opened it
+          // will open the connections.
           for (InputConnection connection : newConnections) {
             connection.messageHandler(messageHandler);
             for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
@@ -244,6 +265,10 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
             }
           });
 
+          // Add all connections from the connection context.
+          // Only add connections to the connections list once the connection
+          // has been opened. This ensures that we don't attempt to send messages
+          // on a close connection.
           connections.clear();
           for (InputConnectionContext connectionContext : context.connections()) {
             final InputConnection connection = new DefaultInputConnection(vertx, connectionContext);

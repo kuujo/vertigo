@@ -24,9 +24,9 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.context.OutputConnectionContext;
 import net.kuujo.vertigo.hooks.OutputHook;
-import net.kuujo.vertigo.io.OutputSerializer;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
+import net.kuujo.vertigo.io.impl.OutputSerializer;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

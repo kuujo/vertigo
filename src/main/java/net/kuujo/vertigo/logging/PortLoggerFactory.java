@@ -23,7 +23,7 @@ import net.kuujo.vertigo.io.OutputCollector;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
- * Output port logger factory.
+ * Port logger factory.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -34,7 +34,7 @@ public class PortLoggerFactory {
    * Creates an output port logger for the given type.
    *
    * @param clazz The type being logged.
-   * @param port The output port to which to log messages.
+   * @param port The output collector to which to log messages.
    * @return An output port logger.
    */
   public static PortLogger getLogger(Class<?> clazz, OutputCollector output) {

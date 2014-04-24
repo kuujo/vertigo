@@ -25,10 +25,10 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Connection output group implementation.<p>
+ * Connection level output group.<p>
  *
  * This is the output group that handles actually sending grouped messages on the
- * connection.
+ * connection
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

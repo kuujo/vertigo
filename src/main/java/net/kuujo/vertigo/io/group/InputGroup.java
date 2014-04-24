@@ -20,7 +20,7 @@ import net.kuujo.vertigo.io.Input;
 import org.vertx.java.core.Handler;
 
 /**
- * Input groups represent collections of incoming messages.<p>
+ * Input groups represent collections of input messages.<p>
  *
  * In order for an input group to receive messages, an output group
  * of the same name must have sent messages from the other side of

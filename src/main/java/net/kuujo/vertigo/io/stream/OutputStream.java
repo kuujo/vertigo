@@ -24,7 +24,7 @@ import net.kuujo.vertigo.io.Output;
  * Output stream.<p>
  *
  * The output stream represents a group of connections between the current
- * component intance and multiple instances of another component. Each stream
+ * component instance and multiple instances of another component. Each stream
  * uses an internal {@link net.kuujo.vertigo.io.selector.Selector} to select
  * connections to which to send each message. Each message sent on a stream
  * can be sent to a single connection or it can be copied to multiple connections

@@ -40,6 +40,7 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultInputConnection implements InputConnection {
   private static final long BATCH_SIZE = 1000;
+  private static final long MAX_BATCH_TIME = 100;
   private final Vertx vertx;
   private final EventBus eventBus;
   private final InputConnectionContext context;
@@ -66,8 +67,7 @@ public class DefaultInputConnection implements InputConnection {
       // are full, otherwise the feedback will never be triggered.
       long currentTime = System.currentTimeMillis();
       if (currentTime - lastFeedbackTime > 1000) {
-        eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
-        lastFeedbackTime = currentTime;
+        ack();
       }
     }
   };
@@ -150,7 +150,7 @@ public class DefaultInputConnection implements InputConnection {
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
           if (feedbackTimerID == 0) {
-            feedbackTimerID = vertx.setPeriodic(1000, internalTimer);
+            feedbackTimerID = vertx.setPeriodic(MAX_BATCH_TIME, internalTimer);
           }
           open = true;
         }
@@ -171,16 +171,34 @@ public class DefaultInputConnection implements InputConnection {
       lastReceived = id;
       // If the ID reaches the end of the current batch then tell the data
       // source that it's okay to remove all previous messages.
-      if (lastReceived % BATCH_SIZE == 0 && open && connected) {
-        eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
-        lastFeedbackTime = System.currentTimeMillis();
+      if (lastReceived % BATCH_SIZE == 0) {
+        ack();
       }
       return true;
-    } else if (open && connected) {
+    } else {
+      fail();
+    }
+    return false;
+  }
+
+  /**
+   * Sends an ack message for the current received count.
+   */
+  private void ack() {
+    if (open && connected) {
+      eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
+      lastFeedbackTime = System.currentTimeMillis();
+    }
+  }
+
+  /**
+   * Sends a fail message for the current received count.
+   */
+  private void fail() {
+    if (open && connected) {
       eventBus.send(outAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();
     }
-    return false;
   }
 
   @Override

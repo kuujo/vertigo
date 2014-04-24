@@ -46,7 +46,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputConnection implements OutputConnection {
-  private static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
+  private static final int DEFAULT_MAX_QUEUE_SIZE = 10000;
   private final Vertx vertx;
   private final EventBus eventBus;
   private final OutputConnectionContext context;
@@ -314,8 +314,10 @@ public class DefaultOutputConnection implements OutputConnection {
    * Handles a connection resume.
    */
   private void doResume(long id) {
-    paused = false;
-    checkDrain();
+    if (paused) {
+      paused = false;
+      checkDrain();
+    }
   }
 
   /**

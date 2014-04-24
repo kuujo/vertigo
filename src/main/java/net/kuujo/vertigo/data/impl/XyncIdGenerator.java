@@ -18,38 +18,60 @@ package net.kuujo.vertigo.data.impl;
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
-import net.kuujo.xync.data.impl.XyncAsyncIdGenerator;
+import net.kuujo.vertigo.data.DataException;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An event bus ID generator implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ * @author Jordan Halterman
  */
 @ClusterType
 public class XyncIdGenerator implements AsyncIdGenerator {
-  private final net.kuujo.xync.data.AsyncIdGenerator generator;
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+  private final String name;
+  private final EventBus eventBus;
 
   @Factory
   public static XyncIdGenerator factory(String name, Vertx vertx) {
-    return new XyncIdGenerator(new XyncAsyncIdGenerator(name, vertx.eventBus()));
+    return new XyncIdGenerator(name, vertx.eventBus());
   }
 
-  private XyncIdGenerator(net.kuujo.xync.data.AsyncIdGenerator generator) {
-    this.generator = generator;
+  public XyncIdGenerator(String name, EventBus eventBus) {
+    this.name = name;
+    this.eventBus = eventBus;
   }
 
   @Override
   public String name() {
-    return generator.name();
+    return name;
   }
 
   @Override
   public void nextId(final Handler<AsyncResult<Long>> resultHandler) {
-    generator.nextId(resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "next")
+        .putString("type", "id")
+        .putString("name", name);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Long>(result.cause()).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Long>(result.result().body().getLong("result")).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
 }

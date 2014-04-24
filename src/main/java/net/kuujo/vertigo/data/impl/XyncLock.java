@@ -17,59 +17,115 @@ package net.kuujo.vertigo.data.impl;
 
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.data.DataException;
 import net.kuujo.vertigo.data.AsyncLock;
-import net.kuujo.xync.data.impl.XyncAsyncLock;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.eventbus.ReplyException;
+import org.vertx.java.core.eventbus.ReplyFailure;
+import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An event bus lock implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ * @author Jordan Halterman
  */
 @ClusterType
 public class XyncLock implements AsyncLock {
-  private final net.kuujo.xync.data.AsyncLock lock;
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+  private final String name;
+  private final EventBus eventBus;
 
   @Factory
   public static XyncLock factory(String name, Vertx vertx) {
-    return new XyncLock(new XyncAsyncLock(name, vertx.eventBus()));
+    return new XyncLock(name, vertx.eventBus());
   }
 
-  private XyncLock(net.kuujo.xync.data.AsyncLock lock) {
-    this.lock = lock;
+  public XyncLock(String name, EventBus eventBus) {
+    this.name = name;
+    this.eventBus = eventBus;
   }
 
   @Override
   public String name() {
-    return lock.name();
+    return name;
   }
 
   @Override
   public void lock(final Handler<AsyncResult<Void>> resultHandler) {
-    lock.lock(resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "lock")
+        .putString("type", "lock")
+        .putString("name", name);
+    eventBus.send(CLUSTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        if (message.body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new DataException(message.body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void tryLock(final Handler<AsyncResult<Boolean>> resultHandler) {
-    lock.tryLock(resultHandler);
+    tryLock(30000, resultHandler);
   }
 
   @Override
   public void tryLock(long timeout, final Handler<AsyncResult<Boolean>> resultHandler) {
-    lock.tryLock(timeout, resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "try")
+        .putString("type", "lock")
+        .putString("name", name);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, timeout, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          if (((ReplyException) result.cause()).failureType().equals(ReplyFailure.TIMEOUT)) {
+            new DefaultFutureResult<Boolean>(false).setHandler(resultHandler);
+          } else {
+            new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+          }
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void unlock() {
-    lock.unlock();
+    unlock(null);
   }
 
   @Override
   public void unlock(final Handler<AsyncResult<Void>> doneHandler) {
-    lock.unlock(doneHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "unlock")
+        .putString("type", "lock")
+        .putString("name", name);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
   }
 
 }

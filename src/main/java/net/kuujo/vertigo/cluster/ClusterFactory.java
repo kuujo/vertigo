@@ -16,13 +16,15 @@
 package net.kuujo.vertigo.cluster;
 
 import net.kuujo.vertigo.util.Factories;
-import net.kuujo.xync.XyncCluster;
-import net.kuujo.xync.impl.DefaultXyncCluster;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.eventbus.ReplyException;
+import org.vertx.java.core.eventbus.ReplyFailure;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
@@ -31,6 +33,7 @@ import org.vertx.java.platform.Container;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ClusterFactory {
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
   private static Cluster currentCluster;
   private final Vertx vertx;
   private final Container container;
@@ -49,15 +52,14 @@ public class ClusterFactory {
     if (currentCluster != null) {
       new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
     } else {
-      XyncCluster cluster = new DefaultXyncCluster(vertx);
-      cluster.isCluster(new Handler<AsyncResult<Boolean>>() {
+      vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, new JsonObject(), 1, new Handler<AsyncResult<Message<JsonObject>>>() {
         @Override
-        public void handle(AsyncResult<Boolean> result) {
+        public void handle(AsyncResult<Message<JsonObject>> result) {
           ClusterScope currentScope;
-          if (result.result()) {
-            currentScope = ClusterScope.CLUSTER;
-          } else {
+          if (result.failed() && ((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
             currentScope = ClusterScope.LOCAL;
+          } else {
+            currentScope = ClusterScope.CLUSTER;
           }
           currentCluster = createCluster(currentScope);
           new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);

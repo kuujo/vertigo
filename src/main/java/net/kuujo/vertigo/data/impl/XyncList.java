@@ -17,106 +17,257 @@ package net.kuujo.vertigo.data.impl;
 
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.data.DataException;
 import net.kuujo.vertigo.data.AsyncList;
-import net.kuujo.xync.data.impl.XyncAsyncList;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * An event bus list implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ * @author Jordan Halterman
  *
  * @param <T> The list data type.
  */
 @ClusterType
 public class XyncList<T> implements AsyncList<T> {
-  private final net.kuujo.xync.data.AsyncList<T> list;
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+  private final String name;
+  private final EventBus eventBus;
 
   @Factory
   public static <T> XyncList<T> factory(String name, Vertx vertx) {
-    return new XyncList<T>(new XyncAsyncList<T>(name, vertx.eventBus()));
+    return new XyncList<T>(name, vertx.eventBus());
   }
 
-  private XyncList(net.kuujo.xync.data.AsyncList<T> list) {
-    this.list = list;
+  public XyncList(String name, EventBus eventBus) {
+    this.name = name;
+    this.eventBus = eventBus;
   }
 
   @Override
   public String name() {
-    return list.name();
+    return name;
   }
 
   @Override
   public void add(T value) {
-    list.add(value);
+    add(value, null);
   }
 
   @Override
   public void add(T value, final Handler<AsyncResult<Boolean>> doneHandler) {
-    list.add(value, doneHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "add")
+        .putString("type", "list")
+        .putString("name", name)
+        .putValue("value", value);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(doneHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void remove(T value) {
-    list.remove(value);
+    remove(value, null);
   }
 
   @Override
   public void remove(T value, final Handler<AsyncResult<Boolean>> doneHandler) {
-    list.remove(value, doneHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "remove")
+        .putString("type", "list")
+        .putString("name", name)
+        .putValue("value", value);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(doneHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void remove(int index) {
-    list.remove(index);
+    remove(index, null);
   }
 
   @Override
   public void remove(int index, final Handler<AsyncResult<T>> doneHandler) {
-    list.remove(index, doneHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "remove")
+        .putString("type", "list")
+        .putString("name", name)
+        .putValue("index", index);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      @SuppressWarnings("unchecked")
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<T>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<T>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<T>((T) result.result().body().getValue("result")).setHandler(doneHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void contains(Object value, final Handler<AsyncResult<Boolean>> resultHandler) {
-    list.contains(value, resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "contains")
+        .putString("type", "list")
+        .putString("name", name)
+        .putValue("value", value);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void size(final Handler<AsyncResult<Integer>> resultHandler) {
-    list.size(resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "size")
+        .putString("type", "list")
+        .putString("name", name);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Integer>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Integer>(result.result().body().getInteger("result")).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void isEmpty(final Handler<AsyncResult<Boolean>> resultHandler) {
-    list.isEmpty(resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "empty")
+        .putString("type", "list")
+        .putString("name", name);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void clear() {
-    list.clear();
+    clear(null);
   }
 
   @Override
   public void clear(final Handler<AsyncResult<Void>> doneHandler) {
-    list.clear(doneHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "clear")
+        .putString("type", "list")
+        .putString("name", name);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void get(int index, final Handler<AsyncResult<T>> resultHandler) {
-    list.get(index, resultHandler);
+    JsonObject message = new JsonObject()
+        .putString("action", "get")
+        .putString("type", "list")
+        .putString("name", name)
+        .putNumber("index", index);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      @SuppressWarnings("unchecked")
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<T>(result.cause()).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<T>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<T>((T) result.result().body().getValue("result")).setHandler(resultHandler);
+        }
+      }
+    });
   }
 
   @Override
   public void set(int index, T value) {
-    list.set(index, value);
+    set(index, value, null);
   }
 
   @Override
   public void set(int index, T value, final Handler<AsyncResult<Void>> doneHandler) {
-    list.set(index, value, doneHandler);
+    JsonObject message = new JsonObject()
+      .putString("action", "set")
+      .putString("type", "list")
+      .putString("name", name)
+      .putNumber("index", index)
+      .putValue("value", value);
+    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
   }
 
 }

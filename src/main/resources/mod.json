@@ -3,6 +3,5 @@
   "licenses": ["The Apache Software License Version 2.0"],
   "author": "Jordan Halterman",
   "keywords": ["event", "processing", "real-time"],
-  "homepage": "https://github.com/kuujo/vertigo",
-  "includes": "net.kuujo~xync-tools~0.1.0-SNAPSHOT"
+  "homepage": "https://github.com/kuujo/vertigo"
 }

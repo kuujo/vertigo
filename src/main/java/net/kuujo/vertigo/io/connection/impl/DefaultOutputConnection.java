@@ -379,6 +379,7 @@ public class DefaultOutputConnection implements OutputConnection {
     if (open && !paused) {
       eventBus.send(inAddress, message);
     }
+    groups.remove(group);
   }
 
   /**

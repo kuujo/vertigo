@@ -52,9 +52,25 @@ public class DefaultInputConnection implements InputConnection {
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
   private long lastReceived;
+  private long lastFeedbackTime;
+  private long feedbackTimerID;
   private boolean open;
   private boolean connected;
   private boolean paused;
+
+  private final Handler<Long> internalTimer = new Handler<Long>() {
+    @Override
+    public void handle(Long timerID) {
+      // Ensure that feedback messages are sent at least every second or so.
+      // This will ensure that feedback is still provided when output connections
+      // are full, otherwise the feedback will never be triggered.
+      long currentTime = System.currentTimeMillis();
+      if (currentTime - lastFeedbackTime > 1000) {
+        eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
+        lastFeedbackTime = currentTime;
+      }
+    }
+  };
 
   private final Handler<Message<JsonObject>> internalMessageHandler = new Handler<Message<JsonObject>>() {
     @Override
@@ -133,6 +149,9 @@ public class DefaultInputConnection implements InputConnection {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
+          if (feedbackTimerID == 0) {
+            feedbackTimerID = vertx.setPeriodic(1000, internalTimer);
+          }
           open = true;
         }
         doneHandler.handle(result);
@@ -154,10 +173,12 @@ public class DefaultInputConnection implements InputConnection {
       // source that it's okay to remove all previous messages.
       if (lastReceived % BATCH_SIZE == 0 && open && connected) {
         eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
+        lastFeedbackTime = System.currentTimeMillis();
       }
       return true;
     } else if (open && connected) {
       eventBus.send(outAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
+      lastFeedbackTime = System.currentTimeMillis();
     }
     return false;
   }
@@ -308,6 +329,10 @@ public class DefaultInputConnection implements InputConnection {
     eventBus.unregisterHandler(inAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
+        if (feedbackTimerID > 0) {
+          vertx.cancelTimer(feedbackTimerID);
+          feedbackTimerID = 0;
+        }
         open = false;
         doneHandler.handle(result);
       }

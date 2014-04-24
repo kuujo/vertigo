@@ -893,6 +893,211 @@ public class NetworkTest extends TestVerticle {
     });
   }
 
+  public static class TestGroupForwardSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("foo").send("bar").send("baz").end();
+        }
+      });
+    }
+  }
+
+  public static class TestGroupForwardForwarder extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(final InputGroup ingroup) {
+          output.port("out").group("foo", new Handler<OutputGroup>() {
+            @Override
+            public void handle(final OutputGroup outgroup) {
+              ingroup.messageHandler(new Handler<String>() {
+                @Override
+                public void handle(String message) {
+                  outgroup.send(message);
+                }
+              });
+              ingroup.endHandler(new Handler<Void>() {
+                @Override
+                public void handle(Void _) {
+                  outgroup.end();
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+
+  public static class TestGroupForwardReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              messages.add(message);
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              assertTrue(messages.contains("foo"));
+              assertTrue(messages.contains("bar"));
+              assertTrue(messages.contains("baz"));
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testGroupForward() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("group-forward");
+    network.addVerticle("sender", TestGroupForwardSender.class.getName());
+    network.addVerticle("forwarder", TestGroupForwardForwarder.class.getName());
+    network.addVerticle("receiver", TestGroupForwardReceiver.class.getName());
+    network.createConnection("sender", "out", "forwarder", "in").roundSelect();
+    network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestNestedGroupForwardSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.group("bar", new Handler<OutputGroup>() {
+            @Override
+            public void handle(OutputGroup group) {
+              group.send("foo").send("bar").send("baz").end();
+            }
+          });
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestNestedGroupForwardForwarder extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(final InputGroup ingroup) {
+          output.port("out").group("foo", new Handler<OutputGroup>() {
+            @Override
+            public void handle(final OutputGroup outgroup) {
+              ingroup.groupHandler("bar", new Handler<InputGroup>() {
+                @Override
+                public void handle(final InputGroup ingroup) {
+                  outgroup.group("bar", new Handler<OutputGroup>() {
+                    @Override
+                    public void handle(final OutputGroup outgroup) {
+                      ingroup.messageHandler(new Handler<String>() {
+                        @Override
+                        public void handle(String message) {
+                          outgroup.send(message);
+                        }
+                      });
+                      ingroup.endHandler(new Handler<Void>() {
+                        @Override
+                        public void handle(Void _) {
+                          outgroup.end();
+                        }
+                      });
+                    }
+                  });
+                }
+              });
+              ingroup.endHandler(new Handler<Void>() {
+                @Override
+                public void handle(Void _) {
+                  outgroup.end();
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+
+  public static class TestNestedGroupForwardReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.groupHandler("bar", new Handler<InputGroup>() {
+            @Override
+            public void handle(InputGroup group) {
+              group.messageHandler(new Handler<String>() {
+                @Override
+                public void handle(String message) {
+                  messages.add(message);
+                }
+              });
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              assertTrue(messages.contains("foo"));
+              assertTrue(messages.contains("bar"));
+              assertTrue(messages.contains("baz"));
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testNestedGroupForward() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork("nested-group-forward");
+    network.addVerticle("sender", TestNestedGroupForwardSender.class.getName());
+    network.addVerticle("forwarder", TestNestedGroupForwardForwarder.class.getName());
+    network.addVerticle("receiver", TestNestedGroupForwardReceiver.class.getName());
+    network.createConnection("sender", "out", "forwarder", "in").roundSelect();
+    network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
   public static class TestReconfigureSender extends ComponentVerticle {
     @Override
     public void start() {

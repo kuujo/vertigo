@@ -20,8 +20,27 @@ import net.kuujo.vertigo.io.Input;
 import org.vertx.java.core.Handler;
 
 /**
- * Input groups allow incoming messages to be separated into groups. Groups are
- * named structures of messages that are defined by the component outputting messages.
+ * Input groups represent collections of incoming messages.<p>
+ *
+ * In order for an input group to receive messages, an output group
+ * of the same name must have sent messages from the other side of
+ * the connection. Each time an output group is created a corresponding
+ * input group will be created on the other side of the connection.<p>
+ *
+ * Input groups use a very particular order of operations. When a new
+ * group message is received on an input connection, the connection will
+ * create a corresponding input group. The group will not receive any
+ * messages until it has registered a message handler. Once a message
+ * handler has been registered, the input group will notify the
+ * corresponding output group that it's prepared to accept messages.
+ * This allows time for input groups to call asynchronous APIs during
+ * setup.<p>
+ *
+ * Input group messages will be received in strong order just as all
+ * other Vertigo messages. The input group uses the underlying connection
+ * to validate message ordering. This ordering helps guarantee that
+ * all child groups will be ended before the parent is ended. This allows
+ * inputs to reliably create and destroy state using start and end handlers.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

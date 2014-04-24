@@ -19,7 +19,7 @@ import net.kuujo.vertigo.io.Output;
 
 
 /**
- * Output group.<p>
+ * Output group are collections of messages.<p>
  *
  * Output groups represent structured groups of output messages. Users can
  * use output groups to batch messages in a manner that will be similarly
@@ -27,9 +27,18 @@ import net.kuujo.vertigo.io.Output;
  * guarantees that the other side of the connection(s) will see each of
  * the messages within the group. Additionally, sub-groups may be created,
  * and Vertigo guarantees that sub-groups are sent and ended prior to parent
- * groups ending. This allows for logical grouping of messages. Note that
- * while groups are guaranteed to be strongly ordered, messages within groups
- * are not guaranteed to be ordered.
+ * groups ending. This allows for logical grouping of messages.<p>
+ *
+ * All messages within a root level output group will be sent on the same
+ * connection. In other words, connection selection is performed per-group
+ * rather than per-message.<p>
+ *
+ * Grouped messages are guaranteed to be ordered just as all Vertigo messages
+ * are. However, some components of a group are not ordered. Specifically, if
+ * a group is ended before all of its children (groups) have ended, the parent
+ * group will wait for the children to end before sending its own end message.
+ * This helps Vertigo guarantee that when all children of a group have completed
+ * before a parent completing.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

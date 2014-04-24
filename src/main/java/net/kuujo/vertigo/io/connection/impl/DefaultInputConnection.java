@@ -25,15 +25,12 @@ import net.kuujo.vertigo.hooks.InputHook;
 import net.kuujo.vertigo.io.InputDeserializer;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.group.InputGroup;
-import net.kuujo.vertigo.io.group.impl.DefaultInputGroup;
-import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -46,117 +43,52 @@ public class DefaultInputConnection implements InputConnection {
   private final Vertx vertx;
   private final EventBus eventBus;
   private final InputConnectionContext context;
+  private final String inAddress;
+  private final String outAddress;
   private List<InputHook> hooks = new ArrayList<>();
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
-  private final Map<String, DefaultInputGroup> groups = new HashMap<>();
+  private final Map<String, ConnectionInputGroup> groups = new HashMap<>();
   private final InputDeserializer deserializer = new InputDeserializer();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
-  private String feedbackAddress;
   private long lastReceived;
   private boolean open;
+  private boolean connected;
   private boolean paused;
-
-  private final Handler<Message<String>> internalOpenHandler = new Handler<Message<String>>() {
-    @Override
-    public void handle(Message<String> message) {
-      if (open) {
-        feedbackAddress = message.body();
-        groups.clear();
-        message.reply(true);
-      }
-    }
-  };
-
-  private final Handler<Message<JsonObject>> internalStartHandler = new Handler<Message<JsonObject>>() {
-    @Override
-    public void handle(Message<JsonObject> message) {
-      if (!paused) {
-        long id = message.body().getLong("id");
-        if (checkID(id)) {
-          JsonObject body = message.body();
-          String groupID = body.getString("group");
-          String name = body.getString("name");
-          String parentId = body.getString("parent");
-          DefaultInputGroup group = new DefaultInputGroup(groupID, name, vertx);
-          groups.put(groupID, group);
-          if (parentId != null) {
-            DefaultInputGroup parent = groups.get(parentId);
-            if (parent != null) {
-              parent.handleGroup(group);
-            }
-          } else {
-            Handler<InputGroup> handler = groupHandlers.get(name);
-            if (handler != null) {
-              handler.handle(group);
-            }
-          }
-          group.handleStart();
-        }
-      }
-    }
-  };
-
-  private final Handler<Message<JsonObject>> internalGroupHandler = new Handler<Message<JsonObject>>() {
-    @Override
-    public void handle(Message<JsonObject> message) {
-      if (!paused) {
-        long id = message.body().getLong("id");
-        if (checkID(id)) {
-          String groupID = message.body().getString("group");
-          DefaultInputGroup group = groups.get(groupID);
-          if (group != null) {
-            Object value = deserializer.deserialize(message.body());
-            if (value != null) {
-              group.handleMessage(value);
-            }
-          }
-        }
-      }
-    }
-  };
-
-  private final Handler<Message<JsonObject>> internalEndHandler = new Handler<Message<JsonObject>>() {
-    @Override
-    public void handle(Message<JsonObject> message) {
-      if (!paused) {
-        long id = message.body().getLong("id");
-        if (checkID(id)) {
-          String groupID = message.body().getString("group");
-          DefaultInputGroup group = groups.remove(groupID);
-          if (group != null) {
-            group.handleEnd();
-          }
-        }
-      }
-    }
-  };
 
   private final Handler<Message<JsonObject>> internalMessageHandler = new Handler<Message<JsonObject>>() {
     @Override
-    @SuppressWarnings("unchecked")
     public void handle(Message<JsonObject> message) {
-      if (!paused) {
-        long id = message.body().getLong("id");
-        if (checkID(id)) {
-          Object value = deserializer.deserialize(message.body());
-          if (value != null && messageHandler != null) {
-            messageHandler.handle(value);
-          }
-          for (InputHook hook : hooks) {
-            hook.handleReceive(value);
-          }
+      if (open && !paused) {
+        String action = message.body().getString("action");
+        switch (action) {
+          case "message":
+            if (checkID(message.body().getLong("id"))) {
+              doMessage(message.body());
+            }
+            break;
+          case "start":
+            if (checkID(message.body().getLong("id"))) {
+              doGroupStart(message.body());
+            }
+            break;
+          case "group":
+            if (checkID(message.body().getLong("id"))) {
+              doGroupMessage(message.body());
+            }
+            break;
+          case "end":
+            if (checkID(message.body().getLong("id"))) {
+              doGroupEnd(message.body());
+            }
+            break;
+          case "connect":
+            doConnect(message);
+            break;
+          case "disconnect":
+            doDisconnect(message);
+            break;
         }
-      }
-    }
-  };
-
-  private final Handler<Message<Boolean>> internalCloseHandler = new Handler<Message<Boolean>>() {
-    @Override
-    public void handle(Message<Boolean> message) {
-      if (open) {
-        groups.clear();
-        message.reply(true);
       }
     }
   };
@@ -165,6 +97,8 @@ public class DefaultInputConnection implements InputConnection {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
+    this.inAddress = String.format("%s.in", context.address());
+    this.outAddress = String.format("%s.out", context.address());
     this.hooks = context.hooks();
   }
 
@@ -195,23 +129,15 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(4).setHandler(new Handler<AsyncResult<Void>>() {
+    eventBus.registerHandler(inAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else {
+        if (result.succeeded()) {
           open = true;
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
+        doneHandler.handle(result);
       }
     });
-    vertx.eventBus().registerHandler(String.format("%s.open", context.address()), internalOpenHandler, counter);
-    vertx.eventBus().registerHandler(String.format("%s.start", context.address()), internalStartHandler, counter);
-    vertx.eventBus().registerHandler(String.format("%s.group", context.address()), internalGroupHandler, counter);
-    vertx.eventBus().registerHandler(String.format("%s.end", context.address()), internalEndHandler, counter);
-    vertx.eventBus().registerHandler(String.format("%s.close", context.address()), internalCloseHandler, counter);
-    vertx.eventBus().registerHandler(context.address(), internalMessageHandler, counter);
     return this;
   }
 
@@ -226,30 +152,34 @@ public class DefaultInputConnection implements InputConnection {
       lastReceived = id;
       // If the ID reaches the end of the current batch then tell the data
       // source that it's okay to remove all previous messages.
-      if (lastReceived % BATCH_SIZE == 0 && open && feedbackAddress != null) {
-        eventBus.send(feedbackAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
+      if (lastReceived % BATCH_SIZE == 0 && open && connected) {
+        eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
       }
       return true;
-    } else if (open && feedbackAddress != null) {
-      eventBus.send(feedbackAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
+    } else if (open && connected) {
+      eventBus.send(outAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
     }
     return false;
   }
 
   @Override
   public InputConnection pause() {
-    paused = true;
-    if (open && feedbackAddress != null) {
-      eventBus.send(feedbackAddress, new JsonObject().putString("action", "pause").putNumber("id", lastReceived));
+    if (!paused) {
+      paused = true;
+      if (open && connected) {
+        eventBus.send(outAddress, new JsonObject().putString("action", "pause").putNumber("id", lastReceived));
+      }
     }
     return this;
   }
 
   @Override
   public InputConnection resume() {
-    paused = false;
-    if (open && feedbackAddress != null) {
-      eventBus.send(feedbackAddress, new JsonObject().putString("action", "resume").putNumber("id", lastReceived));
+    if (paused) {
+      paused = false;
+      if (open && connected) {
+        eventBus.send(outAddress, new JsonObject().putString("action", "resume").putNumber("id", lastReceived));
+      }
     }
     return this;
   }
@@ -267,6 +197,107 @@ public class DefaultInputConnection implements InputConnection {
     return this;
   }
 
+  /**
+   * Handles receiving a message.
+   */
+  @SuppressWarnings("unchecked")
+  private void doMessage(final JsonObject message) {
+    Object value = deserializer.deserialize(message);
+    if (value != null && messageHandler != null) {
+      messageHandler.handle(value);
+    }
+    for (InputHook hook : hooks) {
+      hook.handleReceive(value);
+    }
+  }
+
+  /**
+   * Handles a group start.
+   */
+  private void doGroupStart(final JsonObject message) {
+    String groupID = message.getString("group");
+    String name = message.getString("name");
+    String parentId = message.getString("parent");
+    ConnectionInputGroup group = new ConnectionInputGroup(groupID, name, this);
+    groups.put(groupID, group);
+    if (parentId != null) {
+      ConnectionInputGroup parent = groups.get(parentId);
+      if (parent != null) {
+        parent.handleGroup(group);
+      }
+    } else {
+      Handler<InputGroup> handler = groupHandlers.get(name);
+      if (handler != null) {
+        handler.handle(group);
+      } else {
+        groupReady(groupID);
+      }
+    }
+    group.handleStart();
+  }
+
+  /**
+   * Indicates that an input group is ready.
+   */
+  void groupReady(String group) {
+    eventBus.send(outAddress, new JsonObject().putString("action", "start").putString("group", group));
+  }
+
+  /**
+   * Handles a group message.
+   */
+  private void doGroupMessage(final JsonObject message) {
+    String groupID = message.getString("group");
+    ConnectionInputGroup group = groups.get(groupID);
+    if (group != null) {
+      Object value = deserializer.deserialize(message);
+      if (value != null) {
+        group.handleMessage(value);
+      }
+    }
+  }
+
+  /**
+   * Handles a group end.
+   */
+  private void doGroupEnd(final JsonObject message) {
+    String groupID = message.getString("group");
+    ConnectionInputGroup group = groups.remove(groupID);
+    if (group != null) {
+      group.handleEnd();
+    }
+  }
+
+  /**
+   * Handles connect.
+   */
+  private void doConnect(final Message<JsonObject> message) {
+    if (open) {
+      if (!connected) {
+        groups.clear();
+        connected = true;
+      }
+      message.reply(true);
+    } else {
+      message.reply(false);
+    }
+  }
+
+  /**
+   * Handles disconnect.
+   */
+  private void doDisconnect(final Message<JsonObject> message) {
+    if (open) {
+      if (connected) {
+        groups.clear();
+        connected = false;
+      }
+      message.reply(true);
+    } else {
+      message.reply(false);
+    }
+  }
+
   @Override
   public void close() {
     close(null);
@@ -274,19 +305,13 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(4).setHandler(new Handler<AsyncResult<Void>>() {
+    eventBus.unregisterHandler(inAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         open = false;
         doneHandler.handle(result);
       }
     });
-    vertx.eventBus().unregisterHandler(String.format("%s.open", context.address()), internalOpenHandler, counter);
-    vertx.eventBus().unregisterHandler(String.format("%s.start", context.address()), internalStartHandler, counter);
-    vertx.eventBus().unregisterHandler(String.format("%s.group", context.address()), internalGroupHandler, counter);
-    vertx.eventBus().unregisterHandler(String.format("%s.end", context.address()), internalEndHandler, counter);
-    vertx.eventBus().unregisterHandler(String.format("%s.close", context.address()), internalCloseHandler, counter);
-    vertx.eventBus().unregisterHandler(context.address(), internalMessageHandler, counter);
   }
 
 }

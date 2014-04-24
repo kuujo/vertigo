@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group.impl;
+package net.kuujo.vertigo.io.connection.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import net.kuujo.vertigo.io.OutputSerializer;
-import net.kuujo.vertigo.io.connection.impl.DefaultOutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -41,52 +36,44 @@ public class ConnectionOutputGroup implements OutputGroup {
   private final String id;
   private final String parent;
   private final String name;
-  private final Vertx vertx;
   private final DefaultOutputConnection connection;
-  private final String address;
-  private final OutputSerializer serializer;
+  private Handler<OutputGroup> startHandler;
   private Handler<Void> endHandler;
-  private final Map<String, ConnectionOutputGroup> groups = new HashMap<>();
+  private int children;
+  private boolean started;
   private boolean ended;
   private boolean closed;
 
-  public ConnectionOutputGroup(String id, String name, Vertx vertx, DefaultOutputConnection connection, OutputSerializer serializer) {
+  public ConnectionOutputGroup(String id, String name, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
     this.parent = null;
-    this.vertx = vertx;
     this.connection = connection;
-    this.address = connection.context().address();
-    this.serializer = serializer;
   }
 
-  public ConnectionOutputGroup(String id, String name, String parent, Vertx vertx, DefaultOutputConnection connection, OutputSerializer serializer) {
+  public ConnectionOutputGroup(String id, String name, String parent, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
     this.parent = parent;
-    this.vertx = vertx;
     this.connection = connection;
-    this.address = connection.context().address();
-    this.serializer = serializer;
   }
 
   /**
    * Checks whether the group is complete.
    */
   private void checkEnd() {
-    if (ended && !closed && groups.isEmpty()) {
+    if (ended && !closed && children == 0) {
       closed = true;
-      connection.doSend(String.format("%s.end", address), new JsonObject().putString("group", id));
+      connection.doGroupEnd(id);
       if (endHandler != null) {
         endHandler.handle((Void) null);
       }
     }
   }
 
-  public ConnectionOutputGroup endHandler(Handler<Void> handler) {
+  void endHandler(Handler<Void> handler) {
     this.endHandler = handler;
     checkEnd();
-    return this;
   }
 
   @Override
@@ -101,16 +88,27 @@ public class ConnectionOutputGroup implements OutputGroup {
 
   @Override
   public Vertx vertx() {
-    return vertx;
+    return connection.vertx();
   }
 
   /**
    * Starts the output group.
    */
-  public OutputGroup start(final Handler<OutputGroup> doneHandler) {
-    connection.doSend(String.format("%s.start", address), new JsonObject().putString("group", id).putString("name", name).putString("parent", parent));
-    doneHandler.handle(this);
-    return this;
+  void start(final Handler<OutputGroup> startHandler) {
+    connection.doGroupStart(id, name, parent);
+    this.startHandler = startHandler;
+  }
+
+  /**
+   * Called when the output connection receives a ready message from the
+   * group at the other side of the connection. The ready message will be
+   * sent once a message handler has been registered on the target group.
+   */
+  void handleStart() {
+    if (!started && startHandler != null) {
+      startHandler.handle(this);
+      started = true;
+    }
   }
 
   @Override
@@ -142,33 +140,15 @@ public class ConnectionOutputGroup implements OutputGroup {
 
   @Override
   public ConnectionOutputGroup group(final String name, final Handler<OutputGroup> handler) {
-    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this.id, vertx, connection, serializer);
-
-    // Set an end handler on the group that will remove the group
-    // from the groups list and complete the group set.
-    group.endHandler(new Handler<Void>() {
+    ConnectionOutputGroup group = connection.group(name, id, handler);
+    children++;
+    group.endHandler(new VoidHandler() {
       @Override
-      public void handle(Void _) {
-        groups.remove(name);
+      protected void handle() {
+        children--;
         checkEnd();
       }
     });
-
-    // If there's already a group with this name in the groups list
-    // then set the previous group's end handler to start this group.
-    final ConnectionOutputGroup lastGroup = groups.get(name);
-    if (lastGroup != null) {
-      lastGroup.endHandler(new Handler<Void>() {
-        @Override
-        public void handle(Void _) {
-          groups.put(name, group);
-          group.start(handler);
-        }
-      });
-    } else {
-      groups.put(name, group);
-      group.start(handler);
-    }
     return this;
   }
 
@@ -177,7 +157,7 @@ public class ConnectionOutputGroup implements OutputGroup {
    */
   private OutputGroup doSend(final Object value) {
     if (!ended) {
-      connection.doSend(String.format("%s.group", address), serializer.serialize(value).putString("group", id));
+      connection.doGroupSend(id, value);
     }
     return this;
   }

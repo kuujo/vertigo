@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.group;
 
 /**
- * Input/output group.
+ * Input/output group. Groups are logical collections of messages.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

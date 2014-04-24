@@ -27,7 +27,6 @@ import net.kuujo.vertigo.hooks.OutputHook;
 import net.kuujo.vertigo.io.OutputSerializer;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
-import net.kuujo.vertigo.io.group.impl.ConnectionOutputGroup;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -51,8 +50,8 @@ public class DefaultOutputConnection implements OutputConnection {
   private final Vertx vertx;
   private final EventBus eventBus;
   private final OutputConnectionContext context;
-  private final String address;
-  private final String feedbackAddress = UUID.randomUUID().toString();
+  private final String outAddress;
+  private final String inAddress;
   private final OutputSerializer serializer = new OutputSerializer();
   private List<OutputHook> hooks = new ArrayList<>();
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
@@ -64,24 +63,26 @@ public class DefaultOutputConnection implements OutputConnection {
   private boolean full;
   private boolean paused;
 
-  private final Handler<Message<JsonObject>> internalFeedbackHandler = new Handler<Message<JsonObject>>() {
+  private final Handler<Message<JsonObject>> internalMessageHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
       String action = message.body().getString("action");
-      long id = message.body().getLong("id");
       if (action != null) {
         switch (action) {
+          case "start":
+            doStart(message.body().getString("group"));
+            break;
           case "ack":
-            doAck(id);
+            doAck(message.body().getLong("id"));
             break;
           case "fail":
-            doFail(id);
+            doFail(message.body().getLong("id"));
             break;
           case "pause":
-            doPause(id);
+            doPause(message.body().getLong("id"));
             break;
           case "resume":
-            doResume(id);
+            doResume(message.body().getLong("id"));
             break;
         }
       }
@@ -93,7 +94,8 @@ public class DefaultOutputConnection implements OutputConnection {
     this.eventBus = vertx.eventBus();
     this.context = context;
     this.hooks = context.hooks();
-    this.address = context.address();
+    this.outAddress = String.format("%s.out", context.address());
+    this.inAddress = String.format("%s.in", context.address());
   }
 
   @Override
@@ -118,13 +120,13 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public OutputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.registerHandler(feedbackAddress, internalFeedbackHandler, new Handler<AsyncResult<Void>>() {
+    eventBus.registerHandler(outAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
-          doOpen(doneHandler);
+          connect(doneHandler);
         }
       }
     });
@@ -134,8 +136,8 @@ public class DefaultOutputConnection implements OutputConnection {
   /**
    * Connects to the other side of the connection.
    */
-  private void doOpen(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.sendWithTimeout(String.format("%s.open", address), feedbackAddress, 5000, new Handler<AsyncResult<Message<Boolean>>>() {
+  private void connect(final Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "connect"), 5000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {
@@ -143,13 +145,13 @@ public class DefaultOutputConnection implements OutputConnection {
           if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
             new DefaultFutureResult<Void>(failure).setHandler(doneHandler);
           } else {
-            doOpen(doneHandler);
+            connect(doneHandler);
           }
         } else if (result.result().body()) {
           open = true;
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         } else {
-          doOpen(doneHandler);
+          connect(doneHandler);
         }
       }
     });
@@ -183,38 +185,18 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection group(final String name, final Handler<OutputGroup> handler) {
-    final ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, vertx, this, serializer);
-
-    // Set an end handler on the group that will remove it from the groups
-    // list if the group is completed before any new groups with the same
-    // name are created.
-    group.endHandler(new Handler<Void>() {
-      @Override
-      public void handle(Void _) {
-        groups.remove(name);
-      }
-    });
-
-    // Get the last group that was created for this group name.
-    final ConnectionOutputGroup lastGroup = groups.get(name);
-    if (lastGroup != null) {
-      // Override the default end handler for the group to start the following
-      // group once the last group as completed. This guarantees ordering of
-      // groups with the same name.
-      lastGroup.endHandler(new Handler<Void>() {
-        @Override
-        public void handle(Void _) {
-          groups.put(name, group);
-          group.start(handler);
-        }
-      });
-    } else {
-      // If there is no previous group then start the group immediately.
-      groups.put(name, group);
-      group.start(handler);
-    }
+  public OutputConnection group(String name, Handler<OutputGroup> handler) {
+    ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this);
+    groups.put(group.id(), group);
+    group.start(handler);
     return this;
+  }
+
+  ConnectionOutputGroup group(String name, String parent, Handler<OutputGroup> handler) {
+    ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, parent, this);
+    groups.put(group.id(), group);
+    group.start(handler);
+    return group;
   }
 
   @Override
@@ -224,13 +206,13 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.unregisterHandler(feedbackAddress, internalFeedbackHandler, new Handler<AsyncResult<Void>>() {
+    eventBus.unregisterHandler(outAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
-          doClose(doneHandler);
+          disconnect(doneHandler);
         }
       }
     });
@@ -239,8 +221,8 @@ public class DefaultOutputConnection implements OutputConnection {
   /**
    * Disconnects from the other side of the connection.
    */
-  private void doClose(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.sendWithTimeout(String.format("%s.close"), feedbackAddress, 5000, new Handler<AsyncResult<Message<Boolean>>>() {
+  private void disconnect(final Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "disconnect"), 5000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {
@@ -248,13 +230,13 @@ public class DefaultOutputConnection implements OutputConnection {
           if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
             new DefaultFutureResult<Void>(failure).setHandler(doneHandler);
           } else {
-            doClose(doneHandler);
+            disconnect(doneHandler);
           }
         } else if (result.result().body()) {
           open = false;
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         } else {
-          doClose(doneHandler);
+          disconnect(doneHandler);
         }
       }
     });
@@ -264,7 +246,7 @@ public class DefaultOutputConnection implements OutputConnection {
    * Checks whether the connection is open.
    */
   private void checkOpen() {
-    if (!open) throw new IllegalStateException("Connection to " + address + " not open.");
+    if (!open) throw new IllegalStateException("Connection to " + context.address() + " not open.");
   }
 
   /**
@@ -289,6 +271,16 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   /**
+   * Handles a group start.
+   */
+  private void doStart(String groupID) {
+    ConnectionOutputGroup group = groups.get(groupID);
+    if (group != null) {
+      group.handleStart();
+    }
+  }
+
+  /**
    * Handles a batch ack.
    */
   private void doAck(long id) {
@@ -306,7 +298,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private void doFail(long id) {
     if (messages.containsKey(id+1)) {
       for (long i = id+1; i <= messages.lastKey(); i++) {
-        eventBus.send(address, messages.get(i));
+        eventBus.send(inAddress, messages.get(i));
       }
     }
   }
@@ -330,25 +322,85 @@ public class DefaultOutputConnection implements OutputConnection {
    * Sends a message.
    */
   private OutputConnection doSend(final Object value) {
-    doSend(address, serializer.serialize(value));
+    checkOpen();
+    JsonObject message = createMessage(value)
+        .putString("action", "message");
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
     for (OutputHook hook : hooks) {
       hook.handleSend(value);
     }
+    checkFull();
     return this;
   }
 
-  public void doSend(String address, JsonObject message) {
+  /**
+   * Sends a group start message.
+   */
+  void doGroupStart(String group, String name, String parent) {
     checkOpen();
+    JsonObject message = createMessage()
+        .putString("group", group)
+        .putString("name", name)
+        .putString("parent", parent)
+        .putString("action", "start");
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
+    checkFull();
+  }
+
+  /**
+   * Sends a group message.
+   */
+  void doGroupSend(String group, Object value) {
+    checkOpen();
+    JsonObject message = createMessage(value)
+        .putString("action", "group")
+        .putString("group", group);
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
+    for (OutputHook hook : hooks) {
+      hook.handleSend(value);
+    }
+    checkFull();
+  }
+
+  /**
+   * Sends a group end message.
+   */
+  void doGroupEnd(String group) {
+    checkOpen();
+    JsonObject message = createMessage()
+        .putString("action", "end")
+        .putString("group", group);
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
+  }
+
+  /**
+   * Creates an empty message.
+   */
+  private JsonObject createMessage() {
+    JsonObject message = new JsonObject();
     long id = currentMessage++;
     message.putNumber("id", id);
     messages.put(id, message);
-    // Don't bother sending the message if the connection is paused.
-    // The input connection will simply ignore the message anyways.
-    // Just queue the message and wait for the connection to be resumed.
-    if (!paused) {
-      eventBus.send(address, message);
-    }
-    checkFull();
+    return message;
+  }
+
+  /**
+   * Creates a value message.
+   */
+  private JsonObject createMessage(Object value) {
+    JsonObject message = serializer.serialize(value);
+    long id = currentMessage++;
+    message.putNumber("id", id);
+    messages.put(id, message);
+    return message;
   }
 
   @Override

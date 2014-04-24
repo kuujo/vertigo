@@ -19,7 +19,20 @@ import net.kuujo.vertigo.context.InputConnectionContext;
 import net.kuujo.vertigo.io.Input;
 
 /**
- * A component-to-component input connection.
+ * Input connection represents the receiving side of a connection
+ * between two instances of two components.<p>
+ *
+ * Messages on input connections must be received in order. Output
+ * and input connections keep track of message order by tagging and
+ * comparing messages with monotonically increasing unique identifiers.
+ * If the input connection receives a message out of order, it will
+ * immediately notify the output connection of the last known ordered
+ * message, indicating that the output connection should resend messages
+ * after the last known correct message.<p>
+ *
+ * The input connection will periodically send messages to the output
+ * connection indicating the last correct message received, allowing the
+ * output to clear its queue.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

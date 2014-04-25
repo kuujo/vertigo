@@ -35,7 +35,7 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * A word count network example.
  *
- * This example demonstrates the use of groupings - in particular the FieldsGrouping -
+ * This example demonstrates the use of selectors - in particular the HashSelector -
  * to control the dispersion of messages between multiple verticle instances.
  *
  * @author Jordan Halterman
@@ -43,60 +43,68 @@ import org.vertx.java.core.json.JsonObject;
 public class WordCountNetwork extends VertigoVerticle {
 
   /**
-   * A random word feeder.
+   * Random word feeder.
    */
-  public static class WordFeeder extends RichFeederVerticle {
+  public static class WordFeeder extends ComponentVerticle {
     private String[] words = new String[]{
       "foo", "bar", "baz", "foobar", "foobaz", "barfoo", "barbaz", "bazfoo", "bazbar"
     };
     private Random random = new Random();
 
     @Override
-    protected void nextMessage() {
-      String word = words[random.nextInt(words.length-1)];
-      emit(new JsonObject().putString("word", word));
+    public void start() {
+      doSend();
+    }
+
+    private void doSend() {
+      while (!output.port("out").sendQueueFull()) {
+        output.port("out").send(words[random.nextInt(words.length-1)]);
+      }
+      output.port("out").drainHandler(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
+          doSend();
+        }
+      });
     }
   }
 
   /**
-   * A word counting worker.
+   * Word counter.
    */
-  @Input(schema={@Input.Field(name="word", type=String.class)})
-  public static class WordCountWorker extends RichWorkerVerticle {
-    private Map<String, Integer> counts = new HashMap<>();
+  public static class WordCounter extends ComponentVerticle {
+    private final Map<String, Integer> counts = new HashMap<>();
 
     @Override
-    protected void handleMessage(JsonMessage message) {
-      String word = message.body().getString("word");
-      Integer count = counts.get(word);
-      if (count == null) count = 0;
-      count++;
-      emit(new JsonObject().putString("word", word).putNumber("count", count), message);
-      ack(message);
+    public void start() {
+      input.port("in").messageHandler(new Handler<String>() {
+        @Override
+        public void handle(String word) {
+          Integer count = counts.get(word);
+          if (count == null) count = 0;
+          count++;
+          output.port("out").send(new JsonObject().putString("word", word).putNumber("count", count));
+        }
+      });
     }
+
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public void start() {
-    Network network = vertigo.createNetwork("word_count");
-    network.addFeeder("word_feeder", WordFeeder.class.getName());
-    network.addWorker("word_counter", WordCountWorker.class.getName(), 4).addInput("word_feeder").groupBy(new FieldsGrouping("word"));
+    Network network = vertigo.createNetwork("word-count");
+    network.addVerticle("word-feeder", WordFeeder.class.getName());
+    network.addVerticle("word-counter", WordCounter.class.getName(), 4);
+    network.createConnection("word-feeder", "out", "word-counter", "in").hashSelect();
 
-    vertigo.deployLocalNetwork(network, new Handler<AsyncResult<NetworkContext>>() {
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override
-      public void handle(AsyncResult<NetworkContext> result) {
+      public void handle(AsyncResult<ActiveNetwork> result) {
         if (result.failed()) {
           container.logger().error(result.cause());
-        }
-        else {
-          final NetworkContext context = result.result();
-          vertx.setTimer(5000, new Handler<Long>() {
-            @Override
-            public void handle(Long timerID) {
-              vertigo.shutdownLocalNetwork(context);
-            }
-          });
+        } else {
+          container.logger().info("Started successfully.");
         }
       }
     });

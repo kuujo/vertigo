@@ -374,15 +374,6 @@ public class NetworkTest {
   }
 
   @Test
-  public void testConnectionParsedPort() {
-    ConnectionConfig connection = new DefaultConnectionConfig("foo:notout", "bar:notin", new DefaultNetworkConfig("test"));
-    assertEquals("foo", connection.getSource().getComponent());
-    assertEquals("notout", connection.getSource().getPort());
-    assertEquals("bar", connection.getTarget().getComponent());
-    assertEquals("notin", connection.getTarget().getPort());
-  }
-
-  @Test
   public void testCreateConnectionDefaultPort() {
     NetworkConfig network = new DefaultNetworkConfig("test");
     ConnectionConfig connection = network.createConnection("foo", "bar");
@@ -390,23 +381,6 @@ public class NetworkTest {
     assertEquals("out", connection.getSource().getPort());
     assertEquals("bar", connection.getTarget().getComponent());
     assertEquals("in", connection.getTarget().getPort());
-  }
-
-  @Test
-  public void testCreateConnectionParsedPort() {
-    NetworkConfig network = new DefaultNetworkConfig("test");
-    ConnectionConfig connection = network.createConnection("foo:notout", "bar:notin");
-    assertEquals("foo", connection.getSource().getComponent());
-    assertEquals("notout", connection.getSource().getPort());
-    assertEquals("bar", connection.getTarget().getComponent());
-    assertEquals("notin", connection.getTarget().getPort());
-    boolean exists = false;
-    for (ConnectionConfig other : network.getConnections()) {
-      if (other.equals(connection)) {
-        exists = true;
-      }
-    }
-    assertTrue(exists);
   }
 
   @Test

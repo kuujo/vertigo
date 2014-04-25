@@ -22,7 +22,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * The Vertigo cluster manager handles deployment and undeployment of complete
+ * The cluster manager handles deployment and undeployment of complete
  * or partial Vertigo networks and provides an interface for accessing existing
  * networks in the Vertigo cluster.
  *

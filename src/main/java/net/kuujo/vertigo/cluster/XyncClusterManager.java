@@ -22,7 +22,7 @@ import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Xync cluster manager implementation.<p>
+ * Xync-based cluster manager implementation.<p>
  *
  * The Xync cluster manager is backed by {@link XyncCluster} which relies
  * upon the Xync event bus API for fault-tolerant deployments and Hazelcast

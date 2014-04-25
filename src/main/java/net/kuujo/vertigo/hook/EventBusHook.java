@@ -24,7 +24,7 @@ import org.vertx.java.core.eventbus.EventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * An event bus publishing hook.
+ * Event bus based hook implementation.
  *
  * This hook publishes events to the event bus. Messages are published using the
  * string format "vertigo.hooks.%s" where the string argument is the full

@@ -31,7 +31,7 @@ import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * The Vertigo API.
+ * The core Vertigo API.
  * <p>
  * 
  * This is the primary interface for creating and deploying Vertigo networks.<p>

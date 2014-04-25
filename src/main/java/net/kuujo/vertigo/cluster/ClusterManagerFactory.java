@@ -24,7 +24,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.platform.Container;
 
 /**
- * Cluster manager factory.
+ * Factory for creating cluster managers.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

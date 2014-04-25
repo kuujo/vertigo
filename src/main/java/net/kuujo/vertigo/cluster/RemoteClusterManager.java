@@ -22,7 +22,7 @@ import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Remote cluster manager implementation.<p>
+ * Hazelcast-based cluster manager implementation.<p>
  *
  * The remote cluster manager is backed by {@link RemoteCluster} which uses
  * a special {@link HazelcastCluster} verticle to access Hazelcast data

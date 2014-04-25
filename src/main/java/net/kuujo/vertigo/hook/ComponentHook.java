@@ -18,7 +18,7 @@ package net.kuujo.vertigo.hook;
 import net.kuujo.vertigo.component.Component;
 
 /**
- * Component hook.
+ * Hook type for component events.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

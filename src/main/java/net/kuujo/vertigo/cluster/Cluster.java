@@ -28,7 +28,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 /**
- * The Vertigo cluster is a low level API for deployments and shared data access.<p>
+ * The cluster is a low level API for deployments and shared data access.<p>
  *
  * In opposition to core Vert.x {@link Container} behavior, Vertigo cluster deployments
  * support absolute deployment identifiers. This allows deployments to be referenced

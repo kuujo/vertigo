@@ -18,7 +18,7 @@ package net.kuujo.vertigo;
 import net.kuujo.vertigo.util.serialization.JsonSerializable;
 
 /**
- * Base configuration.
+ * Interface for configuring Vertigo types.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

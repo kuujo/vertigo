@@ -20,7 +20,7 @@ import net.kuujo.vertigo.util.serialization.JsonSerializable;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Base type for hooks.
+ * Base type for hooking into Vertigo events.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

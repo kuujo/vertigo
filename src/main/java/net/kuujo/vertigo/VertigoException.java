@@ -18,7 +18,7 @@ package net.kuujo.vertigo;
 import org.vertx.java.core.VertxException;
 
 /**
- * A base Vert.igo exception.
+ * Base Vert.igo exception.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.cluster;
 
 /**
- * The cluster scope indicates the Vertigo clustering method.<p>
+ * Enumerated types for Vertigo cluster scopes.<p>
  *
  * The scope is used to identify both the current Vert.x cluster
  * type and the scope in which a Vertigo network should be deployed.

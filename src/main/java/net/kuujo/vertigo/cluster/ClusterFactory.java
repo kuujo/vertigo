@@ -30,7 +30,7 @@ import org.vertx.java.platform.Container;
 import com.hazelcast.core.Hazelcast;
 
 /**
- * Cluster factory.
+ * Factory for creating clusters for deployment and shared data access.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

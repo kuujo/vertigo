@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.hook;
 
 /**
- * Input hook.
+ * Hook type for listening for input message events.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

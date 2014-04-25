@@ -15,9 +15,8 @@
  */
 package net.kuujo.vertigo;
 
-
 /**
- * Active configuration.
+ * Interface for altering live configurations.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

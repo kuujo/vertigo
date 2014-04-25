@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.hook;
 
 /**
- * Output hook.
+ * Hook type for listening for output message events.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

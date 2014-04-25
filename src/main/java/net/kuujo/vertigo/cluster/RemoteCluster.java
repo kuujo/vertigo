@@ -41,7 +41,7 @@ import org.vertx.java.platform.Verticle;
 import com.hazelcast.core.Hazelcast;
 
 /**
- * Remote cluster implementation.<p>
+ * Hazelcast-based cluster implementation.<p>
  *
  * The remote cluster is backed by a special Hazelcast cluster verticle
  * per node. When the cluster is started, it detects whether a Hazelcast

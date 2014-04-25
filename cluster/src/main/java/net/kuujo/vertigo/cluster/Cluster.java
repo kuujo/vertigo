@@ -42,6 +42,7 @@ import org.vertx.java.platform.Container;
  */
 @LocalTypeInfo(defaultImpl=LocalCluster.class)
 @ClusterTypeInfo(defaultImpl=HazelcastCluster.class)
+@XyncTypeInfo(defaultImpl=XyncCluster.class)
 public interface Cluster {
 
   /**

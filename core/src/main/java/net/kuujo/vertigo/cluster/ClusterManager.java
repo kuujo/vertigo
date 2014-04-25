@@ -30,6 +30,7 @@ import org.vertx.java.core.Handler;
  */
 @LocalTypeInfo(defaultImpl=LocalClusterManager.class)
 @ClusterTypeInfo(defaultImpl=HazelcastClusterManager.class)
+@XyncTypeInfo(defaultImpl=XyncClusterManager.class)
 public interface ClusterManager {
 
   /**

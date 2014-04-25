@@ -39,10 +39,17 @@ public enum ClusterScope {
   LOCAL("local"),
 
   /**
-   * The <code>cluster</code> scope indicates that the network should be deployed
-   * across the Vert.x cluster whenever possible.
+   * The <code>cluster</code> scope indicates that the network should perform coordination
+   * using the Vert.x Hazelcast cluster whenever possible.
    */
-  CLUSTER("cluster");
+  CLUSTER("cluster"),
+
+  /**
+   * The <code>xync</code> scope indicates that the network should be deployed
+   * across the Vert.x cluster using Xync whenever possible. Additionally, cluster-wide
+   * shared data structures will use Xync.
+   */
+  XYNC("xync");
 
   private final String name;
 
@@ -68,6 +75,8 @@ public enum ClusterScope {
         return LOCAL;
       case "cluster":
         return CLUSTER;
+      case "xync":
+        return XYNC;
       default:
         throw new IllegalArgumentException(name + " is not a valid scope.");
     }

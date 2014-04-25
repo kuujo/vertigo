@@ -47,6 +47,21 @@ import org.vertx.java.platform.Container;
 public interface Cluster {
 
   /**
+   * Starts the cluster.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The cluster.
+   */
+  Cluster start(Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Stops the cluster.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   */
+  void stop(Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Returns the cluster scope.
    *
    * @return The cluster scope.

@@ -151,7 +151,9 @@ public class NetworkManager extends BusModBase {
 
                           // Set up the network's cluster. This differs from the coordination
                           // cluster and is used for deploying/undeploying network components.
-                          if (cluster.scope().equals(ClusterScope.CLUSTER) && currentContext.scope().equals(ClusterScope.CLUSTER)) {
+                          if (cluster.scope().equals(ClusterScope.XYNC) && currentContext.scope().equals(ClusterScope.XYNC)) {
+                            contextCluster = clusterFactory.createCluster(ClusterScope.XYNC);
+                          } else if (cluster.scope().equals(ClusterScope.CLUSTER) && (currentContext.scope().equals(ClusterScope.CLUSTER) || currentContext.scope().equals(ClusterScope.XYNC))) {
                             contextCluster = clusterFactory.createCluster(ClusterScope.CLUSTER);
                           } else {
                             contextCluster = clusterFactory.createCluster(ClusterScope.LOCAL);
@@ -655,7 +657,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a module component instance in the network's cluster.
    */
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    contextCluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance), 1, new Handler<AsyncResult<String>>() {
+    contextCluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance, contextCluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -671,7 +673,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a verticle component instance in the network's cluster.
    */
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    contextCluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance), 1, new Handler<AsyncResult<String>>() {
+    contextCluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, contextCluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -687,7 +689,7 @@ public class NetworkManager extends BusModBase {
    * Deploys a worker verticle component instance in the network's cluster.
    */
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    contextCluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance), 1, instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+    contextCluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, contextCluster), 1, instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {

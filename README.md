@@ -26,7 +26,7 @@ Vert.x verticles) and distributed across a Vert.x cluster.
 * Facilitates distribution of messages between multiple verticle instances using
   **random, round-robin, mod hashing, fair, or fanout** methods.
 * Components can be written in **any Vert.x supported language**, with
-  APIs for Vertigo 0.6 in [Javascript][vertigo-js] and [Python][vertigo-python]
+  APIs for Vertigo in [Javascript][vertigo-js] and [Python][vertigo-python]
 
 For an in-depth explaination of how Vertigo works, see [how it works](#how-it-works)
 
@@ -428,9 +428,13 @@ vertigo.deployNetwork(network);
 ```
 
 When Vertigo deploys the network, it will automatically detect the current Vert.x
-cluster scope. If the current Vert.x instance is a member of a Xync cluster then
-the network will be deployed across the Xync cluster. Otherwise, the network will
-be deployed within the current Vert.x instance using the Vert.x `Container`.
+cluster scope. If the current Vert.x instance is a member of a [Xync](http://github.com/kuujo/xync)
+cluster then the network will be deployed across the cluster. If the
+Vert.x instance is clustered (a `HazelcastInstance` is available) but not using
+the Xync platform manager, Vertigo will still perform coordination using cluster-wide
+shared data, but network deployments will only occur within the current Vert.x instance.
+If the Vert.x instance is not clustered then deployments will take place via the
+Vert.x `Container`.
 
 ### Undeploying a network
 To undeploy a network, use the `undeployNetwork` method.
@@ -558,8 +562,8 @@ not a Xync cluster then the network will automatically fall back to `LOCAL`.
 It's important to note that while configuring the cluster scope on a network will
 cause the network to be *deployed* in that scope, the network's scope configuration
 *does not impact Vertigo's synchronization*. In other words, even if a network is
-deployed locally, if the current Vert.x cluster is a Xync cluster, Vertigo will still
-coordinate with other Vert.x instances using Xync. This allows locally deployed networks
+deployed locally, if the current Vert.x instance is a cluster member, Vertigo will still
+use Xync or Hazelcast to coordinate networks. This allows locally deployed networks
 to be referenced and reconfigured even outside of the instance in which it was deployed.
 For instance, users can deploy one component of the `foo` network locally in one Vert.x
 instance and deploy a separate component of the `foo` network locally in another Vert.x

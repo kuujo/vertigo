@@ -15,10 +15,15 @@
  */
 package net.kuujo.vertigo.util;
 
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterFactory;
+import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
 
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 
 /**
  * Context utilities.
@@ -28,14 +33,29 @@ import org.vertx.java.core.json.JsonObject;
 public final class Config {
 
   /**
+   * Parses a cluster from configuration.
+   *
+   * @param config The verticle configuration.
+   * @return The verticle's cluster.
+   */
+  static Cluster parseCluster(JsonObject config, Vertx vertx, Container container) {
+    String scluster = config.getString("__cluster__");
+    if (scluster == null) {
+      throw new IllegalArgumentException("No component cluster found.");
+    }
+    config.removeField("__cluster__");
+    return new ClusterFactory(vertx, container).createCluster(ClusterScope.parse(scluster));
+  }
+
+  /**
    * Builds a verticle configuration.
    *
    * @param context The verticle context.
    * @return A verticle configuration.
    */
-  public static JsonObject buildConfig(InstanceContext context) {
+  public static JsonObject buildConfig(InstanceContext context, Cluster cluster) {
     JsonObject config = context.component().config().copy();
-    return config.putObject("__context__", DefaultInstanceContext.toJson(context));
+    return config.putObject("__context__", DefaultInstanceContext.toJson(context)).putString("__cluster__", cluster.scope().toString());
   }
 
   /**

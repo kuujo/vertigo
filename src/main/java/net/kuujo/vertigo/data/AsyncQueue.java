@@ -15,6 +15,12 @@
  */
 package net.kuujo.vertigo.data;
 
+import net.kuujo.vertigo.annotations.ClusterTypeInfo;
+import net.kuujo.vertigo.annotations.LocalTypeInfo;
+import net.kuujo.vertigo.annotations.XyncTypeInfo;
+import net.kuujo.vertigo.data.impl.EventBusQueue;
+import net.kuujo.vertigo.data.impl.SharedDataQueue;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
@@ -25,6 +31,9 @@ import org.vertx.java.core.Handler;
  *
  * @param <T> The queue data type.
  */
+@LocalTypeInfo(defaultImpl=SharedDataQueue.class)
+@ClusterTypeInfo(defaultImpl=EventBusQueue.class)
+@XyncTypeInfo(defaultImpl=EventBusQueue.class)
 public interface AsyncQueue<T> extends AsyncCollection<T> {
 
   /**

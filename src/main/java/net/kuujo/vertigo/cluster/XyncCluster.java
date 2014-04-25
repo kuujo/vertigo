@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.annotations.XyncType;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
@@ -39,66 +39,37 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
-import com.hazelcast.core.Hazelcast;
-
 /**
- * Remote cluster implementation.<p>
+ * Xync cluster implementation.<p>
  *
- * The remote cluster is backed by a special Hazelcast cluster verticle
- * per node. When the cluster is started, it detects whether a Hazelcast
- * verticle is already running on the node. If there's not Hazelcast
- * verticle running then it deploys the Hazelcast verticle. The Hazelcast
- * verticle is a worker verticle that accesses Hazelcast data structures
- * directly.
+ * The Xync cluster is backed by the custom Xync platform manager
+ * and Hazelcast data structures via the Vert.x event bus. When running
+ * the remote cluster the Vert.x instance <b>must</b> have been run with
+ * the custom Xync platform manager.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@ClusterType
-public class RemoteCluster implements Cluster {
+@XyncType
+public class XyncCluster implements Cluster {
   private static final String CLUSTER_ADDRESS = "__CLUSTER__";
   private final Vertx vertx;
-  private final Container container;
-  private final String nodeID;
-  private final String address;
 
   @Factory
   public static Cluster factory(Vertx vertx, Container container) {
-    return new RemoteCluster(vertx, container);
+    return new XyncCluster(vertx, container);
   }
 
-  public RemoteCluster(Verticle verticle) {
+  public XyncCluster(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
-  @SuppressWarnings("deprecation")
-  public RemoteCluster(Vertx vertx, Container container) {
+  public XyncCluster(Vertx vertx, Container container) {
     this.vertx = vertx;
-    this.container = container;
-    nodeID = Hazelcast.getDefaultInstance().getCluster().getLocalMember().getUuid();
-    address = String.format("%s.%s", CLUSTER_ADDRESS, nodeID);
   }
 
   @Override
   public Cluster start(final Handler<AsyncResult<Void>> doneHandler) {
-    vertx.eventBus().sendWithTimeout(address, new JsonObject(), 1, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          container.deployWorkerVerticle(HazelcastCluster.class.getName(), new JsonObject().putString("id", nodeID).putString("address", address), 1, false, new Handler<AsyncResult<String>>() {
-            @Override
-            public void handle(AsyncResult<String> result) {
-              if (result.failed()) {
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              } else {
-                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-              }
-            }
-          });
-        } else {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-      }
-    });
+    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
     return this;
   }
 
@@ -109,7 +80,7 @@ public class RemoteCluster implements Cluster {
 
   @Override
   public ClusterScope scope() {
-    return ClusterScope.CLUSTER;
+    return ClusterScope.XYNC;
   }
 
   @Override

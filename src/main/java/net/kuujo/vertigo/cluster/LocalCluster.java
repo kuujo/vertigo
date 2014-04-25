@@ -69,6 +69,17 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
+  public Cluster start(final Handler<AsyncResult<Void>> doneHandler) {
+    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+    return this;
+  }
+
+  @Override
+  public void stop(Handler<AsyncResult<Void>> doneHandler) {
+    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+  }
+
+  @Override
   public ClusterScope scope() {
     return ClusterScope.LOCAL;
   }

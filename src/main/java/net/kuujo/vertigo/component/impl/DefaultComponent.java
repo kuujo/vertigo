@@ -18,7 +18,6 @@ package net.kuujo.vertigo.component.impl;
 import java.util.List;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -57,12 +56,12 @@ public class DefaultComponent implements Component {
   protected final DefaultOutputCollector output;
   private boolean started;
 
-  protected DefaultComponent(InstanceContext context, Vertx vertx, Container container) {
+  protected DefaultComponent(InstanceContext context, Vertx vertx, Container container, Cluster cluster) {
     this.address = context.address();
     this.vertx = vertx;
     this.container = container;
     this.context = context;
-    this.cluster = new ClusterFactory(vertx, container).createCluster(context.component().network().scope());
+    this.cluster = cluster;
     this.coordinator = new DefaultComponentCoordinator(context, vertx, container);
     this.input = new DefaultInputCollector(vertx, context.input());
     this.output = new DefaultOutputCollector(vertx, context.output());

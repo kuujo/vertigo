@@ -27,6 +27,8 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import com.hazelcast.core.Hazelcast;
+
 /**
  * Cluster factory.
  *
@@ -52,17 +54,34 @@ public class ClusterFactory {
     if (currentCluster != null) {
       new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
     } else {
+      // If the cluster is not available then this must not be a Xync cluster.
+      // A Xync cluster would have had a __CLUSTER__ handler registered before
+      // the platform completed startup. If there is no __CLUSTER__ handler then
+      // try to determine whether this is a Hazelcast clustered Vert.x instance.
       vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, new JsonObject(), 1, new Handler<AsyncResult<Message<JsonObject>>>() {
         @Override
         public void handle(AsyncResult<Message<JsonObject>> result) {
           ClusterScope currentScope;
           if (result.failed() && ((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
-            currentScope = ClusterScope.LOCAL;
+            if (Hazelcast.getAllHazelcastInstances().isEmpty()) {
+              currentScope = ClusterScope.LOCAL;
+            } else {
+              currentScope = ClusterScope.CLUSTER;
+            }
           } else {
-            currentScope = ClusterScope.CLUSTER;
+            currentScope = ClusterScope.XYNC;
           }
           currentCluster = createCluster(currentScope);
-          new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
+          currentCluster.start(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
+              } else {
+                new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
+              }
+            }
+          });
         }
       });
     }

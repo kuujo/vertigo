@@ -17,6 +17,7 @@ package net.kuujo.vertigo.data.impl;
 
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.annotations.XyncType;
 import net.kuujo.vertigo.data.AsyncSet;
 import net.kuujo.vertigo.data.DataException;
 
@@ -36,17 +37,18 @@ import org.vertx.java.core.json.JsonObject;
  * @param <T> The set data type.
  */
 @ClusterType
-public class XyncSet<T> implements AsyncSet<T> {
+@XyncType
+public class EventBusSet<T> implements AsyncSet<T> {
   private static final String CLUSTER_ADDRESS = "__CLUSTER__";
   private final String name;
   private final EventBus eventBus;
 
   @Factory
-  public static <T> XyncSet<T> factory(String name, Vertx vertx) {
-    return new XyncSet<T>(name, vertx.eventBus());
+  public static <T> EventBusSet<T> factory(String name, Vertx vertx) {
+    return new EventBusSet<T>(name, vertx.eventBus());
   }
 
-  public XyncSet(String name, EventBus eventBus) {
+  public EventBusSet(String name, EventBus eventBus) {
     this.name = name;
     this.eventBus = eventBus;
   }

@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.util;
 
+import static net.kuujo.vertigo.util.Config.parseCluster;
 import static net.kuujo.vertigo.util.Config.parseContext;
 
 import java.lang.annotation.Annotation;
@@ -27,6 +28,8 @@ import net.kuujo.vertigo.annotations.ClusterTypeInfo;
 import net.kuujo.vertigo.annotations.Factory;
 import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.annotations.LocalTypeInfo;
+import net.kuujo.vertigo.annotations.XyncType;
+import net.kuujo.vertigo.annotations.XyncTypeInfo;
 import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
@@ -51,7 +54,7 @@ public final class Factories {
    * Creates a component instance for the current Vert.x instance.
    */
   public static Component createComponent(Vertx vertx, Container container) {
-    return new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(parseContext(container.config()));
+    return new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(parseContext(container.config()), parseCluster(container.config(), vertx, container));
   }
 
   /**
@@ -80,6 +83,12 @@ public final class Factories {
         throw new IllegalArgumentException("No cluster type info available.");
       }
       ClusterTypeInfo info = clazz.getAnnotation(ClusterTypeInfo.class);
+      return createObjectFromFactoryMethod((Class<? extends T>) info.defaultImpl(), args);
+    } else if (scope.equals(ClusterScope.XYNC)) {
+      if (!clazz.isAnnotationPresent(XyncTypeInfo.class)) {
+        throw new IllegalArgumentException("No Xync type info available.");
+      }
+      XyncTypeInfo info = clazz.getAnnotation(XyncTypeInfo.class);
       return createObjectFromFactoryMethod((Class<? extends T>) info.defaultImpl(), args);
     }
     return null;
@@ -153,7 +162,8 @@ public final class Factories {
     if (scope.equals(ClusterScope.LOCAL)) {
       if (isAnnotationPresentInHierarchy(clazz, LocalType.class)
           || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
-              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class))) {
+              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class)
+              && !isAnnotationPresentInHierarchy(clazz, XyncType.class))) {
         return clazz;
       } else {
         // Find the base data type for the local cluster mode and look
@@ -168,7 +178,8 @@ public final class Factories {
     } else if (scope.equals(ClusterScope.CLUSTER)) {
       if (isAnnotationPresentInHierarchy(clazz, ClusterType.class)
           || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
-              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class))) {
+              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class)
+              && !isAnnotationPresentInHierarchy(clazz, XyncType.class))) {
         return clazz;
       } else {
         // Find the base data type for the remote cluster mode and look
@@ -177,6 +188,22 @@ public final class Factories {
         ClusterTypeInfo info = getAnnotationInHierarchy(clazz, ClusterTypeInfo.class);
         if (info == null) {
           throw new IllegalStateException("Cannot instantiate " + clazz.getName() + " object in cluster mode.");
+        }
+        return info.defaultImpl();
+      }
+    } else if (scope.equals(ClusterScope.XYNC)) {
+      if (isAnnotationPresentInHierarchy(clazz, XyncType.class)
+          || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
+              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class)
+              && !isAnnotationPresentInHierarchy(clazz, XyncType.class))) {
+        return clazz;
+      } else {
+        // Find the base data type for the Xync cluster mode and look
+        // for a default implementation. If no default implementation is
+        // provided for the current cluster mode then an exception is thrown.
+        XyncTypeInfo info = getAnnotationInHierarchy(clazz, XyncTypeInfo.class);
+        if (info == null) {
+          throw new IllegalStateException("Cannot instantiate " + clazz.getName() + " object in Xync mode.");
         }
         return info.defaultImpl();
       }
@@ -191,7 +218,8 @@ public final class Factories {
    *
    * @param clazz The class to check.
    * @param annotation The annotation for which to search.
-   * @return
+   * @return Indicates whether the given annotation is present on any class
+   *         or interface in the class/interface hierarchy.
    */
   private static boolean isAnnotationPresentInHierarchy(Class<?> clazz, Class<? extends Annotation> annotation) {
     Class<?> current = clazz;

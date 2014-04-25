@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.annotations.XyncType;
 import net.kuujo.vertigo.data.DataException;
 import net.kuujo.vertigo.data.MapEvent;
 import net.kuujo.vertigo.data.MapEvent.Type;
@@ -50,15 +51,16 @@ import org.vertx.java.core.json.JsonObject;
  * @param <V> The map value type.
  */
 @ClusterType
-public class XyncMap<K, V> implements WatchableAsyncMap<K, V> {
+@XyncType
+public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
   private final String CLUSTER_ADDRESS = "__CLUSTER__";
   private final String name;
   private final EventBus eventBus;
   private final Map<K, Map<Handler<MapEvent<K, V>>, HandlerWrapper>> watchHandlers = new HashMap<>();
 
   @Factory
-  public static <K, V> XyncMap<K, V> factory(String name, Vertx vertx) {
-    return new XyncMap<K, V>(name, vertx.eventBus());
+  public static <K, V> EventBusMap<K, V> factory(String name, Vertx vertx) {
+    return new EventBusMap<K, V>(name, vertx.eventBus());
   }
 
   private static class HandlerWrapper {
@@ -71,7 +73,7 @@ public class XyncMap<K, V> implements WatchableAsyncMap<K, V> {
     }
   }
 
-  public XyncMap(String name, EventBus eventBus) {
+  public EventBusMap(String name, EventBus eventBus) {
     this.name = name;
     this.eventBus = eventBus;
   }

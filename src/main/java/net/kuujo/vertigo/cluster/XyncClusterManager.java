@@ -15,41 +15,42 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.annotations.XyncType;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Remote cluster manager implementation.<p>
+ * Xync cluster manager implementation.<p>
  *
- * The remote cluster manager is backed by {@link RemoteCluster} which uses
- * a special {@link HazelcastCluster} verticle to access Hazelcast data
- * structures. This cluster is only available when Vert.x is clustered.
+ * The Xync cluster manager is backed by {@link XyncCluster} which relies
+ * upon the Xync event bus API for fault-tolerant deployments and Hazelcast
+ * data structure access. This means the Xync cluster manager depends upon
+ * the Xync platform manager or a similar event bus API for operation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@ClusterType
-public class RemoteClusterManager extends AbstractClusterManager {
+@XyncType
+public class XyncClusterManager extends AbstractClusterManager {
 
   @Factory
-  public static RemoteClusterManager factory(Vertx vertx, Container container) {
-    return new RemoteClusterManager(vertx, container);
+  public static XyncClusterManager factory(Vertx vertx, Container container) {
+    return new XyncClusterManager(vertx, container);
   }
 
-  public RemoteClusterManager(Verticle verticle) {
+  public XyncClusterManager(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
-  public RemoteClusterManager(Vertx vertx, Container container) {
-    super(vertx, container, new RemoteCluster(vertx, container));
+  public XyncClusterManager(Vertx vertx, Container container) {
+    super(vertx, container, new XyncCluster(vertx, container));
   }
 
   @Override
   public ClusterScope scope() {
-    return ClusterScope.CLUSTER;
+    return ClusterScope.XYNC;
   }
 
 }

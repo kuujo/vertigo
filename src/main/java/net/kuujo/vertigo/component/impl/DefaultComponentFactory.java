@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.component.impl;
 
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentFactory;
 import net.kuujo.vertigo.context.InstanceContext;
@@ -52,8 +53,8 @@ public class DefaultComponentFactory implements ComponentFactory {
   }
 
   @Override
-  public Component createComponent(InstanceContext context) {
-    return new DefaultComponent(context, vertx, container);
+  public Component createComponent(InstanceContext context, Cluster cluster) {
+    return new DefaultComponent(context, vertx, container, cluster);
   }
 
 }

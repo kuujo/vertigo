@@ -15,6 +15,12 @@
  */
 package net.kuujo.vertigo.data;
 
+import net.kuujo.vertigo.annotations.ClusterTypeInfo;
+import net.kuujo.vertigo.annotations.LocalTypeInfo;
+import net.kuujo.vertigo.annotations.XyncTypeInfo;
+import net.kuujo.vertigo.data.impl.EventBusSet;
+import net.kuujo.vertigo.data.impl.SharedDataSet;
+
 /**
  * Asynchronous set.
  *
@@ -22,5 +28,8 @@ package net.kuujo.vertigo.data;
  *
  * @param <T> The set data type.
  */
+@LocalTypeInfo(defaultImpl=SharedDataSet.class)
+@ClusterTypeInfo(defaultImpl=EventBusSet.class)
+@XyncTypeInfo(defaultImpl=EventBusSet.class)
 public interface AsyncSet<T> extends AsyncCollection<T> {
 }

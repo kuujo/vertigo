@@ -17,6 +17,7 @@ package net.kuujo.vertigo.data.impl;
 
 import net.kuujo.vertigo.annotations.ClusterType;
 import net.kuujo.vertigo.annotations.Factory;
+import net.kuujo.vertigo.annotations.XyncType;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.DataException;
 
@@ -34,17 +35,18 @@ import org.vertx.java.core.json.JsonObject;
  * @author Jordan Halterman
  */
 @ClusterType
-public class XyncIdGenerator implements AsyncIdGenerator {
+@XyncType
+public class EventBusIdGenerator implements AsyncIdGenerator {
   private static final String CLUSTER_ADDRESS = "__CLUSTER__";
   private final String name;
   private final EventBus eventBus;
 
   @Factory
-  public static XyncIdGenerator factory(String name, Vertx vertx) {
-    return new XyncIdGenerator(name, vertx.eventBus());
+  public static EventBusIdGenerator factory(String name, Vertx vertx) {
+    return new EventBusIdGenerator(name, vertx.eventBus());
   }
 
-  public XyncIdGenerator(String name, EventBus eventBus) {
+  public EventBusIdGenerator(String name, EventBus eventBus) {
     this.name = name;
     this.eventBus = eventBus;
   }

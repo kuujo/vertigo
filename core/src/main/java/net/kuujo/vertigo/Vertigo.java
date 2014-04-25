@@ -97,7 +97,7 @@ public final class Vertigo {
    * structure of the given network configuration has no effect on the result.
    *
    * @param network The network to check.
-   * @param resultHandler An asynchronous handler to be called with the result
+   * @param resultHandler An asynchronous handler to be called with the result.
    * @return The Vertigo instance.
    * @see Vertigo#isDeployed(String, Handler)
    */
@@ -112,6 +112,33 @@ public final class Vertigo {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
         } else {
           result.result().isRunning(network.getName(), resultHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Loads an active network from the cluster.<p>
+   *
+   * When the network is loaded, Vertigo will use the current cluster manager to
+   * check whether the network is running. If the network is not running then
+   * an error will occur, otherwise a reference to the running network will be
+   * returned to the async result handler as an {@link ActiveNetwork} instance,
+   * which can be used to asynchronously reconfigure the network.
+   *
+   * @param name The name of the network to load.
+   * @param resultHandler An asynchronous handler to be called with the result.
+   * @return The Vertigo instance.
+   */
+  public Vertigo getNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
+    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(resultHandler);
+        } else {
+          result.result().getNetwork(name, resultHandler);
         }
       }
     });

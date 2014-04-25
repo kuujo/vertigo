@@ -3,140 +3,36 @@ Vertigo
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
-**[Java User Manual](#java-user-manual) | Javadoc (Unavailable for Vertigo 0.7.x)**
+**[Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java)**
 
 **[Javascript API][vertigo-js]**
 
 **[Python API][vertigo-python]**
 
-Vertigo is a fast event processing framework built on the [Vert.x](http://vertx.io/)
+Vertigo is a fast, polyglot event processing framework built on the [Vert.x](http://vertx.io/)
 application platform. Combining concepts of cutting-edge [real-time systems](http://storm.incubator.apache.org/)
 and [flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
 Vertigo allows real-time problems to be broken down into smaller tasks (as
 Vert.x verticles) and distributed across a Vert.x cluster.
 
 * Manages multi-step event processing systems, from simple pipelines to
-  **complex networks of Vert.x modules/verticles**, including **remote procedure
-  calls spanning multiple Vert.x verticle instances**
-* Supports deployment of networks within a single Vert.x instance or across a Vert.x cluster.
+  **complex networks of Vert.x modules/verticles**
+* Supports deployment of networks **within a single Vert.x instance or across a Vert.x cluster**
+* **Coordinates startup and shutdown** of networks across the Vert.x cluster
 * **Promotes reusability** by abstracting communication details from verticle implementations,
-  allowing components to be arbitrarily connected to form complex networks.
-* Guarantees **strong ordering** and **exactly-once** processing of messages.
-* Handles event bus **flow control** and **automatic retries** on failures.
+  allowing components to be arbitrarily connected to form complex networks
+* Guarantees **strong ordering** and **exactly-once** processing of messages
+* Handles event bus **flow control** and **automatic retries** on failures
 * Facilitates distribution of messages between multiple verticle instances using
-  **random, round-robin, mod hashing, fair, or fanout** methods.
+  **random, round-robin, mod hashing, fair, or fanout** methods
 * Components can be written in **any Vert.x supported language**, with
   APIs for Vertigo in [Javascript][vertigo-js] and [Python][vertigo-python]
 
-For an in-depth explaination of how Vertigo works, see [how it works](#how-it-works)
-
-### New in Vertigo 0.7
-Vertigo 0.7 represents a significant directional shift for Vertigo. In my view, Vertigo
-is finally gaining an identity of its own. We have now adopted many concepts of
-[flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
-essentially merging modern reliable stream-processing features with more abstract component
-APIs and communication models. Vertigo 0.7 is not yet stable, but we do have a comprehensive
-list of the changes that have been or will be made prior to a 0.7 release.
-
-#### Vertigo UI
-Contributors to Vertigo have been developing a UI for Vertigo that will allow users to
-visually design Vertigo networks. Significant work is being done to ensure that Vertigo
-will integrate seamlessly with the new UI. See the Vertigo Google Group for more info.
-
-#### A single abstract component
-Vertigo itself no longer provides high level component implementations - e.g. feeders
-and workers. Instead, Vertigo provides a single "black box" `Component` which can both
-receive and send messages. This means that components can be arbitrarily connected to
-one another without component type limitations.
-
-#### Redesigned network configuration API
-The network configuration API has been completely redesigned for Vertigo 0.7. The design is
-loosely based on common flow-based programming APIs, but more importantly it allows for
-partial network configurations to be interpreted by Vertigo in order to support live
-network configuration changes (see below).
-
-```java
-NetworkConfig network = vertigo.createNetwork("wordcount")
-  .addComponent("foo", "foo.js", 2)
-  .addComponent("bar", "bar.js", 4)
-  .createConnection("foo", "out", "bar", "in");
-```
-
-#### Live network configuration changes
-One of the primary focuses in Vertigo 0.7 was the ability to support adding and removing
-components and connections from networks while running. To accomplish this, the entire
-coordination framework underlying Vertigo was rewritten to use a distributed implementation
-of the observer pattern to allow components and networks to watch their own configurations
-for changes and update themselves asynchronously. This allows Vertigo networks to be
-restructured after deployment by simply deploying and undeploying partial networks.
-
-#### Active networks
-In conjunction with support for active network configuration changes, Vertigo now provides
-an `ActiveNetwork` object that allows networks to be reconfigured by directly altering
-network configurations.
-
-```java
-vertigo.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
-  public void handle(AsyncResult<ActiveNetwork> result) {
-    if (result.succeeded()) {
-      ActiveNetwork network = result.result();
-      network.addComponent("baz", "baz.py", 3); // Add a component.
-      network.removeComponent("foo"); // Remove a component.
-      network.createConnection("bar", "baz"); // Create a connection.
-      network.destroyConnection("foo", "bar"); // Destroy a connection.
-    }
-  }
-});
-```
-
-#### Distributed, fault-tolerant deployments
-Vertigo 0.7. provides significantly improved support for distributed network deployments
-using [Xync](http://github.com/kuujo/xync). Xync allows Vertigo to distribute network
-components across a cluster of Vert.x instances and integrates closely with the Vert.x
-HA mechanism.
-
-#### Reliable connections
-Vertigo's internal messaging framework has been redesigned to remove potential reliability
-issues in cases where the Vert.x event loop is blocked. Previously, Vertigo's pub-sub style
-messaging was dependent upon a timout mechanism which could fail under certain circumstances,
-but Vertigo is now guaranteed not to temporarily drop connections in those cases.
-
-#### Significant performance improvements
-Vertigo 0.7 acheives significant gains in the area of performance. Memory usage has been
-significantly reduced, and a redesigned message acking algorithm supports throughput
-about 6x greater than its predecessor, Vertigo 0.6.
-
-#### Strong ordering
-Vertigo connections now guarantee strong ordering of messages. Output messagesa are
-tagged with a monotonically increasing identifier for each connection. If a receiving
-input connection receives a message out of order, it notifies the message source, causing
-the source to replay lost messages in order.
-
-#### Cluster-wide shared data structures
-Vertigo 0.7 supports cluster-wide shared data structures like `map`, `list`, `set`,
-`queue`, `lock`, and `id` (a unique ID generator). These data structures can be used
-for coordination between components and are available both regarless of whether Vert.x
-is in clustering mode.
-
-#### Streams to ports
-Vertigo 0.7 has adopted the concept of ports from the flow-based programming model. This
-is a rather insignificant change which means that rather than one component subscribing
-to an output stream from another component, connections are created on named output
-and input ports between two components. This allows for components to be more easily reused
-since connections can be created between arbitrary ports on two components.
-
-#### Network deployment from JSON files
-Finally, Vertigo 0.7 supports deployment of networks directly from configuration files
-with the `vertigo-deployer` module. This module essentially behaves like a standard
-Vert.x language module, allowing `*.network.json` files to be deployed directly using
-the Vert.x command line interface.
-
-```
-vertx run wordcount.network.json
-```
+For an in-depth explanation of how Vertigo works, see [how it works](#how-it-works)
 
 # Java User Manual
 1. [Introduction](#introduction)
+1. [Setup](#setup)
    * [Adding Vertigo as a Maven dependency](#adding-vertigo-as-a-maven-dependency)
    * [Including Vertigo in a Vert.x module](#including-vertigo-in-a-vertx-module)
 1. [Networks](#networks)
@@ -151,8 +47,16 @@ vertx run wordcount.network.json
    * [Reconfiguring a network](#reconfiguring-a-network)
    * [Deploying a bare network](#deploying-a-bare-network)
    * [Working with active networks](#working-with-active-networks)
+   * [Deploying networks from the command line](#deploying-networks-from-the-command-line)
 1. [Clustering](#clustering)
    * [Configuring cluster scopes](#configuring-cluster-scopes)
+   * [Cluster-wide shared data](#cluster-wide-shared-data)
+      * [AsyncMap](#asyncmap)
+      * [AsyncSet](#asyncset)
+      * [AsyncList](#asynclist)
+      * [AsyncQueue](#asyncqueue)
+      * [AsyncLock](#asynclock)
+      * [AsyncIdGenerator](#asyncidgenerator)
 1. [Components](#components)
    * [Creating a component](#creating-a-component)
    * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
@@ -173,10 +77,13 @@ vertx run wordcount.network.json
 Vertigo is a multi-step event processing framework built on Vert.x. It exposes a
 very simple yet powerful API defines networks of Vert.x verticles and the relationships
 between them in a manner that abstracts communication details from implementations, making
-Vertigo components reusable. It supports deployment of networks within a single Vert.x
-instance or across a cluster of Vert.x instances and performs setup and coordination
-internally. Vertigo also provides for advanced messaging requirements such as strong
-ordering and exactly-once semantics.
+Vertigo components reusable. It provides for advanced messaging requirements such as
+strong ordering and exactly-once processing and supports deployment of networks within a
+single Vert.x instance or across a cluster of Vert.x instances and performs setup and
+coordination internally.
+
+## Setup
+To use Vertigo simply add the library as a Maven dependency or as a Vert.x module include.
 
 ### Adding Vertigo as a Maven dependency
 
@@ -268,7 +175,8 @@ network.addComponent("bar", "com.bar~bar~1.0", 4); // Adds a module component.
 Once a component has been added to the network, the component configuration will
 be returned. Users can set additional options on the component configuration. The
 most important of these options is the `group` option. When deploying networks within
-a Vert.x cluster, the `group` indicates the HA group to which to deploy the module or verticle.
+a Vert.x cluster, the `group` indicates the HA group to which to deploy the module or
+verticle.
 
 ### Creating connections between components
 A set of components is not a network until connections are created between those
@@ -277,7 +185,7 @@ each component instance. When creating connections between components, you must
 specify a component and port to which the connection connects. Each connection
 binds one component's output port with another component's input port.
 
-To create a connectoin between two components use the `createConnection` method.
+To create a connection between two components use the `createConnection` method.
 
 ```java
 network.createConnection("foo", "out", "bar", "in");
@@ -310,7 +218,7 @@ as well.
 * Round robin selector - selects targets in a round-robin fashion
 * Random selector - selects a random target to which to send each message
 * Hash selector - uses a simple mod hash algorithm to select a target for each message
-* Fair selector - selects the target with the least number of messages in the queue
+* Fair selector - selects the target with the least number of messages in its send queue
 * All selector - sends each message to all target instances
 * Custom selector - user provided custom selector implementation
 
@@ -398,7 +306,7 @@ For example...
 ```
 
 ## Deployment
-One of the most important tasks of Vertigo is to support dpeloyment and startup
+One of the most important tasks of Vertigo is to support deployment and startup
 of networks in a consistent and reliable manner. Vertigo supports network deployment
 either within a single Vert.x instance (local) or across a cluster of Vert.x instances.
 When a Vertigo network is deployed, a special verticle known as the *network manager*
@@ -407,11 +315,11 @@ within the network, handling runtime configuration changes, and coordinating sta
 and shutdown of networks.
 
 Networks can be deployed and configured from any verticle within any node in a Vert.x
-cluster. If a network is deployed from another verticle, the network can still be
+cluster. Even if a network is deployed from another verticle, the network can still be
 referenced and updated from anywhere in the cluster. Vertigo's internal coordination
 mechanisms ensure consistency for deployments across all nodes in a cluster.
 
-Vertigo clustering is supported by [Xync](http://github.com/kuujo/xync)
+Remote deployments are supported by [Xync](http://github.com/kuujo/xync)
 
 For more information on network deployment and coordination see [how it works](#how-it-works)
 
@@ -492,19 +400,8 @@ To deploy an empty network simply deploy a string network name.
 vertigo.deployNetwork("test");
 ```
 
-Note that this method can also be used to reference an existing network and retrieve
-an `ActiveNetwork` instance (more on active networks below):
-
-```java
-vertigo.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
-  public void handle(AsyncResult<ActiveNetwork> result) {
-    NetworkConfig network = result.result().getConfig();
-  }
-});
-```
-
 ### Working with active networks
-Vertigo provides a helper API for reconfiguring netowrks known as *active networks*.
+Vertigo provides a helper API for reconfiguring networks known as *active networks*.
 The `ActiveNetwork` is a `NetworkConfig` like object that exposes methods that directly
 update the running network when called. Obviously, the name is taken from the active
 record pattern.
@@ -533,14 +430,52 @@ vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
 The `ActiveNetwork` instance contains a reference to the *entire* network configuration,
 even if the configuration that was deployed was only a partial network configuration.
 
-## Clustering
-Vertigo clustering is currently only supported by [Xync](http://github.com/kuujo/xync).
-Xync allows Vertigo to remotely deploy Vert.x verticles and modules and provides
-cluster-wide data structures for synchronization. This allows Vertigo to spread deployments
-out across the cluster and synchronize local and clustered networks that are deployed
-within the same Vert.x cluster.
+You can load an `ActiveNetwork` for an already running network with the `getNetwork` method.
 
-When deploying a network, Vertigo will *automatically detect the current cluster state*.
+```java
+vertigo.getNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    if (result.succeeded()) {
+      ActiveNetwork network = result.result();
+    }
+  }
+});
+```
+
+### Deploying networks from the command line
+Vertigo provides a special facility for deploying networks from json confguration files.
+This feature is implemented as a Vert.x language module, so the network deployer must
+be first added to your `langs.properties` file.
+
+```
+network=net.kuujo~vertigo-deployer~0.7.0:net.kuujo.vertigo.NetworkFactory
+.network=network
+```
+
+You can replace the given extension with anything that works for you. Once the language
+module has been configured, simply run a network configuration file like any other
+Vert.x verticle.
+
+```
+vertx run my_network.network
+```
+
+The `NetworkFactory` will construct the network from the json configuration file and
+deploy the network to the available cluster.
+
+## Clustering
+Vertigo currently provides several different clustering methods. When networks are deployed,
+Vertigo will automatically detect the current Vert.x cluster type and adjust its behavior
+based on available features. The available cluster scopes are as follows:
+* `local` - *Vert.x is not clustered*. Vertigo will use Vert.x `SharedData` for coordination
+  of networks and deployments will be performed via the Vert.x `Container`.
+* `cluster` - *Vert.x is clustered using the default `HazelcastClusterManager`*. Vertigo will
+  deploy a special Hazelcast verticle for coordination of networks over Hazelcast data
+  structures, but deployments will still be performed via the Vert.x `Container`.
+* `xync` - *Vert.x is clustered using the [Xync](http://github.com/kuujo/xync) platform
+  manager*. Vertigo will use Xync cluster-wide data structures for coordination and remote
+  deployments will be supported by the Xync cluster manager.
+
 If the current Vert.x cluster is a Xync-backed cluster, Vertigo networks will be deployed
 across the cluster by default. In Vertigo, this is known as the cluster scope.
 
@@ -556,8 +491,10 @@ NetworkConfig network = vertigo.createNetwork("test");
 network.setScope(ClusterScope.LOCAL);
 ```
 
-The network scope defaults to `CLUSTER`, but if the current Vert.x cluster is
-not a Xync cluster then the network will automatically fall back to `LOCAL`.
+The network scope defaults to `XYNC` which is the highest level scope. However,
+if the current Vert.x instance is not a Xync clustered instance, the scope will
+fall back to `CLUSTER`, and if the current Vert.x instance is not a Hazelcast
+clustered instance, the scope will fall back to `LOCAL`.
 
 It's important to note that while configuring the cluster scope on a network will
 cause the network to be *deployed* in that scope, the network's scope configuration
@@ -569,6 +506,125 @@ For instance, users can deploy one component of the `foo` network locally in one
 instance and deploy a separate component of the `foo` network locally in another Vert.x
 instance and both components will still become a part of the same network event though
 the network is `LOCAL`.
+
+### Cluster-wide shared data
+Vertigo provides cluster-wide shared data structures within all components regardless
+of the deployment method. How cluster-wide shared data is implemented depends on the
+scope in which the network is deployed. For example, if the network is deployed as a
+local network, Vertigo will use Vert.x's `SharedData` structures. If the network is
+deployed in a normal Vert.x cluster, Vertigo will use a special Hazelcast worker
+verticle for shared data access. The Hazelcast verticle will be deployed on each
+node in the Vert.x cluster and accessed by the components on that node locally.
+If the network is deployed as part of a Xync cluster, Vertigo will access Xync data
+structures over the event bus.
+
+#### AsyncMap
+The `AsyncMap` interface closely mimics the interface of the Java `Map` interface,
+but uses `Handler<AsyncResult<T>>` rather than return values.
+
+```java
+final AsyncMap<String, String> map = cluster.getMap("foo");
+map.put("foo", "bar", new Handler<AsyncResult<String>>() {
+  public void handle(AsyncResult<String> result) {
+    if (result.succeeded()) {
+      map.get("foo", new Handler<AsyncResult<String>>() {
+        public void handle(AsyncResult<String> result) {
+          if (result.succeeded()) {
+            String foo = result.result();
+          }
+        }
+      });
+    }
+  }
+});
+```
+
+#### AsyncSet
+The `AsyncSet` interface closely mimics the interface of the Java `Set` interface,
+but uses `Handler<AsyncResult<T>>` rather than return values.
+
+```java
+final AsyncSet<String> set = cluster.getSet("foo");
+set.add("bar", new Handler<AsyncResult<Boolean>>() {
+  public void handle(AsyncResult<Boolean> result) {
+    if (result.succeeded()) {
+      set.remove("bar");
+    }
+  }
+});
+```
+
+#### AsyncList
+The `AsyncList` interface closely mimics the interface of the Java `List` interface,
+but uses `Handler<AsyncResult<T>>` rather than return values.
+
+```java
+AsyncList<String> list = cluster.getList("foo");
+list.add("bar", new Handler<AsyncResult<Boolean>>() {
+  public void handle(AsyncResult<Boolean> result) {
+    if (result.succeeded()) {
+      list.remove(0);
+    }
+  }
+});
+```
+
+#### AsyncQueue
+The `AsyncQueue` interface closely mimics the interface of the Java `Queue` interface,
+but uses `Handler<AsyncResult<T>>` rather than return values.
+
+```java
+final AsyncQueue<String> queue = cluster.getQueue("foo");
+queue.add("bar", new Handler<AsyncResult<Boolean>>() {
+  public void handle(AsyncResult<Boolean> result) {
+    if (result.succeeded()) {
+      queue.poll(new Handler<AsyncResult<String>>() {
+        public void handle(AsyncResult<String> result) {
+          if (result.succeeded()) {
+            String value = result.result();
+          }
+        }
+      });
+    }
+  }
+});
+```
+
+#### AsyncLock
+The `AsyncLock` provides a simple distributed lock.
+
+```java
+final AsyncLock lock = cluster.getLock("foo");
+lock.lock(new Handler<AsyncResult<Void>>() {
+  public void handle(AsycncResult<Void> result) {
+    if (result.succeeded()) {
+      logger.info("Locked the lock.");
+      lock.unlock(new Handler<AsyncResult<Void>>() {
+        public void handle(AsyncResult<Void> result) {
+          if (result.succeeded()) {
+            logger.info("Unlocked the lock.");
+          }
+        }
+      });
+    }
+  }
+});
+```
+
+#### AsyncIdGenerator
+The `AsyncIdGenerator` facilitates generating cluster-wide monotonically increasing
+unique IDs with the `nextId()` method.
+
+```java
+AsyncIdGenerator ids = cluster.getIdGenerator("foo");
+ids.nextId(new Handler<AsyncResult<Long>>() {
+  public void handle(AsyncResult<Long> result) {
+    if (result.succeeded()) {
+      long id = result.result();
+    }
+  }
+});
+```
 
 ## Components
 Components are "black box" Vert.x verticles that communicate with other components within
@@ -664,9 +720,9 @@ acking is handled internally.
 
 ### Working with message groups
 Vertigo provides a mechanism for logically grouping messages appropriately
-named *groups*. Groups are logical collections of messsages that are strongly
+named *groups*. Groups are logical collections of messages that are strongly
 ordered by name. Before any given group can stat, each of the groups of the same
-name at the same level that preceeded it must have been completed. Additionally,
+name at the same level that preceded it must have been completed. Additionally,
 messages within a group are *guaranteed to be delivered to the same instance* of each
 target component. In other words, routing is performed per-group rather than per-message.
 
@@ -794,7 +850,7 @@ input.port("in").groupHandler("foo", new Handler<InputGroup>() {
 });
 ```
 
-### Providing serializeable messages
+### Providing serializable messages
 The Vertigo messaging system supports custom serialization of messages for
 Java. Serializable messages must implement the `JsonSerializeable` interface.
 
@@ -820,7 +876,7 @@ any basic fields (primitive types, strings, and collections), but Jackson annota
 can be used to provide custom serialization of `JsonSerializeable` objects.
 
 ## Logging
-Ecah Vertigo component contains a special `PortLogger` which logs messages
+Each Vertigo component contains a special `PortLogger` which logs messages
 to component output ports in addition to standard Vert.x log files. This allows
 other components to listen for log messages on input ports.
 
@@ -915,7 +971,7 @@ Vertigo ensures exactly-once semantics by batching messages for each connection.
 Each message that is sent on a single output connection will be tagged with a
 monotonically increasing ID for that connection. The input connection that receives
 messages from the specific output connection will keep track of the last seen
-monitonically increasing ID for the connection. When a new message is received,
+monotonically increasing ID for the connection. When a new message is received,
 the input connection checks to ensure that it is the next message in the sequence
 according to its ID. If a message is received out of order, the input connection
 immediately sends a message to the output connection indicating the last sequential
@@ -935,7 +991,7 @@ Vertigo provides two mechanisms for deployment - local and cluster. The *local*
 deployment method simply uses the Vert.x `Container` for deployments. However, Vertigo's
 internal deployment API is designed in such a way that each deployment is *assigned*
 a unique ID rather than using Vert.x's internal deployment IDs. This allows Vertigo
-to reference and evealuate deployments after failures. In the case of local deployments,
+to reference and evaluate deployments after failures. In the case of local deployments,
 deployment information is stored in Vert.x's `SharedData` structures.
 
 Vertigo also supports clustered deployments using Xync. Xync exposes user-defined
@@ -950,7 +1006,7 @@ network configuration.
 
 Once the cluster scope has been determined, Vertigo will check the cluster (e.g. `SharedData`
 or Xync) to determine whether the network is already deployed. If the network has not
-been deployed (a deployment with the ID of the netowrk name is not deployed) then
+been deployed (a deployment with the ID of the network name is not deployed) then
 Vertigo simply deploys a new `NetworkManager` verticle to manage the network. Actual
 component deployments are performed within the network manager through the coordination
 system. For more information on the network manager and coordination see

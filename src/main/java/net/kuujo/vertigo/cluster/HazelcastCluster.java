@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import net.kuujo.vertigo.data.MapEvent;
+import net.kuujo.vertigo.cluster.data.MapEvent;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.data;
+package net.kuujo.vertigo.cluster.data;
 
 import java.util.Collection;
 import java.util.Set;
@@ -21,8 +21,8 @@ import java.util.Set;
 import net.kuujo.vertigo.cluster.ClusterTypeInfo;
 import net.kuujo.vertigo.cluster.LocalTypeInfo;
 import net.kuujo.vertigo.cluster.XyncTypeInfo;
-import net.kuujo.vertigo.data.impl.EventBusMap;
-import net.kuujo.vertigo.data.impl.SharedDataMap;
+import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
+import net.kuujo.vertigo.cluster.data.impl.SharedDataMap;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

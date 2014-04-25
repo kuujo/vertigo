@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.data;
+package net.kuujo.vertigo.cluster.data;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

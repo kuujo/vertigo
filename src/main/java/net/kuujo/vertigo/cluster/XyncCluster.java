@@ -15,18 +15,18 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.data.AsyncIdGenerator;
-import net.kuujo.vertigo.data.AsyncList;
-import net.kuujo.vertigo.data.AsyncLock;
-import net.kuujo.vertigo.data.AsyncQueue;
-import net.kuujo.vertigo.data.AsyncSet;
-import net.kuujo.vertigo.data.WatchableAsyncMap;
-import net.kuujo.vertigo.data.impl.EventBusIdGenerator;
-import net.kuujo.vertigo.data.impl.EventBusList;
-import net.kuujo.vertigo.data.impl.EventBusLock;
-import net.kuujo.vertigo.data.impl.EventBusMap;
-import net.kuujo.vertigo.data.impl.EventBusQueue;
-import net.kuujo.vertigo.data.impl.EventBusSet;
+import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
+import net.kuujo.vertigo.cluster.data.AsyncList;
+import net.kuujo.vertigo.cluster.data.AsyncLock;
+import net.kuujo.vertigo.cluster.data.AsyncQueue;
+import net.kuujo.vertigo.cluster.data.AsyncSet;
+import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.EventBusIdGenerator;
+import net.kuujo.vertigo.cluster.data.impl.EventBusList;
+import net.kuujo.vertigo.cluster.data.impl.EventBusLock;
+import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
+import net.kuujo.vertigo.cluster.data.impl.EventBusQueue;
+import net.kuujo.vertigo.cluster.data.impl.EventBusSet;
 import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;

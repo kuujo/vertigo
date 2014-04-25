@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.data.impl;
+package net.kuujo.vertigo.cluster.data.impl;
 
 import net.kuujo.vertigo.cluster.ClusterType;
 import net.kuujo.vertigo.cluster.LocalType;
-import net.kuujo.vertigo.data.AsyncIdGenerator;
+import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
 import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;

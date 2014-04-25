@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.data;
+package net.kuujo.vertigo.cluster.data;
 
 import net.kuujo.vertigo.cluster.ClusterTypeInfo;
 import net.kuujo.vertigo.cluster.LocalTypeInfo;
 import net.kuujo.vertigo.cluster.XyncTypeInfo;
-import net.kuujo.vertigo.data.impl.EventBusLock;
-import net.kuujo.vertigo.data.impl.SharedDataLock;
+import net.kuujo.vertigo.cluster.data.impl.EventBusLock;
+import net.kuujo.vertigo.cluster.data.impl.SharedDataLock;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

@@ -15,10 +15,7 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -31,20 +28,13 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@LocalType
-@ClusterType
 public class SharedDataIdGenerator implements AsyncIdGenerator {
   private static final String ID_MAP_NAME = "__ID__";
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<String, Long> map;
 
-  @Factory
-  public static SharedDataIdGenerator factory(String name, Vertx vertx) {
-    return new SharedDataIdGenerator(name, vertx);
-  }
-
-  private SharedDataIdGenerator(String name, Vertx vertx) {
+  public SharedDataIdGenerator(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(ID_MAP_NAME);

@@ -474,32 +474,32 @@ public class LocalCluster implements Cluster {
 
   @Override
   public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    return SharedDataMap.factory(name, vertx);
+    return new SharedDataMap<K, V>(name, vertx);
   }
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return SharedDataList.factory(name, vertx);
+    return new SharedDataList<T>(name, vertx);
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return SharedDataSet.factory(name, vertx);
+    return new SharedDataSet<T>(name, vertx);
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return SharedDataQueue.factory(name, vertx);
+    return new SharedDataQueue<T>(name, vertx);
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return SharedDataIdGenerator.factory(name, vertx);
+    return new SharedDataIdGenerator(name, vertx);
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return SharedDataLock.factory(name, vertx);
+    return new SharedDataLock(name, vertx);
   }
 
 }

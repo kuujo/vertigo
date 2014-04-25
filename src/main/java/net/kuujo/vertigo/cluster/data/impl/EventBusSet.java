@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.XyncType;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.DataException;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,21 +33,15 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The set data type.
  */
-@ClusterType
-@XyncType
-public class EventBusSet<T> implements AsyncSet<T> {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+public abstract class EventBusSet<T> implements AsyncSet<T> {
+  private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  @Factory
-  public static <T> EventBusSet<T> factory(String name, Vertx vertx) {
-    return new EventBusSet<T>(name, vertx.eventBus());
-  }
-
-  public EventBusSet(String name, EventBus eventBus) {
+  protected EventBusSet(String address, String name, Vertx vertx) {
+    this.address = address;
     this.name = name;
-    this.eventBus = eventBus;
+    this.eventBus = vertx.eventBus();
   }
 
   @Override
@@ -70,7 +61,7 @@ public class EventBusSet<T> implements AsyncSet<T> {
         .putString("type", "set")
         .putString("name", name)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -96,7 +87,7 @@ public class EventBusSet<T> implements AsyncSet<T> {
         .putString("type", "set")
         .putString("name", name)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -117,7 +108,7 @@ public class EventBusSet<T> implements AsyncSet<T> {
         .putString("type", "set")
         .putString("name", name)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -137,7 +128,7 @@ public class EventBusSet<T> implements AsyncSet<T> {
         .putString("action", "size")
         .putString("type", "set")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -157,7 +148,7 @@ public class EventBusSet<T> implements AsyncSet<T> {
         .putString("action", "empty")
         .putString("type", "set")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -182,7 +173,7 @@ public class EventBusSet<T> implements AsyncSet<T> {
         .putString("action", "clear")
         .putString("type", "set")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {

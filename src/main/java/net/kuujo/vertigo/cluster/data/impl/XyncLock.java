@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.data;
+package net.kuujo.vertigo.cluster.data.impl;
+import org.vertx.java.core.Vertx;
 
 /**
- * Asynchronous set.
+ * Xync lock implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The set data type.
+ * @author Jordan Halterman
  */
-public interface AsyncSet<T> extends AsyncCollection<T> {
+public class XyncLock extends EventBusLock {
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+
+  public XyncLock(String name, Vertx vertx) {
+    super(CLUSTER_ADDRESS, name, vertx);
+  }
+
 }

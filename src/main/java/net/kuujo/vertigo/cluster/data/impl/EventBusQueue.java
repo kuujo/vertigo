@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.XyncType;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.DataException;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,21 +33,15 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The queue data type.
  */
-@ClusterType
-@XyncType
-public class EventBusQueue<T> implements AsyncQueue<T> {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+public abstract class EventBusQueue<T> implements AsyncQueue<T> {
+  private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  @Factory
-  public static <T> EventBusQueue<T> factory(String name, Vertx vertx) {
-    return new EventBusQueue<T>(name, vertx.eventBus());
-  }
-
-  public EventBusQueue(String name, EventBus eventBus) {
+  protected EventBusQueue(String address, String name, Vertx vertx) {
+    this.address = address;
     this.name = name;
-    this.eventBus = eventBus;
+    this.eventBus = vertx.eventBus();
   }
 
   @Override
@@ -70,7 +61,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("type", "queue")
         .putString("name", name)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -106,7 +97,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("type", "queue")
         .putString("name", name)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -127,7 +118,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("type", "queue")
         .putString("name", name)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -147,7 +138,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "size")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -167,7 +158,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "empty")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -192,7 +183,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "clear")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -212,7 +203,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "element")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -233,7 +224,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "peek")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -254,7 +245,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "poll")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -275,7 +266,7 @@ public class EventBusQueue<T> implements AsyncQueue<T> {
         .putString("action", "remove")
         .putString("type", "queue")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {

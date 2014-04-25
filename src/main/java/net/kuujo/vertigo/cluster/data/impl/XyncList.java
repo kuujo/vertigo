@@ -13,14 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.data;
+package net.kuujo.vertigo.cluster.data.impl;
+
+import org.vertx.java.core.Vertx;
 
 /**
- * Asynchronous set.
+ * Xync list implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ * @author Jordan Halterman
  *
- * @param <T> The set data type.
+ * @param <T> The list data type.
  */
-public interface AsyncSet<T> extends AsyncCollection<T> {
+public class XyncList<T> extends EventBusList<T> {
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+
+  public XyncList(String name, Vertx vertx) {
+    super(CLUSTER_ADDRESS, name, vertx);
+  }
+
 }

@@ -18,10 +18,7 @@ package net.kuujo.vertigo.cluster.data.impl;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,8 +33,6 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  *
  * @param <T> The queue data type.
  */
-@LocalType
-@ClusterType
 public class SharedDataQueue<T> implements AsyncQueue<T> {
   private static final String QUEUE_MAP_NAME = "__QUEUE__";
   private final String name;
@@ -45,12 +40,7 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
   private final ConcurrentSharedMap<Integer, Object> map;
   private int currentIndex;
 
-  @Factory
-  public static <T> SharedDataQueue<T> factory(String name, Vertx vertx) {
-    return new SharedDataQueue<T>(name, vertx);
-  }
-
-  private SharedDataQueue(String name, Vertx vertx) {
+  public SharedDataQueue(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(QUEUE_MAP_NAME);

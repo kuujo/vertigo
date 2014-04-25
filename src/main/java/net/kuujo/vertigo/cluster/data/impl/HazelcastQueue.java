@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.data;
+package net.kuujo.vertigo.cluster.data.impl;
+import org.vertx.java.core.Vertx;
 
 /**
- * Asynchronous set.
+ * Hazelcast queue implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ * @author Jordan Halterman
  *
- * @param <T> The set data type.
+ * @param <T> The queue data type.
  */
-public interface AsyncSet<T> extends AsyncCollection<T> {
+public class HazelcastQueue<T> extends EventBusQueue<T> {
+
+  public HazelcastQueue(String address, String name, Vertx vertx) {
+    super(address, name, vertx);
+  }
+
 }

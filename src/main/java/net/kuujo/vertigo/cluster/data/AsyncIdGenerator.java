@@ -15,12 +15,6 @@
  */
 package net.kuujo.vertigo.cluster.data;
 
-import net.kuujo.vertigo.cluster.ClusterTypeInfo;
-import net.kuujo.vertigo.cluster.LocalTypeInfo;
-import net.kuujo.vertigo.cluster.XyncTypeInfo;
-import net.kuujo.vertigo.cluster.data.impl.EventBusIdGenerator;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataIdGenerator;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
@@ -29,9 +23,6 @@ import org.vertx.java.core.Handler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@LocalTypeInfo(defaultImpl=SharedDataIdGenerator.class)
-@ClusterTypeInfo(defaultImpl=EventBusIdGenerator.class)
-@XyncTypeInfo(defaultImpl=EventBusIdGenerator.class)
 public interface AsyncIdGenerator {
 
   /**

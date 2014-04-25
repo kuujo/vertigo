@@ -18,12 +18,6 @@ package net.kuujo.vertigo.cluster.data;
 import java.util.Collection;
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.ClusterTypeInfo;
-import net.kuujo.vertigo.cluster.LocalTypeInfo;
-import net.kuujo.vertigo.cluster.XyncTypeInfo;
-import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataMap;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
@@ -35,9 +29,6 @@ import org.vertx.java.core.Handler;
  * @param <K> The map key type.
  * @param <V> The map value type.
  */
-@LocalTypeInfo(defaultImpl=SharedDataMap.class)
-@ClusterTypeInfo(defaultImpl=EventBusMap.class)
-@XyncTypeInfo(defaultImpl=EventBusMap.class)
 public interface AsyncMap<K, V> {
 
   /**

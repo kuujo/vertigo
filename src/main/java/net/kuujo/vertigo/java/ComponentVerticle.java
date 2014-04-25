@@ -54,7 +54,7 @@ import org.vertx.java.platform.Verticle;
  * network is deployed. The <code>cluster</code> can be used to deploy
  * additional modules or verticles or access cluster-wide shared data.
  * For instance, if the network was deployed to a Xync cluster, the
- * <code>cluster</code> will be a {@link net.kuujo.vertigo.cluster.RemoteCluster}
+ * <code>cluster</code> will be a {@link net.kuujo.vertigo.cluster.HazelcastCluster}
  * which can be used to access Hazelcast data structures.<p>
  *
  * The component also has a special <code>logger</code> which is a

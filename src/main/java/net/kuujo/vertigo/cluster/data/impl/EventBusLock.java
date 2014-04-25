@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.XyncType;
 import net.kuujo.vertigo.cluster.data.AsyncLock;
 import net.kuujo.vertigo.cluster.data.DataException;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,21 +33,15 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-@ClusterType
-@XyncType
-public class EventBusLock implements AsyncLock {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+public abstract class EventBusLock implements AsyncLock {
+  private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  @Factory
-  public static EventBusLock factory(String name, Vertx vertx) {
-    return new EventBusLock(name, vertx.eventBus());
-  }
-
-  public EventBusLock(String name, EventBus eventBus) {
+  protected EventBusLock(String address, String name, Vertx vertx) {
+    this.address = address;
     this.name = name;
-    this.eventBus = eventBus;
+    this.eventBus = vertx.eventBus();
   }
 
   @Override
@@ -64,7 +55,7 @@ public class EventBusLock implements AsyncLock {
         .putString("action", "lock")
         .putString("type", "lock")
         .putString("name", name);
-    eventBus.send(CLUSTER_ADDRESS, message, new Handler<Message<JsonObject>>() {
+    eventBus.send(address, message, new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         if (message.body().getString("status").equals("error")) {
@@ -87,7 +78,7 @@ public class EventBusLock implements AsyncLock {
         .putString("action", "try")
         .putString("type", "lock")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, timeout, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, timeout, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -116,7 +107,7 @@ public class EventBusLock implements AsyncLock {
         .putString("action", "unlock")
         .putString("type", "lock")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {

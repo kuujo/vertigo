@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.data;
+package net.kuujo.vertigo.cluster.data.impl;
+
+import org.vertx.java.core.Vertx;
 
 /**
- * Asynchronous set.
+ * Xync map implementation.
  *
- * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ * @author Jordan Halterman
  *
- * @param <T> The set data type.
+ * @param <K> The map key type.
+ * @param <V> The map value type.
  */
-public interface AsyncSet<T> extends AsyncCollection<T> {
+public class XyncMap<K, V> extends EventBusMap<K, V> {
+  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+
+  public XyncMap(String name, Vertx vertx) {
+    super(CLUSTER_ADDRESS, name, vertx);
+  }
+
 }

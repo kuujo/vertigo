@@ -15,12 +15,6 @@
  */
 package net.kuujo.vertigo.cluster.data;
 
-import net.kuujo.vertigo.cluster.ClusterTypeInfo;
-import net.kuujo.vertigo.cluster.LocalTypeInfo;
-import net.kuujo.vertigo.cluster.XyncTypeInfo;
-import net.kuujo.vertigo.cluster.data.impl.EventBusList;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataList;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
@@ -31,9 +25,6 @@ import org.vertx.java.core.Handler;
  *
  * @param <T> The list data type.
  */
-@LocalTypeInfo(defaultImpl=SharedDataList.class)
-@ClusterTypeInfo(defaultImpl=EventBusList.class)
-@XyncTypeInfo(defaultImpl=EventBusList.class)
 public interface AsyncList<T> extends AsyncCollection<T> {
 
   /**

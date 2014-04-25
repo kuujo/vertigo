@@ -29,7 +29,7 @@ import org.vertx.java.core.Handler;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalTypeInfo(defaultImpl=LocalClusterManager.class)
-@ClusterTypeInfo(defaultImpl=RemoteClusterManager.class)
+@ClusterTypeInfo(defaultImpl=HazelcastClusterManager.class)
 public interface ClusterManager {
 
   /**

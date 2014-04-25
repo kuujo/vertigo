@@ -15,10 +15,7 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.data.AsyncLock;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -31,20 +28,13 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@LocalType
-@ClusterType
 public class SharedDataLock implements AsyncLock {
   private static final String LOCK_MAP_NAME = "__LOCK__";
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<String, Long> map;
 
-  @Factory
-  public static SharedDataLock factory(String name, Vertx vertx) {
-    return new SharedDataLock(name, vertx);
-  }
-
-  private SharedDataLock(String name, Vertx vertx) {
+  public SharedDataLock(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(LOCK_MAP_NAME);

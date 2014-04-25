@@ -24,13 +24,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.XyncType;
 import net.kuujo.vertigo.cluster.data.DataException;
 import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.MapEvent.Type;
-import net.kuujo.vertigo.util.Factory;
+import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -50,18 +47,11 @@ import org.vertx.java.core.json.JsonObject;
  * @param <K> The map key type.
  * @param <V> The map value type.
  */
-@ClusterType
-@XyncType
-public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
-  private final String CLUSTER_ADDRESS = "__CLUSTER__";
+public abstract class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
+  private final String address;
   private final String name;
   private final EventBus eventBus;
   private final Map<K, Map<Handler<MapEvent<K, V>>, HandlerWrapper>> watchHandlers = new HashMap<>();
-
-  @Factory
-  public static <K, V> EventBusMap<K, V> factory(String name, Vertx vertx) {
-    return new EventBusMap<K, V>(name, vertx.eventBus());
-  }
 
   private static class HandlerWrapper {
     private final String address;
@@ -73,9 +63,10 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
     }
   }
 
-  public EventBusMap(String name, EventBus eventBus) {
+  protected EventBusMap(String address, String name, Vertx vertx) {
+    this.address = address;
     this.name = name;
-    this.eventBus = eventBus;
+    this.eventBus = vertx.eventBus();
   }
 
   @Override
@@ -96,7 +87,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("name", name)
         .putValue("key", key)
         .putValue("value", value);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -118,7 +109,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("type", "map")
         .putString("name", name)
         .putValue("key", key);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -145,7 +136,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("type", "map")
         .putString("name", name)
         .putValue("key", key);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -167,7 +158,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("type", "map")
         .putString("name", name)
         .putValue("key", key);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -187,7 +178,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("action", "keys")
         .putString("type", "map")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -217,7 +208,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("action", "values")
         .putString("type", "map")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -247,7 +238,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("action", "size")
         .putString("type", "map")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -267,7 +258,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("action", "empty")
         .putString("type", "map")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -292,7 +283,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putString("action", "clear")
         .putString("type", "map")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -353,7 +344,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
               .putValue("key", key)
               .putString("event", event != null ? event.toString() : null)
               .putString("address", id);
-          eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+          eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
             @Override
             public void handle(AsyncResult<Message<JsonObject>> result) {
               if (result.failed()) {
@@ -410,7 +401,7 @@ public class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
         .putValue("key", key)
         .putString("event", event != null ? event.toString() : null)
         .putString("address", handlers.get(handler).address);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {

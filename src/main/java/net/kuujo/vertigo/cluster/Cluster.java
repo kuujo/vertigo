@@ -41,7 +41,7 @@ import org.vertx.java.platform.Container;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalTypeInfo(defaultImpl=LocalCluster.class)
-@ClusterTypeInfo(defaultImpl=RemoteCluster.class)
+@ClusterTypeInfo(defaultImpl=HazelcastCluster.class)
 public interface Cluster {
 
   /**

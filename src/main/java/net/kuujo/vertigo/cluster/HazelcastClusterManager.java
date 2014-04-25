@@ -24,26 +24,26 @@ import org.vertx.java.platform.Verticle;
 /**
  * Hazelcast-based cluster manager implementation.<p>
  *
- * The remote cluster manager is backed by {@link RemoteCluster} which uses
- * a special {@link HazelcastCluster} verticle to access Hazelcast data
+ * The remote cluster manager is backed by {@link HazelcastCluster} which uses
+ * a special {@link HazelcastClusterVerticle} verticle to access Hazelcast data
  * structures. This cluster is only available when Vert.x is clustered.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @ClusterType
-public class RemoteClusterManager extends AbstractClusterManager {
+public class HazelcastClusterManager extends AbstractClusterManager {
 
   @Factory
-  public static RemoteClusterManager factory(Vertx vertx, Container container) {
-    return new RemoteClusterManager(vertx, container);
+  public static HazelcastClusterManager factory(Vertx vertx, Container container) {
+    return new HazelcastClusterManager(vertx, container);
   }
 
-  public RemoteClusterManager(Verticle verticle) {
+  public HazelcastClusterManager(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
-  public RemoteClusterManager(Vertx vertx, Container container) {
-    super(vertx, container, new RemoteCluster(vertx, container));
+  public HazelcastClusterManager(Vertx vertx, Container container) {
+    super(vertx, container, new HazelcastCluster(vertx, container));
   }
 
   @Override

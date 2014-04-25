@@ -21,12 +21,12 @@ import net.kuujo.vertigo.cluster.data.AsyncLock;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.cluster.data.impl.EventBusIdGenerator;
-import net.kuujo.vertigo.cluster.data.impl.EventBusList;
-import net.kuujo.vertigo.cluster.data.impl.EventBusLock;
-import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
-import net.kuujo.vertigo.cluster.data.impl.EventBusQueue;
-import net.kuujo.vertigo.cluster.data.impl.EventBusSet;
+import net.kuujo.vertigo.cluster.data.impl.XyncIdGenerator;
+import net.kuujo.vertigo.cluster.data.impl.XyncList;
+import net.kuujo.vertigo.cluster.data.impl.XyncLock;
+import net.kuujo.vertigo.cluster.data.impl.XyncMap;
+import net.kuujo.vertigo.cluster.data.impl.XyncQueue;
+import net.kuujo.vertigo.cluster.data.impl.XyncSet;
 import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
@@ -448,32 +448,32 @@ public class XyncCluster implements Cluster {
 
   @Override
   public <T> AsyncList<T> getList(String name) {
-    return EventBusList.factory(name, vertx);
+    return new XyncList<T>(name, vertx);
   }
 
   @Override
   public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    return EventBusMap.factory(name, vertx);
+    return new XyncMap<K, V>(name, vertx);
   }
 
   @Override
   public <T> AsyncSet<T> getSet(String name) {
-    return EventBusSet.factory(name, vertx);
+    return new XyncSet<T>(name, vertx);
   }
 
   @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    return EventBusQueue.factory(name, vertx);
+    return new XyncQueue<T>(name, vertx);
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return EventBusIdGenerator.factory(name, vertx);
+    return new XyncIdGenerator(name, vertx);
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return EventBusLock.factory(name, vertx);
+    return new XyncLock(name, vertx);
   }
 
 }

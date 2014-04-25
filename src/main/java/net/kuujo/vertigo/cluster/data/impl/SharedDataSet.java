@@ -17,10 +17,7 @@ package net.kuujo.vertigo.cluster.data.impl;
 
 import java.util.Set;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -34,19 +31,12 @@ import org.vertx.java.core.impl.DefaultFutureResult;
  *
  * @param <T> The set data type.
  */
-@LocalType
-@ClusterType
 public class SharedDataSet<T> implements AsyncSet<T> {
   private final String name;
   private final Vertx vertx;
   private final Set<T> set;
 
-  @Factory
-  public static <T> SharedDataSet<T> factory(String name, Vertx vertx) {
-    return new SharedDataSet<T>(name, vertx);
-  }
-
-  private SharedDataSet(String name, Vertx vertx) {
+  public SharedDataSet(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.set = vertx.sharedData().getSet(name);

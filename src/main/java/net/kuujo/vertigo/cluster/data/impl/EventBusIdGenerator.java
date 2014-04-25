@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.XyncType;
 import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
 import net.kuujo.vertigo.cluster.data.DataException;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -34,21 +31,15 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-@ClusterType
-@XyncType
-public class EventBusIdGenerator implements AsyncIdGenerator {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+public abstract class EventBusIdGenerator implements AsyncIdGenerator {
+  private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  @Factory
-  public static EventBusIdGenerator factory(String name, Vertx vertx) {
-    return new EventBusIdGenerator(name, vertx.eventBus());
-  }
-
-  public EventBusIdGenerator(String name, EventBus eventBus) {
+  protected EventBusIdGenerator(String address, String name, Vertx vertx) {
+    this.address = address;
     this.name = name;
-    this.eventBus = eventBus;
+    this.eventBus = vertx.eventBus();
   }
 
   @Override
@@ -62,7 +53,7 @@ public class EventBusIdGenerator implements AsyncIdGenerator {
         .putString("action", "next")
         .putString("type", "id")
         .putString("name", name);
-    eventBus.sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {

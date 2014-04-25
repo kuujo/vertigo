@@ -22,12 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.data.DataException;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -46,8 +43,6 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  * @param <K> The map key type.
  * @param <V> The map value type.
  */
-@LocalType
-@ClusterType
 public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
   private final String name;
   private final Vertx vertx;
@@ -56,12 +51,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
   private final Map<Handler<MapEvent<K, V>>, String> watchAddresses = new HashMap<>();
   private final Map<String, Handler<Message<JsonObject>>> messageHandlers = new HashMap<>();
 
-  @Factory
-  public static <K, V> SharedDataMap<K, V> factory(String name, Vertx vertx) {
-    return new SharedDataMap<K, V>(name, vertx);
-  }
-
-  private SharedDataMap(String name, Vertx vertx) {
+  public SharedDataMap(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(name);

@@ -18,10 +18,7 @@ package net.kuujo.vertigo.cluster.data.impl;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.kuujo.vertigo.cluster.ClusterType;
-import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.data.AsyncList;
-import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -34,8 +31,6 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@LocalType
-@ClusterType
 public class SharedDataList<T> implements AsyncList<T> {
   private static final String LIST_MAP_NAME = "__LIST__";
   private final String name;
@@ -43,12 +38,7 @@ public class SharedDataList<T> implements AsyncList<T> {
   private final ConcurrentSharedMap<Integer, Object> map;
   private int currentSize = 0;
 
-  @Factory
-  public static <T> SharedDataList<T> factory(String name, Vertx vertx) {
-    return new SharedDataList<T>(name, vertx);
-  }
-
-  private SharedDataList(String name, Vertx vertx) {
+  public SharedDataList(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(LIST_MAP_NAME);

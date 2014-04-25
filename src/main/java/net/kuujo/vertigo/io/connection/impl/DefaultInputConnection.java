@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.io.connection.InputConnection;
+import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.group.InputGroup;
 import net.kuujo.vertigo.io.impl.InputDeserializer;
 

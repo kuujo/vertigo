@@ -23,14 +23,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import net.kuujo.vertigo.annotations.ClusterType;
-import net.kuujo.vertigo.annotations.ClusterTypeInfo;
-import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.annotations.LocalType;
-import net.kuujo.vertigo.annotations.LocalTypeInfo;
-import net.kuujo.vertigo.annotations.XyncType;
-import net.kuujo.vertigo.annotations.XyncTypeInfo;
 import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.ClusterType;
+import net.kuujo.vertigo.cluster.ClusterTypeInfo;
+import net.kuujo.vertigo.cluster.LocalType;
+import net.kuujo.vertigo.cluster.LocalTypeInfo;
+import net.kuujo.vertigo.cluster.XyncType;
+import net.kuujo.vertigo.cluster.XyncTypeInfo;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 
@@ -40,7 +39,7 @@ import org.vertx.java.platform.Container;
 /**
  * Factory utility.<p>
  *
- * This helper class should be used with the {@link net.kuujo.vertigo.annotations.Factory}
+ * This helper class should be used with the {@link net.kuujo.vertigo.util.Factory}
  * annotation to construct types from annotated factory methods. Specifically,
  * when constructing types that are specific to different cluster modes, the factory
  * utility will automatically fall back to the appropriate default local- or cluster-

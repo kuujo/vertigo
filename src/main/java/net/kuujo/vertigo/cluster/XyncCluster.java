@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.annotations.XyncType;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
@@ -29,6 +27,7 @@ import net.kuujo.vertigo.data.impl.EventBusLock;
 import net.kuujo.vertigo.data.impl.EventBusMap;
 import net.kuujo.vertigo.data.impl.EventBusQueue;
 import net.kuujo.vertigo.data.impl.EventBusSet;
+import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

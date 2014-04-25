@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.data;
 
-import net.kuujo.vertigo.util.serializer.JsonSerializable;
+import net.kuujo.vertigo.util.serialization.JsonSerializable;
 
 /**
  * Map event.

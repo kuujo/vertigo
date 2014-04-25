@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.component;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.context.InstanceContext;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.network.NetworkConfig;

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.io.selector;
 import java.util.List;
 
 import net.kuujo.vertigo.io.connection.Connection;
-import net.kuujo.vertigo.util.serializer.JsonSerializable;
+import net.kuujo.vertigo.util.serialization.JsonSerializable;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

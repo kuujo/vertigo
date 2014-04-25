@@ -18,8 +18,8 @@ package net.kuujo.vertigo.util;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.cluster.ClusterScope;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.component.InstanceContext;
+import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;

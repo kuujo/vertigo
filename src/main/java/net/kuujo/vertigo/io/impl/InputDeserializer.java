@@ -18,8 +18,8 @@ package net.kuujo.vertigo.io.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serialization.Serializer;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
 

@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.context.ConnectionContext;
 import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 

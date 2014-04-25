@@ -19,7 +19,7 @@ import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.context.InstanceContext;
+import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 
@@ -58,7 +58,7 @@ import org.vertx.java.platform.Verticle;
  * which can be used to access Hazelcast data structures.<p>
  *
  * The component also has a special <code>logger</code> which is a
- * {@link net.kuujo.vertigo.logger.PortLogger} that is specific to
+ * {@link net.kuujo.vertigo.io.logging.logger.PortLogger} that is specific to
  * the component instance. The port logger will log any messages to
  * the underlying Vert.x {@link org.vertx.java.core.logging.Logger}
  * as well as the corresponding output port.

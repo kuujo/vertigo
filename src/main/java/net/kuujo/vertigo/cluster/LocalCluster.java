@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.annotations.LocalType;
 import net.kuujo.vertigo.data.AsyncIdGenerator;
 import net.kuujo.vertigo.data.AsyncList;
 import net.kuujo.vertigo.data.AsyncLock;
@@ -29,6 +27,7 @@ import net.kuujo.vertigo.data.impl.SharedDataLock;
 import net.kuujo.vertigo.data.impl.SharedDataMap;
 import net.kuujo.vertigo.data.impl.SharedDataQueue;
 import net.kuujo.vertigo.data.impl.SharedDataSet;
+import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

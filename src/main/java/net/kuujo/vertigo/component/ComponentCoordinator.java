@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.component;
 
-import net.kuujo.vertigo.context.InstanceContext;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 

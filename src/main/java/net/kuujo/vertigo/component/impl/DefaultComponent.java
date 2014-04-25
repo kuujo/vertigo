@@ -20,13 +20,13 @@ import java.util.List;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentCoordinator;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.hooks.ComponentHook;
+import net.kuujo.vertigo.component.InstanceContext;
+import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.DefaultInputCollector;
 import net.kuujo.vertigo.io.impl.DefaultOutputCollector;
-import net.kuujo.vertigo.logging.PortLoggerFactory;
+import net.kuujo.vertigo.io.logging.PortLoggerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;

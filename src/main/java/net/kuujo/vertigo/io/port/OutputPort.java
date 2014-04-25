@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.io.port;
 
-import net.kuujo.vertigo.context.OutputPortContext;
 import net.kuujo.vertigo.io.Output;
 
 /**

@@ -16,14 +16,14 @@
 package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.context.NetworkContext;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.component.ModuleConfig;
+import net.kuujo.vertigo.component.VerticleConfig;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.ActiveNetwork;
-import net.kuujo.vertigo.network.ComponentConfig;
-import net.kuujo.vertigo.network.ConnectionConfig;
-import net.kuujo.vertigo.network.ModuleConfig;
 import net.kuujo.vertigo.network.NetworkConfig;
-import net.kuujo.vertigo.network.VerticleConfig;
+import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Observer;
 
 import org.vertx.java.core.AsyncResult;

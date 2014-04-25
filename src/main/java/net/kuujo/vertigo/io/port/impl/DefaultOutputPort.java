@@ -19,13 +19,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
-import net.kuujo.vertigo.hooks.OutputHook;
+import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
 import net.kuujo.vertigo.io.port.OutputPort;
+import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.stream.OutputStream;
+import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.io.stream.impl.DefaultOutputStream;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;

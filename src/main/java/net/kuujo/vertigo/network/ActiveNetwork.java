@@ -15,6 +15,11 @@
  */
 package net.kuujo.vertigo.network;
 
+import net.kuujo.vertigo.ActiveConfig;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.component.ModuleConfig;
+import net.kuujo.vertigo.component.VerticleConfig;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
 import net.kuujo.vertigo.io.selector.Selector;
 
 import org.vertx.java.core.AsyncResult;

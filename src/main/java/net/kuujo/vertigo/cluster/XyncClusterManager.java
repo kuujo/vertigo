@@ -15,8 +15,7 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.annotations.XyncType;
+import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.Vertx;
 import org.vertx.java.platform.Container;

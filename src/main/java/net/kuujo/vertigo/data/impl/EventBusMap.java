@@ -24,13 +24,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import net.kuujo.vertigo.annotations.ClusterType;
-import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.annotations.XyncType;
+import net.kuujo.vertigo.cluster.ClusterType;
+import net.kuujo.vertigo.cluster.XyncType;
 import net.kuujo.vertigo.data.DataException;
 import net.kuujo.vertigo.data.MapEvent;
 import net.kuujo.vertigo.data.MapEvent.Type;
 import net.kuujo.vertigo.data.WatchableAsyncMap;
+import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

@@ -19,8 +19,7 @@ import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.component.ComponentCoordinator;
-import net.kuujo.vertigo.context.InstanceContext;
-import net.kuujo.vertigo.context.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.data.MapEvent;
 import net.kuujo.vertigo.data.WatchableAsyncMap;
 

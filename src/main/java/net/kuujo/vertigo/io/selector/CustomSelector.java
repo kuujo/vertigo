@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.io.connection.Connection;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
 

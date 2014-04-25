@@ -17,7 +17,6 @@ package net.kuujo.vertigo.io;
 
 import java.util.Collection;
 
-import net.kuujo.vertigo.context.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPort;
 
 /**

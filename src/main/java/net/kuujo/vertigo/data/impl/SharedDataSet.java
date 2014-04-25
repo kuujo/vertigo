@@ -17,10 +17,10 @@ package net.kuujo.vertigo.data.impl;
 
 import java.util.Set;
 
-import net.kuujo.vertigo.annotations.ClusterType;
-import net.kuujo.vertigo.annotations.Factory;
-import net.kuujo.vertigo.annotations.LocalType;
+import net.kuujo.vertigo.cluster.ClusterType;
+import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.data.AsyncSet;
+import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;

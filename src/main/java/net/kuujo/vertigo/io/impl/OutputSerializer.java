@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.kuujo.vertigo.util.serializer.Serializer;
-import net.kuujo.vertigo.util.serializer.SerializerFactory;
+import net.kuujo.vertigo.util.serialization.Serializer;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;

@@ -21,13 +21,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.kuujo.vertigo.context.InputConnectionContext;
-import net.kuujo.vertigo.context.InputPortContext;
-import net.kuujo.vertigo.hooks.InputHook;
+import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.io.connection.InputConnection;
+import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.DefaultInputConnection;
 import net.kuujo.vertigo.io.group.InputGroup;
 import net.kuujo.vertigo.io.port.InputPort;
+import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.Task;

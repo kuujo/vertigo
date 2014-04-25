@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vertigo.context.OutputContext;
-import net.kuujo.vertigo.context.OutputPortContext;
-import net.kuujo.vertigo.context.impl.DefaultOutputContext;
-import net.kuujo.vertigo.context.impl.DefaultOutputPortContext;
 import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPort;
+import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.port.impl.DefaultOutputPort;
+import net.kuujo.vertigo.io.port.impl.DefaultOutputPortContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.Task;

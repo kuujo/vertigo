@@ -18,14 +18,14 @@ package net.kuujo.vertigo.io.stream.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.context.OutputStreamContext;
 import net.kuujo.vertigo.io.connection.OutputConnection;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.DefaultOutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.io.stream.OutputStream;
+import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;

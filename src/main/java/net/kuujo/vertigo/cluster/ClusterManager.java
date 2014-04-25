@@ -15,8 +15,6 @@ w * Copyright 2014 the original author or authors.
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.annotations.ClusterTypeInfo;
-import net.kuujo.vertigo.annotations.LocalTypeInfo;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 

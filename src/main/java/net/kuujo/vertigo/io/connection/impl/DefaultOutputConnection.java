@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import net.kuujo.vertigo.context.OutputConnectionContext;
-import net.kuujo.vertigo.hooks.OutputHook;
+import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.connection.OutputConnection;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.impl.OutputSerializer;
 

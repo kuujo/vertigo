@@ -18,9 +18,9 @@ package net.kuujo.vertigo.data;
 import java.util.Collection;
 import java.util.Set;
 
-import net.kuujo.vertigo.annotations.ClusterTypeInfo;
-import net.kuujo.vertigo.annotations.LocalTypeInfo;
-import net.kuujo.vertigo.annotations.XyncTypeInfo;
+import net.kuujo.vertigo.cluster.ClusterTypeInfo;
+import net.kuujo.vertigo.cluster.LocalTypeInfo;
+import net.kuujo.vertigo.cluster.XyncTypeInfo;
 import net.kuujo.vertigo.data.impl.EventBusMap;
 import net.kuujo.vertigo.data.impl.SharedDataMap;
 

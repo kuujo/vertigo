@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.io.port;
 
-import net.kuujo.vertigo.context.PortContext;
 import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 

@@ -8,9 +8,9 @@
   </parent>
 
   <groupId>net.kuujo</groupId>
-  <artifactId>vertigo</artifactId>
+  <artifactId>vertigo-parent</artifactId>
   <version>0.7.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <name>Vertigo</name>
   <description>A distributed event processing framework for Vert.x.</description>
   <url>http://github.com/kuujo/vertigo</url>
@@ -60,6 +60,13 @@
     <url>http://github.com/kuujo/vertigo/issues</url>
   </issueManagement>
 
+  <modules>
+    <module>core</module>
+    <module>cluster</module>
+    <module>utils</module>
+    <module>deployer</module>
+  </modules>
+
   <dependencies>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -85,21 +92,9 @@
       <version>${testtools.version}</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>com.hazelcast</groupId>
-      <artifactId>hazelcast</artifactId>
-      <version>${hazelcast.version}</version>
-    </dependency>
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -136,7 +131,7 @@
                 <resource>
                   <directory>src/main/resources</directory>
                   <filtering>true</filtering>
-                  <includes>  
+                  <includes>
                     <include>mod.json</include>
                   </includes>
                 </resource>

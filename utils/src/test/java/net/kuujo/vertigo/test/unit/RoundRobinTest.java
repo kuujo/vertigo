@@ -26,7 +26,7 @@ import net.kuujo.vertigo.util.RoundRobin;
 import org.junit.Test;
 
 /**
- * Selector tests.
+ * Round-robin tests.
  *
  * @author Jordan Halterman
  */

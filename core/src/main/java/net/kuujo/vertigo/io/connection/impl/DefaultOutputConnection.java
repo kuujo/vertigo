@@ -89,6 +89,10 @@ public class DefaultOutputConnection implements OutputConnection {
     }
   };
 
+  public DefaultOutputConnection(Vertx vertx, String address) {
+    this(vertx, DefaultOutputConnectionContext.Builder.newBuilder().setAddress(address).build());
+  }
+
   public DefaultOutputConnection(Vertx vertx, OutputConnectionContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();

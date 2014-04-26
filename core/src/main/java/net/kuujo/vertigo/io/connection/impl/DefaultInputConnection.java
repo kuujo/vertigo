@@ -109,6 +109,10 @@ public class DefaultInputConnection implements InputConnection {
     }
   };
 
+  public DefaultInputConnection(Vertx vertx, String address) {
+    this(vertx, DefaultInputConnectionContext.Builder.newBuilder().setAddress(address).build());
+  }
+
   public DefaultInputConnection(Vertx vertx, InputConnectionContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();

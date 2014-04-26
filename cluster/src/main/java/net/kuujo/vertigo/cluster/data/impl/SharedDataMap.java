@@ -306,7 +306,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
       vertx.runOnContext(new Handler<Void>() {
         @Override
         public void handle(Void _) {
-          new DefaultFutureResult<Void>(new DataException("Handler not registered."));
+          new DefaultFutureResult<Void>(new DataException("Handler not registered.")).setHandler(doneHandler);
         }
       });
     }

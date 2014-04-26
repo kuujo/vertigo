@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncLock;
@@ -52,6 +55,16 @@ import org.vertx.java.platform.Verticle;
 public class XyncCluster implements Cluster {
   private static final String CLUSTER_ADDRESS = "__CLUSTER__";
   private final Vertx vertx;
+  @SuppressWarnings("rawtypes")
+  private final Map<String, WatchableAsyncMap> maps = new HashMap<>();
+  @SuppressWarnings("rawtypes")
+  private final Map<String, AsyncList> lists = new HashMap<>();
+  @SuppressWarnings("rawtypes")
+  private final Map<String, AsyncQueue> queues = new HashMap<>();
+  @SuppressWarnings("rawtypes")
+  private final Map<String, AsyncSet> sets = new HashMap<>();
+  private final Map<String, AsyncLock> locks = new HashMap<>();
+  private final Map<String, AsyncIdGenerator> ids = new HashMap<>();
 
   @Factory
   public static Cluster factory(Vertx vertx, Container container) {
@@ -447,33 +460,67 @@ public class XyncCluster implements Cluster {
   }
 
   @Override
-  public <T> AsyncList<T> getList(String name) {
-    return new XyncList<T>(name, vertx);
-  }
-
-  @Override
+  @SuppressWarnings("unchecked")
   public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    return new XyncMap<K, V>(name, vertx);
+    WatchableAsyncMap<K, V> map = maps.get(name);
+    if (map == null) {
+      map = new XyncMap<K, V>(name, vertx);
+      maps.put(name, map);
+    }
+    return map;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
+  public <T> AsyncList<T> getList(String name) {
+    AsyncList<T> list = lists.get(name);
+    if (list == null) {
+      list = new XyncList<T>(name, vertx);
+      lists.put(name, list);
+    }
+    return list;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
   public <T> AsyncSet<T> getSet(String name) {
-    return new XyncSet<T>(name, vertx);
+    AsyncSet<T> set = sets.get(name);
+    if (set == null) {
+      set = new XyncSet<T>(name, vertx);
+      sets.put(name, set);
+    }
+    return set;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> AsyncQueue<T> getQueue(String name) {
-    return new XyncQueue<T>(name, vertx);
+    AsyncQueue<T> queue = queues.get(name);
+    if (queue == null) {
+      queue = new XyncQueue<T>(name, vertx);
+      queues.put(name, queue);
+    }
+    return queue;
   }
 
   @Override
   public AsyncIdGenerator getIdGenerator(String name) {
-    return new XyncIdGenerator(name, vertx);
+    AsyncIdGenerator id = ids.get(name);
+    if (id == null) {
+      id = new XyncIdGenerator(name, vertx);
+      ids.put(name, id);
+    }
+    return id;
   }
 
   @Override
   public AsyncLock getLock(String name) {
-    return new XyncLock(name, vertx);
+    AsyncLock lock = locks.get(name);
+    if (lock == null) {
+      lock = new XyncLock(name, vertx);
+      locks.put(name, lock);
+    }
+    return lock;
   }
 
 }

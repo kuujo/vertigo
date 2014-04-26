@@ -136,16 +136,20 @@ abstract class AbstractClusterManager implements ClusterManager {
               } else {
                 // Deploy the network manager according to the network cluster type. If the
                 // current Vertigo scope is CLUSTER *and* the network's scope is CLUSTER then
-                // deploy the manager as a cluster. Otherwise, the network is local since either
-                // local scope was specified on the network or the current instance is local.
-                // All coordination is done in the current Vertigo scope regarless of the
-                // network configuration.
+                // deploy the manager as a cluster. If the current Vertigo scope is XYNC and
+                // the network's scope is XYNC then deploy the network as a Xync cluster.
+                // Otherwise, the network is local since either local scope was specified
+                // on the network or the current instance is local. All coordination is done
+                // in the current Vertigo scope regarless of the network configuration.
                 Cluster contextCluster;
-                if (network.getScope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
+                if (network.getScope().equals(ClusterScope.XYNC) && scope().equals(ClusterScope.XYNC)) {
+                  contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.XYNC);
+                } else if (network.getScope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
                   contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.CLUSTER);
                 } else {
                   contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.LOCAL);
                 }
+
                 JsonObject config = new JsonObject().putString("name", network.getName());
                 contextCluster.deployVerticle(network.getName(), NetworkManager.class.getName(), config, 1, new Handler<AsyncResult<String>>() {
                   @Override

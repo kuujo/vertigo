@@ -460,7 +460,9 @@ public class NetworkManager extends BusModBase {
    */
   private void checkReady() {
     if (allReady()) {
-      data.put(currentContext.status(), "ready", new Handler<AsyncResult<String>>() {
+      // Set the network's status key to the current context version. This
+      // can be used by listeners to determine when a configuration change is complete.
+      data.put(currentContext.status(), currentContext.version(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {

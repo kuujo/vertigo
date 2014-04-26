@@ -189,35 +189,67 @@ abstract class AbstractClusterManager implements ClusterManager {
             updatedContext = ContextBuilder.buildContext(network);
           }
 
-          // Once the updated context has been set in the cluster, the network's manager
-          // verticle (which should be watching the configuration) will be notified and
-          // will asynchronously update component configurations and deploy/undeploy
-          // any components as necessary.
           final NetworkContext context = updatedContext;
-          cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+
+          // Create an active network to return to the user. The
+          // active network can be used to alter the configuration of the
+          // live network.
+          final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
+          cluster.<String, String>getMap(context.name()).watch(context.name(), new Handler<MapEvent<String, String>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(MapEvent<String, String> event) {
+              String scontext = event.value();
+              if (scontext != null && scontext.length() > 0) {
+                active.update(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
+              }
+            }
+          }, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
               } else {
-                // Create an active network. The active network should watch the configuration
-                // in the cluster as well so we can update the active network's configuration.
-                final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-                cluster.<String, String>getMap(network.getName()).watch(network.getName(), new Handler<MapEvent<String, String>>() {
+                // When the context is set in the cluster, the network's manager will be notified
+                // via a cluster event. The manager will then unset the network's status key and
+                // update the network. Once the network has been updated (components are deployed
+                // and undeployed and connections are created or removed as necessary) the manager
+                // will reset the network's status key to the updated version. We can use this fact
+                // to determine when the configuration change is complete by watching the network's
+                // status key for the new context version.
+                cluster.<String, String>getMap(context.name()).watch(context.status(), new Handler<MapEvent<String, String>>() {
                   @Override
                   public void handle(MapEvent<String, String> event) {
-                    String scontext = event.value();
-                    if (scontext != null && scontext.length() > 0) {
-                      active.update(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
+                    // Once the network has been updated we can stop watching the network's status key.
+                    // Once the status key is unwatched trigger the async handler indicating that the
+                    // update is complete.
+                    if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
+                      cluster.<String, String>getMap(context.name()).unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
+                        @Override
+                        public void handle(AsyncResult<Void> result) {
+                          new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
+                        }
+                      });
                     }
                   }
                 }, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
+                    // Once the network's status key is being watched, set the new configuration in
+                    // the cluster. This change will be recognized by the network's manager which will
+                    // then update the running network's configuration.
                     if (result.failed()) {
                       new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
                     } else {
-                      new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
+                      cluster.<String, String>getMap(context.name()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                        @Override
+                        public void handle(AsyncResult<String> result) {
+                          // Only fail the handler if the put failed. We don't trigger the async handler
+                          // here because we're still waiting for the status key to be set after the update.
+                          if (result.failed()) {
+                            new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                          }
+                        }
+                      });
                     }
                   }
                 });
@@ -297,6 +329,8 @@ abstract class AbstractClusterManager implements ClusterManager {
                 NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 NetworkConfig updatedConfig = Configs.unmergeNetworks(currentContext.config(), network);
                 final NetworkContext context = ContextBuilder.buildContext(updatedConfig);
+
+                // If all the components in the network were removed then undeploy the entire network.
                 if (context.components().isEmpty()) {
                   cluster.<String, String>getMap(network.getName()).remove(context.address(), new Handler<AsyncResult<String>>() {
                     @Override
@@ -318,13 +352,42 @@ abstract class AbstractClusterManager implements ClusterManager {
                     }
                   });
                 } else {
-                  cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                  // If the entire network isn't being undeployed, watch the network's status
+                  // key to determine when the new configuration has be updated. The network
+                  // manager will set the status key to the updated context version once complete.
+                  cluster.<String, String>getMap(context.name()).watch(context.status(), new Handler<MapEvent<String, String>>() {
                     @Override
-                    public void handle(AsyncResult<String> result) {
+                    public void handle(MapEvent<String, String> event) {
+                      // Once the status key has been set to the updated version, stop watching the
+                      // status key with this handler and trigger the async handler.
+                      if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
+                        cluster.<String, String>getMap(context.name()).unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
+                          @Override
+                          public void handle(AsyncResult<Void> result) {
+                            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                          }
+                        });
+                      }
+                    }
+                  }, new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> result) {
                       if (result.failed()) {
                         new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
                       } else {
-                        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                        // Once the status key is being watched, update the network's context. This
+                        // will cause the network's manager to undeploy components and update connections
+                        // and will set the status key once complete.
+                        cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                          @Override
+                          public void handle(AsyncResult<String> result) {
+                            // Only trigger the async handler if the put failed. The async handler will
+                            // be complete once the network's status key has been set to the updated version.
+                            if (result.failed()) {
+                              new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                            }
+                          }
+                        });
                       }
                     }
                   });

@@ -34,6 +34,7 @@ public abstract class BaseContext<T extends Context<T>> implements Context<T> {
   private static final Serializer serializer = SerializerFactory.getSerializer(BaseContext.class);
   @JsonIgnore
   protected final Set<Observer<T>> observers = new HashSet<>();
+  protected String version;
   protected String address;
 
   @Override

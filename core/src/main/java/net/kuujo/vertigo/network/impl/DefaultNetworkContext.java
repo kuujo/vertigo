@@ -44,6 +44,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class DefaultNetworkContext extends BaseContext<NetworkContext> implements NetworkContext {
   private String name;
+  private String version;
   private ClusterScope scope = ClusterScope.CLUSTER;
   private NetworkConfig config;
   private String status;
@@ -76,6 +77,11 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   @Override
   public String name() {
     return name;
+  }
+
+  @Override
+  public String version() {
+    return version;
   }
 
   @Override
@@ -218,6 +224,17 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
     public Builder setName(String name) {
       context.name = name;
       context.address = name;
+      return this;
+    }
+
+    /**
+     * Sets the network version.
+     *
+     * @param version The network version.
+     * @return The context builder.
+     */
+    public Builder setVersion(String version) {
+      context.version = version;
       return this;
     }
 

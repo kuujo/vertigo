@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ComponentContext;
@@ -66,6 +67,7 @@ public final class ContextBuilder {
 
     // Set basic network configuration options.
     context.setName(network.getName());
+    context.setVersion(UUID.randomUUID().toString());
     context.setScope(network.getScope());
     context.setAddress(network.getName());
     context.setConfig(network);

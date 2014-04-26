@@ -51,6 +51,15 @@ public interface NetworkContext extends Context<NetworkContext> {
   String name();
 
   /**
+   * Returns the network version. Contexts may be updated through network
+   * configuration changes, so the version can be used to track updates to
+   * the network.
+   *
+   * @return The network version.
+   */
+  String version();
+
+  /**
    * Returns the network configuration from which the context was built.
    *
    * @return The network configuration.

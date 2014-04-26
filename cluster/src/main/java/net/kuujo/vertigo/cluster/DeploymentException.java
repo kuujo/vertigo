@@ -15,15 +15,13 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.VertigoException;
-
 /**
  * Deployment exception.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
-public class DeploymentException extends VertigoException {
+public class DeploymentException extends ClusterException {
 
   public DeploymentException(String message) {
     super(message);

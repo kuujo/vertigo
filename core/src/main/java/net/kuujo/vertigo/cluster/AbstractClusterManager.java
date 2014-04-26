@@ -58,7 +58,7 @@ abstract class AbstractClusterManager implements ClusterManager {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(resultHandler);
+          new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(resultHandler);
         } else if (!result.result()) {
           new DefaultFutureResult<ActiveNetwork>(new DeploymentException("Network is not deployed.")).setHandler(resultHandler);
         } else {
@@ -66,7 +66,7 @@ abstract class AbstractClusterManager implements ClusterManager {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
-                new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(resultHandler);
+                new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(resultHandler);
               } else {
                 NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
@@ -82,7 +82,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(resultHandler);
+                      new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(resultHandler);
                     } else {
                       new DefaultFutureResult<ActiveNetwork>(active).setHandler(resultHandler);
                     }
@@ -124,7 +124,7 @@ abstract class AbstractClusterManager implements ClusterManager {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
         } else if (result.result()) {
           doDeployNetwork(network, doneHandler);
         } else {
@@ -132,7 +132,7 @@ abstract class AbstractClusterManager implements ClusterManager {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
-                new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+                new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
               } else {
                 // Deploy the network manager according to the network cluster type. If the
                 // current Vertigo scope is CLUSTER *and* the network's scope is CLUSTER then
@@ -151,7 +151,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                   @Override
                   public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+                      new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
                     } else {
                       doDeployNetwork(network, doneHandler);
                     }
@@ -175,7 +175,7 @@ abstract class AbstractClusterManager implements ClusterManager {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
         } else {
           // If the network's configuration already exists, merge the new
           // configuration with the existing configuration and update the
@@ -198,7 +198,7 @@ abstract class AbstractClusterManager implements ClusterManager {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
-                new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+                new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
               } else {
                 // Create an active network. The active network should watch the configuration
                 // in the cluster as well so we can update the active network's configuration.
@@ -215,7 +215,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+                      new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
                     } else {
                       new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
                     }
@@ -244,7 +244,7 @@ abstract class AbstractClusterManager implements ClusterManager {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
         } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
         } else {
@@ -252,13 +252,13 @@ abstract class AbstractClusterManager implements ClusterManager {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
               } else {
                 cluster.undeployVerticle(name, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                      new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
                     } else {
                       new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                     }
@@ -284,7 +284,7 @@ abstract class AbstractClusterManager implements ClusterManager {
       @Override
       public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
         } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
         } else {
@@ -292,7 +292,7 @@ abstract class AbstractClusterManager implements ClusterManager {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
               } else if (result.result() != null) {
                 NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 NetworkConfig updatedConfig = Configs.unmergeNetworks(currentContext.config(), network);
@@ -302,13 +302,13 @@ abstract class AbstractClusterManager implements ClusterManager {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {
-                        new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                        new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
                       } else {
                         cluster.undeployVerticle(context.address(), new Handler<AsyncResult<Void>>() {
                           @Override
                           public void handle(AsyncResult<Void> result) {
                             if (result.failed()) {
-                              new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                              new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
                             } else {
                               new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                             }
@@ -322,7 +322,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {
-                        new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                        new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
                       } else {
                         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                       }

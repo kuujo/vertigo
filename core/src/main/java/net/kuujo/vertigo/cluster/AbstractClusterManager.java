@@ -144,7 +144,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                 Cluster contextCluster;
                 if (network.getScope().equals(ClusterScope.XYNC) && scope().equals(ClusterScope.XYNC)) {
                   contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.XYNC);
-                } else if (network.getScope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
+                } else if ((network.getScope().equals(ClusterScope.CLUSTER) || network.getScope().equals(ClusterScope.XYNC)) && scope().equals(ClusterScope.CLUSTER)) {
                   contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.CLUSTER);
                 } else {
                   contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.LOCAL);

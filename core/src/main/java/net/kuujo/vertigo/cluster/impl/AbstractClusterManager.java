@@ -189,16 +189,22 @@ abstract class AbstractClusterManager implements ClusterManager {
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
           new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
-        } else if (result.result() == null) {
-          // If the context doesn't already exist, the network must not be deployed.
-          // Deploy the network manager.
-          doDeployNetwork(network, null, doneHandler);
         } else {
-          // If the context already exists in the coordination cluster, load the context
-          // and the network's cluster to check whether the network's manager is deployed.
-          // If the manager isn't already deployed then deploy it.
-          final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+          // Create the new network context. If a context already existed in the cluster
+          // then merge the new configuration with the existing configuration. Otherwise
+          // just build a network context.
+          NetworkContext updatedContext;
+          if (result.result() == null) {
+            updatedContext = ContextBuilder.buildContext(network);
+          } else {
+            updatedContext = ContextBuilder.buildContext(Configs.mergeNetworks(DefaultNetworkContext.fromJson(new JsonObject(result.result())).config(), network));
+          }
+
+          final NetworkContext context = updatedContext;
           final Cluster contextCluster = createNetworkCluster(context);
+
+          // If the network's manager isn't already deployed in the network's cluster
+          // then deploy the manager.
           contextCluster.isDeployed(context.name(), new Handler<AsyncResult<Boolean>>() {
             @Override
             public void handle(AsyncResult<Boolean> result) {
@@ -207,7 +213,7 @@ abstract class AbstractClusterManager implements ClusterManager {
               } else if (result.result()) {
                 // If the network manager is already deployed in the network's cluster then
                 // simply merge and update the network's configuration.
-                doDeployNetwork(network, context, doneHandler);
+                doDeployNetwork(context, doneHandler);
               } else {
                 // If the network manager hasn't yet been deployed then deploy the manager
                 // and then update the network's configuration.
@@ -217,7 +223,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                     if (result.failed()) {
                       new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
                     } else {
-                      doDeployNetwork(network, context, doneHandler);
+                      doDeployNetwork(context, doneHandler);
                     }
                   }
                 });
@@ -233,18 +239,7 @@ abstract class AbstractClusterManager implements ClusterManager {
   /**
    * Handles deployment of a network.
    */
-  private void doDeployNetwork(final NetworkConfig network, final NetworkContext currentContext, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    // If a previous context for the network was provided, merge the previous context's
-    // configuration with the new network configuration and build a new context.
-    NetworkContext updatedContext;
-    if (currentContext == null) {
-      updatedContext = ContextBuilder.buildContext(network);
-    } else {
-      updatedContext = ContextBuilder.buildContext(Configs.mergeNetworks(currentContext.config(), network));
-    }
-
-    final NetworkContext context = updatedContext;
-
+  private void doDeployNetwork(final NetworkContext context, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     // Create an active network to return to the user. The active network can be used to
     // alter the configuration of the live network.
     final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx);

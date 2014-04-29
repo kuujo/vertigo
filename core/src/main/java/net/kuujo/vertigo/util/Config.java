@@ -39,15 +39,16 @@ public final class Config {
    * @return The verticle's cluster.
    */
   static Cluster parseCluster(JsonObject config, Vertx vertx, Container container) {
-    String cluster = config.getString("__cluster__");
-    if (cluster == null) {
+    if (!config.containsField("__cluster__")) {
       throw new IllegalArgumentException("No component cluster found.");
     }
+    String cluster = config.getString("__cluster__");
+    config.removeField("__cluster__");
     String sscope = config.getString("__scope__");
     if (sscope == null) {
       throw new IllegalArgumentException("No cluster scope found.");
     }
-    config.removeField("__cluster__");
+    config.removeField("__scope__");
     return new ClusterFactory(vertx, container).createCluster(cluster, ClusterScope.parse(sscope));
   }
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.kuujo.vertigo.cluster.impl.DefaultClusterContext;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
@@ -68,7 +69,9 @@ public final class ContextBuilder {
     // Set basic network configuration options.
     context.setName(network.getName());
     context.setVersion(UUID.randomUUID().toString());
-    context.setScope(network.getScope());
+    context.setCluster(DefaultClusterContext.Builder.newBuilder()
+        .setAddress(network.getClusterConfig().getAddress())
+        .setScope(network.getClusterConfig().getScope()).build());
     context.setAddress(network.getName());
     context.setConfig(network);
     context.setStatusAddress(String.format("%s.__status", network.getName()));

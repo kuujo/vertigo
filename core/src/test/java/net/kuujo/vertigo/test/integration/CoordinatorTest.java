@@ -18,9 +18,10 @@ package net.kuujo.vertigo.test.integration;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.LocalCluster;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentCoordinator;
@@ -61,7 +62,7 @@ public class CoordinatorTest extends TestVerticle {
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test"), vertx);
 
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
@@ -105,7 +106,7 @@ public class CoordinatorTest extends TestVerticle {
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test"), vertx);
 
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
@@ -155,7 +156,7 @@ public class CoordinatorTest extends TestVerticle {
     final InstanceContext instance = context.component("test").instances().iterator().next();
 
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test");
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test"), vertx);
 
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override

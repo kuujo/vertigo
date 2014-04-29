@@ -15,12 +15,13 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
+import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
-import net.kuujo.vertigo.cluster.data.AsyncLock;
+import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.LocalCluster;
+import net.kuujo.vertigo.cluster.impl.RemoteCluster;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -41,24 +42,15 @@ import org.vertx.java.platform.Container;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalTypeInfo(defaultImpl=LocalCluster.class)
-@ClusterTypeInfo(defaultImpl=HazelcastCluster.class)
-@XyncTypeInfo(defaultImpl=XyncCluster.class)
+@ClusterTypeInfo(defaultImpl=RemoteCluster.class)
 public interface Cluster {
 
   /**
-   * Starts the cluster.
+   * Returns the cluster address.
    *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The cluster.
+   * @return The cluster address.
    */
-  Cluster start(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Stops the cluster.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  String address();
 
   /**
    * Returns the cluster scope.
@@ -632,7 +624,7 @@ public interface Cluster {
    * @param name The map name.
    * @return An asynchronous cluster-wide replicated map.
    */
-  <K, V> WatchableAsyncMap<K, V> getMap(String name);
+  <K, V> AsyncMap<K, V> getMap(String name);
 
   /**
    * Returns an asynchronous cluster-wide replicated list.
@@ -659,19 +651,11 @@ public interface Cluster {
   <T> AsyncQueue<T> getQueue(String name);
 
   /**
-   * Returns an asynchronous cluster-wide unique ID generator.
+   * Returns an asynchronous cluster-wide counter.
    *
-   * @param name The ID generator name.
-   * @return An asynchronous cluster-wide ID generator.
+   * @param name The counter name.
+   * @return An asynchronous cluster-wide counter.
    */
-  AsyncIdGenerator getIdGenerator(String name);
-
-  /**
-   * Returns an asynchronous cluster-wide lock.
-   *
-   * @param name The lock name.
-   * @return An asynchronous cluster-wide lock.
-   */
-  AsyncLock getLock(String name);
+  AsyncCounter getCounter(String name);
 
 }

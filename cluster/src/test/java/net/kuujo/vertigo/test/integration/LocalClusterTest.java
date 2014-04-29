@@ -19,8 +19,8 @@ import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.impl.LocalCluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;

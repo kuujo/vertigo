@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.DeploymentException;
+import net.kuujo.vertigo.cluster.LocalType;
+import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
-import net.kuujo.vertigo.cluster.data.AsyncLock;
+import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataIdGenerator;
+import net.kuujo.vertigo.cluster.data.impl.SharedDataCounter;
 import net.kuujo.vertigo.cluster.data.impl.SharedDataList;
-import net.kuujo.vertigo.cluster.data.impl.SharedDataLock;
 import net.kuujo.vertigo.cluster.data.impl.SharedDataMap;
 import net.kuujo.vertigo.cluster.data.impl.SharedDataQueue;
 import net.kuujo.vertigo.cluster.data.impl.SharedDataSet;
@@ -56,15 +58,14 @@ public class LocalCluster implements Cluster {
   private final Container container;
   private final ConcurrentSharedMap<String, String> deployments;
   @SuppressWarnings("rawtypes")
-  private final Map<String, WatchableAsyncMap> maps = new HashMap<>();
+  private final Map<String, AsyncMap> maps = new HashMap<>();
   @SuppressWarnings("rawtypes")
   private final Map<String, AsyncList> lists = new HashMap<>();
   @SuppressWarnings("rawtypes")
   private final Map<String, AsyncQueue> queues = new HashMap<>();
   @SuppressWarnings("rawtypes")
   private final Map<String, AsyncSet> sets = new HashMap<>();
-  private final Map<String, AsyncLock> locks = new HashMap<>();
-  private final Map<String, AsyncIdGenerator> ids = new HashMap<>();
+  private final Map<String, AsyncCounter> counters = new HashMap<>();
 
   @Factory
   public static Cluster factory(Vertx vertx, Container container) {
@@ -82,14 +83,8 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
-  public Cluster start(final Handler<AsyncResult<Void>> doneHandler) {
-    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-    return this;
-  }
-
-  @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+  public String address() {
+    return null;
   }
 
   @Override
@@ -488,8 +483,8 @@ public class LocalCluster implements Cluster {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    WatchableAsyncMap<K, V> map = maps.get(name);
+  public <K, V> AsyncMap<K, V> getMap(String name) {
+    AsyncMap<K, V> map = maps.get(name);
     if (map == null) {
       map = new SharedDataMap<K, V>(name, vertx);
       maps.put(name, map);
@@ -531,23 +526,13 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
-  public AsyncIdGenerator getIdGenerator(String name) {
-    AsyncIdGenerator id = ids.get(name);
-    if (id == null) {
-      id = new SharedDataIdGenerator(name, vertx);
-      ids.put(name, id);
+  public AsyncCounter getCounter(String name) {
+    AsyncCounter counter = counters.get(name);
+    if (counter == null) {
+      counter = new SharedDataCounter(name, vertx);
+      counters.put(name, counter);
     }
-    return id;
-  }
-
-  @Override
-  public AsyncLock getLock(String name) {
-    AsyncLock lock = locks.get(name);
-    if (lock == null) {
-      lock = new SharedDataLock(name, vertx);
-      locks.put(name, lock);
-    }
-    return lock;
+    return counter;
   }
 
 }

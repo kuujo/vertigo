@@ -13,42 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
+import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.shareddata.SharedData;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Hazelcast-based cluster manager implementation.<p>
+ * Local cluster manager implementation.<p>
  *
- * The remote cluster manager is backed by {@link HazelcastCluster} which uses
- * a special {@link HazelcastClusterVerticle} verticle to access Hazelcast data
- * structures. This cluster is only available when Vert.x is clustered.
+ * The local cluster manager is backed by {@link LocalCluster} which is simply
+ * an interface to the Vert.x {@link Container} and {@link SharedData}. Thus,
+ * deployments and coordination via the <code>LocalClusterManager</code> is
+ * is inherently done within a single Vert.x instance.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@ClusterType
-public class HazelcastClusterManager extends AbstractClusterManager {
+@LocalType
+public class LocalClusterManager extends AbstractClusterManager {
 
   @Factory
-  public static HazelcastClusterManager factory(Vertx vertx, Container container) {
-    return new HazelcastClusterManager(vertx, container);
+  public static LocalClusterManager factory(Vertx vertx, Container container) {
+    return new LocalClusterManager(vertx, container);
   }
 
-  public HazelcastClusterManager(Verticle verticle) {
+  public LocalClusterManager(Verticle verticle) {
     this(verticle.getVertx(), verticle.getContainer());
   }
 
-  public HazelcastClusterManager(Vertx vertx, Container container) {
-    super(vertx, container, new HazelcastCluster(vertx, container));
+  public LocalClusterManager(Vertx vertx, Container container) {
+    super(vertx, container, new LocalCluster(vertx, container));
   }
 
   @Override
   public ClusterScope scope() {
-    return ClusterScope.CLUSTER;
+    return ClusterScope.LOCAL;
   }
 
 }

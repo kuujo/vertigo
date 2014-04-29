@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.util;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.impl.ClusterFactory;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 
@@ -39,12 +39,16 @@ public final class Config {
    * @return The verticle's cluster.
    */
   static Cluster parseCluster(JsonObject config, Vertx vertx, Container container) {
-    String scluster = config.getString("__cluster__");
-    if (scluster == null) {
+    String cluster = config.getString("__cluster__");
+    if (cluster == null) {
       throw new IllegalArgumentException("No component cluster found.");
     }
+    String sscope = config.getString("__scope__");
+    if (sscope == null) {
+      throw new IllegalArgumentException("No cluster scope found.");
+    }
     config.removeField("__cluster__");
-    return new ClusterFactory(vertx, container).createCluster(ClusterScope.parse(scluster));
+    return new ClusterFactory(vertx, container).createCluster(cluster, ClusterScope.parse(sscope));
   }
 
   /**
@@ -55,7 +59,9 @@ public final class Config {
    */
   public static JsonObject buildConfig(InstanceContext context, Cluster cluster) {
     JsonObject config = context.component().config().copy();
-    return config.putObject("__context__", DefaultInstanceContext.toJson(context)).putString("__cluster__", cluster.scope().toString());
+    return config.putObject("__context__", DefaultInstanceContext.toJson(context))
+        .putString("__cluster__", cluster.address())
+        .putString("__scope__", cluster.scope().toString());
   }
 
   /**

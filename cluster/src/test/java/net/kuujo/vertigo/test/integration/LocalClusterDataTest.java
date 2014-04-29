@@ -18,12 +18,10 @@ package net.kuujo.vertigo.test.integration;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
-import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.LocalCluster;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.AsyncMap;
+import net.kuujo.vertigo.cluster.impl.LocalCluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -40,7 +38,7 @@ public class LocalClusterDataTest extends TestVerticle {
   @Test
   public void testSetGetDelete() {
     final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test-set-get");
+    final AsyncMap<String, String> data = cluster.getMap("test-set-get");
     data.put("foo", "bar", new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -66,102 +64,6 @@ public class LocalClusterDataTest extends TestVerticle {
             });
           }
         });
-      }
-    });
-  }
-
-  @Test
-  public void testWatchCreate() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test-watch-create");
-    data.watch("test1", new Handler<MapEvent<String, String>>() {
-      @Override
-      public void handle(MapEvent<String, String> event) {
-        if (event.type().equals(MapEvent.Type.CREATE)) {
-          assertEquals(MapEvent.Type.CREATE, event.type());
-          assertEquals("test1", event.key());
-          assertEquals("Hello world 1!", event.value());
-          testComplete();
-        }
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          fail(result.cause().getMessage());
-        } else {
-          data.put("test1", "Hello world 1!");
-        }
-      }
-    });
-  }
-
-  @Test
-  public void testWatchUpdate() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test-watch-update");
-    data.watch("test2", new Handler<MapEvent<String, String>>() {
-      @Override
-      public void handle(MapEvent<String, String> event) {
-        if (event.type().equals(MapEvent.Type.UPDATE)) {
-          assertEquals(MapEvent.Type.UPDATE, event.type());
-          assertEquals("test2", event.key());
-          assertEquals("Hello world 2 again!", event.value());
-          testComplete();
-        }
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          fail(result.cause().getMessage());
-        } else {
-          data.put("test2", "Hello world 2!", new Handler<AsyncResult<String>>() {
-            @Override
-            public void handle(AsyncResult<String> result) {
-              if (result.failed()) {
-                fail(result.cause().getMessage());
-              } else {
-                data.put("test2", "Hello world 2 again!");
-              }
-            }
-          });
-        }
-      }
-    });
-  }
-
-  @Test
-  public void testWatchDelete() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = cluster.getMap("test-watch-delete");
-    data.watch("test3", new Handler<MapEvent<String, String>>() {
-      @Override
-      public void handle(MapEvent<String, String> event) {
-        if (event.type().equals(MapEvent.Type.DELETE)) {
-          assertEquals(MapEvent.Type.DELETE, event.type());
-          assertEquals("test3", event.key());
-          assertEquals("Hello world 3!", event.value());
-          testComplete();
-        }
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          fail(result.cause().getMessage());
-        } else {
-          data.put("test3", "Hello world 3!", new Handler<AsyncResult<String>>() {
-            @Override
-            public void handle(AsyncResult<String> result) {
-              if (result.failed()) {
-                fail(result.cause().getMessage());
-              } else {
-                data.remove("test3");
-              }
-            }
-          });
-        }
       }
     });
   }

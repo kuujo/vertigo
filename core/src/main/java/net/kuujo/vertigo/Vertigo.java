@@ -16,7 +16,7 @@
 package net.kuujo.vertigo;
 
 import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.cluster.ClusterManagerFactory;
+import net.kuujo.vertigo.cluster.impl.ClusterManagerFactory;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;

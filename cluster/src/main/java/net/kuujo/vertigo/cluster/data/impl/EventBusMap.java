@@ -17,22 +17,16 @@ package net.kuujo.vertigo.cluster.data.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
+import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.DataException;
-import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.MapEvent.Type;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VertxException;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
@@ -47,23 +41,12 @@ import org.vertx.java.core.json.JsonObject;
  * @param <K> The map key type.
  * @param <V> The map value type.
  */
-public abstract class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
+public class EventBusMap<K, V> implements AsyncMap<K, V> {
   private final String address;
   private final String name;
   private final EventBus eventBus;
-  private final Map<K, Map<Handler<MapEvent<K, V>>, HandlerWrapper>> watchHandlers = new HashMap<>();
 
-  private static class HandlerWrapper {
-    private final String address;
-    private final Handler<Message<JsonObject>> messageHandler;
-
-    private HandlerWrapper(String address, Handler<Message<JsonObject>> messageHandler) {
-      this.address = address;
-      this.messageHandler = messageHandler;
-    }
-  }
-
-  protected EventBusMap(String address, String name, Vertx vertx) {
+  public EventBusMap(String address, String name, Vertx vertx) {
     this.address = address;
     this.name = name;
     this.eventBus = vertx.eventBus();
@@ -292,125 +275,6 @@ public abstract class EventBusMap<K, V> implements WatchableAsyncMap<K, V> {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-      }
-    });
-  }
-
-  @Override
-  public void watch(K key, Handler<MapEvent<K, V>> handler) {
-    watch(key, null, handler, null);
-  }
-
-  @Override
-  public void watch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
-    watch(key, null, handler, doneHandler);
-  }
-
-  @Override
-  public void watch(K key, Type event, Handler<MapEvent<K, V>> handler) {
-    watch(key, event, handler, null);
-  }
-
-  @Override
-  public void watch(final K key, final Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
-    final String id = UUID.randomUUID().toString();
-    final Handler<Message<JsonObject>> watchHandler = new Handler<Message<JsonObject>>() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public void handle(Message<JsonObject> message) {
-        handler.handle(new MapEvent<K, V>(MapEvent.Type.parse(message.body().getString("event")), (K) message.body().getValue("key"), (V) message.body().getValue("value")));
-      }
-    };
-
-    final HandlerWrapper wrapper = new HandlerWrapper(id, watchHandler);
-
-    if (!watchHandlers.containsKey(key)) {
-      watchHandlers.put(key, new HashMap<Handler<MapEvent<K, V>>, HandlerWrapper>());
-    }
-
-    final Map<Handler<MapEvent<K, V>>, HandlerWrapper> handlers = watchHandlers.get(key);
-
-    eventBus.registerHandler(id, watchHandler, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else {
-          handlers.put(handler, wrapper);
-          JsonObject message = new JsonObject()
-              .putString("action", "watch")
-              .putString("name", name)
-              .putValue("key", key)
-              .putString("event", event != null ? event.toString() : null)
-              .putString("address", id);
-          eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-            @Override
-            public void handle(AsyncResult<Message<JsonObject>> result) {
-              if (result.failed()) {
-                eventBus.unregisterHandler(id, watchHandler);
-                handlers.remove(handler);
-                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-              } else {
-                JsonObject body = result.result().body();
-                if (body.getString("status").equals("error")) {
-                  eventBus.unregisterHandler(id, watchHandler);
-                  handlers.remove(handler);
-                  new DefaultFutureResult<Void>(new VertxException(body.getString("message"))).setHandler(doneHandler);
-                } else {
-                  new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-                }
-              }
-            }
-          });
-        }
-      }
-    });
-  }
-
-  @Override
-  public void unwatch(K key, Handler<MapEvent<K, V>> handler) {
-    unwatch(key, null, handler, null);
-  }
-
-  @Override
-  public void unwatch(K key, Type event, Handler<MapEvent<K, V>> handler) {
-    unwatch(key, event, handler, null);
-  }
-
-  @Override
-  public void unwatch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
-    unwatch(key, null, handler, doneHandler);
-  }
-
-  @Override
-  public void unwatch(final K key, final Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
-    if (!watchHandlers.containsKey(key)) {
-      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-      return;
-    }
-
-    final Map<Handler<MapEvent<K, V>>, HandlerWrapper> handlers = watchHandlers.get(key);
-    if (!handlers.containsKey(handler)) {
-      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-      return;
-    }
-
-    JsonObject message = new JsonObject()
-        .putString("action", "unwatch")
-        .putValue("key", key)
-        .putString("event", event != null ? event.toString() : null)
-        .putString("address", handlers.get(handler).address);
-    eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          HandlerWrapper wrapper = handlers.remove(handler);
-          eventBus.unregisterHandler(wrapper.address, wrapper.messageHandler);
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else {
-          HandlerWrapper wrapper = handlers.remove(handler);
-          eventBus.unregisterHandler(wrapper.address, wrapper.messageHandler, doneHandler);
         }
       }
     });

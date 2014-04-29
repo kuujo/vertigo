@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.ClusterType;
+import net.kuujo.vertigo.cluster.DeploymentException;
+import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
-import net.kuujo.vertigo.cluster.data.AsyncLock;
+import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
-import net.kuujo.vertigo.cluster.data.impl.XyncIdGenerator;
-import net.kuujo.vertigo.cluster.data.impl.XyncList;
-import net.kuujo.vertigo.cluster.data.impl.XyncLock;
-import net.kuujo.vertigo.cluster.data.impl.XyncMap;
-import net.kuujo.vertigo.cluster.data.impl.XyncQueue;
-import net.kuujo.vertigo.cluster.data.impl.XyncSet;
+import net.kuujo.vertigo.cluster.data.impl.EventBusCounter;
+import net.kuujo.vertigo.cluster.data.impl.EventBusList;
+import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
+import net.kuujo.vertigo.cluster.data.impl.EventBusQueue;
+import net.kuujo.vertigo.cluster.data.impl.EventBusSet;
 import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.AsyncResult;
@@ -51,48 +53,42 @@ import org.vertx.java.platform.Verticle;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@XyncType
-public class XyncCluster implements Cluster {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
+@ClusterType
+public class RemoteCluster implements Cluster {
+  private final String address;
   private final Vertx vertx;
   @SuppressWarnings("rawtypes")
-  private final Map<String, WatchableAsyncMap> maps = new HashMap<>();
+  private final Map<String, AsyncMap> maps = new HashMap<>();
   @SuppressWarnings("rawtypes")
   private final Map<String, AsyncList> lists = new HashMap<>();
   @SuppressWarnings("rawtypes")
   private final Map<String, AsyncQueue> queues = new HashMap<>();
   @SuppressWarnings("rawtypes")
   private final Map<String, AsyncSet> sets = new HashMap<>();
-  private final Map<String, AsyncLock> locks = new HashMap<>();
-  private final Map<String, AsyncIdGenerator> ids = new HashMap<>();
+  private final Map<String, AsyncCounter> counters = new HashMap<>();
 
   @Factory
-  public static Cluster factory(Vertx vertx, Container container) {
-    return new XyncCluster(vertx, container);
+  public static Cluster factory(String address, Vertx vertx, Container container) {
+    return new RemoteCluster(address, vertx, container);
   }
 
-  public XyncCluster(Verticle verticle) {
-    this(verticle.getVertx(), verticle.getContainer());
+  public RemoteCluster(String address, Verticle verticle) {
+    this(address, verticle.getVertx(), verticle.getContainer());
   }
 
-  public XyncCluster(Vertx vertx, Container container) {
+  public RemoteCluster(String address, Vertx vertx, Container container) {
+    this.address = address;
     this.vertx = vertx;
   }
 
   @Override
-  public Cluster start(final Handler<AsyncResult<Void>> doneHandler) {
-    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-    return this;
-  }
-
-  @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+  public String address() {
+    return address;
   }
 
   @Override
   public ClusterScope scope() {
-    return ClusterScope.XYNC;
+    return ClusterScope.CLUSTER;
   }
 
   @Override
@@ -100,7 +96,7 @@ public class XyncCluster implements Cluster {
     JsonObject message = new JsonObject()
         .putString("action", "check")
         .putString("id", deploymentID);
-    vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -199,8 +195,9 @@ public class XyncCluster implements Cluster {
         .putString("type", "module")
         .putString("module", moduleName)
         .putObject("config", config)
-        .putNumber("instances", instances);
-    vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putNumber("instances", instances)
+        .putBoolean("ha", true);
+    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -299,8 +296,9 @@ public class XyncCluster implements Cluster {
         .putString("type", "verticle")
         .putString("main", main)
         .putObject("config", config)
-        .putNumber("instances", instances);
-    vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putNumber("instances", instances)
+        .putBoolean("ha", true);
+    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -401,8 +399,9 @@ public class XyncCluster implements Cluster {
         .putObject("config", config)
         .putNumber("instances", instances)
         .putBoolean("worker", true)
-        .putBoolean("multi-threaded", multiThreaded);
-    vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putBoolean("multi-threaded", multiThreaded)
+        .putBoolean("ha", true);
+    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -423,7 +422,7 @@ public class XyncCluster implements Cluster {
         .putString("action", "undeploy")
         .putString("id", deploymentID)
         .putString("type", "module");
-    vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -444,7 +443,7 @@ public class XyncCluster implements Cluster {
         .putString("action", "undeploy")
         .putString("id", deploymentID)
         .putString("type", "verticle");
-    vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
@@ -461,10 +460,10 @@ public class XyncCluster implements Cluster {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <K, V> WatchableAsyncMap<K, V> getMap(String name) {
-    WatchableAsyncMap<K, V> map = maps.get(name);
+  public <K, V> AsyncMap<K, V> getMap(String name) {
+    AsyncMap<K, V> map = maps.get(name);
     if (map == null) {
-      map = new XyncMap<K, V>(name, vertx);
+      map = new EventBusMap<K, V>(address, name, vertx);
       maps.put(name, map);
     }
     return map;
@@ -475,7 +474,7 @@ public class XyncCluster implements Cluster {
   public <T> AsyncList<T> getList(String name) {
     AsyncList<T> list = lists.get(name);
     if (list == null) {
-      list = new XyncList<T>(name, vertx);
+      list = new EventBusList<T>(address, name, vertx);
       lists.put(name, list);
     }
     return list;
@@ -486,7 +485,7 @@ public class XyncCluster implements Cluster {
   public <T> AsyncSet<T> getSet(String name) {
     AsyncSet<T> set = sets.get(name);
     if (set == null) {
-      set = new XyncSet<T>(name, vertx);
+      set = new EventBusSet<T>(address, name, vertx);
       sets.put(name, set);
     }
     return set;
@@ -497,30 +496,20 @@ public class XyncCluster implements Cluster {
   public <T> AsyncQueue<T> getQueue(String name) {
     AsyncQueue<T> queue = queues.get(name);
     if (queue == null) {
-      queue = new XyncQueue<T>(name, vertx);
+      queue = new EventBusQueue<T>(address, name, vertx);
       queues.put(name, queue);
     }
     return queue;
   }
 
   @Override
-  public AsyncIdGenerator getIdGenerator(String name) {
-    AsyncIdGenerator id = ids.get(name);
-    if (id == null) {
-      id = new XyncIdGenerator(name, vertx);
-      ids.put(name, id);
+  public AsyncCounter getCounter(String name) {
+    AsyncCounter counter = counters.get(name);
+    if (counter == null) {
+      counter = new EventBusCounter(address, name, vertx);
+      counters.put(name, counter);
     }
-    return id;
-  }
-
-  @Override
-  public AsyncLock getLock(String name) {
-    AsyncLock lock = locks.get(name);
-    if (lock == null) {
-      lock = new XyncLock(name, vertx);
-      locks.put(name, lock);
-    }
-    return lock;
+    return counter;
   }
 
 }

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.network;
 import java.util.List;
 
 import net.kuujo.vertigo.Context;
-import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.ClusterContext;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 
@@ -67,11 +67,11 @@ public interface NetworkContext extends Context<NetworkContext> {
   NetworkConfig config();
 
   /**
-   * Returns the network's maximum cluster scope.
+   * Returns the network's cluster context.
    *
-   * @return The network's cluster scope.
+   * @return The network's cluster context.
    */
-  ClusterScope scope();
+  ClusterContext cluster();
 
   /**
    * Returns the network status address.<p>

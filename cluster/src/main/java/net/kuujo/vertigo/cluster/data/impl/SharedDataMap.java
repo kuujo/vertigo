@@ -16,23 +16,14 @@
 package net.kuujo.vertigo.cluster.data.impl;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
-import net.kuujo.vertigo.cluster.data.DataException;
-import net.kuujo.vertigo.cluster.data.MapEvent;
-import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.AsyncMap;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 /**
@@ -43,19 +34,15 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  * @param <K> The map key type.
  * @param <V> The map value type.
  */
-public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
+public class SharedDataMap<K, V> implements AsyncMap<K, V> {
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<K, V> map;
-  private final ConcurrentSharedMap<K, String> watchers;
-  private final Map<Handler<MapEvent<K, V>>, String> watchAddresses = new HashMap<>();
-  private final Map<String, Handler<Message<JsonObject>>> messageHandlers = new HashMap<>();
 
   public SharedDataMap(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
     this.map = vertx.sharedData().getMap(name);
-    this.watchers = vertx.sharedData().getMap(String.format("%s.watchers", name));
   }
 
   @Override
@@ -74,17 +61,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
       @Override
       public void handle(Void _) {
         synchronized (map) {
-          if (!map.containsKey(key)) {
-            map.put(key, value);
-            triggerEvent(MapEvent.Type.CHANGE, key, value);
-            triggerEvent(MapEvent.Type.CREATE, key, value);
-            new DefaultFutureResult<V>((V) null).setHandler(doneHandler);
-          } else {
-            V result = map.put(key, value);
-            triggerEvent(MapEvent.Type.CHANGE, key, value);
-            triggerEvent(MapEvent.Type.UPDATE, key, value);
-            new DefaultFutureResult<V>(result).setHandler(doneHandler);
-          }
+          new DefaultFutureResult<V>(map.put(key, value)).setHandler(doneHandler);
         }
       }
     });
@@ -110,10 +87,7 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        V value = map.remove(key);
-        triggerEvent(MapEvent.Type.CHANGE, key, value);
-        triggerEvent(MapEvent.Type.DELETE, key, value);
-        new DefaultFutureResult<V>(value).setHandler(resultHandler);
+        new DefaultFutureResult<V>(map.remove(key)).setHandler(resultHandler);
       }
     });
   }
@@ -182,176 +156,6 @@ public class SharedDataMap<K, V> implements WatchableAsyncMap<K, V> {
         new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
       }
     });
-  }
-
-  @Override
-  public void watch(K key, Handler<MapEvent<K, V>> handler) {
-    watch(key, null, handler, null);
-  }
-
-  @Override
-  public void watch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
-    watch(key, event, handler, null);
-  }
-
-  @Override
-  public void watch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
-    watch(key, null, handler, doneHandler);
-  }
-
-  @Override
-  public void watch(final K key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
-    final String address = UUID.randomUUID().toString();
-    if (event == null) {
-      addWatcher(MapEvent.Type.CREATE, key, address);
-      addWatcher(MapEvent.Type.UPDATE, key, address);
-      addWatcher(MapEvent.Type.CHANGE, key, address);
-      addWatcher(MapEvent.Type.DELETE, key, address);
-    } else {
-      addWatcher(event, key, address);
-    }
-
-    final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public void handle(Message<JsonObject> message) {
-        handler.handle(new MapEvent<K, V>(MapEvent.Type.parse(message.body().getString("type")), (K) message.body().getValue("key"), (V) message.body().getValue("value")));
-      }
-    };
-
-    vertx.eventBus().registerLocalHandler(address, messageHandler);
-
-    messageHandlers.put(address, messageHandler);
-    watchAddresses.put(handler, address);
-
-    vertx.runOnContext(new Handler<Void>() {
-      @Override
-      public void handle(Void _) {
-        new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-      }
-    });
-  }
-
-  /**
-   * Adds a watcher to a key.
-   */
-  private void addWatcher(MapEvent.Type event, K key, String address) {
-    synchronized (watchers) {
-      String swatchers = this.watchers.get(key);
-      JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
-      if (swatchers == null) {
-        watchers = new JsonObject();
-      }
-      JsonArray addresses = watchers.getArray(event.toString());
-      if (addresses == null) {
-        addresses = new JsonArray();
-        watchers.putArray(event.toString(), addresses);
-      }
-      if (!addresses.contains(address)) {
-        addresses.add(address);
-      }
-      this.watchers.put(key, watchers.encode());
-    }
-  }
-
-  @Override
-  public void unwatch(K key, Handler<MapEvent<K, V>> handler) {
-    unwatch(key, null, handler, null);
-  }
-
-  @Override
-  public void unwatch(K key, MapEvent.Type event, Handler<MapEvent<K, V>> handler) {
-    unwatch(key, event, handler, null);
-  }
-
-  @Override
-  public void unwatch(K key, Handler<MapEvent<K, V>> handler, Handler<AsyncResult<Void>> doneHandler) {
-    unwatch(key, null, handler, doneHandler);
-  }
-
-  @Override
-  public void unwatch(final K key, final MapEvent.Type event, final Handler<MapEvent<K, V>> handler, final Handler<AsyncResult<Void>> doneHandler) {
-    if (watchAddresses.containsKey(handler)) {
-      String address = watchAddresses.remove(handler);
-
-      String swatchers = this.watchers.get(key);
-      JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
-      if (swatchers == null) {
-        watchers = new JsonObject();
-      }
-
-      if (event == null) {
-        removeWatcher(watchers, MapEvent.Type.CREATE, address);
-        removeWatcher(watchers, MapEvent.Type.UPDATE, address);
-        removeWatcher(watchers, MapEvent.Type.CHANGE, address);
-        removeWatcher(watchers, MapEvent.Type.DELETE, address);
-      } else {
-        removeWatcher(watchers, event, address);
-      }
-
-      Handler<Message<JsonObject>> messageHandler = messageHandlers.remove(address);
-      if (messageHandler != null) {
-        vertx.eventBus().unregisterHandler(address, messageHandler);
-      }
-
-      this.watchers.put(key, watchers.encode());
-
-      vertx.runOnContext(new Handler<Void>() {
-        @Override
-        public void handle(Void _) {
-          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        }
-      });
-    } else {
-      vertx.runOnContext(new Handler<Void>() {
-        @Override
-        public void handle(Void _) {
-          new DefaultFutureResult<Void>(new DataException("Handler not registered.")).setHandler(doneHandler);
-        }
-      });
-    }
-  }
-
-  /**
-   * Removes a watcher from a key.
-   */
-  private void removeWatcher(JsonObject watchers, MapEvent.Type event, String address) {
-    synchronized (watchers) {
-      JsonArray addresses = watchers.getArray(event.toString());
-      if (addresses == null) {
-        addresses = new JsonArray();
-        watchers.putArray(event.toString(), addresses);
-      }
-  
-      Iterator<Object> iter = addresses.iterator();
-      while (iter.hasNext()) {
-        if (iter.next().equals(address)) {
-          iter.remove();
-        }
-      }
-  
-      if (addresses.size() == 0) {
-        watchers.removeField(event.toString());
-      }
-    }
-  }
-
-  /**
-   * Triggers a cluster event.
-   */
-  private void triggerEvent(MapEvent.Type type, K key, V value) {
-    String swatchers = this.watchers.get(key);
-    JsonObject watchers = swatchers != null ? new JsonObject(swatchers) : null;
-    if (swatchers == null) {
-      watchers = new JsonObject();
-    }
-
-    JsonArray addresses = watchers.getArray(type.toString());
-    if (addresses != null) {
-      for (Object address : addresses) {
-        vertx.eventBus().send((String) address, new JsonObject().putString("type", type.toString()).putValue("key", key).putValue("value", value));
-      }
-    }
   }
 
 }

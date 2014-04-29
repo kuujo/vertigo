@@ -20,7 +20,6 @@
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
 
     <vertx.version>2.1RC1</vertx.version>
-    <hazelcast.version>2.6.7</hazelcast.version>
     <testtools.version>2.0.3-final</testtools.version>
     <junit.version>4.8.2</junit.version>
 

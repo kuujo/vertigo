@@ -13,30 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.data;
+package net.kuujo.vertigo.cluster;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.cluster.impl.DefaultClusterContext;
 
 /**
- * Asynchronous globally unique ID generator.
+ * Cluster context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface AsyncIdGenerator {
+@JsonTypeInfo(
+  use=JsonTypeInfo.Id.CLASS,
+  include=JsonTypeInfo.As.PROPERTY,
+  property="class",
+  defaultImpl=DefaultClusterContext.class
+)
+public interface ClusterContext extends Context<ClusterContext> {
 
   /**
-   * Returns the ID generator name.
+   * Returns the cluster address.
    *
-   * @return The unique ID generator name.
+   * @return The cluster address.
    */
-  String name();
+  String address();
 
   /**
-   * Gets the next unique ID from the generator.
+   * Returns the cluster scope.
    *
-   * @param resultHandler An asynchronous handler to be called with the next unique ID.
+   * @return The cluster scope.
    */
-  void nextId(Handler<AsyncResult<Long>> resultHandler);
+  ClusterScope scope();
 
 }

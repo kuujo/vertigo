@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
+import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.ClusterType;
 import net.kuujo.vertigo.util.Factory;
 
 import org.vertx.java.core.Vertx;
@@ -24,32 +26,32 @@ import org.vertx.java.platform.Verticle;
 /**
  * Xync-based cluster manager implementation.<p>
  *
- * The Xync cluster manager is backed by {@link XyncCluster} which relies
+ * The Xync cluster manager is backed by {@link RemoteCluster} which relies
  * upon the Xync event bus API for fault-tolerant deployments and Hazelcast
  * data structure access. This means the Xync cluster manager depends upon
  * the Xync platform manager or a similar event bus API for operation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@XyncType
-public class XyncClusterManager extends AbstractClusterManager {
+@ClusterType
+public class RemoteClusterManager extends AbstractClusterManager {
 
   @Factory
-  public static XyncClusterManager factory(Vertx vertx, Container container) {
-    return new XyncClusterManager(vertx, container);
+  public static RemoteClusterManager factory(String address, Vertx vertx, Container container) {
+    return new RemoteClusterManager(address, vertx, container);
   }
 
-  public XyncClusterManager(Verticle verticle) {
-    this(verticle.getVertx(), verticle.getContainer());
+  public RemoteClusterManager(String address, Verticle verticle) {
+    this(address, verticle.getVertx(), verticle.getContainer());
   }
 
-  public XyncClusterManager(Vertx vertx, Container container) {
-    super(vertx, container, new XyncCluster(vertx, container));
+  public RemoteClusterManager(String address, Vertx vertx, Container container) {
+    super(vertx, container, new RemoteCluster(address, vertx, container));
   }
 
   @Override
   public ClusterScope scope() {
-    return ClusterScope.XYNC;
+    return ClusterScope.CLUSTER;
   }
 
 }

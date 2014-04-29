@@ -33,12 +33,12 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The set data type.
  */
-public abstract class EventBusSet<T> implements AsyncSet<T> {
+public class EventBusSet<T> implements AsyncSet<T> {
   private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  protected EventBusSet(String address, String name, Vertx vertx) {
+  public EventBusSet(String address, String name, Vertx vertx) {
     this.address = address;
     this.name = name;
     this.eventBus = vertx.eventBus();

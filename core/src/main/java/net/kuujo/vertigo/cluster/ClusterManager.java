@@ -15,6 +15,8 @@ w * Copyright 2014 the original author or authors.
  */
 package net.kuujo.vertigo.cluster;
 
+import net.kuujo.vertigo.cluster.impl.LocalClusterManager;
+import net.kuujo.vertigo.cluster.impl.RemoteClusterManager;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -29,8 +31,7 @@ import org.vertx.java.core.Handler;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @LocalTypeInfo(defaultImpl=LocalClusterManager.class)
-@ClusterTypeInfo(defaultImpl=HazelcastClusterManager.class)
-@XyncTypeInfo(defaultImpl=XyncClusterManager.class)
+@ClusterTypeInfo(defaultImpl=RemoteClusterManager.class)
 public interface ClusterManager {
 
   /**

@@ -25,10 +25,11 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.ClusterFactory;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
@@ -132,7 +133,7 @@ public class NetworkManager extends BusModBase {
               startResult.setFailure(result.cause());
             } else {
               cluster = result.result();
-              data = cluster.getMap(name);
+              data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx);
               data.watch(name, watchHandler, new Handler<AsyncResult<Void>>() {
                 @Override
                 public void handle(AsyncResult<Void> result) {
@@ -151,12 +152,10 @@ public class NetworkManager extends BusModBase {
 
                           // Set up the network's cluster. This differs from the coordination
                           // cluster and is used for deploying/undeploying network components.
-                          if (cluster.scope().equals(ClusterScope.XYNC) && currentContext.scope().equals(ClusterScope.XYNC)) {
-                            contextCluster = clusterFactory.createCluster(ClusterScope.XYNC);
-                          } else if (cluster.scope().equals(ClusterScope.CLUSTER) && (currentContext.scope().equals(ClusterScope.CLUSTER) || currentContext.scope().equals(ClusterScope.XYNC))) {
-                            contextCluster = clusterFactory.createCluster(ClusterScope.CLUSTER);
+                          if (cluster.scope().equals(ClusterScope.CLUSTER) && currentContext.cluster().scope().equals(ClusterScope.CLUSTER)) {
+                            contextCluster = clusterFactory.createCluster(currentContext.cluster().address(), ClusterScope.CLUSTER);
                           } else {
-                            contextCluster = clusterFactory.createCluster(ClusterScope.LOCAL);
+                            contextCluster = clusterFactory.createCluster(currentContext.cluster().address(), ClusterScope.LOCAL);
                           }
 
                           final CountingCompletionHandler<Void> componentCounter = new CountingCompletionHandler<Void>(currentContext.components().size());
@@ -226,10 +225,10 @@ public class NetworkManager extends BusModBase {
       @Override
       public void handle(final Task task) {
         currentContext = context;
-        if (cluster.scope().equals(ClusterScope.CLUSTER) && currentContext.scope().equals(ClusterScope.CLUSTER)) {
-          contextCluster = clusterFactory.createCluster(ClusterScope.CLUSTER);
+        if (cluster.scope().equals(ClusterScope.CLUSTER) && currentContext.cluster().scope().equals(ClusterScope.CLUSTER)) {
+          contextCluster = clusterFactory.createCluster(currentContext.cluster().address(), ClusterScope.CLUSTER);
         } else {
-          contextCluster = clusterFactory.createCluster(ClusterScope.LOCAL);
+          contextCluster = clusterFactory.createCluster(currentContext.cluster().address(), ClusterScope.LOCAL);
         }
 
         // Any time the network is being reconfigured, unready the network.
@@ -316,7 +315,7 @@ public class NetworkManager extends BusModBase {
               else {
                 // Just deploy the entire network if it wasn't already deployed.
                 currentContext = context;
-                contextCluster = clusterFactory.createCluster(currentContext.scope());
+                contextCluster = clusterFactory.createCluster(currentContext.cluster().address(), currentContext.cluster().scope());
 
                 deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
                   @Override

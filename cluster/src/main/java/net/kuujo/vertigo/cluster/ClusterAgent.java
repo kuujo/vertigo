@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.data.impl;
+package net.kuujo.vertigo.cluster;
 
-import org.vertx.java.core.Vertx;
+import net.kuujo.xync.Xync;
 
 /**
- * Xync set implementation.
+ * Vertigo cluster agent.
  *
  * @author Jordan Halterman
- *
- * @param <T> The set data type.
  */
-public class XyncSet<T> extends EventBusSet<T> {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
-
-  public XyncSet(String name, Vertx vertx) {
-    super(CLUSTER_ADDRESS, name, vertx);
-  }
-
+public class ClusterAgent extends Xync {
 }

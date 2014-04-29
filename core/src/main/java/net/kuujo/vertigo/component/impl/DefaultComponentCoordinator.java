@@ -17,9 +17,10 @@ package net.kuujo.vertigo.component.impl;
 
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.ClusterFactory;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.InstanceContext;
 
@@ -41,6 +42,7 @@ import org.vertx.java.platform.Container;
  */
 public class DefaultComponentCoordinator implements ComponentCoordinator {
   private final String address;
+  private final Vertx vertx;
   private final ClusterFactory clusterFactory;
   private Cluster cluster;
   private WatchableAsyncMap<String, String> data;
@@ -73,6 +75,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
 
   public DefaultComponentCoordinator(InstanceContext context, Vertx vertx, Container container) {
     this.address = context.address();
+    this.vertx = vertx;
     this.currentContext = context;
     this.clusterFactory = new ClusterFactory(vertx, container);
   }
@@ -84,7 +87,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
 
   @Override
   public ComponentCoordinator start(final Handler<AsyncResult<InstanceContext>> doneHandler) {
-    // Coordination is always performed at the highest cluster level.
+    // Coordination is always performed at the Vertigo cluster level.
     clusterFactory.getCurrentCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
@@ -92,7 +95,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
           new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
         } else {
           cluster = result.result();
-          data = cluster.getMap(currentContext.component().network().address());
+          data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(currentContext.component().network().address()), vertx);
 
           // Start watching the component's context. It's important that this
           // happens in a certain order in order to prevent race conditions. First

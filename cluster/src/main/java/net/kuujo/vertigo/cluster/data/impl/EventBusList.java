@@ -33,12 +33,12 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The list data type.
  */
-public abstract class EventBusList<T> implements AsyncList<T> {
+public class EventBusList<T> implements AsyncList<T> {
   private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  protected EventBusList(String address, String name, Vertx vertx) {
+  public EventBusList(String address, String name, Vertx vertx) {
     this.address = address;
     this.name = name;
     this.eventBus = vertx.eventBus();

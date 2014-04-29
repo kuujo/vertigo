@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 import net.kuujo.vertigo.Config;
-import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.ClusterConfig;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ModuleConfig;
 import net.kuujo.vertigo.component.VerticleConfig;
@@ -55,10 +55,9 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   public static final String NETWORK_NAME = "name";
 
   /**
-   * <code>scope</code> is a string indicating the network cluster scope. The value
-   * can be either <code>local</code> or <code>cluster</code>.
+   * <code>cluster</code> is an object defining the network's cluster configuration.
    */
-  public static final String NETWORK_SCOPE = "scope";
+  public static final String NETWORK_CLUSTER = "cluster";
 
   /**
    * <code>components</code> is an object defining network component configurations. Each
@@ -79,19 +78,11 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   String getName();
 
   /**
-   * Sets the network scope.
+   * Returns the network's cluster configuration.
    *
-   * @param scope The network scope.
-   * @return The network configuration.
+   * @return The network's cluster configuration.
    */
-  NetworkConfig setScope(ClusterScope scope);
-
-  /**
-   * Returns the network scope.
-   *
-   * @return The network scope. Defaults to <code>CLUSTER</code>
-   */
-  ClusterScope getScope();
+  ClusterConfig getClusterConfig();
 
   /**
    * Gets a list of network components.

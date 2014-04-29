@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
+
+import static net.kuujo.xync.util.Cluster.isHazelcastCluster;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterAgent;
+import net.kuujo.vertigo.cluster.ClusterScope;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -25,16 +30,14 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
-import com.hazelcast.core.Hazelcast;
-
 /**
  * Factory for creating clusters for deployment and shared data access.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ClusterFactory {
-  private static final String CLUSTER_ADDRESS = "__CLUSTER__";
-  private static Cluster currentCluster;
+  private static final String VERTIGO_CLUSTER_ADDRESS = "vertigo";
+  private Cluster currentCluster;
   private final Vertx vertx;
   private final Container container;
 
@@ -52,47 +55,43 @@ public class ClusterFactory {
     if (currentCluster != null) {
       new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
     } else {
-      // If the cluster is not available then this must not be a Xync cluster.
-      // A Xync cluster would have had a __CLUSTER__ handler registered before
-      // the platform completed startup. If there is no __CLUSTER__ handler then
-      // try to determine whether this is a Hazelcast clustered Vert.x instance.
-      vertx.eventBus().sendWithTimeout(CLUSTER_ADDRESS, new JsonObject(), 1, new Handler<AsyncResult<Message<JsonObject>>>() {
-        @Override
-        public void handle(AsyncResult<Message<JsonObject>> result) {
-          ClusterScope currentScope;
-          if (result.failed() && ((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
-            if (Hazelcast.getAllHazelcastInstances().isEmpty()) {
-              currentScope = ClusterScope.LOCAL;
-            } else {
-              currentScope = ClusterScope.CLUSTER;
-            }
-          } else {
-            currentScope = ClusterScope.XYNC;
-          }
-          currentCluster = createCluster(currentScope);
-          currentCluster.start(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
+      if (isHazelcastCluster()) {
+        // Check to make sure the cluster is available on the event bus. If the cluster
+        // isn't available then deploy a new cluster agent that can be used to coordinate.
+        vertx.eventBus().sendWithTimeout(VERTIGO_CLUSTER_ADDRESS, new JsonObject(), 1, new Handler<AsyncResult<Message<JsonObject>>>() {
+          @Override
+          public void handle(AsyncResult<Message<JsonObject>> result) {
+            if (result.failed()) {
+              if (((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
+                container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", VERTIGO_CLUSTER_ADDRESS), 1, false, new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    if (result.failed()) {
+                      new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
+                    } else {
+                      currentCluster = createCluster(VERTIGO_CLUSTER_ADDRESS, ClusterScope.CLUSTER);
+                      new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
+                    }
+                  }
+                });
               } else {
-                new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
+                new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
               }
+            } else {
+              currentCluster = createCluster(VERTIGO_CLUSTER_ADDRESS, ClusterScope.CLUSTER);
+              new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
             }
-          });
-        }
-      });
+          }
+        });
+      } else {
+        currentCluster = createCluster(VERTIGO_CLUSTER_ADDRESS, ClusterScope.LOCAL);
+        new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
+      }
     }
   }
 
   /**
-   * Loads the current cluster scope.<p>
-   *
-   * The current scope is determined based on whether the Xync cluster is
-   * available. The Xync API will check whether any handlers for the Xync
-   * <code>__CLUSTER__</code> address exist on the event bus using a short
-   * timeout, and if so then the current cluster scope will be set to
-   * <code>CLUSTER</code>, otherwise the cluster scope will be <code>LOCAL</code>.
+   * Loads the current cluster scope.
    *
    * @param doneHandler An asynchronous handler to be called once the scope is loaded.
    */
@@ -115,14 +114,12 @@ public class ClusterFactory {
    * @param scope The cluster scope.
    * @return A cluster for the given scope.
    */
-  public Cluster createCluster(ClusterScope scope) {
+  public Cluster createCluster(String address, ClusterScope scope) {
     switch (scope) {
       case LOCAL:
         return new LocalCluster(vertx, container);
       case CLUSTER:
-        return new HazelcastCluster(vertx, container);
-      case XYNC:
-        return new XyncCluster(vertx, container);
+        return new RemoteCluster(address, vertx, container);
       default:
         throw new IllegalArgumentException("Invalid cluster scope.");
     }

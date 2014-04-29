@@ -28,8 +28,6 @@ import net.kuujo.vertigo.cluster.ClusterType;
 import net.kuujo.vertigo.cluster.ClusterTypeInfo;
 import net.kuujo.vertigo.cluster.LocalType;
 import net.kuujo.vertigo.cluster.LocalTypeInfo;
-import net.kuujo.vertigo.cluster.XyncType;
-import net.kuujo.vertigo.cluster.XyncTypeInfo;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
 
@@ -82,12 +80,6 @@ public final class Factories {
         throw new IllegalArgumentException("No cluster type info available.");
       }
       ClusterTypeInfo info = clazz.getAnnotation(ClusterTypeInfo.class);
-      return createObjectFromFactoryMethod((Class<? extends T>) info.defaultImpl(), args);
-    } else if (scope.equals(ClusterScope.XYNC)) {
-      if (!clazz.isAnnotationPresent(XyncTypeInfo.class)) {
-        throw new IllegalArgumentException("No Xync type info available.");
-      }
-      XyncTypeInfo info = clazz.getAnnotation(XyncTypeInfo.class);
       return createObjectFromFactoryMethod((Class<? extends T>) info.defaultImpl(), args);
     }
     return null;
@@ -161,8 +153,7 @@ public final class Factories {
     if (scope.equals(ClusterScope.LOCAL)) {
       if (isAnnotationPresentInHierarchy(clazz, LocalType.class)
           || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
-              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class)
-              && !isAnnotationPresentInHierarchy(clazz, XyncType.class))) {
+              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class))) {
         return clazz;
       } else {
         // Find the base data type for the local cluster mode and look
@@ -177,8 +168,7 @@ public final class Factories {
     } else if (scope.equals(ClusterScope.CLUSTER)) {
       if (isAnnotationPresentInHierarchy(clazz, ClusterType.class)
           || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
-              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class)
-              && !isAnnotationPresentInHierarchy(clazz, XyncType.class))) {
+              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class))) {
         return clazz;
       } else {
         // Find the base data type for the remote cluster mode and look
@@ -187,22 +177,6 @@ public final class Factories {
         ClusterTypeInfo info = getAnnotationInHierarchy(clazz, ClusterTypeInfo.class);
         if (info == null) {
           throw new IllegalStateException("Cannot instantiate " + clazz.getName() + " object in cluster mode.");
-        }
-        return info.defaultImpl();
-      }
-    } else if (scope.equals(ClusterScope.XYNC)) {
-      if (isAnnotationPresentInHierarchy(clazz, XyncType.class)
-          || (!isAnnotationPresentInHierarchy(clazz, LocalType.class)
-              && !isAnnotationPresentInHierarchy(clazz, ClusterType.class)
-              && !isAnnotationPresentInHierarchy(clazz, XyncType.class))) {
-        return clazz;
-      } else {
-        // Find the base data type for the Xync cluster mode and look
-        // for a default implementation. If no default implementation is
-        // provided for the current cluster mode then an exception is thrown.
-        XyncTypeInfo info = getAnnotationInHierarchy(clazz, XyncTypeInfo.class);
-        if (info == null) {
-          throw new IllegalStateException("Cannot instantiate " + clazz.getName() + " object in Xync mode.");
         }
         return info.defaultImpl();
       }

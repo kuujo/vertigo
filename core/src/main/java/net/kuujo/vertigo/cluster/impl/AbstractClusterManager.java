@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.DeploymentException;
 import net.kuujo.vertigo.cluster.data.MapEvent;
+import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
 import net.kuujo.vertigo.impl.ContextBuilder;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -70,7 +76,7 @@ abstract class AbstractClusterManager implements ClusterManager {
               } else {
                 NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
                 final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-                cluster.<String, String>getMap(name).watch(name, new Handler<MapEvent<String, String>>() {
+                new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx).watch(name, new Handler<MapEvent<String, String>>() {
                   @Override
                   public void handle(MapEvent<String, String> event) {
                     String scontext = event.value();
@@ -128,7 +134,7 @@ abstract class AbstractClusterManager implements ClusterManager {
         } else if (result.result()) {
           doDeployNetwork(network, doneHandler);
         } else {
-          cluster.<String, String>getMap(network.getName()).remove(network.getName(), new Handler<AsyncResult<String>>() {
+          new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx).remove(network.getName(), new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
@@ -142,12 +148,10 @@ abstract class AbstractClusterManager implements ClusterManager {
                 // on the network or the current instance is local. All coordination is done
                 // in the current Vertigo scope regarless of the network configuration.
                 Cluster contextCluster;
-                if (network.getScope().equals(ClusterScope.XYNC) && scope().equals(ClusterScope.XYNC)) {
-                  contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.XYNC);
-                } else if ((network.getScope().equals(ClusterScope.CLUSTER) || network.getScope().equals(ClusterScope.XYNC)) && scope().equals(ClusterScope.CLUSTER)) {
-                  contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.CLUSTER);
+                if (network.getClusterConfig().getScope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
+                  contextCluster = new ClusterFactory(vertx, container).createCluster(network.getClusterConfig().getAddress(), ClusterScope.CLUSTER);
                 } else {
-                  contextCluster = new ClusterFactory(vertx, container).createCluster(ClusterScope.LOCAL);
+                  contextCluster = new ClusterFactory(vertx, container).createCluster(network.getClusterConfig().getAddress(), ClusterScope.LOCAL);
                 }
 
                 JsonObject config = new JsonObject().putString("name", network.getName());
@@ -198,8 +202,9 @@ abstract class AbstractClusterManager implements ClusterManager {
           // Create an active network to return to the user. The
           // active network can be used to alter the configuration of the
           // live network.
+          final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx);
           final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-          cluster.<String, String>getMap(context.name()).watch(context.name(), new Handler<MapEvent<String, String>>() {
+          data.watch(context.name(), new Handler<MapEvent<String, String>>() {
             @Override
             public void handle(MapEvent<String, String> event) {
               String scontext = event.value();
@@ -220,14 +225,14 @@ abstract class AbstractClusterManager implements ClusterManager {
                 // will reset the network's status key to the updated version. We can use this fact
                 // to determine when the configuration change is complete by watching the network's
                 // status key for the new context version.
-                cluster.<String, String>getMap(context.name()).watch(context.status(), new Handler<MapEvent<String, String>>() {
+                data.watch(context.status(), new Handler<MapEvent<String, String>>() {
                   @Override
                   public void handle(MapEvent<String, String> event) {
                     // Once the network has been updated we can stop watching the network's status key.
                     // Once the status key is unwatched trigger the async handler indicating that the
                     // update is complete.
                     if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
-                      cluster.<String, String>getMap(context.name()).unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
+                      data.unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
@@ -244,7 +249,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                     if (result.failed()) {
                       new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
                     } else {
-                      cluster.<String, String>getMap(context.name()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                      data.put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
                         @Override
                         public void handle(AsyncResult<String> result) {
                           // Only fail the handler if the put failed. We don't trigger the async handler
@@ -284,7 +289,7 @@ abstract class AbstractClusterManager implements ClusterManager {
         } else if (!result.result()) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
         } else {
-          cluster.<String, String>getMap(name).remove(name, new Handler<AsyncResult<String>>() {
+          new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx).remove(name, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
@@ -336,7 +341,7 @@ abstract class AbstractClusterManager implements ClusterManager {
 
                 // If all the components in the network were removed then undeploy the entire network.
                 if (context.components().isEmpty()) {
-                  cluster.<String, String>getMap(network.getName()).remove(context.address(), new Handler<AsyncResult<String>>() {
+                  new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx).remove(context.address(), new Handler<AsyncResult<String>>() {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.failed()) {
@@ -359,13 +364,13 @@ abstract class AbstractClusterManager implements ClusterManager {
                   // If the entire network isn't being undeployed, watch the network's status
                   // key to determine when the new configuration has be updated. The network
                   // manager will set the status key to the updated context version once complete.
-                  cluster.<String, String>getMap(context.name()).watch(context.status(), new Handler<MapEvent<String, String>>() {
+                  new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx).watch(context.status(), new Handler<MapEvent<String, String>>() {
                     @Override
                     public void handle(MapEvent<String, String> event) {
                       // Once the status key has been set to the updated version, stop watching the
                       // status key with this handler and trigger the async handler.
                       if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
-                        cluster.<String, String>getMap(context.name()).unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
+                        new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx).unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
                           @Override
                           public void handle(AsyncResult<Void> result) {
                             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -382,7 +387,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                         // Once the status key is being watched, update the network's context. This
                         // will cause the network's manager to undeploy components and update connections
                         // and will set the status key once complete.
-                        cluster.<String, String>getMap(network.getName()).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                        new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
                           @Override
                           public void handle(AsyncResult<String> result) {
                             // Only trigger the async handler if the put failed. The async handler will

@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.cluster.ClusterContext;
 import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
@@ -44,6 +45,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class DefaultNetworkContext extends BaseContext<NetworkContext> implements NetworkContext {
   private String name;
+  private ClusterContext cluster;
   private String version;
   private ClusterScope scope = ClusterScope.CLUSTER;
   private NetworkConfig config;
@@ -90,8 +92,8 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   }
 
   @Override
-  public ClusterScope scope() {
-    return scope;
+  public ClusterContext cluster() {
+    return cluster;
   }
 
   @JsonGetter("scope")
@@ -246,6 +248,17 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      */
     public Builder setConfig(NetworkConfig config) {
       context.config = config;
+      return this;
+    }
+
+    /**
+     * Sets the network cluster address.
+     *
+     * @param cluster The network's cluster address.
+     * @return The context builder.
+     */
+    public Builder setCluster(ClusterContext cluster) {
+      context.cluster = cluster;
       return this;
     }
 

@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
+import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.ClusterScope;
+import net.kuujo.vertigo.cluster.impl.ClusterFactory;
 import net.kuujo.vertigo.util.Factories;
 
 import org.vertx.java.core.AsyncResult;
@@ -42,8 +45,6 @@ public class ClusterManagerFactory {
   /**
    * Loads the current cluster scope.
    *
-   * @param vertx The current Vert.x instance.
-   * @param container The current Vert.x container.
    * @param resultHandler An asynchronous handler to be called with the result.
    */
   public void getCurrentScope(Handler<AsyncResult<ClusterScope>> resultHandler) {
@@ -53,8 +54,6 @@ public class ClusterManagerFactory {
   /**
    * Loads the cluster manager for the current scope.
    *
-   * @param vertx The current Vert.x instance.
-   * @param container The current Vert.x container.
    * @param doneHandler An asynchronous handler to be called once the cluster manager is loaded.
    */
   public void getCurrentClusterManager(final Handler<AsyncResult<ClusterManager>> resultHandler) {

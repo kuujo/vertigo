@@ -33,12 +33,12 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The queue data type.
  */
-public abstract class EventBusQueue<T> implements AsyncQueue<T> {
+public class EventBusQueue<T> implements AsyncQueue<T> {
   private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  protected EventBusQueue(String address, String name, Vertx vertx) {
+  public EventBusQueue(String address, String name, Vertx vertx) {
     this.address = address;
     this.name = name;
     this.eventBus = vertx.eventBus();

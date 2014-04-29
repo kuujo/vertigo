@@ -417,6 +417,11 @@ public class RemoteCluster implements Cluster {
   }
 
   @Override
+  public Cluster undeployModule(String deploymentID) {
+    return undeployModule(deploymentID, null);
+  }
+
+  @Override
   public Cluster undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "undeploy")
@@ -435,6 +440,11 @@ public class RemoteCluster implements Cluster {
       }
     });
     return this;
+  }
+
+  @Override
+  public Cluster undeployVerticle(String deploymentID) {
+    return undeployVerticle(deploymentID, null);
   }
 
   @Override

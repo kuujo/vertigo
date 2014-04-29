@@ -105,7 +105,7 @@ public class NetworkManager extends BusModBase {
       } else if (event.type().equals(MapEvent.Type.UPDATE)) {
         handleUpdate(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
       } else if (event.type().equals(MapEvent.Type.DELETE)) { 
-        handleDelete(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
+        handleDelete();
       }
     }
   };
@@ -401,7 +401,7 @@ public class NetworkManager extends BusModBase {
   /**
    * Handles the deletion of the network.
    */
-  private void handleDelete(final NetworkContext context) {
+  private void handleDelete() {
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
@@ -411,17 +411,30 @@ public class NetworkManager extends BusModBase {
             if (result.failed()) {
               logger.error(result.cause());
             }
-            undeployNetwork(context, new Handler<AsyncResult<Void>>() {
-              @Override
-              public void handle(AsyncResult<Void> result) {
-                if (result.failed()) {
-                  log.error(result.cause());
-                } else {
-                  log.info("Successfully undeployed network " + context.address());
-                  task.complete();
+            if (currentContext != null) {
+              undeployNetwork(currentContext, new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  if (result.failed()) {
+                    log.error(result.cause());
+                  } else {
+                    // Once we've finished undeploying all the components of the
+                    // network, set the network's status to nothing in order to
+                    // indicate that the manager (this) can be undeployed.
+                    data.put(currentContext.status(), "", new Handler<AsyncResult<String>>() {
+                      @Override
+                      public void handle(AsyncResult<String> result) {
+                        if (result.failed()) {
+                          log.error(result.cause());
+                        } else {
+                          log.info("Successfully undeployed components of " + currentContext.address());
+                        }
+                      }
+                    });
+                  }
                 }
-              }
-            });
+              });
+            }
           }
         });
       }
@@ -429,7 +442,7 @@ public class NetworkManager extends BusModBase {
   }
 
   /**
-   * Unreadies the netowrk.
+   * Unreadies the network.
    */
   private void unready(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {

@@ -319,31 +319,85 @@ abstract class AbstractClusterManager implements ClusterManager {
 
   @Override
   public ClusterManager undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) {
-    // The network's manager should be deployed under a deployment ID
-    // of the same name as the network. If the network's manager is deployed
-    // then unset the network's context, indicating that the manager should
-    // undeploy the network.
-    cluster.isDeployed(name, new Handler<AsyncResult<Boolean>>() {
+    // First we need to load the network's context from the cluster.
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx);
+    data.get(name, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
-        } else if (!result.result()) {
+          new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result() == null) {
           new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
         } else {
-          new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx).remove(name, new Handler<AsyncResult<String>>() {
+          // Load the network's cluster in order to determine whether the network's
+          // manager is deployed. The manager will always be deployed in the network's
+          // cluster rather than the coordination cluster (though the two may actually
+          // be the same cluster).
+          final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+          final Cluster contextCluster = createNetworkCluster(context);
+          contextCluster.isDeployed(context.name(), new Handler<AsyncResult<Boolean>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(AsyncResult<Boolean> result) {
               if (result.failed()) {
-                new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+              } else if (!result.result()) {
+                new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
               } else {
-                cluster.undeployVerticle(name, new Handler<AsyncResult<Void>>() {
+                // Now that we have the network's context we need to watch the network's
+                // status key before we begin undeploying the network. Once we unset the
+                // network's configuration key the network's manager will automatically
+                // begin undeploying the network.
+                data.watch(context.status(), MapEvent.Type.CHANGE, new Handler<MapEvent<String, String>>() {
+                  @Override
+                  public void handle(MapEvent<String, String> event) {
+                    // When the network's status key is set to an empty string, that indicates
+                    // that the network's manager has completely undeployed all components and
+                    // connections within the network. The manager is the only element of the
+                    // network left running, so we can go ahead and undeploy it.
+                    if (event.value() != null && event.value().equals("")) {
+                      // First, stop watching the status key so this handler doesn't accidentally
+                      // get called again for some reason.
+                      data.unwatch(context.status(), MapEvent.Type.CHANGE, this, new Handler<AsyncResult<Void>>() {
+                        @Override
+                        public void handle(AsyncResult<Void> result) {
+                          // Now undeploy the manager from the context cluster. Once the manager
+                          // has been undeployed the undeployment of the network is complete.
+                          contextCluster.undeployVerticle(context.name(), new Handler<AsyncResult<Void>>() {
+                            @Override
+                            public void handle(AsyncResult<Void> result) {
+                              if (result.failed()) {
+                                new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                              } else {
+                                // We can be nice and unset the status key since the manager was undeployed :-)
+                                data.remove(context.status());
+                                new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                              }
+                            }
+                          });
+                        }
+                      });
+                    }
+                  }
+                }, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
+                    // Once we've started watching the status key, unset the network's context in
+                    // the cluster. The network's manager will be notified of the configuration
+                    // change and will begin undeploying all of its components. Once the components
+                    // have been undeployed it will reset its status key.
                     if (result.failed()) {
-                      new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                      new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
                     } else {
-                      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                      data.remove(context.name(), new Handler<AsyncResult<String>>() {
+                        @Override
+                        public void handle(AsyncResult<String> result) {
+                          // If the removal was successful then just do nothing. We have to wait
+                          // until the manager resets the status key triggering a map event.
+                          if (result.failed()) {
+                            new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+                          }
+                        }
+                      });
                     }
                   }
                 });
@@ -363,39 +417,89 @@ abstract class AbstractClusterManager implements ClusterManager {
 
   @Override
   public ClusterManager undeployNetwork(final NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
-    cluster.isDeployed(network.getName(), new Handler<AsyncResult<Boolean>>() {
+    // First attempt to load the network's existing configuration from the
+    // coordination cluster.
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx);
+    data.get(network.getName(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
-        } else if (!result.result()) {
-          new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
+          new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
         } else {
-          cluster.<String, String>getMap(network.getName()).get(network.getName(), new Handler<AsyncResult<String>>() {
+          // Use the existing configuration to load the network's cluster
+          // and ensure the network's manager is deployed.
+          final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+          final Cluster contextCluster = createNetworkCluster(context);
+          contextCluster.isDeployed(context.name(), new Handler<AsyncResult<Boolean>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(AsyncResult<Boolean> result) {
               if (result.failed()) {
-                new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
-              } else if (result.result() != null) {
-                NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
-                NetworkConfig updatedConfig = Configs.unmergeNetworks(currentContext.config(), network);
+                new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+              } else if (!result.result()) {
+                new DefaultFutureResult<Void>(new DeploymentException("Network is not deployed.")).setHandler(doneHandler);
+              } else {
+                // If the network's manager is deployed then unmerge the given
+                // configuration from the configuration of the network that's
+                // already running. If the resulting configuration is a no-component
+                // network then that indicates that the entire network is being undeployed.
+                // Otherwise, we simply update the existing configuration and allow the
+                // network's manager to handle deployment and undeployment of components.
+                NetworkConfig updatedConfig = Configs.unmergeNetworks(context.config(), network);
                 final NetworkContext context = ContextBuilder.buildContext(updatedConfig);
 
-                // If all the components in the network were removed then undeploy the entire network.
+                // If the new configuration has no components then undeploy the entire network.
                 if (context.components().isEmpty()) {
-                  new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx).remove(context.address(), new Handler<AsyncResult<String>>() {
+                  // We need to watch the network's status key to determine when the network's
+                  // components have been completely undeployed. Once that happens it's okay
+                  // to then undeploy the network's manager.
+                  data.watch(context.status(), MapEvent.Type.CHANGE, new Handler<MapEvent<String, String>>() {
                     @Override
-                    public void handle(AsyncResult<String> result) {
-                      if (result.failed()) {
-                        new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
-                      } else {
-                        cluster.undeployVerticle(context.address(), new Handler<AsyncResult<Void>>() {
+                    public void handle(MapEvent<String, String> event) {
+                      // When the network's status key is set to an empty string, that indicates
+                      // that the network's manager has completely undeployed all components and
+                      // connections within the network. The manager is the only element of the
+                      // network left running, so we can go ahead and undeploy it.
+                      if (event.value() != null && event.value().equals("")) {
+                        // First, stop watching the status key so this handler doesn't accidentally
+                        // get called again for some reason.
+                        data.unwatch(context.status(), MapEvent.Type.CHANGE, this, new Handler<AsyncResult<Void>>() {
                           @Override
                           public void handle(AsyncResult<Void> result) {
+                            // Now undeploy the manager from the context cluster. Once the manager
+                            // has been undeployed the undeployment of the network is complete.
+                            contextCluster.undeployVerticle(context.name(), new Handler<AsyncResult<Void>>() {
+                              @Override
+                              public void handle(AsyncResult<Void> result) {
+                                if (result.failed()) {
+                                  new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                                } else {
+                                  // We can be nice and unset the status key since the manager was undeployed :-)
+                                  data.remove(context.status());
+                                  new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                                }
+                              }
+                            });
+                          }
+                        });
+                      }
+                    }
+                  }, new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> result) {
+                      // Once we've started watching the status key, unset the network's context in
+                      // the cluster. The network's manager will be notified of the configuration
+                      // change and will begin undeploying all of its components. Once the components
+                      // have been undeployed it will reset its status key.
+                      if (result.failed()) {
+                        new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+                      } else {
+                        data.remove(context.name(), new Handler<AsyncResult<String>>() {
+                          @Override
+                          public void handle(AsyncResult<String> result) {
+                            // If the removal was successful then just do nothing. We have to wait
+                            // until the manager resets the status key triggering a map event.
                             if (result.failed()) {
-                              new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
-                            } else {
-                              new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+                              new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
                             }
                           }
                         });
@@ -403,16 +507,16 @@ abstract class AbstractClusterManager implements ClusterManager {
                     }
                   });
                 } else {
-                  // If the entire network isn't being undeployed, watch the network's status
-                  // key to determine when the new configuration has be updated. The network
-                  // manager will set the status key to the updated context version once complete.
-                  new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx).watch(context.status(), new Handler<MapEvent<String, String>>() {
+                  // If only a portion of the running network is being undeployed, we need
+                  // to watch the network's status key for notification once the configuration
+                  // change is complete.
+                  data.watch(context.status(), MapEvent.Type.CHANGE, new Handler<MapEvent<String, String>>() {
                     @Override
                     public void handle(MapEvent<String, String> event) {
-                      // Once the status key has been set to the updated version, stop watching the
-                      // status key with this handler and trigger the async handler.
-                      if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
-                        new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx).unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
+                      if (event.value() != null && event.value().equals(context.version())) {
+                        // The network's configuration has been completely updated. Stop watching
+                        // the network's status key and call the async handler.
+                        data.unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
                           @Override
                           public void handle(AsyncResult<Void> result) {
                             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -423,19 +527,20 @@ abstract class AbstractClusterManager implements ClusterManager {
                   }, new Handler<AsyncResult<Void>>() {
                     @Override
                     public void handle(AsyncResult<Void> result) {
+                      // Once we've started watching the status key, update the network's context in
+                      // the cluster. The network's manager will be notified of the configuration
+                      // change and will begin deploying or undeploying components and connections
+                      // as necessary.
                       if (result.failed()) {
-                        new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                        new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
                       } else {
-                        // Once the status key is being watched, update the network's context. This
-                        // will cause the network's manager to undeploy components and update connections
-                        // and will set the status key once complete.
-                        new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx).put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
+                        data.put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
                           @Override
                           public void handle(AsyncResult<String> result) {
-                            // Only trigger the async handler if the put failed. The async handler will
-                            // be complete once the network's status key has been set to the updated version.
+                            // If the removal was successful then just do nothing. We have to wait
+                            // until the manager resets the status key triggering a map event.
                             if (result.failed()) {
-                              new DefaultFutureResult<Void>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                              new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
                             }
                           }
                         });
@@ -443,8 +548,6 @@ abstract class AbstractClusterManager implements ClusterManager {
                     }
                   });
                 }
-              } else {
-                new DefaultFutureResult<Void>(new DeploymentException("Network configuration not found.")).setHandler(doneHandler);
               }
             }
           });

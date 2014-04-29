@@ -604,10 +604,26 @@ public interface Cluster {
    * Undeploys a module from the cluster.
    *
    * @param deploymentID The unique module deployment ID.
+   * @return The cluster client.
+   */
+  Cluster undeployModule(String deploymentID);
+
+  /**
+   * Undeploys a module from the cluster.
+   *
+   * @param deploymentID The unique module deployment ID.
    * @param doneHandler An asynchronous handler to be called once the module is undeployed.
    * @return The cluster client.
    */
   Cluster undeployModule(String deploymentID, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
+   * Undeploys a verticle from the cluster.
+   *
+   * @param deploymentID The unique verticle deployment ID.
+   * @return The cluster client.
+   */
+  Cluster undeployVerticle(String deploymentID);
 
   /**
    * Undeploys a verticle from the cluster.

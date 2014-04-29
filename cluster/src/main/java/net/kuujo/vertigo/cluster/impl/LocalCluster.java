@@ -442,6 +442,11 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
+  public Cluster undeployModule(String deploymentID) {
+    return undeployModule(deploymentID, null);
+  }
+
+  @Override
   public Cluster undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     if (!deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
@@ -459,6 +464,11 @@ public class LocalCluster implements Cluster {
       }
     }
     return this;
+  }
+
+  @Override
+  public Cluster undeployVerticle(String deploymentID) {
+    return undeployVerticle(deploymentID, null);
   }
 
   @Override

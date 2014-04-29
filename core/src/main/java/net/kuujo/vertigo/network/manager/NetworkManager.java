@@ -40,7 +40,6 @@ import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Task;
 import net.kuujo.vertigo.util.TaskRunner;
 
-import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
@@ -48,6 +47,7 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
+import org.vertx.java.platform.Verticle;
 
 /**
  * Vertigo network manager.<p>
@@ -84,7 +84,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class NetworkManager extends BusModBase {
+public class NetworkManager extends Verticle {
   private static final Logger log = LoggerFactory.getLogger(NetworkManager.class);
   private String name;
   private ClusterFactory clusterFactory;
@@ -237,7 +237,7 @@ public class NetworkManager extends BusModBase {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
-              logger.error(result.cause());
+              log.error(result.cause());
             } else {
               deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
                 @Override
@@ -271,7 +271,7 @@ public class NetworkManager extends BusModBase {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
-              logger.error(result.cause());
+              log.error(result.cause());
             } else {
               if (currentContext != null) {
                 final NetworkContext runningContext = currentContext;
@@ -409,7 +409,7 @@ public class NetworkManager extends BusModBase {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
-              logger.error(result.cause());
+              log.error(result.cause());
             }
             if (currentContext != null) {
               undeployNetwork(currentContext, new Handler<AsyncResult<Void>>() {

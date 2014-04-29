@@ -61,22 +61,18 @@ public class ClusterFactory {
         vertx.eventBus().sendWithTimeout(VERTIGO_CLUSTER_ADDRESS, new JsonObject(), 1, new Handler<AsyncResult<Message<JsonObject>>>() {
           @Override
           public void handle(AsyncResult<Message<JsonObject>> result) {
-            if (result.failed()) {
-              if (((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
-                container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", VERTIGO_CLUSTER_ADDRESS), 1, false, new Handler<AsyncResult<String>>() {
-                  @Override
-                  public void handle(AsyncResult<String> result) {
-                    if (result.failed()) {
-                      new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
-                    } else {
-                      currentCluster = createCluster(VERTIGO_CLUSTER_ADDRESS, ClusterScope.CLUSTER);
-                      new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
-                    }
+            if (result.failed() && ((ReplyException) result.cause()).failureType().equals(ReplyFailure.NO_HANDLERS)) {
+              container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", VERTIGO_CLUSTER_ADDRESS), 1, false, new Handler<AsyncResult<String>>() {
+                @Override
+                public void handle(AsyncResult<String> result) {
+                  if (result.failed()) {
+                    new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
+                  } else {
+                    currentCluster = createCluster(VERTIGO_CLUSTER_ADDRESS, ClusterScope.CLUSTER);
+                    new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);
                   }
-                });
-              } else {
-                new DefaultFutureResult<Cluster>(result.cause()).setHandler(resultHandler);
-              }
+                }
+              });
             } else {
               currentCluster = createCluster(VERTIGO_CLUSTER_ADDRESS, ClusterScope.CLUSTER);
               new DefaultFutureResult<Cluster>(currentCluster).setHandler(resultHandler);

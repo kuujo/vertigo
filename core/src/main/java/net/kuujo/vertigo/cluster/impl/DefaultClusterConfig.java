@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultClusterConfig implements ClusterConfig {
-  private String address;
+  private String address = "cluster";
   private ClusterScope scope = ClusterScope.CLUSTER;
 
   @Override

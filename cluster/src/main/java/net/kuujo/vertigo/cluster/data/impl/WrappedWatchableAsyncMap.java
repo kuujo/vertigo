@@ -71,7 +71,7 @@ public class WrappedWatchableAsyncMap<K, V> implements WatchableAsyncMap<K, V> {
             .putString("type", MapEvent.Type.CHANGE.toString())
             .putValue("key", key)
             .putValue("value", value));
-        String event = result.result() != null ? MapEvent.Type.CREATE.toString() : MapEvent.Type.UPDATE.toString();
+        String event = result.result() == null ? MapEvent.Type.CREATE.toString() : MapEvent.Type.UPDATE.toString();
         eventBus.publish(String.format("%s.%s.%s", map.name(), key, event), new JsonObject()
             .putString("type", event)
             .putValue("key", key)

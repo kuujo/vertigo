@@ -21,6 +21,9 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
+import net.kuujo.vertigo.cluster.data.MapEvent;
+import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
 import net.kuujo.vertigo.cluster.impl.LocalCluster;
 
 import org.junit.Test;
@@ -62,6 +65,84 @@ public class LocalClusterDataTest extends TestVerticle {
                 });
               }
             });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testWatchCreate() {
+    final Cluster cluster = new LocalCluster(vertx, container);
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-create"), vertx);
+    data.watch("foo", new Handler<MapEvent<String, String>>() {
+      @Override
+      public void handle(MapEvent<String, String> event) {
+        if (event.type().equals(MapEvent.Type.CREATE)) {
+          assertEquals("foo", event.key());
+          assertEquals("bar", event.value());
+          testComplete();
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        assertTrue(result.succeeded());
+        data.put("foo", "bar");
+      }
+    });
+  }
+
+  @Test
+  public void testWatchUpdate() {
+    final Cluster cluster = new LocalCluster(vertx, container);
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-update"), vertx);
+    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        data.watch("foo", new Handler<MapEvent<String, String>>() {
+          @Override
+          public void handle(MapEvent<String, String> event) {
+            if (event.type().equals(MapEvent.Type.UPDATE)) {
+              assertEquals("foo", event.key());
+              assertEquals("bar", event.value());
+              testComplete();
+            }
+          }
+        }, new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+            data.put("foo", "bar");
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testWatchDelete() {
+    final Cluster cluster = new LocalCluster(vertx, container);
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-delete"), vertx);
+    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        data.watch("foo", new Handler<MapEvent<String, String>>() {
+          @Override
+          public void handle(MapEvent<String, String> event) {
+            if (event.type().equals(MapEvent.Type.DELETE)) {
+              assertEquals("foo", event.key());
+              assertEquals("bar", event.value());
+              testComplete();
+            }
+          }
+        }, new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+            data.remove("foo");
           }
         });
       }

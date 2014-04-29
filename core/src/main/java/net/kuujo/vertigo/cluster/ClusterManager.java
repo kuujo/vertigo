@@ -67,31 +67,6 @@ public interface ClusterManager {
   ClusterManager isRunning(String name, Handler<AsyncResult<Boolean>> resultHandler);
 
   /**
-   * Deploys an empty network to the cluster.<p>
-   *
-   * This method deploys a no-component network to the cluster. This can be
-   * useful if another verticle needs to reference and update the running network
-   * asynchronously rather than deploying a predefined network.
-   *
-   * @param name The name of the network to deploy.
-   * @return The cluster manager.
-   */
-  ClusterManager deployNetwork(String name);
-
-  /**
-   * Deploys an empty network to the cluster.<p>
-   *
-   * This method deploys a no-component network to the cluster. This can be
-   * useful if you want to reference and update the running network asynchronously
-   * using the {@link ActiveNetwork} rather than deploying a predefined network.
-   *
-   * @param name The name of the network to deploy.
-   * @param doneHandler An asynchronous handler to be called once the deployment is complete.
-   * @return The cluster manager.
-   */
-  ClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler);
-
-  /**
    * Deploys a network to the cluster.<p>
    *
    * If the given network configuration's name matches the name of a network

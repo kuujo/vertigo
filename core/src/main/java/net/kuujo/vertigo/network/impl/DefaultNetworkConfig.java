@@ -64,6 +64,12 @@ public class DefaultNetworkConfig implements NetworkConfig {
   }
 
   @Override
+  public NetworkConfig setClusterConfig(ClusterConfig cluster) {
+    this.cluster = cluster;
+    return this;
+  }
+
+  @Override
   public ClusterConfig getClusterConfig() {
     return cluster;
   }

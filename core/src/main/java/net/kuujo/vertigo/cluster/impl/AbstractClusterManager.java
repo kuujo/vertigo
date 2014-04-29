@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.cluster.impl;
 
 import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterException;
 import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.cluster.DeploymentException;
@@ -27,7 +28,6 @@ import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultActiveNetwork;
-import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.network.manager.NetworkManager;
 import net.kuujo.vertigo.util.Configs;
@@ -58,25 +58,65 @@ abstract class AbstractClusterManager implements ClusterManager {
     this.cluster = cluster;
   }
 
+  /**
+   * Creates a network-level cluster.<p>
+   *
+   * Vertigo always coordinates at the highest available level. That is, if the
+   * current Vert.x instance is clustered then Vertigo coordinates using cluster-wide
+   * shared data, otherwise it coordinates using Vert.x <code>SharedData</code>.<p>
+   *
+   * Network clusters are created by resolving the current coordination cluster
+   * scope with the network's cluster scope. If the coordination cluster is a
+   * <code>CLUSTER</code> cluster then the network's cluster scope can be either
+   * <code>CLUSTER</code> or <code>LOCAL</code>, otherwise the network's cluster
+   * is <code>LOCAL</code> regardless.
+   */
+  private Cluster createNetworkCluster(NetworkContext context) {
+    if (context.cluster().scope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
+      return new ClusterFactory(vertx, container).createCluster(context.cluster().address(), ClusterScope.CLUSTER);
+    } else {
+      return new ClusterFactory(vertx, container).createCluster(context.cluster().address(), ClusterScope.LOCAL);
+    }
+  }
+
   @Override
   public ClusterManager getNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
-    cluster.isDeployed(name, new Handler<AsyncResult<Boolean>>() {
+    // Load the network's context from the coordination cluster. If the network
+    // is deployed in the current Vert.x cluster then its context will be available
+    // in the Vertigo coordination (highest level) cluster.
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx);
+    data.get(name, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(resultHandler);
-        } else if (!result.result()) {
-          new DefaultFutureResult<ActiveNetwork>(new DeploymentException("Network is not deployed.")).setHandler(resultHandler);
-        } else {
-          cluster.<String, String>getMap(name).get(name, new Handler<AsyncResult<String>>() {
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result() != null) {
+          // If the context exists in the coordination cluster, load the network's
+          // cluster and make sure the network is actually deployed.
+          final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+          final Cluster contextCluster = createNetworkCluster(context);
+
+          // We check whether the network is deployed by querying the network's cluster
+          // to determine whether the network's manager is deployed. The manager will
+          // always be deployed in the *network's* cluster rather than the coordination cluster.
+          contextCluster.isDeployed(context.name(), new Handler<AsyncResult<Boolean>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(AsyncResult<Boolean> result) {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(resultHandler);
+              } else if (!result.result()) {
+                // If the manager is not deployed then don't return the active network. However,
+                // we don't remove the network's context from the cluster just in case the
+                // network is currently being deployed. We don't want to interfere with deployment.
+                new DefaultFutureResult<ActiveNetwork>(new DeploymentException("Network is not deployed.")).setHandler(resultHandler);
               } else {
-                NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+                // Finally, if the network is loaded and deployed then subscribe to messages
+                // from the context on behalf of the active network. Once the active network
+                // has been subscribed to updates, the network has been loaded.
                 final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-                new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx).watch(name, new Handler<MapEvent<String, String>>() {
+                // To create the active network we simply watch the network's context in the
+                // coordination cluster and update the active network when it changes.
+                data.watch(name, new Handler<MapEvent<String, String>>() {
                   @Override
                   public void handle(MapEvent<String, String> event) {
                     String scontext = event.value();
@@ -88,7 +128,7 @@ abstract class AbstractClusterManager implements ClusterManager {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(resultHandler);
+                      new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(resultHandler);
                     } else {
                       new DefaultFutureResult<ActiveNetwork>(active).setHandler(resultHandler);
                     }
@@ -105,18 +145,30 @@ abstract class AbstractClusterManager implements ClusterManager {
 
   @Override
   public ClusterManager isRunning(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
-    cluster.isDeployed(name, resultHandler);
+    // To check if a network is running we first need to determine whether
+    // the network's configuration is stored in the coordination cluster.
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(name), vertx);
+    data.get(name, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result() == null) {
+          // If no context was stored in the coordination cluster then assume
+          // that the network is not running since we can't coordinate without
+          // a context.
+          new DefaultFutureResult<Boolean>(false).setHandler(resultHandler);
+        } else {
+          // If the context exists in the coordination cluster then load the
+          // context and the network's cluster and determine whether the network's
+          // manager is deployed.
+          final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+          final Cluster contextCluster = createNetworkCluster(context);
+          contextCluster.isDeployed(context.name(), resultHandler);
+        }
+      }
+    });
     return this;
-  }
-
-  @Override
-  public ClusterManager deployNetwork(String name) {
-    return deployNetwork(name, null);
-  }
-
-  @Override
-  public ClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    return deployNetwork(new DefaultNetworkConfig(name), doneHandler);
   }
 
   @Override
@@ -126,42 +178,46 @@ abstract class AbstractClusterManager implements ClusterManager {
 
   @Override
   public ClusterManager deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    cluster.isDeployed(network.getName(), new Handler<AsyncResult<Boolean>>() {
+    // When deploying the network, we first need to check the *coordination* cluster
+    // to determine whether a network of that name is already deployed in the Vert.x
+    // cluster. If the network is already deployed, then we merge the given network
+    // configuration with the existing network configuration. If the network seems to
+    // be new, then we deploy a new network manager on the network's cluster.
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx);
+    data.get(network.getName(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
-        } else if (result.result()) {
-          doDeployNetwork(network, doneHandler);
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result() == null) {
+          // If the context doesn't already exist, the network must not be deployed.
+          // Deploy the network manager.
+          doDeployNetwork(network, null, doneHandler);
         } else {
-          new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(network.getName()), vertx).remove(network.getName(), new Handler<AsyncResult<String>>() {
+          // If the context already exists in the coordination cluster, load the context
+          // and the network's cluster to check whether the network's manager is deployed.
+          // If the manager isn't already deployed then deploy it.
+          final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+          final Cluster contextCluster = createNetworkCluster(context);
+          contextCluster.isDeployed(context.name(), new Handler<AsyncResult<Boolean>>() {
             @Override
-            public void handle(AsyncResult<String> result) {
+            public void handle(AsyncResult<Boolean> result) {
               if (result.failed()) {
                 new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
+              } else if (result.result()) {
+                // If the network manager is already deployed in the network's cluster then
+                // simply merge and update the network's configuration.
+                doDeployNetwork(network, context, doneHandler);
               } else {
-                // Deploy the network manager according to the network cluster type. If the
-                // current Vertigo scope is CLUSTER *and* the network's scope is CLUSTER then
-                // deploy the manager as a cluster. If the current Vertigo scope is XYNC and
-                // the network's scope is XYNC then deploy the network as a Xync cluster.
-                // Otherwise, the network is local since either local scope was specified
-                // on the network or the current instance is local. All coordination is done
-                // in the current Vertigo scope regarless of the network configuration.
-                Cluster contextCluster;
-                if (network.getClusterConfig().getScope().equals(ClusterScope.CLUSTER) && scope().equals(ClusterScope.CLUSTER)) {
-                  contextCluster = new ClusterFactory(vertx, container).createCluster(network.getClusterConfig().getAddress(), ClusterScope.CLUSTER);
-                } else {
-                  contextCluster = new ClusterFactory(vertx, container).createCluster(network.getClusterConfig().getAddress(), ClusterScope.LOCAL);
-                }
-
-                JsonObject config = new JsonObject().putString("name", network.getName());
-                contextCluster.deployVerticle(network.getName(), NetworkManager.class.getName(), config, 1, new Handler<AsyncResult<String>>() {
+                // If the network manager hasn't yet been deployed then deploy the manager
+                // and then update the network's configuration.
+                contextCluster.deployVerticle(context.name(), NetworkManager.class.getName(), new JsonObject().putString("name", context.name()), 1, new Handler<AsyncResult<String>>() {
                   @Override
                   public void handle(AsyncResult<String> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                      new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
                     } else {
-                      doDeployNetwork(network, doneHandler);
+                      doDeployNetwork(network, context, doneHandler);
                     }
                   }
                 });
@@ -177,88 +233,74 @@ abstract class AbstractClusterManager implements ClusterManager {
   /**
    * Handles deployment of a network.
    */
-  private void doDeployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    // Attempt to find an existing configuration for the given network.
-    cluster.<String, String>getMap(network.getName()).get(network.getName(), new Handler<AsyncResult<String>>() {
+  private void doDeployNetwork(final NetworkConfig network, final NetworkContext currentContext, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    // If a previous context for the network was provided, merge the previous context's
+    // configuration with the new network configuration and build a new context.
+    NetworkContext updatedContext;
+    if (currentContext == null) {
+      updatedContext = ContextBuilder.buildContext(network);
+    } else {
+      updatedContext = ContextBuilder.buildContext(Configs.mergeNetworks(currentContext.config(), network));
+    }
+
+    final NetworkContext context = updatedContext;
+
+    // Create an active network to return to the user. The active network can be used to
+    // alter the configuration of the live network.
+    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx);
+    final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
+    data.watch(context.name(), new Handler<MapEvent<String, String>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(MapEvent<String, String> event) {
+        String scontext = event.value();
+        if (scontext != null && scontext.length() > 0) {
+          active.update(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
         } else {
-          // If the network's configuration already exists, merge the new
-          // configuration with the existing configuration and update the
-          // network context.
-          NetworkContext updatedContext;
-          if (result.result() != null) {
-            NetworkContext currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
-            NetworkConfig updatedConfig = Configs.mergeNetworks(currentContext.config(), network);
-            updatedContext = ContextBuilder.buildContext(updatedConfig);
-          } else {
-            updatedContext = ContextBuilder.buildContext(network);
-          }
-
-          final NetworkContext context = updatedContext;
-
-          // Create an active network to return to the user. The
-          // active network can be used to alter the configuration of the
-          // live network.
-          final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(context.name()), vertx);
-          final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), AbstractClusterManager.this);
-          data.watch(context.name(), new Handler<MapEvent<String, String>>() {
+          // When the context is set in the cluster, the network's manager will be notified
+          // via a cluster event. The manager will then unset the network's status key and
+          // update the network. Once the network has been updated (components are deployed
+          // and undeployed and connections are created or removed as necessary) the manager
+          // will reset the network's status key to the updated version. We can use this fact
+          // to determine when the configuration change is complete by watching the network's
+          // status key for the new context version.
+          data.watch(context.status(), new Handler<MapEvent<String, String>>() {
             @Override
             public void handle(MapEvent<String, String> event) {
-              String scontext = event.value();
-              if (scontext != null && scontext.length() > 0) {
-                active.update(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
+              // Once the network has been updated we can stop watching the network's status key.
+              // Once the status key is unwatched trigger the async handler indicating that the
+              // update is complete.
+              if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
+                data.unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
+                  }
+                });
               }
             }
           }, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
+              // Once the network's status key is being watched, set the new configuration in
+              // the cluster. This change will be recognized by the network's manager which will
+              // then update the running network's configuration.
               if (result.failed()) {
-                new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
+                new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
               } else {
-                // When the context is set in the cluster, the network's manager will be notified
-                // via a cluster event. The manager will then unset the network's status key and
-                // update the network. Once the network has been updated (components are deployed
-                // and undeployed and connections are created or removed as necessary) the manager
-                // will reset the network's status key to the updated version. We can use this fact
-                // to determine when the configuration change is complete by watching the network's
-                // status key for the new context version.
-                data.watch(context.status(), new Handler<MapEvent<String, String>>() {
+                data.put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
                   @Override
-                  public void handle(MapEvent<String, String> event) {
-                    // Once the network has been updated we can stop watching the network's status key.
-                    // Once the status key is unwatched trigger the async handler indicating that the
-                    // update is complete.
-                    if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
-                      data.unwatch(context.status(), this, new Handler<AsyncResult<Void>>() {
-                        @Override
-                        public void handle(AsyncResult<Void> result) {
-                          new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
-                        }
-                      });
-                    }
-                  }
-                }, new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    // Once the network's status key is being watched, set the new configuration in
-                    // the cluster. This change will be recognized by the network's manager which will
-                    // then update the running network's configuration.
+                  public void handle(AsyncResult<String> result) {
+                    // Only fail the handler if the put failed. We don't trigger the async handler
+                    // here because we're still waiting for the status key to be set after the update.
                     if (result.failed()) {
-                      new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
-                    } else {
-                      data.put(context.address(), DefaultNetworkContext.toJson(context).encode(), new Handler<AsyncResult<String>>() {
-                        @Override
-                        public void handle(AsyncResult<String> result) {
-                          // Only fail the handler if the put failed. We don't trigger the async handler
-                          // here because we're still waiting for the status key to be set after the update.
-                          if (result.failed()) {
-                            new DefaultFutureResult<ActiveNetwork>(new DeploymentException(result.cause())).setHandler(doneHandler);
-                          }
-                        }
-                      });
+                      new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
                     }
                   }
                 });

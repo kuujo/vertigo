@@ -78,6 +78,14 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   String getName();
 
   /**
+   * Sets the network's cluster configuration.
+   *
+   * @param cluster The cluster configuration.
+   * @return The network configuration.
+   */
+  NetworkConfig setClusterConfig(ClusterConfig cluster);
+
+  /**
    * Returns the network's cluster configuration.
    *
    * @return The network's cluster configuration.

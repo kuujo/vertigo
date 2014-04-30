@@ -113,7 +113,7 @@ public class EventBusCounter implements AsyncCounter {
   @Override
   public void decrement(final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
-        .putString("action", "increment")
+        .putString("action", "decrement")
         .putString("type", "counter")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {

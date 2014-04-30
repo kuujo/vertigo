@@ -34,7 +34,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  * @param <T> The queue data type.
  */
 public class SharedDataQueue<T> implements AsyncQueue<T> {
-  private static final String QUEUE_MAP_NAME = "__QUEUE__";
+  private static final String QUEUE_MAP_PREFIX = "__queue";
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<Integer, Object> map;
@@ -43,8 +43,8 @@ public class SharedDataQueue<T> implements AsyncQueue<T> {
   public SharedDataQueue(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
-    this.map = vertx.sharedData().getMap(QUEUE_MAP_NAME);
-    this.currentIndex = (int) map.get(-1);
+    this.map = vertx.sharedData().getMap(String.format("%s.%s", QUEUE_MAP_PREFIX, name));
+    this.currentIndex = (int) (map.containsKey(-1) ? map.get(-1) : 0);
   }
 
   @Override

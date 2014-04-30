@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.cluster.data.impl;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import net.kuujo.vertigo.cluster.data.AsyncList;
@@ -32,7 +31,7 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class SharedDataList<T> implements AsyncList<T> {
-  private static final String LIST_MAP_NAME = "__LIST__";
+  private static final String LIST_MAP_PREFIX = "__list";
   private final String name;
   private final Vertx vertx;
   private final ConcurrentSharedMap<Integer, Object> map;
@@ -41,8 +40,8 @@ public class SharedDataList<T> implements AsyncList<T> {
   public SharedDataList(String name, Vertx vertx) {
     this.name = name;
     this.vertx = vertx;
-    this.map = vertx.sharedData().getMap(LIST_MAP_NAME);
-    this.currentSize = (int) map.get(-1);
+    this.map = vertx.sharedData().getMap(String.format("%s.%s", LIST_MAP_PREFIX, name));
+    this.currentSize = (int) (map.containsKey(-1) ? map.get(-1) : 0);
   }
 
   @Override
@@ -78,11 +77,20 @@ public class SharedDataList<T> implements AsyncList<T> {
     vertx.runOnContext(new Handler<Void>() {
       @Override
       public void handle(Void _) {
-        Iterator<Map.Entry<Integer, Object>> iter = map.entrySet().iterator();
-        while (iter.hasNext()) {
-          if (iter.next().getValue().equals(value)) {
-            iter.remove();
-            new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
+        for (Map.Entry<Integer, Object> entry : map.entrySet()) {
+          if (entry.getValue().equals(value)) {
+            int index = entry.getKey();
+            synchronized (map) {
+              map.remove(index);
+              int i = index+1;
+              while (map.containsKey(i)) {
+                map.put(i-1, map.remove(i));
+                i++;
+              }
+              currentSize--;
+              map.put(-1, currentSize);
+              new DefaultFutureResult<Boolean>(true).setHandler(doneHandler);
+            }
             return;
           }
         }

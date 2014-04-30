@@ -30,6 +30,112 @@ Vert.x verticles) and distributed across a Vert.x cluster.
 
 For an in-depth explanation of how Vertigo works, see [how it works](#how-it-works)
 
+# Getting Started
+This is a brief tutorial that describes the basic components of Vertigo
+along with a simple example.
+
+## Networks
+Networks are collections of Vert.x verticles and modules that are connected
+together by input and output ports. Each component in a network contains processing
+logic, and connections between components indicate how messages should be
+passed between them. Networks can be created either in code or in JSON and
+can be deployed in code or from the command line.
+
+```
+vertx run my_network.json
+```
+
+## Ports
+Components in Vertigo communicate via input and output ports. Messaging in Vertigo
+is inherently uni-directional, so each component has a unique set of input and
+output ports. Input ports are interfaces to which other components can connect
+to send messages, and output ports are interfaces to which other components can
+connect to receive messages.
+
+```java
+public class MyComponent extends ComponentVerticle {
+
+  @Override
+  public void start() {
+    input.port("in").messageHandler(new Handler<String>() {
+      public void handle(String message) {
+        output.port("out").send(message);
+      }
+    });
+  }
+
+}
+```
+
+Ports do not have to be explicitly declared. Vertigo will lazily create ports
+if they don't already exist. Messages can be of any type that is supported by the
+Vert.x event bus. Vertigo guarantees that messages will always arrive in the order
+in which they were sent.
+
+Vertigo components are "black boxes," meaning all components can send or receive
+messages. Vertigo makes no distinction between the behaviors of different components.
+
+While components receive messages on input ports and send messages to output ports,
+the network configuration is used to define how ports on different components
+relate to one another. Connections between components/ports in your network indicate
+how messages will flow through the network.
+
+## A Simple Network
+```java
+NetworkConfig network = vertigo.createNetwork("word-count");
+network.addComponent("word-feeder", "random_word_feeder.py");
+network.addComponent("word-counter", "word_counter.js", 2);
+network.createConnection("word-feeder", "word", "word-counter", "word", new HashSelector());
+```
+
+This network contains two components. The first component is a Python component
+that will feed random words to its `word` out port. The second component is a
+Javascript component that will count words received on its `word` in port. The
+network therefore defines a connection between the `word-feeder` component's
+`word` out port and the `word-counter` component's `word` in port.
+
+Note that since we defined two instances of the `word-counter` component, it's
+important that the same words always go to the same instance, so we use a
+`HashSelector` on the connection to ensure the same word always goes to the
+same component instance.
+
+`random_word_feeder.py`
+
+```python
+import vertx
+from vertigo import component, input
+
+@component.start_handler
+def start_handler(error=None):
+  if not error:
+    words = ['apple', 'banana', 'pear']
+    def feed_random_word(timer_id):
+      output.send('word', words[rand(len(words)-1)])
+    vertx.set_periodic(1000, feed_random_word)
+```
+
+Here we simply send a random word to the `word` out port every second.
+
+`word_counter.js`
+
+```javascript
+var input = require('vertigo/input');
+var output = require('vertigo/output');
+
+var words = {};
+input.port('word').messageHandler(function(word) {
+  if (words[word] === undefined) {
+    words[word] = 0;
+  }
+  words[word]++;
+  output.port('count').send({word: word, count: words[word]});
+});
+```
+
+This component registers a message handler on the `word` in port, updates
+an internal count for the word, and sends the updated word count on the
+`count` out port.
+
 # Java User Manual
 1. [Introduction](#introduction)
 1. [Setup](#setup)

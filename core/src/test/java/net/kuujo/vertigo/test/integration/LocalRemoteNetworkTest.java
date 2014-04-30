@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.ClusterAgent;
@@ -77,7 +78,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("one-to-one");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestSender.class.getName());
         network.addVerticle("receiver", TestReceiver.class.getName());
@@ -146,7 +147,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("one-to-many");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestOneToManySender.class.getName());
         network.addVerticle("receiver", TestOneToManyReceiver.class.getName(), 4);
@@ -197,7 +198,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("many-to-one");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestManyToOneSender.class.getName(), 4);
         network.addVerticle("receiver", TestManyToOneReceiver.class.getName());
@@ -278,7 +279,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("many-to-many");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestManyToManySender.class.getName(), 4);
         network.addVerticle("receiver", TestManyToManyReceiver.class.getName(), 4);
@@ -344,7 +345,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("many");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestManySender.class.getName());
         network.addVerticle("receiver", TestManyReceiver.class.getName());
@@ -412,7 +413,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("pause-resume");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestPauseResumeSender.class.getName());
         network.addVerticle("receiver", TestPauseResumeReceiver.class.getName());
@@ -480,7 +481,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("basic-group");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestBasicGroupSender.class.getName());
         network.addVerticle("receiver", TestBasicGroupReceiver.class.getName());
@@ -568,7 +569,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("async-group-send");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestAsyncGroupSender.class.getName());
         network.addVerticle("receiver", TestAsyncGroupReceiver.class.getName());
@@ -666,7 +667,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("nested-group");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestNestedGroupSender.class.getName());
         network.addVerticle("receiver", TestNestedGroupReceiver.class.getName());
@@ -794,7 +795,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("nested-async-group");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestNestedAsyncGroupSender.class.getName());
         network.addVerticle("receiver", TestNestedAsyncGroupReceiver.class.getName());
@@ -876,7 +877,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("group-order");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestOrderedGroupSender.class.getName());
         network.addVerticle("receiver", TestOrderedGroupReceiver.class.getName());
@@ -973,7 +974,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("nested-group-order");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestOrderedNestedGroupSender.class.getName());
         network.addVerticle("receiver", TestOrderedNestedGroupReceiver.class.getName());
@@ -1068,7 +1069,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("group-forward");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestGroupForwardSender.class.getName());
         network.addVerticle("forwarder", TestGroupForwardForwarder.class.getName());
@@ -1192,7 +1193,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("nested-group-forward");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestNestedGroupForwardSender.class.getName());
         network.addVerticle("forwarder", TestNestedGroupForwardForwarder.class.getName());
@@ -1245,8 +1246,9 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
+        final String name = UUID.randomUUID().toString();
         final Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("reconfigure-add-component");
+        NetworkConfig network = vertigo.createNetwork(name);
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestReconfigureSender.class.getName());
         network.createConnection("sender", "out", "receiver", "in");
@@ -1256,7 +1258,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
             if (result.failed()) {
               assertTrue(result.cause().getMessage(), result.succeeded());
             } else {
-              NetworkConfig network = vertigo.createNetwork("reconfigure-add-component");
+              NetworkConfig network = vertigo.createNetwork(name);
               network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
               vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
                 @Override
@@ -1283,7 +1285,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         final Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("active-add-component");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestReconfigureSender.class.getName());
         network.createConnection("sender", "out", "receiver", "in");
@@ -1318,8 +1320,9 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
+        final String name = UUID.randomUUID().toString();
         final Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("reconfigure-create-connection");
+        NetworkConfig network = vertigo.createNetwork(name);
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestReconfigureSender.class.getName());
         network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
@@ -1329,7 +1332,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
             if (result.failed()) {
               assertTrue(result.cause().getMessage(), result.succeeded());
             } else {
-              NetworkConfig network = vertigo.createNetwork("reconfigure-create-connection");
+              NetworkConfig network = vertigo.createNetwork(name);
               network.createConnection("sender", "out", "receiver", "in");
               vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
                 @Override
@@ -1356,7 +1359,7 @@ public class LocalRemoteNetworkTest extends TestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         final Vertigo vertigo = new Vertigo(vertx, container);
-        NetworkConfig network = vertigo.createNetwork("active-create-connection");
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.LOCAL);
         network.addVerticle("sender", TestReconfigureSender.class.getName());
         network.addVerticle("receiver", TestReconfigureReceiver.class.getName());

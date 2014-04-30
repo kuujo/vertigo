@@ -139,8 +139,13 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(deploymentID, moduleName, config, instances, false, doneHandler);
+  }
+
+  @Override
   public Cluster deployModule(final String deploymentID, String moduleName, JsonObject config,
-      int instances, final Handler<AsyncResult<String>> doneHandler) {
+      int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override
@@ -216,6 +221,11 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, boolean ha, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(deploymentID, moduleName, config, instances, ha, doneHandler);
+  }
+
+  @Override
   public Cluster deployVerticle(String deploymentID, String main) {
     return deployVerticle(deploymentID, main, null, 1, null);
   }
@@ -253,6 +263,12 @@ public class LocalCluster implements Cluster {
   @Override
   public Cluster deployVerticle(final String deploymentID, String main,
       JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(deploymentID, main, config, instances, false, doneHandler);
+  }
+
+    @Override
+    public Cluster deployVerticle(final String deploymentID, String main,
+        JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override
@@ -328,6 +344,11 @@ public class LocalCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean ha, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(deploymentID, main, config, instances, ha, doneHandler);
+  }
+
+  @Override
   public Cluster deployWorkerVerticle(String deploymentID, String main) {
     return deployWorkerVerticle(deploymentID, main, null, 1, false, null);
   }
@@ -365,6 +386,12 @@ public class LocalCluster implements Cluster {
   @Override
   public Cluster deployWorkerVerticle(final String deploymentID, String main,
       JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, false, doneHandler);
+  }
+
+    @Override
+    public Cluster deployWorkerVerticle(final String deploymentID, String main,
+        JsonObject config, int instances, boolean multiThreaded, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     if (deployments.containsKey(deploymentID)) {
       vertx.runOnContext(new Handler<Void>() {
         @Override
@@ -439,6 +466,11 @@ public class LocalCluster implements Cluster {
   @Override
   public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, doneHandler);
+  }
+
+  @Override
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(deploymentID, main, config, instances, multiThreaded, ha, doneHandler);
   }
 
   @Override

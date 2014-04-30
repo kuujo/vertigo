@@ -152,6 +152,11 @@ public class RemoteCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
+    return deployModuleTo(deploymentID, null, moduleName, config, instances, ha, doneHandler);
+  }
+
+  @Override
   public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName) {
     return deployModuleTo(deploymentID, groupID, moduleName, null, 1, null);
   }
@@ -188,6 +193,11 @@ public class RemoteCluster implements Cluster {
 
   @Override
   public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+    return deployModuleTo(deploymentID, groupID, moduleName, config, instances, false, doneHandler);
+  }
+
+  @Override
+  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("id", deploymentID)
@@ -196,7 +206,7 @@ public class RemoteCluster implements Cluster {
         .putString("module", moduleName)
         .putObject("config", config)
         .putNumber("instances", instances)
-        .putBoolean("ha", true);
+        .putBoolean("ha", ha);
     vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -253,6 +263,11 @@ public class RemoteCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, int instances, boolean ha, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticleTo(deploymentID, null, main, config, instances, ha, doneHandler);
+  }
+
+  @Override
   public Cluster deployVerticleTo(String deploymentID, String groupID, String main) {
     return deployVerticleTo(deploymentID, groupID, main, null, 1, null);
   }
@@ -289,6 +304,11 @@ public class RemoteCluster implements Cluster {
 
   @Override
   public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticleTo(deploymentID, groupID, main, config, instances, false, doneHandler);
+  }
+
+  @Override
+  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("id", deploymentID)
@@ -297,7 +317,7 @@ public class RemoteCluster implements Cluster {
         .putString("main", main)
         .putObject("config", config)
         .putNumber("instances", instances)
-        .putBoolean("ha", true);
+        .putBoolean("ha", ha);
     vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -354,6 +374,11 @@ public class RemoteCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticleTo(deploymentID, null, main, config, instances, multiThreaded, ha, doneHandler);
+  }
+
+  @Override
   public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main) {
     return deployWorkerVerticleTo(deploymentID, groupID, main, null, 1, false, null);
   }
@@ -390,6 +415,11 @@ public class RemoteCluster implements Cluster {
 
   @Override
   public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticleTo(deploymentID, groupID, main, config, instances, multiThreaded, false, doneHandler);
+  }
+
+  @Override
+  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("id", deploymentID)
@@ -400,7 +430,7 @@ public class RemoteCluster implements Cluster {
         .putNumber("instances", instances)
         .putBoolean("worker", true)
         .putBoolean("multi-threaded", multiThreaded)
-        .putBoolean("ha", true);
+        .putBoolean("ha", ha);
     vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {

@@ -63,7 +63,7 @@ public class ClusterManagerFactory {
         if (result.failed()) {
           new DefaultFutureResult<ClusterManager>(result.cause()).setHandler(resultHandler);
         } else {
-          new DefaultFutureResult<ClusterManager>(createClusterManager(result.result())).setHandler(resultHandler);
+          new DefaultFutureResult<ClusterManager>(createClusterManager("vertigo", result.result())).setHandler(resultHandler);
         }
       }
     });
@@ -72,13 +72,12 @@ public class ClusterManagerFactory {
   /**
    * Creates a cluster manager for the given scope.
    *
+   * @param address The cluster address;
    * @param scope The scope for which to create the cluster manager.
-   * @param vertx The current Vert.x instance.
-   * @param container The current Vert.x container.
    * @return A cluster manager for the given scope.
    */
-  public ClusterManager createClusterManager(ClusterScope scope) {
-    return Factories.createObject(scope, ClusterManager.class, vertx, container);
+  public ClusterManager createClusterManager(String address, ClusterScope scope) {
+    return Factories.createObject(scope, ClusterManager.class, address, vertx, container);
   }
 
 }

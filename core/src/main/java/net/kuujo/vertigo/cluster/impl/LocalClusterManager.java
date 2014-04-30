@@ -38,7 +38,7 @@ import org.vertx.java.platform.Verticle;
 public class LocalClusterManager extends AbstractClusterManager {
 
   @Factory
-  public static LocalClusterManager factory(Vertx vertx, Container container) {
+  public static LocalClusterManager factory(String address, Vertx vertx, Container container) {
     return new LocalClusterManager(vertx, container);
   }
 

@@ -55,8 +55,7 @@ For an in-depth explanation of how Vertigo works, see [how it works](#how-it-wor
       * [AsyncSet](#asyncset)
       * [AsyncList](#asynclist)
       * [AsyncQueue](#asyncqueue)
-      * [AsyncLock](#asynclock)
-      * [AsyncIdGenerator](#asyncidgenerator)
+      * [AsyncCounter](#asynccounter)
 1. [Components](#components)
    * [Creating a component](#creating-a-component)
    * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
@@ -243,7 +242,10 @@ vertigo.createNetwork(json);
 The JSON configuration format is as follows:
 
 * `name` - the network name
-* `scope` - the network cluster scope, e.g. `local` or `cluster`. See [configuring cluster scopes](#configuring-cluster-scopes)
+* `cluster` - the network's cluster configuration
+   * `address` - the event bus address to the cluster manager. This only applies
+     to networks with a `cluster` scope
+   * `scope` - the network's cluster scope, e.g. `local` or `cluster` See [configuring cluster scopes](#configuring-cluster-scopes)
 * `components` - an object of network components, keyed by component names
    * `name` - the component name
    * `type` - the component type, either `module` or `verticle`
@@ -269,7 +271,9 @@ For example...
 ```
 {
   "name": "my-network",
-  "scope": "local",
+  "cluster": {
+    "scope": "local"
+  },
   "components": {
     "foo": {
       "name": "foo",
@@ -319,8 +323,6 @@ cluster. Even if a network is deployed from another verticle, the network can st
 referenced and updated from anywhere in the cluster. Vertigo's internal coordination
 mechanisms ensure consistency for deployments across all nodes in a cluster.
 
-Remote deployments are supported by [Xync](http://github.com/kuujo/xync)
-
 For more information on network deployment and coordination see [how it works](#how-it-works)
 
 ### Deploying a network
@@ -336,13 +338,18 @@ vertigo.deployNetwork(network);
 ```
 
 When Vertigo deploys the network, it will automatically detect the current Vert.x
-cluster scope. If the current Vert.x instance is a member of a [Xync](http://github.com/kuujo/xync)
-cluster then the network will be deployed across the cluster. If the
-Vert.x instance is clustered (a `HazelcastInstance` is available) but not using
-the Xync platform manager, Vertigo will still perform coordination using cluster-wide
-shared data, but network deployments will only occur within the current Vert.x instance.
-If the Vert.x instance is not clustered then deployments will take place via the
-Vert.x `Container`.
+cluster scope. If the current Vert.x instance is a Hazelcast clustered instance,
+Vertigo will attempt to deploy the network across the cluster. This behavior can
+be configured in the network's configuration.
+
+If the current Vert.x instance is not clustered then all network deployment will
+automatically fall back to the Vert.x `Container`. Even if a network is configured
+to be deployed locally, Vertigo will still coordinate using Hazelcast if it's
+available.
+
+Note that in order to support remote component deployment you must use a
+[Xync](http://github.com/kuujo/xync) node or some other facility that supports
+event bus deployments.
 
 ### Undeploying a network
 To undeploy a network, use the `undeployNetwork` method.
@@ -464,20 +471,14 @@ The `NetworkFactory` will construct the network from the json configuration file
 deploy the network to the available cluster.
 
 ## Clustering
-Vertigo currently provides several different clustering methods. When networks are deployed,
+Vertigo currently provides two different clustering methods. When networks are deployed,
 Vertigo will automatically detect the current Vert.x cluster type and adjust its behavior
 based on available features. The available cluster scopes are as follows:
 * `local` - *Vert.x is not clustered*. Vertigo will use Vert.x `SharedData` for coordination
   of networks and deployments will be performed via the Vert.x `Container`.
 * `cluster` - *Vert.x is clustered using the default `HazelcastClusterManager`*. Vertigo will
-  deploy a special Hazelcast verticle for coordination of networks over Hazelcast data
-  structures, but deployments will still be performed via the Vert.x `Container`.
-* `xync` - *Vert.x is clustered using the [Xync](http://github.com/kuujo/xync) platform
-  manager*. Vertigo will use Xync cluster-wide data structures for coordination and remote
-  deployments will be supported by the Xync cluster manager.
-
-If the current Vert.x cluster is a Xync-backed cluster, Vertigo networks will be deployed
-across the cluster by default. In Vertigo, this is known as the cluster scope.
+  coordinate networks through Hazelcast and, for network confgured for the `cluster` scope,
+  will attempt to deploy components remotely over the event bus.
 
 For more information on Vertigo clustering see [how Vertigo coordinates networks](#how-vertigo-coordinates-networks)
 
@@ -488,19 +489,19 @@ network configuration.
 
 ```java
 NetworkConfig network = vertigo.createNetwork("test");
-network.setScope(ClusterScope.LOCAL);
+network.getClusterConfig().setScope(ClusterScope.LOCAL);
 ```
 
-The network scope defaults to `XYNC` which is the highest level scope. However,
-if the current Vert.x instance is not a Xync clustered instance, the scope will
-fall back to `CLUSTER`, and if the current Vert.x instance is not a Hazelcast
-clustered instance, the scope will fall back to `LOCAL`.
+The network scope defaults to `CLUSTER` which is considered the highest level scope.
+If the current Vert.x is not a clustered Vert.x instance, the cluster scope will
+automatically fall back to `LOCAL`. This allows for networks to be easily tested
+in a single Vert.x instance.
 
 It's important to note that while configuring the cluster scope on a network will
 cause the network to be *deployed* in that scope, the network's scope configuration
 *does not impact Vertigo's synchronization*. In other words, even if a network is
 deployed locally, if the current Vert.x instance is a cluster member, Vertigo will still
-use Xync or Hazelcast to coordinate networks. This allows locally deployed networks
+use Hazelcast to coordinate networks. This allows locally deployed networks
 to be referenced and reconfigured even outside of the instance in which it was deployed.
 For instance, users can deploy one component of the `foo` network locally in one Vert.x
 instance and deploy a separate component of the `foo` network locally in another Vert.x
@@ -508,15 +509,13 @@ instance and both components will still become a part of the same network event 
 the network is `LOCAL`.
 
 ### Cluster-wide shared data
-Vertigo provides cluster-wide shared data structures within all components regardless
-of the deployment method. How cluster-wide shared data is implemented depends on the
-scope in which the network is deployed. For example, if the network is deployed as a
-local network, Vertigo will use Vert.x's `SharedData` structures. If the network is
-deployed in a normal Vert.x cluster, Vertigo will use a special Hazelcast worker
-verticle for shared data access. The Hazelcast verticle will be deployed on each
-node in the Vert.x cluster and accessed by the components on that node locally.
-If the network is deployed as part of a Xync cluster, Vertigo will access Xync data
-structures over the event bus.
+Cluster-wide shared data structures are made available via the same API as clustering.
+If a network is deployed in `LOCAL` scope then Vert.x `SharedData` based data structures
+will be made available in component instances. If a network is deployed in `CLUSTER`
+scope then shared data structures will be accessed over the event bus.
+
+The cluster API is available in all components via the `cluster` field of the
+`ComponentVerticle`.
 
 #### AsyncMap
 The `AsyncMap` interface closely mimics the interface of the Java `Map` interface,
@@ -590,37 +589,15 @@ queue.add("bar", new Handler<AsyncResult<Boolean>>() {
 });
 ```
 
-#### AsyncLock
-The `AsyncLock` provides a simple distributed lock.
+#### AsyncCounter
+The `AsyncCounter` facilitates generating cluster-wide counters.
 
 ```java
-final AsyncLock lock = cluster.getLock("foo");
-lock.lock(new Handler<AsyncResult<Void>>() {
-  public void handle(AsycncResult<Void> result) {
-    if (result.succeeded()) {
-      logger.info("Locked the lock.");
-      lock.unlock(new Handler<AsyncResult<Void>>() {
-        public void handle(AsyncResult<Void> result) {
-          if (result.succeeded()) {
-            logger.info("Unlocked the lock.");
-          }
-        }
-      });
-    }
-  }
-});
-```
-
-#### AsyncIdGenerator
-The `AsyncIdGenerator` facilitates generating cluster-wide monotonically increasing
-unique IDs with the `nextId()` method.
-
-```java
-AsyncIdGenerator ids = cluster.getIdGenerator("foo");
-ids.nextId(new Handler<AsyncResult<Long>>() {
+AsyncCounter counter = cluster.getCounter("foo");
+counter.incrementAndGet(new Handler<AsyncResult<Long>>() {
   public void handle(AsyncResult<Long> result) {
     if (result.succeeded()) {
-      long id = result.result();
+      long value = result.result();
     }
   }
 });
@@ -1000,28 +977,25 @@ deployment IDs in its own API.
 (See `net.kuujo.vertigo.cluster.Cluster` and `net.kuujo.vertigo.cluster.ClusterManager`)
 
 When Vertigo begins deploying a network, it first determines the current cluster scope.
-If the current Vert.x instance is a member of a Xync-based Vert.x cluster, Vertigo will
-attempt to deploy the network across the cluster. This behavior can be configured in the
-network configuration.
-
-Once the cluster scope has been determined, Vertigo will check the cluster (e.g. `SharedData`
-or Xync) to determine whether the network is already deployed. If the network has not
-been deployed (a deployment with the ID of the network name is not deployed) then
-Vertigo simply deploys a new `NetworkManager` verticle to manage the network. Actual
-component deployments are performed within the network manager through the coordination
-system. For more information on the network manager and coordination see
+If the current Vert.x instance is a Hazelcast clustered instance, Vertigo will perform
+all coordination through the Hazelcast cluster. Once the cluster scope is determined,
+Vertigo will check the cluster's shard data structures to determine whether the network
+is already deployed. If the network is already deployed then Vertigo will load the
+network's cluster scope - which may differ from the actual cluster scope - and deploy
+the network's manager. Actual component deployments are performed by the manager.
+For more information on the network manager and coordination see
 [how vertigo coordinates networks](#how-vertigo-coordinates-networks).
 
 ### How Vertigo coordinates networks
 Vertigo uses a very unique and flexible system for coordinating network deployment,
 startup, and configuration. The Vertigo coordination system is built on a distributed
 observer implementation. Vertigo will always use the highest cluster scope available
-for coordination. That is, if the current Vert.x cluster is a Xync cluster then Vertigo
-will use the Xync cluster for coordination. This ensures that Vertigo can coordinate
+for coordination. That is, if the current Vert.x cluster is a Hazelcast cluster then Vertigo
+will use Hazelcast for coordination. This ensures that Vertigo can coordinate
 all networks within a cluster, even if they are deployed as local networks.
 
 The distributed observer pattern is implemented as map events for both Vert.x `SharedData`
-and Xync's Hazelcast-based maps. Events for any given key in a Vertigo cluster can be
+and Hazelcast-based maps. Events for any given key in a Vertigo cluster can be
 watched by simply registering an event bus address to which to send events. The Vertigo
 `NetworkManager` and components both use this mechanism for coordination with one another.
 

@@ -44,7 +44,7 @@ public class FaultTolerantNetwork extends Verticle {
    * Persists and sends messages received on the event bus.
    */
   public static class FaultTolerantFeeder extends ComponentVerticle {
-    private AsyncIdGenerator ids;
+    private AsyncCounter ids;
     private AsyncMap<Long, String> messages;
 
     /**
@@ -54,7 +54,7 @@ public class FaultTolerantNetwork extends Verticle {
     private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
       @Override
       public void handle(final Message<JsonObject> message) {
-        ids.nextId(new Handler<AsyncResult<Long>>() {
+        ids.incrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
           public void handle(AsyncResult<Long> result) {
             if (result.succeeded()) {

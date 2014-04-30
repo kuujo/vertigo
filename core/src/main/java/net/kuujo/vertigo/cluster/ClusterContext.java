@@ -21,7 +21,8 @@ import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.cluster.impl.DefaultClusterContext;
 
 /**
- * Cluster context.
+ * The cluster context contains configuration information for a
+ * specific network's clustering.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

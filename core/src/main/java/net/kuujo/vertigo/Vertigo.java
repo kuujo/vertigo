@@ -37,12 +37,41 @@ import org.vertx.java.platform.Verticle;
  * 
  * This is the primary interface for creating and deploying Vertigo networks.<p>
  *
- * Vertigo provides its own cluster abstraction that allows cluster modes to
- * be separated from network configurations. When deploying, undeploying, or
- * otherwise operating on Vertigo networks, Vertigo will attempt to automatically
- * detect and use the current Vert.x cluster state. See method documentation
- * for more information.
- * 
+ * Vertigo provides its own cluster abstraction that allows networks to be deployed
+ * either in a single Vert.x instance or across a Vert.x cluster. When a network
+ * is deployed, Vertigo uses the network's configuration to create a cluster in
+ * the proper scope. If the network indicates a <code>LOCAL</code> scope then its components
+ * will be deployed within the current Vert.x instance. If the network indicates
+ * a <code>CLUSTER</code> scope then its components will be deployed across the
+ * cluster using an event bus interface.<p>
+ *
+ * This API also supports active network configuration changes. Networks can be
+ * partially deployed and undeployed using the same methods as are used to deploy
+ * or undeploy entire networks. When a network is being deployed, Vertigo will
+ * determine whether a network of the same name is already running in the cluster.
+ * If the network is already running, Vertigo will <em>merge</em> the new network's
+ * configuration with the running network's configuration and update the running
+ * network's components and connections. Similarly, when a network is undeployed
+ * Vertigo will unmerge the undeployed network configuration from the running
+ * network configuration and only completely undeploy the network if all components
+ * have been undeployed.<p>
+ *
+ * It's important to note that regardless of the scope in which a network is
+ * deployed, Vertigo will always attempt to coordinate networks at the highest
+ * level. In other words, even if a network is deployed in <code>LOCAL</code>
+ * scope, Vertigo will check all nodes in the cluster to determine whether a
+ * network of the same name is already deployed. This helps prevent event bus
+ * address clashes in networks of the same name in the same cluster. But it
+ * also provides some additional usefulness. Users can connect local networks
+ * on different nodes together by simply deploying two networks of the same
+ * name in the <code>LOCAL</code> scope on two separate nodes. Since Vertigo
+ * coordinates at the cluster level, the two deployments will still become
+ * part of the same network and can thus communicate with one another.<p>
+ *
+ * Please note that <em>Vertigo only supports the default Hazelcast cluster
+ * manager</em>. Attempting to use Vertigo in a Vert.x cluster with any other
+ * cluster manager will simply fail.
+ *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class Vertigo {

@@ -24,7 +24,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Event bus hook listener.
+ * Event bus hook listener.<p>
  *
  * This class assists in listening for messages arriving on the event bus
  * via the {@link EventBusHook}.

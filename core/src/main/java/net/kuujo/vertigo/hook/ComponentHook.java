@@ -18,7 +18,11 @@ package net.kuujo.vertigo.hook;
 import net.kuujo.vertigo.component.Component;
 
 /**
- * Hook type for component events.
+ * Hook type for component events.<p>
+ *
+ * Component hooks can be added to specific components through the
+ * network configuration API. All component hooks are serializable
+ * using the default Jackson-based json serializer.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

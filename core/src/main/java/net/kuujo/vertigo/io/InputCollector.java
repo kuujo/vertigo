@@ -20,7 +20,7 @@ import java.util.Collection;
 import net.kuujo.vertigo.io.port.InputPort;
 
 /**
- * An input collector.<p>
+ * Interface for receiving messages on input ports.<p>
  * 
  * The input collector is the primary interface for receiving input within a component
  * instance. Input collectors are simple wrappers around {@link InputPort} instances.

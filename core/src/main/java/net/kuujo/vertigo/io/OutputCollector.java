@@ -20,7 +20,7 @@ import java.util.Collection;
 import net.kuujo.vertigo.io.port.OutputPort;
 
 /**
- * Output collector.<p>
+ * Interface for sending messages on output ports.<p>
  *
  * The output collector exposes a simple interface to {@link OutputPort} instances
  * through which messages can be sent.

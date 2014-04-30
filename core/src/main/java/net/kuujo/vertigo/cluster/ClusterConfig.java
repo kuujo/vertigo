@@ -21,7 +21,14 @@ import net.kuujo.vertigo.cluster.impl.DefaultClusterConfig;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Cluster configuration.
+ * Network cluster configuration.<p>
+ *
+ * The cluster configuration is used by Vertigo to determine how the
+ * components of a network should be deployed. When a network is deployed
+ * in a Vert.x clustered instance, the network can be deployed across the
+ * cluster in what is known as the <code>CLUSTER</code> scope. Users
+ * can specify in the cluster configuration how a network should be
+ * deployed.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -44,7 +51,12 @@ public interface ClusterConfig extends Config<ClusterConfig> {
   public static final String CLUSTER_SCOPE = "scope";
 
   /**
-   * Sets the cluster address.
+   * Sets the cluster address.<p>
+   *
+   * The cluster address is used by Vertigo to deploy components and work
+   * with cluster-wide data structures when the network is clustered. If
+   * the network is deployed in <code>LOCAL</code> scope then the cluster
+   * address does not need to be set up.
    *
    * @param address The cluster address.
    * @return The cluster configuration.
@@ -59,7 +71,16 @@ public interface ClusterConfig extends Config<ClusterConfig> {
   String getAddress();
 
   /**
-   * Sets the network scope.
+   * Sets the network scope.<p>
+   *
+   * Setting the network's scope to <code>CLUSTER</code> will result in the
+   * network's components being deployed across the cluster when Vert.x is
+   * a clustered instance. If the cluster scope is being used you must provide
+   * an event bus address to the cluster manager. This is the default scope.<p>
+   *
+   * If the scope is set to <code>LOCAL</code> then the network will always
+   * be deployed in the local Vert.x instance regardless of the Vert.x cluster
+   * state.
    *
    * @param scope The network scope.
    * @return The cluster configuration.

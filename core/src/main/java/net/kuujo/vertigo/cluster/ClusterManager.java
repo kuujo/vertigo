@@ -58,7 +58,12 @@ public interface ClusterManager {
   ClusterManager getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler);
 
   /**
-   * Checks whether a network is running in the cluster.
+   * Checks whether a network is running in the cluster.<p>
+   *
+   * In order to check whether a network is running, the cluster manager attempts
+   * to load the network's configuration from the internal Vertigo coordination
+   * cluster. If the configuration exists then the cluster manager then checks
+   * to see if the network is actually running.
    *
    * @param name The name of the network to check.
    * @param resultHandler An asynchronous handler to be called with the result.

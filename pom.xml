@@ -272,6 +272,7 @@
       <build>
         <plugins>
           <plugin>
+            <inherited>true</inherited>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>${maven.javadoc.plugin.version}</version>
@@ -280,6 +281,7 @@
               <excludePackageNames>net.kuujo.vertigo.network.manager:*.impl.*</excludePackageNames>
               <reportOutputDirectory>docs</reportOutputDirectory>
               <destDir>java</destDir>
+              <aggregate>true</aggregate>
             </configuration>
             <executions>
               <execution>

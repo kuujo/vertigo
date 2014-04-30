@@ -455,7 +455,7 @@ This feature is implemented as a Vert.x language module, so the network deployer
 be first added to your `langs.properties` file.
 
 ```
-network=net.kuujo~vertigo-deployer~0.7.0:net.kuujo.vertigo.NetworkFactory
+network=net.kuujo~vertigo-deployer~0.7.0-SNAPSHOT:net.kuujo.vertigo.NetworkFactory
 .network=network
 ```
 
@@ -1055,6 +1055,6 @@ will fetch the last known configuration for the network and continue normal oper
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
-[vertigo-python]: https://github.com/kuujo/vertigo-python/tree/0.7.0
-[vertigo-js]: https://github.com/kuujo/vertigo-js/tree/0.7.0
+[vertigo-python]: https://github.com/kuujo/vertigo-python
+[vertigo-js]: https://github.com/kuujo/vertigo-js
 [google-group]: https://groups.google.com/forum/#!forum/vertx-vertigo

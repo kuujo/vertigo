@@ -62,8 +62,8 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
-  public OutputStreamContext context() {
-    return context;
+  public String address() {
+    return context.address();
   }
 
   @Override

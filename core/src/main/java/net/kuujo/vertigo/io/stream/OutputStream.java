@@ -34,10 +34,10 @@ import net.kuujo.vertigo.io.Output;
 public interface OutputStream extends Output<OutputStream>, Openable<OutputStream>, Closeable<OutputStream> {
 
   /**
-   * Returns the stream context.
+   * Returns the output stream address.
    *
-   * @return The stream context.
+   * @return The output stream address.
    */
-  OutputStreamContext context();
+  String address();
 
 }

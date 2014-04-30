@@ -39,12 +39,4 @@ public interface Port<T extends Port<T>> extends Openable<T>, Closeable<T> {
    */
   String name();
 
-  /**
-   * Returns the port context.
-   *
-   * @return The port context.
-   */
-  @SuppressWarnings("rawtypes")
-  PortContext context();
-
 }

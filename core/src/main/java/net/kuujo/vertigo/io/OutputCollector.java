@@ -30,13 +30,6 @@ import net.kuujo.vertigo.io.port.OutputPort;
 public interface OutputCollector extends IOCollector<OutputCollector> {
 
   /**
-   * Returns the component output context.
-   *
-   * @return The current component output context.
-   */
-  OutputContext context();
-
-  /**
    * Returns a collection of output ports.
    *
    * @return A collection of output ports.

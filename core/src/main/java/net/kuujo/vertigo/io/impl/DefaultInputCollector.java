@@ -64,11 +64,6 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   }
 
   @Override
-  public InputContext context() {
-    return context;
-  }
-
-  @Override
   public Collection<InputPort> ports() {
     return ports.values();
   }

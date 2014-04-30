@@ -40,14 +40,6 @@ public interface Connection<T extends Connection<T>> extends Openable<T>, Closea
   String address();
 
   /**
-   * Returns the connection context.
-   *
-   * @return The connection context.
-   */
-  @SuppressWarnings("rawtypes")
-  ConnectionContext context();
-
-  /**
    * Returns the current connection size.
    *
    * @return The current connection size.

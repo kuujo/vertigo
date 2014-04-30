@@ -64,11 +64,6 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   }
 
   @Override
-  public OutputContext context() {
-    return context;
-  }
-
-  @Override
   public Collection<OutputPort> ports() {
     return ports.values();
   }

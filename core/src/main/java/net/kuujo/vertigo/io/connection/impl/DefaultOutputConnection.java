@@ -113,11 +113,6 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnectionContext context() {
-    return context;
-  }
-
-  @Override
   public OutputConnection open() {
     return open(null);
   }

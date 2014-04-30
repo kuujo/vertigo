@@ -28,12 +28,4 @@ import net.kuujo.vertigo.io.Input;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputPort extends Port<InputPort>, Input<InputPort> {
-
-  /**
-   * Returns the input port context.
-   *
-   * @return The input port context.
-   */
-  InputPortContext context();
-
 }

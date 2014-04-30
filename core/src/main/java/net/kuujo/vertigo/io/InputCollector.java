@@ -30,13 +30,6 @@ import net.kuujo.vertigo.io.port.InputPort;
 public interface InputCollector extends IOCollector<InputCollector> {
 
   /**
-   * Returns the component input context.
-   *
-   * @return The input context.
-   */
-  InputContext context();
-
-  /**
    * Returns a collection of input ports.
    *
    * @return A collection of input ports.

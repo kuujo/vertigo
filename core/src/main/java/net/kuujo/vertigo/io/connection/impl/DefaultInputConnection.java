@@ -133,11 +133,6 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
-  public InputConnectionContext context() {
-    return context;
-  }
-
-  @Override
   public int size() {
     return 0;
   }

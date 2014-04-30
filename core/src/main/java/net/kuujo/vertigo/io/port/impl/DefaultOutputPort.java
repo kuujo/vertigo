@@ -77,11 +77,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPortContext context() {
-    return context;
-  }
-
-  @Override
   public void update(final OutputPortContext update) {
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -97,7 +92,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           final OutputStream stream = iter.next();
           boolean exists = false;
           for (OutputStreamContext output : update.streams()) {
-            if (output.equals(stream.context())) {
+            if (output.address().equals(stream.address())) {
               exists = true;
               break;
             }
@@ -111,7 +106,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to close output stream " + stream.context().address());
+                  log.error("Failed to close output stream " + stream.address());
                 }
               }
             });
@@ -124,7 +119,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         for (OutputStreamContext output : update.streams()) {
           boolean exists = false;
           for (OutputStream stream : streams) {
-            if (stream.context().equals(output)) {
+            if (stream.address().equals(output.address())) {
               exists = true;
               break;
             }
@@ -167,7 +162,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open output stream " + stream.context().address());
+                  log.error("Failed to open output stream " + stream.address());
                 } else {
                   streams.add(stream);
                 }
@@ -267,7 +262,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open output stream " + stream.context().address());
+                  log.error("Failed to open output stream " + stream.address());
                   counter.fail(result.cause());
                 } else {
                   streams.add(stream);

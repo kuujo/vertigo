@@ -29,14 +29,6 @@ import net.kuujo.vertigo.io.port.Port;
 public interface IOCollector<T extends IOCollector<T>> extends Openable<T>, Closeable<T> {
 
   /**
-   * Returns the collector context.
-   *
-   * @return The collector context.
-   */
-  @SuppressWarnings("rawtypes")
-  IOContext context();
-
-  /**
    * Returns a named port.
    *
    * @param name The port name.

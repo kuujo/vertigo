@@ -32,12 +32,4 @@ import net.kuujo.vertigo.io.Output;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputPort extends Port<OutputPort>, Output<OutputPort> {
-
-  /**
-   * Returns the output port context.
-   *
-   * @return The output port context.
-   */
-  OutputPortContext context();
-
 }

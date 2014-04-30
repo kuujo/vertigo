@@ -36,12 +36,4 @@ import net.kuujo.vertigo.io.Input;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputConnection extends Connection<InputConnection>, Input<InputConnection> {
- 
-  /**
-   * Returns the input connection context.
-   *
-   * @return The input connection context.
-   */
-  InputConnectionContext context();
-
 }

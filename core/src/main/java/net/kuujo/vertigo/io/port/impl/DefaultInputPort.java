@@ -76,11 +76,6 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
-  public InputPortContext context() {
-    return context;
-  }
-
-  @Override
   public void update(final InputPortContext update) {
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -96,7 +91,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           final InputConnection connection = iter.next();
           boolean exists = false;
           for (InputConnectionContext input : update.connections()) {
-            if (input.equals(connection.context())) {
+            if (input.address().equals(connection.address())) {
               exists = true;
               break;
             }
@@ -123,7 +118,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
         for (InputConnectionContext input : update.connections()) {
           boolean exists = false;
           for (InputConnection connection : connections) {
-            if (connection.context().equals(input)) {
+            if (connection.address().equals(input.address())) {
               exists = true;
               break;
             }

@@ -42,12 +42,4 @@ import net.kuujo.vertigo.io.Output;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputConnection extends Connection<OutputConnection>, Output<OutputConnection> {
-
-  /**
-   * Returns the output connection context.
-   *
-   * @return The output connection context.
-   */
-  OutputConnectionContext context();
-
 }

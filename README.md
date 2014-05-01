@@ -9,22 +9,29 @@ Vertigo
 
 **[Python API][vertigo-python]**
 
-Vertigo is a fast, polyglot event processing framework built on the [Vert.x](http://vertx.io/)
-application platform. Combining concepts of cutting-edge [real-time systems](http://storm.incubator.apache.org/)
-and [flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
+Vertigo is a fast, fault-tolerant, polyglot event processing framework built on the
+[Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
+[real-time systems](http://storm.incubator.apache.org/) and
+[flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
 Vertigo allows real-time problems to be broken down into smaller tasks (as
 Vert.x verticles) and distributed across a Vert.x cluster.
 
 * Manages multi-step event processing systems, from simple pipelines to
   **complex networks of Vert.x modules/verticles**
-* Supports deployment of networks **within a single Vert.x instance or across a Vert.x cluster**
+* Supports deployment of networks **within a single Vert.x instance or across a
+  Vert.x cluster** and provides automatic **failover** for failed components
 * **Coordinates startup and shutdown** of networks across the Vert.x cluster
 * **Promotes reusability** by abstracting communication details from verticle implementations,
   allowing components to be arbitrarily connected to form complex networks
 * Guarantees **strong ordering** and **exactly-once** processing of messages
-* Handles event bus **flow control** and **automatic retries** on failures
+* Handles **event bus flow control** and **automatic retries** on failures
 * Facilitates distribution of messages between multiple verticle instances using
   **random, round-robin, mod hashing, fair, or fanout** methods
+* Provides **cluster-wide shared data** structures for synchronization
+* Supports **live network configuration changes** so networks do not have to
+  be shutdown in order to be reconfigured
+* Provides a simple **batch API** for efficiently batching messages between components
+* Support **command line deployment** of networks
 * Components can be written in **any Vert.x supported language**, with
   APIs for Vertigo in [Javascript][vertigo-js] and [Python][vertigo-python]
 
@@ -82,6 +89,9 @@ network.addComponent("bar", "bar.js", 2);
 network.addComponent("baz", "baz.py", 4);
 network.createConnection("bar", "out", "baz", "in");
 ```
+
+Vertigo doesn't route messages through any central router. Rather, messages are sent
+between components directly on the Vert.x event bus.
 
 ## A Simple Network
 Vertigo provides all its API functionality through a single `Vertigo` object.
@@ -208,6 +218,14 @@ vertx run word_count_network.json
    * [Creating connections between components](#)
    * [Routing messages between multiple component instances](#routing-messages-between-multiple-component-instances)
    * [Creating networks from JSON](#creating-networks-from-json)
+1. [Components](#components)
+   * [Creating a component](#creating-a-component)
+   * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
+1. [Messaging](#messaging)
+   * [Sending messages on an output port](#sending-messages-on-an-output-port)
+   * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
+   * [Working with message groups](#working-with-message-groups)
+   * [Providing serializeable messages](#providing-serializeable-messages)
 1. [Deployment](#deployment)
    * [Deploying a network](#deploying-a-network)
    * [Undeploying a network](#undeploying-a-network)
@@ -223,14 +241,6 @@ vertx run word_count_network.json
       * [AsyncList](#asynclist)
       * [AsyncQueue](#asyncqueue)
       * [AsyncCounter](#asynccounter)
-1. [Components](#components)
-   * [Creating a component](#creating-a-component)
-   * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
-1. [Messaging](#messaging)
-   * [Sending messages on an output port](#sending-messages-on-an-output-port)
-   * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
-   * [Working with message groups](#working-with-message-groups)
-   * [Providing serializeable messages](#providing-serializeable-messages)
 1. [Logging](#logging)
    * [Logging messages to output ports](#logging-messages-to-output-ports)
    * [Reading log messages](#reading-log-messages)
@@ -475,6 +485,260 @@ For example...
   ]
 }
 ```
+
+## Components
+Networks are made up of any number of *components* which are simply Vert.x verticles or
+modules that are connected together according to the network configuration. Each component
+is a "black box" that receives input on named input ports and sends output to named output
+ports. By their nature, components do not know from where they received messages or from where
+they're sending messages.
+
+### Creating a component
+To create a Java component, extend the base `ComponentVerticle` class.
+
+```java
+public class MyComponent extends ComponentVerticle {
+
+  @Override
+  public void start() {
+  
+  }
+
+}
+```
+
+The `ComponentVerticle` base class is simply a special extension of the Vert.x `Verticle`
+that synchronizes with other components in the network at startup and provides Vertigo
+specific APIs. Once the component has completed startup it will call the `start()` method
+just like any other verticle.
+
+### The elements of a Vertigo component
+The `ComponentVerticle` base class provides the following additional `protected` fields:
+* `vertigo` - a `Vertigo` instance
+* `cluster` - the Vertigo `Cluster` to which the component belongs
+* `input` - the component's `InputCollector`, an interface to input ports
+* `output`- the component's `OutputCollector`, an interface to output ports
+* `logger` - the component's `PortLogger`, a special logger that logs messages to output ports
+
+The most important of these variables is the `input` and `output` objects on which messages
+are received and sent respectively. In Vertigo, messages flow in only one direction, so
+messages can only be received on input ports and sent to output ports.
+
+## Messaging
+The Vertigo messaging API is simply a wrapper around the Vert.x event bus.
+Vertigo messages are not sent through any central router. Rather, Vertigo uses
+network configurations to create direct event bus connections between components.
+Vertigo components send and receive messages using only output and input *ports*
+and are hidden from event bus address details which are defined in network configurations.
+This is the element that makes Vertigo components reusable.
+
+Vertigo messages are guaranteed to arrive in order. Vertigo also provides an API
+that allows for logical grouping and ordering of collections of messages known as
+[groups](#working-with-message-groups). Groups are strongly ordered named batches
+of messages that can be nested.
+
+For more information on messaging see [how Vertigo handles messaging](#how-vertigo-handles-messaging)
+
+### Sending messages on an output port
+To reference an output port, use the `output.port(String name)` method.
+
+```java
+OutputPort port = output.port("out");
+```
+
+If the referenced output port is not defined in the network configuration, the
+port will be lazily created, though it will not actually reference any connections.
+
+Any message that can be sent on the Vert.x event bus can be sent on the output port.
+To send a message on the event bus, simply call the `send` method.
+
+```java
+output.port("out").send("Hello world!");
+```
+
+Internally, Vertigo will route the message to any connections as defined in the
+network configuration.
+
+Output ports also support custom message serialization.
+See [providing serializeable messages](#providing-serializeable-messages)
+
+### Receiving messages on an input port
+Input ports are referenced in the same was as output ports.
+
+```java
+InputPort port = input.port("in");
+```
+
+To receive messages on an input port, register a message handler on the port.
+
+```java
+input.port("in").messageHandler(new Handler<String>() {
+  public void handle(String message) {
+    output.port("out").send(message);
+  }
+});
+```
+
+Note that Vertigo messages arrive in plain format and not in any sort of `Message`
+wrapper. This is because Vertigo messages are inherently uni-directional, and message
+acking is handled internally.
+
+### Working with message groups
+Vertigo provides a mechanism for logically grouping messages appropriately
+named *groups*. Groups are logical collections of messages that are strongly
+ordered by name. Before any given group can stat, each of the groups of the same
+name at the same level that preceded it must have been completed. Additionally,
+messages within a group are *guaranteed to be delivered to the same instance* of each
+target component. In other words, routing is performed per-group rather than per-message.
+
+When a new output group is created, Vertigo will await the completion of all groups
+of the same name that were created prior to the new group before sending the new group's
+messages.
+
+```java
+output.port("out").group("foo", new Handler<OutputGroup>() {
+  public void handle(OutputGroup group) {
+    group.send("foo").send("bar").send("baz").end();
+  }
+});
+```
+
+Note that the group's `end()` method *must* be called in order to indicate completion of
+the group. *Groups are fully asynchronous*, meaning they support asynchronous calls to other
+APIs, and this step is crucial to that functionality.
+
+```java
+output.port("out").group("foo", new Handler<OutputGroup>() {
+  public void handle(final OutputGroup group) {
+    someObject.someAsyncApi(new Handler<AsyncResult<String>>() {
+      public void handle(AsyncResult<String> result) {
+        if (result.succeeded()) {
+          group.send(result.result()).end();
+        }
+      }
+    });
+  }
+});
+```
+
+The `OutputGroup` API exposes the same methods as the `OutputPort`. That means that groups
+can be nested and Vertigo will still guarantee ordering across groups.
+
+```java
+output.port("out").group("foo", new Handler<OutputGroup>() {
+  public void handle(OutputGroup group) {
+    group.group("bar", new Handler<OutputGroup>() {
+      public void handle(OutputGroup group) {
+        group.send(1).send(2).send(3).end();
+      }
+    });
+    group.group("baz", new Handler<OutputGroup>() {
+      public void handle(OutputGroup group) {
+        group.send(4).send(5).send(6).end();
+      }
+    });
+    // Since two child groups were created, this group will not be ended
+    // until both children have been ended.
+    group.end();
+  }
+});
+```
+
+
+As with receiving messages, to receive message groups register a handler on an
+input port using the `groupHandler` method, passing a group name as the first
+argument.
+
+```java
+input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+  public void handle(InputGroup group) {
+    group.messageHandler(new Handler<String>() {
+      public void handle(String message) {
+        output.port("out").send(message);
+      }
+    });
+  }
+});
+```
+
+The `InputGroup` API also supports a `startHandler` and `endHandler`. The `endHandler`
+can be particularly useful for aggregations. Vertigo guarantees that if a group's
+`endHandler` is called then *all* of the messages sent for that group were received
+by that group.
+
+```java
+input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+  public void handle(InputGroup group) {
+
+    final Set<String> messages = new HashSet<>();
+
+    group.messageHandler(new Handler<String>() {
+      public void handle(String message) {
+        messages.add(message);
+      }
+    });
+
+    group.endHandler(new Handler<Void>() {
+      public void handle(Void ignore) {
+        System.out.println("Received " + messages.size() + " messages in group.");
+      }
+    });
+  }
+});
+```
+
+As with output groups, input groups can be nested, representing the same structure
+sent by an output group.
+
+```java
+input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+  public void handle(InputGroup group) {
+    group.group("bar", new Handler<InputGroup>() {
+      public void handle(InputGroup group) {
+        group.messageHandler(new Handler<Integer>() {
+          public void handle(Integer number) {
+            output.port("bar").send(number);
+          }
+        });
+      }
+    });
+    group.group("baz", new Handler<InputGroup>() {
+      public void handle(InputGroup group) {
+        group.messageHandler(new Handler<String>() {
+          public void handle(String string) {
+            output.port("baz").send(string);
+          }
+        });
+      }
+    });
+  }
+});
+```
+
+### Providing serializable messages
+The Vertigo messaging system supports custom serialization of messages for
+Java. Serializable messages must implement the `JsonSerializeable` interface.
+
+```java
+public class MyMessage implements JsonSerializeable {
+  private String foo;
+  private int bar;
+
+  // An empty constructor must be provided for serialization.
+  public MyMessage() {
+  }
+
+  public MyMessage(String foo, int bar) {
+    this.foo = foo;
+    this.bar = bar;
+  }
+}
+```
+
+In most cases, Vertigo's Jackson-based serializer will work with no custom
+configuration necessary. Vertigo's default serializer automatically serializes
+any basic fields (primitive types, strings, and collections), but Jackson annotations
+can be used to provide custom serialization of `JsonSerializeable` objects.
 
 ## Deployment
 One of the most important tasks of Vertigo is to support deployment and startup
@@ -769,255 +1033,6 @@ counter.incrementAndGet(new Handler<AsyncResult<Long>>() {
   }
 });
 ```
-
-## Components
-Components are "black box" Vert.x verticles that communicate with other components within
-the same network through named *input* and *output* ports.
-
-For detailed information on component startup and coordination see
-[how Vertigo coordinates networks](#how-vertigo-coordinates-networks)
-
-### Creating a component
-Components are defined by extending the base `ComponentVerticle` class.
-
-```java
-public class MyComponent extends ComponentVerticle {
-
-  @Override
-  public void start() {
-  
-  }
-
-}
-```
-
-Components behave exactly like normal Vert.x verticles. Once the component has been
-started and synchronized with other components within its network, the `start()` method
-will be called.
-
-### The elements of a Vertigo component
-Each Java component has several additional fields:
-* `vertigo` - a `Vertigo` instance
-* `cluster` - the Vertigo `Cluster` to which the component belongs
-* `input` - the component's `InputCollector`, an interface to input ports
-* `output`- the component's `OutputCollector`, an interface to output ports
-* `logger` - the component's `PortLogger`, a special logger that logs messages to output ports
-
-## Messaging
-The Vertigo messaging API is simply a wrapper around the Vert.x event bus.
-Vertigo messages are not sent through any central router. Rather, Vertigo uses
-network configurations to create direct event bus connections between components.
-Vertigo components send and receive messages using only output and input *ports*
-and are hidden from event bus address details which are defined in network configurations.
-This is the element that makes Vertigo components reusable.
-
-Vertigo messages are guaranteed to arrive in order. Vertigo also provides an API
-that allows for logical grouping and ordering of collections of messages known as
-[groups](#working-with-message-groups). Groups are strongly ordered named batches
-of messages that can be nested.
-
-For more information on messaging see [how Vertigo handles messaging](#how-vertigo-handles-messaging)
-
-### Sending messages on an output port
-To reference an output port, use the `output.port(String name)` method.
-
-```java
-OutputPort port = output.port("out");
-```
-
-If the referenced output port is not defined in the network configuration, the
-port will be lazily created, though it will not actually reference any connections.
-
-Any message that can be sent on the Vert.x event bus can be sent on the output port.
-To send a message on the event bus, simply call the `send` method.
-
-```java
-output.port("out").send("Hello world!");
-```
-
-Internally, Vertigo will route the message to any connections as defined in the
-network configuration.
-
-Output ports also support custom message serialization.
-See [providing serializeable messages](#providing-serializeable-messages)
-
-### Receiving messages on an input port
-Input ports are referenced in the same was as output ports.
-
-```java
-InputPort port = input.port("in");
-```
-
-To receive messages on an input port, register a message handler on the port.
-
-```java
-input.port("in").messageHandler(new Handler<String>() {
-  public void handle(String message) {
-    output.port("out").send(message);
-  }
-});
-```
-
-Note that Vertigo messages arrive in plain format and not in any sort of `Message`
-wrapper. This is because Vertigo messages are inherently uni-directional, and message
-acking is handled internally.
-
-### Working with message groups
-Vertigo provides a mechanism for logically grouping messages appropriately
-named *groups*. Groups are logical collections of messages that are strongly
-ordered by name. Before any given group can stat, each of the groups of the same
-name at the same level that preceded it must have been completed. Additionally,
-messages within a group are *guaranteed to be delivered to the same instance* of each
-target component. In other words, routing is performed per-group rather than per-message.
-
-When a new output group is created, Vertigo will await the completion of all groups
-of the same name that were created prior to the new group before sending the new group's
-messages.
-
-```java
-output.port("out").group("foo", new Handler<OutputGroup>() {
-  public void handle(OutputGroup group) {
-    group.send("foo").send("bar").send("baz").end();
-  }
-});
-```
-
-Note that the group's `end()` method *must* be called in order to indicate completion of
-the group. *Groups are fully asynchronous*, meaning they support asynchronous calls to other
-APIs, and this step is crucial to that functionality.
-
-```java
-output.port("out").group("foo", new Handler<OutputGroup>() {
-  public void handle(final OutputGroup group) {
-    someObject.someAsyncApi(new Handler<AsyncResult<String>>() {
-      public void handle(AsyncResult<String> result) {
-        if (result.succeeded()) {
-          group.send(result.result()).end();
-        }
-      }
-    });
-  }
-});
-```
-
-The `OutputGroup` API exposes the same methods as the `OutputPort`. That means that groups
-can be nested and Vertigo will still guarantee ordering across groups.
-
-```java
-output.port("out").group("foo", new Handler<OutputGroup>() {
-  public void handle(OutputGroup group) {
-    group.group("bar", new Handler<OutputGroup>() {
-      public void handle(OutputGroup group) {
-        group.send(1).send(2).send(3).end();
-      }
-    });
-    group.group("baz", new Handler<OutputGroup>() {
-      public void handle(OutputGroup group) {
-        group.send(4).send(5).send(6).end();
-      }
-    });
-    // Since two child groups were created, this group will not be ended
-    // until both children have been ended.
-    group.end();
-  }
-});
-```
-
-
-As with receiving messages, to receive message groups register a handler on an
-input port using the `groupHandler` method, passing a group name as the first
-argument.
-
-```java
-input.port("in").groupHandler("foo", new Handler<InputGroup>() {
-  public void handle(InputGroup group) {
-    group.messageHandler(new Handler<String>() {
-      public void handle(String message) {
-        output.port("out").send(message);
-      }
-    });
-  }
-});
-```
-
-The `InputGroup` API also supports a `startHandler` and `endHandler`. The `endHandler`
-can be particularly useful for aggregations. Vertigo guarantees that if a group's
-`endHandler` is called then *all* of the messages sent for that group were received
-by that group.
-
-```java
-input.port("in").groupHandler("foo", new Handler<InputGroup>() {
-  public void handle(InputGroup group) {
-
-    final Set<String> messages = new HashSet<>();
-
-    group.messageHandler(new Handler<String>() {
-      public void handle(String message) {
-        messages.add(message);
-      }
-    });
-
-    group.endHandler(new Handler<Void>() {
-      public void handle(Void ignore) {
-        System.out.println("Received " + messages.size() + " messages in group.");
-      }
-    });
-  }
-});
-```
-
-As with output groups, input groups can be nested, representing the same structure
-sent by an output group.
-
-```java
-input.port("in").groupHandler("foo", new Handler<InputGroup>() {
-  public void handle(InputGroup group) {
-    group.group("bar", new Handler<InputGroup>() {
-      public void handle(InputGroup group) {
-        group.messageHandler(new Handler<Integer>() {
-          public void handle(Integer number) {
-            output.port("bar").send(number);
-          }
-        });
-      }
-    });
-    group.group("baz", new Handler<InputGroup>() {
-      public void handle(InputGroup group) {
-        group.messageHandler(new Handler<String>() {
-          public void handle(String string) {
-            output.port("baz").send(string);
-          }
-        });
-      }
-    });
-  }
-});
-```
-
-### Providing serializable messages
-The Vertigo messaging system supports custom serialization of messages for
-Java. Serializable messages must implement the `JsonSerializeable` interface.
-
-```java
-public class MyMessage implements JsonSerializeable {
-  private String foo;
-  private int bar;
-
-  // An empty constructor must be provided for serialization.
-  public MyMessage() {
-  }
-
-  public MyMessage(String foo, int bar) {
-    this.foo = foo;
-    this.bar = bar;
-  }
-}
-```
-
-In most cases, Vertigo's Jackson-based serializer will work with no custom
-configuration necessary. Vertigo's default serializer automatically serializes
-any basic fields (primitive types, strings, and collections), but Jackson annotations
-can be used to provide custom serialization of `JsonSerializeable` objects.
 
 ## Logging
 Each Vertigo component contains a special `PortLogger` which logs messages

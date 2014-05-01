@@ -6,5 +6,5 @@
   "keywords": ["event", "processing", "real-time"],
   "homepage": "https://github.com/kuujo/vertigo",
   "worker": true,
-  "includes": "net.kuujo~vertigo-utils~0.7.0-SNAPSHOT"
+  "includes": "net.kuujo~vertigo-utils~0.7.0-SNAPSHOT,net.kuujo~xync~0.1.0-SNAPSHOT"
 }

@@ -3,11 +3,9 @@ Vertigo
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
-**[Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java)**
+**[Getting Started](#getting-started) | [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java)**
 
-**[Javascript API][vertigo-js]**
-
-**[Python API][vertigo-python]**
+[Javascript API][vertigo-js] | [Python API][vertigo-python]
 
 Vertigo is a fast, fault-tolerant, polyglot event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
@@ -110,13 +108,12 @@ network.addComponent("word-counter", WordCounter.class.getName(), 2);
 network.createConnection("word-feeder", "word", "word-counter", "word", new HashSelector());
 ```
 
-This network contains two components. The first component is a Python component
-that will feed random words to its `word` out port. The second component is a
-Javascript component that will count words received on its `word` in port. The
-network therefore defines a connection between the `word-feeder` component's
-`word` out port and the `word-counter` component's `word` in port. Vertigo
-components can be implemented in a variety of languages since they're just
-Vert.x verticles.
+Vertigo components can be implemented in a variety of languages since they're
+just Vert.x verticles. This network contains two components. The first component
+is a Python component that will feed random words to its `word` out port. The second
+component is a Javascript component that will count words received on its `word` in
+port. The network therefore defines a connection between the `word-feeder` component's
+`word` out port and the `word-counter` component's `word` in port.
 
 Note that since we defined two instances of the `word-counter` component, it's
 important that the same words always go to the same instance, so we use a
@@ -486,11 +483,15 @@ For example...
 }
 ```
 
+JSON network configurations can be used to deploy Vertigo networks from the command
+line using the `vertx` command line tool. For more information see
+[deploying networks from the command line](#deploying-networks-from-the-command-line)
+
 ## Components
 Networks are made up of any number of *components* which are simply Vert.x verticles or
 modules that are connected together according to the network configuration. Each component
 is a "black box" that receives input on named input ports and sends output to named output
-ports. By their nature, components do not know from where they received messages or from where
+ports. By their nature, components do not know from where they received messages or to where
 they're sending messages.
 
 ### Creating a component
@@ -532,7 +533,8 @@ Vertigo components send and receive messages using only output and input *ports*
 and are hidden from event bus address details which are defined in network configurations.
 This is the element that makes Vertigo components reusable.
 
-Vertigo messages are guaranteed to arrive in order. Vertigo also provides an API
+Vertigo messages are guaranteed to arrive *in the order in which they were sent*
+and to only be processed *exactly once*. Vertigo also provides an API
 that allows for logical grouping and ordering of collections of messages known as
 [groups](#working-with-message-groups). Groups are strongly ordered named batches
 of messages that can be nested.
@@ -744,17 +746,16 @@ can be used to provide custom serialization of `JsonSerializeable` objects.
 One of the most important tasks of Vertigo is to support deployment and startup
 of networks in a consistent and reliable manner. Vertigo supports network deployment
 either within a single Vert.x instance (local) or across a cluster of Vert.x instances.
-When a Vertigo network is deployed, a special verticle known as the *network manager*
-is deployed. The network manager is tasked with managing and monitoring components
-within the network, handling runtime configuration changes, and coordinating startup
-and shutdown of networks.
+When a network is deployed, Vertigo will handle assignment of components to the
+appropriate nodes within the cluster and coordinate startup across all the components.
 
 Networks can be deployed and configured from any verticle within any node in a Vert.x
 cluster. Even if a network is deployed from another verticle, the network can still be
 referenced and updated from anywhere in the cluster. Vertigo's internal coordination
 mechanisms ensure consistency for deployments across all nodes in a cluster.
 
-For more information on network deployment and coordination see [how it works](#how-it-works)
+For more information on how Vertigo handles network deployment and coordination
+see [how it works](#how-it-works)
 
 ### Deploying a network
 To deploy a network, simply use the `deployNetwork` method.
@@ -773,6 +774,10 @@ cluster scope. If the current Vert.x instance is a Hazelcast clustered instance,
 Vertigo will attempt to deploy the network across the cluster. This behavior can
 be configured in the network's configuration.
 
+```java
+network.getClusterConfig().setScope(ClusterScope.LOCAL);
+```
+
 If the current Vert.x instance is not clustered then all network deployment will
 automatically fall back to the Vert.x `Container`. Even if a network is configured
 to be deployed locally, Vertigo will still coordinate using Hazelcast if it's
@@ -781,6 +786,8 @@ available.
 Note that in order to support remote component deployment you must use a
 [Xync](http://github.com/kuujo/xync) node or some other facility that supports
 event bus deployments.
+
+See [configuring cluster scopes](#configuring-cluster-scopes) for more on scopes
 
 ### Undeploying a network
 To undeploy a network, use the `undeployNetwork` method.
@@ -969,6 +976,11 @@ map.put("foo", "bar", new Handler<AsyncResult<String>>() {
 });
 ```
 
+If the network's cluster scope is `LOCAL` then Vertigo maps will be backed by
+the Vert.x `ConcurrentSharedMap`. If the cluster scope is `CLUSTER` then maps
+will be backed by Hazelcast maps that are accessed over the event bus in a Xync
+worker verticle to prevent blocking the event loop.
+
 #### AsyncSet
 The `AsyncSet` interface closely mimics the interface of the Java `Set` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
@@ -984,6 +996,11 @@ set.add("bar", new Handler<AsyncResult<Boolean>>() {
 });
 ```
 
+If the network's cluster scope is `LOCAL` then Vertigo sets will be backed by
+the Vert.x `SharedData` sets. If the cluster scope is `CLUSTER` then sets
+will be backed by Hazelcast sets that are accessed over the event bus in a Xync
+worker verticle to prevent blocking the event loop.
+
 #### AsyncList
 The `AsyncList` interface closely mimics the interface of the Java `List` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
@@ -998,6 +1015,11 @@ list.add("bar", new Handler<AsyncResult<Boolean>>() {
   }
 });
 ```
+
+If the network's cluster scope is `LOCAL` then Vertigo lists will be backed by
+a custom list implementation on top of the Vert.x `ConcurrentSharedMap`. If the
+cluster scope is `CLUSTER` then lists will be backed by Hazelcast lists that are
+accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
 #### AsyncQueue
 The `AsyncQueue` interface closely mimics the interface of the Java `Queue` interface,
@@ -1020,6 +1042,11 @@ queue.add("bar", new Handler<AsyncResult<Boolean>>() {
 });
 ```
 
+If the network's cluster scope is `LOCAL` then Vertigo queues will be backed by
+a custom queue implementation on top of the Vert.x `ConcurrentSharedMap`. If the
+cluster scope is `CLUSTER` then queues will be backed by Hazelcast queues that are
+accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
+
 #### AsyncCounter
 The `AsyncCounter` facilitates generating cluster-wide counters.
 
@@ -1033,6 +1060,11 @@ counter.incrementAndGet(new Handler<AsyncResult<Long>>() {
   }
 });
 ```
+
+If the network's cluster scope is `LOCAL` then Vertigo counters will be backed by
+a custom counter implementation on top of the Vert.x `ConcurrentSharedMap`. If the
+cluster scope is `CLUSTER` then counters will be backed by Hazelcast maps that are
+accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
 ## Logging
 Each Vertigo component contains a special `PortLogger` which logs messages

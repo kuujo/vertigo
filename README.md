@@ -5,7 +5,7 @@ Vertigo
 
 **[Getting Started](#getting-started) | [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java)**
 
-[Javascript API][vertigo-js] | [Python API][vertigo-python]
+[Javascript][vertigo-js] | [Python][vertigo-python]
 
 Vertigo is a fast, fault-tolerant, polyglot event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
@@ -264,7 +264,7 @@ To use Vertigo simply add the library as a Maven dependency or as a Vert.x modul
 <dependency>
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.7.0-beta1</version>
 </dependency>
 ```
 
@@ -276,7 +276,7 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.7.0-SNAPSHOT"
+  "includes": "net.kuujo~vertigo~0.7.0-beta1"
 }
 ```
 
@@ -893,7 +893,7 @@ This feature is implemented as a Vert.x language module, so the network deployer
 be first added to your `langs.properties` file.
 
 ```
-network=net.kuujo~vertigo-deployer~0.7.0-SNAPSHOT:net.kuujo.vertigo.NetworkFactory
+network=net.kuujo~vertigo-deployer~0.7.0-beta1:net.kuujo.vertigo.NetworkFactory
 .network=network
 ```
 

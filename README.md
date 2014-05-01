@@ -41,10 +41,6 @@ logic, and connections between components indicate how messages should be
 passed between them. Networks can be created either in code or in JSON and
 can be deployed in code or from the command line.
 
-```
-vertx run my_network.json
-```
-
 ## Ports
 Components in Vertigo communicate via input and output ports. Messaging in Vertigo
 is inherently uni-directional, so each component has a unique set of input and
@@ -80,11 +76,27 @@ the network configuration is used to define how ports on different components
 relate to one another. Connections between components/ports in your network indicate
 how messages will flow through the network.
 
+```java
+NetworkConfig network = vertigo.createNetwork("foo");
+network.addComponent("bar", "bar.js", 2);
+network.addComponent("baz", "baz.py", 4);
+network.createConnection("bar", "out", "baz", "in");
+```
+
 ## A Simple Network
+Vertigo provides all its API functionality through a single `Vertigo` object.
+
+```java
+Vertigo vertigo = new Vertigo(this);
+```
+
+The `Vertigo` object supports creating and deploying networks. Each language
+binding has an equivalent API.
+
 ```java
 NetworkConfig network = vertigo.createNetwork("word-count");
-network.addComponent("word-feeder", "random_word_feeder.py");
-network.addComponent("word-counter", "word_counter.js", 2);
+network.addComponent("word-feeder", RandomWordCounter.class.getName());
+network.addComponent("word-counter", WordCounter.class.getName(), 2);
 network.createConnection("word-feeder", "word", "word-counter", "word", new HashSelector());
 ```
 
@@ -92,7 +104,9 @@ This network contains two components. The first component is a Python component
 that will feed random words to its `word` out port. The second component is a
 Javascript component that will count words received on its `word` in port. The
 network therefore defines a connection between the `word-feeder` component's
-`word` out port and the `word-counter` component's `word` in port.
+`word` out port and the `word-counter` component's `word` in port. Vertigo
+components can be implemented in a variety of languages since they're just
+Vert.x verticles.
 
 Note that since we defined two instances of the `word-counter` component, it's
 important that the same words always go to the same instance, so we use a
@@ -135,6 +149,53 @@ input.port('word').messageHandler(function(word) {
 This component registers a message handler on the `word` in port, updates
 an internal count for the word, and sends the updated word count on the
 `count` out port.
+
+Once the network has been configured and components have been created,
+we deploy the network with the same `Vertigo` API that created it.
+
+```java
+vertigo.deployNetwork(network);
+```
+
+We can also configure and deploy the network in JSON.
+
+```
+{
+  "name": "word-count",
+  "components": {
+    "word-feeder": {
+      "type": "verticle",
+      "main": "random_word_feeder.py",
+    },
+    "word-counter": {
+      "type": "verticle",
+      "main": "word_counter.js",
+      "instances": 2
+    }
+  },
+  "connections": [
+    {
+      "source": {
+        "component": "word-feeder",
+        "port": "word"
+      },
+      "target": {
+        "component": "word-counter",
+        "port": "word"
+      }
+    }
+  ]
+}
+```
+
+This is a JSON network configuration that is equivalent to the Java
+configuration we defined above. The JSON configuration can be deployed
+directly from a JSON configuration file using the `vertx` command line
+tool.
+
+```
+vertx run word_count_network.json
+```
 
 # Java User Manual
 1. [Introduction](#introduction)

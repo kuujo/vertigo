@@ -16,6 +16,9 @@
 package net.kuujo.vertigo.io.connection;
 
 import net.kuujo.vertigo.io.Output;
+import net.kuujo.vertigo.io.OutputGroupSupport;
+
+import org.vertx.java.core.Handler;
 
 /**
  * Output connection.<p>
@@ -41,5 +44,15 @@ import net.kuujo.vertigo.io.Output;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputConnection extends Connection<OutputConnection>, Output<OutputConnection> {
+public interface OutputConnection extends Connection<OutputConnection>, Output<OutputConnection>, OutputGroupSupport<OutputConnection> {
+
+  /**
+   * Creates an output batch on the connection.
+   *
+   * @param id The unique batch ID.
+   * @param handler A handler to be called once the batch is started.
+   * @return The output connection.
+   */
+  OutputConnection batch(String id, Handler<ConnectionOutputBatch> handler);
+
 }

@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io.group;
 
 import net.kuujo.vertigo.io.Input;
+import net.kuujo.vertigo.io.InputGroupSupport;
 
 import org.vertx.java.core.Handler;
 
@@ -44,7 +45,7 @@ import org.vertx.java.core.Handler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputGroup extends Group<InputGroup>, Input<InputGroup> {
+public interface InputGroup extends Group<InputGroup>, Input<InputGroup>, InputGroupSupport<InputGroup> {
 
   /**
    * Registers a start handler on the group.

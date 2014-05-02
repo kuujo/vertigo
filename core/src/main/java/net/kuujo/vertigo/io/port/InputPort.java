@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.io.port;
 
 import net.kuujo.vertigo.io.Input;
+import net.kuujo.vertigo.io.InputBatchSupport;
+import net.kuujo.vertigo.io.InputGroupSupport;
 
 /**
  * Input port on which messages are received.<p>
@@ -27,5 +29,5 @@ import net.kuujo.vertigo.io.Input;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputPort extends Port<InputPort>, Input<InputPort> {
+public interface InputPort extends Port<InputPort>, Input<InputPort>, InputGroupSupport<InputPort>, InputBatchSupport<InputPort> {
 }

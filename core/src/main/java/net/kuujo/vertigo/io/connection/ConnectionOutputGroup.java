@@ -13,31 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group;
+package net.kuujo.vertigo.io.connection;
+
+import net.kuujo.vertigo.io.group.OutputGroup;
 
 /**
- * Input/output group.<p>
- *
- * Groups are named logical collections of messages between two instances
- * of two components. When a group is created, the group will be assigned
- * to a single target instance per connection. Groups can be nested.
+ * Connection level output group.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Group<T extends Group<T>> {
-
-  /**
-   * Returns the unique group identifier.
-   *
-   * @return The unique group identifier.
-   */
-  String id();
-
-  /**
-   * Returns the group name.
-   *
-   * @return The group name.
-   */
-  String name();
-
+public interface ConnectionOutputGroup extends OutputGroup {
 }

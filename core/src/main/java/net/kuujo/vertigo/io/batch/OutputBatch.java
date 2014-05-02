@@ -13,31 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group;
+package net.kuujo.vertigo.io.batch;
+
+import net.kuujo.vertigo.io.Output;
+import net.kuujo.vertigo.io.OutputGroupSupport;
 
 /**
- * Input/output group.<p>
+ * Sendable batch of messages.<p>
  *
- * Groups are named logical collections of messages between two instances
- * of two components. When a group is created, the group will be assigned
- * to a single target instance per connection. Groups can be nested.
+ * Output batches represent collections of messages during a time window.
+ * Each port may only have one batch associated with it at any given time,
+ * and only once the batch has been ended can the next batch be created.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Group<T extends Group<T>> {
+public interface OutputBatch extends Batch<OutputBatch>, Output<OutputBatch>, OutputGroupSupport<OutputBatch> {
 
   /**
-   * Returns the unique group identifier.
-   *
-   * @return The unique group identifier.
+   * Ends the batch.
    */
-  String id();
-
-  /**
-   * Returns the group name.
-   *
-   * @return The group name.
-   */
-  String name();
+  void end();
 
 }

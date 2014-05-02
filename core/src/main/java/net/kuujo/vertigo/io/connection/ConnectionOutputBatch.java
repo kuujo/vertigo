@@ -13,31 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group;
+package net.kuujo.vertigo.io.connection;
 
 /**
- * Input/output group.<p>
+ * Connection level output batch.<p>
  *
- * Groups are named logical collections of messages between two instances
- * of two components. When a group is created, the group will be assigned
- * to a single target instance per connection. Groups can be nested.
+ * The connection output batch is an extension of the {@link OutputConnection} that
+ * allows batch connections to be selected during routing.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Group<T extends Group<T>> {
+public interface ConnectionOutputBatch extends OutputConnection {
 
   /**
-   * Returns the unique group identifier.
+   * Returns the batch ID.
    *
-   * @return The unique group identifier.
+   * @return The unique batch ID.
    */
   String id();
 
   /**
-   * Returns the group name.
-   *
-   * @return The group name.
+   * Ends the batch.
    */
-  String name();
+  void end();
 
 }

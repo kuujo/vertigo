@@ -17,7 +17,10 @@ package net.kuujo.vertigo.io.stream.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import net.kuujo.vertigo.io.batch.OutputBatch;
+import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.DefaultOutputConnection;
@@ -43,9 +46,9 @@ import org.vertx.java.core.json.JsonObject;
 public class DefaultOutputStream implements OutputStream {
   private final Vertx vertx;
   private final OutputStreamContext context;
-  private final List<OutputConnection> connections = new ArrayList<>();
+  final List<OutputConnection> connections = new ArrayList<>();
   private int maxQueueSize;
-  private Selector selector;
+  Selector selector;
 
   public DefaultOutputStream(Vertx vertx, OutputStreamContext context) {
     this.vertx = vertx;
@@ -117,6 +120,29 @@ public class DefaultOutputStream implements OutputStream {
   public OutputStream drainHandler(Handler<Void> handler) {
     for (OutputConnection connection : connections) {
       connection.drainHandler(handler);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream batch(final Handler<OutputBatch> handler) {
+    return batch(UUID.randomUUID().toString(), handler);
+  }
+
+  @Override
+  public OutputStream batch(final String id, final Handler<OutputBatch> handler) {
+    final List<ConnectionOutputBatch> batches = new ArrayList<>();
+    final int connectionsSize = connections.size();
+    for (OutputConnection connection : connections) {
+      connection.batch(id, new Handler<ConnectionOutputBatch>() {
+        @Override
+        public void handle(ConnectionOutputBatch batch) {
+          batches.add(batch);
+          if (batches.size() == connectionsSize) {
+            handler.handle(new StreamOutputBatch(id, DefaultOutputStream.this, batches));
+          }
+        }
+      });
     }
     return this;
   }

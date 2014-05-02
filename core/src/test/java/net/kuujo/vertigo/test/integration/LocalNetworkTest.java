@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.io.batch.InputBatch;
+import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.group.InputGroup;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.java.ComponentVerticle;
@@ -105,9 +107,6 @@ public class LocalNetworkTest extends TestVerticle {
         public void handle(AsyncResult<Void> result) {
           assertTrue(result.succeeded());
           for (int i = 0; i < count; i++) {
-            output.port("out").send("Hello world!");
-            output.port("out").send("Hello world!");
-            output.port("out").send("Hello world!");
             output.port("out").send("Hello world!");
           }
         }
@@ -368,6 +367,179 @@ public class LocalNetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
     network.addVerticle("sender", TestPauseResumeSender.class.getName());
     network.addVerticle("receiver", TestPauseResumeReceiver.class.getName());
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestOneToManyBatchSender extends ComponentVerticle {
+    private final int count = 4;
+    private final Set<String> received = new HashSet<>();
+
+    @Override
+    public void start() {
+      vertx.eventBus().registerHandler("test", new Handler<Message<String>>() {
+        @Override
+        public void handle(Message<String> message) {
+          received.add(message.body());
+          if (received.size() == count) {
+            testComplete();
+          }
+        }
+      }, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          assertTrue(result.succeeded());
+          output.port("out").batch(new Handler<OutputBatch>() {
+            @Override
+            public void handle(OutputBatch batch) {
+              batch.send("Hello world!");
+              batch.send("Hello world!");
+              batch.send("Hello world!");
+              batch.send("Hello world!");
+              batch.end();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  public static class TestOneToManyBatchReceiver extends ComponentVerticle {
+    private boolean sent;
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(InputBatch batch) {
+          batch.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              if (!sent) {
+                assertEquals("Hello world!", message);
+                vertx.eventBus().send("test", context.address());
+                sent = true;
+              }
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToManyBatch() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+    network.addVerticle("sender", TestOneToManyBatchSender.class.getName());
+    network.addVerticle("receiver", TestOneToManyBatchReceiver.class.getName(), 4);
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestOneToManyGroupWithinBatchSender extends ComponentVerticle {
+    private final int count = 4;
+    private final Set<String> received = new HashSet<>();
+
+    @Override
+    public void start() {
+      vertx.eventBus().registerHandler("test", new Handler<Message<String>>() {
+        @Override
+        public void handle(Message<String> message) {
+          received.add(message.body());
+          if (received.size() == count) {
+            testComplete();
+          }
+        }
+      }, new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          assertTrue(result.succeeded());
+          output.port("out").batch(new Handler<OutputBatch>() {
+            @Override
+            public void handle(OutputBatch batch) {
+              batch.group("foo", new Handler<OutputGroup>() {
+                @Override
+                public void handle(OutputGroup group) {
+                  group.send("Hello world!").end();
+                }
+              });
+              batch.group("foo", new Handler<OutputGroup>() {
+                @Override
+                public void handle(OutputGroup group) {
+                  group.send("Hello world!").end();
+                }
+              });
+              batch.group("foo", new Handler<OutputGroup>() {
+                @Override
+                public void handle(OutputGroup group) {
+                  group.send("Hello world!").end();
+                }
+              });
+              batch.group("foo", new Handler<OutputGroup>() {
+                @Override
+                public void handle(OutputGroup group) {
+                  group.send("Hello world!").end();
+                }
+              });
+              batch.end();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  public static class TestOneToManyGroupWithinBatchReceiver extends ComponentVerticle {
+    private boolean sent;
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(InputBatch batch) {
+          batch.groupHandler("foo", new Handler<InputGroup>() {
+            @Override
+            public void handle(InputGroup group) {
+              group.messageHandler(new Handler<String>() {
+                @Override
+                public void handle(String message) {
+                  if (!sent) {
+                    assertEquals("Hello world!", message);
+                    vertx.eventBus().send("test", context.address());
+                    sent = true;
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToManyGroupWithinBatch() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+    network.addVerticle("sender", TestOneToManyGroupWithinBatchSender.class.getName());
+    network.addVerticle("receiver", TestOneToManyGroupWithinBatchReceiver.class.getName(), 4);
     network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.kuujo.vertigo.hook.InputHook;
+import net.kuujo.vertigo.io.batch.InputBatch;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.group.InputGroup;
@@ -48,10 +49,12 @@ public class DefaultInputConnection implements InputConnection {
   private final String outAddress;
   private List<InputHook> hooks = new ArrayList<>();
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
-  private final Map<String, ConnectionInputGroup> groups = new HashMap<>();
+  private final Map<String, DefaultConnectionInputGroup> groups = new HashMap<>();
   private final InputDeserializer deserializer = new InputDeserializer();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
+  private Handler<InputBatch> batchHandler;
+  private DefaultConnectionInputBatch currentBatch;
   private long lastReceived;
   private long lastFeedbackTime;
   private long feedbackTimerID;
@@ -83,7 +86,7 @@ public class DefaultInputConnection implements InputConnection {
               doMessage(message.body());
             }
             break;
-          case "start":
+          case "startGroup":
             if (checkID(message.body().getLong("id"))) {
               doGroupStart(message.body());
             }
@@ -93,9 +96,24 @@ public class DefaultInputConnection implements InputConnection {
               doGroupMessage(message.body());
             }
             break;
-          case "end":
+          case "endGroup":
             if (checkID(message.body().getLong("id"))) {
               doGroupEnd(message.body());
+            }
+            break;
+          case "startBatch":
+            if (checkID(message.body().getLong("id"))) {
+              doBatchStart(message.body());
+            }
+            break;
+          case "batch":
+            if (checkID(message.body().getLong("id"))) {
+              doBatchMessage(message.body());
+            }
+            break;
+          case "endBatch":
+            if (checkID(message.body().getLong("id"))) {
+              doBatchEnd(message.body());
             }
             break;
           case "connect":
@@ -230,6 +248,12 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
+  public InputConnection batchHandler(Handler<InputBatch> handler) {
+    batchHandler = handler;
+    return this;
+  }
+
+  @Override
   public InputConnection groupHandler(String group, Handler<InputGroup> handler) {
     groupHandlers.put(group, handler);
     return this;
@@ -256,12 +280,16 @@ public class DefaultInputConnection implements InputConnection {
     String groupID = message.getString("group");
     String name = message.getString("name");
     String parentId = message.getString("parent");
-    ConnectionInputGroup group = new ConnectionInputGroup(groupID, name, this);
+    DefaultConnectionInputGroup group = new DefaultConnectionInputGroup(groupID, name, this);
     groups.put(groupID, group);
     if (parentId != null) {
-      ConnectionInputGroup parent = groups.get(parentId);
-      if (parent != null) {
-        parent.handleGroup(group);
+      if (currentBatch != null && parentId.equals(currentBatch.id())) {
+        currentBatch.handleGroup(group);
+      } else {
+        DefaultConnectionInputGroup parent = groups.get(parentId);
+        if (parent != null) {
+          parent.handleGroup(group);
+        }
       }
     } else {
       Handler<InputGroup> handler = groupHandlers.get(name);
@@ -278,7 +306,7 @@ public class DefaultInputConnection implements InputConnection {
    * Indicates that an input group is ready.
    */
   void groupReady(String group) {
-    eventBus.send(outAddress, new JsonObject().putString("action", "start").putString("group", group));
+    eventBus.send(outAddress, new JsonObject().putString("action", "group").putString("group", group));
   }
 
   /**
@@ -286,7 +314,7 @@ public class DefaultInputConnection implements InputConnection {
    */
   private void doGroupMessage(final JsonObject message) {
     String groupID = message.getString("group");
-    ConnectionInputGroup group = groups.get(groupID);
+    DefaultConnectionInputGroup group = groups.get(groupID);
     if (group != null) {
       Object value = deserializer.deserialize(message);
       if (value != null) {
@@ -300,9 +328,54 @@ public class DefaultInputConnection implements InputConnection {
    */
   private void doGroupEnd(final JsonObject message) {
     String groupID = message.getString("group");
-    ConnectionInputGroup group = groups.remove(groupID);
+    DefaultConnectionInputGroup group = groups.remove(groupID);
     if (group != null) {
       group.handleEnd();
+    }
+  }
+
+  /**
+   * Handles a batch start.
+   */
+  private void doBatchStart(final JsonObject message) {
+    if (currentBatch != null) {
+      currentBatch.handleEnd();
+    }
+    String batchID = message.getString("batch");
+    currentBatch = new DefaultConnectionInputBatch(batchID, this);
+    if (batchHandler != null) {
+      batchHandler.handle(currentBatch);
+    }
+    currentBatch.handleStart();
+  }
+
+  /**
+   * Indicates that an input batch is ready.
+   */
+  void batchReady(String batch) {
+    eventBus.send(outAddress, new JsonObject().putString("action", "batch").putString("batch", batch));
+  }
+
+  /**
+   * Handles a batch message.
+   */
+  private void doBatchMessage(final JsonObject message) {
+    String batchID = message.getString("batch");
+    if (currentBatch != null && currentBatch.id().equals(batchID)) {
+      Object value = deserializer.deserialize(message);
+      if (value != null) {
+        currentBatch.handleMessage(value);
+      }
+    }
+  }
+
+  /**
+   * Handles a batch end.
+   */
+  private void doBatchEnd(final JsonObject message) {
+    if (currentBatch != null) {
+      currentBatch.handleEnd();
+      currentBatch = null;
     }
   }
 

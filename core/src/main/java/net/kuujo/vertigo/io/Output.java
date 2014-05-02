@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.io;
 
-import net.kuujo.vertigo.io.group.OutputGroup;
-
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -194,20 +192,5 @@ public interface Output<T extends Output<T>> {
    * @return The output.
    */
   T send(JsonObject message);
-
-  /**
-   * Creates a named output group.<p>
-   *
-   * When creating an output group, the output will synchronize with any
-   * inputs to which it is connected prior to calling the group handler. This
-   * means that once the group handler has been called, messages sent to the
-   * group will be immediately sent to any output connections rather than
-   * queueing messages.
-   *
-   * @param name The output group name.
-   * @param handler A handler to be called once the output group is created.
-   * @return The output buffer.
-   */
-  T group(String name, Handler<OutputGroup> handler);
 
 }

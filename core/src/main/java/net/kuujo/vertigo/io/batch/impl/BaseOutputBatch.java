@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group.impl;
+package net.kuujo.vertigo.io.batch.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
+import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.group.OutputGroup;
+import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -29,22 +30,21 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Top-level output group.<p>
+ * Top-level output batch.<p>
  *
- * This output group implementation is the API that is exposed to users.
- * However, internally it wraps other {@link OutputGroup} instances
+ * This output batch implementation is the API that is exposed to users.
+ * However, internally it wraps other {@link OutputBatch} instances
  * which handle grouping logic for individual output connections.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class BaseOutputGroup implements OutputGroup {
-  private final String id = UUID.randomUUID().toString();
-  private final String name;
+public class BaseOutputBatch implements OutputBatch {
+  private final String id;
   private final Vertx vertx;
-  private final Collection<OutputGroup> connections;
+  private final Collection<OutputBatch> connections;
 
-  public BaseOutputGroup(String name, Vertx vertx, Collection<OutputGroup> connections) {
-    this.name = name;
+  public BaseOutputBatch(String id, Vertx vertx, Collection<OutputBatch> connections) {
+    this.id = id;
     this.vertx = vertx;
     this.connections = connections;
   }
@@ -55,18 +55,13 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public String name() {
-    return name;
-  }
-
-  @Override
   public Vertx vertx() {
     return vertx;
   }
 
   @Override
-  public OutputGroup setSendQueueMaxSize(int maxSize) {
-    for (OutputGroup group : connections) {
+  public OutputBatch setSendQueueMaxSize(int maxSize) {
+    for (OutputBatch group : connections) {
       group.setSendQueueMaxSize(maxSize);
     }
     return this;
@@ -75,7 +70,7 @@ public class BaseOutputGroup implements OutputGroup {
   @Override
   public int getSendQueueMaxSize() {
     int maxSize = 0;
-    for (OutputGroup group : connections) {
+    for (OutputBatch group : connections) {
       maxSize += group.getSendQueueMaxSize();
     }
     return maxSize;
@@ -84,7 +79,7 @@ public class BaseOutputGroup implements OutputGroup {
   @Override
   public int size() {
     int highest = 0;
-    for (OutputGroup group : connections) {
+    for (OutputBatch group : connections) {
       highest = Math.max(highest, group.size());
     }
     return highest;
@@ -92,7 +87,7 @@ public class BaseOutputGroup implements OutputGroup {
 
   @Override
   public boolean sendQueueFull() {
-    for (OutputGroup group : connections) {
+    for (OutputBatch group : connections) {
       if (group.sendQueueFull()) {
         return true;
       }
@@ -101,18 +96,18 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup drainHandler(Handler<Void> handler) {
-    for (OutputGroup group : connections) {
+  public OutputBatch drainHandler(Handler<Void> handler) {
+    for (OutputBatch group : connections) {
       group.drainHandler(handler);
     }
     return this;
   }
 
   @Override
-  public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
+  public OutputBatch group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int connectionsSize = connections.size();
-    for (OutputGroup connection : connections) {
+    for (OutputBatch connection : connections) {
       connection.group(name, new Handler<OutputGroup>() {
         @Override
         public void handle(OutputGroup group) {
@@ -127,123 +122,122 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup send(Object message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Object message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(String message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(String message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Boolean message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Boolean message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Character message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Character message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Short message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Short message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Integer message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Integer message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Long message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Long message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Double message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Double message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Float message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Float message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Buffer message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Buffer message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(JsonObject message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(JsonObject message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(JsonArray message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(JsonArray message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(Byte message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(Byte message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup send(byte[] message) {
-    for (OutputGroup output : connections) {
+  public OutputBatch send(byte[] message) {
+    for (OutputBatch output : connections) {
       output.send(message);
     }
     return this;
   }
 
   @Override
-  public OutputGroup end() {
-    for (OutputGroup output : connections) {
+  public void end() {
+    for (OutputBatch output : connections) {
       output.end();
     }
-    return this;
   }
 
 }

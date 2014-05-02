@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
+import net.kuujo.vertigo.io.connection.ConnectionOutputGroup;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
 import org.vertx.java.core.Handler;
@@ -32,7 +33,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ConnectionOutputGroup implements OutputGroup {
+public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   private final String id;
   private final String parent;
   private final String name;
@@ -44,14 +45,14 @@ public class ConnectionOutputGroup implements OutputGroup {
   private boolean ended;
   private boolean closed;
 
-  public ConnectionOutputGroup(String id, String name, DefaultOutputConnection connection) {
+  public DefaultConnectionOutputGroup(String id, String name, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
     this.parent = null;
     this.connection = connection;
   }
 
-  public ConnectionOutputGroup(String id, String name, String parent, DefaultOutputConnection connection) {
+  public DefaultConnectionOutputGroup(String id, String name, String parent, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
     this.parent = parent;
@@ -139,8 +140,8 @@ public class ConnectionOutputGroup implements OutputGroup {
   }
 
   @Override
-  public ConnectionOutputGroup group(final String name, final Handler<OutputGroup> handler) {
-    ConnectionOutputGroup group = connection.group(name, id, handler);
+  public DefaultConnectionOutputGroup group(final String name, final Handler<OutputGroup> handler) {
+    DefaultConnectionOutputGroup group = connection.group(name, id, handler);
     children++;
     group.endHandler(new VoidHandler() {
       @Override

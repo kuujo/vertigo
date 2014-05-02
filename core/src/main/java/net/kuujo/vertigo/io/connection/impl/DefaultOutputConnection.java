@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import net.kuujo.vertigo.hook.OutputHook;
+import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.group.OutputGroup;
@@ -58,7 +59,8 @@ public class DefaultOutputConnection implements OutputConnection {
   private Handler<Void> drainHandler;
   private long currentMessage = 1;
   private final TreeMap<Long, JsonObject> messages = new TreeMap<>();
-  private final Map<String, ConnectionOutputGroup> groups = new HashMap<>();
+  private final Map<String, DefaultConnectionOutputGroup> groups = new HashMap<>();
+  private DefaultConnectionOutputBatch currentBatch;
   private boolean open;
   private boolean full;
   private boolean paused;
@@ -69,8 +71,11 @@ public class DefaultOutputConnection implements OutputConnection {
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {
-          case "start":
-            doStart(message.body().getString("group"));
+          case "group":
+            doStartGroup(message.body().getString("group"));
+            break;
+          case "batch":
+            doStartBatch(message.body().getString("batch"));
             break;
           case "ack":
             doAck(message.body().getLong("id"));
@@ -184,15 +189,32 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
+  public OutputConnection batch(final String id, final Handler<ConnectionOutputBatch> handler) {
+    if (currentBatch != null) {
+      currentBatch.endHandler(new Handler<Void>() {
+        @Override
+        public void handle(Void _) {
+          currentBatch = new DefaultConnectionOutputBatch(id, DefaultOutputConnection.this);
+          currentBatch.start(handler);
+        }
+      });
+    } else {
+      currentBatch = new DefaultConnectionOutputBatch(id, this);
+      currentBatch.start(handler);
+    }
+    return this;
+  }
+
+  @Override
   public OutputConnection group(String name, Handler<OutputGroup> handler) {
-    ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, this);
+    DefaultConnectionOutputGroup group = new DefaultConnectionOutputGroup(UUID.randomUUID().toString(), name, this);
     groups.put(group.id(), group);
     group.start(handler);
     return this;
   }
 
-  ConnectionOutputGroup group(String name, String parent, Handler<OutputGroup> handler) {
-    ConnectionOutputGroup group = new ConnectionOutputGroup(UUID.randomUUID().toString(), name, parent, this);
+  DefaultConnectionOutputGroup group(String name, String parent, Handler<OutputGroup> handler) {
+    DefaultConnectionOutputGroup group = new DefaultConnectionOutputGroup(UUID.randomUUID().toString(), name, parent, this);
     groups.put(group.id(), group);
     group.start(handler);
     return group;
@@ -272,10 +294,19 @@ public class DefaultOutputConnection implements OutputConnection {
   /**
    * Handles a group start.
    */
-  private void doStart(String groupID) {
-    ConnectionOutputGroup group = groups.get(groupID);
+  private void doStartGroup(String groupID) {
+    DefaultConnectionOutputGroup group = groups.get(groupID);
     if (group != null) {
       group.handleStart();
+    }
+  }
+
+  /**
+   * Handles a batch start.
+   */
+  private void doStartBatch(String batchID) {
+    if (currentBatch != null && currentBatch.id().equals(batchID)) {
+      currentBatch.handleStart();
     }
   }
 
@@ -345,7 +376,7 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("group", group)
         .putString("name", name)
         .putString("parent", parent)
-        .putString("action", "start");
+        .putString("action", "startGroup");
     if (open && !paused) {
       eventBus.send(inAddress, message);
     }
@@ -375,12 +406,57 @@ public class DefaultOutputConnection implements OutputConnection {
   void doGroupEnd(String group) {
     checkOpen();
     JsonObject message = createMessage()
-        .putString("action", "end")
+        .putString("action", "endGroup")
         .putString("group", group);
     if (open && !paused) {
       eventBus.send(inAddress, message);
     }
     groups.remove(group);
+  }
+
+  /**
+   * Sends a batch start message.
+   */
+  void doBatchStart(String batch) {
+    checkOpen();
+    JsonObject message = createMessage()
+        .putString("batch", batch)
+        .putString("action", "startBatch");
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
+    checkFull();
+  }
+
+  /**
+   * Sends a batch message.
+   */
+  void doBatchSend(String batch, Object value) {
+    checkOpen();
+    JsonObject message = createMessage(value)
+        .putString("action", "batch")
+        .putString("batch", batch);
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
+    for (OutputHook hook : hooks) {
+      hook.handleSend(value);
+    }
+    checkFull();
+  }
+
+  /**
+   * Sends a batch end message.
+   */
+  void doBatchEnd(String batch) {
+    checkOpen();
+    JsonObject message = createMessage()
+        .putString("action", "endBatch")
+        .putString("batch", batch);
+    if (open && !paused) {
+      eventBus.send(inAddress, message);
+    }
+    groups.remove(batch);
   }
 
   /**

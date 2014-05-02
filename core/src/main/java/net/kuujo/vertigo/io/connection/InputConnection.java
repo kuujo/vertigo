@@ -16,6 +16,11 @@
 package net.kuujo.vertigo.io.connection;
 
 import net.kuujo.vertigo.io.Input;
+import net.kuujo.vertigo.io.InputBatchSupport;
+import net.kuujo.vertigo.io.InputGroupSupport;
+import net.kuujo.vertigo.io.batch.InputBatch;
+
+import org.vertx.java.core.Handler;
 
 /**
  * Input connection represents the receiving side of a connection
@@ -35,5 +40,14 @@ import net.kuujo.vertigo.io.Input;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputConnection extends Connection<InputConnection>, Input<InputConnection> {
+public interface InputConnection extends Connection<InputConnection>, Input<InputConnection>, InputGroupSupport<InputConnection>, InputBatchSupport<InputConnection> {
+
+  /**
+   * Registers an input batch handler.
+   *
+   * @param handler A handler to be called when an input batch is started.
+   * @return The input connection.
+   */
+  InputConnection batchHandler(Handler<InputBatch> handler);
+
 }

@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.io;
 
-import net.kuujo.vertigo.io.group.InputGroup;
-
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
@@ -71,23 +69,5 @@ public interface Input<T extends Input<T>> {
    */
   @SuppressWarnings("rawtypes")
   T messageHandler(Handler handler);
-
-  /**
-   * Registers a group handler on the input.<p>
-   *
-   * The group handler will be called any time a group with the given name
-   * is received on the input on which the handler was registered. That means
-   * if the handler was registered on a port, the handler will only be called
-   * for a group that is received by the port. Alternatively, if the handler
-   * was registered on a group then the handler will only be called for a group
-   * that was received by the group on which the handler was registered. This
-   * means that group handlers are inherently hierarchical, and its important
-   * that users take care in how handlers are registered.
-   *
-   * @param group The name of the group for which to register the handler.
-   * @param handler A handler to be called when the group is received.
-   * @return The input instance.
-   */
-  T groupHandler(String group, Handler<InputGroup> handler);
 
 }

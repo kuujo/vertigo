@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group;
+package net.kuujo.vertigo.io.batch;
 
 /**
- * Input/output group.<p>
+ * Base interface for batches. Batches represent collections of messages over time.<p>
  *
- * Groups are named logical collections of messages between two instances
- * of two components. When a group is created, the group will be assigned
- * to a single target instance per connection. Groups can be nested.
+ * As opposed to groups, batches are collections of messages that can be
+ * sent to any target component instance. Batches simply delimit a group
+ * of messages output from a given component during a time window.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ *
+ * @param <T> The batch type.
  */
-public interface Group<T extends Group<T>> {
+public interface Batch<T extends Batch<T>> {
 
   /**
-   * Returns the unique group identifier.
+   * Returns the unique batch ID.
    *
-   * @return The unique group identifier.
+   * @return The unique batch ID.
    */
   String id();
-
-  /**
-   * Returns the group name.
-   *
-   * @return The group name.
-   */
-  String name();
 
 }

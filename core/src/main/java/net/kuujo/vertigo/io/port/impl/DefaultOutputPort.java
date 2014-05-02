@@ -18,8 +18,11 @@ package net.kuujo.vertigo.io.port.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import net.kuujo.vertigo.hook.OutputHook;
+import net.kuujo.vertigo.io.batch.OutputBatch;
+import net.kuujo.vertigo.io.batch.impl.BaseOutputBatch;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
 import net.kuujo.vertigo.io.port.OutputPort;
@@ -315,6 +318,29 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
         }
       }
     });
+  }
+
+  @Override
+  public OutputPort batch(final Handler<OutputBatch> handler) {
+    return batch(UUID.randomUUID().toString(), handler);
+  }
+
+  @Override
+  public OutputPort batch(final String id, final Handler<OutputBatch> handler) {
+    final List<OutputBatch> batches = new ArrayList<>();
+    final int streamsSize = streams.size();
+    for (OutputStream stream : streams) {
+      stream.batch(id, new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batches.add(batch);
+          if (batches.size() == streamsSize) {
+            handler.handle(new BaseOutputBatch(id, vertx, batches));
+          }
+        }
+      });
+    }
+    return this;
   }
 
   @Override

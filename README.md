@@ -222,6 +222,7 @@ vertx run word_count_network.json
    * [Sending messages on an output port](#sending-messages-on-an-output-port)
    * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
    * [Working with message groups](#working-with-message-groups)
+   * [Wording with message batches](#working-with-message-batches)
    * [Providing serializeable messages](#providing-serializeable-messages)
 1. [Deployment](#deployment)
    * [Deploying a network](#deploying-a-network)
@@ -587,7 +588,7 @@ acking is handled internally.
 
 ### Working with message groups
 Vertigo provides a mechanism for logically grouping messages appropriately
-named *groups*. Groups are logical collections of messages that are strongly
+named *groups*. Groups are named logical collections of messages that are strongly
 ordered by name. Before any given group can stat, each of the groups of the same
 name at the same level that preceded it must have been completed. Additionally,
 messages within a group are *guaranteed to be delivered to the same instance* of each
@@ -713,6 +714,97 @@ input.port("in").groupHandler("foo", new Handler<InputGroup>() {
         });
       }
     });
+  }
+});
+```
+
+### Working with message batches
+Batches are similar to groups in that they represent collections of messages.
+Batches even use a similar API to groups. However, batches differ from groups
+in that they represent collections of output to all connections. In other words,
+whereas groups are guaranteed to always be delivered to the same target component
+instance, batches use normal selection routines to route each individual message.
+Additionally, batches cannot be nested like groups, but groups can be contained
+within batches. Batches simply represent windows of output from a port.
+
+The batch API works similarly to the group API, but batches are *not* named.
+```java
+output.port("out").batch(new Handler<OutputBatch>() {
+  public void handle(OutputBatch batch) {
+    batch.send("foo").send("bar").send("baz").end();
+  }
+});
+```
+
+Just as with groups, batches need to be explicitly ended. However, only one batch
+can be open for any given connection at any given time, so that means that a new
+batch will not open until the previous batch has been ended.
+
+On the input port side, the batch API works similarly to the group API.
+
+```java
+input.port("in").batchHandler(new Handler<InputBatch>() {
+  public void handle(InputBatch batch) {
+
+    // Aggregate all messages from the batch.
+    final JsonArray messages = new JsonArray();
+    batch.messageHandler(new Handler<String>() {
+      public void handle(String message) {
+        messages.add(message);
+      }
+    });
+
+    // Send the aggregated array once the batch is ended.
+    batch.endHandler(new Handler<Void>() {
+      public void handle(Void event) {
+        output.port("out").send(messages);
+      }
+    });
+  }
+});
+```
+
+Batches cannot be nested, but they can contain groups.
+```java
+output.port("out").batch(new Handler<OutputBatch>() {
+  public void handle(OutputBatch batch) {
+    batch.group("fruits", new Handler<OutputGroup>() {
+      public void handle(OutputGroup group) {
+        group.send("apple").send("banana").send("peach").end();
+      }
+    });
+    batch.end();
+  }
+});
+```
+
+Even if a batch is ended, it will not internally end and allow the next batch to
+be created until any child groups have been successfully ended.
+
+Groups within batches can be received in the same manner as they are with groups.
+
+```java
+input.port("in").batchHandler(new Handler<InputBatch>() {
+  public void handle(InputBatch batch) {
+
+    batch.groupHandler("fruits", new Handler<InputGroup>() {
+      public void handle(InputGroup group) {
+
+        final Set<String> fruits = new HashSet<>();
+        group.messageHandler(new Handler<String>() {
+          public void handle(String message) {
+            fruits.add(message);
+          }
+        });
+
+        group.endHandler(new Handler<Void>() {
+          public void handle(Void event) {
+            System.out.println("Got all the fruits!");
+          }
+        });
+      }
+    });
+
   }
 });
 ```

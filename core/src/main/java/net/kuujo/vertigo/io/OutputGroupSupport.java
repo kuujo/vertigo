@@ -13,31 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group;
+package net.kuujo.vertigo.io;
+
+import net.kuujo.vertigo.io.group.OutputGroup;
+
+import org.vertx.java.core.Handler;
 
 /**
- * Input/output group.<p>
- *
- * Groups are named logical collections of messages between two instances
- * of two components. When a group is created, the group will be assigned
- * to a single target instance per connection. Groups can be nested.
+ * Support for creating output groups.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ *
+ * @param <T> The type to which the support belongs.
  */
-public interface Group<T extends Group<T>> {
+public interface OutputGroupSupport<T extends OutputGroupSupport<T>> {
 
   /**
-   * Returns the unique group identifier.
+   * Creates a named output group.<p>
    *
-   * @return The unique group identifier.
-   */
-  String id();
-
-  /**
-   * Returns the group name.
+   * Messages sent through groups will always be sent to the same
+   * connection(s). Groups can also be nested.
    *
-   * @return The group name.
+   * @param name The output group name.
+   * @param handler A handler to be called once the group has been setup.
+   * @return The called object.
    */
-  String name();
+  T group(String name, Handler<OutputGroup> handler);
 
 }

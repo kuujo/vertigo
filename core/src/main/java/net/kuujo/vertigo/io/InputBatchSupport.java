@@ -13,31 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.group;
+package net.kuujo.vertigo.io;
+
+import net.kuujo.vertigo.io.batch.InputBatch;
+
+import org.vertx.java.core.Handler;
 
 /**
- * Input/output group.<p>
- *
- * Groups are named logical collections of messages between two instances
- * of two components. When a group is created, the group will be assigned
- * to a single target instance per connection. Groups can be nested.
+ * Support for receiving input batches.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ *
+ * @param <T> The type to which the support belongs.
  */
-public interface Group<T extends Group<T>> {
+public interface InputBatchSupport<T extends InputBatchSupport<T>> {
 
   /**
-   * Returns the unique group identifier.
+   * Registers a batch handler.
    *
-   * @return The unique group identifier.
+   * @param handler The handler to register. This handler will be called
+   *        whenever a new batch is started.
+   * @return The called object.
    */
-  String id();
-
-  /**
-   * Returns the group name.
-   *
-   * @return The group name.
-   */
-  String name();
+  T batchHandler(Handler<InputBatch> handler);
 
 }

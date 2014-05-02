@@ -18,6 +18,8 @@ package net.kuujo.vertigo.io.stream;
 import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 import net.kuujo.vertigo.io.Output;
+import net.kuujo.vertigo.io.OutputBatchSupport;
+import net.kuujo.vertigo.io.OutputGroupSupport;
 
 /**
  * Output stream.<p>
@@ -31,7 +33,7 @@ import net.kuujo.vertigo.io.Output;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputStream extends Output<OutputStream>, Openable<OutputStream>, Closeable<OutputStream> {
+public interface OutputStream extends Output<OutputStream>, OutputBatchSupport<OutputStream>, OutputGroupSupport<OutputStream>, Openable<OutputStream>, Closeable<OutputStream> {
 
   /**
    * Returns the output stream address.

@@ -17,11 +17,14 @@ package net.kuujo.vertigo.io.port.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.kuujo.vertigo.hook.InputHook;
+import net.kuujo.vertigo.io.batch.InputBatch;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.DefaultInputConnection;
@@ -54,6 +57,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   private final TaskRunner tasks = new TaskRunner();
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
+  private final Set<Handler<InputBatch>> batchHandlers = new HashSet<>();
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private boolean open;
   private boolean paused;
@@ -150,6 +154,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           // configuration is updated again.
           for (final InputConnection connection : newConnections) {
             connection.messageHandler(messageHandler);
+            for (Handler<InputBatch> handler : batchHandlers) {
+              connection.batchHandler(handler);
+            }
             for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
               connection.groupHandler(entry.getKey(), entry.getValue());
             }
@@ -173,6 +180,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           // will open the connections.
           for (InputConnection connection : newConnections) {
             connection.messageHandler(messageHandler);
+            for (Handler<InputBatch> handler : batchHandlers) {
+              connection.batchHandler(handler);
+            }
             for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
               connection.groupHandler(entry.getKey(), entry.getValue());
             }
@@ -225,6 +235,16 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
+  public InputPort batchHandler(Handler<InputBatch> handler) {
+    if (this.batchHandlers.add(handler)) {
+      for (InputConnection connection : connections) {
+        connection.batchHandler(handler);
+      }
+    }
+    return this;
+  }
+
+  @Override
   public InputPort groupHandler(String group, Handler<InputGroup> handler) {
     this.groupHandlers.put(group, handler);
     for (InputConnection connection : connections) {
@@ -268,6 +288,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           for (InputConnectionContext connectionContext : context.connections()) {
             final InputConnection connection = new DefaultInputConnection(vertx, connectionContext);
             connection.messageHandler(messageHandler);
+            for (Handler<InputBatch> handler : batchHandlers) {
+              connection.batchHandler(handler);
+            }
             for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
               connection.groupHandler(entry.getKey(), entry.getValue());
             }

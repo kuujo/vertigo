@@ -18,22 +18,20 @@ package net.kuujo.vertigo.io.connection.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.kuujo.vertigo.io.batch.InputBatch;
+import net.kuujo.vertigo.io.connection.ConnectionInputBatch;
 import net.kuujo.vertigo.io.group.InputGroup;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
 /**
- * Connection level input group.<p>
- *
- * This input group is created directly by a {@link DefaultInputConnection} when
- * the connection receives a new group message.
+ * Connection input batch.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ConnectionInputGroup implements InputGroup {
+public class DefaultConnectionInputBatch implements ConnectionInputBatch {
   private final String id;
-  private final String name;
   private final DefaultInputConnection connection;
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
@@ -42,9 +40,8 @@ public class ConnectionInputGroup implements InputGroup {
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private boolean started;
 
-  public ConnectionInputGroup(String id, String name, DefaultInputConnection connection) {
+  public DefaultConnectionInputBatch(String id, DefaultInputConnection connection) {
     this.id = id;
-    this.name = name;
     this.connection = connection;
   }
 
@@ -54,24 +51,31 @@ public class ConnectionInputGroup implements InputGroup {
   }
 
   @Override
-  public String name() {
-    return name;
-  }
-
-  @Override
   public Vertx vertx() {
     return connection.vertx();
   }
 
   @Override
-  public InputGroup pause() {
+  public InputBatch pause() {
     connection.pause();
     return this;
   }
 
   @Override
-  public InputGroup resume() {
+  public InputBatch resume() {
     connection.resume();
+    return this;
+  }
+
+  void handleStart() {
+    if (startHandler != null) {
+      startHandler.handle(null);
+    }
+  }
+
+  @Override
+  public InputBatch startHandler(Handler<Void> handler) {
+    this.startHandler = handler;
     return this;
   }
 
@@ -84,14 +88,14 @@ public class ConnectionInputGroup implements InputGroup {
 
   @Override
   @SuppressWarnings("rawtypes")
-  public InputGroup messageHandler(Handler handler) {
-    // When a message handler is registered on the group, notify the other
-    // side of the connection that the group is ready to receive messages.
-    // This allows the input group to perform asynchronous setup operations
+  public InputBatch messageHandler(Handler handler) {
+    // When a message handler is registered on the batch, notify the other
+    // side of the connection that the batch is ready to receive messages.
+    // This allows the input batch to perform asynchronous setup operations
     // prior to receiving messages.
     this.messageHandler = handler;
     if (!started && handler != null) {
-      connection.groupReady(id);
+      connection.batchReady(id);
       started = true;
     }
     return this;
@@ -110,30 +114,18 @@ public class ConnectionInputGroup implements InputGroup {
   }
 
   @Override
-  public InputGroup groupHandler(String group, Handler<InputGroup> handler) {
+  public InputBatch groupHandler(String group, Handler<InputGroup> handler) {
     // When a group handler is registered on the group, if the group hasn't
     // already been started then send a start message to the source.
     if (handler != null) {
       this.groupHandlers.put(group, handler);
       if (!started) {
-        connection.groupReady(id);
+        connection.batchReady(id);
         started = true;
       }
     } else {
       this.groupHandlers.remove(group);
     }
-    return this;
-  }
-
-  void handleStart() {
-    if (startHandler != null) {
-      startHandler.handle(null);
-    }
-  }
-
-  @Override
-  public InputGroup startHandler(Handler<Void> handler) {
-    this.startHandler = handler;
     return this;
   }
 
@@ -144,7 +136,7 @@ public class ConnectionInputGroup implements InputGroup {
   }
 
   @Override
-  public InputGroup endHandler(Handler<Void> handler) {
+  public InputBatch endHandler(Handler<Void> handler) {
     this.endHandler = handler;
     return this;
   }

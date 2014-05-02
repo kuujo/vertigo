@@ -434,6 +434,44 @@ public class RemoteNetworkTest extends TestVerticle {
     });
   }
 
+  public static class TestOneToNoneBatchSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").batch(new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batch.send("foo").send("bar").send("baz").end();
+          testComplete();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToNoneBatch() {
+    net.kuujo.xync.util.Cluster.initialize();
+    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        Vertigo vertigo = new Vertigo(vertx, container);
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToNoneBatchSender.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
   public static class TestOneToManyBatchSender extends ComponentVerticle {
     private final int count = 4;
     private final Set<String> received = new HashSet<>();
@@ -608,6 +646,44 @@ public class RemoteNetworkTest extends TestVerticle {
         network.getClusterConfig().setAddress("test").setScope(ClusterScope.CLUSTER);
         network.addVerticle("sender", TestOneToManyGroupWithinBatchSender.class.getName());
         network.addVerticle("receiver", TestOneToManyGroupWithinBatchReceiver.class.getName(), 4);
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestOneToNoneGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("test", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("foo").send("bar").send("baz").end();
+          testComplete();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToNoneGroup() {
+    net.kuujo.xync.util.Cluster.initialize();
+    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        Vertigo vertigo = new Vertigo(vertx, container);
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToNoneGroupSender.class.getName());
         network.createConnection("sender", "out", "receiver", "in").roundSelect();
         vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override

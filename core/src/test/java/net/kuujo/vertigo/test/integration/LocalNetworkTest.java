@@ -49,6 +49,38 @@ import org.vertx.testtools.TestVerticle;
  */
 public class LocalNetworkTest extends TestVerticle {
 
+  public static class TestOneToNoneSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").send("Hello world!");
+      vertx.setTimer(100, new Handler<Long>() {
+        @Override
+        public void handle(Long event) {
+          testComplete();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToNone() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+    network.addVerticle("sender", TestSender.class.getName());
+    network.addVerticle("receiver", TestReceiver.class.getName());
+    network.createConnection("sender", "out", "receiver", "in");
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
   public static class TestSender extends ComponentVerticle {
     @Override
     public void start() {
@@ -380,6 +412,37 @@ public class LocalNetworkTest extends TestVerticle {
     });
   }
 
+  public static class TestOneToNoneBatchSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").batch(new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batch.send("foo").send("bar").send("baz").end();
+          testComplete();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToNoneBatch() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+    network.addVerticle("sender", TestOneToNoneBatchSender.class.getName());
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
   public static class TestOneToManyBatchSender extends ComponentVerticle {
     private final int count = 4;
     private final Set<String> received = new HashSet<>();
@@ -540,6 +603,37 @@ public class LocalNetworkTest extends TestVerticle {
     NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
     network.addVerticle("sender", TestOneToManyGroupWithinBatchSender.class.getName());
     network.addVerticle("receiver", TestOneToManyGroupWithinBatchReceiver.class.getName(), 4);
+    network.createConnection("sender", "out", "receiver", "in").roundSelect();
+    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      @Override
+      public void handle(AsyncResult<ActiveNetwork> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+        }
+      }
+    });
+  }
+
+  public static class TestOneToNoneGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("test", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("foo").send("bar").send("baz").end();
+          testComplete();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testOneToNoneGroup() {
+    Vertigo vertigo = new Vertigo(this);
+    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+    network.addVerticle("sender", TestOneToNoneGroupSender.class.getName());
     network.createConnection("sender", "out", "receiver", "in").roundSelect();
     vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
       @Override

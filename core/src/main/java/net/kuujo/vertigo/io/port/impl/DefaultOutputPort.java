@@ -329,16 +329,20 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   public OutputPort batch(final String id, final Handler<OutputBatch> handler) {
     final List<OutputBatch> batches = new ArrayList<>();
     final int streamsSize = streams.size();
-    for (OutputStream stream : streams) {
-      stream.batch(id, new Handler<OutputBatch>() {
-        @Override
-        public void handle(OutputBatch batch) {
-          batches.add(batch);
-          if (batches.size() == streamsSize) {
-            handler.handle(new BaseOutputBatch(id, vertx, batches));
+    if (streamsSize == 0) {
+      handler.handle(new BaseOutputBatch(id, vertx, batches));
+    } else {
+      for (OutputStream stream : streams) {
+        stream.batch(id, new Handler<OutputBatch>() {
+          @Override
+          public void handle(OutputBatch batch) {
+            batches.add(batch);
+            if (batches.size() == streamsSize) {
+              handler.handle(new BaseOutputBatch(id, vertx, batches));
+            }
           }
-        }
-      });
+        });
+      }
     }
     return this;
   }
@@ -346,17 +350,21 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   @Override
   public OutputPort group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
-    final int streamSize = streams.size();
-    for (OutputStream stream : streams) {
-      stream.group(name, new Handler<OutputGroup>() {
-        @Override
-        public void handle(OutputGroup group) {
-          groups.add(group);
-          if (groups.size() == streamSize) {
-            handler.handle(new BaseOutputGroup(name, vertx, groups));
+    final int streamsSize = streams.size();
+    if (streamsSize == 0) {
+      handler.handle(new BaseOutputGroup(name, vertx, groups));
+    } else {
+      for (OutputStream stream : streams) {
+        stream.group(name, new Handler<OutputGroup>() {
+          @Override
+          public void handle(OutputGroup group) {
+            groups.add(group);
+            if (groups.size() == streamsSize) {
+              handler.handle(new BaseOutputGroup(name, vertx, groups));
+            }
           }
-        }
-      });
+        });
+      }
     }
     return this;
   }

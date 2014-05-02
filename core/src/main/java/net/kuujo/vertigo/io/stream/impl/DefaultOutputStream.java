@@ -133,16 +133,20 @@ public class DefaultOutputStream implements OutputStream {
   public OutputStream batch(final String id, final Handler<OutputBatch> handler) {
     final List<ConnectionOutputBatch> batches = new ArrayList<>();
     final int connectionsSize = connections.size();
-    for (OutputConnection connection : connections) {
-      connection.batch(id, new Handler<ConnectionOutputBatch>() {
-        @Override
-        public void handle(ConnectionOutputBatch batch) {
-          batches.add(batch);
-          if (batches.size() == connectionsSize) {
-            handler.handle(new StreamOutputBatch(id, DefaultOutputStream.this, batches));
+    if (connectionsSize == 0) {
+      handler.handle(new StreamOutputBatch(id, this, batches));
+    } else {
+      for (OutputConnection connection : connections) {
+        connection.batch(id, new Handler<ConnectionOutputBatch>() {
+          @Override
+          public void handle(ConnectionOutputBatch batch) {
+            batches.add(batch);
+            if (batches.size() == connectionsSize) {
+              handler.handle(new StreamOutputBatch(id, DefaultOutputStream.this, batches));
+            }
           }
-        }
-      });
+        });
+      }
     }
     return this;
   }
@@ -152,16 +156,20 @@ public class DefaultOutputStream implements OutputStream {
     final List<OutputGroup> groups = new ArrayList<>();
     List<OutputConnection> connections = selector.select(name, this.connections);
     final int connectionsSize = connections.size();
-    for (OutputConnection connection : connections) {
-      connection.group(name, new Handler<OutputGroup>() {
-        @Override
-        public void handle(OutputGroup group) {
-          groups.add(group);
-          if (groups.size() == connectionsSize) {
-            handler.handle(new BaseOutputGroup(name, vertx, groups));
+    if (connectionsSize == 0) {
+      handler.handle(new BaseOutputGroup(name, vertx, groups));
+    } else {
+      for (OutputConnection connection : connections) {
+        connection.group(name, new Handler<OutputGroup>() {
+          @Override
+          public void handle(OutputGroup group) {
+            groups.add(group);
+            if (groups.size() == connectionsSize) {
+              handler.handle(new BaseOutputGroup(name, vertx, groups));
+            }
           }
-        }
-      });
+        });
+      }
     }
     return this;
   }

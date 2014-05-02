@@ -112,16 +112,20 @@ public class BaseOutputGroup implements OutputGroup {
   public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int connectionsSize = connections.size();
-    for (OutputGroup connection : connections) {
-      connection.group(name, new Handler<OutputGroup>() {
-        @Override
-        public void handle(OutputGroup group) {
-          groups.add(group);
-          if (groups.size() == connectionsSize) {
-            handler.handle(new BaseOutputGroup(name, vertx, groups));
+    if (connectionsSize == 0) {
+      handler.handle(new BaseOutputGroup(name, vertx, groups));
+    } else {
+      for (OutputGroup connection : connections) {
+        connection.group(name, new Handler<OutputGroup>() {
+          @Override
+          public void handle(OutputGroup group) {
+            groups.add(group);
+            if (groups.size() == connectionsSize) {
+              handler.handle(new BaseOutputGroup(name, vertx, groups));
+            }
           }
-        }
-      });
+        });
+      }
     }
     return this;
   }

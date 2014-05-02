@@ -222,7 +222,7 @@ vertx run word_count_network.json
    * [Sending messages on an output port](#sending-messages-on-an-output-port)
    * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
    * [Working with message groups](#working-with-message-groups)
-   * [Wording with message batches](#working-with-message-batches)
+   * [Working with message batches](#working-with-message-batches)
    * [Providing serializeable messages](#providing-serializeable-messages)
 1. [Deployment](#deployment)
    * [Deploying a network](#deploying-a-network)

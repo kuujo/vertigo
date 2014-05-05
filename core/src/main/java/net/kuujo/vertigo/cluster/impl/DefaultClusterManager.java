@@ -88,7 +88,7 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   @Override
-  public ClusterManager isRunning(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public ClusterManager isDeployed(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "check")
         .putString("type", "network")

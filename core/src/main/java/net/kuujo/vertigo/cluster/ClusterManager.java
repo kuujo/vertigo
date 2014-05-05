@@ -64,9 +64,9 @@ public interface ClusterManager {
   ClusterManager getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler);
 
   /**
-   * Checks whether a network is running in the cluster.<p>
+   * Checks whether a network is deployed in the cluster.<p>
    *
-   * In order to check whether a network is running, the cluster manager attempts
+   * In order to check whether a network is deployed, the cluster manager attempts
    * to load the network's configuration from the internal Vertigo coordination
    * cluster. If the configuration exists then the cluster manager then checks
    * to see if the network is actually running.
@@ -75,7 +75,7 @@ public interface ClusterManager {
    * @param resultHandler An asynchronous handler to be called with the result.
    * @return The cluster manager.
    */
-  ClusterManager isRunning(String name, Handler<AsyncResult<Boolean>> resultHandler);
+  ClusterManager isDeployed(String name, Handler<AsyncResult<Boolean>> resultHandler);
 
   /**
    * Deploys a network to the cluster.<p>

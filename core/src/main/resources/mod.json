@@ -1,4 +1,6 @@
 {
+  "main": "net.kuujo.vertigo.cluster.impl.ClusterManagerVerticle",
+  "worker": true,
   "description": "Fast, flow-based event processing framework",
   "licenses": ["The Apache Software License Version 2.0"],
   "author": "Jordan Halterman",

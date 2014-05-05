@@ -33,12 +33,12 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The list data type.
  */
-public class EventBusList<T> implements AsyncList<T> {
+public class DefaultAsyncList<T> implements AsyncList<T> {
   private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  public EventBusList(String address, String name, Vertx vertx) {
+  public DefaultAsyncList(String address, String name, Vertx vertx) {
     this.address = address;
     this.name = name;
     this.eventBus = vertx.eventBus();
@@ -93,6 +93,7 @@ public class EventBusList<T> implements AsyncList<T> {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("error")) {
+          System.out.println(result.result().body());
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(doneHandler);

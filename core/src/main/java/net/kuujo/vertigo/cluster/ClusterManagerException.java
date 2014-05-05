@@ -15,23 +15,27 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import net.kuujo.vertigo.VertigoException;
 
 /**
- * Annotates a handler as being available in cluster mode.<p>
- *
- * This annotation should be used for identifying types available within
- * Vertigo components as being available when clustering (e.g. in remote mode).
- * When a network is being run in cluster mode, Vertigo synchronization types
- * must be supported by clustering. If clustering is not supported by a type
- * then Vertigo will automatically fall back to a type that is supported.
+ * Cluster manager exception.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ClusterType {
+@SuppressWarnings("serial")
+public class ClusterManagerException extends VertigoException {
+
+  public ClusterManagerException(String message) {
+    super(message);
+  }
+
+  public ClusterManagerException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public ClusterManagerException(Throwable cause) {
+    super(cause);
+  }
+
 }
+

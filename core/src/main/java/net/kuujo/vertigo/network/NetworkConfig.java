@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 
 import net.kuujo.vertigo.Config;
-import net.kuujo.vertigo.cluster.ClusterConfig;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ModuleConfig;
 import net.kuujo.vertigo.component.VerticleConfig;
@@ -55,11 +54,6 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   public static final String NETWORK_NAME = "name";
 
   /**
-   * <code>cluster</code> is an object defining the network's cluster configuration.
-   */
-  public static final String NETWORK_CLUSTER = "cluster";
-
-  /**
    * <code>components</code> is an object defining network component configurations. Each
    * item in the object must be keyed by the unique component address, with each item
    * being an object containing the component configuration. See the {@link ComponentConfig}
@@ -76,21 +70,6 @@ public interface NetworkConfig extends Config<NetworkConfig> {
    * @return The network name.
    */
   String getName();
-
-  /**
-   * Sets the network's cluster configuration.
-   *
-   * @param cluster The cluster configuration.
-   * @return The network configuration.
-   */
-  NetworkConfig setClusterConfig(ClusterConfig cluster);
-
-  /**
-   * Returns the network's cluster configuration.
-   *
-   * @return The network's cluster configuration.
-   */
-  ClusterConfig getClusterConfig();
 
   /**
    * Gets a list of network components.

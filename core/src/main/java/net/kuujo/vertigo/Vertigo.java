@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.cluster.ClusterConfig;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.cluster.ClusterScope;
-import net.kuujo.vertigo.cluster.impl.ClusterManagerFactory;
+import net.kuujo.vertigo.cluster.impl.DefaultClusterFactory;
+import net.kuujo.vertigo.cluster.impl.DefaultClusterManagerFactory;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
@@ -27,7 +27,6 @@ import net.kuujo.vertigo.util.Configs;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
@@ -38,12 +37,17 @@ import org.vertx.java.platform.Verticle;
  * This is the primary interface for creating and deploying Vertigo networks.<p>
  *
  * Vertigo provides its own cluster abstraction that allows networks to be deployed
- * either in a single Vert.x instance or across a Vert.x cluster. When a network
- * is deployed, Vertigo uses the network's configuration to create a cluster in
- * the proper scope. If the network indicates a <code>LOCAL</code> scope then its components
- * will be deployed within the current Vert.x instance. If the network indicates
- * a <code>CLUSTER</code> scope then its components will be deployed across the
- * cluster using an event bus interface.<p>
+ * remotely over the event bus. Vertigo networks can be deployed using the cluster
+ * abstraction regardless of whether Vert.x is actually clustered. If Vert.x is
+ * not clustered, Vertigo will use Vert.x shared data to mimic a real cluster.<p>
+ *
+ * Clusters can be used to create logical separation between networks of the same
+ * name. Networks of the same name within the same cluster will always be considered
+ * the same network. However, networks of the same name in different Vertigo clusters
+ * are logically separate. This means you can run two instances of the same network
+ * within a single Vert.x cluster by using multiple Vertigo clusters, and Vertigo
+ * will manage the two networks separately, ensuring that event bus addresses
+ * do not clash.<p>
  *
  * This API also supports active network configuration changes. Networks can be
  * partially deployed and undeployed using the same methods as are used to deploy
@@ -56,33 +60,57 @@ import org.vertx.java.platform.Verticle;
  * network configuration and only completely undeploy the network if all components
  * have been undeployed.<p>
  *
- * It's important to note that regardless of the scope in which a network is
- * deployed, Vertigo will always attempt to coordinate networks at the highest
- * level. In other words, even if a network is deployed in <code>LOCAL</code>
- * scope, Vertigo will check all nodes in the cluster to determine whether a
- * network of the same name is already deployed. This helps prevent event bus
- * address clashes in networks of the same name in the same cluster. But it
- * also provides some additional usefulness. Users can connect local networks
- * on different nodes together by simply deploying two networks of the same
- * name in the <code>LOCAL</code> scope on two separate nodes. Since Vertigo
- * coordinates at the cluster level, the two deployments will still become
- * part of the same network and can thus communicate with one another.<p>
- *
  * Please note that <em>Vertigo only supports the default Hazelcast cluster
- * manager</em>. Attempting to use Vertigo in a Vert.x cluster with any other
- * cluster manager will simply fail.
+ * manager</em>. Attempting to use the Vertigo cluster in a Vert.x cluster with
+ * any other cluster manager will simply fail.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class Vertigo {
-  private final ClusterManagerFactory clusterFactory;
+  private static final String DEFAULT_CLUSTER_ADDRESS = "vertigo";
+  private final ClusterManager manager;
+  private final Cluster cluster;
 
   public Vertigo(Verticle verticle) {
-    this(verticle.getVertx(), verticle.getContainer());
+    this(DEFAULT_CLUSTER_ADDRESS, verticle.getVertx(), verticle.getContainer());
   }
 
   public Vertigo(Vertx vertx, Container container) {
-    this.clusterFactory = new ClusterManagerFactory(vertx, container);
+    this(DEFAULT_CLUSTER_ADDRESS, vertx, container);
+  }
+
+  public Vertigo(String address, Verticle verticle) {
+    this(address, verticle.getVertx(), verticle.getContainer());
+  }
+
+  public Vertigo(String address, Vertx vertx, Container container) {
+    this.cluster = new DefaultClusterFactory(vertx, container).createCluster(address);
+    this.manager = new DefaultClusterManagerFactory(vertx, container).createClusterManager(address);
+  }
+
+  /**
+   * Returns the Vertigo cluster address.<p>
+   *
+   * This is the address of the Vertigo cluster to which this Vertigo
+   * instance communicates. This address defaults to <code>vertigo</code>.
+   *
+   * @return The Vertigo cluster address.
+   */
+  public String address() {
+    return cluster.address();
+  }
+
+  /**
+   * Returns the internal cluster.<p>
+   *
+   * The {@link Cluster} is the API used by Vertigo internally to deploy modules
+   * and verticles within the Vertigo cluster. This cluster can be similarly used
+   * to deploy custom modules or verticles within the Vertigo cluster.
+   *
+   * @return The cluster.
+   */
+  public Cluster cluster() {
+    return cluster;
   }
 
   /**
@@ -108,7 +136,75 @@ public final class Vertigo {
   }
 
   /**
+   * Deploys a Vertigo node.<p>
+   *
+   * The Vertigo node is a special worker verticle that manages Vertigo
+   * network, module, and verticle deployments and provides an API for
+   * cluster-wide shared data structures.
+   *
+   * @return The Vertigo instance.
+   * @see Vertigo#undeployNode(String)
+   * @see Vertigo#undeployNode(String, Handler
+   */
+  public Vertigo deployNode() {
+    manager.deployNode(null);
+    return this;
+  }
+
+  /**
+   * Deploys a Vertigo node.<p>
+   *
+   * The Vertigo node is a special worker verticle that manages Vertigo
+   * network, module, and verticle deployments and provides an API for
+   * cluster-wide shared data structures.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   *        The handler will be called with the deployment ID of the node.
+   *        This can be used to undeploy the node with the
+   *        {@link Vertigo#undeployNode(String)} method.
+   * @return The Vertigo instance.
+   * @see Vertigo#undeployNode(String)
+   * @see Vertigo#undeployNode(String, Handler)
+   */
+  public Vertigo deployNode(Handler<AsyncResult<String>> doneHandler) {
+    manager.deployNode(doneHandler);
+    return this;
+  }
+
+  /**
+   * Undeploys a Vertigo node.
+   *
+   * @param id The unique node ID of the node to undeploy.
+   * @return The Vertigo instance.
+   * @see Vertigo#deployNode()
+   * @see Vertigo#deployNode(Handler)
+   */
+  public Vertigo undeployNode(String id) {
+    manager.undeployNode(id, null);
+    return this;
+  }
+
+  /**
+   * Undeploys a Vertigo node.
+   *
+   * @param id The unique ID of the node to undeploy.
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The Vertigo instance.
+   * @see Vertigo#deployNode()
+   * @see Vertigo#deployNode(Handler)
+   */
+  public Vertigo undeployNode(String id, Handler<AsyncResult<Void>> doneHandler) {
+    manager.undeployNode(id, doneHandler);
+    return this;
+  }
+
+  /**
    * Checks whether a network is deployed in the cluster.
+   *
+   * In order to load the network Vertigo will first attempt to load the network's
+   * configuration from the current cluster. If the network's configuration is found,
+   * Vertigo will load the configuration and check to ensure that the network's
+   * manager is running in the cluster.
    *
    * @param name The name of the network to check.
    * @param resultHandler An asynchronous handler to be called with the result.
@@ -122,11 +218,10 @@ public final class Vertigo {
   /**
    * Checks whether a network is deployed in the cluster.<p>
    *
-   * Vertigo determines whether the network is running by first attempting to
-   * load the network's configuration from the internal coordination cluster.
-   * If the network's configuration is stored in the cluster, Vertigo loads
-   * the network's cluster and checks whether the network's manager is deployed
-   * in the appropriate cluster. If so, the network is considered deployed.
+   * In order to load the network Vertigo will first attempt to load the network's
+   * configuration from the current cluster. If the network's configuration is found,
+   * Vertigo will load the configuration and check to ensure that the network's
+   * manager is running in the cluster.<p>
    *
    * Note that the configuration provided to this method is mostly irrelevant
    * as only the given configuration's <code>name</code> is used to determine
@@ -138,50 +233,27 @@ public final class Vertigo {
    * @return The Vertigo instance.
    * @see Vertigo#isDeployed(String, Handler)
    */
-  public Vertigo isDeployed(final NetworkConfig network, final Handler<AsyncResult<Boolean>> resultHandler) {
-    // The status of a network is checked by checking the current cluster manager.
-    // Even if the current scope is CLUSTER, but the network was deployed as a LOCAL
-    // network, the network's configuration will be stored in the CLUSTER.
-    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
-      @Override
-      public void handle(AsyncResult<ClusterManager> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
-        } else {
-          result.result().isRunning(network.getName(), resultHandler);
-        }
-      }
-    });
+  public Vertigo isDeployed(NetworkConfig network, Handler<AsyncResult<Boolean>> resultHandler) {
+    manager.isRunning(network.getName(), resultHandler);
     return this;
   }
 
   /**
    * Loads an active network from the cluster.<p>
    *
-   * In order to load the network, Vertigo will first attempt to load the network's
-   * configuration from the internal coordination cluster. The coordination cluster
-   * stores network configurations regardless of the scope in which a network was
-   * deployed. If the network's configuration is found, Vertigo loads the network's
-   * cluster scope and checks to ensure the network is running in that cluster. If
-   * the network configuration is found and the network is running in the appropriate
-   * cluster, an {@link ActiveNetwork} will be provided for the network. The active
-   * network can be used to reconfigure the network.
+   * In order to load the network Vertigo will first attempt to load the network's
+   * configuration from the current cluster. If the network's configuration is found,
+   * Vertigo will load the configuration and check to ensure that the network's
+   * manager is running in the cluster. If the network is running then an
+   * {@link ActiveNetwork} will be provided. The active network can be used to
+   * reconfigure the network.
    *
    * @param name The name of the network to load.
    * @param resultHandler An asynchronous handler to be called with the result.
    * @return The Vertigo instance.
    */
-  public Vertigo getNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
-    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
-      @Override
-      public void handle(AsyncResult<ClusterManager> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(resultHandler);
-        } else {
-          result.result().getNetwork(name, resultHandler);
-        }
-      }
-    });
+  public Vertigo getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler) {
+    manager.getNetwork(name, resultHandler);
     return this;
   }
 
@@ -189,22 +261,17 @@ public final class Vertigo {
    * Deploys a bare network to the Vertigo cluster.<p>
    *
    * This method will deploy an empty network to the current Vertigo cluster.
-   * The current cluster is determined by whether the Vert.x instance was
-   * deployed as a Hazelcast clustered Vert.x instance. If the current Vert.x
-   * cluster is a Hazelcast cluster (the Vert.x default), the network will
-   * be deployed across the cluster. This means that any runtime configuration
-   * changes to the network will result in components being deployed on various
-   * nodes within the cluster rather than within the current Vert.x instance.
+   * If the current Vert.x cluster is a Hazelcast cluster (the Vert.x default),
+   * the network will be deployed across the cluster. This means that any runtime
+   * configuration changes to the network will result in components being deployed
+   * on various nodes within the cluster rather than within the current Vert.x
+   * instance.<p>
    *
    * @param name The name of the network to deploy. If a network with the
    *        given name is already deployed in the Vertigo cluster then the
    *        deployment will simply have no effect.
    * @return The Vertigo instance.
    * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
    * @see Vertigo#deployNetwork(JsonObject)
    * @see Vertigo#deployNetwork(JsonObject, Handler)
    * @see Vertigo#deployNetwork(NetworkConfig)
@@ -218,12 +285,11 @@ public final class Vertigo {
    * Deploys a bare network to the Vertigo cluster.<p>
    *
    * This method will deploy an empty network to the current Vertigo cluster.
-   * The current cluster is determined by whether the Vert.x instance was
-   * deployed as a Hazelcast clustered Vert.x instance. If the current Vert.x
-   * cluster is a Hazelcast cluster (the Vert.x default), the network will
-   * be deployed across the cluster. This means that any runtime configuration
-   * changes to the network will result in components being deployed on various
-   * nodes within the cluster rather than within the current Vert.x instance.<p>
+   * If the current Vert.x cluster is a Hazelcast cluster (the Vert.x default),
+   * the network will be deployed across the cluster. This means that any runtime
+   * configuration changes to the network will result in components being deployed
+   * on various nodes within the cluster rather than within the current Vert.x
+   * instance.<p>
    *
    * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
    * The active network can be used to reconfigure the live network just like
@@ -240,10 +306,6 @@ public final class Vertigo {
    *        asynchronously without shutdown.
    * @return The Vertigo instance.
    * @see Vertigo#deployNetwork(String)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
    * @see Vertigo#deployNetwork(JsonObject)
    * @see Vertigo#deployNetwork(JsonObject, Handler)
    * @see Vertigo#deployNetwork(NetworkConfig)
@@ -251,148 +313,6 @@ public final class Vertigo {
    */
   public Vertigo deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     return deployNetwork(createNetwork(name), doneHandler);
-  }
-
-  /**
-   * Deploys a bare network to the Vertigo cluster.<p>
-   *
-   * This method will deploy an empty network to the given cluster scope.
-   * If the current Vert.x instance is a Hazelcast clustered instance then
-   * the cluster scope may be either <code>LOCAL</code> or <code>CLUSTER</code>,
-   * but if the current Vert.x instance is not clustered then the cluster
-   * scope will fall back to <code>LOCAL</code> regardless of the value
-   * provided.
-   *
-   * @param name The name of the network to deploy. If a network with the
-   *        given name is already deployed in the Vertigo cluster then the
-   *        deployment will simply have no effect.
-   * @param scope The cluster scope in which to deploy the network.
-   * @return The Vertigo instance.
-   * @see Vertigo#deployNetwork(String)
-   * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
-   * @see Vertigo#deployNetwork(JsonObject)
-   * @see Vertigo#deployNetwork(JsonObject, Handler)
-   * @see Vertigo#deployNetwork(NetworkConfig)
-   * @see Vertigo#deployNetwork(NetworkConfig, Handler)
-   */
-  public Vertigo deployNetwork(String name, ClusterScope scope) {
-    NetworkConfig network = createNetwork(name);
-    network.getClusterConfig().setScope(scope);
-    return deployNetwork(network);
-  }
-
-  /**
-   * Deploys a bare network to the Vertigo cluster.<p>
-   *
-   * This method will deploy an empty network to the given cluster scope.
-   * If the current Vert.x instance is a Hazelcast clustered instance then
-   * the cluster scope may be either <code>LOCAL</code> or <code>CLUSTER</code>,
-   * but if the current Vert.x instance is not clustered then the cluster
-   * scope will fall back to <code>LOCAL</code> regardless of the value
-   * provided.<p>
-   *
-   * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
-   * The active network can be used to reconfigure the live network just like
-   * a normal network configuration. When active network configurations change,
-   * the live network is notified and asynchronously reconfigures itself to
-   * handle the configuration changes.
-   *
-   * @param name The name of the network to deploy. If a network with the
-   *        given name is already deployed in the Vertigo cluster then the
-   *        deployment will simply have no effect.
-   * @param scope The cluster scope in which to deploy the network.
-   * @param doneHandler An asynchronous handler to be called once complete. If
-   *        the network is successfully deployed, the handler will be passed an
-   *        {@link ActiveNetwork} which can be used to reconfigure the network
-   *        asynchronously without shutdown.
-   * @return The Vertigo instance.
-   * @see Vertigo#deployNetwork(String)
-   * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
-   * @see Vertigo#deployNetwork(NetworkConfig)
-   * @see Vertigo#deployNetwork(NetworkConfig, Handler)
-   */
-  public Vertigo deployNetwork(String name, ClusterScope scope, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    NetworkConfig network = createNetwork(name);
-    network.getClusterConfig().setScope(scope);
-    return deployNetwork(network, doneHandler);
-  }
-
-  /**
-   * Deploys a bare network to the Vertigo cluster.<p>
-   *
-   * This method will deploy an empty network to the given cluster If the
-   * current Vert.x instance is a Hazelcast clustered instance then the
-   * cluster may be of either <code>LOCAL</code> or <code>CLUSTER</code>
-   * scope, but if the current Vert.x instance is not clustered then the
-   * cluster scope will fall back to <code>LOCAL</code> regardless of the
-   * cluster configuration.
-   *
-   * @param name The name of the network to deploy. If a network with the
-   *        given name is already deployed in the Vertigo cluster then the
-   *        deployment will simply have no effect.
-   * @param cluster The cluster configuration for the cluster to which to deploy
-   *        the network.
-   * @return The Vertigo instance.
-   * @see Vertigo#deployNetwork(String)
-   * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
-   * @see Vertigo#deployNetwork(JsonObject)
-   * @see Vertigo#deployNetwork(JsonObject, Handler)
-   * @see Vertigo#deployNetwork(NetworkConfig)
-   * @see Vertigo#deployNetwork(NetworkConfig, Handler)
-   */
-  public Vertigo deployNetwork(String name, ClusterConfig cluster) {
-    return deployNetwork(name, cluster, null);
-  }
-
-  /**
-   * Deploys a bare network to the Vertigo cluster.<p>
-   *
-   * This method will deploy an empty network to the given cluster If the
-   * current Vert.x instance is a Hazelcast clustered instance then the
-   * cluster may be of either <code>LOCAL</code> or <code>CLUSTER</code>
-   * scope, but if the current Vert.x instance is not clustered then the
-   * cluster scope will fall back to <code>LOCAL</code> regardless of the
-   * cluster configuration.<p>
-   *
-   * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
-   * The active network can be used to reconfigure the live network just like
-   * a normal network configuration. When active network configurations change,
-   * the live network is notified and asynchronously reconfigures itself to
-   * handle the configuration changes.
-   *
-   * @param name The name of the network to deploy. If a network with the
-   *        given name is already deployed in the Vertigo cluster then the
-   *        deployment will simply have no effect.
-   * @param cluster The cluster configuration for the cluster to which to deploy
-   *        the network.
-   * @param doneHandler An asynchronous handler to be called once complete. If
-   *        the network is successfully deployed, the handler will be passed an
-   *        {@link ActiveNetwork} which can be used to reconfigure the network
-   *        asynchronously without shutdown.
-   * @return The Vertigo instance.
-   * @see Vertigo#deployNetwork(String)
-   * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(JsonObject)
-   * @see Vertigo#deployNetwork(JsonObject, Handler)
-   * @see Vertigo#deployNetwork(NetworkConfig)
-   * @see Vertigo#deployNetwork(NetworkConfig, Handler)
-   */
-  public Vertigo deployNetwork(String name, ClusterConfig cluster, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    NetworkConfig network = createNetwork(name);
-    network.setClusterConfig(cluster);
-    return deployNetwork(network, doneHandler);
   }
 
   /**
@@ -406,27 +326,13 @@ public final class Vertigo {
    * Note that only components and connections may be added or removed from
    * running networks. Changes to things like cluster configurations will have
    * no impact on the network as they are core to the operation of the network
-   * and thus require a complete shutdown for configuration changes.<p>
-   *
-   * When the network is deployed, Vertigo will use the network's cluster
-   * configuration to determine how deployments occur. If the network's cluster
-   * scope is <code>CLUSTER</code> and the current Vert.x instance is a Hazelcast
-   * clustered instance then Vertigo will attempt to perform deployments over
-   * the event bus at the cluster address provided in the configuration.<p>
-   *
-   * If the current Vert.x instance is not clustered then Vertigo will deploy
-   * the network using the Vert.x {@link Container} and coordination will
-   * occur strictly through Vert.x shared data structures.
+   * and thus require a complete shutdown for configuration changes.
    *
    * @param network The JSON configuration for the network to deploy.
    * @return The Vertigo instance.
    * @see Vertigo#createNetwork(JsonObject)
    * @see Vertigo#deployNetwork(String)
    * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
    * @see Vertigo#deployNetwork(JsonObject, Handler)
    * @see Vertigo#deployNetwork(NetworkConfig)
    * @see Vertigo#deployNetwork(NetworkConfig, Handler)
@@ -448,16 +354,6 @@ public final class Vertigo {
    * no impact on the network as they are core to the operation of the network
    * and thus require a complete shutdown for configuration changes.<p>
    *
-   * When the network is deployed, Vertigo will use the network's cluster
-   * configuration to determine how deployments occur. If the network's cluster
-   * scope is <code>CLUSTER</code> and the current Vert.x instance is a Hazelcast
-   * clustered instance then Vertigo will attempt to perform deployments over
-   * the event bus at the cluster address provided in the configuration.<p>
-   *
-   * If the current Vert.x instance is not clustered then Vertigo will deploy
-   * the network using the Vert.x {@link Container} and coordination will
-   * occur strictly through Vert.x shared data structures.<p>
-   *
    * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
    * The active network can be used to reconfigure the live network just like
    * a normal network configuration. When active network configurations change,
@@ -473,10 +369,6 @@ public final class Vertigo {
    * @see Vertigo#createNetwork(JsonObject)
    * @see Vertigo#deployNetwork(String)
    * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
    * @see Vertigo#deployNetwork(JsonObject)
    * @see Vertigo#deployNetwork(NetworkConfig)
    * @see Vertigo#deployNetwork(NetworkConfig, Handler)
@@ -496,26 +388,12 @@ public final class Vertigo {
    * Note that only components and connections may be added or removed from
    * running networks. Changes to things like cluster configurations will have
    * no impact on the network as they are core to the operation of the network
-   * and thus require a complete shutdown for configuration changes.<p>
-   *
-   * When the network is deployed, Vertigo will use the network's cluster
-   * configuration to determine how deployments occur. If the network's cluster
-   * scope is <code>CLUSTER</code> and the current Vert.x instance is a Hazelcast
-   * clustered instance then Vertigo will attempt to perform deployments over
-   * the event bus at the cluster address provided in the configuration.<p>
-   *
-   * If the current Vert.x instance is not clustered then Vertigo will deploy
-   * the network using the Vert.x {@link Container} and coordination will
-   * occur strictly through Vert.x shared data structures.
+   * and thus require a complete shutdown for configuration changes.
    *
    * @param network The network configuration to deploy.
    * @return The Vertigo instance.
    * @see Vertigo#deployNetwork(String)
    * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
    * @see Vertigo#deployNetwork(JsonObject)
    * @see Vertigo#deployNetwork(JsonObject, Handler)
    * @see Vertigo#deployNetwork(NetworkConfig, Handler)
@@ -537,16 +415,6 @@ public final class Vertigo {
    * no impact on the network as they are core to the operation of the network
    * and thus require a complete shutdown for configuration changes.<p>
    *
-   * When the network is deployed, Vertigo will use the network's cluster
-   * configuration to determine how deployments occur. If the network's cluster
-   * scope is <code>CLUSTER</code> and the current Vert.x instance is a Hazelcast
-   * clustered instance then Vertigo will attempt to perform deployments over
-   * the event bus at the cluster address provided in the configuration.<p>
-   *
-   * If the current Vert.x instance is not clustered then Vertigo will deploy
-   * the network using the Vert.x {@link Container} and coordination will
-   * occur strictly through Vert.x shared data structures.<p>
-   *
    * Once the deployment is complete, an {@link ActiveNetwork} will be provided.
    * The active network can be used to reconfigure the live network just like
    * a normal network configuration. When active network configurations change,
@@ -561,36 +429,22 @@ public final class Vertigo {
    * @return The Vertigo instance.
    * @see Vertigo#deployNetwork(String)
    * @see Vertigo#deployNetwork(String, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterScope)
-   * @see Vertigo#deployNetwork(String, ClusterScope, Handler)
-   * @see Vertigo#deployNetwork(String, ClusterConfig)
-   * @see Vertigo#deployNetwork(String, ClusterConfig, Handler)
    * @see Vertigo#deployNetwork(JsonObject)
    * @see Vertigo#deployNetwork(JsonObject, Handler)
    * @see Vertigo#deployNetwork(NetworkConfig)
    */
-  public Vertigo deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
-      @Override
-      public void handle(AsyncResult<ClusterManager> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
-        } else {
-          result.result().deployNetwork(network, doneHandler);
-        }
-      }
-    });
+  public Vertigo deployNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    manager.deployNetwork(network, doneHandler);
     return this;
   }
 
   /**
    * Undeploys a complete network from the Vertigo cluster.<p>
    *
-   * The network will be undeployed in its entirety from the scope in which
-   * it was originally deployed. When this method is called, Vertigo will load
-   * the network's full configuration from the internal coordination cluster.
-   * The full configuration will be used to undeploy the proper components
-   * and the network manager.
+   * The network will be undeployed in its entirety from the current cluster.
+   * When this method is called, Vertigo will load the network's full configuration
+   * from the internal coordination cluster. The full configuration will be used
+   * to undeploy the proper components and the network manager.
    *
    * @param name The name of the network to undeploy.
    * @return The Vertigo instance.
@@ -607,12 +461,11 @@ public final class Vertigo {
   /**
    * Undeploys a complete network from the Vertigo cluster.<p>
    *
-   * The network will be undeployed in its entirety from the scope in which
-   * it was originally deployed. When this method is called, Vertigo will load
-   * the network's full configuration from the internal coordination cluster.
-   * The full configuration will be used to undeploy the proper components
-   * and the network manager. If the network's configuration cannot be found
-   * then the call will fail.
+   * The network will be undeployed in its entirety from the current cluster.
+   * When this method is called, Vertigo will load the network's full configuration
+   * from the internal coordination cluster. The full configuration will be used
+   * to undeploy the proper components and the network manager. If the network's
+   * configuration cannot be found then the call will fail.
    *
    * @param name The name of the network to undeploy.
    * @param doneHandler An asynchronous handler to be called once complete.
@@ -624,29 +477,14 @@ public final class Vertigo {
    * @see Vertigo#undeployNetwork(NetworkConfig, Handler)
    */
   public Vertigo undeployNetwork(final String name, final Handler<AsyncResult<Void>> doneHandler) { 
-    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
-      @Override
-      public void handle(AsyncResult<ClusterManager> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else {
-          result.result().undeployNetwork(name, doneHandler);
-        }
-      }
-    });
+    manager.undeployNetwork(name, doneHandler);
     return this;
   }
 
   /**
    * Undeploys a complete or partial network from a JSON configuration.<p>
    *
-   * The network will be undeployed from the scope in which is was originally
-   * deployed. In order to guarantee the network is undeployed from the proper
-   * scope, Vertigo will load the network's original configuration from its
-   * internal coordination cluster and use the original cluster configuration
-   * for undeployment. This means cluster configurations in the undeployed
-   * configuration provided to this method have no effect.<p>
-   *
+   * The network will be undeployed from the current cluster.
    * If the configuration is a complete match to the configuration of the deployed
    * network, the complete network will be undeployed. Alternatively, if the
    * given configuration is only a partial configuration compared to the complete
@@ -669,13 +507,7 @@ public final class Vertigo {
   /**
    * Undeploys a complete or partial network from a JSON configuration.<p>
    *
-   * The network will be undeployed from the scope in which is was originally
-   * deployed. In order to guarantee the network is undeployed from the proper
-   * scope, Vertigo will load the network's original configuration from its
-   * internal coordination cluster and use the original cluster configuration
-   * for undeployment. This means cluster configurations in the undeployed
-   * configuration provided to this method have no effect.<p>
-   *
+   * The network will be undeployed from the current cluster.
    * If the configuration is a complete match to the configuration of the deployed
    * network, the complete network will be undeployed. Alternatively, if the
    * given configuration is only a partial configuration compared to the complete
@@ -698,13 +530,7 @@ public final class Vertigo {
   /**
    * Undeploys a complete or partial network from the Vertigo cluster.<p>
    *
-   * The network will be undeployed from the scope in which is was originally
-   * deployed. In order to guarantee the network is undeployed from the proper
-   * scope, Vertigo will load the network's original configuration from its
-   * internal coordination cluster and use the original cluster configuration
-   * for undeployment. This means cluster configurations in the undeployed
-   * configuration provided to this method have no effect.<p>
-   *
+   * The network will be undeployed from the current cluster.
    * If the configuration is a complete match to the configuration of the deployed
    * network, the complete network will be undeployed. Alternatively, if the
    * given configuration is only a partial configuration compared to the complete
@@ -727,13 +553,7 @@ public final class Vertigo {
   /**
    * Undeploys a complete or partial network from the Vertigo cluster.<p>
    *
-   * The network will be undeployed from the scope in which is was originally
-   * deployed. In order to guarantee the network is undeployed from the proper
-   * scope, Vertigo will load the network's original configuration from its
-   * internal coordination cluster and use the original cluster configuration
-   * for undeployment. This means cluster configurations in the undeployed
-   * configuration provided to this method have no effect.<p>
-   *
+   * The network will be undeployed from the current cluster.
    * If the configuration is a complete match to the configuration of the deployed
    * network, the complete network will be undeployed. Alternatively, if the
    * given configuration is only a partial configuration compared to the complete
@@ -750,16 +570,7 @@ public final class Vertigo {
    * @see Vertigo#undeployNetwork(NetworkConfig)
    */
   public Vertigo undeployNetwork(final NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
-    clusterFactory.getCurrentClusterManager(new Handler<AsyncResult<ClusterManager>>() {
-      @Override
-      public void handle(AsyncResult<ClusterManager> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-        } else {
-          result.result().undeployNetwork(network, doneHandler);
-        }
-      }
-    });
+    manager.undeployNetwork(network, doneHandler);
     return this;
   }
 

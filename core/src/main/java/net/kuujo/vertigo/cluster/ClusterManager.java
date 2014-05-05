@@ -15,8 +15,6 @@ w * Copyright 2014 the original author or authors.
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.vertigo.cluster.impl.LocalClusterManager;
-import net.kuujo.vertigo.cluster.impl.RemoteClusterManager;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -30,16 +28,24 @@ import org.vertx.java.core.Handler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@LocalTypeInfo(defaultImpl=LocalClusterManager.class)
-@ClusterTypeInfo(defaultImpl=RemoteClusterManager.class)
 public interface ClusterManager {
 
   /**
-   * Returns the cluster manager scope.
+   * Deploys a new cluster node.
    *
-   * @return The cluster manager scope.
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The cluster manager.
    */
-  ClusterScope scope();
+  ClusterManager deployNode(Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Undeploys a running cluster node.
+   *
+   * @param id The unique ID of the node to undeploy.
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The cluster manager.
+   */
+  ClusterManager undeployNode(String id, Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Gets a network reference for a deployed network.<p>

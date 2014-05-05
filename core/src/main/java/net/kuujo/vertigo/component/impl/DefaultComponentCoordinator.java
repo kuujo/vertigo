@@ -20,7 +20,6 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
-import net.kuujo.vertigo.cluster.impl.ClusterFactory;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.InstanceContext;
 
@@ -29,7 +28,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 /**
  * Default coordinator implementation.<p>
@@ -43,7 +41,6 @@ import org.vertx.java.platform.Container;
 public class DefaultComponentCoordinator implements ComponentCoordinator {
   private final String address;
   private final Vertx vertx;
-  private final ClusterFactory clusterFactory;
   private Cluster cluster;
   private WatchableAsyncMap<String, String> data;
   private InstanceContext currentContext;
@@ -73,11 +70,11 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     }
   };
 
-  public DefaultComponentCoordinator(InstanceContext context, Vertx vertx, Container container) {
+  public DefaultComponentCoordinator(InstanceContext context, Vertx vertx, Cluster cluster) {
     this.address = context.address();
     this.vertx = vertx;
     this.currentContext = context;
-    this.clusterFactory = new ClusterFactory(vertx, container);
+    this.cluster = cluster;
   }
 
   @Override
@@ -87,46 +84,35 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
 
   @Override
   public ComponentCoordinator start(final Handler<AsyncResult<InstanceContext>> doneHandler) {
-    // Coordination is always performed at the Vertigo cluster level.
-    clusterFactory.getCurrentCluster(new Handler<AsyncResult<Cluster>>() {
+    data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(currentContext.component().network().address()), vertx);
+
+    // Start watching the component's context. It's important that this
+    // happens in a certain order in order to prevent race conditions. First
+    // we watch the component's configuration, then we attempt to load the
+    // existing component configuration. Otherwise, the component's configuration
+    // could potentially be set between get() and watch().
+    data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
       @Override
-      public void handle(AsyncResult<Cluster> result) {
+      public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
         } else {
-          cluster = result.result();
-          data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(currentContext.component().network().address()), vertx);
-
-          // Start watching the component's context. It's important that this
-          // happens in a certain order in order to prevent race conditions. First
-          // we watch the component's configuration, then we attempt to load the
-          // existing component configuration. Otherwise, the component's configuration
-          // could potentially be set between get() and watch().
-          data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
+          data.get(address, new Handler<AsyncResult<String>>() {
             @Override
-            public void handle(AsyncResult<Void> result) {
+            public void handle(AsyncResult<String> result) {
               if (result.failed()) {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
               } else {
-                data.get(address, new Handler<AsyncResult<String>>() {
+                if (result.result() != null) {
+                  currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
+                }
+                data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
                   @Override
-                  public void handle(AsyncResult<String> result) {
+                  public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
                     } else {
-                      if (result.result() != null) {
-                        currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
-                      }
-                      data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
-                        @Override
-                        public void handle(AsyncResult<Void> result) {
-                          if (result.failed()) {
-                            new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
-                          } else {
-                            new DefaultFutureResult<InstanceContext>(currentContext).setHandler(doneHandler);
-                          }
-                        }
-                      });
+                      new DefaultFutureResult<InstanceContext>(currentContext).setHandler(doneHandler);
                     }
                   }
                 });

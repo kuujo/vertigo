@@ -21,7 +21,6 @@ import static org.vertx.testtools.VertxAssert.assertNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterAgent;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
@@ -29,7 +28,8 @@ import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
-import net.kuujo.vertigo.cluster.impl.RemoteCluster;
+import net.kuujo.vertigo.cluster.impl.ClusterVerticle;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -47,11 +47,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapPut() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-put");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -75,11 +75,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapGet() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-get");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -103,11 +103,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapRemove() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-remove");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -138,11 +138,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapContainsKey() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-contains-key");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -179,11 +179,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapSize() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-size");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -213,11 +213,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapClear() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-clear");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -260,11 +260,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapWatchCreate() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-create"), vertx);
         data.watch("foo", new Handler<MapEvent<String, String>>() {
           @Override
@@ -289,11 +289,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapWatchUpdate() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-update"), vertx);
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -324,11 +324,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testMapWatchDelete() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-delete"), vertx);
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -359,11 +359,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testSetAdd() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -387,11 +387,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testSetContains() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-contains");
         data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -422,11 +422,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testSetRemove() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-remove");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -457,11 +457,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testSetSize() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-size");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -499,11 +499,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testSetClear() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-clear");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -554,11 +554,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testSetIsEmpty() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-is-empty");
         data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -589,11 +589,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListAdd() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -617,11 +617,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListGet() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-get");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -659,11 +659,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListContains() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-contains");
         data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -694,11 +694,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListSize() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-size");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -736,11 +736,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListRemoveByValue() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-remove-by-value");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -778,11 +778,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListRemoveByIndex() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-remove-by-index");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -813,11 +813,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListClear() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-clear");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -868,11 +868,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testListIsEmpty() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-is-empty");
         data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -903,11 +903,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testCounterIncrement() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncCounter data = cluster.getCounter("test-counter-increment");
         data.incrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
@@ -937,11 +937,11 @@ public class RemoteClusterDataTest extends TestVerticle {
   @Test
   public void testCounterDecrement() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new RemoteCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncCounter data = cluster.getCounter("test-counter-decrement");
         data.decrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override

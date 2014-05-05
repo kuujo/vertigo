@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vertigo.cluster.ClusterConfig;
-import net.kuujo.vertigo.cluster.impl.DefaultClusterConfig;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ModuleConfig;
 import net.kuujo.vertigo.component.VerticleConfig;
@@ -46,7 +44,6 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultNetworkConfig implements NetworkConfig {
   private String name;
-  private ClusterConfig cluster = new DefaultClusterConfig();
   private Map<String, ComponentConfig<?>> components = new HashMap<String, ComponentConfig<?>>();
   private List<ConnectionConfig> connections = new ArrayList<>();
 
@@ -61,17 +58,6 @@ public class DefaultNetworkConfig implements NetworkConfig {
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public NetworkConfig setClusterConfig(ClusterConfig cluster) {
-    this.cluster = cluster;
-    return this;
-  }
-
-  @Override
-  public ClusterConfig getClusterConfig() {
-    return cluster;
   }
 
   @Override

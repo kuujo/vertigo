@@ -15,12 +15,38 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import net.kuujo.xync.Xync;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 /**
- * Vertigo cluster agent.
+ * Cluster factory.
  *
  * @author Jordan Halterman
  */
-public class ClusterAgent extends Xync {
+public interface ClusterFactory {
+
+  /**
+   * Sets the factory Vertx instance.
+   *
+   * @param vertx The current Vertx instance.
+   * @return The cluster factory.
+   */
+  ClusterFactory setVertx(Vertx vertx);
+
+  /**
+   * Sets the factory container instance.
+   *
+   * @param container The current Container instance.
+   * @return The cluster factory.
+   */
+  ClusterFactory setContainer(Container container);
+
+  /**
+   * Creates a new cluster.
+   *
+   * @param address The cluster address.
+   * @return A new cluster.
+   */
+  Cluster createCluster(String address);
+
 }

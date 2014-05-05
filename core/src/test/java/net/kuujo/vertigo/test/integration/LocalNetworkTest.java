@@ -64,19 +64,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToNone() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestSender.class.getName());
-    network.addVerticle("receiver", TestReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in");
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestSender.class.getName());
+        network.addVerticle("receiver", TestReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -103,19 +109,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToOne() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestSender.class.getName());
-    network.addVerticle("receiver", TestReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in");
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestSender.class.getName());
+        network.addVerticle("receiver", TestReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -161,19 +173,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToMany() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOneToManySender.class.getName());
-    network.addVerticle("receiver", TestOneToManyReceiver.class.getName(), 4);
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToManySender.class.getName());
+        network.addVerticle("receiver", TestOneToManyReceiver.class.getName(), 4);
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -204,19 +222,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testManyToOne() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestManyToOneSender.class.getName(), 4);
-    network.addVerticle("receiver", TestManyToOneReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestManyToOneSender.class.getName(), 4);
+        network.addVerticle("receiver", TestManyToOneReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -277,19 +301,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testManyToMany() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestManyToManySender.class.getName(), 4);
-    network.addVerticle("receiver", TestManyToManyReceiver.class.getName(), 4);
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestManyToManySender.class.getName(), 4);
+        network.addVerticle("receiver", TestManyToManyReceiver.class.getName(), 4);
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -335,19 +365,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testMany() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestManySender.class.getName());
-    network.addVerticle("receiver", TestManyReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestManySender.class.getName());
+        network.addVerticle("receiver", TestManyReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -395,19 +431,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testPauseResume() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestPauseResumeSender.class.getName());
-    network.addVerticle("receiver", TestPauseResumeReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestPauseResumeSender.class.getName());
+        network.addVerticle("receiver", TestPauseResumeReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -427,18 +469,24 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToNoneBatch() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOneToNoneBatchSender.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToNoneBatchSender.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -500,19 +548,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToManyBatch() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOneToManyBatchSender.class.getName());
-    network.addVerticle("receiver", TestOneToManyBatchReceiver.class.getName(), 4);
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToManyBatchSender.class.getName());
+        network.addVerticle("receiver", TestOneToManyBatchReceiver.class.getName(), 4);
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -599,19 +653,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToManyGroupWithinBatch() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOneToManyGroupWithinBatchSender.class.getName());
-    network.addVerticle("receiver", TestOneToManyGroupWithinBatchReceiver.class.getName(), 4);
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToManyGroupWithinBatchSender.class.getName());
+        network.addVerticle("receiver", TestOneToManyGroupWithinBatchReceiver.class.getName(), 4);
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -631,18 +691,24 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testOneToNoneGroup() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOneToNoneGroupSender.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOneToNoneGroupSender.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -690,19 +756,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testBasicGroup() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestBasicGroupSender.class.getName());
-    network.addVerticle("receiver", TestBasicGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestBasicGroupSender.class.getName());
+        network.addVerticle("receiver", TestBasicGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -770,19 +842,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testAsyncGroup() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestAsyncGroupSender.class.getName());
-    network.addVerticle("receiver", TestAsyncGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestAsyncGroupSender.class.getName());
+        network.addVerticle("receiver", TestAsyncGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -860,19 +938,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testNestedGroups() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestNestedGroupSender.class.getName());
-    network.addVerticle("receiver", TestNestedGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestNestedGroupSender.class.getName());
+        network.addVerticle("receiver", TestNestedGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -980,19 +1064,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testNestedAsyncGroups() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestNestedAsyncGroupSender.class.getName());
-    network.addVerticle("receiver", TestNestedAsyncGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestNestedAsyncGroupSender.class.getName());
+        network.addVerticle("receiver", TestNestedAsyncGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -1054,19 +1144,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testGroupOrder() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOrderedGroupSender.class.getName());
-    network.addVerticle("receiver", TestOrderedGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOrderedGroupSender.class.getName());
+        network.addVerticle("receiver", TestOrderedGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -1143,19 +1239,25 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testNestedGroupsOrder() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestOrderedNestedGroupSender.class.getName());
-    network.addVerticle("receiver", TestOrderedNestedGroupReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestOrderedNestedGroupSender.class.getName());
+        network.addVerticle("receiver", TestOrderedNestedGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -1230,21 +1332,27 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testGroupForward() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestGroupForwardSender.class.getName());
-    network.addVerticle("forwarder", TestGroupForwardForwarder.class.getName());
-    network.addVerticle("receiver", TestGroupForwardReceiver.class.getName());
-    network.createConnection("sender", "out", "forwarder", "in").roundSelect();
-    network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestGroupForwardSender.class.getName());
+        network.addVerticle("forwarder", TestGroupForwardForwarder.class.getName());
+        network.addVerticle("receiver", TestGroupForwardReceiver.class.getName());
+        network.createConnection("sender", "out", "forwarder", "in").roundSelect();
+        network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -1346,21 +1454,27 @@ public class LocalNetworkTest extends TestVerticle {
 
   @Test
   public void testNestedGroupForward() {
-    Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestNestedGroupForwardSender.class.getName());
-    network.addVerticle("forwarder", TestNestedGroupForwardForwarder.class.getName());
-    network.addVerticle("receiver", TestNestedGroupForwardReceiver.class.getName());
-    network.createConnection("sender", "out", "forwarder", "in").roundSelect();
-    network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          assertTrue(result.succeeded());
-        }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestNestedGroupForwardSender.class.getName());
+        network.addVerticle("forwarder", TestNestedGroupForwardForwarder.class.getName());
+        network.addVerticle("receiver", TestNestedGroupForwardReceiver.class.getName());
+        network.createConnection("sender", "out", "forwarder", "in").roundSelect();
+        network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
       }
     });
   }
@@ -1394,28 +1508,34 @@ public class LocalNetworkTest extends TestVerticle {
   public void testReconfigureAddComponent() {
     final String name = UUID.randomUUID().toString();
     final Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(name);
-    network.addVerticle("sender", TestReconfigureSender.class.getName());
-    network.createConnection("sender", "out", "receiver", "in");
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          NetworkConfig network = vertigo.createNetwork(name);
-          network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
-          vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-            @Override
-            public void handle(AsyncResult<ActiveNetwork> result) {
-              if (result.failed()) {
-                assertTrue(result.cause().getMessage(), result.succeeded());
-              } else {
-                assertTrue(result.succeeded());
-              }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(name);
+        network.addVerticle("sender", TestReconfigureSender.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              NetworkConfig network = vertigo.createNetwork(name);
+              network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
+              vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+                @Override
+                public void handle(AsyncResult<ActiveNetwork> result) {
+                  if (result.failed()) {
+                    assertTrue(result.cause().getMessage(), result.succeeded());
+                  } else {
+                    assertTrue(result.succeeded());
+                  }
+                }
+              });
             }
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -1423,27 +1543,33 @@ public class LocalNetworkTest extends TestVerticle {
   @Test
   public void testActiveAddComponent() {
     final Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestReconfigureSender.class.getName());
-    network.createConnection("sender", "out", "receiver", "in");
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          ActiveNetwork network = result.result();
-          network.addVerticle("receiver", TestReconfigureReceiver.class.getName(), new Handler<AsyncResult<ActiveNetwork>>() {
-            @Override
-            public void handle(AsyncResult<ActiveNetwork> result) {
-              if (result.failed()) {
-                assertTrue(result.cause().getMessage(), result.succeeded());
-              } else {
-                assertTrue(result.succeeded());
-              }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestReconfigureSender.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              ActiveNetwork network = result.result();
+              network.addVerticle("receiver", TestReconfigureReceiver.class.getName(), new Handler<AsyncResult<ActiveNetwork>>() {
+                @Override
+                public void handle(AsyncResult<ActiveNetwork> result) {
+                  if (result.failed()) {
+                    assertTrue(result.cause().getMessage(), result.succeeded());
+                  } else {
+                    assertTrue(result.succeeded());
+                  }
+                }
+              });
             }
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -1452,28 +1578,34 @@ public class LocalNetworkTest extends TestVerticle {
   public void testReconfigureCreateConnection() {
     final String name = UUID.randomUUID().toString();
     final Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(name);
-    network.addVerticle("sender", TestReconfigureSender.class.getName());
-    network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          NetworkConfig network = vertigo.createNetwork(name);
-          network.createConnection("sender", "out", "receiver", "in");
-          vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-            @Override
-            public void handle(AsyncResult<ActiveNetwork> result) {
-              if (result.failed()) {
-                assertTrue(result.cause().getMessage(), result.succeeded());
-              } else {
-                assertTrue(result.succeeded());
-              }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(name);
+        network.addVerticle("sender", TestReconfigureSender.class.getName());
+        network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              NetworkConfig network = vertigo.createNetwork(name);
+              network.createConnection("sender", "out", "receiver", "in");
+              vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+                @Override
+                public void handle(AsyncResult<ActiveNetwork> result) {
+                  if (result.failed()) {
+                    assertTrue(result.cause().getMessage(), result.succeeded());
+                  } else {
+                    assertTrue(result.succeeded());
+                  }
+                }
+              });
             }
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -1481,27 +1613,33 @@ public class LocalNetworkTest extends TestVerticle {
   @Test
   public void testActiveCreateConnection() {
     final Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
-    network.addVerticle("sender", TestReconfigureSender.class.getName());
-    network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
-        if (result.failed()) {
-          assertTrue(result.cause().getMessage(), result.succeeded());
-        } else {
-          ActiveNetwork network = result.result();
-          network.createConnection("sender", "out", "receiver", "in", new Handler<AsyncResult<ActiveNetwork>>() {
-            @Override
-            public void handle(AsyncResult<ActiveNetwork> result) {
-              if (result.failed()) {
-                assertTrue(result.cause().getMessage(), result.succeeded());
-              } else {
-                assertTrue(result.succeeded());
-              }
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestReconfigureSender.class.getName());
+        network.addVerticle("receiver", TestReconfigureReceiver.class.getName());
+        vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              ActiveNetwork network = result.result();
+              network.createConnection("sender", "out", "receiver", "in", new Handler<AsyncResult<ActiveNetwork>>() {
+                @Override
+                public void handle(AsyncResult<ActiveNetwork> result) {
+                  if (result.failed()) {
+                    assertTrue(result.cause().getMessage(), result.succeeded());
+                  } else {
+                    assertTrue(result.succeeded());
+                  }
+                }
+              });
             }
-          });
-        }
+          }
+        });
       }
     });
   }

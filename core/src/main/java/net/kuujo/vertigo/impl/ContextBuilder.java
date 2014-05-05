@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.kuujo.vertigo.cluster.impl.DefaultClusterContext;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
@@ -54,37 +53,35 @@ import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public final class ContextBuilder {
-  private static final String COMPONENT_ADDRESS_PATTERN = System.getProperty("vertigo.component.address", "%1$s.%2$s");
+  private static final String COMPONENT_ADDRESS_PATTERN = System.getProperty("vertigo.component.address", "%1$s.%2$s.%3$s");
 
   /**
    * Builds a network context from a network definition.
    *
    * @param network The network definition.
+   * @param cluster The cluster to which the network belongs.
    * @return A new network context.
    * @throws MalformedNetworkException If the network is malformed.
    */
-  public static NetworkContext buildContext(NetworkConfig network) {
+  public static NetworkContext buildContext(NetworkConfig network, String cluster) {
     DefaultNetworkContext.Builder context = DefaultNetworkContext.Builder.newBuilder();
 
     // Set basic network configuration options.
     context.setName(network.getName());
     context.setVersion(UUID.randomUUID().toString());
-    context.setCluster(DefaultClusterContext.Builder.newBuilder()
-        .setAddress(network.getClusterConfig().getAddress())
-        .setScope(network.getClusterConfig().getScope()).build());
-    context.setAddress(network.getName());
+    context.setAddress(String.format("%s.%s", cluster, network.getName()));
     context.setConfig(network);
-    context.setStatusAddress(String.format("%s.__status", network.getName()));
+    context.setStatusAddress(String.format("%s.%s.__status", cluster, network.getName()));
 
     // Set up network components without inputs. Inputs are stored in a map so
     // that they can be set up after all component instances have been set up.
     Map<String, DefaultComponentContext<?>> components = new HashMap<>();
     for (ComponentConfig<?> component : network.getComponents()) {
       if (component.getType().equals(ComponentConfig.Type.MODULE)) {
-        // Set up basic module configuratin options.
+        // Set up basic module configuration options.
         DefaultModuleContext.Builder module = DefaultModuleContext.Builder.newBuilder();
         module.setName(component.getName());
-        String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), component.getName());
+        String address = String.format(COMPONENT_ADDRESS_PATTERN, cluster, network.getName(), component.getName());
         module.setAddress(address);
         module.setStatusAddress(String.format("%s.__status", address));
         module.setModule(((ModuleConfig) component).getModule());
@@ -110,7 +107,7 @@ public final class ContextBuilder {
         // Set up basic verticle configuration options.
         DefaultVerticleContext.Builder verticle = DefaultVerticleContext.Builder.newBuilder();
         verticle.setName(component.getName());
-        String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), component.getName());
+        String address = String.format(COMPONENT_ADDRESS_PATTERN, cluster, network.getName(), component.getName());
         verticle.setAddress(address);
         verticle.setStatusAddress(String.format("%s.__status", address));
         verticle.setMain(((VerticleConfig) component).getMain());
@@ -166,7 +163,7 @@ public final class ContextBuilder {
           // If the output port doesn't already exist then add it.
           if (output == null) {
             DefaultOutputPortContext port = DefaultOutputPortContext.Builder.newBuilder()
-                .setAddress(String.format("out:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number()))
+                .setAddress(String.format("out:%s@%s.%s.%s[%d]", connection.getSource().getPort(), cluster, network.getName(), source.name(), sourceInstance.number()))
                 .setName(connection.getSource().getPort())
                 .build();
             DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) sourceInstance.output())
@@ -179,7 +176,7 @@ public final class ContextBuilder {
 
           // Set up an output stream from the output port.
           DefaultOutputStreamContext.Builder outStream = DefaultOutputStreamContext.Builder.newBuilder();
-          outStream.setAddress(String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name()));
+          outStream.setAddress(String.format("out:%s@%s.%s.%s[%d]->in:%s@%s.%s.%s[]", connection.getSource().getPort(), cluster, network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), cluster, network.getName(), target.name()));
           outStream.setSelector(connection.getSelector());
 
           // For each target instance, add a unique input connection for the output.
@@ -196,7 +193,7 @@ public final class ContextBuilder {
             // If the input port doesn't already exist then add it.
             if (input == null) {
               DefaultInputPortContext port = DefaultInputPortContext.Builder.newBuilder()
-                  .setAddress(String.format("in:%s@%s.%s[%d]", connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number()))
+                  .setAddress(String.format("in:%s@%s.%s.%s[%d]", connection.getTarget().getPort(), cluster, network.getName(), target.name(), targetInstance.number()))
                   .setName(connection.getTarget().getPort())
                   .build();
               DefaultInputContext.Builder.newBuilder((DefaultInputContext) targetInstance.input())
@@ -209,7 +206,7 @@ public final class ContextBuilder {
 
             // Add an input connection to the input port.
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
-            String address = String.format("out:%s@%s.%s[%d]->in:%s@%s.%s[%d]", connection.getSource().getPort(), network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), network.getName(), target.name(), targetInstance.number());
+            String address = String.format("out:%s@%s.%s.%s[%d]->in:%s@%s.%s.%s[%d]", connection.getSource().getPort(), cluster, network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), cluster, network.getName(), target.name(), targetInstance.number());
             inConnection.setAddress(address);
 
             // Add input level hooks to the input.

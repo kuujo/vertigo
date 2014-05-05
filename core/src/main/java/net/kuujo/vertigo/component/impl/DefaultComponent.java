@@ -62,7 +62,7 @@ public class DefaultComponent implements Component {
     this.container = container;
     this.context = context;
     this.cluster = cluster;
-    this.coordinator = new DefaultComponentCoordinator(context, vertx, container);
+    this.coordinator = new DefaultComponentCoordinator(context, vertx, cluster);
     this.input = new DefaultInputCollector(vertx, context.input());
     this.output = new DefaultOutputCollector(vertx, context.output());
     this.logger = PortLoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), address), output);

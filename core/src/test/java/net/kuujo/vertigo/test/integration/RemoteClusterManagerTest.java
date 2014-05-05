@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,19 @@ package net.kuujo.vertigo.test.integration;
 
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-import net.kuujo.vertigo.cluster.ClusterAgent;
+
+import java.util.UUID;
+
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.cluster.ClusterScope;
-import net.kuujo.vertigo.cluster.impl.RemoteClusterManager;
+import net.kuujo.vertigo.cluster.impl.DefaultClusterManager;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
-import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -42,19 +42,18 @@ public class RemoteClusterManagerTest extends TestVerticle {
   @Test
   public void testLocalDeploy() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = new DefaultNetworkConfig("test-local-deploy");
-        network.getClusterConfig().setAddress("test");
-        network.getClusterConfig().setScope(ClusterScope.CLUSTER);
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
         network.addVerticle("feeder", TestFeeder.class.getName());
         network.addVerticle("worker1", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream1", "worker", "stream1");
         network.createConnection("feeder", "stream2", "worker", "stream2");
 
-        ClusterManager cluster = new RemoteClusterManager("test", vertx, container);
+        ClusterManager cluster = new DefaultClusterManager(vertx, container);
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -69,20 +68,19 @@ public class RemoteClusterManagerTest extends TestVerticle {
   @Test
   public void testLocalShutdown() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployNode(new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = new DefaultNetworkConfig("test-local-shutdown");
-        network.getClusterConfig().setAddress("test");
-        network.getClusterConfig().setScope(ClusterScope.CLUSTER);
+        NetworkConfig network = vertigo.createNetwork("test-local-shutdown");
         network.addVerticle("feeder", TestFeeder.class.getName());
         network.addVerticle("worker1", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream1", "worker", "stream1");
         network.addVerticle("worker2", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream2", "worker", "stream2");
 
-        final ClusterManager cluster = new RemoteClusterManager("test", vertx, container);
+        final ClusterManager cluster = new DefaultClusterManager(vertx, container);
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {

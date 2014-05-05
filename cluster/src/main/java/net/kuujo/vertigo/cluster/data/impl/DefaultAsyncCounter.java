@@ -30,12 +30,12 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class EventBusCounter implements AsyncCounter {
+public class DefaultAsyncCounter implements AsyncCounter {
   private final String address;
   private final String name;
   private final EventBus eventBus;
 
-  public EventBusCounter(String address, String name, Vertx vertx) {
+  public DefaultAsyncCounter(String address, String name, Vertx vertx) {
     this.address = address;
     this.name = name;
     this.eventBus = vertx.eventBus();

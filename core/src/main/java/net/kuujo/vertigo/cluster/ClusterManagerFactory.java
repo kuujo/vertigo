@@ -15,28 +15,38 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.platform.Container;
 
 /**
- * Annotates a handler as only being available in cluster mode.<p>
- *
- * This annotation allows Vertigo synchronization types to specify defaults
- * when running in cluster mode. If a network is deployed in cluster mode but
- * requires a local-only data type, Vertigo factories will automatically
- * fall back to the default cluster type specified by this annotation.
+ * Cluster manager factory.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ClusterTypeInfo {
+public interface ClusterManagerFactory {
 
   /**
-   * Default cluster-mode implementation.
+   * Sets the current Vertx instance.
+   *
+   * @param vertx The current Vertx instance.
+   * @return The cluster manager factory.
    */
-  Class<?> defaultImpl();
+  ClusterManagerFactory setVertx(Vertx vertx);
+
+  /**
+   * Sets the current Container instance.
+   *
+   * @param container The current Vertx container.
+   * @return The cluster manager factory.
+   */
+  ClusterManagerFactory setContainer(Container container);
+
+  /**
+   * Creates a new cluster manager.
+   *
+   * @param address The cluster address.
+   * @return The cluster manager.
+   */
+  ClusterManager createClusterManager(String address);
 
 }

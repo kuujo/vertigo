@@ -19,20 +19,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterScope;
-import net.kuujo.vertigo.cluster.ClusterType;
 import net.kuujo.vertigo.cluster.DeploymentException;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.data.impl.EventBusCounter;
-import net.kuujo.vertigo.cluster.data.impl.EventBusList;
-import net.kuujo.vertigo.cluster.data.impl.EventBusMap;
-import net.kuujo.vertigo.cluster.data.impl.EventBusQueue;
-import net.kuujo.vertigo.cluster.data.impl.EventBusSet;
-import net.kuujo.vertigo.util.Factory;
+import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncCounter;
+import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncList;
+import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncQueue;
+import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncSet;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -53,8 +50,8 @@ import org.vertx.java.platform.Verticle;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@ClusterType
-public class RemoteCluster implements Cluster {
+public class DefaultCluster implements Cluster {
+  private static final String DEFAULT_CLUSTER_ADDRESS = "vertigo";
   private final String address;
   private final Vertx vertx;
   @SuppressWarnings("rawtypes")
@@ -67,16 +64,19 @@ public class RemoteCluster implements Cluster {
   private final Map<String, AsyncSet> sets = new HashMap<>();
   private final Map<String, AsyncCounter> counters = new HashMap<>();
 
-  @Factory
-  public static Cluster factory(String address, Vertx vertx, Container container) {
-    return new RemoteCluster(address, vertx, container);
+  public DefaultCluster(Verticle verticle) {
+    this(DEFAULT_CLUSTER_ADDRESS, verticle);
   }
 
-  public RemoteCluster(String address, Verticle verticle) {
+  public DefaultCluster(Vertx vertx, Container container) {
+    this(DEFAULT_CLUSTER_ADDRESS, vertx, container);
+  }
+
+  public DefaultCluster(String address, Verticle verticle) {
     this(address, verticle.getVertx(), verticle.getContainer());
   }
 
-  public RemoteCluster(String address, Vertx vertx, Container container) {
+  public DefaultCluster(String address, Vertx vertx, Container container) {
     this.address = address;
     this.vertx = vertx;
   }
@@ -84,11 +84,6 @@ public class RemoteCluster implements Cluster {
   @Override
   public String address() {
     return address;
-  }
-
-  @Override
-  public ClusterScope scope() {
-    return ClusterScope.CLUSTER;
   }
 
   @Override
@@ -503,7 +498,7 @@ public class RemoteCluster implements Cluster {
   public <K, V> AsyncMap<K, V> getMap(String name) {
     AsyncMap<K, V> map = maps.get(name);
     if (map == null) {
-      map = new EventBusMap<K, V>(address, name, vertx);
+      map = new DefaultAsyncMap<K, V>(address, name, vertx);
       maps.put(name, map);
     }
     return map;
@@ -514,7 +509,7 @@ public class RemoteCluster implements Cluster {
   public <T> AsyncList<T> getList(String name) {
     AsyncList<T> list = lists.get(name);
     if (list == null) {
-      list = new EventBusList<T>(address, name, vertx);
+      list = new DefaultAsyncList<T>(address, name, vertx);
       lists.put(name, list);
     }
     return list;
@@ -525,7 +520,7 @@ public class RemoteCluster implements Cluster {
   public <T> AsyncSet<T> getSet(String name) {
     AsyncSet<T> set = sets.get(name);
     if (set == null) {
-      set = new EventBusSet<T>(address, name, vertx);
+      set = new DefaultAsyncSet<T>(address, name, vertx);
       sets.put(name, set);
     }
     return set;
@@ -536,7 +531,7 @@ public class RemoteCluster implements Cluster {
   public <T> AsyncQueue<T> getQueue(String name) {
     AsyncQueue<T> queue = queues.get(name);
     if (queue == null) {
-      queue = new EventBusQueue<T>(address, name, vertx);
+      queue = new DefaultAsyncQueue<T>(address, name, vertx);
       queues.put(name, queue);
     }
     return queue;
@@ -546,7 +541,7 @@ public class RemoteCluster implements Cluster {
   public AsyncCounter getCounter(String name) {
     AsyncCounter counter = counters.get(name);
     if (counter == null) {
-      counter = new EventBusCounter(address, name, vertx);
+      counter = new DefaultAsyncCounter(address, name, vertx);
       counters.put(name, counter);
     }
     return counter;

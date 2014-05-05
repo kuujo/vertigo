@@ -28,11 +28,13 @@ import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
-import net.kuujo.vertigo.cluster.impl.LocalCluster;
+import net.kuujo.vertigo.cluster.impl.ClusterVerticle;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -44,65 +46,22 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapPut() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncMap<String, String> data = cluster.getMap("test-map-put");
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertNull(result.result());
-        data.put("foo", "baz", new Handler<AsyncResult<String>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncMap<String, String> data = cluster.getMap("test-map-put");
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            assertEquals("bar", result.result());
-            testComplete();
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testMapGet() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncMap<String, String> data = cluster.getMap("test-map-get");
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        assertTrue(result.succeeded());
-        assertNull(result.result());
-        data.get("foo", new Handler<AsyncResult<String>>() {
-          @Override
-          public void handle(AsyncResult<String> result) {
-            assertTrue(result.succeeded());
-            assertEquals("bar", result.result());
-            testComplete();
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testMapRemove() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncMap<String, String> data = cluster.getMap("test-map-remove");
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        assertTrue(result.succeeded());
-        assertNull(result.result());
-        data.remove("foo", new Handler<AsyncResult<String>>() {
-          @Override
-          public void handle(AsyncResult<String> result) {
-            assertTrue(result.succeeded());
-            assertEquals("bar", result.result());
-            data.get("foo", new Handler<AsyncResult<String>>() {
+            assertNull(result.result());
+            data.put("foo", "baz", new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 assertTrue(result.succeeded());
-                assertNull(result.result());
+                assertEquals("bar", result.result());
                 testComplete();
               }
             });
@@ -113,28 +72,55 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testMapContainsKey() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncMap<String, String> data = cluster.getMap("test-map-contains-key");
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+  public void testMapGet() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertNull(result.result());
-        data.containsKey("foo", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncMap<String, String> data = cluster.getMap("test-map-get");
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
-          public void handle(AsyncResult<Boolean> result) {
+          public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            assertTrue(result.result());
+            assertNull(result.result());
+            data.get("foo", new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                assertTrue(result.succeeded());
+                assertEquals("bar", result.result());
+                testComplete();
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testMapRemove() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncMap<String, String> data = cluster.getMap("test-map-remove");
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            assertTrue(result.succeeded());
+            assertNull(result.result());
             data.remove("foo", new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 assertTrue(result.succeeded());
-                data.containsKey("foo", new Handler<AsyncResult<Boolean>>() {
+                assertEquals("bar", result.result());
+                data.get("foo", new Handler<AsyncResult<String>>() {
                   @Override
-                  public void handle(AsyncResult<Boolean> result) {
+                  public void handle(AsyncResult<String> result) {
                     assertTrue(result.succeeded());
-                    assertFalse(result.result());
+                    assertNull(result.result());
                     testComplete();
                   }
                 });
@@ -147,24 +133,70 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testMapSize() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncMap<String, String> data = cluster.getMap("test-map-size");
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+  public void testMapContainsKey() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertNull(result.result());
-        data.put("bar", "baz", new Handler<AsyncResult<String>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncMap<String, String> data = cluster.getMap("test-map-contains-key");
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            data.size(new Handler<AsyncResult<Integer>>() {
+            assertNull(result.result());
+            data.containsKey("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
-              public void handle(AsyncResult<Integer> result) {
+              public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
-                assertTrue(result.result() == 2);
-                testComplete();
+                assertTrue(result.result());
+                data.remove("foo", new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    assertTrue(result.succeeded());
+                    data.containsKey("foo", new Handler<AsyncResult<Boolean>>() {
+                      @Override
+                      public void handle(AsyncResult<Boolean> result) {
+                        assertTrue(result.succeeded());
+                        assertFalse(result.result());
+                        testComplete();
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testMapSize() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncMap<String, String> data = cluster.getMap("test-map-size");
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            assertTrue(result.succeeded());
+            assertNull(result.result());
+            data.put("bar", "baz", new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                assertTrue(result.succeeded());
+                data.size(new Handler<AsyncResult<Integer>>() {
+                  @Override
+                  public void handle(AsyncResult<Integer> result) {
+                    assertTrue(result.succeeded());
+                    assertTrue(result.result() == 2);
+                    testComplete();
+                  }
+                });
               }
             });
           }
@@ -175,32 +207,38 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapClear() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncMap<String, String> data = cluster.getMap("test-map-clear");
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertNull(result.result());
-        data.put("bar", "baz", new Handler<AsyncResult<String>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncMap<String, String> data = cluster.getMap("test-map-clear");
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            data.size(new Handler<AsyncResult<Integer>>() {
+            assertNull(result.result());
+            data.put("bar", "baz", new Handler<AsyncResult<String>>() {
               @Override
-              public void handle(AsyncResult<Integer> result) {
+              public void handle(AsyncResult<String> result) {
                 assertTrue(result.succeeded());
-                assertTrue(result.result() == 2);
-                data.clear(new Handler<AsyncResult<Void>>() {
+                data.size(new Handler<AsyncResult<Integer>>() {
                   @Override
-                  public void handle(AsyncResult<Void> result) {
+                  public void handle(AsyncResult<Integer> result) {
                     assertTrue(result.succeeded());
-                    data.size(new Handler<AsyncResult<Integer>>() {
+                    assertTrue(result.result() == 2);
+                    data.clear(new Handler<AsyncResult<Void>>() {
                       @Override
-                      public void handle(AsyncResult<Integer> result) {
-                         assertTrue(result.succeeded());
-                         assertTrue(result.result() == 0);
-                         testComplete();
+                      public void handle(AsyncResult<Void> result) {
+                        assertTrue(result.succeeded());
+                        data.size(new Handler<AsyncResult<Integer>>() {
+                          @Override
+                          public void handle(AsyncResult<Integer> result) {
+                             assertTrue(result.succeeded());
+                             assertTrue(result.result() == 0);
+                             testComplete();
+                          }
+                        });
                       }
                     });
                   }
@@ -215,38 +253,16 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchCreate() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-create"), vertx);
-    data.watch("foo", new Handler<MapEvent<String, String>>() {
-      @Override
-      public void handle(MapEvent<String, String> event) {
-        if (event.type().equals(MapEvent.Type.CREATE)) {
-          assertEquals("foo", event.key());
-          assertEquals("bar", event.value());
-          testComplete();
-        }
-      }
-    }, new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        assertTrue(result.succeeded());
-        data.put("foo", "bar");
-      }
-    });
-  }
-
-  @Test
-  public void testMapWatchUpdate() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-update"), vertx);
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-create"), vertx);
         data.watch("foo", new Handler<MapEvent<String, String>>() {
           @Override
           public void handle(MapEvent<String, String> event) {
-            if (event.type().equals(MapEvent.Type.UPDATE)) {
+            if (event.type().equals(MapEvent.Type.CREATE)) {
               assertEquals("foo", event.key());
               assertEquals("bar", event.value());
               testComplete();
@@ -264,74 +280,31 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testMapWatchDelete() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-delete"), vertx);
-    data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+  public void testMapWatchUpdate() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        data.watch("foo", new Handler<MapEvent<String, String>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-update"), vertx);
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
-          public void handle(MapEvent<String, String> event) {
-            if (event.type().equals(MapEvent.Type.DELETE)) {
-              assertEquals("foo", event.key());
-              assertEquals("bar", event.value());
-              testComplete();
-            }
-          }
-        }, new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
+          public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            data.remove("foo");
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testSetAdd() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncSet<String> data = cluster.getSet("test-set-add");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
-      @Override
-      public void handle(AsyncResult<Boolean> result) {
-        assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("foo", new Handler<AsyncResult<Boolean>>() {
-          @Override
-          public void handle(AsyncResult<Boolean> result) {
-            assertTrue(result.succeeded());
-            assertFalse(result.result());
-            testComplete();
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testSetContains() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncSet<String> data = cluster.getSet("test-set-contains");
-    data.contains("foo", new Handler<AsyncResult<Boolean>>() {
-      @Override
-      public void handle(AsyncResult<Boolean> result) {
-        assertTrue(result.succeeded());
-        assertFalse(result.result());
-        data.add("foo", new Handler<AsyncResult<Boolean>>() {
-          @Override
-          public void handle(AsyncResult<Boolean> result) {
-            assertTrue(result.succeeded());
-            assertTrue(result.result());
-            data.contains("foo", new Handler<AsyncResult<Boolean>>() {
+            data.watch("foo", new Handler<MapEvent<String, String>>() {
               @Override
-              public void handle(AsyncResult<Boolean> result) {
+              public void handle(MapEvent<String, String> event) {
+                if (event.type().equals(MapEvent.Type.UPDATE)) {
+                  assertEquals("foo", event.key());
+                  assertEquals("bar", event.value());
+                  testComplete();
+                }
+              }
+            }, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                assertTrue(result.result());
-                testComplete();
+                data.put("foo", "bar");
               }
             });
           }
@@ -341,20 +314,53 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testSetRemove() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncSet<String> data = cluster.getSet("test-set-remove");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+  public void testMapWatchDelete() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.remove("foo", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-delete"), vertx);
+        data.put("foo", "bar", new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            assertTrue(result.succeeded());
+            data.watch("foo", new Handler<MapEvent<String, String>>() {
+              @Override
+              public void handle(MapEvent<String, String> event) {
+                if (event.type().equals(MapEvent.Type.DELETE)) {
+                  assertEquals("foo", event.key());
+                  assertEquals("bar", event.value());
+                  testComplete();
+                }
+              }
+            }, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                assertTrue(result.succeeded());
+                data.remove("foo");
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testSetAdd() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncSet<String> data = cluster.getSet("test-set-add");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            data.remove("foo", new Handler<AsyncResult<Boolean>>() {
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
@@ -369,29 +375,28 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testSetSize() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncSet<String> data = cluster.getSet("test-set-size");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+  public void testSetContains() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("bar", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncSet<String> data = cluster.getSet("test-set-contains");
+        data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
-            assertTrue(result.result());
-            data.add("baz", new Handler<AsyncResult<Boolean>>() {
+            assertFalse(result.result());
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
                 assertTrue(result.result());
-                data.size(new Handler<AsyncResult<Integer>>() {
+                data.contains("foo", new Handler<AsyncResult<Boolean>>() {
                   @Override
-                  public void handle(AsyncResult<Integer> result) {
+                  public void handle(AsyncResult<Boolean> result) {
                     assertTrue(result.succeeded());
-                    assertTrue(result.result() == 3);
+                    assertTrue(result.result());
                     testComplete();
                   }
                 });
@@ -404,39 +409,120 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testSetClear() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncSet<String> data = cluster.getSet("test-set-clear");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+  public void testSetRemove() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("bar", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncSet<String> data = cluster.getSet("test-set-remove");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            data.add("baz", new Handler<AsyncResult<Boolean>>() {
+            data.remove("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
                 assertTrue(result.result());
-                data.size(new Handler<AsyncResult<Integer>>() {
+                data.remove("foo", new Handler<AsyncResult<Boolean>>() {
                   @Override
-                  public void handle(AsyncResult<Integer> result) {
+                  public void handle(AsyncResult<Boolean> result) {
                     assertTrue(result.succeeded());
-                    assertTrue(result.result() == 3);
-                    data.clear(new Handler<AsyncResult<Void>>() {
+                    assertFalse(result.result());
+                    testComplete();
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testSetSize() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncSet<String> data = cluster.getSet("test-set-size");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            assertTrue(result.succeeded());
+            assertTrue(result.result());
+            data.add("bar", new Handler<AsyncResult<Boolean>>() {
+              @Override
+              public void handle(AsyncResult<Boolean> result) {
+                assertTrue(result.succeeded());
+                assertTrue(result.result());
+                data.add("baz", new Handler<AsyncResult<Boolean>>() {
+                  @Override
+                  public void handle(AsyncResult<Boolean> result) {
+                    assertTrue(result.succeeded());
+                    assertTrue(result.result());
+                    data.size(new Handler<AsyncResult<Integer>>() {
                       @Override
-                      public void handle(AsyncResult<Void> result) {
+                      public void handle(AsyncResult<Integer> result) {
                         assertTrue(result.succeeded());
-                        data.size(new Handler<AsyncResult<Integer>>() {
+                        assertTrue(result.result() == 3);
+                        testComplete();
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testSetClear() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncSet<String> data = cluster.getSet("test-set-clear");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            assertTrue(result.succeeded());
+            assertTrue(result.result());
+            data.add("bar", new Handler<AsyncResult<Boolean>>() {
+              @Override
+              public void handle(AsyncResult<Boolean> result) {
+                assertTrue(result.succeeded());
+                assertTrue(result.result());
+                data.add("baz", new Handler<AsyncResult<Boolean>>() {
+                  @Override
+                  public void handle(AsyncResult<Boolean> result) {
+                    assertTrue(result.succeeded());
+                    assertTrue(result.result());
+                    data.size(new Handler<AsyncResult<Integer>>() {
+                      @Override
+                      public void handle(AsyncResult<Integer> result) {
+                        assertTrue(result.succeeded());
+                        assertTrue(result.result() == 3);
+                        data.clear(new Handler<AsyncResult<Void>>() {
                           @Override
-                          public void handle(AsyncResult<Integer> result) {
+                          public void handle(AsyncResult<Void> result) {
                             assertTrue(result.succeeded());
-                            assertTrue(result.result() == 0);
-                            testComplete();
+                            data.size(new Handler<AsyncResult<Integer>>() {
+                              @Override
+                              public void handle(AsyncResult<Integer> result) {
+                                assertTrue(result.succeeded());
+                                assertTrue(result.result() == 0);
+                                testComplete();
+                              }
+                            });
                           }
                         });
                       }
@@ -453,24 +539,30 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetIsEmpty() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncSet<String> data = cluster.getSet("test-set-is-empty");
-    data.isEmpty(new Handler<AsyncResult<Boolean>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncSet<String> data = cluster.getSet("test-set-is-empty");
+        data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            data.isEmpty(new Handler<AsyncResult<Boolean>>() {
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
-                assertFalse(result.result());
-                testComplete();
+                assertTrue(result.result());
+                data.isEmpty(new Handler<AsyncResult<Boolean>>() {
+                  @Override
+                  public void handle(AsyncResult<Boolean> result) {
+                    assertTrue(result.succeeded());
+                    assertFalse(result.result());
+                    testComplete();
+                  }
+                });
               }
             });
           }
@@ -481,19 +573,25 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListAdd() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-add");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            testComplete();
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
+              @Override
+              public void handle(AsyncResult<Boolean> result) {
+                assertTrue(result.succeeded());
+                assertTrue(result.result());
+                testComplete();
+              }
+            });
           }
         });
       }
@@ -502,29 +600,35 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListGet() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-get");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-get");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            data.get(0, new Handler<AsyncResult<String>>() {
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
-              public void handle(AsyncResult<String> result) {
+              public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
-                assertEquals("foo", result.result());
-                data.get(1, new Handler<AsyncResult<String>>() {
+                assertTrue(result.result());
+                data.get(0, new Handler<AsyncResult<String>>() {
                   @Override
                   public void handle(AsyncResult<String> result) {
                     assertTrue(result.succeeded());
                     assertEquals("foo", result.result());
-                    testComplete();
+                    data.get(1, new Handler<AsyncResult<String>>() {
+                      @Override
+                      public void handle(AsyncResult<String> result) {
+                        assertTrue(result.succeeded());
+                        assertEquals("foo", result.result());
+                        testComplete();
+                      }
+                    });
                   }
                 });
               }
@@ -537,56 +641,27 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListContains() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-contains");
-    data.contains("foo", new Handler<AsyncResult<Boolean>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertFalse(result.result());
-        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-contains");
+        data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
-            assertTrue(result.result());
-            data.contains("foo", new Handler<AsyncResult<Boolean>>() {
+            assertFalse(result.result());
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
                 assertTrue(result.result());
-                testComplete();
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testListSize() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-size");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
-      @Override
-      public void handle(AsyncResult<Boolean> result) {
-        assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("bar", new Handler<AsyncResult<Boolean>>() {
-          @Override
-          public void handle(AsyncResult<Boolean> result) {
-            assertTrue(result.succeeded());
-            assertTrue(result.result());
-            data.add("baz", new Handler<AsyncResult<Boolean>>() {
-              @Override
-              public void handle(AsyncResult<Boolean> result) {
-                assertTrue(result.succeeded());
-                assertTrue(result.result());
-                data.size(new Handler<AsyncResult<Integer>>() {
+                data.contains("foo", new Handler<AsyncResult<Boolean>>() {
                   @Override
-                  public void handle(AsyncResult<Integer> result) {
+                  public void handle(AsyncResult<Boolean> result) {
                     assertTrue(result.succeeded());
-                    assertTrue(result.result() == 3);
+                    assertTrue(result.result());
                     testComplete();
                   }
                 });
@@ -599,15 +674,55 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testListRemoveByValue() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-remove-by-value");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+  public void testListSize() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.remove("foo", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-size");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            assertTrue(result.succeeded());
+            assertTrue(result.result());
+            data.add("bar", new Handler<AsyncResult<Boolean>>() {
+              @Override
+              public void handle(AsyncResult<Boolean> result) {
+                assertTrue(result.succeeded());
+                assertTrue(result.result());
+                data.add("baz", new Handler<AsyncResult<Boolean>>() {
+                  @Override
+                  public void handle(AsyncResult<Boolean> result) {
+                    assertTrue(result.succeeded());
+                    assertTrue(result.result());
+                    data.size(new Handler<AsyncResult<Integer>>() {
+                      @Override
+                      public void handle(AsyncResult<Integer> result) {
+                        assertTrue(result.succeeded());
+                        assertTrue(result.result() == 3);
+                        testComplete();
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testListRemoveByValue() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-remove-by-value");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
@@ -616,7 +731,48 @@ public class LocalClusterDataTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
-                assertFalse(result.result());
+                assertTrue(result.result());
+                data.remove("foo", new Handler<AsyncResult<Boolean>>() {
+                  @Override
+                  public void handle(AsyncResult<Boolean> result) {
+                    assertTrue(result.succeeded());
+                    assertFalse(result.result());
+                    data.size(new Handler<AsyncResult<Integer>>() {
+                      @Override
+                      public void handle(AsyncResult<Integer> result) {
+                        assertTrue(result.succeeded());
+                        assertTrue(result.result() == 0);
+                        testComplete();
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testListRemoveByIndex() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-remove-by-index");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            assertTrue(result.succeeded());
+            assertTrue(result.result());
+            data.remove(0, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                assertTrue(result.succeeded());
+                assertEquals("foo", result.result());
                 data.size(new Handler<AsyncResult<Integer>>() {
                   @Override
                   public void handle(AsyncResult<Integer> result) {
@@ -634,67 +790,45 @@ public class LocalClusterDataTest extends TestVerticle {
   }
 
   @Test
-  public void testListRemoveByIndex() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-remove-by-index");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
-      @Override
-      public void handle(AsyncResult<Boolean> result) {
-        assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.remove(0, new Handler<AsyncResult<String>>() {
-          @Override
-          public void handle(AsyncResult<String> result) {
-            assertTrue(result.succeeded());
-            assertEquals("foo", result.result());
-            data.size(new Handler<AsyncResult<Integer>>() {
-              @Override
-              public void handle(AsyncResult<Integer> result) {
-                assertTrue(result.succeeded());
-                assertTrue(result.result() == 0);
-                testComplete();
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-
-  @Test
   public void testListClear() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-clear");
-    data.add("foo", new Handler<AsyncResult<Boolean>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("bar", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-clear");
+        data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            data.add("baz", new Handler<AsyncResult<Boolean>>() {
+            data.add("bar", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
                 assertTrue(result.result());
-                data.size(new Handler<AsyncResult<Integer>>() {
+                data.add("baz", new Handler<AsyncResult<Boolean>>() {
                   @Override
-                  public void handle(AsyncResult<Integer> result) {
+                  public void handle(AsyncResult<Boolean> result) {
                     assertTrue(result.succeeded());
-                    assertTrue(result.result() == 3);
-                    data.clear(new Handler<AsyncResult<Void>>() {
+                    assertTrue(result.result());
+                    data.size(new Handler<AsyncResult<Integer>>() {
                       @Override
-                      public void handle(AsyncResult<Void> result) {
+                      public void handle(AsyncResult<Integer> result) {
                         assertTrue(result.succeeded());
-                        data.size(new Handler<AsyncResult<Integer>>() {
+                        assertTrue(result.result() == 3);
+                        data.clear(new Handler<AsyncResult<Void>>() {
                           @Override
-                          public void handle(AsyncResult<Integer> result) {
+                          public void handle(AsyncResult<Void> result) {
                             assertTrue(result.succeeded());
-                            assertTrue(result.result() == 0);
-                            testComplete();
+                            data.size(new Handler<AsyncResult<Integer>>() {
+                              @Override
+                              public void handle(AsyncResult<Integer> result) {
+                                assertTrue(result.succeeded());
+                                assertTrue(result.result() == 0);
+                                testComplete();
+                              }
+                            });
                           }
                         });
                       }
@@ -711,24 +845,30 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListIsEmpty() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncList<String> data = cluster.getList("test-list-is-empty");
-    data.isEmpty(new Handler<AsyncResult<Boolean>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Boolean> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result());
-        data.add("foo", new Handler<AsyncResult<Boolean>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncList<String> data = cluster.getList("test-list-is-empty");
+        data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
           public void handle(AsyncResult<Boolean> result) {
             assertTrue(result.succeeded());
             assertTrue(result.result());
-            data.isEmpty(new Handler<AsyncResult<Boolean>>() {
+            data.add("foo", new Handler<AsyncResult<Boolean>>() {
               @Override
               public void handle(AsyncResult<Boolean> result) {
                 assertTrue(result.succeeded());
-                assertFalse(result.result());
-                testComplete();
+                assertTrue(result.result());
+                data.isEmpty(new Handler<AsyncResult<Boolean>>() {
+                  @Override
+                  public void handle(AsyncResult<Boolean> result) {
+                    assertTrue(result.succeeded());
+                    assertFalse(result.result());
+                    testComplete();
+                  }
+                });
               }
             });
           }
@@ -739,23 +879,29 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testCounterIncrement() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncCounter data = cluster.getCounter("test-counter-increment");
-    data.incrementAndGet(new Handler<AsyncResult<Long>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Long> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result() == 1);
-        data.increment(new Handler<AsyncResult<Void>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncCounter data = cluster.getCounter("test-counter-increment");
+        data.incrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
-          public void handle(AsyncResult<Void> result) {
+          public void handle(AsyncResult<Long> result) {
             assertTrue(result.succeeded());
-            data.get(new Handler<AsyncResult<Long>>() {
+            assertTrue(result.result() == 1);
+            data.increment(new Handler<AsyncResult<Void>>() {
               @Override
-              public void handle(AsyncResult<Long> result) {
+              public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                assertTrue(result.result() == 2);
-                testComplete();
+                data.get(new Handler<AsyncResult<Long>>() {
+                  @Override
+                  public void handle(AsyncResult<Long> result) {
+                    assertTrue(result.succeeded());
+                    assertTrue(result.result() == 2);
+                    testComplete();
+                  }
+                });
               }
             });
           }
@@ -766,23 +912,29 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testCounterDecrement() {
-    final Cluster cluster = new LocalCluster(vertx, container);
-    final AsyncCounter data = cluster.getCounter("test-counter-decrement");
-    data.decrementAndGet(new Handler<AsyncResult<Long>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Long> result) {
+      public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        assertTrue(result.result() == -1);
-        data.decrement(new Handler<AsyncResult<Void>>() {
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final AsyncCounter data = cluster.getCounter("test-counter-decrement");
+        data.decrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
-          public void handle(AsyncResult<Void> result) {
+          public void handle(AsyncResult<Long> result) {
             assertTrue(result.succeeded());
-            data.get(new Handler<AsyncResult<Long>>() {
+            assertTrue(result.result() == -1);
+            data.decrement(new Handler<AsyncResult<Void>>() {
               @Override
-              public void handle(AsyncResult<Long> result) {
+              public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                assertTrue(result.result() == -2);
-                testComplete();
+                data.get(new Handler<AsyncResult<Long>>() {
+                  @Override
+                  public void handle(AsyncResult<Long> result) {
+                    assertTrue(result.succeeded());
+                    assertTrue(result.result() == -2);
+                    testComplete();
+                  }
+                });
               }
             });
           }

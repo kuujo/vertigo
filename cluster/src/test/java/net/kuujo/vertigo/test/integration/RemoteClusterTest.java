@@ -20,8 +20,8 @@ import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterAgent;
-import net.kuujo.vertigo.cluster.impl.RemoteCluster;
+import net.kuujo.vertigo.cluster.impl.ClusterVerticle;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -54,11 +54,11 @@ public class RemoteClusterTest extends TestVerticle {
   @Test
   public void testDeployVerticle() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new RemoteCluster("test", vertx, container);
+        final Cluster client = new DefaultCluster("test", vertx, container);
         client.deployVerticle("test-verticle1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
@@ -73,11 +73,11 @@ public class RemoteClusterTest extends TestVerticle {
   @Test
   public void testUndeployVerticle() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new RemoteCluster("test", vertx, container);
+        final Cluster client = new DefaultCluster("test", vertx, container);
         client.deployVerticle("test-verticle2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
@@ -99,11 +99,11 @@ public class RemoteClusterTest extends TestVerticle {
   @Test
   public void testVerticleIsDeployed() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new RemoteCluster("test", vertx, container);
+        final Cluster client = new DefaultCluster("test", vertx, container);
         client.deployVerticle("test-verticle3", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
@@ -126,11 +126,11 @@ public class RemoteClusterTest extends TestVerticle {
   @Test
   public void testVerticleIsNotDeployed() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new RemoteCluster("test", vertx, container);
+        final Cluster client = new DefaultCluster("test", vertx, container);
         client.deployVerticle("test-verticle4", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
@@ -159,11 +159,11 @@ public class RemoteClusterTest extends TestVerticle {
   @Test
   public void testDeployWorkerVerticle() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new RemoteCluster("test", vertx, container);
+        final Cluster client = new DefaultCluster("test", vertx, container);
         client.deployWorkerVerticle("test-worker1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
@@ -178,11 +178,11 @@ public class RemoteClusterTest extends TestVerticle {
   @Test
   public void testUndeployWorkerVerticle() {
     net.kuujo.xync.util.Cluster.initialize();
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new RemoteCluster("test", vertx, container);
+        final Cluster client = new DefaultCluster("test", vertx, container);
         client.deployWorkerVerticle("test-worker2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {

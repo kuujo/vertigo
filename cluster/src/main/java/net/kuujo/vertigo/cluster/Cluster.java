@@ -20,8 +20,6 @@ import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
-import net.kuujo.vertigo.cluster.impl.LocalCluster;
-import net.kuujo.vertigo.cluster.impl.RemoteCluster;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -41,8 +39,6 @@ import org.vertx.java.platform.Container;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@LocalTypeInfo(defaultImpl=LocalCluster.class)
-@ClusterTypeInfo(defaultImpl=RemoteCluster.class)
 public interface Cluster {
 
   /**
@@ -51,13 +47,6 @@ public interface Cluster {
    * @return The cluster address.
    */
   String address();
-
-  /**
-   * Returns the cluster scope.
-   *
-   * @return The cluster scope.
-   */
-  ClusterScope scope();
 
   /**
    * Checks whether a module or verticle is deployed in the cluster.

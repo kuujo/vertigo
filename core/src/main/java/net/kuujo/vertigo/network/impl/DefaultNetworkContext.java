@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.kuujo.vertigo.cluster.ClusterContext;
-import net.kuujo.vertigo.cluster.ClusterScope;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
 import net.kuujo.vertigo.impl.BaseContext;
@@ -32,9 +30,6 @@ import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
-
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * A network context which contains information regarding the complete structure of a
@@ -45,9 +40,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class DefaultNetworkContext extends BaseContext<NetworkContext> implements NetworkContext {
   private String name;
-  private ClusterContext cluster;
   private String version;
-  private ClusterScope scope = ClusterScope.CLUSTER;
   private NetworkConfig config;
   private String status;
   private Map<String, ComponentContext<?>> components = new HashMap<>();
@@ -89,21 +82,6 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   @Override
   public NetworkConfig config() {
     return config;
-  }
-
-  @Override
-  public ClusterContext cluster() {
-    return cluster;
-  }
-
-  @JsonGetter("scope")
-  private String getClusterScopeName() {
-    return scope.toString();
-  }
-
-  @JsonSetter("scope")
-  private void setClusterScopeName(String name) {
-    this.scope = ClusterScope.parse(name);
   }
 
   @Override
@@ -248,28 +226,6 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      */
     public Builder setConfig(NetworkConfig config) {
       context.config = config;
-      return this;
-    }
-
-    /**
-     * Sets the network cluster address.
-     *
-     * @param cluster The network's cluster address.
-     * @return The context builder.
-     */
-    public Builder setCluster(ClusterContext cluster) {
-      context.cluster = cluster;
-      return this;
-    }
-
-    /**
-     * Sets the network cluster scope.
-     *
-     * @param scope The network's cluster scope.
-     * @return The context builder.
-     */
-    public Builder setScope(ClusterScope scope) {
-      context.scope = scope;
       return this;
     }
 

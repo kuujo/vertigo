@@ -12,7 +12,7 @@
 
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-    <xync.version>0.1.0-beta1</xync.version>
+    <xync.version>0.1.0-SNAPSHOT</xync.version>
   </properties>
 
   <dependencies>

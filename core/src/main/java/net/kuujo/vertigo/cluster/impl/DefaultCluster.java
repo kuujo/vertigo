@@ -41,12 +41,7 @@ import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
 
 /**
- * Xync-based cluster implementation.<p>
- *
- * The Xync cluster is backed by the custom Xync platform manager
- * and Hazelcast data structures via the Vert.x event bus. When running
- * the remote cluster the Vert.x instance <b>must</b> have been run with
- * the custom Xync platform manager.
+ * Default cluster implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

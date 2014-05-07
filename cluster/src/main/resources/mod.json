@@ -1,10 +1,10 @@
 {
-  "description": "Cluster-wide shared data and deployment framework",
+  "description": "Vertigo cluster manager supports remote deployments and cluster-wide shared data",
   "licenses": ["The Apache Software License Version 2.0"],
   "author": "Jordan Halterman",
   "keywords": ["cluster manager", "shared data"],
   "homepage": "https://github.com/kuujo/vertigo",
-  "main": "net.kuujo.vertigo.cluster.impl.ClusterVerticle",
+  "main": "net.kuujo.vertigo.cluster.impl.ClusterAgent",
   "worker": true,
   "includes": "net.kuujo~vertigo~0.7.0-SNAPSHOT"
 }

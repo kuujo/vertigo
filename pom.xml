@@ -62,7 +62,6 @@
   <modules>
     <module>core</module>
     <module>cluster</module>
-    <module>utils</module>
     <module>deployer</module>
   </modules>
 

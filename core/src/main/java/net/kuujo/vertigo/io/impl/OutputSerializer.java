@@ -15,16 +15,12 @@
  */
 package net.kuujo.vertigo.io.impl;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
-import net.kuujo.vertigo.util.serialization.Serializer;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
+import net.kuujo.vertigo.util.serialization.SerializationException;
 
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -38,23 +34,6 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class OutputSerializer {
-  private final Map<Class<?>, Serializer> serializers = new HashMap<>();
-  @SuppressWarnings("serial")
-  private final Set<Class<?>> eventBusTypes = new HashSet<Class<?>>() {{
-    add(String.class);
-    add(Integer.class);
-    add(Short.class);
-    add(Integer.class);
-    add(Long.class);
-    add(Float.class);
-    add(Double.class);
-    add(Byte.class);
-    add(byte[].class);
-    add(Character.class);
-    add(Buffer.class);
-    add(JsonObject.class);
-    add(JsonArray.class);
-  }};
 
   /**
    * Serializes a message.
@@ -63,16 +42,25 @@ public class OutputSerializer {
    * @return The serialized message.
    */
   public JsonObject serialize(Object message) {
-    Class<?> clazz = message.getClass();
-    if (eventBusTypes.contains(clazz)) {
-      return new JsonObject().putValue("value", message);
+    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+    ObjectOutputStream stream = null;
+    byte[] serialized = null;
+    try {
+      stream = new ObjectOutputStream(byteStream);
+      stream.writeObject(message);
+    } catch (IOException e) {
+      throw new SerializationException(e.getMessage());
+    } finally {
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (IOException e) {
+        }
+      }
     }
-    Serializer serializer = serializers.get(clazz);
-    if (serializer == null) {
-      serializer = SerializerFactory.getSerializer(clazz);
-      serializers.put(clazz, serializer);
-    }
-    return new JsonObject().putBoolean("serialized", true).putString("class", clazz.getName()).putString("value", serializer.serializeToString(message));
+
+    serialized = byteStream.toByteArray();
+    return new JsonObject().putBinary("value", serialized);
   }
 
 }

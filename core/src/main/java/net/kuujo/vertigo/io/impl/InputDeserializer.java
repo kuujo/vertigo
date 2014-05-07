@@ -15,11 +15,13 @@
  */
 package net.kuujo.vertigo.io.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 
-import net.kuujo.vertigo.util.serialization.Serializer;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
+import net.kuujo.vertigo.util.serialization.SerializationException;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -34,8 +36,27 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class InputDeserializer {
-  private final Map<String, Class<?>> classes = new HashMap<>();
-  private final Map<Class<?>, Serializer> serializers = new HashMap<>();
+
+  /**
+   * Object input stream that loads the class from the current context class loader.
+   */
+  private class ThreadObjectInputStream extends ObjectInputStream {
+
+    public ThreadObjectInputStream(InputStream in) throws IOException {
+      super(in);
+    }
+
+    @Override
+    public Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException, IOException {
+      try {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        return loader.loadClass(desc.getName());
+      } catch (Exception e) {
+      }
+      return super.resolveClass(desc);
+    }
+
+  }
 
   /**
    * Deserializes an input message.
@@ -44,37 +65,21 @@ public class InputDeserializer {
    * @return The message value.
    */
   public Object deserialize(JsonObject message) {
-    boolean serialized = message.getBoolean("serialized", false);
-    if (!serialized) {
-      return message.getValue("value");
-    }
-
-    String className = message.getString("class");
-    if (className == null) {
-      return null;
-    }
-
-    Class<?> clazz = classes.get(className);
-    if (clazz == null) {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      try {
-        clazz = loader.loadClass(className);
-      } catch (Exception e) {
-        throw new IllegalArgumentException("Error instantiating serializer factory.");
+    byte[] bytes = message.getBinary("value");
+    ObjectInputStream stream = null;
+    try {
+      stream = new ThreadObjectInputStream(new ByteArrayInputStream(bytes));
+      return stream.readObject();
+    } catch (ClassNotFoundException | IOException e) {
+      throw new SerializationException(e.getMessage());
+    } finally {
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (IOException e) {
+        }
       }
     }
-
-    Serializer serializer = serializers.get(clazz);
-    if (serializer == null) {
-      serializer = SerializerFactory.getSerializer(clazz);
-      serializers.put(clazz, serializer);
-    }
-
-    String value = message.getString("value");
-    if (value == null) {
-      return null;
-    }
-    return serializer.deserializeString(value, clazz);
   }
 
 }

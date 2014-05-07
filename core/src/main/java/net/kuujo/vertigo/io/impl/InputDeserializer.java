@@ -65,6 +65,11 @@ public class InputDeserializer {
    * @return The message value.
    */
   public Object deserialize(JsonObject message) {
+    boolean serialized = message.getBoolean("serialized", false);
+    if (!serialized) {
+      return message.getValue("value");
+    }
+
     byte[] bytes = message.getBinary("value");
     ObjectInputStream stream = null;
     try {

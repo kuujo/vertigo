@@ -18,9 +18,13 @@ package net.kuujo.vertigo.io.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.kuujo.vertigo.util.serialization.SerializationException;
 
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -34,6 +38,22 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class OutputSerializer {
+  @SuppressWarnings("serial")
+  private final Set<Class<?>> eventBusTypes = new HashSet<Class<?>>() {{
+    add(String.class);
+    add(Integer.class);
+    add(Short.class);
+    add(Integer.class);
+    add(Long.class);
+    add(Float.class);
+    add(Double.class);
+    add(Byte.class);
+    add(byte[].class);
+    add(Character.class);
+    add(Buffer.class);
+    add(JsonObject.class);
+    add(JsonArray.class);
+  }};
 
   /**
    * Serializes a message.
@@ -42,6 +62,11 @@ public class OutputSerializer {
    * @return The serialized message.
    */
   public JsonObject serialize(Object message) {
+    Class<?> clazz = message.getClass();
+    if (eventBusTypes.contains(clazz)) {
+      return new JsonObject().putValue("value", message);
+    }
+
     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     ObjectOutputStream stream = null;
     byte[] serialized = null;
@@ -60,7 +85,7 @@ public class OutputSerializer {
     }
 
     serialized = byteStream.toByteArray();
-    return new JsonObject().putBinary("value", serialized);
+    return new JsonObject().putBoolean("serialized", true).putBinary("value", serialized);
   }
 
 }

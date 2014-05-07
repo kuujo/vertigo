@@ -29,7 +29,6 @@ import net.kuujo.vertigo.cluster.ClusterFactory;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
-import net.kuujo.vertigo.cluster.impl.DefaultClusterFactory;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
@@ -122,8 +121,7 @@ public class NetworkManager extends Verticle {
       return;
     }
 
-    ClusterFactory clusterFactory = new DefaultClusterFactory(vertx, container);
-    cluster = clusterFactory.createCluster(scluster);
+    cluster = ClusterFactory.getCluster(scluster, vertx, container);
 
     // Load the current cluster. Regardless of the network's cluster scope,
     // we use the CLUSTER for coordination if it's available. This ensures

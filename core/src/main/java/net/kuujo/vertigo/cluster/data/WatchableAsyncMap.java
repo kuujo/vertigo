@@ -19,7 +19,13 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Watchable asynchronous map.
+ * Watchable asynchronous map.<p>
+ *
+ * This is an extension of the {@link AsyncMap} interface that supports
+ * map key events. Types that implement this interface will trigger
+ * event handlers when data changes in the map. Note that events can
+ * be received from anywhere in the cluster, so the async map events
+ * system is distributed.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

@@ -19,7 +19,6 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.cluster.impl.DefaultClusterManager;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -39,17 +38,17 @@ public class LocalClusterManagerTest extends TestVerticle {
   @Test
   public void testLocalDeploy() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployNode(new Handler<AsyncResult<String>>() {
+    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-local-deploy");
         network.addVerticle("feeder", TestFeeder.class.getName());
         network.addVerticle("worker1", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream1", "worker", "stream1");
         network.createConnection("feeder", "stream2", "worker", "stream2");
-    
-        final ClusterManager cluster = new DefaultClusterManager(vertx, container);
+
+        final ClusterManager cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -64,9 +63,9 @@ public class LocalClusterManagerTest extends TestVerticle {
   @Test
   public void testLocalShutdown() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployNode(new Handler<AsyncResult<String>>() {
+    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-local-shutdown");
         network.addVerticle("feeder", TestFeeder.class.getName());
@@ -74,8 +73,8 @@ public class LocalClusterManagerTest extends TestVerticle {
         network.createConnection("feeder", "stream1", "worker", "stream1");
         network.addVerticle("worker2", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream2", "worker", "stream2");
-    
-        final ClusterManager cluster = new DefaultClusterManager(vertx, container);
+
+        final ClusterManager cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {

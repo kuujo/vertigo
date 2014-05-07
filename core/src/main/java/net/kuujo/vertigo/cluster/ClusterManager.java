@@ -20,6 +20,7 @@ import net.kuujo.vertigo.network.NetworkConfig;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * The cluster manager handles deployment and undeployment of complete
@@ -31,21 +32,11 @@ import org.vertx.java.core.Handler;
 public interface ClusterManager {
 
   /**
-   * Deploys a new cluster node.
+   * Returns the cluster address.
    *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The cluster manager.
+   * @return The cluster address.
    */
-  ClusterManager deployNode(Handler<AsyncResult<String>> doneHandler);
-
-  /**
-   * Undeploys a running cluster node.
-   *
-   * @param id The unique ID of the node to undeploy.
-   * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The cluster manager.
-   */
-  ClusterManager undeployNode(String id, Handler<AsyncResult<Void>> doneHandler);
+  String address();
 
   /**
    * Gets a network reference for a deployed network.<p>
@@ -76,6 +67,66 @@ public interface ClusterManager {
    * @return The cluster manager.
    */
   ClusterManager isDeployed(String name, Handler<AsyncResult<Boolean>> resultHandler);
+
+  /**
+   * Deploys a bare network to the cluster.<p>
+   *
+   * The network will be deployed with no components and no connections. You
+   * can add components and connections to the network with an {@link ActiveNetwork}
+   * instance.
+   *
+   * @param name The name of the network to deploy.
+   * @return The cluster manager.
+   */
+  ClusterManager deployNetwork(String name);
+
+  /**
+   * Deploys a bare network to the cluster.<p>
+   *
+   * The network will be deployed with no components and no connections. You
+   * can add components and connections to the network with an {@link ActiveNetwork}
+   * instance.
+   *
+   * @param name The name of the network to deploy.
+   * @param doneHandler An asynchronous handler to be called once the network has
+   *        completed deployment. The handler will be called with an {@link ActiveNetwork}
+   *        instance which can be used to add or remove components and connections from
+   *        the network.
+   * @return The cluster manager.
+   */
+  ClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler);
+
+  /**
+   * Deploys a json network to the cluster.<p>
+   *
+   * The JSON network configuration will be converted to a {@link NetworkConfig} before
+   * being deployed to the cluster. The conversion is done synchronously, so if the
+   * configuration is invalid then this method may throw an exception.
+   *
+   * @param network The JSON network configuration. For the configuration format see
+   *        the project documentation.
+   * @return The cluster manager.
+   */
+  ClusterManager deployNetwork(JsonObject network);
+
+  /**
+   * Deploys a json network to the cluster.<p>
+   *
+   * The JSON network configuration will be converted to a {@link NetworkConfig} before
+   * being deployed to the cluster. The conversion is done synchronously, so if the
+   * configuration is invalid then this method may throw an exception. Once the network
+   * has been deployed an {@link ActiveNetwork} will be provided which can be used to
+   * add and remove components and connections from the network.
+   *
+   * @param network The JSON network configuration. For the configuration format see
+   *        the project documentation.
+   * @param doneHandler An asynchronous handler to be called once the network has
+   *        completed deployment. The handler will be called with an {@link ActiveNetwork}
+   *        instance which can be used to add or remove components and connections from
+   *        the network.
+   * @return The cluster manager.
+   */
+  ClusterManager deployNetwork(JsonObject network, Handler<AsyncResult<ActiveNetwork>> doneHandler);
 
   /**
    * Deploys a network to the cluster.<p>
@@ -141,6 +192,41 @@ public interface ClusterManager {
   ClusterManager undeployNetwork(String name, Handler<AsyncResult<Void>> doneHandler);
 
   /**
+   * Undeploys a network from json.<p>
+   *
+   * The JSON configuration will immediately be converted to a {@link NetworkConfig} prior
+   * to undeploying the network. In order to undeploy the entire network, the configuration
+   * should be the same as the deployed configuration. Vertigo will use configuration
+   * components to determine whether two configurations are identical. If the given
+   * configuration is not identical to the running configuration, any components or
+   * connections in the json configuration that are present in the running network
+   * will be closed and removed from the running network.
+   *
+   * @param network The JSON configuration to undeploy. For the configuration format see
+   *        the project documentation.
+   * @return The cluster manager.
+   */
+  ClusterManager undeployNetwork(JsonObject network);
+
+  /**
+   * Undeploys a network from json.<p>
+   *
+   * The JSON configuration will immediately be converted to a {@link NetworkConfig} prior
+   * to undeploying the network. In order to undeploy the entire network, the configuration
+   * should be the same as the deployed configuration. Vertigo will use configuration
+   * components to determine whether two configurations are identical. If the given
+   * configuration is not identical to the running configuration, any components or
+   * connections in the json configuration that are present in the running network
+   * will be closed and removed from the running network.
+   *
+   * @param network The JSON configuration to undeploy. For the configuration format see
+   *        the project documentation.
+   * @param doneHandler An asynchronous handler to be called once the configuration is undeployed.
+   * @return The cluster manager.
+   */
+  ClusterManager undeployNetwork(JsonObject network, Handler<AsyncResult<Void>> doneHandler);
+
+  /**
    * Undeploys a network from the cluster.<p>
    *
    * This method supports both partial and complete undeployment of networks. When
@@ -164,7 +250,7 @@ public interface ClusterManager {
    * connections then the entire network will be undeployed.
    *
    * @param network The network configuration to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the network is undeployed.
+   * @param doneHandler An asynchronous handler to be called once the configuration is undeployed.
    * @return The cluster manager.
    */
   ClusterManager undeployNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);

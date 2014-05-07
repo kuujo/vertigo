@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.impl;
+package net.kuujo.vertigo;
 
-import net.kuujo.xync.Xync;
+import org.vertx.java.core.VertxException;
 
 /**
- * Cluster deployment manager verticle.<p>
- *
- * The cluster agent simply provides a Vertigo interface to the Xync
- * cluster.
+ * Base Vertigo exception.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ClusterVerticle extends Xync {
+@SuppressWarnings("serial")
+public class VertigoException extends VertxException {
+
+  public VertigoException(String message) {
+    super(message);
+  }
+
+  public VertigoException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public VertigoException(Throwable cause) {
+    super(cause);
+  }
+
 }

@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -41,6 +42,7 @@ import org.vertx.java.platform.VerticleFactory;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkFactory implements VerticleFactory {
+  private static final String DEFAULT_CLUSTER = "vertigo";
   private Vertx vertx;
   private Container container;
   private ClassLoader cl;
@@ -60,9 +62,10 @@ public class NetworkFactory implements VerticleFactory {
   @Override
   public Verticle createVerticle(String main) throws Exception {
     JsonObject json = loadJson(main);
+    String cluster = json.getString("cluster", DEFAULT_CLUSTER);
     Vertigo vertigo = new Vertigo(vertx, container);
     NetworkConfig network = vertigo.createNetwork(json);
-    Verticle verticle = new NetworkVerticle(vertigo, network);
+    Verticle verticle = new NetworkVerticle(vertigo.getCluster(cluster), network);
     verticle.setVertx(vertx);
     verticle.setContainer(container);
     return verticle;
@@ -96,17 +99,17 @@ public class NetworkFactory implements VerticleFactory {
    * Deploys a Vertigo network.
    */
   public static class NetworkVerticle extends Verticle {
-    private Vertigo vertigo;
+    private ClusterManager cluster;
     private NetworkConfig network;
 
-    public NetworkVerticle(Vertigo vertigo, NetworkConfig config) {
-      this.vertigo = vertigo;
+    public NetworkVerticle(ClusterManager cluster, NetworkConfig config) {
+      this.cluster = cluster;
       this.network = config;
     }
 
     @Override
     public void start(final Future<Void> startResult) {
-      vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
         @Override
         public void handle(AsyncResult<ActiveNetwork> result) {
           if (result.failed()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
+package net.kuujo.vertigo.cluster.impl;
 
-import org.vertx.java.core.VertxException;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterFactory;
 
 /**
- * Base Vert.igo exception.
+ * Default cluster factory implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@SuppressWarnings("serial")
-public class VertigoException extends VertxException {
+public class DefaultClusterFactory extends ClusterFactory {
 
-  public VertigoException(String message) {
-    super(message);
-  }
-
-  public VertigoException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public VertigoException(Throwable cause) {
-    super(cause);
+  @Override
+  public Cluster createCluster(String address) {
+    return new DefaultCluster(address, vertx, container);
   }
 
 }

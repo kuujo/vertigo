@@ -33,6 +33,7 @@ import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.serialization.SerializationException;
 import net.kuujo.vertigo.util.serialization.Serializer;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
+import net.kuujo.xync.Xync;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -43,11 +44,16 @@ import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 
 /**
- * Cluster manager bus verticle.
+ * Vertigo cluster agent bus verticle.<p>
+ *
+ * If deploying this verticle directly (and not as a module) the
+ * verticle should always be deployed as a worker verticle. If the
+ * current Vert.x instance is a Hazelcast clustered instance, the
+ * cluster agent will use Hazelcast to coordinate deployments.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ClusterManagerVerticle extends ClusterVerticle {
+public class ClusterAgent extends Xync {
   private static final Serializer configSerializer = SerializerFactory.getSerializer(Config.class);
 
   @Override

@@ -12,18 +12,14 @@
 
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
+    <xync.version>0.1.0-SNAPSHOT</xync.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>net.kuujo</groupId>
-      <artifactId>vertigo-cluster</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.kuujo</groupId>
-      <artifactId>vertigo-utils</artifactId>
-      <version>${project.version}</version>
+      <artifactId>xync</artifactId>
+      <version>${xync.version}</version>
     </dependency>
   </dependencies>
 

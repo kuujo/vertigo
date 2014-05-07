@@ -18,34 +18,12 @@ package net.kuujo.vertigo.cluster.impl;
 import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.cluster.ClusterManagerFactory;
 
-import org.vertx.java.core.Vertx;
-import org.vertx.java.platform.Container;
-
 /**
- * Factory for creating cluster managers.
+ * Default cluster manager factory implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultClusterManagerFactory implements ClusterManagerFactory {
-  private Vertx vertx;
-  private Container container;
-
-  public DefaultClusterManagerFactory(Vertx vertx, Container container) {
-    this.vertx = vertx;
-    this.container = container;
-  }
-
-  @Override
-  public ClusterManagerFactory setVertx(Vertx vertx) {
-    this.vertx = vertx;
-    return this;
-  }
-
-  @Override
-  public ClusterManagerFactory setContainer(Container container) {
-    this.container = container;
-    return this;
-  }
+public class DefaultClusterManagerFactory extends ClusterManagerFactory {
 
   @Override
   public ClusterManager createClusterManager(String address) {

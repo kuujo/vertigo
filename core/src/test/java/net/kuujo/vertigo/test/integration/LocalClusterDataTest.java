@@ -20,7 +20,10 @@ import static org.vertx.testtools.VertxAssert.assertFalse;
 import static org.vertx.testtools.VertxAssert.assertNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterFactory;
+import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
@@ -28,13 +31,10 @@ import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
-import net.kuujo.vertigo.cluster.impl.ClusterVerticle;
-import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -46,11 +46,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapPut() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-put");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -73,11 +74,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapGet() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-get");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -100,11 +102,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapRemove() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-remove");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -134,11 +137,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapContainsKey() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-contains-key");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -174,11 +178,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapSize() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-size");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -207,11 +212,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapClear() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-clear");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -253,11 +259,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchCreate() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-create"), vertx);
         data.watch("foo", new Handler<MapEvent<String, String>>() {
           @Override
@@ -281,11 +288,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchUpdate() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-update"), vertx);
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -315,11 +323,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchDelete() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-delete"), vertx);
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -349,11 +358,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetAdd() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -376,11 +386,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetContains() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-contains");
         data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -410,11 +421,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetRemove() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-remove");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -444,11 +456,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetSize() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-size");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -485,11 +498,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetClear() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-clear");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -539,11 +553,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetIsEmpty() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-is-empty");
         data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -573,11 +588,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListAdd() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -600,11 +616,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListGet() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-get");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -641,11 +658,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListContains() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-contains");
         data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -675,11 +693,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListSize() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-size");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -716,11 +735,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListRemoveByValue() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-remove-by-value");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -757,11 +777,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListRemoveByIndex() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-remove-by-index");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -791,11 +812,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListClear() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-clear");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -845,11 +867,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testListIsEmpty() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-is-empty");
         data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -879,11 +902,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testCounterIncrement() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncCounter data = cluster.getCounter("test-counter-increment");
         data.incrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
@@ -912,11 +936,12 @@ public class LocalClusterDataTest extends TestVerticle {
 
   @Test
   public void testCounterDecrement() {
-    container.deployWorkerVerticle(ClusterVerticle.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
         final AsyncCounter data = cluster.getCounter("test-counter-decrement");
         data.decrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override

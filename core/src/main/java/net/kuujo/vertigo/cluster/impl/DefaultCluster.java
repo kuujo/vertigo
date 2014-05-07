@@ -547,4 +547,14 @@ public class DefaultCluster implements Cluster {
     return counter;
   }
 
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof Cluster && ((Cluster) other).address().equals(address);
+  }
+
+  @Override
+  public String toString() {
+    return address;
+  }
+
 }

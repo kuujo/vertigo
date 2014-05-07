@@ -22,7 +22,9 @@ import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultActiveNetwork;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
@@ -32,6 +34,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
+import org.vertx.java.platform.Verticle;
 
 /**
  * Default cluster manager implementation.
@@ -43,7 +46,14 @@ public class DefaultClusterManager implements ClusterManager {
   private static final long DEFAULT_REPLY_TIMEOUT = 30000;
   private final String address;
   private final Vertx vertx;
-  private final Container container;
+
+  public DefaultClusterManager(Verticle verticle) {
+    this(DEFAULT_CLUSTER_ADDRESS, verticle.getVertx(), verticle.getContainer());
+  }
+
+  public DefaultClusterManager(String address, Verticle verticle) {
+    this(address, verticle.getVertx(), verticle.getContainer());
+  }
 
   public DefaultClusterManager(Vertx vertx, Container container) {
     this(DEFAULT_CLUSTER_ADDRESS, vertx, container);
@@ -52,19 +62,11 @@ public class DefaultClusterManager implements ClusterManager {
   public DefaultClusterManager(String address, Vertx vertx, Container container) {
     this.address = address;
     this.vertx = vertx;
-    this.container = container;
   }
 
   @Override
-  public ClusterManager deployNode(Handler<AsyncResult<String>> doneHandler) {
-    container.deployWorkerVerticle(ClusterManagerVerticle.class.getName(), new JsonObject().putString("cluster", address), 1, false, doneHandler);
-    return this;
-  }
-
-  @Override
-  public ClusterManager undeployNode(String id, Handler<AsyncResult<Void>> doneHandler) {
-    container.undeployVerticle(id, doneHandler);
-    return this;
+  public String address() {
+    return address;
   }
 
   @Override
@@ -106,6 +108,26 @@ public class DefaultClusterManager implements ClusterManager {
       }
     });
     return this;
+  }
+
+  @Override
+  public ClusterManager deployNetwork(String name) {
+    return deployNetwork(name, null);
+  }
+
+  @Override
+  public ClusterManager deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    return deployNetwork(new DefaultNetworkConfig(name), doneHandler);
+  }
+
+  @Override
+  public ClusterManager deployNetwork(JsonObject network) {
+    return deployNetwork(network, null);
+  }
+
+  @Override
+  public ClusterManager deployNetwork(JsonObject network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    return deployNetwork(Configs.createNetwork(network), doneHandler);
   }
 
   @Override
@@ -161,6 +183,16 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   @Override
+  public ClusterManager undeployNetwork(JsonObject network) {
+    return undeployNetwork(network, null);
+  }
+
+  @Override
+  public ClusterManager undeployNetwork(JsonObject network, Handler<AsyncResult<Void>> doneHandler) {
+    return undeployNetwork(Configs.createNetwork(network), doneHandler);
+  }
+
+  @Override
   public ClusterManager undeployNetwork(NetworkConfig network) {
     return undeployNetwork(network, null);
   }
@@ -209,6 +241,16 @@ public class DefaultClusterManager implements ClusterManager {
         }
       }
     });
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof ClusterManager && ((ClusterManager) other).address().equals(address);
+  }
+
+  @Override
+  public String toString() {
+    return address;
   }
 
 }

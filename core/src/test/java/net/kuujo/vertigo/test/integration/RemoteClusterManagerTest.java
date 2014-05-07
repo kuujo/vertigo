@@ -28,6 +28,8 @@ import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -40,9 +42,18 @@ import org.vertx.testtools.TestVerticle;
  */
 public class RemoteClusterManagerTest extends TestVerticle {
 
+  @BeforeClass
+  public static void setupCluster() {
+    net.kuujo.xync.util.Cluster.initialize();
+  }
+
+  @AfterClass
+  public static void shutdownCluster() {
+    net.kuujo.xync.util.Cluster.getHazelcastInstance().shutdown();
+  }
+
   @Test
   public void testDeploy() {
-    net.kuujo.xync.util.Cluster.initialize();
     final Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -68,7 +79,6 @@ public class RemoteClusterManagerTest extends TestVerticle {
 
   @Test
   public void testShutdown() {
-    net.kuujo.xync.util.Cluster.initialize();
     final Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -106,7 +116,6 @@ public class RemoteClusterManagerTest extends TestVerticle {
 
   @Test
   public void testGetNetwork() {
-    net.kuujo.xync.util.Cluster.initialize();
     final Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -148,7 +157,6 @@ public class RemoteClusterManagerTest extends TestVerticle {
 
   @Test
   public void testGetNetworks() {
-    net.kuujo.xync.util.Cluster.initialize();
     final Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
       @Override

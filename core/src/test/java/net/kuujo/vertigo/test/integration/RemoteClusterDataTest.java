@@ -32,6 +32,8 @@ import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -44,9 +46,18 @@ import org.vertx.testtools.TestVerticle;
  */
 public class RemoteClusterDataTest extends TestVerticle {
 
+  @BeforeClass
+  public static void setupCluster() {
+    net.kuujo.xync.util.Cluster.initialize();
+  }
+
+  @AfterClass
+  public static void shutdownCluster() {
+    net.kuujo.xync.util.Cluster.getHazelcastInstance().shutdown();
+  }
+
   @Test
   public void testMapPut() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -75,7 +86,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapGet() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -104,7 +114,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapRemove() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -140,7 +149,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapContainsKey() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -182,7 +190,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapSize() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -217,7 +224,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapClear() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -265,7 +271,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchCreate() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -295,7 +300,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchUpdate() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -331,7 +335,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testMapWatchDelete() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -367,7 +370,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetAdd() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -396,7 +398,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetContains() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -432,7 +433,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetRemove() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -468,7 +468,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetSize() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -511,7 +510,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetClear() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -567,7 +565,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testSetIsEmpty() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -603,7 +600,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListAdd() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -632,7 +628,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListGet() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -675,7 +670,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListContains() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -711,7 +705,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListSize() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -754,7 +747,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListRemoveByValue() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -797,7 +789,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListRemoveByIndex() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -833,7 +824,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListClear() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -889,7 +879,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testListIsEmpty() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -925,7 +914,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testCounterIncrement() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override
@@ -960,7 +948,6 @@ public class RemoteClusterDataTest extends TestVerticle {
 
   @Test
   public void testCounterDecrement() {
-    net.kuujo.xync.util.Cluster.initialize();
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
       @Override

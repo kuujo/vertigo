@@ -23,6 +23,8 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.impl.ClusterAgent;
 import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -36,6 +38,16 @@ import org.vertx.testtools.TestVerticle;
  * @author Jordan Halterman
  */
 public class RemoteClusterTest extends TestVerticle {
+
+  @BeforeClass
+  public static void setupCluster() {
+    net.kuujo.xync.util.Cluster.initialize();
+  }
+
+  @AfterClass
+  public static void shutdownCluster() {
+    net.kuujo.xync.util.Cluster.getHazelcastInstance().shutdown();
+  }
 
   public static class TestVerticle1 extends Verticle {
     @Override
@@ -53,7 +65,6 @@ public class RemoteClusterTest extends TestVerticle {
 
   @Test
   public void testDeployVerticle() {
-    net.kuujo.xync.util.Cluster.initialize();
     container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -72,7 +83,6 @@ public class RemoteClusterTest extends TestVerticle {
 
   @Test
   public void testUndeployVerticle() {
-    net.kuujo.xync.util.Cluster.initialize();
     container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -98,7 +108,6 @@ public class RemoteClusterTest extends TestVerticle {
 
   @Test
   public void testVerticleIsDeployed() {
-    net.kuujo.xync.util.Cluster.initialize();
     container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -125,7 +134,6 @@ public class RemoteClusterTest extends TestVerticle {
 
   @Test
   public void testVerticleIsNotDeployed() {
-    net.kuujo.xync.util.Cluster.initialize();
     container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -158,7 +166,6 @@ public class RemoteClusterTest extends TestVerticle {
 
   @Test
   public void testDeployWorkerVerticle() {
-    net.kuujo.xync.util.Cluster.initialize();
     container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -177,7 +184,6 @@ public class RemoteClusterTest extends TestVerticle {
 
   @Test
   public void testUndeployWorkerVerticle() {
-    net.kuujo.xync.util.Cluster.initialize();
     container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {

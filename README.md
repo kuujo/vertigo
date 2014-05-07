@@ -23,6 +23,7 @@ Vert.x verticles) and distributed across a Vert.x cluster.
   allowing components to be arbitrarily connected to form complex networks
 * Guarantees **strong ordering** and **exactly-once** processing of messages
 * Handles **event bus flow control** and **automatic retries** on failures
+* Supports `Serializable` Java messages on the Vert.x event bus
 * Facilitates distribution of messages between multiple verticle instances using
   **random, round-robin, mod hashing, fair, or fanout** methods
 * Provides **cluster-wide shared data** structures for synchronization
@@ -851,17 +852,13 @@ input.port("in").batchHandler(new Handler<InputBatch>() {
 ```
 
 ### Providing serializable messages
-The Vertigo messaging system supports custom serialization of messages for
-Java. Serializable messages must implement the `JsonSerializeable` interface.
+In addition to types supported by the Vert.x event bus, the Vertigo messaging
+framework supports any `Serializable` Java object.
 
 ```java
-public class MyMessage implements JsonSerializeable {
+public class MyMessage implements Serializeable {
   private String foo;
   private int bar;
-
-  // An empty constructor must be provided for serialization.
-  public MyMessage() {
-  }
 
   public MyMessage(String foo, int bar) {
     this.foo = foo;
@@ -869,11 +866,6 @@ public class MyMessage implements JsonSerializeable {
   }
 }
 ```
-
-In most cases, Vertigo's Jackson-based serializer will work with no custom
-configuration necessary. Vertigo's default serializer automatically serializes
-any basic fields (primitive types, strings, and collections), but Jackson annotations
-can be used to provide custom serialization of `JsonSerializeable` objects.
 
 ## Network Deployment and Clustering
 Vertigo provides its own cluster management framework on top of the Vert.x cluster.

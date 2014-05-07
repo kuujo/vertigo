@@ -39,19 +39,6 @@ For an in-depth explanation of how Vertigo works, see [how it works](#how-it-wor
 This is a brief tutorial that describes the basic components of Vertigo
 along with a simple example.
 
-## Cluster
-Vertigo provides its own cluster abstraction within the Vert.x cluster. Vertigo
-clusters are simple collections of verticles that manage deployment of modules
-and verticles, allow components to be deploye remotely (over the event bus)
-and provide cluster-wide shared data structures. Clusters can be run either in
-a single Vert.x instance (for testing) or across a Vert.x cluster.
-
-Vertigo nodes can be started just as any other Vert.x module
-
-```
-vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta2
-```
-
 ## Networks
 Networks are collections of Vert.x verticles and modules that are connected
 together by input and output ports. Each component in a network contains processing
@@ -59,12 +46,20 @@ logic, and connections between components indicate how messages should be
 passed between them. Networks can be created either in code or in JSON and can
 be deployed in code or from the command line.
 
+![Vertigo network](http://postimg.org/image/w3rw7f8ur/)
+
+As with any Vert.x verticle, Vertigo components can be deployed with any number
+of instances.
+
 ## Ports
 Components in Vertigo communicate via input and output ports. Messaging in Vertigo
 is inherently uni-directional, so each component has a unique set of input and
 output ports. Input ports are interfaces to which other components can connect
 to send messages, and output ports are interfaces to which other components can
-connect to receive messages.
+connect to receive messages. Vertigo does not route messages through any central
+router. Components communicate directly with one another over the event bus.
+
+![Direct connections](http://postimg.org/image/413x0b1qr/)
 
 ```java
 public class MyComponent extends ComponentVerticle {
@@ -86,8 +81,10 @@ if they don't already exist. Messages can be of any type that is supported by th
 Vert.x event bus. Vertigo guarantees that messages will always arrive in the order
 in which they were sent.
 
-Vertigo components are "black boxes," meaning all components can send or receive
-messages. Vertigo makes no distinction between the behaviors of different components.
+In cases where a connection connects two components with multiple instances,
+Vertigo facilitates special routing between the components with *selectors*.
+
+![Selectors](http://postimg.org/image/n7h43hi8j/)
 
 While components receive messages on input ports and send messages to output ports,
 the network configuration is used to define how ports on different components
@@ -103,6 +100,13 @@ network.createConnection("bar", "out", "baz", "in");
 
 Vertigo doesn't route messages through any central router. Rather, messages are sent
 between components directly on the Vert.x event bus.
+
+## Cluster
+Vertigo provides its own cluster abstraction within the Vert.x cluster. Vertigo
+clusters are simple collections of verticles that manage deployment of networks,
+allow modules and verticles to be deploye remotely (over the event bus)
+and provide cluster-wide shared data structures. Clusters can be run either in
+a single Vert.x instance (for testing) or across a Vert.x cluster.
 
 ## A Simple Network
 Vertigo provides all its API functionality through a single `Vertigo` object.
@@ -420,6 +424,8 @@ messages to event bus handlers in a round-robin fashion. But Vertigo provides
 additional routing methods known as *selectors*. Selectors indicate how messages
 should be routed between multiple instances of a component.
 
+![Selectors](http://postimg.org/image/n7h43hi8j/)
+
 Vertigo provides several selector types by default and supports custom selectors
 as well.
 
@@ -563,6 +569,11 @@ network configurations to create direct event bus connections between components
 Vertigo components send and receive messages using only output and input *ports*
 and are hidden from event bus address details which are defined in network configurations.
 This is the element that makes Vertigo components reusable.
+
+Rather than routing messages through a central router, components communicate
+directly with one another over the event bus, ensuring optimal performance.
+
+![Direct connections](http://postimg.org/image/413x0b1qr/)
 
 Vertigo messages are guaranteed to arrive *in the order in which they were sent*
 and to only be processed *exactly once*. Vertigo also provides an API

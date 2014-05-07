@@ -15,6 +15,10 @@
  */
 package net.kuujo.vertigo.cluster.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.cluster.ClusterManagerException;
@@ -25,6 +29,7 @@ import net.kuujo.vertigo.network.impl.DefaultActiveNetwork;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.util.Configs;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
@@ -32,6 +37,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 import org.vertx.java.platform.Verticle;
@@ -70,9 +76,55 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   @Override
+  public ClusterManager getNetworks(final Handler<AsyncResult<Collection<ActiveNetwork>>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "list")
+        .putString("type", "network");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Collection<ActiveNetwork>>(new ClusterManagerException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Collection<ActiveNetwork>>(new ClusterManagerException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          final List<ActiveNetwork> networks = new ArrayList<>();
+          JsonArray jsonNetworks = result.result().body().getArray("result");
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(jsonNetworks.size());
+          counter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Collection<ActiveNetwork>>(result.cause()).setHandler(resultHandler);
+              } else {
+                new DefaultFutureResult<Collection<ActiveNetwork>>(networks).setHandler(resultHandler);
+              }
+            }
+          });
+          for (Object jsonNetwork : jsonNetworks) {
+            createActiveNetwork(DefaultNetworkContext.fromJson((JsonObject) jsonNetwork), new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                if (result.failed()) {
+                  counter.fail(result.cause());
+                } else {
+                  networks.add(result.result());
+                  counter.succeed();
+                }
+              }
+            });
+          }
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
   public ClusterManager getNetwork(String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "load")
+        .putString("type", "network")
         .putString("name", name);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
@@ -82,7 +134,7 @@ public class DefaultClusterManager implements ClusterManager {
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<ActiveNetwork>(new ClusterManagerException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
-          createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("context")), resultHandler);
+          createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("result")), resultHandler);
         }
       }
     });

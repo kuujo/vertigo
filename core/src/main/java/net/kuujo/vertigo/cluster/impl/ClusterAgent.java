@@ -41,6 +41,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -61,6 +62,13 @@ public class ClusterAgent extends Xync {
     String action = message.body().getString("action");
     if (action != null) {
       switch (action) {
+        case "list":
+          if (message.body().containsField("type") && message.body().getString("type").equals("network")) {
+            doListNetworks(message);
+          } else {
+            super.handleClusterMessage(message);
+          }
+          break;
         case "check":
           if (message.body().containsField("type") && message.body().getString("type").equals("network")) {
             doIsDeployedNetwork(message);
@@ -100,6 +108,13 @@ public class ClusterAgent extends Xync {
     String action = message.body().getString("action");
     if (action != null) {
       switch (action) {
+        case "list":
+          if (message.body().containsField("type") && message.body().getString("type").equals("network")) {
+            doListNetworks(message);
+          } else {
+            super.handleClusterMessage(message);
+          }
+          break;
         case "check":
           if (message.body().containsField("type") && message.body().getString("type").equals("network")) {
             doIsDeployedNetwork(message);
@@ -162,6 +177,21 @@ public class ClusterAgent extends Xync {
   }
 
   /**
+   * Loads all network configurations.
+   */
+  private void doListNetworks(final Message<JsonObject> message) {
+    Set<String> networks = manager.<String>getSet(String.format("cluster.%s.networks", cluster));
+    JsonArray results = new JsonArray();
+    for (String network : networks) {
+      String scontext = manager.<String, String>getMap(String.format("%s.%s", cluster, network)).get(String.format("%s.%s", cluster, network));
+      if (scontext != null) {
+        results.add(new JsonObject(scontext));
+      }
+    }
+    message.reply(new JsonObject().putString("status", "ok").putArray("result", results));
+  }
+
+  /**
    * Loads a network configuration.
    */
   private void doLoadNetwork(final Message<JsonObject> message) {
@@ -173,7 +203,7 @@ public class ClusterAgent extends Xync {
       if (scontext == null) {
         message.reply(new JsonObject().putString("status", "error").putString("message", "Network not deployed."));
       } else {
-        message.reply(new JsonObject().putString("status", "ok").putObject("context", new JsonObject(scontext)));
+        message.reply(new JsonObject().putString("status", "ok").putObject("result", new JsonObject(scontext)));
       }
     }
   }
@@ -256,6 +286,7 @@ public class ClusterAgent extends Xync {
               if (result.failed()) {
                 message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
               } else {
+                manager.<String>getSet(String.format("cluster.%s.networks", cluster)).add(context.name());
                 doDeployNetwork(context, message);
               }
             }
@@ -386,6 +417,7 @@ public class ClusterAgent extends Xync {
                             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
                           } else {
                             // We can be nice and unset the status key since the manager was undeployed :-)
+                            manager.<String>getSet(String.format("cluster.%s.networks", cluster)).remove(context.name());
                             data.remove(context.status());
                             message.reply(new JsonObject().putString("status", "ok"));
                           }

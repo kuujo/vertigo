@@ -15,6 +15,8 @@ w * Copyright 2014 the original author or authors.
  */
 package net.kuujo.vertigo.cluster;
 
+import java.util.Collection;
+
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -37,6 +39,16 @@ public interface ClusterManager {
    * @return The cluster address.
    */
   String address();
+
+  /**
+   * Gets a list of networks deployed in the cluster.
+   *
+   * @param resultHandler An asynchronous handler to be called with a collection of
+   *        {@link ActiveNetwork} instances, each representing a network running in
+   *        the cluster.
+   * @return The cluster manager.
+   */
+  ClusterManager getNetworks(Handler<AsyncResult<Collection<ActiveNetwork>>> resultHandler);
 
   /**
    * Gets a network reference for a deployed network.<p>

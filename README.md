@@ -39,12 +39,25 @@ For an in-depth explanation of how Vertigo works, see [how it works](#how-it-wor
 This is a brief tutorial that describes the basic components of Vertigo
 along with a simple example.
 
+## Cluster
+Vertigo provides its own cluster abstraction within the Vert.x cluster. Vertigo
+clusters are simple collections of verticles that manage deployment of modules
+and verticles, allow components to be deploye remotely (over the event bus)
+and provide cluster-wide shared data structures. Clusters can be run either in
+a single Vert.x instance (for testing) or across a Vert.x cluster.
+
+Vertigo nodes can be started just as any other Vert.x module
+
+```
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta2
+```
+
 ## Networks
 Networks are collections of Vert.x verticles and modules that are connected
 together by input and output ports. Each component in a network contains processing
 logic, and connections between components indicate how messages should be
-passed between them. Networks can be created either in code or in JSON and
-can be deployed in code or from the command line.
+passed between them. Networks can be created either in code or in JSON and can
+be deployed in code or from the command line.
 
 ## Ports
 Components in Vertigo communicate via input and output ports. Messaging in Vertigo
@@ -157,18 +170,30 @@ This component registers a message handler on the `word` in port, updates
 an internal count for the word, and sends the updated word count on the
 `count` out port.
 
-Once the network has been configured and components have been created,
-we deploy the network with the same `Vertigo` API that created it.
+In order for a network to be deployed a Vertigo cluster must already be
+running in the Vert.x cluster. The cluster can be started by either starting
+the `vertigo-cluster` module or using the `Vertigo` API.
 
 ```java
-vertigo.deployNetwork(network);
+vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
+  public void handle(AsyncResult<ClusterManager> result) {
+    ClusterManager cluster = result.result();
+  }
+});
 ```
 
-We can also configure and deploy the network in JSON.
+Once the cluster has been deployed we can deploy a network to the cluster.
+
+```java
+cluster.deployNetwork(network);
+```
+
+We can also configure the network in JSON and deploy it to a running cluster.
 
 ```
 {
   "name": "word-count",
+  "cluster": "test-cluster",
   "components": {
     "word-feeder": {
       "type": "verticle",
@@ -224,21 +249,30 @@ vertx run word_count_network.json
    * [Working with message groups](#working-with-message-groups)
    * [Working with message batches](#working-with-message-batches)
    * [Providing serializeable messages](#providing-serializeable-messages)
-1. [Deployment](#deployment)
+1. [Network Deployment and Clustering](#network-deployment-and-clustering)
+   * [Starting a cluster from the command line](#starting-a-cluster-from-the-command-line)
+   * [Starting a cluster programmatically](#starting-a-cluster-programmatically)
+   * [Referencing a cluster programmatically](#referencing-a-cluster-programmatically)
    * [Deploying a network](#deploying-a-network)
+   * [Deploying a network from json](#deploying-a-network-from-json)
    * [Undeploying a network](#undeploying-a-network)
-   * [Reconfiguring a network](#reconfiguring-a-network)
+   * [Listing networks running in a cluster](#listing-networks-running-in-a-cluster)
    * [Deploying a bare network](#deploying-a-bare-network)
+   * [Reconfiguring a network](#reconfiguring-a-network)
    * [Working with active networks](#working-with-active-networks)
-   * [Deploying networks from the command line](#deploying-networks-from-the-command-line)
-1. [Clustering](#clustering)
-   * [Configuring cluster scopes](#configuring-cluster-scopes)
-   * [Cluster-wide shared data](#cluster-wide-shared-data)
-      * [AsyncMap](#asyncmap)
-      * [AsyncSet](#asyncset)
-      * [AsyncList](#asynclist)
-      * [AsyncQueue](#asyncqueue)
-      * [AsyncCounter](#asynccounter)
+   * [Deploying a network from the command line](#deploying-a-network-from-the-command-line)
+1. [Cluster Management](#cluster-management)
+   * [Accessing the cluster from within a component](#accessing-the-cluster-from-within-a-component)
+   * [Deploying modules and verticles to the cluster](#deploying-modules-and-verticles-to-the-cluster)
+   * [Undeploying modules and verticles from the cluster](#undeploying-modules-and-verticles-from-the-cluster)
+   * [Deploying modules and verticles with HA](#deploying-modules-and-verticles-with-ha)
+   * [Working with HA groups](#working-with-ha-groups)
+1. [Cluster-wide Shared Data](#cluster-wide-shared-data)
+   * [AsyncMap](#asyncmap)
+   * [AsyncSet](#asyncset)
+   * [AsyncList](#asynclist)
+   * [AsyncQueue](#asyncqueue)
+   * [AsyncCounter](#asynccounter)
 1. [Logging](#logging)
    * [Logging messages to output ports](#logging-messages-to-output-ports)
    * [Reading log messages](#reading-log-messages)
@@ -265,7 +299,7 @@ To use Vertigo simply add the library as a Maven dependency or as a Vert.x modul
 <dependency>
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>0.7.0-beta1</version>
+  <version>0.7.0-beta2</version>
 </dependency>
 ```
 
@@ -277,7 +311,7 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.7.0-beta1"
+  "includes": "net.kuujo~vertigo~0.7.0-beta2"
 }
 ```
 
@@ -417,10 +451,8 @@ vertigo.createNetwork(json);
 The JSON configuration format is as follows:
 
 * `name` - the network name
-* `cluster` - the network's cluster configuration
-   * `address` - the event bus address to the cluster manager. This only applies
-     to networks with a `cluster` scope
-   * `scope` - the network's cluster scope, e.g. `local` or `cluster` See [configuring cluster scopes](#configuring-cluster-scopes)
+* `cluster` - the cluster to which to deploy the network. This option applies
+  only when deploying the network from the command line
 * `components` - an object of network components, keyed by component names
    * `name` - the component name
    * `type` - the component type, either `module` or `verticle`
@@ -446,9 +478,7 @@ For example...
 ```
 {
   "name": "my-network",
-  "cluster": {
-    "scope": "local"
-  },
+  "cluster": "test-cluster",
   "components": {
     "foo": {
       "name": "foo",
@@ -834,158 +864,271 @@ configuration necessary. Vertigo's default serializer automatically serializes
 any basic fields (primitive types, strings, and collections), but Jackson annotations
 can be used to provide custom serialization of `JsonSerializeable` objects.
 
-## Deployment
-One of the most important tasks of Vertigo is to support deployment and startup
-of networks in a consistent and reliable manner. Vertigo supports network deployment
-either within a single Vert.x instance (local) or across a cluster of Vert.x instances.
-When a network is deployed, Vertigo will handle assignment of components to the
-appropriate nodes within the cluster and coordinate startup across all the components.
+## Network Deployment and Clustering
+Vertigo provides its own cluster management framework on top of the Vert.x cluster.
+Each Vertigo network will always be deployed in a Vertigo cluster. Vertigo clusters
+can be deployed either within a single, non-clustered Vert.x instance or across a
+Vert.x cluster. Clusters provide a logical separation between different applications
+within a Vert.x cluster and provide additional features such as failover.
 
-Networks can be deployed and configured from any verticle within any node in a Vert.x
-cluster. Even if a network is deployed from another verticle, the network can still be
-referenced and updated from anywhere in the cluster. Vertigo's internal coordination
-mechanisms ensure consistency for deployments across all nodes in a cluster.
+### Starting a cluster from the command line
+Vertigo provides a special Vert.x module for starting a Vertigo cluster agent. To
+start a cluster node simply start the `net.kuujo~vertigo-cluster~0.7.0-beta2` module.
 
-For more information on how Vertigo handles network deployment and coordination
-see [how it works](#how-it-works)
+```
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta2
+```
+
+The cluster agent accepts a few important configuration options:
+* `cluster` - the event bus address of the cluster to which the node belongs. Defaults
+   to `vertigo`
+* `group` - the HA group to which the node belongs. For simplicity, the Vertigo HA
+  mechanism is modeled on the core Vert.x HA support.
+* `address` - the event bus address of the node. Defaults to a `UUID` based string.
+* `quorum` - the HA quorum size. See the Vert.x HA documentation on quorums.
+
+### Starting a cluster programmatically
+Vertigo also provides an API for deploying clusters or individual nodes through the
+Vert.x `Container`.
+
+```java
+Vertigo vertigo = new Vertigo(this);
+vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
+  public void handle(AsyncResult<ClusterManager> result) {
+    ClusterManager cluster = result.result();
+  }
+});
+```
+
+There are several methods for deploying nodes or clusters within the current
+Vert.x instance.
+
+* `deployCluster(String address)`
+* `deployCluster(String address, Handler<AsyncResult<ClusterManager>> doneHandler)`
+* `deployCluster(String address, int nodes)`
+* `deployCluster(String address, int nodes, Handler<AsyncResult<ClusterManager>> doneHandler)`
+
+Users should use this API rather than deploying the `ClusterAgent` verticle directly
+because the cluster agent is pluggable. To override the default cluster agent
+set the system property `net.kuujo.vertigo.cluster`.
+
+### Referencing a cluster programmatically
+Network deployments are performed through the `ClusterManager` API. To get a
+`ClusterManager` instance for a running Vertigo cluster call the `getCluster` method
+
+```java
+ClusterManager cluster = vertigo.getCluster("test-cluster");
+```
 
 ### Deploying a network
-To deploy a network, simply use the `deployNetwork` method.
+To deploy a network use the `deployNetwork` methods on the `ClusterManager` for
+the cluster to which the network should be deployed.
 
 ```java
 NetworkConfig network = vertigo.createNetwork("test");
-network.addVerticle("foo", "foo.js", 2);
-network.addVerticle("bar", "bar.py", 4);
+network.addComponent("foo", "foo.js", 2);
+network.addComponent("bar", "bar.py", 4);
 network.createConnection("foo", "out", "bar", "in");
 
-vertigo.deployNetwork(network);
+cluster.deployNetwork(network);
 ```
 
-When Vertigo deploys the network, it will automatically detect the current Vert.x
-cluster scope. If the current Vert.x instance is a Hazelcast clustered instance,
-Vertigo will attempt to deploy the network across the cluster. This behavior can
-be configured in the network's configuration.
+When the network is deployed, the cluster will check to determine whether a
+network of the same name is already running in the cluster. If a network of
+the same name is running, the given network configuration will be *merged*
+with the running network's configuration and the missing components will be
+deployed. This is very important to remember. Deployment will *not* fail if
+you deploy a network with the same name of a network that already running
+in the given cluster.
+
+To determine when the network has been successfully deployed pass an `AsyncResult`
+handler to the `deployNetwork` method.
 
 ```java
-network.getClusterConfig().setScope(ClusterScope.LOCAL);
-```
-
-If the current Vert.x instance is not clustered then all network deployment will
-automatically fall back to the Vert.x `Container`. Even if a network is configured
-to be deployed locally, Vertigo will still coordinate using Hazelcast if it's
-available.
-
-Note that in order to support remote component deployment you must use a
-[Xync](http://github.com/kuujo/xync) node or some other facility that supports
-event bus deployments.
-
-See [configuring cluster scopes](#configuring-cluster-scopes) for more on scopes
-
-### Undeploying a network
-To undeploy a network, use the `undeployNetwork` method.
-
-```java
-vertigo.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
-  public void handle(AsyncResult<Void> result) {
+cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwor>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
     if (result.succeeded()) {
-      // Successfully undeployed the network
+      ActiveNetwork network = result.result();
     }
   }
 });
 ```
 
-Passing a string network name to the method will cause the entire network to
-be undeployed. The method also supports a network configuration which can be
-used to undeploy portions of the network without undeploying the entire network.
-More on that in a minute.
+You can also deploy the network from the `Vertigo` API by naming the cluster
+to which to deploy the network.
+
+```java
+vertigo.deployNetwork("test-cluster", network, new Handler<AsyncResult<ActiveNetwor>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    if (result.succeeded()) {
+      ActiveNetwork network = result.result();
+    }
+  }
+});
+```
+
+### Deploying a network from JSON
+Networks can be deployed programmatically from JSON configurations. To deploy
+a network from JSON configuration simply pass the `JsonObject` configuration
+in place of the `NetworkConfig`
+
+```java
+JsonObject network = new JsonObject()
+    .putString("name", "test")
+    .putObject("components", new JsonObject()
+        .putObject("foo", new JsonObject()
+            .putString("type", "verticle").putString("main", "foo.js")));
+
+cluster.deployNetwork(network);
+```
+
+For information on the JSON configuration format see
+[creating networks from json](#creating-networks-from-json)
+
+### Undeploying a network
+To undeploy a *complete* network from a cluster call the `undeployNetwork`
+method, passing the network name as the first argument.
+
+```java
+cluster.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
+  public void handle(AsyncResult<Void> result) {
+    if (result.succeeded()) {
+      // Network has been undeployed.
+    }
+  }
+});
+```
+
+The `AsyncResult` handler will be called once all the components within the network
+have been undeployed from the cluster.
+
+The `undeployNetwork` method also supports a `NetworkConfig`. The configuration based
+undeploy method behaves similarly to the `deployNetwork` method in that the given
+configuration will be *unmerged* from the configuration that's running in the cluster.
+If the configuration lists all the components that are present in the running network
+then the network will be completely undeployed, otherwise only the listed components
+will be undeployed and the network will continue to run. For this reason it is
+*strongly recommended* that you undeploy a network by name if you intend to undeploy
+the entire network.
+
+### Listing networks running in a cluster
+To list the networks running in a cluster call the `getNetworks` method.
+
+```java
+cluster.getNetworks(new Handler<AsyncResult<Collection<ActiveNetwork>>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    ActiveNetwork network = result.result();
+  }
+});
+```
+
+Note that the method returns an `ActiveNetwork`. The active network can be used
+to reconfigure the running network, but more on that later. The current network
+configuration can be retrieved from the `ActiveNetwork` by calling the `getConfig`
+method.
+
+```java
+NetworkConfig config = network.getConfig();
+```
+
+### Deploying a bare network
+Vertigo networks can be reconfigured after deployment, so sometimes it's useful
+to deploy an empty network with no components or connections.
+
+```java
+cluster.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
+  public void handle(AsyncResult<ActiveNetwork> result) {
+    ActiveNetwork network = result.result();
+  }
+});
+```
+
+When a bare network is deployed, Vertigo simply deploys a network manager
+verticle with no components. Once the network is reconfigured, the manager
+will automatically update the network with any new components.
 
 ### Reconfiguring a network
-Vertigo networks can be reconfigured even after deployment. This is where network
-names become particularly important. When a user deploys a network, Vertigo first
-determines whether the network is already deployed within the current Vertigo cluster.
-If a network with the same name is already deployed, *the given network configuration
-will be merged with the existing network configuration* and Vertigo will update
-components and connections within the network rather than deploying a new network.
-This means that Vertigo networks can be deployed one component or connection at
-a time.
+Vertigo provides several methods to reconfigure a network after it has been
+deployed. After a network is deployed users can add or remove components or
+connections from the network. To reconfigure a running network simply deploy
+or undeploy a network configuration of the same name.
 
 ```java
 // Create and deploy a two component network.
 NetworkConfig network = vertigo.createNetwork("test");
-network.addVerticle("foo", "foo.js", 2);
-network.addVerticle("bar", "bar.py", 4);
+network.addComponent("foo", "foo.js", 2);
+network.addComponent("bar", "bar.py", 4);
 
-// Deploy the network to the cluster.
-vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+vertigo.deployNetwork("test-cluster", network, new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
-
     // Create and deploy a connection between the two components.
-    NetworkConfig network = vertigo.createNetwork("test"); // Note the same network name.
+    NetworkConfig network = vertigo.createNetwork("test");
     network.createConnection("foo", "out", "bar", "in");
-    vertigo.deployNetwork(network);
-
+    vertigo.deployNetwork("test-cluster", network);
   }
 });
 ```
 
-### Deploying a bare network
-Since networks can be reconfigured *after* deployment, Vertigo provides a simple
-helper method for deploying empty networks that will be reconfigured after deployment.
-To deploy an empty network simply deploy a string network name.
+When a network is deployed, the cluster will check to see if any other networks
+of the same name are already deployed. If a network of the same name is deployed
+then the new configuration will be merged with the running configuration.
+Similarly, when undeploying a network from configuration, the cluster will undeploy
+only the components and connections listed in a connection. The network will only
+be completely undeployed if the configuration lists all the components deployed in
+the network.
 
-```java
-vertigo.deployNetwork("test");
-```
+Vertigo queues configuration changes internally to ensure that only one configuration
+change can occur at any given time. So if you separately deploy two connections,
+the second connection will not be added to the network until the first has been
+added and connected on all relevant components. To deploy more than one component
+or connection to a running network simultaneously just list them in the same
+configuration.
 
 ### Working with active networks
-Vertigo provides a helper API for reconfiguring networks known as *active networks*.
-The `ActiveNetwork` is a `NetworkConfig` like object that exposes methods that directly
-update the running network when called. Obviously, the name is taken from the active
-record pattern.
+Vertigo provides a special API for reconfiguring running networks known as the
+*active network*. The `ActiveNetwork` API mimics the network configuration API,
+except changes to an `ActiveNetwork` instance will be immediately deployed to
+the running network in the appropriate cluster.
 
-When deploying any network an `ActiveNetwork` instance for the deployed network will
-be returned once the deployment is complete.
+To load an active network you can call `getNetwork` on a cluster.
 
 ```java
-// Create a network with a single component.
-NetworkConfig network = vertigo.createNetwork("test");
-network.addVerticle("foo", "foo.js", 2);
-
-// Deploy the network.
-vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+cluster.getNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
-    if (result.succeeded()) {
-      // Add another component to the network and create a connection between the two components.
-      ActiveNetwork network = result.result();
-      network.addVerticle("bar", "bar.py", 2);
-      network.createConnection("foo", "out", "bar", "in");
-    }
+    ActiveNetwork network = result.result();
+    network.createConnection("foo", "out", "bar", "in");
   }
 });
 ```
 
-The `ActiveNetwork` instance contains a reference to the *entire* network configuration,
-even if the configuration that was deployed was only a partial network configuration.
-
-You can load an `ActiveNetwork` for an already running network with the `getNetwork` method.
+The active network API also supports `AsyncResult` handlers so you can determine
+when the network has been updated with the new configuration.
 
 ```java
-vertigo.getNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
+network.createConnection("foo", "out", "bar", "in", new Handler<AsyncResult<ActiveNetwork>>() {
   public void handle(AsyncResult<ActiveNetwork> result) {
-    if (result.succeeded()) {
-      ActiveNetwork network = result.result();
-    }
+    // Connection has been added and connected.
   }
 });
 ```
 
-### Deploying networks from the command line
+Each `ActiveNetwork` also contains an internal `NetworkConfig` which can be
+retrieved by the `getConfig` method.
+
+```java
+NetworkConfig config = network.getConfig();
+```
+
+The active network's internal `NetworkConfig` will be automatically updated when
+the running network configuration is updated.
+
+### Deploying a network from the command line
 Vertigo provides a special facility for deploying networks from json confguration files.
 This feature is implemented as a Vert.x language module, so the network deployer must
 be first added to your `langs.properties` file.
 
 ```
-network=net.kuujo~vertigo-deployer~0.7.0-beta1:net.kuujo.vertigo.NetworkFactory
+network=net.kuujo~vertigo-deployer~0.7.0-beta2:net.kuujo.vertigo.NetworkFactory
 .network=network
 ```
 
@@ -1000,45 +1143,89 @@ vertx run my_network.network
 The `NetworkFactory` will construct the network from the json configuration file and
 deploy the network to the available cluster.
 
-## Clustering
-Vertigo currently provides two different clustering methods. When networks are deployed,
-Vertigo will automatically detect the current Vert.x cluster type and adjust its behavior
-based on available features. The available cluster scopes are as follows:
-* `local` - *Vert.x is not clustered*. Vertigo will use Vert.x `SharedData` for coordination
-  of networks and deployments will be performed via the Vert.x `Container`.
-* `cluster` - *Vert.x is clustered using the default `HazelcastClusterManager`*. Vertigo will
-  coordinate networks through Hazelcast and, for network confgured for the `cluster` scope,
-  will attempt to deploy components remotely over the event bus.
+## Cluster Management
+Vertigo clusters support remote deployments over the event bus through
+[Xync](http://github.com/kuujo/xync). Users can use the Vertigo cluster API to
+remotely deploy Vert.x modules and verticles from Vertigo components.
 
-For more information on Vertigo clustering see [how Vertigo coordinates networks](#how-vertigo-coordinates-networks)
+### Accessing the cluster from within a component
+The Xync cluster is made available to users through the `cluster` field within
+the `ComponentVerticle` class. The `cluster` within any given component will always
+reference the Vertigo cluster to which the component's parent network belongs. This
+means that deployments made through the `cluster` will be separated in the same
+way that networks are separated from each other across clusters.
 
-### Configuring cluster scopes
-Users can optionally configure the cluster scope for individual Vertigo networks.
-To configure the cluster scope for a network simply use the `setScope` method on the
-network configuration.
+### Deploying modules and verticles to the cluster
+The Vertigo cluster supports remote deployment of modules and verticles over the
+event bus. The `Cluster` API wraps the event bus API and mimics the core Vert.x
+`Container` interface. To deploy a module or verticle simply call the appropriate
+method on the component `Cluster` instance:
 
 ```java
-NetworkConfig network = vertigo.createNetwork("test");
-network.getClusterConfig().setScope(ClusterScope.LOCAL);
+public class MyComponent extends ComponentVerticle {
+
+  @Override
+  public void start() {
+    cluster.deployVerticle("foo", "foo.js", new Handler<AsyncResult<String>>() {
+      public void handle(AsyncResult<String> result) {
+        if (result.succeeded()) {
+          // Successfully deployed the verticle!
+        }
+      }
+    });
+  }
+
+}
 ```
 
-The network scope defaults to `CLUSTER` which is considered the highest level scope.
-If the current Vert.x is not a clustered Vert.x instance, the cluster scope will
-automatically fall back to `LOCAL`. This allows for networks to be easily tested
-in a single Vert.x instance.
+The `Cluster` API differs in one important aspect from the `Container` API. Because
+cluster deployments are remote, users must provide an *explicit* deployment ID for
+each deployment. This ensures that even if the instance from which the module/verticle
+was deployed fails, the deployment can still be referenced from different Vert.x
+instances. If the deployment ID of a deployment already exists then the deployment
+will fail.
 
-It's important to note that while configuring the cluster scope on a network will
-cause the network to be *deployed* in that scope, the network's scope configuration
-*does not impact Vertigo's synchronization*. In other words, even if a network is
-deployed locally, if the current Vert.x instance is a cluster member, Vertigo will still
-use Hazelcast to coordinate networks. This allows locally deployed networks
-to be referenced and reconfigured even outside of the instance in which it was deployed.
-For instance, users can deploy one component of the `foo` network locally in one Vert.x
-instance and deploy a separate component of the `foo` network locally in another Vert.x
-instance and both components will still become a part of the same network event though
-the network is `LOCAL`.
+The internal component cluster is the same cluster to which the component's parent network
+belongs. That means that deployment IDs are unique to each cluster. You can deploy
+a module with the deployment ID `foo` in two separate clusters at the same time.
 
-### Cluster-wide shared data
+### Undeploying modules and verticles from the cluster
+To undeploy a module or verticle from the cluster call the `undeployModule` or
+`undeployVerticle` method, using the user-defined deployment ID.
+
+```java
+cluster.undeployVerticle("foo");
+```
+
+### Deploying modules and verticles with HA
+Like Vert.x clusters, the Vertigo clusters supports HA deployments. By default, modules
+and verticles are not deployed with HA enabled.
+
+```java
+cluster.deployVerticle("foo", "foo.js", null, 1, true);
+```
+
+The last argument in the arguments list indicates whether to deploy the deployment
+with HA. When a Vertigo cluster node fails, any deployments deployed with HA enabled
+on that node will be taken over by another node within the same group within the cluster.
+
+### Working with HA groups
+Vertigo's HA grouping mechanism is intentionally designed to mimic the core HA behavior.
+Each Vertigo node can be assigned to a specific HA group, and when a node fails its HA
+deployments will be taken over by another node in the same group.
+
+Modules or verticles can also be deployed directly to a specific HA group. To deploy
+a module or verticle to an HA group call the `deployModuleTo` or `deployVerticleTo`
+methods respectively, passing the target HA group as the second argument (after the
+deployment ID).
+
+```java
+cluster.deployVerticleTo("foo", "my-group", "foo.js");
+```
+
+By default, all deployments are deployed to the `__DEFAULT__` HA group.
+
+## Cluster-wide shared data
 Cluster-wide shared data structures are made available via the same API as clustering.
 If a network is deployed in `LOCAL` scope then Vert.x `SharedData` based data structures
 will be made available in component instances. If a network is deployed in `CLUSTER`
@@ -1047,7 +1234,7 @@ scope then shared data structures will be accessed over the event bus.
 The cluster API is available in all components via the `cluster` field of the
 `ComponentVerticle`.
 
-#### AsyncMap
+### AsyncMap
 The `AsyncMap` interface closely mimics the interface of the Java `Map` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -1073,7 +1260,7 @@ the Vert.x `ConcurrentSharedMap`. If the cluster scope is `CLUSTER` then maps
 will be backed by Hazelcast maps that are accessed over the event bus in a Xync
 worker verticle to prevent blocking the event loop.
 
-#### AsyncSet
+### AsyncSet
 The `AsyncSet` interface closely mimics the interface of the Java `Set` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -1093,7 +1280,7 @@ the Vert.x `SharedData` sets. If the cluster scope is `CLUSTER` then sets
 will be backed by Hazelcast sets that are accessed over the event bus in a Xync
 worker verticle to prevent blocking the event loop.
 
-#### AsyncList
+### AsyncList
 The `AsyncList` interface closely mimics the interface of the Java `List` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -1113,7 +1300,7 @@ a custom list implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 cluster scope is `CLUSTER` then lists will be backed by Hazelcast lists that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
-#### AsyncQueue
+### AsyncQueue
 The `AsyncQueue` interface closely mimics the interface of the Java `Queue` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -1139,7 +1326,7 @@ a custom queue implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 cluster scope is `CLUSTER` then queues will be backed by Hazelcast queues that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
-#### AsyncCounter
+### AsyncCounter
 The `AsyncCounter` facilitates generating cluster-wide counters.
 
 ```java

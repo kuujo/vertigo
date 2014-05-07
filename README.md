@@ -46,7 +46,7 @@ logic, and connections between components indicate how messages should be
 passed between them. Networks can be created either in code or in JSON and can
 be deployed in code or from the command line.
 
-![Vertigo network](http://postimg.org/image/w3rw7f8ur/)
+![Vertigo network](http://s21.postimg.org/ve93v28bb/Untitled_Diagram.png)
 
 As with any Vert.x verticle, Vertigo components can be deployed with any number
 of instances.
@@ -59,7 +59,7 @@ to send messages, and output ports are interfaces to which other components can
 connect to receive messages. Vertigo does not route messages through any central
 router. Components communicate directly with one another over the event bus.
 
-![Direct connections](http://postimg.org/image/413x0b1qr/)
+![Direct connections](http://s21.postimg.org/65oa1e3dj/Untitled_Diagram_1.png)
 
 ```java
 public class MyComponent extends ComponentVerticle {
@@ -84,7 +84,7 @@ in which they were sent.
 In cases where a connection connects two components with multiple instances,
 Vertigo facilitates special routing between the components with *selectors*.
 
-![Selectors](http://postimg.org/image/n7h43hi8j/)
+![Selectors](http://s21.postimg.org/a3bjqsq6v/Untitled_Diagram_2.png)
 
 While components receive messages on input ports and send messages to output ports,
 the network configuration is used to define how ports on different components
@@ -424,7 +424,7 @@ messages to event bus handlers in a round-robin fashion. But Vertigo provides
 additional routing methods known as *selectors*. Selectors indicate how messages
 should be routed between multiple instances of a component.
 
-![Selectors](http://postimg.org/image/n7h43hi8j/)
+![Selectors](http://s21.postimg.org/a3bjqsq6v/Untitled_Diagram_2.png)
 
 Vertigo provides several selector types by default and supports custom selectors
 as well.
@@ -573,7 +573,7 @@ This is the element that makes Vertigo components reusable.
 Rather than routing messages through a central router, components communicate
 directly with one another over the event bus, ensuring optimal performance.
 
-![Direct connections](http://postimg.org/image/413x0b1qr/)
+![Direct connections](http://s21.postimg.org/65oa1e3dj/Untitled_Diagram_1.png)
 
 Vertigo messages are guaranteed to arrive *in the order in which they were sent*
 and to only be processed *exactly once*. Vertigo also provides an API

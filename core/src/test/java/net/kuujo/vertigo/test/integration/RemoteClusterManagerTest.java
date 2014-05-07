@@ -15,8 +15,13 @@
  */
 package net.kuujo.vertigo.test.integration;
 
+import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
+
+import java.util.Collection;
+import java.util.UUID;
+
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.java.ComponentVerticle;
@@ -36,10 +41,10 @@ import org.vertx.testtools.TestVerticle;
 public class RemoteClusterManagerTest extends TestVerticle {
 
   @Test
-  public void testLocalDeploy() {
+  public void testDeploy() {
     net.kuujo.xync.util.Cluster.initialize();
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
       @Override
       public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
@@ -62,10 +67,10 @@ public class RemoteClusterManagerTest extends TestVerticle {
   }
 
   @Test
-  public void testLocalShutdown() {
+  public void testShutdown() {
     net.kuujo.xync.util.Cluster.initialize();
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
       @Override
       public void handle(AsyncResult<ClusterManager> result) {
         assertTrue(result.succeeded());
@@ -88,6 +93,90 @@ public class RemoteClusterManagerTest extends TestVerticle {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     assertTrue(result.succeeded());
+                    testComplete();
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testGetNetwork() {
+    net.kuujo.xync.util.Cluster.initialize();
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork("test-get-network-1");
+        network.addVerticle("feeder", TestFeeder.class.getName());
+        network.addVerticle("worker", TestWorker.class.getName(), 2);
+        network.createConnection("feeder", "stream", "worker", "stream");
+
+        final ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            assertTrue(result.succeeded());
+            NetworkConfig network = vertigo.createNetwork("test-get-network-2");
+            network.addVerticle("feeder", TestFeeder.class.getName());
+            network.addVerticle("worker", TestWorker.class.getName(), 2);
+            network.createConnection("feeder", "stream", "worker", "stream");
+            cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                assertTrue(result.succeeded());
+                cluster.getNetwork("test-get-network-1", new Handler<AsyncResult<ActiveNetwork>>() {
+                  @Override
+                  public void handle(AsyncResult<ActiveNetwork> result) {
+                    assertTrue(result.succeeded());
+                    assertEquals("test-get-network-1", result.result().getConfig().getName());
+                    testComplete();
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testGetNetworks() {
+    net.kuujo.xync.util.Cluster.initialize();
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork("test-get-networks-1");
+        network.addVerticle("feeder", TestFeeder.class.getName());
+        network.addVerticle("worker", TestWorker.class.getName(), 2);
+        network.createConnection("feeder", "stream", "worker", "stream");
+
+        final ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            assertTrue(result.succeeded());
+            NetworkConfig network = vertigo.createNetwork("test-get-networks-2");
+            network.addVerticle("feeder", TestFeeder.class.getName());
+            network.addVerticle("worker", TestWorker.class.getName(), 2);
+            network.createConnection("feeder", "stream", "worker", "stream");
+            cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                assertTrue(result.succeeded());
+                cluster.getNetworks(new Handler<AsyncResult<Collection<ActiveNetwork>>>() {
+                  @Override
+                  public void handle(AsyncResult<Collection<ActiveNetwork>> result) {
+                    assertTrue(result.succeeded());
+                    assertEquals(2, result.result().size());
                     testComplete();
                   }
                 });

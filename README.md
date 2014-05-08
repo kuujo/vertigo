@@ -1235,9 +1235,10 @@ By default, all deployments are deployed to the `__DEFAULT__` HA group.
 
 ## Cluster-wide shared data
 Cluster-wide shared data structures are made available via the same API as clustering.
-If a network is deployed in `LOCAL` scope then Vert.x `SharedData` based data structures
-will be made available in component instances. If a network is deployed in `CLUSTER`
-scope then shared data structures will be accessed over the event bus.
+If the current Vert.x instance is a Hazelcast clustered instance then cluster-wide
+shared data structures will be backed by Hazelcast data structures. If the current
+Vert.x instance is not clustered then data structures will be backed by Vert.x
+`SharedData` structures.
 
 The cluster API is available in all components via the `cluster` field of the
 `ComponentVerticle`.
@@ -1263,8 +1264,8 @@ map.put("foo", "bar", new Handler<AsyncResult<String>>() {
 });
 ```
 
-If the network's cluster scope is `LOCAL` then Vertigo maps will be backed by
-the Vert.x `ConcurrentSharedMap`. If the cluster scope is `CLUSTER` then maps
+If the Vert.x instance is not clustered then Vertigo maps will be backed by
+the Vert.x `ConcurrentSharedMap`. If the Vert.x instance is clustered then maps
 will be backed by Hazelcast maps that are accessed over the event bus in a Xync
 worker verticle to prevent blocking the event loop.
 
@@ -1283,8 +1284,8 @@ set.add("bar", new Handler<AsyncResult<Boolean>>() {
 });
 ```
 
-If the network's cluster scope is `LOCAL` then Vertigo sets will be backed by
-the Vert.x `SharedData` sets. If the cluster scope is `CLUSTER` then sets
+If the Vert.x instance is not clustered then Vertigo sets will be backed by
+the Vert.x `SharedData` sets. If the Vert.x instance is clustered then sets
 will be backed by Hazelcast sets that are accessed over the event bus in a Xync
 worker verticle to prevent blocking the event loop.
 
@@ -1303,9 +1304,9 @@ list.add("bar", new Handler<AsyncResult<Boolean>>() {
 });
 ```
 
-If the network's cluster scope is `LOCAL` then Vertigo lists will be backed by
+If the Vert.x instance is not clustered then Vertigo lists will be backed by
 a custom list implementation on top of the Vert.x `ConcurrentSharedMap`. If the
-cluster scope is `CLUSTER` then lists will be backed by Hazelcast lists that are
+Vert.x instance is clustered then lists will be backed by Hazelcast lists that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
 ### AsyncQueue
@@ -1329,9 +1330,9 @@ queue.add("bar", new Handler<AsyncResult<Boolean>>() {
 });
 ```
 
-If the network's cluster scope is `LOCAL` then Vertigo queues will be backed by
+If the Vert.x instance is not clustered then Vertigo queues will be backed by
 a custom queue implementation on top of the Vert.x `ConcurrentSharedMap`. If the
-cluster scope is `CLUSTER` then queues will be backed by Hazelcast queues that are
+Vert.x instance is clustered then queues will be backed by Hazelcast queues that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
 ### AsyncCounter
@@ -1348,9 +1349,9 @@ counter.incrementAndGet(new Handler<AsyncResult<Long>>() {
 });
 ```
 
-If the network's cluster scope is `LOCAL` then Vertigo counters will be backed by
+If the Vert.x instance is not clustered then Vertigo counters will be backed by
 a custom counter implementation on top of the Vert.x `ConcurrentSharedMap`. If the
-cluster scope is `CLUSTER` then counters will be backed by Hazelcast maps that are
+Vert.x instance is clustered then counters will be backed by Hazelcast maps that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
 ## Logging

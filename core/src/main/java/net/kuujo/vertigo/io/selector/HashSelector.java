@@ -20,9 +20,9 @@ import java.util.List;
 import net.kuujo.vertigo.io.connection.Connection;
 
 /**
- * A hash selector.
+ * Selector that sends messages based on a simple mod-hash algorithm.<p>
  *
- * The *hash* selector is a consistent-hashing based grouping. Given
+ * The hash selector is a consistent-hashing based grouping. Given
  * a value on which to hash, this grouping guarantees that workers will
  * always receive messages with the same values.
  *

@@ -32,7 +32,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * the message.<p>
  *
  * Vertigo supports custom selector implementations. To implement a custom
- * selector, simply implement the {@link Selector} interface.
+ * selector, simply implement the {@link Selector} interface as any selector
+ * implementation does.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

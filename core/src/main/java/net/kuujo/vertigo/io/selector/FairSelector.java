@@ -21,7 +21,7 @@ import java.util.List;
 import net.kuujo.vertigo.io.connection.Connection;
 
 /**
- * a *fair* selector.
+ * Selector that sends messages to the connection with the smallest queue.<p>
  *
  * The fair selector selects connections based on their current output queue
  * sizes. This means the if one connection's queue is backed up, the fair

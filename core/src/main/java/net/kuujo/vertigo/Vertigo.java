@@ -55,6 +55,7 @@ import org.vertx.java.platform.Verticle;
  * To deploy a cluster use the {@link Vertigo#deployCluster(String, Handler)} methods.<p>
  *
  * <pre>
+ * {@code
  * vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
  *   public void handle(AsyncResult<ClusterManager> result) {
  *     if (result.succeeded()) {
@@ -62,6 +63,7 @@ import org.vertx.java.platform.Verticle;
  *     }
  *   }
  * });
+ * }
  * </pre><p>
  *
  * The {@link ClusterManager} can be used to operate on a specific cluster,
@@ -69,6 +71,30 @@ import org.vertx.java.platform.Verticle;
  * a running cluster call the {@link Vertigo#getCluster(String)} method. To
  * deploy a network to a cluster use the {@link Vertigo#deployNetwork(String, NetworkConfig)}
  * methods.<p>
+ *
+ * <pre>
+ * {@code
+ * cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+ *   public void handle(AsyncResult<ActiveNetwork> result) {
+ *     ActiveNetwork network = result.result();
+ *   }
+ * });
+ * </pre><p>
+ *
+ * When a network is deployed to a cluster, the cluster first checks to determine
+ * whether the network is already running in the cluster. If the network is already
+ * running then <em>the new configuration will be merged with the running configuration.</em>
+ * This is important to remember. It allows users to reconfigure running networks,
+ * but it also means that a network deployment will not fail if a network of the
+ * same name is already running in the cluster. Networks should be named carefully
+ * in order to prevent merging two unrelated networks.<p>
+ *
+ * Clusters also provide a logical separation of networks within the Vert.x cluster.
+ * While Vertigo will merge networks of the same name within a single cluster, networks
+ * of the same name can be deployed in separate clusters simultaneously. Even if the
+ * network configurations are the same, Vertigo will ensure that event bus addresses
+ * do not clash across clusters, so it's okay to deploy, for instance, a "test" and
+ * "live" cluster within the same Vert.x cluster.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

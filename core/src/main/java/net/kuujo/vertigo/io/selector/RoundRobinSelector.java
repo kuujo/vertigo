@@ -20,9 +20,9 @@ import java.util.List;
 import net.kuujo.vertigo.io.connection.Connection;
 
 /**
- * A *round* selector.
+ * Selector that sends messages to connections using a simple round-robin algorithm.<p>
  *
- * The *round* selector dispatches messages to workers in a round-robin
+ * The round selector dispatches messages to workers in a round-robin
  * fashion.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>

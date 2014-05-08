@@ -20,7 +20,7 @@ import java.util.List;
 import net.kuujo.vertigo.io.connection.Connection;
 
 /**
- * An *all* selector.
+ * Selector that sends messages on all connections.<p>
  *
  * The *all* selector dispatches messages to all instances of a component.
  * Thus, if a component has four instances, all four component workers will

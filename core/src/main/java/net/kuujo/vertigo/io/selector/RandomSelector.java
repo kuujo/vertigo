@@ -21,9 +21,9 @@ import java.util.Random;
 import net.kuujo.vertigo.io.connection.Connection;
 
 /**
- * A *random* selector.
+ * Selector that sends messages to a random connection.<p>
  *
- * The *random* selector dispatches messages to component workers randomly.
+ * The random selector dispatches messages to component workers randomly.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

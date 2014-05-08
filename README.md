@@ -7,7 +7,7 @@ Vertigo
 
 [Javascript][vertigo-js] | [Python][vertigo-python]
 
-Vertigo is a fast, fault-tolerant, polyglot event processing framework built on the
+Vertigo is a durable polyglot event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
 [real-time systems](http://storm.incubator.apache.org/) and
 [flow-based programming](http://en.wikipedia.org/wiki/Flow-based_programming),
@@ -54,18 +54,22 @@ be deployed in code or from the command line.
 
 ![Vertigo network](http://s21.postimg.org/ve93v28bb/Untitled_Diagram.png)
 
-As with any Vert.x verticle, Vertigo components can be deployed with any number
-of instances.
+## Components
 
-## Ports
-Components in Vertigo communicate via input and output ports. Messaging in Vertigo
-is inherently uni-directional, so each component has a unique set of input and
-output ports. Input ports are interfaces to which other components can connect
-to send messages, and output ports are interfaces to which other components can
-connect to receive messages. Vertigo does not route messages through any central
-router. Components communicate directly with one another over the event bus.
+As with any Vert.x verticle, Vertigo components can be deployed with any number
+of instances. Components communicate with each other over the Vert.x event bus.
+But Vertigo doesn't use raw event bus addresses. Instead, components communicate
+through named output and input ports. This allows components to be abstracted
+from the relationships between them, making them reusable.
+
+Messaging in Vertigo is inherently uni-directional. Components receive messages
+from other components on input ports and send messages to other components on
+output ports.
 
 ![Direct connections](http://s21.postimg.org/65oa1e3dj/Untitled_Diagram_1.png)
+
+Messages are not routed through any central router. Rather, components
+communicate with each other directly over the event bus.
 
 ```java
 public class MyComponent extends ComponentVerticle {
@@ -103,9 +107,6 @@ network.addComponent("bar", "bar.js", 2);
 network.addComponent("baz", "baz.py", 4);
 network.createConnection("bar", "out", "baz", "in");
 ```
-
-Vertigo doesn't route messages through any central router. Rather, messages are sent
-between components directly on the Vert.x event bus.
 
 ## Cluster
 Vertigo provides its own cluster abstraction within the Vert.x cluster. Vertigo

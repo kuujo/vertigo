@@ -116,6 +116,7 @@ public class NetworkFactory implements VerticleFactory {
             startResult.setFailure(result.cause());
           } else {
             startResult.setResult((Void) null);
+            container.exit();
           }
         }
       });

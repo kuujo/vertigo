@@ -153,23 +153,13 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           // accidentally open up two of the same connection even if the
           // configuration is updated again.
           for (final InputConnection connection : newConnections) {
-            connection.messageHandler(messageHandler);
-            for (Handler<InputBatch> handler : batchHandlers) {
-              connection.batchHandler(handler);
-            }
-            for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
-              connection.groupHandler(entry.getKey(), entry.getValue());
-            }
-            if (paused) {
-              connection.pause();
-            }
             connection.open(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
                   log.error("Failed to open input connection " + connection.address());
                 } else {
-                  connections.add(connection);
+                  connections.add(setupConnection(connection));
                 }
               }
             });
@@ -179,17 +169,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           // connection to the connections list. Once the port is opened it
           // will open the connections.
           for (InputConnection connection : newConnections) {
-            connection.messageHandler(messageHandler);
-            for (Handler<InputBatch> handler : batchHandlers) {
-              connection.batchHandler(handler);
-            }
-            for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
-              connection.groupHandler(entry.getKey(), entry.getValue());
-            }
-            if (paused) {
-              connection.pause();
-            }
-            connections.add(connection);
+            connections.add(setupConnection(connection));
           }
           DefaultInputPort.this.hooks = update.hooks();
           task.complete();
@@ -287,16 +267,6 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           connections.clear();
           for (InputConnectionContext connectionContext : context.connections()) {
             final InputConnection connection = new DefaultInputConnection(vertx, connectionContext);
-            connection.messageHandler(messageHandler);
-            for (Handler<InputBatch> handler : batchHandlers) {
-              connection.batchHandler(handler);
-            }
-            for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
-              connection.groupHandler(entry.getKey(), entry.getValue());
-            }
-            if (paused) {
-              connection.pause();
-            }
             connection.open(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -304,7 +274,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
                   log.error("Failed to open input connection " + connection.address());
                   startCounter.fail(result.cause());
                 } else {
-                  connections.add(connection);
+                  connections.add(setupConnection(connection));
                   startCounter.succeed();
                 }
               }
@@ -317,6 +287,23 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       }
     });
     return this;
+  }
+
+  /**
+   * Sets up the given connection.
+   */
+  private InputConnection setupConnection(InputConnection connection) {
+    connection.messageHandler(messageHandler);
+    for (Handler<InputBatch> handler : batchHandlers) {
+      connection.batchHandler(handler);
+    }
+    for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
+      connection.groupHandler(entry.getKey(), entry.getValue());
+    }
+    if (paused) {
+      connection.pause();
+    }
+    return connection;
   }
 
   @Override

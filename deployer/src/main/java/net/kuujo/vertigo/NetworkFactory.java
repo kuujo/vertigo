@@ -113,9 +113,11 @@ public class NetworkFactory implements VerticleFactory {
         @Override
         public void handle(AsyncResult<ActiveNetwork> result) {
           if (result.failed()) {
+            container.logger().warn("Failed to deploy network.");
             startResult.setFailure(result.cause());
           } else {
             startResult.setResult((Void) null);
+            container.logger().info("Successfully deployed network.");
             container.exit();
           }
         }

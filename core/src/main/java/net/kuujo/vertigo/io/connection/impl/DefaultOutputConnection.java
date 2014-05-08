@@ -456,7 +456,9 @@ public class DefaultOutputConnection implements OutputConnection {
     if (open && !paused) {
       eventBus.send(inAddress, message);
     }
-    groups.remove(batch);
+    if (currentBatch != null && currentBatch.id().equals(batch)) {
+      currentBatch = null;
+    }
   }
 
   /**

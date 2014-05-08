@@ -630,6 +630,78 @@ public class NetworkTest extends VertigoTestVerticle {
     });
   }
 
+  public static class TestBatchesSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      vertx.setPeriodic(100, new Handler<Long>() {
+        @Override
+        public void handle(Long timerID) {
+          output.port("out").batch(new Handler<OutputBatch>() {
+            @Override
+            public void handle(OutputBatch batch) {
+              batch.send("foo").send("bar").send("baz").end();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  public static class TestBatchesReceiver extends ComponentVerticle {
+    private int received;
+
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(final InputBatch batch) {
+          final Set<String> messages = new HashSet<>();
+          batch.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              messages.add(message);
+            }
+          });
+          batch.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void event) {
+              assertEquals(3, messages.size());
+              received++;
+              if (received == 5) {
+                testComplete();
+              }
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testBatches() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestBatchesSender.class.getName());
+        network.addVerticle("receiver", TestBatchesReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
   public static class TestOneToManyGroupWithinBatchSender extends ComponentVerticle {
     private final int count = 4;
     private final Set<String> received = new HashSet<>();

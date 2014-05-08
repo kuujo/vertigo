@@ -126,6 +126,9 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
 
   void endHandler(Handler<Void> handler) {
     this.endHandler = handler;
+    if (closed) {
+      endHandler.handle((Void) null);
+    }
   }
 
   /**

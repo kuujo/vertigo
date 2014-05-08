@@ -54,6 +54,7 @@ public class FaultTolerantNetwork extends Verticle {
     private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
       @Override
       public void handle(final Message<JsonObject> message) {
+        // Get the next unique ID from the distributed counter.
         ids.incrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
           public void handle(AsyncResult<Long> result) {
@@ -61,6 +62,9 @@ public class FaultTolerantNetwork extends Verticle {
               final long id = result.result();
               final JsonObject body = message.body();
               body.putNumber("id", id);
+
+              // Store the message in the messages map. Once the message is
+              // acked it will be removed from the map.
               messages.put(id, body.encode(), new Handler<AsyncResult<String>>() {
                 @Override
                 public void handle(AsyncResult<String> result) {
@@ -91,10 +95,15 @@ public class FaultTolerantNetwork extends Verticle {
 
     @Override
     public void start() {
-      ids = cluster.getIdGenerator("ids");
+      // Get an asynchronous counter from the cluster. The counter
+      // will be used to generate cluster-wide unique IDs for messages.
+      ids = cluster.getCounter("ids");
+
+      // Get an asynchronous map from the cluster. The map will be
+      // used to temporarily store messages until they're acked.
       messages = cluster.getMap("messages");
 
-      // Listen on the 'ack' port for ack messages. When an ack message
+      // Listen on the "ack" port for ack messages. When an ack message
       // is received, remove the message from the messages map.
       input.port("ack").messageHandler(new Handler<Long>() {
         @Override
@@ -112,6 +121,8 @@ public class FaultTolerantNetwork extends Verticle {
   public static class MessageReceiver extends ComponentVerticle {
     @Override
     public void start() {
+      // Register a message handler on the "in" input port.
+      // This handler expects to receive a JsonObject message.
       input.port("in").messageHandler(new Handler<JsonObject>() {
         @Override
         public void handle(JsonObject message) {
@@ -123,21 +134,44 @@ public class FaultTolerantNetwork extends Verticle {
   }
 
   @Override
-  public void start() {
+  public void start(final Future<Void> startResult) {
+    // Deploy a "default" cluster. This will deploy a single node cluster.
+    // If the current Vert.x instance is a Hazelcast clustered instance,
+    // the cluster will coordinate through Hazelcast data structures,
+    // otherwise the cluster will coordinate through Vert.x shared data.
     Vertigo vertigo = new Vertigo(this);
-    NetworkConfig network = vertigo.createNetwork("fault-tolerant");
-    network.addVerticle("sender", FaultTolerantFeeder.class.getName());
-    network.addVerticle("receiver", MessageReceiver.class.getName());
-    network.createConnection("sender", "out", "receiver", "in");
-    network.createConnection("receiver", "ack", "sender", "ack");
-
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-      @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
+    vertigo.deployCluster("default", new Handler<AsyncResult<ClusterManager>>() {
+      public void handle(AsyncResult<ClusterManager> result) {
         if (result.failed()) {
-          container.logger().error(result.cause());
+          startResult.setFailure(result.cause());
         } else {
-          container.logger().info("Started successfully.");
+          // The cluster manager is used to deploy, undeploy, and
+          // reconfigure networks in the given cluster.
+          ClusterManager cluster = result.result();
+
+          // Create a new network configuration. This network uses
+          // circular connections to send "ack" messages back to the
+          // FaultTolerantFeeder from the MessageReceiver.
+          NetworkConfig network = vertigo.createNetwork("fault-tolerant");
+          network.addVerticle("sender", FaultTolerantFeeder.class.getName());
+          network.addVerticle("receiver", MessageReceiver.class.getName());
+          network.createConnection("sender", "out", "receiver", "in");
+          network.createConnection("receiver", "ack", "sender", "ack");
+
+          // Deploy the network to the cluster. Once all the components
+          // in the network have been started and all the connections
+          // are successfully communicating with one another the async
+          // handler will be called.
+          cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+            @Override
+            public void handle(AsyncResult<ActiveNetwork> result) {
+              if (result.failed()) {
+                startResult.setFailure(result.cause());
+              } else {
+                startResult.setResult((Void) null);
+              }
+            }
+          });
         }
       }
     });

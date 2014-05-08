@@ -263,9 +263,11 @@ vertx run word_count_network.json
    * [Starting a cluster from the command line](#starting-a-cluster-from-the-command-line)
    * [Starting a cluster programmatically](#starting-a-cluster-programmatically)
    * [Referencing a cluster programmatically](#referencing-a-cluster-programmatically)
+   * [Accessing a cluster through the event bus](#accessing-a-cluster-through-the-event-bus)
    * [Deploying a network](#deploying-a-network)
    * [Deploying a network from json](#deploying-a-network-from-json)
    * [Undeploying a network](#undeploying-a-network)
+   * [Checking if a network is deployed](#checking-if-a-network-is-deployed)
    * [Listing networks running in a cluster](#listing-networks-running-in-a-cluster)
    * [Deploying a bare network](#deploying-a-bare-network)
    * [Reconfiguring a network](#reconfiguring-a-network)
@@ -275,6 +277,7 @@ vertx run word_count_network.json
    * [Accessing the cluster from within a component](#accessing-the-cluster-from-within-a-component)
    * [Deploying modules and verticles to the cluster](#deploying-modules-and-verticles-to-the-cluster)
    * [Undeploying modules and verticles from the cluster](#undeploying-modules-and-verticles-from-the-cluster)
+   * [Checking if a module or verticle is deployed](#checking-if-a-module-or-verticle-is-deployed)
    * [Deploying modules and verticles with HA](#deploying-modules-and-verticles-with-ha)
    * [Working with HA groups](#working-with-ha-groups)
 1. [Cluster-wide Shared Data](#cluster-wide-shared-data)
@@ -283,6 +286,7 @@ vertx run word_count_network.json
    * [AsyncList](#asynclist)
    * [AsyncQueue](#asyncqueue)
    * [AsyncCounter](#asynccounter)
+   * [Accessing shared data over the event bus](#accessing-shared-data-over-the-event-bus)
 1. [Logging](#logging)
    * [Logging messages to output ports](#logging-messages-to-output-ports)
    * [Reading log messages](#reading-log-messages)
@@ -928,6 +932,31 @@ Network deployments are performed through the `ClusterManager` API. To get a
 ClusterManager cluster = vertigo.getCluster("test-cluster");
 ```
 
+### Accessing a cluster through the event bus
+The cluster system is built on worker verticles that are accessed over the event bus.
+Cluster agents expose an event bus API that can be used as an alternative to the
+Java API. Since all Java interface methods simply wrap the event bus API, you can
+perform all the same operations as are available through the API over the event bus.
+
+To send a message to a cluster simply send the message to the cluster address.
+
+```java
+JsonObject message = new JsonObject()
+    .putString("action", "check")
+    .putString("network", "test");
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObejct>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+      boolean isDeployed = reply.body().getBoolean("result");
+    }
+  }
+});
+```
+
+Each message must contain an `action` indicating the action to perform. Each API
+method has an action associated with it, and the actions and their arguments will
+be outline in the following documentation.
+
 ### Deploying a network
 To deploy a network use the `deployNetwork` methods on the `ClusterManager` for
 the cluster to which the network should be deployed.
@@ -990,6 +1019,39 @@ JsonObject network = new JsonObject()
 cluster.deployNetwork(network);
 ```
 
+JSON configurations can also be used to deploy networks to a cluster over the
+event bus. To deploy a network over the event bus send a `deploy` message to
+the cluster address with a `network` type, specifying the `network` configuration
+as a `JsonObject`.
+
+```
+{
+  "action": "deploy",
+  "type": "network",
+  "network": {
+    "name": "test",
+    "components": {
+      "foo": {
+        "type": "verticle",
+        "main": "foo.js"
+      }
+    }
+  }
+}
+```
+
+If successful, the cluster will reply with a `status` of `ok`.
+
+```java
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+      // Network was successfully deployed!
+    }
+  }
+});
+```
+
 For information on the JSON configuration format see
 [creating networks from json](#creating-networks-from-json)
 
@@ -1019,6 +1081,82 @@ will be undeployed and the network will continue to run. For this reason it is
 *strongly recommended* that you undeploy a network by name if you intend to undeploy
 the entire network.
 
+Like the `deployNetwork` method, `undeployNetwork` has an equivalent event bus based
+action. To undeploy a network over the event bus use the `undeploy` action, specifying
+`network` as the `type` to undeploy along with the `network` to undeploy.
+
+```
+{
+  "action": "undeploy",
+  "type": "network",
+  "network": "test"
+}
+```
+
+The `network` field can also contain a JSON configuration to undeploy. If the undeployment
+is successful, the cluster will reply with a `status` of `ok`.
+
+```java
+JsonObject message = new JsonObject()
+  .putString("action", "undeploy")
+  .putString("type", "network")
+  .putString("network", "test");
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+      // Network was successfully undeployed!
+    }
+  }
+});
+```
+
+### Checking if a network is deployed
+To check if a network is deployed in the cluster use the `isDeployed` method.
+
+```java
+cluster.isDeployed("test", new Handler<AsyncResult<Boolean>>() {
+  public void handle(AsyncResult<Boolean> result) {
+    if (result.succeeded()) {
+      boolean deployed = result.result(); // Whether the network is deployed.
+    }
+  }
+});
+```
+
+When checking if a network is deployed, a `check` message will be sent to the cluster along
+with the name of the network to check. If the network's configuration is available in
+the cluster then the network will be considered deployed. This is the same check that
+the cluster uses to determine whether a network is already deployed when deploying a
+new network configuration.
+
+To check whether a network is deployed directly over the event bus, send a `check` message
+to the cluster specifying a `network` type along with the `network` name.
+
+```
+{
+  "action": "check",
+  "type": "network",
+  "network": "test"
+}
+```
+
+Send the `check` message to the cluster event bus address. If successful, the cluster will
+reply with a boolean `result` indicating whether the network is deployed in the cluster.
+
+```java
+JsonObject message = new JsonObject()
+  .putString("action", "check")
+  .putString("type", "network")
+  .putString("network", "test");
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+      boolean deployed = reply.body().getBoolean("result");
+    }
+  }
+});
+```
+
 ### Listing networks running in a cluster
 To list the networks running in a cluster call the `getNetworks` method.
 
@@ -1039,6 +1177,30 @@ method.
 NetworkConfig config = network.getConfig();
 ```
 
+To list the networks running in the cluster over the event bus, use the `list`
+action.
+
+```
+{
+  "action": "list"
+}
+```
+
+If successful, the cluster will reply with a `result` containing an array of
+configuration objects for each network running in the cluster.
+
+```java
+JsonObject message = new JsonObject()
+  .putStrign("action", "list");
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+      JsonArray networks = reply.body().getArray("result");
+    }
+  }
+});
+```
+
 ### Deploying a bare network
 Vertigo networks can be reconfigured after deployment, so sometimes it's useful
 to deploy an empty network with no components or connections.
@@ -1054,6 +1216,23 @@ cluster.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
 When a bare network is deployed, Vertigo simply deploys a network manager
 verticle with no components. Once the network is reconfigured, the manager
 will automatically update the network with any new components.
+
+To deploy a bare network over the event bus, pass a `String` network name
+in the `network` field rather than a JSON network configuration.
+
+```java
+JsonObject message = new JsonObject()
+  .putString("action", "deploy")
+  .putString("type", "network")
+  .putString("network", "test");
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+      // Network was successfully deployed!
+    }
+  }
+});
+```
 
 ### Reconfiguring a network
 Vertigo provides several methods to reconfigure a network after it has been
@@ -1091,6 +1270,9 @@ the second connection will not be added to the network until the first has been
 added and connected on all relevant components. To deploy more than one component
 or connection to a running network simultaneously just list them in the same
 configuration.
+
+Just as networks can be deployed and undeployed over the event bus, they can also
+be reconfigured by sending `deploy` and `undeploy` messages to the cluster.
 
 ### Working with active networks
 Vertigo provides a special API for reconfiguring running networks known as the
@@ -1216,6 +1398,33 @@ cluster.deployVerticle("foo", "foo.js", null, 1, true);
 The last argument in the arguments list indicates whether to deploy the deployment
 with HA. When a Vertigo cluster node fails, any deployments deployed with HA enabled
 on that node will be taken over by another node within the same group within the cluster.
+
+### Checking if a module or verticle is deployed
+Since deployment IDs in Vertigo clusters are user-defined, users can determine whether
+a module or verticle is already deployed with a specific deployment ID. To check if
+a deployment is already deployed in the cluster use the `isDeployed` method.
+
+```java
+cluster.isDeployed("foo", new Handler<AsyncResult<Boolean>>() {
+  public void handle(AsyncResult<Boolean> result) {
+    boolean deployed = result.result(); // Whether the module or verticle is deployed
+  }
+});
+```
+
+To check if a module or verticle is deployed over the event bus send a `check` message
+to the cluster, specifying the `module` or `verticle` as the check `type`.
+
+```
+{
+  "action": "check",
+  "type": "verticle",
+  "id": "foo"
+}
+```
+
+If the request is successful, the cluster will reply with a `result` containing a
+boolean indicating whether the deployment ID exists in the cluster.
 
 ### Working with HA groups
 Vertigo's HA grouping mechanism is intentionally designed to mimic the core HA behavior.
@@ -1353,6 +1562,44 @@ If the Vert.x instance is not clustered then Vertigo counters will be backed by
 a custom counter implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 Vert.x instance is clustered then counters will be backed by Hazelcast maps that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
+
+### Accessing shared data over the event bus
+As with network and module/verticle deployments, cluster-wide shared data structures
+can be accessed directly over the event bus. Data actions relate directly to their
+API methods. Each shared data message must contain a `type` and the `name` of the
+data structure to which the message refers. For example, to `put` a value in the
+`foo` map we do the following:
+
+```java
+// Put key "bar" to "baz" in map "foo"
+JsonObject message = new JsonObject()
+  .putString("type", "map")
+  .putString("name", "foo")
+  .putString("action", "put")
+  .putString("key", "bar")
+  .putString("value", "baz");
+vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+  public void handle(Message<JsonObject> reply) {
+    if (reply.body().getString("status").equals("ok")) {
+
+      // Get the value of key "bar" in map "foo"
+      JsonObject message = new JsonObject()
+        .putString("type", "map")
+        .putString("name", "foo")
+        .putString("action", "get")
+        .putString("key", "bar");
+      vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
+        public void handle(Message<JsonObject> reply) {
+          if (reply.body().getString("status").equals("ok")) {
+            String value = reply.body().getString("result");
+          }
+        }
+      });
+
+    }
+  }
+});
+```
 
 ## Logging
 Each Vertigo component contains a special `PortLogger` which logs messages

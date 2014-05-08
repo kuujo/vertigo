@@ -153,11 +153,11 @@ public class ClusterAgent extends Xync {
    * Checks whether a network is deployed.
    */
   private void doIsDeployedNetwork(final Message<JsonObject> message) {
-    String name = message.body().getString("name");
-    if (name == null) {
+    String network = message.body().getString("network");
+    if (network == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No network name specified."));
     } else {
-      String scontext = manager.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
+      String scontext = manager.<String, String>getMap(String.format("%s.%s", cluster, network)).get(String.format("%s.%s", cluster, network));
       if (scontext == null) {
         message.reply(new JsonObject().putString("status", "ok").putBoolean("result", false));
       } else {
@@ -195,11 +195,11 @@ public class ClusterAgent extends Xync {
    * Loads a network configuration.
    */
   private void doLoadNetwork(final Message<JsonObject> message) {
-    String name = message.body().getString("name");
-    if (name == null) {
+    String network = message.body().getString("network");
+    if (network == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No network name specified."));
     } else {
-      String scontext = manager.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
+      String scontext = manager.<String, String>getMap(String.format("%s.%s", cluster, network)).get(String.format("%s.%s", cluster, network));
       if (scontext == null) {
         message.reply(new JsonObject().putString("status", "error").putString("message", "Network not deployed."));
       } else {
@@ -212,27 +212,23 @@ public class ClusterAgent extends Xync {
    * Handles deployment of a network.
    */
   private void doDeployNetwork(final Message<JsonObject> message) {
-    if (message.body().containsField("name")) {
-      String name = message.body().getString("name");
-      if (name != null) {
-        doDeployNetwork(name, message);
-      } else {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network name."));
-      }
-    } else if (message.body().containsField("network")) {
-      JsonObject jsonNetwork = message.body().getObject("network");
-      if (jsonNetwork != null) {
+    Object network = message.body().getValue("network");
+    if (network != null) {
+      if (network instanceof String) {
+        doDeployNetwork((String) network, message);
+      } else if (network instanceof JsonObject) {
+        JsonObject jsonNetwork = (JsonObject) network;
         try {
-          NetworkConfig network = configSerializer.deserializeObject(jsonNetwork, NetworkConfig.class);
-          doDeployNetwork(network, message);
+          NetworkConfig config = configSerializer.deserializeObject(jsonNetwork, NetworkConfig.class);
+          doDeployNetwork(config, message);
         } catch (SerializationException e) {
           message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
         }
       } else {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "No valid network given."));
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network configuration."));
       }
     } else {
-      message.reply(new JsonObject().putString("status", "error").putString("message", "No valid network given."));
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network specified."));
     }
   }
 
@@ -347,27 +343,23 @@ public class ClusterAgent extends Xync {
    * Handles undeployment of a network.
    */
   private void doUndeployNetwork(final Message<JsonObject> message) {
-    if (message.body().containsField("name")) {
-      String name = message.body().getString("name");
-      if (name != null) {
-        doUndeployNetwork(name, message);
-      } else {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network name."));
-      }
-    } else if (message.body().containsField("network")) {
-      JsonObject jsonNetwork = message.body().getObject("network");
-      if (jsonNetwork != null) {
+    Object network = message.body().getValue("network");
+    if (network != null) {
+      if (network instanceof String) {
+        doUndeployNetwork((String) network, message);
+      } else if (network instanceof JsonObject) {
+        JsonObject jsonNetwork = (JsonObject) network;
         try {
-          NetworkConfig network = configSerializer.deserializeObject(jsonNetwork, NetworkConfig.class);
-          doUndeployNetwork(network, message);
+          NetworkConfig config = configSerializer.deserializeObject(jsonNetwork, NetworkConfig.class);
+          doUndeployNetwork(config, message);
         } catch (SerializationException e) {
           message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
         }
       } else {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "No valid network given."));
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network configuration."));
       }
     } else {
-      message.reply(new JsonObject().putString("status", "error").putString("message", "No valid network given."));
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network specified."));
     }
   }
 

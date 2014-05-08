@@ -125,7 +125,7 @@ public class DefaultClusterManager implements ClusterManager {
     JsonObject message = new JsonObject()
         .putString("action", "load")
         .putString("type", "network")
-        .putString("name", name);
+        .putString("network", name);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -146,7 +146,7 @@ public class DefaultClusterManager implements ClusterManager {
     JsonObject message = new JsonObject()
         .putString("action", "check")
         .putString("type", "network")
-        .putString("name", name);
+        .putString("network", name);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -218,7 +218,7 @@ public class DefaultClusterManager implements ClusterManager {
     JsonObject message = new JsonObject()
         .putString("action", "undeploy")
         .putString("type", "network")
-        .putString("name", name);
+        .putString("network", name);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {

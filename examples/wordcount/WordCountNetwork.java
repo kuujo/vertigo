@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.annotations.Input;
-import net.kuujo.vertigo.context.NetworkContext;
-import net.kuujo.vertigo.input.grouping.FieldsGrouping;
-import net.kuujo.vertigo.java.RichFeederVerticle;
-import net.kuujo.vertigo.java.RichWorkerVerticle;
-import net.kuujo.vertigo.java.VertigoVerticle;
-import net.kuujo.vertigo.message.JsonMessage;
+import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.java.ComponentVerticle;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.ActiveNetwork;
 
+import org.vertx.java.platform.Verticle;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Future;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -40,7 +37,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author Jordan Halterman
  */
-public class WordCountNetwork extends VertigoVerticle {
+public class WordCountNetwork extends Verticle {
 
   /**
    * Random word feeder.
@@ -56,11 +53,15 @@ public class WordCountNetwork extends VertigoVerticle {
       doSend();
     }
 
+    /**
+     * Sends a random word to the "word" output port whenever
+     * the output queue is not full.
+     */
     private void doSend() {
-      while (!output.port("out").sendQueueFull()) {
-        output.port("out").send(words[random.nextInt(words.length-1)]);
+      while (!output.port("word").sendQueueFull()) {
+        output.port("word").send(words[random.nextInt(words.length-1)]);
       }
-      output.port("out").drainHandler(new Handler<Void>() {
+      output.port("word").drainHandler(new Handler<Void>() {
         @Override
         public void handle(Void _) {
           doSend();
@@ -70,20 +71,23 @@ public class WordCountNetwork extends VertigoVerticle {
   }
 
   /**
-   * Word counter.
+   * Receives words on the "word" input port and maintains a
+   * historical count of words received. Each time a word
+   * is received its updated count is sent on the "count"
+   * output port.
    */
   public static class WordCounter extends ComponentVerticle {
     private final Map<String, Integer> counts = new HashMap<>();
 
     @Override
     public void start() {
-      input.port("in").messageHandler(new Handler<String>() {
+      input.port("word").messageHandler(new Handler<String>() {
         @Override
         public void handle(String word) {
           Integer count = counts.get(word);
           if (count == null) count = 0;
           count++;
-          output.port("out").send(new JsonObject().putString("word", word).putNumber("count", count));
+          output.port("count").send(new JsonObject().putString("word", word).putNumber("count", count));
         }
       });
     }
@@ -92,19 +96,31 @@ public class WordCountNetwork extends VertigoVerticle {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void start() {
-    Network network = vertigo.createNetwork("word-count");
-    network.addVerticle("word-feeder", WordFeeder.class.getName());
-    network.addVerticle("word-counter", WordCounter.class.getName(), 4);
-    network.createConnection("word-feeder", "out", "word-counter", "in").hashSelect();
-
-    vertigo.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+  public void start(final Future<Void> startResult) {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("default", new Handler<AsyncResult<ClusterManager>>() {
       @Override
-      public void handle(AsyncResult<ActiveNetwork> result) {
+      public void handle(AsyncResult<ClusterManager> result) {
         if (result.failed()) {
-          container.logger().error(result.cause());
+          startResult.setFailure(result.cause());
         } else {
-          container.logger().info("Started successfully.");
+          ClusterManager cluster = result.result();
+
+          NetworkConfig network = vertigo.createNetwork("word-count");
+          network.addVerticle("word-feeder", WordFeeder.class.getName());
+          network.addVerticle("word-counter", WordCounter.class.getName(), 4);
+          network.createConnection("word-feeder", "word", "word-counter", "word").hashSelect();
+
+          cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+            @Override
+            public void handle(AsyncResult<ActiveNetwork> result) {
+              if (result.failed()) {
+                startResult.setFailure(result.cause());
+              } else {
+                startResult.setResult((Void) null);
+              }
+            }
+          });
         }
       }
     });

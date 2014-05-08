@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.data.AsyncIdGenerator;
+import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;

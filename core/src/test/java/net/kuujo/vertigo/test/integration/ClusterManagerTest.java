@@ -184,6 +184,31 @@ public class ClusterManagerTest extends VertigoTestVerticle {
     });
   }
 
+  @Test
+  public void testDeployWithBrokenConnection() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork("test-get-networks-1");
+        network.addVerticle("feeder", TestFeeder.class.getName());
+        network.addVerticle("worker", TestWorker.class.getName(), 2);
+        network.createConnection("feeder", "stream", "worker", "stream");
+        network.createConnection("worker", "out", "nowhere", "in");
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            assertTrue(result.succeeded());
+            testComplete();
+          }
+        });
+      }
+    });
+  }
+
   public static class TestFeeder extends ComponentVerticle {
   }
 

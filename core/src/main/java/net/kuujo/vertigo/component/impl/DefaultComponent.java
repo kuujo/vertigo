@@ -27,6 +27,7 @@ import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.DefaultInputCollector;
 import net.kuujo.vertigo.io.impl.DefaultOutputCollector;
 import net.kuujo.vertigo.io.logging.PortLoggerFactory;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -118,25 +119,20 @@ public class DefaultComponent implements Component {
         } else {
           context = result.result();
 
-          output.open(new Handler<AsyncResult<Void>>() {
+          final CountingCompletionHandler<Void> ioHandler = new CountingCompletionHandler<Void>(2);
+          ioHandler.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
               } else {
-                input.open(new Handler<AsyncResult<Void>>() {
-                  @Override
-                  public void handle(AsyncResult<Void> result) {
-                    if (result.failed()) {
-                      new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
-                    } else {
-                      coordinator.resume();
-                    }
-                  }
-                });
+                coordinator.resume();
               }
             }
           });
+
+          output.open(ioHandler);
+          input.open(ioHandler);
         }
       }
     });

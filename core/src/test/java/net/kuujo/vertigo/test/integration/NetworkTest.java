@@ -325,6 +325,59 @@ public class NetworkTest extends VertigoTestVerticle {
     });
   }
 
+  public static class TestCircularSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").messageHandler(new Handler<String>() {
+        @Override
+        public void handle(String message) {
+          assertEquals("Hello world!", message);
+          testComplete();
+        }
+      });
+      output.port("out").send("Hello world!");
+    }
+  }
+
+  public static class TestCircularReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").messageHandler(new Handler<String>() {
+        @Override
+        public void handle(String message) {
+          assertEquals("Hello world!", message);
+          output.port("out").send(message);
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testCircular() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestCircularSender.class.getName());
+        network.addVerticle("receiver", TestCircularReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        network.createConnection("receiver", "out", "sender", "in");
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
   public static class TestManySender extends ComponentVerticle {
     private int count;
     private final int total = 1000000;

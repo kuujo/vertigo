@@ -115,6 +115,14 @@ allow modules and verticles to be deploye remotely (over the event bus)
 and provide cluster-wide shared data structures. Clusters can be run either in
 a single Vert.x instance (for testing) or across a Vert.x cluster.
 
+![Cluster](http://s8.postimg.org/n535zhv9h/cluster.png)
+
+Rather than communicating over the unreliable event bus, Vertigo uses Hazelcast
+data structures to coordinate between the cluster and components.
+This is one of the properties that makes Vertigo networks fault-tolerant. Even if
+a failure occurs, the network configuration will remain in the cluster and Vertigo
+will automatically failover any failed components.
+
 ## A Simple Network
 Vertigo provides all its API functionality through a single `Vertigo` object.
 

@@ -35,20 +35,20 @@ import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.testtools.TestVerticle;
 
 /**
  * A network messaging test.
  *
  * @author Jordan Halterman
  */
-public class LocalNetworkTest extends TestVerticle {
+public class NetworkTest extends VertigoTestVerticle {
 
   public static class TestOneToNoneSender extends ComponentVerticle {
     @Override

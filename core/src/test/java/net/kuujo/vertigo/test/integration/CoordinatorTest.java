@@ -35,18 +35,18 @@ import net.kuujo.vertigo.io.impl.DefaultInputContext;
 import net.kuujo.vertigo.io.impl.DefaultOutputContext;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.testtools.TestVerticle;
 
 /**
  * A component coordinator test.
  *
  * @author Jordan Halterman
  */
-public class CoordinatorTest extends TestVerticle {
+public class CoordinatorTest extends VertigoTestVerticle {
 
   @Test
   public void testStartWithExistingContext() {

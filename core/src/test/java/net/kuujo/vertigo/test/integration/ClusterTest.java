@@ -22,20 +22,20 @@ import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.impl.ClusterAgent;
 import net.kuujo.vertigo.cluster.impl.DefaultCluster;
+import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
-import org.vertx.testtools.TestVerticle;
 
 /**
- * A local cluster test.
+ * A remote cluster test.
  *
  * @author Jordan Halterman
  */
-public class LocalClusterTest extends TestVerticle {
+public class ClusterTest extends VertigoTestVerticle {
 
   public static class TestVerticle1 extends Verticle {
     @Override

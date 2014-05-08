@@ -27,18 +27,18 @@ import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.testtools.TestVerticle;
 
 /**
- * A local cluster test.
+ * A remote cluster test.
  *
  * @author Jordan Halterman
  */
-public class LocalClusterManagerTest extends TestVerticle {
+public class ClusterManagerTest extends VertigoTestVerticle {
 
   @Test
   public void testDeploy() {
@@ -49,9 +49,9 @@ public class LocalClusterManagerTest extends TestVerticle {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-local-deploy");
         network.addVerticle("feeder", TestFeeder.class.getName());
-        network.addVerticle("worker", TestWorker.class.getName(), 2);
-        network.createConnection("feeder", "stream", "worker", "stream");
-        network.createConnection("feeder", "stream", "worker", "stream");
+        network.addVerticle("worker1", TestWorker.class.getName(), 2);
+        network.createConnection("feeder", "stream1", "worker", "stream1");
+        network.createConnection("feeder", "stream2", "worker", "stream2");
 
         final ClusterManager cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
@@ -75,9 +75,9 @@ public class LocalClusterManagerTest extends TestVerticle {
         NetworkConfig network = vertigo.createNetwork("test-local-shutdown");
         network.addVerticle("feeder", TestFeeder.class.getName());
         network.addVerticle("worker1", TestWorker.class.getName(), 2);
-        network.createConnection("feeder", "stream1", "worker1", "stream1");
+        network.createConnection("feeder", "stream1", "worker", "stream1");
         network.addVerticle("worker2", TestWorker.class.getName(), 2);
-        network.createConnection("feeder", "stream2", "worker2", "stream2");
+        network.createConnection("feeder", "stream2", "worker", "stream2");
 
         final ClusterManager cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {

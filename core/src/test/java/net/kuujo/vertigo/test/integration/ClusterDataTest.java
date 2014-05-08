@@ -31,30 +31,18 @@ import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.test.VertigoTestVerticle;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.testtools.TestVerticle;
 
 /**
  * A remote cluster test.
  *
  * @author Jordan Halterman
  */
-public class RemoteClusterDataTest extends TestVerticle {
-
-  @BeforeClass
-  public static void setupCluster() {
-    net.kuujo.xync.util.Cluster.initialize();
-  }
-
-  @AfterClass
-  public static void shutdownCluster() {
-    net.kuujo.xync.util.Cluster.getHazelcastInstance().shutdown();
-  }
+public class ClusterDataTest extends VertigoTestVerticle {
 
   @Test
   public void testMapPut() {

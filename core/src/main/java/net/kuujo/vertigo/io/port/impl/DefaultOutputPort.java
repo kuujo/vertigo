@@ -392,6 +392,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -400,6 +401,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -408,6 +410,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -416,6 +419,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -424,6 +428,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -432,6 +437,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -440,6 +446,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -448,6 +455,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -456,6 +464,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -464,6 +473,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -472,6 +482,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -480,6 +491,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 
@@ -488,6 +500,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     for (OutputStream stream : streams) {
       stream.send(message);
     }
+    triggerSend(message);
     return this;
   }
 

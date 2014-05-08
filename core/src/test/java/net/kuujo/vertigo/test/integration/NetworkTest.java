@@ -28,6 +28,11 @@ import java.util.UUID;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.hook.ComponentHook;
+import net.kuujo.vertigo.hook.IOHook;
+import net.kuujo.vertigo.hook.InputHook;
+import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.batch.InputBatch;
 import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.group.InputGroup;
@@ -1693,6 +1698,314 @@ public class NetworkTest extends VertigoTestVerticle {
                   }
                 }
               });
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestSimpleSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").send("Hello world!");
+    }
+  }
+
+  public static class TestSimpleReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").messageHandler(new Handler<String>() {
+        @Override
+        public void handle(String message) {
+          assertEquals("Hello world!", message);
+        }
+      });
+    }
+  }
+
+  public static class TestInputHook implements InputHook {
+    @Override
+    public void handleReceive(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+  }
+
+  @Test
+  public void testInputHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").getTarget().addHook(new TestInputHook());
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestOutputHook implements OutputHook {
+    @Override
+    public void handleSend(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+  }
+
+  @Test
+  public void testOutputHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").getSource().addHook(new TestOutputHook());
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestIOSendHook implements IOHook {
+    @Override
+    public void handleReceive(Object message) {
+      
+    }
+    @Override
+    public void handleSend(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+  }
+
+  @Test
+  public void testIOSendHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").addHook(new TestIOSendHook());
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestIOReceiveHook implements IOHook {
+    @Override
+    public void handleReceive(Object message) {
+      
+    }
+    @Override
+    public void handleSend(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+  }
+
+  @Test
+  public void testIOReceiveHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").addHook(new TestIOReceiveHook());
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestComponentStartHook implements ComponentHook {
+    @Override
+    public void handleSend(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+    @Override
+    public void handleReceive(Object message) {
+      
+    }
+    @Override
+    public void handleStart(Component component) {
+      
+    }
+    @Override
+    public void handleStop(Component component) {
+      
+    }
+  }
+
+  @Test
+  public void testComponentStartHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new TestComponentStartHook());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestComponentSendHook implements ComponentHook {
+    @Override
+    public void handleSend(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+    @Override
+    public void handleReceive(Object message) {
+      
+    }
+    @Override
+    public void handleStart(Component component) {
+      
+    }
+    @Override
+    public void handleStop(Component component) {
+      
+    }
+  }
+
+  @Test
+  public void testComponentSendHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new TestComponentSendHook());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestComponentReceiveHook implements ComponentHook {
+    @Override
+    public void handleSend(Object message) {
+      
+    }
+    @Override
+    public void handleReceive(Object message) {
+      assertEquals("Hello world!", message);
+      testComplete();
+    }
+    @Override
+    public void handleStart(Component component) {
+      
+    }
+    @Override
+    public void handleStop(Component component) {
+      
+    }
+  }
+
+  @Test
+  public void testComponentReceiveHook() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addComponent("sender", TestSimpleSender.class.getName());
+        network.addComponent("receiver", TestSimpleReceiver.class.getName()).addHook(new TestComponentReceiveHook());
+        network.createConnection("sender", "out", "receiver", "in");
+
+        ClusterManager cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
             }
           }
         });

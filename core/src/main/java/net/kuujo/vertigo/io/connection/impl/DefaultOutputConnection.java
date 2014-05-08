@@ -141,7 +141,7 @@ public class DefaultOutputConnection implements OutputConnection {
    * Connects to the other side of the connection.
    */
   private void connect(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "connect"), 5000, new Handler<AsyncResult<Message<Boolean>>>() {
+    eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "connect"), 1000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
         if (result.failed()) {

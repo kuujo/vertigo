@@ -139,6 +139,14 @@ public interface ComponentConfig<T extends ComponentConfig<T>> extends Config<T>
   String getName();
 
   /**
+   * Sets the component name.
+   *
+   * @param name The component name.
+   * @return The component configuration.
+   */
+  T setName(String name);
+
+  /**
    * Returns the component configuration.
    * 
    * @return The component configuration.

@@ -67,6 +67,12 @@ public class DefaultVerticleConfig implements VerticleConfig {
   }
 
   @Override
+  public VerticleConfig setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  @Override
   public JsonObject getConfig() {
     return config != null ? new JsonObject(config) : new JsonObject();
   }

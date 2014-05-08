@@ -64,7 +64,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   public List<ComponentConfig<?>> getComponents() {
     List<ComponentConfig<?>> components = new ArrayList<ComponentConfig<?>>();
     for (Map.Entry<String, ComponentConfig<?>> entry : this.components.entrySet()) {
-      components.add(entry.getValue());
+      components.add(entry.getValue().setName(entry.getKey()));
     }
     return components;
   }

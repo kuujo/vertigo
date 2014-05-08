@@ -63,6 +63,12 @@ public class DefaultModuleConfig implements ModuleConfig {
   }
 
   @Override
+  public ModuleConfig setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  @Override
   public JsonObject getConfig() {
     return config != null ? new JsonObject(config) : new JsonObject();
   }

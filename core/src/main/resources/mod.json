@@ -4,5 +4,5 @@
   "author": "Jordan Halterman",
   "keywords": ["event", "processing", "real-time"],
   "homepage": "https://github.com/kuujo/vertigo",
-  "includes": "net.kuujo~xync~0.1.0-SNAPSHOT"
+  "includes": "net.kuujo~xync~1.0.0-beta2-SNAPSHOT"
 }

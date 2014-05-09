@@ -7,6 +7,8 @@ Vertigo
 
 [Javascript][vertigo-js] | [Python][vertigo-python]
 
+**Vertigo 0.7.0-beta2 has been released!**
+
 Vertigo is a durable polyglot event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
 [real-time systems](http://storm.incubator.apache.org/) and
@@ -41,9 +43,101 @@ full-featured Java Profiler. Take a look at YourKit's leading software products:
 [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and
 [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
 
+# Java User Manual
+1. [Getting Started](#getting-started)
+   * [Setup](#setup)
+      * [Adding Vertigo as a Maven dependency](#adding-vertigo-as-a-maven-dependency)
+      * [Including Vertigo in a Vert.x module](#including-vertigo-in-a-vertx-module)
+   * [Networks](#networks)
+   * [Components](#components)
+   * [The Vertigo cluster](#cluster)
+   * [A simple network](#a-simple-network)
+1. [Networks](#networks)
+   * [Creating a new network](#creating-a-new-network)
+   * [Adding components to a network](#adding-components-to-a-network)
+   * [Creating connections between components](#)
+   * [Routing messages between multiple component instances](#routing-messages-between-multiple-component-instances)
+   * [Creating networks from JSON](#creating-networks-from-json)
+1. [Components](#components)
+   * [Creating a component](#creating-a-component)
+   * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
+1. [Messaging](#messaging)
+   * [Sending messages on an output port](#sending-messages-on-an-output-port)
+   * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
+   * [Working with message groups](#working-with-message-groups)
+   * [Working with message batches](#working-with-message-batches)
+   * [Providing serializeable messages](#providing-serializeable-messages)
+1. [Network Deployment and Clustering](#network-deployment-and-clustering)
+   * [Starting a cluster from the command line](#starting-a-cluster-from-the-command-line)
+   * [Starting a cluster programmatically](#starting-a-cluster-programmatically)
+   * [Referencing a cluster programmatically](#referencing-a-cluster-programmatically)
+   * [Accessing a cluster through the event bus](#accessing-a-cluster-through-the-event-bus)
+   * [Deploying a network](#deploying-a-network)
+   * [Deploying a network from json](#deploying-a-network-from-json)
+   * [Undeploying a network](#undeploying-a-network)
+   * [Checking if a network is deployed](#checking-if-a-network-is-deployed)
+   * [Listing networks running in a cluster](#listing-networks-running-in-a-cluster)
+   * [Deploying a bare network](#deploying-a-bare-network)
+   * [Reconfiguring a network](#reconfiguring-a-network)
+   * [Working with active networks](#working-with-active-networks)
+   * [Deploying a network from the command line](#deploying-a-network-from-the-command-line)
+1. [Cluster Management](#cluster-management)
+   * [Accessing the cluster from within a component](#accessing-the-cluster-from-within-a-component)
+   * [Deploying modules and verticles to the cluster](#deploying-modules-and-verticles-to-the-cluster)
+   * [Undeploying modules and verticles from the cluster](#undeploying-modules-and-verticles-from-the-cluster)
+   * [Checking if a module or verticle is deployed](#checking-if-a-module-or-verticle-is-deployed)
+   * [Deploying modules and verticles with HA](#deploying-modules-and-verticles-with-ha)
+   * [Working with HA groups](#working-with-ha-groups)
+1. [Cluster-wide Shared Data](#cluster-wide-shared-data)
+   * [AsyncMap](#asyncmap)
+   * [AsyncSet](#asyncset)
+   * [AsyncList](#asynclist)
+   * [AsyncQueue](#asyncqueue)
+   * [AsyncCounter](#asynccounter)
+   * [Accessing shared data over the event bus](#accessing-shared-data-over-the-event-bus)
+1. [Hooks](#hooks)
+   * [InputHook](#inputhook)
+   * [OutputHook](#outputhook)
+   * [IOHook](#iohook)
+   * [ComponentHook](#componenthook)
+1. [Logging](#logging)
+   * [Logging messages to output ports](#logging-messages-to-output-ports)
+   * [Reading log messages](#reading-log-messages)
+1. [How it works](#how-it-works)
+   * [How Vertigo handles messaging](#how-vertigo-handles-messaging)
+   * [How Vertigo performs deployments](#how-vertigo-performs-deployments)
+   * [How Vertigo coordinates networks](#how-vertigo-coordinates-networks)
+
 # Getting Started
-This is a brief tutorial that describes the basic components of Vertigo
-along with a simple example.
+This is a brief tutorial that will help guide you through high-level Vertigo
+concepts and go through a simple network example. Check out the repository
+for more [examples](https://github.com/kuujo/vertigo/tree/master/examples).
+
+## Setup
+Vertigo can be added to your project as a Maven dependency or included in
+your modules via the Vert.x module system.
+
+### Adding Vertigo as a Maven dependency
+
+```
+<dependency>
+  <groupId>net.kuujo</groupId>
+  <artifactId>vertigo</artifactId>
+  <version>0.7.0-beta2</version>
+</dependency>
+```
+
+### Including Vertigo in a Vert.x module
+
+To use the Vertigo Java API, you can include the Vertigo module in your module's
+`mod.json` file. This will make Vertigo classes available within your module.
+
+```
+{
+  "main": "com.mycompany.myproject.MyVerticle",
+  "includes": "net.kuujo~vertigo~0.7.0-beta2"
+}
+```
 
 ## Networks
 Networks are collections of Vert.x verticles and modules that are connected
@@ -108,7 +202,7 @@ network.addComponent("baz", "baz.py", 4);
 network.createConnection("bar", "out", "baz", "in");
 ```
 
-## Cluster
+## The Vertigo Cluster
 Vertigo provides its own cluster abstraction within the Vert.x cluster. Vertigo
 clusters are simple collections of verticles that manage deployment of networks,
 allow modules and verticles to be deploye remotely (over the event bus)
@@ -189,9 +283,23 @@ This component registers a message handler on the `word` in port, updates
 an internal count for the word, and sends the updated word count on the
 `count` out port.
 
-In order for a network to be deployed a Vertigo cluster must already be
-running in the Vert.x cluster. The cluster can be started by either starting
-the `vertigo-cluster` module or using the `Vertigo` API.
+In order for a network to be deployed, one or more nodes of a Vertigo cluster
+must be running in the Vert.x cluster. Vertigo clusters are made up of simple
+Vert.x verticles. To deploy a cluster node deploy the `vertigo-cluster` module.
+
+```
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta2 -conf cluster.json
+```
+
+The cluster configuration requires a `cluster` name.
+
+```
+{
+  "cluster": "test-cluster"
+}
+```
+
+A test cluster can also be deployed locally through the `Vertigo` API.
 
 ```java
 vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
@@ -207,141 +315,9 @@ Once the cluster has been deployed we can deploy a network to the cluster.
 cluster.deployNetwork(network);
 ```
 
-We can also configure the network in JSON and deploy it to a running cluster.
-
-```
-{
-  "name": "word-count",
-  "cluster": "test-cluster",
-  "components": {
-    "word-feeder": {
-      "type": "verticle",
-      "main": "random_word_feeder.py",
-    },
-    "word-counter": {
-      "type": "verticle",
-      "main": "word_counter.js",
-      "instances": 2
-    }
-  },
-  "connections": [
-    {
-      "source": {
-        "component": "word-feeder",
-        "port": "word"
-      },
-      "target": {
-        "component": "word-counter",
-        "port": "word"
-      }
-    }
-  ]
-}
-```
-
-This is a JSON network configuration that is equivalent to the Java
-configuration we defined above. The JSON configuration can be deployed
-directly from a JSON configuration file using the `vertx` command line
-tool.
-
-```
-vertx run word_count_network.json
-```
-
-# Java User Manual
-1. [Introduction](#introduction)
-1. [Setup](#setup)
-   * [Adding Vertigo as a Maven dependency](#adding-vertigo-as-a-maven-dependency)
-   * [Including Vertigo in a Vert.x module](#including-vertigo-in-a-vertx-module)
-1. [Networks](#networks)
-   * [Creating a new network](#creating-a-new-network)
-   * [Adding components to a network](#adding-components-to-a-network)
-   * [Creating connections between components](#)
-   * [Routing messages between multiple component instances](#routing-messages-between-multiple-component-instances)
-   * [Creating networks from JSON](#creating-networks-from-json)
-1. [Components](#components)
-   * [Creating a component](#creating-a-component)
-   * [The elements of a Vertigo component](#the-elements-of-a-vertigo-component)
-1. [Messaging](#messaging)
-   * [Sending messages on an output port](#sending-messages-on-an-output-port)
-   * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
-   * [Working with message groups](#working-with-message-groups)
-   * [Working with message batches](#working-with-message-batches)
-   * [Providing serializeable messages](#providing-serializeable-messages)
-1. [Network Deployment and Clustering](#network-deployment-and-clustering)
-   * [Starting a cluster from the command line](#starting-a-cluster-from-the-command-line)
-   * [Starting a cluster programmatically](#starting-a-cluster-programmatically)
-   * [Referencing a cluster programmatically](#referencing-a-cluster-programmatically)
-   * [Accessing a cluster through the event bus](#accessing-a-cluster-through-the-event-bus)
-   * [Deploying a network](#deploying-a-network)
-   * [Deploying a network from json](#deploying-a-network-from-json)
-   * [Undeploying a network](#undeploying-a-network)
-   * [Checking if a network is deployed](#checking-if-a-network-is-deployed)
-   * [Listing networks running in a cluster](#listing-networks-running-in-a-cluster)
-   * [Deploying a bare network](#deploying-a-bare-network)
-   * [Reconfiguring a network](#reconfiguring-a-network)
-   * [Working with active networks](#working-with-active-networks)
-   * [Deploying a network from the command line](#deploying-a-network-from-the-command-line)
-1. [Cluster Management](#cluster-management)
-   * [Accessing the cluster from within a component](#accessing-the-cluster-from-within-a-component)
-   * [Deploying modules and verticles to the cluster](#deploying-modules-and-verticles-to-the-cluster)
-   * [Undeploying modules and verticles from the cluster](#undeploying-modules-and-verticles-from-the-cluster)
-   * [Checking if a module or verticle is deployed](#checking-if-a-module-or-verticle-is-deployed)
-   * [Deploying modules and verticles with HA](#deploying-modules-and-verticles-with-ha)
-   * [Working with HA groups](#working-with-ha-groups)
-1. [Cluster-wide Shared Data](#cluster-wide-shared-data)
-   * [AsyncMap](#asyncmap)
-   * [AsyncSet](#asyncset)
-   * [AsyncList](#asynclist)
-   * [AsyncQueue](#asyncqueue)
-   * [AsyncCounter](#asynccounter)
-   * [Accessing shared data over the event bus](#accessing-shared-data-over-the-event-bus)
-1. [Hooks](#hooks)
-   * [InputHook](#inputhook)
-   * [OutputHook](#outputhook)
-   * [IOHook](#iohook)
-   * [ComponentHook](#componenthook)
-1. [Logging](#logging)
-   * [Logging messages to output ports](#logging-messages-to-output-ports)
-   * [Reading log messages](#reading-log-messages)
-1. [How it works](#how-it-works)
-   * [How Vertigo handles messaging](#how-vertigo-handles-messaging)
-   * [How Vertigo performs deployments](#how-vertigo-performs-deployments)
-   * [How Vertigo coordinates networks](#how-vertigo-coordinates-networks)
-
-## Introduction
-Vertigo is a multi-step event processing framework built on Vert.x. It exposes a
-very simple yet powerful API defines networks of Vert.x verticles and the relationships
-between them in a manner that abstracts communication details from implementations, making
-Vertigo components reusable. It provides for advanced messaging requirements such as
-strong ordering and exactly-once processing and supports deployment of networks within a
-single Vert.x instance or across a cluster of Vert.x instances and performs setup and
-coordination internally.
-
-## Setup
-To use Vertigo simply add the library as a Maven dependency or as a Vert.x module include.
-
-### Adding Vertigo as a Maven dependency
-
-```
-<dependency>
-  <groupId>net.kuujo</groupId>
-  <artifactId>vertigo</artifactId>
-  <version>0.7.0-beta2</version>
-</dependency>
-```
-
-### Including Vertigo in a Vert.x module
-
-To use the Vertigo Java API, you can include the Vertigo module in your module's
-`mod.json` file. This will make Vertigo classes available within your module.
-
-```
-{
-  "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.7.0-beta2"
-}
-```
+Vertigo also supports deploying networks from the command line using simple
+JSON configuration files.
+See [deploying a network from the command line](#deploying-a-network-from-the-command-line)
 
 ## Networks
 Vertigo networks are collections of Vert.x verticles and modules that are connected
@@ -659,6 +635,8 @@ name at the same level that preceded it must have been completed. Additionally,
 messages within a group are *guaranteed to be delivered to the same instance* of each
 target component. In other words, routing is performed per-group rather than per-message.
 
+![Groups](http://s30.postimg.org/655svvk3l/groups.png)
+
 When a new output group is created, Vertigo will await the completion of all groups
 of the same name that were created prior to the new group before sending the new group's
 messages.
@@ -791,6 +769,8 @@ whereas groups are guaranteed to always be delivered to the same target componen
 instance, batches use normal selection routines to route each individual message.
 Additionally, batches cannot be nested like groups, but groups can be contained
 within batches. Batches simply represent windows of output from a port.
+
+![Batches](http://s30.postimg.org/dwmiufo8x/groups_1.png)
 
 The batch API works similarly to the group API, but batches are *not* named.
 ```java

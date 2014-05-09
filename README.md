@@ -7,11 +7,6 @@ Vertigo
 
 [Javascript][vertigo-js] | [Python][vertigo-python]
 
-**Vertigo 0.7.0-beta2 has been released!**
-
-**Note: due to Hazelcast dependencies Vertigo 0.7.0-beta2 requires Vert.x 2.1**
-which hasn't yet been released at the time of this note.
-
 Vertigo is a durable polyglot event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
 [real-time systems](http://storm.incubator.apache.org/) and
@@ -47,6 +42,12 @@ full-featured Java Profiler. Take a look at YourKit's leading software products:
 [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp).
 
 # Java User Manual
+
+**Vertigo 0.7.0-beta2 has been released!**
+
+**Note: Vertigo 0.7.0-beta2 is only compatible with Vert.x versions that use
+Hazelcast 3.x**
+
 1. [Getting Started](#getting-started)
    * [Setup](#setup)
       * [Adding Vertigo as a Maven dependency](#adding-vertigo-as-a-maven-dependency)

@@ -9,6 +9,9 @@ Vertigo
 
 **Vertigo 0.7.0-beta2 has been released!**
 
+**Note: due to Hazelcast dependencies Vertigo 0.7.0-beta2 requires Vert.x 2.1**
+which hasn't yet been released at the time of this note.
+
 Vertigo is a durable polyglot event processing framework built on the
 [Vert.x](http://vertx.io/) application platform. Combining concepts of cutting-edge
 [real-time systems](http://storm.incubator.apache.org/) and

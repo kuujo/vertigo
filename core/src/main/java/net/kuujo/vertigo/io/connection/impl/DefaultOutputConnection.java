@@ -141,6 +141,10 @@ public class DefaultOutputConnection implements OutputConnection {
    * Connects to the other side of the connection.
    */
   private void connect(final Handler<AsyncResult<Void>> doneHandler) {
+    // Recursively send "connect" messages to the other side of the connection
+    // until we get a response. This gives the other side of the connection time
+    // to open and ensures that the connection doesn't claim it's open until
+    // the other side has registered a handler and responded at least once.
     eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "connect"), 1000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
@@ -190,6 +194,9 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public OutputConnection batch(final String id, final Handler<ConnectionOutputBatch> handler) {
+    // If there's already a batch open then don't open the new batch until
+    // the previous batch has been ended. This ensures that only one batch
+    // can be open at any given time on the connection.
     if (currentBatch != null) {
       currentBatch.endHandler(new Handler<Void>() {
         @Override
@@ -314,6 +321,8 @@ public class DefaultOutputConnection implements OutputConnection {
    * Handles a batch ack.
    */
   private void doAck(long id) {
+    // The other side of the connection has sent a message indicating which
+    // messages it has seen. We can clear any messages before the indicated ID.
     if (messages.containsKey(id+1)) {
       messages.tailMap(id+1);
     } else {
@@ -326,6 +335,9 @@ public class DefaultOutputConnection implements OutputConnection {
    * Handles a batch fail.
    */
   private void doFail(long id) {
+    // The other side of the connection has sent a message indicating that
+    // it received a message out of order. We have to resend all the messages
+    // after that point in order.
     if (messages.containsKey(id+1)) {
       for (long i = id+1; i <= messages.lastKey(); i++) {
         eventBus.send(inAddress, messages.get(i));
@@ -465,6 +477,9 @@ public class DefaultOutputConnection implements OutputConnection {
    * Creates an empty message.
    */
   private JsonObject createMessage() {
+    // Tag the message with a monotonically increasing ID. The ID
+    // will be used by the other side of the connection to guarantee
+    // ordering.
     JsonObject message = new JsonObject();
     long id = currentMessage++;
     message.putNumber("id", id);
@@ -476,6 +491,9 @@ public class DefaultOutputConnection implements OutputConnection {
    * Creates a value message.
    */
   private JsonObject createMessage(Object value) {
+    // Tag the message with a monotonically increasing ID. The ID
+    // will be used by the other side of the connection to guarantee
+    // ordering.
     JsonObject message = serializer.serialize(value);
     long id = currentMessage++;
     message.putNumber("id", id);

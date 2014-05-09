@@ -119,6 +119,10 @@ public class DefaultComponent implements Component {
         } else {
           context = result.result();
 
+          // We have to make sure the input and output collectors are started
+          // simultaneously in order to support circular connections. If both
+          // input and output aren't started at the same time then circular
+          // connections will never open.
           final CountingCompletionHandler<Void> ioHandler = new CountingCompletionHandler<Void>(2);
           ioHandler.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
@@ -126,6 +130,7 @@ public class DefaultComponent implements Component {
               if (result.failed()) {
                 new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
               } else {
+                // Tell the coordinator we're ready for the network to start.
                 coordinator.resume();
               }
             }
@@ -136,6 +141,10 @@ public class DefaultComponent implements Component {
         }
       }
     });
+
+    // The resume handler will be called by the coordinator once the
+    // network's manager has indicated that all the components in the
+    // network have finished setting up their connections.
     coordinator.resumeHandler(new Handler<Void>() {
       @Override
       @SuppressWarnings("unchecked")
@@ -173,12 +182,7 @@ public class DefaultComponent implements Component {
       });
     }
     else {
-      vertx.runOnContext(new Handler<Void>() {
-        @Override
-        public void handle(Void _) {
-          future.setResult(DefaultComponent.this);
-        }
-      });
+      future.setResult(DefaultComponent.this);
     }
     return this;
   }

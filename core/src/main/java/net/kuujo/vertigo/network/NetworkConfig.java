@@ -62,10 +62,9 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   public static final String NETWORK_COMPONENTS = "components";
 
   /**
-   * Returns the network name.
-   * 
-   * This is the event bus address at which the network's coordinator will register a
-   * handler for components to connect to once deployed.
+   * Returns the network name.<p>
+   *
+   * The network's name should be unique within a given cluster.
    * 
    * @return The network name.
    */
@@ -106,45 +105,65 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   <T extends ComponentConfig> T addComponent(T component);
 
   /**
-   * Adds a module to the network.
+   * Adds a module or verticle component to the network.<p>
+   *
+   * The type of component that's added to the network will be determined
+   * based on Vert.x module naming standards. If the module/main is a
+   * valid module identifier then a module component will be added, otherwise
+   * a verticle component will be added.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param moduleName The module name.
-   * @return The new module configuration.
+   * @param moduleOrMain The component module name or verticle main.
+   * @return The new component configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
   <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain);
 
   /**
-   * Adds a module to the network.
+   * Adds a module or verticle component to the network.<p>
+   *
+   * The type of component that's added to the network will be determined
+   * based on Vert.x module naming standards. If the module/main is a
+   * valid module identifier then a module component will be added, otherwise
+   * a verticle component will be added.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param moduleName The module name.
-   * @param config The module configuration. This configuration will be made
+   * @param moduleOrMain The component module name or verticle main.
+   * @param config The component configuration. This configuration will be made
    *          available as the verticle configuration within deployed module instances.
-   * @return The new module configuration.
+   * @return The new component configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
   <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config);
 
   /**
-   * Adds a module to the network.
+   * Adds a module or verticle component to the network.<p>
+   *
+   * The type of component that's added to the network will be determined
+   * based on Vert.x module naming standards. If the module/main is a
+   * valid module identifier then a module component will be added, otherwise
+   * a verticle component will be added.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
-   * @param moduleName The module name.
+   * @param moduleOrMain The component module name or verticle main.
    * @param instances The number of module instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
-   * @return The new module configuration.
+   * @return The new component configuration.
    * @throws IllegalArgumentException If the module name is not a valid module identifier.
    */
   <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances);
 
   /**
-   * Adds a module or verticle component to the network.
+   * Adds a module or verticle component to the network.<p>
+   *
+   * The type of component that's added to the network will be determined
+   * based on Vert.x module naming standards. If the module/main is a
+   * valid module identifier then a module component will be added, otherwise
+   * a verticle component will be added.
    * 
    * @param name The component name. This will be used as the basis for internal
    *          component addresses.
@@ -154,7 +173,7 @@ public interface NetworkConfig extends Config<NetworkConfig> {
    * @param instances The number of component instances. If multiple instances are
    *          defined, groupings will be used to determine how messages are distributed
    *          between multiple component instances.
-   * @return The new module configuration.
+   * @return The new component configuration.
    */
   <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, int instances);
 

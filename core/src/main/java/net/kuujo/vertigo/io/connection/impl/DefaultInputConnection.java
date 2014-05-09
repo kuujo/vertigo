@@ -202,6 +202,9 @@ public class DefaultInputConnection implements InputConnection {
    * Sends an ack message for the current received count.
    */
   private void ack() {
+    // Send a message to the other side of the connection indicating the
+    // last message that we received in order. This will allow it to
+    // purge messages we've already received from its queue.
     if (open && connected) {
       eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();
@@ -212,6 +215,9 @@ public class DefaultInputConnection implements InputConnection {
    * Sends a fail message for the current received count.
    */
   private void fail() {
+    // Send a "fail" message indicating the last message we received in order.
+    // This will cause the other side of the connection to resend messages
+    // in order from that point on.
     if (open && connected) {
       eventBus.send(outAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();

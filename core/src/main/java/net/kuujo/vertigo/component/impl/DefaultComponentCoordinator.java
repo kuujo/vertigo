@@ -133,6 +133,8 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public ComponentCoordinator resume(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {
+      // Set the status key to "ready" to indicate to the network that the
+      // component is ready to start - all its connections have been opened.
       data.put(currentContext.status(), "ready", new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {

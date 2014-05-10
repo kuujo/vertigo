@@ -1868,11 +1868,14 @@ and shutdown of networks. Rather than communicating over the event bus, the
 cluster and the network communicate using data-driven events through shared
 data structures. When the cluster wants to update a network, it [sets the
 network's configuration key](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L333)
-in the cluster. Similarly, the network
+in the cluster. On the other side, the manager watches the configuration key
+for changes using Vertigo's internal [WatchableAsyncMap](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/data/WatchableAsyncMap.java).
+Similarly, the network
 [sets a status key](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L308)
-once the configuration has been installed. This allows Vertigo's network
-configurations to be persisted in the cluster through crashes and thus means
-that networks can easily recover.
+once the configuration has been installed and the cluster watches the network's
+status key to determine when the network has completed configuration. This
+allows Vertigo's networks to be dynamically altered and network configurations
+to be persisted in the cluster through crashes so they can easily recover.
 
 Since each network manager always monitors the network's configuration for
 changes, it is automatically notified when the cluster updates the configuration.

@@ -1815,9 +1815,9 @@ public class LogReader extends ComponentVerticle {
 ## How it works
 There are four essential components to Vertigo's design:
 * [Configurations](#configurations)
-* [Cluster](#clusters)
-* [Networks](#networks)
-* [Components](#components)
+* [Cluster](#cluster)
+* [Networks](#networks-2)
+* [Components](#components-2)
 * [Communication](#communication)
 
 This section outlines how each of the components of Vertigo is designed and how

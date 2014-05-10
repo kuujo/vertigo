@@ -550,6 +550,72 @@ public class NetworkTest extends VertigoTestVerticle {
     });
   }
 
+  public static class TestBasicBatchSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").batch(new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batch.send("Hello world!");
+          batch.send("Hello world!");
+          batch.send("Hello world!");
+          batch.end();
+        }
+      });
+    }
+  }
+
+  public static class TestBasicBatchReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(InputBatch batch) {
+          final List<String> messages = new ArrayList<>();
+          batch.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          batch.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testBasicBatch() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestBasicBatchSender.class.getName());
+        network.addVerticle("receiver", TestBasicBatchReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
   public static class TestOneToManyBatchSender extends ComponentVerticle {
     private final int count = 4;
     private final Set<String> received = new HashSet<>();
@@ -688,6 +754,102 @@ public class NetworkTest extends VertigoTestVerticle {
         network.addVerticle("sender", TestBatchesSender.class.getName());
         network.addVerticle("receiver", TestBatchesReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestBatchForwardSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").batch(new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batch.send("Hello world!");
+          batch.send("Hello world!");
+          batch.send("Hello world!");
+          batch.end();
+        }
+      });
+    }
+  }
+
+  public static class TestBatchForwarder extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(final InputBatch inbatch) {
+          output.port("out").batch(inbatch.id(), new Handler<OutputBatch>() {
+            @Override
+            public void handle(final OutputBatch outbatch) {
+              inbatch.messageHandler(new Handler<String>() {
+                @Override
+                public void handle(String message) {
+                  outbatch.send(message);
+                }
+              });
+              inbatch.endHandler(new Handler<Void>() {
+                @Override
+                public void handle(Void event) {
+                  outbatch.end();
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  }
+
+  public static class TestBatchForwardReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(InputBatch batch) {
+          final List<String> messages = new ArrayList<>();
+          batch.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          batch.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testBatchForward() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestBatchForwardSender.class.getName());
+        network.addVerticle("forwarder", TestBatchForwarder.class.getName());
+        network.addVerticle("receiver", TestBatchForwardReceiver.class.getName());
+        network.createConnection("sender", "out", "forwarder", "in");
+        network.createConnection("forwarder", "out", "receiver", "in");
         result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {

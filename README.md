@@ -211,7 +211,7 @@ network.createConnection("bar", "out", "baz", "in");
 ## The Vertigo Cluster
 Vertigo provides its own cluster abstraction within the Vert.x cluster. Vertigo
 clusters are simple collections of verticles that manage deployment of networks,
-allow modules and verticles to be deploye remotely (over the event bus)
+allow modules and verticles to be deploy remotely (over the event bus)
 and provide cluster-wide shared data structures. Clusters can be run either in
 a single Vert.x instance (for testing) or across a Vert.x cluster.
 
@@ -1313,7 +1313,7 @@ The active network's internal `NetworkConfig` will be automatically updated when
 the running network configuration is updated.
 
 ### Deploying a network from the command line
-Vertigo provides a special facility for deploying networks from json confguration files.
+Vertigo provides a special facility for deploying networks from json configuration files.
 This feature is implemented as a Vert.x language module, so the network deployer must
 be first added to your `langs.properties` file.
 
@@ -1838,7 +1838,7 @@ The context used by each element for setup tasks such as connecting to the
 cluster, creating ports and connections, and registering hooks.
 
 ### Cluster
-The Vertigo cluster is the component that manaages deployment, undeployment,
+The Vertigo cluster is the component that manages deployment, undeployment,
 and monitoring of networks and their components. Vertigo clusters consist of
 one or more special verticles that expose an event bus interface to deploying
 modules, verticles, and complete networks as well as cluster-wide shared data.
@@ -1914,7 +1914,7 @@ on ports. All Vertigo's messaging is performed over the Vert.x event bus, and
 the messaging system is designed to provide strongly-ordered and exactly-once
 semantics.
 
-There are numerous components to the Vertigo communcation framework. At the
+There are numerous components to the Vertigo communication framework. At the
 highest level, each component has an `InputCollector` and an `OutputCollector`.
 
 Internally, Vertigo uses *streams* to model connections between an output port

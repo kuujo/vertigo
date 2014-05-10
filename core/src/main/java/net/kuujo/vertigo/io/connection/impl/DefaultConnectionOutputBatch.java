@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
+import java.util.UUID;
+
 import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
@@ -266,6 +268,11 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   @Override
   public OutputConnection batch(String id, Handler<ConnectionOutputBatch> handler) {
     throw new UnsupportedOperationException("Cannot batch a batch.");
+  }
+
+  @Override
+  public OutputConnection group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
   }
 
   @Override

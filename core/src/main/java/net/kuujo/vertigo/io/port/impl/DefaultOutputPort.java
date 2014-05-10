@@ -348,6 +348,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
+  public OutputPort group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
+  }
+
+  @Override
   public OutputPort group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int streamsSize = streams.size();

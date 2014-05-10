@@ -29,6 +29,17 @@ import org.vertx.java.core.Handler;
 public interface OutputGroupSupport<T extends OutputGroupSupport<T>> {
 
   /**
+   * Creates a uniquely named output group.<p>
+   *
+   * Messages sent through groups will always be sent to the same
+   * connection(s). Groups can also be nested.
+   *
+   * @param handler A handler to be called once the group has been setup.
+   * @return The called object.
+   */
+  T group(Handler<OutputGroup> handler);
+
+  /**
    * Creates a named output group.<p>
    *
    * Messages sent through groups will always be sent to the same

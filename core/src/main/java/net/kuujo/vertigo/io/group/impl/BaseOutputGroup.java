@@ -109,6 +109,11 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
+  public OutputGroup group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
+  }
+
+  @Override
   public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int connectionsSize = connections.size();

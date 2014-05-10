@@ -213,6 +213,11 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
+  public OutputConnection group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
+  }
+
+  @Override
   public OutputConnection group(String name, Handler<OutputGroup> handler) {
     DefaultConnectionOutputGroup group = new DefaultConnectionOutputGroup(UUID.randomUUID().toString(), name, this);
     groups.put(group.id(), group);

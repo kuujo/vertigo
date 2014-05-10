@@ -58,6 +58,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
   private final Set<Handler<InputBatch>> batchHandlers = new HashSet<>();
+  private Handler<InputGroup> groupHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private boolean open;
   private boolean paused;
@@ -225,6 +226,15 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
+  public InputPort groupHandler(Handler<InputGroup> handler) {
+    this.groupHandler = handler;
+    for (InputConnection connection : connections) {
+      connection.groupHandler(handler);
+    }
+    return this;
+  }
+
+  @Override
   public InputPort groupHandler(String group, Handler<InputGroup> handler) {
     this.groupHandlers.put(group, handler);
     for (InputConnection connection : connections) {
@@ -296,6 +306,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
     connection.messageHandler(messageHandler);
     for (Handler<InputBatch> handler : batchHandlers) {
       connection.batchHandler(handler);
+    }
+    if (groupHandler != null) {
+      connection.groupHandler(groupHandler);
     }
     for (Map.Entry<String, Handler<InputGroup>> entry : groupHandlers.entrySet()) {
       connection.groupHandler(entry.getKey(), entry.getValue());

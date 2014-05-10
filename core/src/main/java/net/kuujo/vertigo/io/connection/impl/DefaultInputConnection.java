@@ -48,6 +48,7 @@ public class DefaultInputConnection implements InputConnection {
   private final String inAddress;
   private final String outAddress;
   private List<InputHook> hooks = new ArrayList<>();
+  private Handler<InputGroup> groupHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private final Map<String, DefaultConnectionInputGroup> groups = new HashMap<>();
   private final InputDeserializer deserializer = new InputDeserializer();
@@ -260,6 +261,12 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
+  public InputConnection groupHandler(Handler<InputGroup> handler) {
+    groupHandler = handler;
+    return this;
+  }
+
+  @Override
   public InputConnection groupHandler(String group, Handler<InputGroup> handler) {
     groupHandlers.put(group, handler);
     return this;
@@ -298,9 +305,13 @@ public class DefaultInputConnection implements InputConnection {
         }
       }
     } else {
+      // First check for a named group handler. If a named group handler isn't
+      // registered then trigger the arbitrary group handler if one is registered.
       Handler<InputGroup> handler = groupHandlers.get(name);
       if (handler != null) {
         handler.handle(group);
+      } else if (groupHandler != null) {
+        groupHandler.handle(group);
       } else {
         groupReady(groupID);
       }

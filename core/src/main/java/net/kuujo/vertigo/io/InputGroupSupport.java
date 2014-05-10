@@ -31,6 +31,15 @@ public interface InputGroupSupport<T extends InputGroupSupport<T>> {
   /**
    * Registers a group handler.
    *
+   * @param handler The handler to register. This handler will be called
+   *        whenever any group on the input is started.
+   * @return The called object.
+   */
+  T groupHandler(Handler<InputGroup> handler);
+
+  /**
+   * Registers a group handler.
+   *
    * @param name The name of the group for which to register the handler.
    * @param handler The handler to register. This handler will be called
    *        whenever a group of the given name is started.

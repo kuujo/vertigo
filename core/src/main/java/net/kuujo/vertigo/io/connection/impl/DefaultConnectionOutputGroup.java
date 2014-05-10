@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
+import java.util.UUID;
+
 import net.kuujo.vertigo.io.connection.ConnectionOutputGroup;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
@@ -137,6 +139,11 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   public OutputGroup drainHandler(Handler<Void> handler) {
     connection.drainHandler(handler);
     return this;
+  }
+
+  @Override
+  public DefaultConnectionOutputGroup group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
   }
 
   @Override

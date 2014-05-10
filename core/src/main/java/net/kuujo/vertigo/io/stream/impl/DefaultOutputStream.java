@@ -152,6 +152,11 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
+  public OutputStream group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
+  }
+
+  @Override
   public OutputStream group(final String name, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     List<OutputConnection> connections = selector.select(name, this.connections);

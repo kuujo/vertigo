@@ -18,6 +18,7 @@ package net.kuujo.vertigo.io.batch.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.group.OutputGroup;
@@ -101,6 +102,11 @@ public class BaseOutputBatch implements OutputBatch {
       group.drainHandler(handler);
     }
     return this;
+  }
+
+  @Override
+  public OutputBatch group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
   }
 
   @Override

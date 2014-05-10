@@ -40,6 +40,7 @@ public class DefaultConnectionInputGroup implements ConnectionInputGroup {
   private Handler messageHandler;
   private Handler<Void> startHandler;
   private Handler<Void> endHandler;
+  private Handler<InputGroup> groupHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private boolean started;
 
@@ -99,15 +100,31 @@ public class DefaultConnectionInputGroup implements ConnectionInputGroup {
   }
 
   void handleGroup(InputGroup group) {
+    // First check for a named group handler. If a named group handler isn't
+    // registered then trigger the arbitrary group handler if one is registered.
     Handler<InputGroup> handler = groupHandlers.get(group.name());
     if (handler != null) {
       handler.handle(group);
+    } else if (groupHandler != null) {
+      groupHandler.handle(group);
     } else {
       // If there is no group handler for this input group then immediately
       // indicate that the group is ready, otherwise no message handler will
       // ever be registered and the group will never be ready.
       connection.groupReady(group.id());
     }
+  }
+
+  @Override
+  public InputGroup groupHandler(Handler<InputGroup> handler) {
+    // When a group handler is registered on the group, if the group hasn't
+    // already been started then send a start message to the source.
+    this.groupHandler = handler;
+    if (handler != null && !started) {
+      connection.groupReady(id);
+      started = true;
+    }
+    return this;
   }
 
   @Override

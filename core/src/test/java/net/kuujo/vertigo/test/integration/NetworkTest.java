@@ -910,6 +910,210 @@ public class NetworkTest extends VertigoTestVerticle {
     });
   }
 
+  public static class TestUnnamedGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group(new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestUnnamedGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler(new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testUnnamedGroup() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestUnnamedGroupSender.class.getName());
+        network.addVerticle("receiver", TestUnnamedGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestNamedToUnnamedGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestNamedToUnnamedGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler(new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testNamedToUnnamedGroup() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestNamedToUnnamedGroupSender.class.getName());
+        network.addVerticle("receiver", TestNamedToUnnamedGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestNamedToNamedGroupSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("foo", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.send("Hello world!");
+          group.end();
+        }
+      });
+    }
+  }
+
+  public static class TestNamedToNamedGroupReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler(new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          fail(); // The "foo" group handler should be called, not the unnamed handler.
+        }
+      });
+      input.port("in").groupHandler("foo", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          final List<String> messages = new ArrayList<>();
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+              messages.add(message);
+            }
+          });
+          group.endHandler(new Handler<Void>() {
+            @Override
+            public void handle(Void _) {
+              assertEquals(3, messages.size());
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testNamedToNamedGroup() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestNamedToNamedGroupSender.class.getName());
+        network.addVerticle("receiver", TestNamedToNamedGroupReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in").roundSelect();
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
   public static class TestAsyncGroupSender extends ComponentVerticle {
     @Override
     public void start() {

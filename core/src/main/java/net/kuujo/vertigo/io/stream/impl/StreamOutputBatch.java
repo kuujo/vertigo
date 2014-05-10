@@ -2,6 +2,7 @@ package net.kuujo.vertigo.io.stream.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
@@ -173,6 +174,11 @@ public class StreamOutputBatch implements OutputBatch {
       connection.send(message);
     }
     return this;
+  }
+
+  @Override
+  public OutputBatch group(Handler<OutputGroup> handler) {
+    return group(UUID.randomUUID().toString(), handler);
   }
 
   @Override

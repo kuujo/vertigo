@@ -1888,7 +1888,10 @@ and then [deploy any new components](https://github.com/kuujo/vertigo/blob/maste
 While new components are being added, the manager will also update each component's
 configuration in the cluster. With components also watching their own configurations
 for changes, this allows components to update their internal connections without
-being undeployed, but more on that in the next section.
+being undeployed, but more on that in the next section. It's important to note that
+[all configuration changes are queued in a task runner](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/util/TaskRunner.java)
+that ensures that only one configuration change can ever be processed at any given
+time.
 
 ### Components
 One of the challenges when starting up multiple verticles across a cluster is
@@ -1909,6 +1912,18 @@ has completed startup. However, even though the component has indicated to the
 network that it has completed startup, the component won't actually start [until
 the network has indicated](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/component/impl/DefaultComponent.java#L148)
 that *all* the active components in the network have completed setup.
+
+When the network's configuration changes, the network manager will set the
+component's configuration key in the cluster. By watching the configuration key,
+the component's internal configuration will be automatically updated if any
+changes occur. With cluster-wide data events, since all contexts are
+[Observable](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/util/Observable.java),
+components can watch their configurations for changes that were made in cluster-wide
+data structures. When a component configuration change occurs, each of the component's
+internal input and output ports will *automatically* recognize the change and
+[update their connections](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/port/impl/DefaultOutputPort.java#L83).
+As with networks, components ensure that only one configuration change can
+ever occur at any given time.
 
 ### Communication
 One of the most important features in Vertigo is its messaging system. The

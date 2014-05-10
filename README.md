@@ -1906,7 +1906,7 @@ first starts up, it immediately
 [loads its current context from the cluster](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/component/impl/DefaultComponentCoordinator.java#L100)
 and watches its configuration key for changes. Once its definite context has
 been loaded, the component will open its input and output collectors. Finally,
-once the components input and outputs have been opened, the coordinator will
+once the component's input and output have been opened, the coordinator will
 set the component's status key in the cluster, indicating that the component
 has completed startup. However, even though the component has indicated to the
 network that it has completed startup, the component won't actually start [until
@@ -1954,7 +1954,7 @@ connection, this monotonically increasing number can be used to check the
 order of messages received. Input connections simply store the ID of the
 last message they received. When a new message is received, if the ID is
 not one plus the last seen ID, the input connection will immediately
-[send a *fail* message](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultConnectionInputGroup.java#L90)
+[send a *fail* message](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultInputConnection.java#L218)
 back to the output connection, indicating the last message
 that the input connection received in order. The output connection will then begin
 [resending all stored messages in order](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultOutputConnection.java#L342)

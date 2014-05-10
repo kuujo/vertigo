@@ -108,9 +108,11 @@ Hazelcast 3.x**
    * [Logging messages to output ports](#logging-messages-to-output-ports)
    * [Reading log messages](#reading-log-messages)
 1. [How it works](#how-it-works)
-   * [How Vertigo handles messaging](#how-vertigo-handles-messaging)
-   * [How Vertigo performs deployments](#how-vertigo-performs-deployments)
-   * [How Vertigo coordinates networks](#how-vertigo-coordinates-networks)
+   * [Configurations](#configurations)
+   * [Cluster](#cluster)
+   * [Networks](#networks)
+   * [Components](#components)
+   * [Communication](#communication)
 
 # Getting Started
 This is a brief tutorial that will help guide you through high-level Vertigo
@@ -1811,13 +1813,110 @@ public class LogReader extends ComponentVerticle {
 ```
 
 ## How it works
-This section is a more in-depth examination of how Vertigo deploys and manages
-networks and the communication between them. It is written with the intention
-of assisting users in making practical decisions when working with Vertigo.
+There are four essential components to Vertigo's design:
+* [Configurations](#configurations)
+* [Cluster](#clusters)
+* [Networks](#networks)
+* [Components](#components)
+* [Communication](#communication)
 
-### How Vertigo handles messaging
-All Vertigo messaging is done over the Vert.x event bus. Vertigo messaging is
-designed to provide guaranteed ordering and exactly-once processing semantics.
+This section outlines how each of the components of Vertigo is designed and how
+they interact with one another in order to support advanced features such as
+fault-tolerant deployments, runtime configuration changes, strongly-ordered
+messaging, and exactly-once processing.
+
+### Configurations
+At the core of Vertigo's networks are immutable configurations called contexts.
+Every element of a network has an associated context. When a network is first
+deployed, Vertigo constructs a version-controlled context from the network's
+configuration. This is the point at which Vertigo generates things like unique
+IDs and event bus addresses.
+
+[ContextBuilder](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/impl/ContextBuilder.java)
+
+The context used by each element for setup tasks such as connecting to the
+cluster, creating ports and connections, and registering hooks.
+
+### Cluster
+The Vertigo cluster is the component that manaages deployment, undeployment,
+and monitoring of networks and their components. Vertigo clusters consist of
+one or more special verticles that expose an event bus interface to deploying
+modules, verticles, and complete networks as well as cluster-wide shared data.
+
+The verticle implementation that handles clustering is the
+[ClusterAgent](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java)
+The cluster agent is an extension of the [Xync](http://github.com/kuujo/xync)
+verticle. Remote module and verticle deployments, failover, and cluster-wide
+shared data are provided by the Xync verticle, while network-specific logic
+is implemented in the Vertigo `ClusterAgent`.
+
+The Vertigo cluster makes heavy use of cluster-wide shared data for coordination.
+This is the element of the cluster that supports deploying/undeploying partial
+network configurations. When a network is deployed to the cluster, the cluster
+will first [determine whether a network of the same name is already deployed in
+the cluster](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L267).
+If the network is running in the cluster, the cluster will load the running network's
+configuration and [merge the new configuration with the existing configuration](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L258),
+otherwise the network will be completely deployed.
+
+### Networks
+But the cluster doesn't ever actually deploy any of the network's components.
+Instead, the cluster simply deploys a special verticle called the
+[network manager](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/network/manager/NetworkManager.java)
+which handles deployment/undeployment of components and coordinates startup
+and shutdown of networks. Rather than communicating over the event bus, the
+cluster and the network communicate using data-driven events through shared
+data structures. When the cluster wants to update a network, it [sets the
+network's configuration key](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L333)
+in the cluster. Similarly, the network
+[sets a status key](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L308)
+once the configuration has been installed. This allows Vertigo's network
+configurations to be persisted in the cluster through crashes and thus means
+that networks can easily recover.
+
+Since each network manager always monitors the network's configuration for
+changes, it is automatically notified when the cluster updates the configuration.
+When a network configuration change occurs, the manager will first
+[unset the network's status key](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/network/manager/NetworkManager.java#L427)
+to indicate that the network is not currently completely set up. This gives the
+network's components an opportunity to pause if necessary. Once the status key
+has been unset the network will [undeploy any removed components](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/network/manager/NetworkManager.java#L323)
+and then [deploy any new components](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/network/manager/NetworkManager.java#L354).
+While new components are being added, the manager will also update each component's
+configuration in the cluster. With components also watching their own configurations
+for changes, this allows components to update their internal connections without
+being undeployed, but more on that in the next section.
+
+### Components
+One of the challenges when starting up multiple verticles across a cluster is
+coordinating startup. If a component begins sending messages on a connection
+before the other side is listening, messages will be lost. It is the responsibility
+of the [component coordinator](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/component/impl/DefaultComponentCoordinator.java)
+to notify the cluster once a component has completed startup.
+
+To do so, coordinators use the same mechanism that clusters and network managers
+use to communicate status information - cluster-wide shared data. When a component
+first starts up, it immediately
+[loads its current context from the cluster](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/component/impl/DefaultComponentCoordinator.java#L100)
+and watches its configuration key for changes. Once its definite context has
+been loaded, the component will open its input and output collectors. Finally,
+once the components input and outputs have been opened, the coordinator will
+set the component's status key in the cluster, indicating that the component
+has completed startup. However, even though the component has indicated to the
+network that it has completed startup, the component won't actually start [until
+the network has indicated](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/component/impl/DefaultComponent.java#L148)
+that *all* the active components in the network have completed setup.
+
+### Communication
+One of the most important features in Vertigo is its messaging system. The
+messaging framework has been completely redesigned in Vertigo 0.7 to be modeled
+on ports. All Vertigo's messaging is performed over the Vert.x event bus, and
+the messaging system is designed to provide strongly-ordered and exactly-once
+semantics.
+
+There are numerous components to the Vertigo communcation framework. At the
+highest level, each component has an `InputCollector` and an `OutputCollector`.
+
 Internally, Vertigo uses *streams* to model connections between an output port
 on one set of component instances and an input port on another set of component
 instances. Each output port can contain any number of output streams, and each
@@ -1827,116 +1926,62 @@ address connection between two instances of two components on a single Vertigo
 connection. Connection selectors are used at the stream level to select a set
 of connections to which to send each message for the stream.
 
-(See `net.kuujo.vertigo.io`)
+Vertigo provides strong ordering and exactly-once semantics through a unique,
+high-performance algorithm wherein messages are essentially batched between
+connections. When a message is sent on an output connection, the connection
+tags the message with a monotonically increasing number and the message is
+stored in an internal `TreeMap` with the ID as the key. Since Vertigo ensures
+that each output connection will only ever communicate with a single input
+connection, this monotonically increasing number can be used to check the
+order of messages received. Input connections simply store the ID of the
+last message they received. When a new message is received, if the ID is
+not one plus the last seen ID, the input connection will immediately
+[send a *fail* message](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultConnectionInputGroup.java#L90)
+back to the output connection, indicating the last message
+that the input connection received in order. The output connection will then begin
+[resending all stored messages in order](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultOutputConnection.java#L342)
+after that point. If no messages are received out of order, the input
+connection will periodically
+[send an *ack* message](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultInputConnection.java#L205)
+to the output connection indicating the last message received.
+The output connection will then
+[purge its internal storage](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultOutputConnection.java#L328)
+of all messages before the indicated identifier. This simple algorithm
+allows Vertigo to guarantee strongly-order/exactly-once processing without
+the use of event bus reply handlers.
 
-Vertigo ensures exactly-once semantics by batching messages for each connection.
-Each message that is sent on a single output connection will be tagged with a
-monotonically increasing ID for that connection. The input connection that receives
-messages from the specific output connection will keep track of the last seen
-monotonically increasing ID for the connection. When a new message is received,
-the input connection checks to ensure that it is the next message in the sequence
-according to its ID. If a message is received out of order, the input connection
-immediately sends a message to the output connection indicating the last sequential
-ID that it received. The output connection will then begin resending messages from
-that point. Even if a message is not received out of order, input connections will
-periodically send a message to their corresponding output connection notifying it
-of the last message received. This essentially acts as a *ack* for a batch of
-messages and allows the output connection to clear its output queue.
+The Vertigo communication framework also supports a couple of different
+forms of batching - *batches* and *groups*.
 
-In the future, this batching algorithm will be the basis for state persistence.
-By coordinating batches between multiple input connections, components can
-checkpoint their state after each batch and notify data sources that it's safe
-to clear persisted messages.
+Batches are unique collections of messages *emitted* from a given component
+instance. Batches are represented on *all* streams within a given port
+during their lifespan. Alternatively, groups are collections of messages
+*received* by a given component. That is, groups relate only to a single
+stream on a given output port. Additionally, each output port may only
+have a single batch open at any given time whereas multiple groups can
+be open at any given time.
 
-### How Vertigo performs deployments
-Vertigo provides two mechanisms for deployment - local and cluster. The *local*
-deployment method simply uses the Vert.x `Container` for deployments. However, Vertigo's
-internal deployment API is designed in such a way that each deployment is *assigned*
-a unique ID rather than using Vert.x's internal deployment IDs. This allows Vertigo
-to reference and evaluate deployments after failures. In the case of local deployments,
-deployment information is stored in Vert.x's `SharedData` structures.
+When a batch is created, since batches relate to all connections in all
+streams, *each output stream* will send a `startBatch` message to the other
+side of [every connection](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/stream/impl/DefaultOutputStream.java#L139).
+However, the batch is not then immediately created. Instead, the other side of
+the connection will wait to respond to the start message
+[until a message handler has actually been registered](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultConnectionInputBatch.java#L93)
+for the batch. This creates a brief paused between the time the batch is created
+and the time the batch is started, but it also ensures that no messages can be
+sent on the batch until a handler is ready to receive them.
 
-Vertigo also supports clustered deployments using Xync. Xync exposes user-defined
-deployment IDs in its own API.
+Batches keep track of the number of groups that are created within them. When
+a batch is ended, it will not actually send an `endBatch` message to the other
+side of the connection until all its child groups (if any) have been completed.
 
-(See `net.kuujo.vertigo.cluster.Cluster` and `net.kuujo.vertigo.cluster.ClusterManager`)
-
-When Vertigo begins deploying a network, it first determines the current cluster scope.
-If the current Vert.x instance is a Hazelcast clustered instance, Vertigo will perform
-all coordination through the Hazelcast cluster. Once the cluster scope is determined,
-Vertigo will check the cluster's shard data structures to determine whether the network
-is already deployed. If the network is already deployed then Vertigo will load the
-network's cluster scope - which may differ from the actual cluster scope - and deploy
-the network's manager. Actual component deployments are performed by the manager.
-For more information on the network manager and coordination see
-[how vertigo coordinates networks](#how-vertigo-coordinates-networks).
-
-### How Vertigo coordinates networks
-Vertigo uses a very unique and flexible system for coordinating network deployment,
-startup, and configuration. The Vertigo coordination system is built on a distributed
-observer implementation. Vertigo will always use the highest cluster scope available
-for coordination. That is, if the current Vert.x cluster is a Hazelcast cluster then Vertigo
-will use Hazelcast for coordination. This ensures that Vertigo can coordinate
-all networks within a cluster, even if they are deployed as local networks.
-
-The distributed observer pattern is implemented as map events for both Vert.x `SharedData`
-and Hazelcast-based maps. Events for any given key in a Vertigo cluster can be
-watched by simply registering an event bus address to which to send events. The Vertigo
-`NetworkManager` and components both use this mechanism for coordination with one another.
-
-(See `net.kuujo.vertigo.data.WatchableAsyncMap`)
-
-The `NetworkManager` is a special verticle that is tasked with starting, configuring,
-and stopping a single network and its components. When a network is deployed, Vertigo
-simply deploys a network manager and sets the network configuration in the cluster. The
-network manager completes the rest of the process.
-
-When the network manager first starts up, it registers to receive events for the
-network's configuration key in the cluster. Once the key has been set, the manager will
-be notified of the configuration change through the event system, load the network
-configuration, and deploy the necessary components.
-
-(See `net.kuujo.vertigo.network.manager.NetworkManager`)
-
-This is the mechanism that makes live network configurations possible in Vertigo.
-Since the network manager already receives notifications of configuration changes for
-the network, all we need to do is set the network's configuration key to a new configuration
-and the network will be automatically notified and updated asynchronously.
-
-But deployment is only one part of the equation. Often times network reconfigurations
-may consist only of new connections between components. For this reason, each Vertigo
-component also watches its own configuration key in the cluster. When the network
-configuration changes, the network manager will update each component's key in the
-cluster, causing running components to be notified of their new configurations.
-Whenever such a configuration is detected by a component, the component will automatically
-update its internal input and output connections asynchronously.
-
-(See `net.kuujo.vertigo.component.ComponentCoordinator`)
-
-Finally, cluster keys are used to coordinate startup, pausing, resuming, and shutdown
-of all components within a network. When a component is deployed and completes setting
-up its input and output connections, it will set a special status key in the cluster.
-The network manager watches status keys for each component in the network. Once the
-status keys have been set for all components in the cluster, the network will be
-considered ready to start. The network manager will then set a special network-wide
-status key which each component in turn watches. Once the components see the network
-status key has been set they will finish startup and call the `start()` method.
-
-During configuration changes, the network manager will unset the network-wide status
-key, causing components to optionally pause during the configuration change.
-
-It's important to note that each of these updates is essentially atomic. The network
-manager, components, and connections each use internal queues to enqueue and process
-updates atomically in the order in which they occur. This has practically no impact on
-performance since configuration changes should be rare and it ensures that rapid configuration
-changes (through an `ActiveNetwork` object for instance) do not cause race conditions.
-
-One of the most important properties of this coordination system is that it is completely
-fault-tolerant. Since configurations are stored in the cluster, even if a component fails
-it can reload its last existing configuration from the cluster once failover occurs.
-If the network manager fails, the rest of the network can continue to run as normal.
-Only configuration changes will be unavailable. Once the manager comes back online, it
-will fetch the last known configuration for the network and continue normal operation.
+When a group is created, each output stream [selects a single connection with
+its internal selector](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/stream/impl/DefaultOutputStream.java#L162).
+As with batches, groups will not actually complete creation
+[until a message handler has actually be registered](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/io/connection/impl/DefaultConnectionInputGroup.java#L90)
+on the other side of the connection. And like batches, groups keep track of the
+child groups created within them and cannot be successfully ended until all
+child groups have been ended.
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 

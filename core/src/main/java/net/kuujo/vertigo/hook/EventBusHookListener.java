@@ -18,6 +18,7 @@ package net.kuujo.vertigo.hook;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -32,19 +33,71 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class EventBusHookListener {
-  private final String componentAddress;
+  private final String address;
   private final EventBus eventBus;
+  private Handler<InstanceContext> startHandler;
+  @SuppressWarnings("rawtypes")
+  private Handler sendHandler;
+  @SuppressWarnings("rawtypes")
+  private Handler receiveHandler;
+  private Handler<InstanceContext> stopHandler;
 
-  public EventBusHookListener(String componentAddress, EventBus eventBus) {
-    this.componentAddress = componentAddress;
+  private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public void handle(Message<JsonObject> message) {
+      String event = message.body().getString("event");
+      if (event != null) {
+        switch (event) {
+          case "start":
+            if (startHandler != null) {
+              startHandler.handle(DefaultInstanceContext.fromJson(message.body().getObject("context")));
+            }
+            break;
+          case "send":
+            if (sendHandler != null) {
+              sendHandler.handle(message.body().getValue("message"));
+            }
+            break;
+          case "receive":
+            if (receiveHandler != null) {
+              receiveHandler.handle(message.body().getValue("message"));
+            }
+            break;
+          case "stop":
+            if (stopHandler != null) {
+              stopHandler.handle(DefaultInstanceContext.fromJson(message.body().getObject("context")));
+            }
+            break;
+        }
+      }
+    }
+  };
+
+  public EventBusHookListener(String address, EventBus eventBus) {
+    this.address = address;
     this.eventBus = eventBus;
-    registerHandler();
   }
 
   /**
-   * Registers the event bus handler.
+   * Starts the hook listener, registering a handler on the event bus.
+   *
+   * @return The hook listener.
    */
-  private void registerHandler() {
+  public EventBusHookListener start() {
+    return start(null);
+  }
+
+  /**
+   * Starts the hook listener, registering a handler on the event bus.
+   *
+   * @param doneHandler An asynchronous handler to be called once the listener
+   *        handler has been registered on the event bus.
+   * @return The hook listener.
+   */
+  public EventBusHookListener start(Handler<AsyncResult<Void>> doneHandler) {
+    eventBus.registerHandler(address, messageHandler, doneHandler);
+    return this;
   }
 
   /**
@@ -56,15 +109,7 @@ public class EventBusHookListener {
    *   The called listener instance.
    */
   public EventBusHookListener startHandler(final Handler<InstanceContext> startHandler) {
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.start", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          startHandler.handle(DefaultInstanceContext.fromJson(body));
-        }
-      }
-    });
+    this.startHandler = startHandler;
     return this;
   }
 
@@ -78,13 +123,7 @@ public class EventBusHookListener {
    */
   @SuppressWarnings("rawtypes")
   public EventBusHookListener receiveHandler(final Handler receiveHandler) {
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.receive", componentAddress), new Handler<Message<Object>>() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public void handle(Message<Object> message) {
-        receiveHandler.handle(message.body());
-      }
-    });
+    this.receiveHandler = receiveHandler;
     return this;
   }
 
@@ -97,14 +136,8 @@ public class EventBusHookListener {
    *   The called listener instance.
    */
   @SuppressWarnings("rawtypes")
-  public EventBusHookListener emitHandler(final Handler sendHandler) {
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.emit", componentAddress), new Handler<Message<Object>>() {
-      @Override
-      @SuppressWarnings("unchecked")
-      public void handle(Message<Object> message) {
-        sendHandler.handle(message.body());
-      }
-    });
+  public EventBusHookListener sendHandler(final Handler sendHandler) {
+    this.sendHandler = sendHandler;
     return this;
   }
 
@@ -117,15 +150,7 @@ public class EventBusHookListener {
    *   The called listener instance.
    */
   public EventBusHookListener stopHandler(final Handler<InstanceContext> stopHandler) {
-    eventBus.registerHandler(String.format("vertigo.hooks.%s.stop", componentAddress), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> message) {
-        JsonObject body = message.body();
-        if (body != null) {
-          stopHandler.handle(DefaultInstanceContext.fromJson(body));
-        }
-      }
-    });
+    this.stopHandler = stopHandler;
     return this;
   }
 

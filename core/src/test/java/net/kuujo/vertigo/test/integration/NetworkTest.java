@@ -29,7 +29,10 @@ import java.util.UUID;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.hook.ComponentHook;
+import net.kuujo.vertigo.hook.EventBusHook;
+import net.kuujo.vertigo.hook.EventBusHookListener;
 import net.kuujo.vertigo.hook.IOHook;
 import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.hook.OutputHook;
@@ -2595,6 +2598,135 @@ public class NetworkTest extends VertigoTestVerticle {
             } else {
               assertTrue(result.succeeded());
             }
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testEventBusHookStart() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        final ClusterManager cluster = result.result();
+        final EventBusHookListener listener = new EventBusHookListener("test-hook", vertx.eventBus());
+        listener.startHandler(new Handler<InstanceContext>() {
+          @Override
+          public void handle(InstanceContext context) {
+            assertEquals("sender", context.component().name());
+            testComplete();
+          }
+        });
+
+        listener.start(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+
+            NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+            network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new EventBusHook("test-hook"));
+            network.addComponent("receiver", TestSimpleReceiver.class.getName());
+            network.createConnection("sender", "out", "receiver", "in");
+
+            cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                if (result.failed()) {
+                  assertTrue(result.cause().getMessage(), result.succeeded());
+                } else {
+                  assertTrue(result.succeeded());
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testEventBusHookSend() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        final ClusterManager cluster = result.result();
+        final EventBusHookListener listener = new EventBusHookListener("test-hook", vertx.eventBus());
+        listener.sendHandler(new Handler<String>() {
+          @Override
+          public void handle(String message) {
+            assertEquals("Hello world!", message);
+            testComplete();
+          }
+        });
+
+        listener.start(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+
+            NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+            network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new EventBusHook("test-hook"));
+            network.addComponent("receiver", TestSimpleReceiver.class.getName());
+            network.createConnection("sender", "out", "receiver", "in");
+
+            cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                if (result.failed()) {
+                  assertTrue(result.cause().getMessage(), result.succeeded());
+                } else {
+                  assertTrue(result.succeeded());
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testEventBusHookReceive() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+      @Override
+      public void handle(AsyncResult<ClusterManager> result) {
+        assertTrue(result.succeeded());
+        final ClusterManager cluster = result.result();
+        final EventBusHookListener listener = new EventBusHookListener("test-hook", vertx.eventBus());
+        listener.receiveHandler(new Handler<String>() {
+          @Override
+          public void handle(String message) {
+            assertEquals("Hello world!", message);
+            testComplete();
+          }
+        });
+
+        listener.start(new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            assertTrue(result.succeeded());
+
+            NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+            network.addComponent("sender", TestSimpleSender.class.getName());
+            network.addComponent("receiver", TestSimpleReceiver.class.getName()).addHook(new EventBusHook("test-hook"));
+            network.createConnection("sender", "out", "receiver", "in");
+
+            cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                if (result.failed()) {
+                  assertTrue(result.cause().getMessage(), result.succeeded());
+                } else {
+                  assertTrue(result.succeeded());
+                }
+              }
+            });
           }
         });
       }

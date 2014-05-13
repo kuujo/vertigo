@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.batch.impl.BaseOutputBatch;
@@ -66,6 +67,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     this.vertx = vertx;
     this.context = context;
     this.hooks = context.hooks();
+    for (Object hook : context.output().instance().component().hooks()) {
+      hooks.add((ComponentHook) hook);
+    }
     context.registerObserver(this);
   }
 

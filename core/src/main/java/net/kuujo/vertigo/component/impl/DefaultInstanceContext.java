@@ -100,12 +100,12 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
 
   @Override
   public InputContext input() {
-    return input;
+    return ((DefaultInputContext) input).setInstanceContext(this);
   }
 
   @Override
   public OutputContext output() {
-    return output;
+    return ((DefaultOutputContext) output).setInstanceContext(this);
   }
 
   @Override

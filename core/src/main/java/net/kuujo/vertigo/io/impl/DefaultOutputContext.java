@@ -76,6 +76,9 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
    * @return A collection of output port contexts.
    */
   public Collection<OutputPortContext> ports() {
+    for (OutputPortContext port : ports) {
+      ((DefaultOutputPortContext) port).setOutput(this);
+    }
     return ports;
   }
 

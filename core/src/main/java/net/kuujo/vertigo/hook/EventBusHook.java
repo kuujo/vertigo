@@ -20,46 +20,62 @@ import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Event bus based hook implementation.<p>
  *
- * This hook publishes events to the event bus. Messages are published using the
- * string format "vertigo.hooks.%s" where the string argument is the full
- * component address. If the method argument is a component, the component
- * context will be provided. If the method argument is a string ID, the ID
- * will be provided.
+ * This hook publishes events to the event bus. Messages are published to the
+ * given address. If no address is provided then messages will be published
+ * to the internal address of the component to which the hook is attached.<p>
+ *
+ * Messages are formatted as {@link JsonObject} instances. Each message will have
+ * an <code>event</code> key which indicates the event that occurred. Additional
+ * keys depend on the event.<p>
+ *
+ * You can use an {@link EventBusHookListener} to listen for messages from an
+ * <code>EventBusHook</code>. This listener will handle parsing messages and
+ * calling event handlers.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class EventBusHook implements ComponentHook {
   @JsonIgnore private InstanceContext context;
   @JsonIgnore private EventBus eventBus;
-  @JsonIgnore private String address;
+  private String address;
+
+  public EventBusHook() {
+  }
+
+  public EventBusHook(String address) {
+    this.address = address;
+  }
 
   @Override
   public void handleStart(Component component) {
     this.eventBus = component.vertx().eventBus();
     this.context = component.context();
-    this.address = component.context().component().address();
-    eventBus.publish(String.format("vertigo.hooks.%s.start", address), DefaultInstanceContext.toJson(context));
+    if (this.address == null) {
+      this.address = component.context().component().address();
+    }
+    eventBus.publish(address, new JsonObject().putString("event", "start").putObject("context", DefaultInstanceContext.toJson(context)));
   }
 
   @Override
   public void handleSend(Object message) {
-    eventBus.publish(String.format("vertigo.hooks.%s.send", address), message);
+    eventBus.publish(address, new JsonObject().putString("event", "send").putValue("message", message));
   }
 
   @Override
   public void handleReceive(Object message) {
-    eventBus.publish(String.format("vertigo.hooks.%s.receive", address), message);
+    eventBus.publish(address, new JsonObject().putString("event", "receive").putValue("message", message));
   }
 
   @Override
   public void handleStop(Component subject) {
-    eventBus.publish(String.format("vertigo.hooks.%s.stop", address), DefaultInstanceContext.toJson(context));
+    eventBus.publish(address, new JsonObject().putString("event", "stop").putObject("context", DefaultInstanceContext.toJson(context)));
   }
 
 }

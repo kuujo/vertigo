@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.io.batch.InputBatch;
 import net.kuujo.vertigo.io.connection.InputConnection;
@@ -67,6 +68,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
     this.vertx = vertx;
     this.context = context;
     this.hooks = context.hooks();
+    for (Object hook : context.input().instance().component().hooks()) {
+      hooks.add((ComponentHook) hook);
+    }
     context.registerObserver(this);
   }
 

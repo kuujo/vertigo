@@ -30,7 +30,6 @@ import net.kuujo.vertigo.component.impl.DefaultComponentContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultModuleContext;
 import net.kuujo.vertigo.component.impl.DefaultVerticleContext;
-import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.hook.IOHook;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
 import net.kuujo.vertigo.io.connection.impl.DefaultInputConnectionContext;
@@ -169,9 +168,6 @@ public final class ContextBuilder {
             DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) sourceInstance.output())
                 .addPort(port).build();
             output = DefaultOutputPortContext.Builder.newBuilder(port);
-            for (ComponentHook hook : source.hooks()) {
-              output.addHook(hook);
-            }
           }
 
           // Set up an output stream from the output port.
@@ -199,9 +195,6 @@ public final class ContextBuilder {
               DefaultInputContext.Builder.newBuilder((DefaultInputContext) targetInstance.input())
                   .addPort(port).build();
               input = DefaultInputPortContext.Builder.newBuilder(port);
-              for (ComponentHook hook : target.hooks()) {
-                input.addHook(hook);
-              }
             }
 
             // Add an input connection to the input port.

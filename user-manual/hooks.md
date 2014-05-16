@@ -21,7 +21,8 @@ can simply implement the relevant hook interface and Vertigo will handle seriali
 of basic fields automatically. You can use Jackson annotations to ignore certain
 fields or provide custom serialization as necessary.
 
-### InputHook
+## InputHook
+
 Input hooks can be used to hook into message events related to the target port
 on a specific connection within a network configuration. Input hooks are added
 to the `target` element of a `ConnectionConfig`.
@@ -78,7 +79,8 @@ TODO
 </div>
 </div>
 
-### OutputHook
+## OutputHook
+
 Output hooks can be used to hook into message events related to the source port
 on a specific connection within a network configuration. Output hooks are added
 to the `source` element of a `ConnectionConfig`.
@@ -135,7 +137,8 @@ TODO
 </div>
 </div>
 
-### IOHook
+## IOHook
+
 I/O hooks are a combination of the `InputHook` and `OutputHook` interfaces. When an
 I/O hook is added to a connection, its methods will be called when an event occurs
 on either side of the connection. For the sending side of the connection, the hook
@@ -192,7 +195,8 @@ TODO
 </div>
 </div>
 
-### ComponentHook
+## ComponentHook
+
 Components hooks are component-level hooks that implement both the `InputHook`
 and `OutputHook` interfaces along with some additional component-level hook methods.
 Since component hooks are added at the component level, the `handleSend` and

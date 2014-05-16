@@ -23,7 +23,8 @@ The `PortLogger` logs to ports named for each logger method:
 * `debug`
 * `trace`
 
-### Logging messages to output ports
+## Logging messages to output ports
+
 The `PortLogger` simple implements the standard Vert.x `Logger` interface.
 So, to log a message to an output port simply call the appropriate log method:
 
@@ -52,7 +53,8 @@ TODO
 </div>
 </div>
 
-### Reading log messages
+## Reading log messages
+
 To listen for log messages from a component, simply add a connection to a network
 configuration listening on the necessary output port. For instance, you could
 aggregate and count log messages from one component by connecting each log port to

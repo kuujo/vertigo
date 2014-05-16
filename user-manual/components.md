@@ -17,7 +17,8 @@ is a "black box" that receives input on named input ports and sends output to na
 ports. By their nature, components do not know from where they received messages or to where
 they're sending messages.
 
-### Creating a component
+## Creating a component
+
 To create a Java component, extend the base `ComponentVerticle` class.
 
 {::options parse_block_html="true" /}
@@ -50,7 +51,8 @@ that synchronizes with other components in the network at startup and provides V
 specific APIs. Once the component has completed startup it will call the `start()` method
 just like any other verticle.
 
-### The elements of a Vertigo component
+## The elements of a Vertigo component
+
 The `ComponentVerticle` base class provides the following additional `protected` fields:
 
 * `vertigo` - a `Vertigo` instance

@@ -24,7 +24,8 @@ they interact with one another in order to support advanced features such as
 fault-tolerant deployments, runtime configuration changes, strongly-ordered
 messaging, and exactly-once processing.
 
-### Configurations
+## Configurations
+
 At the core of Vertigo's networks are immutable configurations called contexts.
 Every element of a network has an associated context. When a network is first
 deployed, Vertigo constructs a version-controlled context from the network's
@@ -36,7 +37,8 @@ IDs and event bus addresses.
 The context used by each element for setup tasks such as connecting to the
 cluster, creating ports and connections, and registering hooks.
 
-### Cluster
+## Cluster
+
 The Vertigo cluster is the component that manages deployment, undeployment,
 and monitoring of networks and their components. Vertigo clusters consist of
 one or more special verticles that expose an event bus interface to deploying
@@ -58,7 +60,8 @@ If the network is running in the cluster, the cluster will load the running netw
 configuration and [merge the new configuration with the existing configuration](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java#L258),
 otherwise the network will be completely deployed.
 
-### Networks
+## Networks
+
 But the cluster doesn't ever actually deploy any of the network's components.
 Instead, the cluster simply deploys a special verticle called the
 [network manager](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/network/manager/NetworkManager.java)
@@ -92,7 +95,8 @@ being undeployed, but more on that in the next section. It's important to note t
 that ensures that only one configuration change can ever be processed at any given
 time.
 
-### Components
+## Components
+
 One of the challenges when starting up multiple verticles across a cluster is
 coordinating startup. If a component begins sending messages on a connection
 before the other side is listening, messages will be lost. It is the responsibility
@@ -124,7 +128,8 @@ internal input and output ports will *automatically* recognize the change and
 As with networks, components ensure that only one configuration change can
 ever occur at any given time.
 
-### Communication
+## Communication
+
 One of the most important features in Vertigo is its messaging system. The
 messaging framework has been completely redesigned in Vertigo 0.7 to be modeled
 on ports. All Vertigo's messaging is performed over the Vert.x event bus, and

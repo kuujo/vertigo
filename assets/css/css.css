@@ -41,8 +41,8 @@ body > .container {
   padding-left: 15px;
 }
 
-code {
-  font-size: 80%;
+pre > code {
+  font-size: 12px;
 }
 
 a {
@@ -185,12 +185,12 @@ a {
 
 #content h2 {
   font-size: 29px;
-  color: #E04655;
+  color: #7146B2;
 }
 
 #content h3 {
   font-size: 23px;
-  color: #7A4FBA;
+  color: #7146B2;
 }
 
 #content h4 {

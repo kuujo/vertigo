@@ -24,7 +24,8 @@ Vert.x instance is not clustered then data structures will be backed by Vert.x
 The cluster API is available in all components via the `cluster` field of the
 `ComponentVerticle`.
 
-### AsyncMap
+## AsyncMap
+
 The `AsyncMap` interface closely mimics the interface of the Java `Map` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -81,7 +82,8 @@ the Vert.x `ConcurrentSharedMap`. If the Vert.x instance is clustered then maps
 will be backed by Hazelcast maps that are accessed over the event bus in a Xync
 worker verticle to prevent blocking the event loop.
 
-### AsyncSet
+## AsyncSet
+
 The `AsyncSet` interface closely mimics the interface of the Java `Set` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -128,7 +130,8 @@ the Vert.x `SharedData` sets. If the Vert.x instance is clustered then sets
 will be backed by Hazelcast sets that are accessed over the event bus in a Xync
 worker verticle to prevent blocking the event loop.
 
-### AsyncList
+## AsyncList
+
 The `AsyncList` interface closely mimics the interface of the Java `List` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -175,7 +178,8 @@ a custom list implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 Vert.x instance is clustered then lists will be backed by Hazelcast lists that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
-### AsyncQueue
+## AsyncQueue
+
 The `AsyncQueue` interface closely mimics the interface of the Java `Queue` interface,
 but uses `Handler<AsyncResult<T>>` rather than return values.
 
@@ -232,7 +236,8 @@ a custom queue implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 Vert.x instance is clustered then queues will be backed by Hazelcast queues that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
-### AsyncCounter
+## AsyncCounter
+
 The `AsyncCounter` facilitates generating cluster-wide counters.
 
 {::options parse_block_html="true" /}
@@ -278,7 +283,8 @@ a custom counter implementation on top of the Vert.x `ConcurrentSharedMap`. If t
 Vert.x instance is clustered then counters will be backed by Hazelcast maps that are
 accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
 
-### Accessing shared data over the event bus
+## Accessing shared data over the event bus
+
 As with network and module/verticle deployments, cluster-wide shared data structures
 can be accessed directly over the event bus. Data actions relate directly to their
 API methods. Each shared data message must contain a `type` and the `name` of the

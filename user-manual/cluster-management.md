@@ -19,14 +19,16 @@ Vertigo clusters support remote deployments over the event bus through
 [Xync](http://github.com/kuujo/xync). Users can use the Vertigo cluster API to
 remotely deploy Vert.x modules and verticles from Vertigo components.
 
-### Accessing the cluster from within a component
+## Accessing the cluster from within a component
+
 The Xync cluster is made available to users through the `cluster` field within
 the `ComponentVerticle` class. The `cluster` within any given component will always
 reference the Vertigo cluster to which the component's parent network belongs. This
 means that deployments made through the `cluster` will be separated in the same
 way that networks are separated from each other across clusters.
 
-### Deploying modules and verticles to the cluster
+## Deploying modules and verticles to the cluster
+
 The Vertigo cluster supports remote deployment of modules and verticles over the
 event bus. The `Cluster` API wraps the event bus API and mimics the core Vert.x
 `Container` interface. To deploy a module or verticle simply call the appropriate
@@ -89,7 +91,8 @@ The internal component cluster is the same cluster to which the component's pare
 belongs. That means that deployment IDs are unique to each cluster. You can deploy
 a module with the deployment ID `foo` in two separate clusters at the same time.
 
-### Undeploying modules and verticles from the cluster
+## Undeploying modules and verticles from the cluster
+
 To undeploy a module or verticle from the cluster call the `undeployModule` or
 `undeployVerticle` method, using the user-defined deployment ID.
 
@@ -113,7 +116,8 @@ TODO
 </div>
 </div>
 
-### Deploying modules and verticles with HA
+## Deploying modules and verticles with HA
+
 Like Vert.x clusters, the Vertigo clusters supports HA deployments. By default, modules
 and verticles are not deployed with HA enabled.
 
@@ -141,7 +145,8 @@ The last argument in the arguments list indicates whether to deploy the deployme
 with HA. When a Vertigo cluster node fails, any deployments deployed with HA enabled
 on that node will be taken over by another node within the same group within the cluster.
 
-### Checking if a module or verticle is deployed
+## Checking if a module or verticle is deployed
+
 Since deployment IDs in Vertigo clusters are user-defined, users can determine whether
 a module or verticle is already deployed with a specific deployment ID. To check if
 a deployment is already deployed in the cluster use the `isDeployed` method.
@@ -191,7 +196,8 @@ to the cluster, specifying the `module` or `verticle` as the check `type`.
 If the request is successful, the cluster will reply with a `result` containing a
 boolean indicating whether the deployment ID exists in the cluster.
 
-### Working with HA groups
+## Working with HA groups
+
 Vertigo's HA grouping mechanism is intentionally designed to mimic the core HA behavior.
 Each Vertigo node can be assigned to a specific HA group, and when a node fails its HA
 deployments will be taken over by another node in the same group.

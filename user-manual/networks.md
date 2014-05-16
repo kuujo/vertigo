@@ -26,7 +26,8 @@ Networks are made up of any number of components which can be arbitrarily connec
 by input and output ports. A Vertigo component is simple a Vert.x module or verticle,
 and can thus have any number of instances associated with it.
 
-### Creating a network
+## Creating a network
+
 To create a new network, create a new `Vertigo` instance and call the `createNetwork` method.
 
 {::options parse_block_html="true" /}
@@ -54,7 +55,8 @@ All Vertigo networks have an explicit, unique name. This name is very important 
 Vertigo as it can be used to reference networks from anywhere within a Vert.x cluster,
 but more on that later.
 
-### Adding components to a network
+## Adding components to a network
+
 To add a component to the network, use one of the `addVerticle` or `addModule` methods.
 
 {::options parse_block_html="true" /}
@@ -166,7 +168,8 @@ most important of these options is the `group` option. When deploying networks w
 a Vert.x cluster, the `group` indicates the HA group to which to deploy the module or
 verticle.
 
-### Creating connections between components
+## Creating connections between components
+
 A set of components is not a network until connections are created between those
 components. Vertigo uses a concept of *ports* to abstract input and output from
 each component instance. When creating connections between components, you must
@@ -207,7 +210,8 @@ so objects may not necessarily be available within the network configuration
 when a partial configuration is created. More on partial network deployment
 and runtime configuration changes in the [deployment](#deployment) section.
 
-### Routing messages between multiple component instances
+## Routing messages between multiple component instances
+
 Just as with Vert.x verticles and modules, each Vertigo component can support
 any number of instances. But connections are created between components and
 not component instances. This means that a single connection can reference
@@ -238,7 +242,8 @@ on a connection.
 * `allSelect()` - sets an all selector on the connection
 * `customSelect(Selector selector)` - sets a custom selector on the connection
 
-### Creating networks from JSON
+## Creating networks from JSON
+
 Vertigo supports creating networks from json configurations. To create a network
 from json call the `Vertigo.createNetwork(JsonObject)` method.
 

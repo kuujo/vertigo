@@ -34,7 +34,8 @@ of messages that can be nested.
 
 For more information on messaging see [how Vertigo handles messaging](#how-vertigo-handles-messaging)
 
-### Sending messages on an output port
+## Sending messages on an output port
+
 To reference an output port, use the `output.port(String name)` method.
 
 {::options parse_block_html="true" /}
@@ -89,7 +90,8 @@ network configuration.
 Output ports also support custom message serialization.
 See [providing serializeable messages](#providing-serializeable-messages)
 
-### Receiving messages on an input port
+## Receiving messages on an input port
+
 Input ports are referenced in the same was as output ports.
 
 {::options parse_block_html="true" /}
@@ -148,7 +150,8 @@ Note that Vertigo messages arrive in plain format and not in any sort of `Messag
 wrapper. This is because Vertigo messages are inherently uni-directional, and message
 acking is handled internally.
 
-### Working with message groups
+## Working with message groups
+
 Vertigo provides a mechanism for logically grouping messages appropriately
 named *groups*. Groups are named logical collections of messages that are strongly
 ordered by name. Before any given group can stat, each of the groups of the same
@@ -431,7 +434,8 @@ TODO
 </div>
 </div>
 
-### Working with message batches
+## Working with message batches
+
 Batches are similar to groups in that they represent collections of messages.
 Batches even use a similar API to groups. However, batches differ from groups
 in that they represent collections of output to all connections. In other words,
@@ -626,7 +630,8 @@ TODO
 </div>
 </div>
 
-### Providing serializable messages
+## Providing serializable messages
+
 In addition to types supported by the Vert.x event bus, the Vertigo messaging
 framework supports any `Serializable` Java object.
 

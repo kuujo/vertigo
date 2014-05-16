@@ -28,7 +28,8 @@ can be deployed either within a single, non-clustered Vert.x instance or across 
 Vert.x cluster. Clusters provide a logical separation between different applications
 within a Vert.x cluster and provide additional features such as failover.
 
-### Starting a cluster from the command line
+## Starting a cluster from the command line
+
 Vertigo provides a special Vert.x module for starting a Vertigo cluster agent. To
 start a cluster node simply start the `net.kuujo~vertigo-cluster~0.7.0-beta2` module.
 
@@ -44,7 +45,8 @@ The cluster agent accepts a few important configuration options:
 * `address` - the event bus address of the node. Defaults to a `UUID` based string.
 * `quorum` - the HA quorum size. See the Vert.x HA documentation on quorums.
 
-### Starting a cluster programmatically
+## Starting a cluster programmatically
+
 Vertigo also provides an API for deploying clusters or individual nodes through the
 Vert.x `Container`.
 
@@ -112,7 +114,8 @@ Users should use this API rather than deploying the `ClusterAgent` verticle dire
 because the cluster agent is pluggable. To override the default cluster agent
 set the system property `net.kuujo.vertigo.cluster`.
 
-### Referencing a cluster programmatically
+## Referencing a cluster programmatically
+
 Network deployments are performed through the `ClusterManager` API. To get a
 `ClusterManager` instance for a running Vertigo cluster call the `getCluster` method
 
@@ -136,7 +139,8 @@ TODO
 </div>
 </div>
 
-### Accessing a cluster through the event bus
+## Accessing a cluster through the event bus
+
 The cluster system is built on worker verticles that are accessed over the event bus.
 Cluster agents expose an event bus API that can be used as an alternative to the
 Java API. Since all Java interface methods simply wrap the event bus API, you can
@@ -190,7 +194,8 @@ Each message must contain an `action` indicating the action to perform. Each API
 method has an action associated with it, and the actions and their arguments will
 be outline in the following documentation.
 
-### Deploying a network
+## Deploying a network
+
 To deploy a network use the `deployNetwork` methods on the `ClusterManager` for
 the cluster to which the network should be deployed.
 
@@ -285,7 +290,8 @@ TODO
 </div>
 </div>
 
-### Deploying a network from JSON
+## Deploying a network from JSON
+
 Networks can be deployed programmatically from JSON configurations. To deploy
 a network from JSON configuration simply pass the `JsonObject` configuration
 in place of the `NetworkConfig`
@@ -367,7 +373,8 @@ TODO
 For information on the JSON configuration format see
 [creating networks from json](#creating-networks-from-json)
 
-### Undeploying a network
+## Undeploying a network
+
 To undeploy a *complete* network from a cluster call the `undeployNetwork`
 method, passing the network name as the first argument.
 
@@ -453,7 +460,8 @@ TODO
 </div>
 </div>
 
-### Checking if a network is deployed
+## Checking if a network is deployed
+
 To check if a network is deployed in the cluster use the `isDeployed` method.
 
 {::options parse_block_html="true" /}
@@ -531,7 +539,8 @@ TODO
 </div>
 </div>
 
-### Listing networks running in a cluster
+## Listing networks running in a cluster
+
 To list the networks running in a cluster call the `getNetworks` method.
 
 {::options parse_block_html="true" /}
@@ -622,7 +631,8 @@ TODO
 </div>
 </div>
 
-### Deploying a bare network
+## Deploying a bare network
+
 Vertigo networks can be reconfigured after deployment, so sometimes it's useful
 to deploy an empty network with no components or connections.
 
@@ -687,7 +697,8 @@ TODO
 </div>
 </div>
 
-### Reconfiguring a network
+## Reconfiguring a network
+
 Vertigo provides several methods to reconfigure a network after it has been
 deployed. After a network is deployed users can add or remove components or
 connections from the network. To reconfigure a running network simply deploy
@@ -743,7 +754,8 @@ configuration.
 Just as networks can be deployed and undeployed over the event bus, they can also
 be reconfigured by sending `deploy` and `undeploy` messages to the cluster.
 
-### Working with active networks
+## Working with active networks
+
 Vertigo provides a special API for reconfiguring running networks known as the
 *active network*. The `ActiveNetwork` API mimics the network configuration API,
 except changes to an `ActiveNetwork` instance will be immediately deployed to
@@ -829,7 +841,8 @@ TODO
 The active network's internal `NetworkConfig` will be automatically updated when
 the running network configuration is updated.
 
-### Deploying a network from the command line
+## Deploying a network from the command line
+
 Vertigo provides a special facility for deploying networks from json configuration files.
 This feature is implemented as a Vert.x language module, so the network deployer must
 be first added to your `langs.properties` file.

@@ -45,6 +45,10 @@ code {
   font-size: 80%;
 }
 
+a {
+  color: #8B61CB;
+}
+
 
 /* JUMBOTRON CONTENT
 -------------------------------------------------- */
@@ -169,6 +173,32 @@ code {
 
 #lang-tabs {
   margin-bottom: 15px;
+}
+
+#content {
+  padding-bottom: 110px;   /* Height of the footer element or greater */
+}
+
+#content > h1, h2, h3, h4, h5 {
+  font-weight: 400;
+}
+
+#content h2 {
+  font-size: 29px;
+  color: #f04c5c;
+}
+
+#content h3 {
+  font-size: 23px;
+  color: #7A4FBA;
+}
+
+#content h4 {
+/*  color: #d14;*/
+}
+
+#content h5 {
+  /*  color: #d14;*/
 }
 
 /* RESPONSIVE CSS

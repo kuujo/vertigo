@@ -1,0 +1,10 @@
+# Jekyll
+permalink: pretty
+paginate: 10 
+name: Vertigo
+baseurl: 
+markdown: kramdown
+version: 0.7.0-beta2
+
+kramdown:
+  parse_block_html: true

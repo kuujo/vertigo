@@ -1,0 +1,17 @@
+{% if page.menu == "getting-started" %}
+            <a href="#setup" class="list-group-item">Setup</a>
+            <a href="#networks" class="list-group-item">Networks</a>
+            <a href="#components" class="list-group-item">Components</a>
+            <a href="#cluster" class="list-group-item">The Vertigo cluster</a>
+            <a href="#a-simple-network" class="list-group-item">A simple network</a>
+{% elsif page.menu == "user-manual" %}
+            <a href="/user-manual/networks" class="list-group-item">Networks</a>
+            <a href="/user-manual/components" class="list-group-item">Components</a>
+            <a href="/user-manual/messaging" class="list-group-item">Messaging</a>
+            <a href="/user-manual/network-deployment-and-clustering" class="list-group-item">Network Deployment and Clustering</a>             
+            <a href="/user-manual/cluster-management" class="list-group-item">Cluster Management</a>
+            <a href="/user-manual/cluster-wide-shared-data" class="list-group-item">Cluster-wide Shared Data</a>
+            <a href="/user-manual/hooks" class="list-group-item">Hooks</a>
+            <a href="/user-manual/logging" class="list-group-item">Logging</a>
+            <a href="/user-manual/how-it-works" class="list-group-item">How it works</a>
+{% endif %}

@@ -13,31 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.manager.impl;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+
+import com.hazelcast.core.HazelcastInstance;
 
 /**
- * Server-side cluster manager.
+ * Cluster data provider factory.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ClusterManager {
+class ClusterDataFactory {
+  private final Vertx vertx;
+
+  ClusterDataFactory(Vertx vertx) {
+    this.vertx = vertx;
+  }
 
   /**
-   * Returns the cluster address.
+   * Creates cluster data.
    *
-   * @return The cluster address.
+   * @return A cluster data store.
    */
-  String address();
-
-  ClusterManager start();
-
-  ClusterManager start(Handler<AsyncResult<Void>> doneHandler);
-
-  void stop();
-
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  public ClusterData createClusterData() {
+    HazelcastInstance hazelcast = ClusterListenerFactory.getHazelcastInstance();
+    if (hazelcast != null) {
+      return new HazelcastClusterData(hazelcast);
+    } else {
+      return new VertxClusterData(vertx);
+    }
+  }
 
 }

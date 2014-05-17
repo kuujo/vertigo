@@ -13,31 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.manager.impl;
 
-import org.vertx.java.core.AsyncResult;
+import java.util.UUID;
+
 import org.vertx.java.core.Handler;
 
 /**
- * Manages a server-side node.
+ * Fake cluster listener for non-clustered Vert.x instances.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface NodeManager {
+class NoClusterListener implements ClusterListener {
+  private final String id = UUID.randomUUID().toString();
 
-  /**
-   * Returns the node address.
-   *
-   * @return The node address.
-   */
-  String address();
+  @Override
+  public String nodeId() {
+    return id;
+  }
 
-  NodeManager start();
+  @Override
+  public void joinHandler(Handler<String> handler) {
+    // Do nothing.
+  }
 
-  NodeManager start(Handler<AsyncResult<Void>> doneHandler);
-
-  void stop();
-
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  @Override
+  public void leaveHandler(Handler<String> handler) {
+    // Do nothing.
+  }
 
 }

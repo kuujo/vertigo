@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.impl;
+package net.kuujo.vertigo.cluster.manager.impl;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Random;
 
-import net.kuujo.vertigo.cluster.GroupManager;
+import net.kuujo.vertigo.cluster.manager.GroupManager;
 import net.kuujo.vertigo.platform.PlatformManager;
 
 import org.vertx.java.core.AsyncResult;

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.impl;
+package net.kuujo.vertigo.cluster.manager.impl;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-import net.kuujo.vertigo.cluster.NodeManager;
+import net.kuujo.vertigo.cluster.manager.NodeManager;
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
 

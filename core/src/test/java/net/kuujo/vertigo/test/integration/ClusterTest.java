@@ -19,8 +19,8 @@ import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.impl.ClusterAgent;
 import net.kuujo.vertigo.cluster.impl.DefaultCluster;
+import net.kuujo.vertigo.cluster.manager.impl.ClusterAgent;
 import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;

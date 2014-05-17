@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.cluster.ClusterManagerFactory;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.impl.ClusterAgent;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
@@ -56,17 +56,17 @@ import org.vertx.java.platform.Verticle;
  *
  * <pre>
  * {@code
- * vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
- *   public void handle(AsyncResult<ClusterManager> result) {
+ * vertigo.deployCluster("test-cluster", new Handler<AsyncResult<Cluster>>() {
+ *   public void handle(AsyncResult<Cluster> result) {
  *     if (result.succeeded()) {
- *       ClusterManager cluster = result.result();
+ *       Cluster cluster = result.result();
  *     }
  *   }
  * });
  * }
  * </pre><p>
  *
- * The {@link ClusterManager} can be used to operate on a specific cluster,
+ * The {@link Cluster} can be used to operate on a specific cluster,
  * or networks can be deployed to named clusters through this API. To get
  * a running cluster call the {@link Vertigo#getCluster(String)} method. To
  * deploy a network to a cluster use the {@link Vertigo#deployNetwork(String, NetworkConfig)}
@@ -164,11 +164,11 @@ public class Vertigo {
    *
    * @param cluster The cluster event bus address.
    * @param doneHandler An asynchronous handler to be called once the cluster
-   *        has been deployed. The handler will be called with a {@link ClusterManager}
+   *        has been deployed. The handler will be called with a {@link Cluster}
    *        which can be used to manage networks running in the cluster.
    * @return The Vertigo instance.
    */
-  public Vertigo deployCluster(String cluster, Handler<AsyncResult<ClusterManager>> doneHandler) {
+  public Vertigo deployCluster(String cluster, Handler<AsyncResult<Cluster>> doneHandler) {
     return deployCluster(cluster, 1, doneHandler);
   }
 
@@ -189,19 +189,19 @@ public class Vertigo {
    * @param cluster The cluster event bus address.
    * @param nodes The number of nodes to deploy.
    * @param doneHandler An asynchronous handler to be called once the cluster
-   *        has been deployed. The handler will be called with a {@link ClusterManager}
+   *        has been deployed. The handler will be called with a {@link Cluster}
    *        which can be used to manage networks running in the cluster.
    * @return The Vertigo instance.
    */
-  public Vertigo deployCluster(final String cluster, int nodes, final Handler<AsyncResult<ClusterManager>> doneHandler) {
+  public Vertigo deployCluster(final String cluster, int nodes, final Handler<AsyncResult<Cluster>> doneHandler) {
     JsonObject config = new JsonObject().putString("cluster", cluster);
     container.deployWorkerVerticle(getClusterMain(), config, nodes, false, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ClusterManager>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<Cluster>(result.cause()).setHandler(doneHandler);
         } else {
-          new DefaultFutureResult<ClusterManager>(getCluster(cluster)).setHandler(doneHandler);
+          new DefaultFutureResult<Cluster>(getCluster(cluster)).setHandler(doneHandler);
         }
       }
     });
@@ -215,8 +215,8 @@ public class Vertigo {
    * @param cluster The cluster address.
    * @return A cluster manager for the given cluster.
    */
-  public ClusterManager getCluster(String cluster) {
-    return ClusterManagerFactory.getClusterManager(cluster, vertx, container);
+  public Cluster getCluster(String cluster) {
+    return new DefaultCluster(cluster, vertx, container);
   }
 
   /**

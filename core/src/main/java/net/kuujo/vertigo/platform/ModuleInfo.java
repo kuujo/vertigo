@@ -13,31 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.platform;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
 
 /**
- * Server-side cluster manager.
+ * Module configuration information.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ClusterManager {
+public class ModuleInfo {
+  private final ModuleIdentifier id;
+  private final ModuleFields fields;
 
-  /**
-   * Returns the cluster address.
-   *
-   * @return The cluster address.
-   */
-  String address();
+  public ModuleInfo(String id, JsonObject config) {
+    this(new ModuleIdentifier(id), new ModuleFields(config));
+  }
 
-  ClusterManager start();
+  public ModuleInfo(ModuleIdentifier id, ModuleFields fields) {
+    this.id = id;
+    this.fields = fields;
+  }
 
-  ClusterManager start(Handler<AsyncResult<Void>> doneHandler);
+  public ModuleIdentifier id() {
+    return id;
+  }
 
-  void stop();
-
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  public ModuleFields fields() {
+    return fields;
+  }
 
 }

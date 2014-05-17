@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -99,10 +99,10 @@ public class NetworkFactory implements VerticleFactory {
    * Deploys a Vertigo network.
    */
   public static class NetworkVerticle extends Verticle {
-    private ClusterManager cluster;
+    private Cluster cluster;
     private NetworkConfig network;
 
-    public NetworkVerticle(ClusterManager cluster, NetworkConfig config) {
+    public NetworkVerticle(Cluster cluster, NetworkConfig config) {
       this.cluster = cluster;
       this.network = config;
     }

@@ -15,8 +15,7 @@
  */
 package net.kuujo.vertigo.test.integration;
 
-import static org.vertx.testtools.VertxAssert.assertEquals;
-import static org.vertx.testtools.VertxAssert.assertFalse;
+import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.cluster.Cluster;
@@ -58,11 +57,11 @@ public class ClusterTest extends VertigoTestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployVerticle("test-verticle1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
+        client.deployVerticle(TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            assertEquals("test-verticle1", result.result());
+            assertNotNull(result.result());
           }
         });
       }
@@ -76,74 +75,16 @@ public class ClusterTest extends VertigoTestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployVerticle("test-verticle2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
+        client.deployVerticle(TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            assertEquals("test-verticle2", result.result());
-            client.undeployVerticle("test-verticle2", new Handler<AsyncResult<Void>>() {
+            assertNotNull(result.result());
+            client.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
                 testComplete();
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testVerticleIsDeployed() {
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        assertTrue(result.succeeded());
-        final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployVerticle("test-verticle3", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
-          @Override
-          public void handle(AsyncResult<String> result) {
-            assertTrue(result.succeeded());
-            assertEquals("test-verticle3", result.result());
-            client.isDeployed("test-verticle3", new Handler<AsyncResult<Boolean>>() {
-              @Override
-              public void handle(AsyncResult<Boolean> result) {
-                assertTrue(result.succeeded());
-                assertTrue(result.result());
-                testComplete();
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-
-  @Test
-  public void testVerticleIsNotDeployed() {
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        assertTrue(result.succeeded());
-        final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployVerticle("test-verticle4", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
-          @Override
-          public void handle(AsyncResult<String> result) {
-            assertTrue(result.succeeded());
-            assertEquals("test-verticle4", result.result());
-            client.undeployVerticle("test-verticle4", new Handler<AsyncResult<Void>>() {
-              @Override
-              public void handle(AsyncResult<Void> result) {
-                assertTrue(result.succeeded());
-                client.isDeployed("test-verticle4", new Handler<AsyncResult<Boolean>>() {
-                  @Override
-                  public void handle(AsyncResult<Boolean> result) {
-                    assertTrue(result.succeeded());
-                    assertFalse(result.result());
-                    testComplete();
-                  }
-                });
               }
             });
           }
@@ -159,11 +100,11 @@ public class ClusterTest extends VertigoTestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployWorkerVerticle("test-worker1", TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
+        client.deployWorkerVerticle(TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            assertEquals("test-worker1", result.result());
+            assertNotNull(result.result());
           }
         });
       }
@@ -177,12 +118,12 @@ public class ClusterTest extends VertigoTestVerticle {
       public void handle(AsyncResult<String> result) {
         assertTrue(result.succeeded());
         final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployWorkerVerticle("test-worker2", TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
+        client.deployWorkerVerticle(TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
-            assertEquals("test-worker2", result.result());
-            client.undeployVerticle("test-worker2", new Handler<AsyncResult<Void>>() {
+            assertNotNull(result.result());
+            client.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());

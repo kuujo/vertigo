@@ -19,22 +19,22 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Server-side cluster manager.
+ * Server-side group manager.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ClusterManager {
+public interface GroupManager {
 
   /**
-   * Returns the cluster address.
+   * Returns the group address.
    *
-   * @return The cluster address.
+   * @return The group address.
    */
   String address();
 
-  ClusterManager start();
+  GroupManager start();
 
-  ClusterManager start(Handler<AsyncResult<Void>> doneHandler);
+  GroupManager start(Handler<AsyncResult<Void>> doneHandler);
 
   void stop();
 

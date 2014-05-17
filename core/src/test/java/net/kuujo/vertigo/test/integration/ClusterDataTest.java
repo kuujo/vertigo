@@ -22,8 +22,6 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
-import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
@@ -31,6 +29,7 @@ import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
@@ -47,11 +46,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapPut() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-put");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -75,11 +74,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapGet() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-get");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -103,11 +102,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapRemove() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-remove");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -138,11 +137,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapContainsKey() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-contains-key");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -179,11 +178,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapSize() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-size");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -213,11 +212,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapClear() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncMap<String, String> data = cluster.getMap("test-map-clear");
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -260,11 +259,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapWatchCreate() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-create"), vertx);
         data.watch("foo", new Handler<MapEvent<String, String>>() {
           @Override
@@ -289,11 +288,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapWatchUpdate() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-update"), vertx);
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -324,11 +323,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testMapWatchDelete() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test-watch-delete"), vertx);
         data.put("foo", "bar", new Handler<AsyncResult<String>>() {
           @Override
@@ -359,11 +358,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testSetAdd() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -387,11 +386,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testSetContains() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-contains");
         data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -422,11 +421,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testSetRemove() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-remove");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -457,11 +456,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testSetSize() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-size");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -499,11 +498,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testSetClear() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-clear");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -554,11 +553,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testSetIsEmpty() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncSet<String> data = cluster.getSet("test-set-is-empty");
         data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -589,11 +588,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListAdd() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-add");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -617,11 +616,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListGet() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-get");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -659,11 +658,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListContains() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-contains");
         data.contains("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -694,11 +693,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListSize() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-size");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -736,11 +735,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListRemoveByValue() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-remove-by-value");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -778,11 +777,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListRemoveByIndex() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-remove-by-index");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -813,11 +812,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListClear() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-clear");
         data.add("foo", new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -868,11 +867,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testListIsEmpty() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncList<String> data = cluster.getList("test-list-is-empty");
         data.isEmpty(new Handler<AsyncResult<Boolean>>() {
           @Override
@@ -903,11 +902,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testCounterIncrement() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncCounter data = cluster.getCounter("test-counter-increment");
         data.incrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override
@@ -937,11 +936,11 @@ public class ClusterDataTest extends VertigoTestVerticle {
   @Test
   public void testCounterDecrement() {
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("test", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster cluster = ClusterFactory.getCluster("test", vertx, container);
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
         final AsyncCounter data = cluster.getCounter("test-counter-decrement");
         data.decrementAndGet(new Handler<AsyncResult<Long>>() {
           @Override

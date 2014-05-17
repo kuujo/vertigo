@@ -15,19 +15,19 @@
  */
 package net.kuujo.vertigo.cluster.impl;
 
-import net.kuujo.vertigo.cluster.ClusterManager;
-import net.kuujo.vertigo.cluster.ClusterManagerFactory;
+import org.vertx.java.core.Handler;
 
 /**
- * Default cluster manager factory implementation.
+ * Cluster membership listener.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultClusterManagerFactory extends ClusterManagerFactory {
+interface ClusterListener {
 
-  @Override
-  public ClusterManager createClusterManager(String address) {
-    return new DefaultClusterManager(address, vertx, container);
-  }
+  String nodeId();
+
+  void joinHandler(Handler<String> handler);
+
+  void leaveHandler(Handler<String> handler);
 
 }

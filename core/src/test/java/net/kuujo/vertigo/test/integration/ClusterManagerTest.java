@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -45,9 +45,9 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testDeploy() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-deploy");
         network.addVerticle("feeder", TestFeeder.class.getName());
@@ -55,7 +55,7 @@ public class ClusterManagerTest extends VertigoTestVerticle {
         network.createConnection("feeder", "stream1", "worker", "stream1");
         network.createConnection("feeder", "stream2", "worker", "stream2");
 
-        final ClusterManager cluster = result.result();
+        final Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -70,9 +70,9 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testDeployFromJson() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         JsonObject network = new JsonObject()
             .putString("name", "test-deploy-from-json")
@@ -92,7 +92,7 @@ public class ClusterManagerTest extends VertigoTestVerticle {
                     .putString("component", "worker")
                     .putString("port", "in"))));
 
-        final ClusterManager cluster = result.result();
+        final Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -107,9 +107,9 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testUndeployByName() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-undeploy-by-name");
         network.addVerticle("feeder", TestFeeder.class.getName());
@@ -118,7 +118,7 @@ public class ClusterManagerTest extends VertigoTestVerticle {
         network.addVerticle("worker2", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream2", "worker", "stream2");
 
-        final ClusterManager cluster = result.result();
+        final Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -144,9 +144,9 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testUndeployByConfig() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         final NetworkConfig network = vertigo.createNetwork("test-undeploy-by-config");
         network.addVerticle("feeder", TestFeeder.class.getName());
@@ -155,7 +155,7 @@ public class ClusterManagerTest extends VertigoTestVerticle {
         network.addVerticle("worker2", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream2", "worker", "stream2");
 
-        final ClusterManager cluster = result.result();
+        final Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -181,16 +181,16 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testGetNetwork() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-get-network-1");
         network.addVerticle("feeder", TestFeeder.class.getName());
         network.addVerticle("worker", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream", "worker", "stream");
 
-        final ClusterManager cluster = result.result();
+        final Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -222,16 +222,16 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testGetNetworks() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-get-networks-1");
         network.addVerticle("feeder", TestFeeder.class.getName());
         network.addVerticle("worker", TestWorker.class.getName(), 2);
         network.createConnection("feeder", "stream", "worker", "stream");
 
-        final ClusterManager cluster = result.result();
+        final Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -263,9 +263,9 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testDeployWithCircularConnections() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-circular-deploy");
         network.addVerticle("feeder", TestFeeder.class.getName());
@@ -273,7 +273,7 @@ public class ClusterManagerTest extends VertigoTestVerticle {
         network.createConnection("feeder", "out", "worker", "in");
         network.createConnection("worker", "out", "feeder", "in");
 
-        ClusterManager cluster = result.result();
+        Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
@@ -288,9 +288,9 @@ public class ClusterManagerTest extends VertigoTestVerticle {
   @Test
   public void testDeployWithBrokenConnection() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         NetworkConfig network = vertigo.createNetwork("test-broken-deploy");
         network.addVerticle("feeder", TestFeeder.class.getName());
@@ -298,7 +298,7 @@ public class ClusterManagerTest extends VertigoTestVerticle {
         network.createConnection("feeder", "stream", "worker", "stream");
         network.createConnection("worker", "out", "nowhere", "in");
 
-        ClusterManager cluster = result.result();
+        Cluster cluster = result.result();
         cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {

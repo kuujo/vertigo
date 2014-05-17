@@ -67,7 +67,6 @@ public interface Input<T extends Input<T>> {
    * @param handler A message handler.
    * @return The input.
    */
-  @SuppressWarnings("rawtypes")
-  T messageHandler(Handler handler);
+  T messageHandler(Handler<?> handler);
 
 }

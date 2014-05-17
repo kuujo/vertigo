@@ -15,11 +15,15 @@
  */
 package net.kuujo.vertigo.cluster.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.DeploymentException;
+import net.kuujo.vertigo.cluster.ClusterException;
+import net.kuujo.vertigo.cluster.Group;
+import net.kuujo.vertigo.cluster.Node;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
@@ -30,50 +34,40 @@ import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncList;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncQueue;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncSet;
+import net.kuujo.vertigo.network.ActiveNetwork;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.NetworkContext;
+import net.kuujo.vertigo.network.impl.DefaultActiveNetwork;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
+import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.util.Configs;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.impl.DefaultFutureResult;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
-import org.vertx.java.platform.Verticle;
 
 /**
- * Default cluster implementation.
+ * Default cluster client implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultCluster implements Cluster {
-  private static final String DEFAULT_CLUSTER_ADDRESS = "vertigo";
+  private static final long DEFAULT_REPLY_TIMEOUT = 30000;
   private final String address;
   private final Vertx vertx;
-  @SuppressWarnings("rawtypes")
-  private final Map<String, AsyncMap> maps = new HashMap<>();
-  @SuppressWarnings("rawtypes")
-  private final Map<String, AsyncList> lists = new HashMap<>();
-  @SuppressWarnings("rawtypes")
-  private final Map<String, AsyncQueue> queues = new HashMap<>();
-  @SuppressWarnings("rawtypes")
-  private final Map<String, AsyncSet> sets = new HashMap<>();
-  private final Map<String, AsyncCounter> counters = new HashMap<>();
-
-  public DefaultCluster(Verticle verticle) {
-    this(DEFAULT_CLUSTER_ADDRESS, verticle);
-  }
-
-  public DefaultCluster(Vertx vertx, Container container) {
-    this(DEFAULT_CLUSTER_ADDRESS, vertx, container);
-  }
-
-  public DefaultCluster(String address, Verticle verticle) {
-    this(address, verticle.getVertx(), verticle.getContainer());
-  }
+  private final Container container;
 
   public DefaultCluster(String address, Vertx vertx, Container container) {
     this.address = address;
     this.vertx = vertx;
+    this.container = container;
   }
 
   @Override
@@ -82,19 +76,20 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
-  public Cluster isDeployed(String deploymentID, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public Cluster getGroup(final String group, final Handler<AsyncResult<Group>> resultHandler) {
     JsonObject message = new JsonObject()
-        .putString("action", "check")
-        .putString("id", deploymentID);
-    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putString("action", "find")
+        .putString("type", "group")
+        .putString("group", group);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+          new DefaultFutureResult<Group>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Group>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
-          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
-        } else {
-          new DefaultFutureResult<Boolean>(new DeploymentException(result.result().body().getString("message"))).setHandler(resultHandler);
+          new DefaultFutureResult<Group>(new DefaultGroup(result.result().body().getString("result"), vertx, container)).setHandler(resultHandler);
         }
       }
     });
@@ -102,110 +97,170 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName) {
-    return deployModuleTo(deploymentID, null, moduleName, null, 1, null);
+  public Cluster getGroups(final Handler<AsyncResult<Collection<Group>>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "list")
+        .putString("type", "group");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Collection<Group>>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Collection<Group>>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("ok")) {
+          JsonArray jsonGroups = result.result().body().getArray("result");
+          List<Group> groups = new ArrayList<>();
+          for (Object jsonGroup : jsonGroups) {
+            groups.add(new DefaultGroup((String) jsonGroup, vertx, container));
+          }
+          new DefaultFutureResult<Collection<Group>>(groups).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config) {
-    return deployModuleTo(deploymentID, null, moduleName, config, 1, null);
+  public Cluster selectGroup(Object key, final Handler<AsyncResult<Group>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "select")
+        .putString("type", "group")
+        .putValue("key", key);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Group>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Group>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("ok")) {
+          new DefaultFutureResult<Group>(new DefaultGroup(result.result().body().getString("result"), vertx, container)).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, int instances) {
-    return deployModuleTo(deploymentID, null, moduleName, null, instances, null);
+  public Cluster getNode(String node, final Handler<AsyncResult<Node>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "find")
+        .putString("type", "node")
+        .putString("node", node);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Node>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Node>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("ok")) {
+          new DefaultFutureResult<Node>(new DefaultNode(result.result().body().getString("result"), vertx, container)).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances) {
-    return deployModuleTo(deploymentID, null, moduleName, config, instances, null);
+  public Cluster getNodes(final Handler<AsyncResult<Collection<Node>>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "list")
+        .putString("type", "node");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Collection<Node>>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Collection<Node>>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("ok")) {
+          JsonArray jsonNodes = result.result().body().getArray("result");
+          List<Node> nodes = new ArrayList<>();
+          for (Object jsonNode : jsonNodes) {
+            nodes.add(new DefaultNode((String) jsonNode, vertx, container));
+          }
+          new DefaultFutureResult<Collection<Node>>(nodes).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, null, moduleName, null, 1, doneHandler);
+  public Cluster selectNode(Object key, final Handler<AsyncResult<Node>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "select")
+        .putString("type", "node")
+        .putValue("key", key);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Node>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Node>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("ok")) {
+          new DefaultFutureResult<Node>(new DefaultNode(result.result().body().getString("result"), vertx, container)).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, null, moduleName, config, 1, doneHandler);
+  public Cluster deployModule(String moduleName) {
+    return deployModule(moduleName, null, 1, null);
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, null, moduleName, null, instances, doneHandler);
+  public Cluster deployModule(String moduleName, JsonObject config) {
+    return deployModule(moduleName, config, 1, null);
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, null, moduleName, config, instances, doneHandler);
+  public Cluster deployModule(String moduleName, int instances) {
+    return deployModule(moduleName, null, instances, null);
   }
 
   @Override
-  public Cluster deployModule(String deploymentID, String moduleName, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, null, moduleName, config, instances, ha, doneHandler);
+  public Cluster deployModule(String moduleName, JsonObject config, int instances) {
+    return deployModule(moduleName, config, instances, null);
   }
 
   @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName) {
-    return deployModuleTo(deploymentID, groupID, moduleName, null, 1, null);
+  public Cluster deployModule(String moduleName, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(moduleName, null, 1, doneHandler);
   }
 
   @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config) {
-    return deployModuleTo(deploymentID, groupID, moduleName, config, 1, null);
+  public Cluster deployModule(String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(moduleName, config, 1, doneHandler);
   }
 
   @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances) {
-    return deployModuleTo(deploymentID, groupID, moduleName, null, instances, null);
+  public Cluster deployModule(String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(moduleName, null, instances, doneHandler);
   }
 
   @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances) {
-    return deployModuleTo(deploymentID, groupID, moduleName, config, instances, null);
-  }
-
-  @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, groupID, moduleName, null, 1, doneHandler);
-  }
-
-  @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, groupID, moduleName, config, 1, doneHandler);
-  }
-
-  @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, groupID, moduleName, null, instances, doneHandler);
-  }
-
-  @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
-    return deployModuleTo(deploymentID, groupID, moduleName, config, instances, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployModuleTo(String deploymentID, String groupID, String moduleName, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployModule(String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
-        .putString("id", deploymentID)
-        .putString("group", groupID)
         .putString("type", "module")
         .putString("module", moduleName)
-        .putObject("config", config)
-        .putNumber("instances", instances)
-        .putBoolean("ha", ha);
-    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putObject("config", config != null ? config : new JsonObject())
+        .putNumber("instances", instances);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<String>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<String>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
     });
@@ -213,110 +268,57 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main) {
-    return deployVerticleTo(deploymentID, null, main, null, 1, null);
+  public Cluster deployVerticle(String main) {
+    return deployVerticle(main, null, 1, null);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, JsonObject config) {
-    return deployVerticleTo(deploymentID, null, main, config, 1, null);
+  public Cluster deployVerticle(String main, JsonObject config) {
+    return deployVerticle(main, config, 1, null);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, int instances) {
-    return deployVerticleTo(deploymentID, null, main, null, instances, null);
+  public Cluster deployVerticle(String main, int instances) {
+    return deployVerticle(main, null, instances, null);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, int instances) {
-    return deployVerticleTo(deploymentID, null, main, config, instances, null);
+  public Cluster deployVerticle(String main, JsonObject config, int instances) {
+    return deployVerticle(main, config, instances, null);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, null, main, null, 1, doneHandler);
+  public Cluster deployVerticle(String main, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(main, null, 1, doneHandler);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, null, main, config, 1, doneHandler);
+  public Cluster deployVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(main, config, 1, doneHandler);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, null, main, null, instances, doneHandler);
+  public Cluster deployVerticle(String main, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(main, null, instances, doneHandler);
   }
 
   @Override
-  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, null, main, config, instances, doneHandler);
-  }
-
-  @Override
-  public Cluster deployVerticle(String deploymentID, String main, JsonObject config, int instances, boolean ha, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, null, main, config, instances, ha, doneHandler);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main) {
-    return deployVerticleTo(deploymentID, groupID, main, null, 1, null);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config) {
-    return deployVerticleTo(deploymentID, groupID, main, config, 1, null);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, int instances) {
-    return deployVerticleTo(deploymentID, groupID, main, null, instances, null);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances) {
-    return deployVerticleTo(deploymentID, groupID, main, config, instances, null);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, groupID, main, null, 1, doneHandler);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, groupID, main, config, 1, doneHandler);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, groupID, main, null, instances, doneHandler);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticleTo(deploymentID, groupID, main, config, instances, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployVerticle(String main, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
-        .putString("id", deploymentID)
-        .putString("group", groupID)
         .putString("type", "verticle")
         .putString("main", main)
-        .putObject("config", config)
-        .putNumber("instances", instances)
-        .putBoolean("ha", ha);
-    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putObject("config", config != null ? config : new JsonObject())
+        .putNumber("instances", instances);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<String>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<String>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
     });
@@ -324,112 +326,39 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main) {
-    return deployWorkerVerticleTo(deploymentID, null, main, null, 1, false, null);
+  public Cluster deployWorkerVerticle(String main) {
+    return deployWorkerVerticle(main, null, 1, false, null);
   }
 
   @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config) {
-    return deployWorkerVerticleTo(deploymentID, null, main, config, 1, false, null);
+  public Cluster deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded) {
+    return deployWorkerVerticle(main, config, instances, false, null);
   }
 
   @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, int instances) {
-    return deployWorkerVerticleTo(deploymentID, null, main, null, instances, false, null);
+  public Cluster deployWorkerVerticle(String main, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(main, null, 1, false, doneHandler);
   }
 
   @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded) {
-    return deployWorkerVerticleTo(deploymentID, null, main, config, instances, multiThreaded, null);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, null, main, null, 1, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, null, main, config, 1, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, null, main, null, instances, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, null, main, config, instances, multiThreaded, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticle(String deploymentID, String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, null, main, config, instances, multiThreaded, ha, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, null, 1, false, null);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, config, 1, false, null);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, null, instances, false, null);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, config, instances, multiThreaded, null);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, null, 1, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, config, 1, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, null, instances, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticleTo(deploymentID, groupID, main, config, instances, multiThreaded, false, doneHandler);
-  }
-
-  @Override
-  public Cluster deployWorkerVerticleTo(String deploymentID, String groupID, String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
+  public Cluster deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
-        .putString("id", deploymentID)
-        .putString("group", groupID)
         .putString("type", "verticle")
         .putString("main", main)
-        .putObject("config", config)
+        .putObject("config", config != null ? config : new JsonObject())
         .putNumber("instances", instances)
         .putBoolean("worker", true)
-        .putBoolean("multi-threaded", multiThreaded)
-        .putBoolean("ha", ha);
-    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putBoolean("multi-threaded", multiThreaded);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<String>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<String>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<String>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<String>(result.result().body().getString("id")).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<String>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
     });
@@ -445,17 +374,17 @@ public class DefaultCluster implements Cluster {
   public Cluster undeployModule(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "undeploy")
-        .putString("id", deploymentID)
-        .putString("type", "module");
-    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putString("type", "module")
+        .putString("id", deploymentID);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
     });
@@ -471,17 +400,17 @@ public class DefaultCluster implements Cluster {
   public Cluster undeployVerticle(String deploymentID, final Handler<AsyncResult<Void>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "undeploy")
-        .putString("id", deploymentID)
-        .putString("type", "verticle");
-    vertx.eventBus().sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+        .putString("type", "verticle")
+        .putString("id", deploymentID);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
-        } else {
-          new DefaultFutureResult<Void>(new DeploymentException(result.result().body().getString("message"))).setHandler(doneHandler);
         }
       }
     });
@@ -489,67 +418,258 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  public Cluster getNetworks(final Handler<AsyncResult<Collection<ActiveNetwork>>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "list")
+        .putString("type", "network");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Collection<ActiveNetwork>>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Collection<ActiveNetwork>>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          final List<ActiveNetwork> networks = new ArrayList<>();
+          JsonArray jsonNetworks = result.result().body().getArray("result");
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(jsonNetworks.size());
+          counter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<Collection<ActiveNetwork>>(result.cause()).setHandler(resultHandler);
+              } else {
+                new DefaultFutureResult<Collection<ActiveNetwork>>(networks).setHandler(resultHandler);
+              }
+            }
+          });
+          for (Object jsonNetwork : jsonNetworks) {
+            createActiveNetwork(DefaultNetworkContext.fromJson((JsonObject) jsonNetwork), new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                if (result.failed()) {
+                  counter.fail(result.cause());
+                } else {
+                  networks.add(result.result());
+                  counter.succeed();
+                }
+              }
+            });
+          }
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Cluster getNetwork(String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "load")
+        .putString("type", "network")
+        .putString("network", name);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("result")), resultHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Cluster isDeployed(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "check")
+        .putString("type", "network")
+        .putString("network", name);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Boolean>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Boolean>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else {
+          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Cluster deployNetwork(String name) {
+    return deployNetwork(name, null);
+  }
+
+  @Override
+  public Cluster deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    return deployNetwork(new DefaultNetworkConfig(name), doneHandler);
+  }
+
+  @Override
+  public Cluster deployNetwork(JsonObject network) {
+    return deployNetwork(network, null);
+  }
+
+  @Override
+  public Cluster deployNetwork(JsonObject network, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    return deployNetwork(Configs.createNetwork(network), doneHandler);
+  }
+
+  @Override
+  public Cluster deployNetwork(NetworkConfig network) {
+    return deployNetwork(network, null);
+  }
+
+  @Override
+  public Cluster deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "deploy")
+        .putString("type", "network")
+        .putObject("network", SerializerFactory.getSerializer(Config.class).serializeToObject(network));
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("context")), doneHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Cluster undeployNetwork(String name) {
+    return undeployNetwork(name, null);
+  }
+
+  @Override
+  public Cluster undeployNetwork(String name, final Handler<AsyncResult<Void>> doneHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "undeploy")
+        .putString("type", "network")
+        .putString("network", name);
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Cluster undeployNetwork(JsonObject network) {
+    return undeployNetwork(network, null);
+  }
+
+  @Override
+  public Cluster undeployNetwork(JsonObject network, Handler<AsyncResult<Void>> doneHandler) {
+    return undeployNetwork(Configs.createNetwork(network), doneHandler);
+  }
+
+  @Override
+  public Cluster undeployNetwork(NetworkConfig network) {
+    return undeployNetwork(network, null);
+  }
+
+  @Override
+  public Cluster undeployNetwork(NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "undeploy")
+        .putString("type", "network")
+        .putObject("network", SerializerFactory.getSerializer(Config.class).serializeToObject(network));
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Creates and returns an active network.
+   */
+  private void createActiveNetwork(final NetworkContext context, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    final DefaultActiveNetwork active = new DefaultActiveNetwork(context.config(), DefaultCluster.this);
+    vertx.eventBus().registerHandler(String.format("%s.%s.change", context.name(), context.name()), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        String event = message.body().getString("type");
+        if (event.equals("change") && message.body().getString("value") != null) {
+          active.update(DefaultNetworkContext.fromJson(new JsonObject(message.body().getString("value"))));
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
+        } else {
+          new DefaultFutureResult<ActiveNetwork>(active).setHandler(doneHandler);
+        }
+      }
+    });
+  }
+
+  @Override
   public <K, V> AsyncMap<K, V> getMap(String name) {
-    AsyncMap<K, V> map = maps.get(name);
-    if (map == null) {
-      map = new DefaultAsyncMap<K, V>(address, name, vertx);
-      maps.put(name, map);
-    }
-    return map;
+    return new DefaultAsyncMap<K, V>(address, name, vertx);
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T> AsyncList<T> getList(String name) {
-    AsyncList<T> list = lists.get(name);
-    if (list == null) {
-      list = new DefaultAsyncList<T>(address, name, vertx);
-      lists.put(name, list);
-    }
-    return list;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
   public <T> AsyncSet<T> getSet(String name) {
-    AsyncSet<T> set = sets.get(name);
-    if (set == null) {
-      set = new DefaultAsyncSet<T>(address, name, vertx);
-      sets.put(name, set);
-    }
-    return set;
+    return new DefaultAsyncSet<T>(address, name, vertx);
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  public <T> AsyncList<T> getList(String name) {
+    return new DefaultAsyncList<T>(address, name, vertx);
+  }
+
+  @Override
   public <T> AsyncQueue<T> getQueue(String name) {
-    AsyncQueue<T> queue = queues.get(name);
-    if (queue == null) {
-      queue = new DefaultAsyncQueue<T>(address, name, vertx);
-      queues.put(name, queue);
-    }
-    return queue;
+    return new DefaultAsyncQueue<T>(address, name, vertx);
   }
 
   @Override
   public AsyncCounter getCounter(String name) {
-    AsyncCounter counter = counters.get(name);
-    if (counter == null) {
-      counter = new DefaultAsyncCounter(address, name, vertx);
-      counters.put(name, counter);
-    }
-    return counter;
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    return other instanceof Cluster && ((Cluster) other).address().equals(address);
+    return new DefaultAsyncCounter(address, name, vertx);
   }
 
   @Override
   public String toString() {
-    return address;
+    return String.format("cluster:%s", address);
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    return object instanceof Cluster && ((Cluster) object).address().equals(address);
   }
 
 }

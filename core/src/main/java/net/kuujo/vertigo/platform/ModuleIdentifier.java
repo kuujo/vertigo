@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster.impl;
-
-import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
+package net.kuujo.vertigo.platform;
 
 /**
- * Default cluster factory implementation.
+ * Module identifier.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultClusterFactory extends ClusterFactory {
+public class ModuleIdentifier extends org.vertx.java.platform.impl.ModuleIdentifier {
 
-  @Override
-  public Cluster createCluster(String address) {
-    return new DefaultCluster(address, vertx, container);
+  public ModuleIdentifier(String stringForm) {
+    super(stringForm);
   }
 
 }

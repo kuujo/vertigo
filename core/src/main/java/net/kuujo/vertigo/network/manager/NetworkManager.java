@@ -25,10 +25,11 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
+import net.kuujo.vertigo.cluster.Group;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
@@ -90,6 +91,7 @@ public class NetworkManager extends Verticle {
   private WatchableAsyncMap<String, String> data;
   private Set<String> ready = new HashSet<>();
   private NetworkContext currentContext;
+  private final Map<String, String> deploymentIDs = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
 
   private final Map<String, Handler<MapEvent<String, String>>> watchHandlers = new HashMap<>();
@@ -121,7 +123,7 @@ public class NetworkManager extends Verticle {
       return;
     }
 
-    cluster = ClusterFactory.getCluster(scluster, vertx, container);
+    cluster = new DefaultCluster(scluster, vertx, container);
 
     // Load the current cluster. Regardless of the network's cluster scope,
     // we use the CLUSTER for coordination if it's available. This ensures
@@ -651,13 +653,23 @@ public class NetworkManager extends Verticle {
    * Deploys a module component instance in the network's cluster.
    */
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance, cluster), 1, true, new Handler<AsyncResult<String>>() {
+    cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Group> result) {
         if (result.failed()) {
           counter.fail(result.cause());
         } else {
-          counter.succeed();
+          result.result().deployModule(instance.component().asModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                counter.fail(result.cause());
+              } else {
+                deploymentIDs.put(instance.address(), result.result());
+                counter.succeed();
+              }
+            }
+          });
         }
       }
     });
@@ -667,13 +679,23 @@ public class NetworkManager extends Verticle {
    * Deploys a verticle component instance in the network's cluster.
    */
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, true, new Handler<AsyncResult<String>>() {
+    cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Group> result) {
         if (result.failed()) {
           counter.fail(result.cause());
         } else {
-          counter.succeed();
+          result.result().deployVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                counter.fail(result.cause());
+              } else {
+                deploymentIDs.put(instance.address(), result.result());
+                counter.succeed();
+              }
+            }
+          });
         }
       }
     });
@@ -683,13 +705,23 @@ public class NetworkManager extends Verticle {
    * Deploys a worker verticle component instance in the network's cluster.
    */
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, instance.component().asVerticle().isMultiThreaded(), true, new Handler<AsyncResult<String>>() {
+    cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Group> result) {
         if (result.failed()) {
           counter.fail(result.cause());
         } else {
-          counter.succeed();
+          result.result().deployWorkerVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1,instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                counter.fail(result.cause());
+              } else {
+                deploymentIDs.put(instance.address(), result.result());
+                counter.succeed();
+              }
+            }
+          });
         }
       }
     });
@@ -748,22 +780,11 @@ public class NetworkManager extends Verticle {
    */
   private void undeployInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      cluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
-        @Override
-        public void handle(AsyncResult<Boolean> result) {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else if (result.result()) {
-            if (instance.component().isModule()) {
-              undeployModule(instance, counter);
-            } else if (instance.component().isVerticle()) {
-              undeployVerticle(instance, counter);
-            }
-          } else {
-            unwatchInstance(instance, counter);
-          }
-        }
-      });
+      if (instance.component().isModule()) {
+        undeployModule(instance, counter);
+      } else if (instance.component().isVerticle()) {
+        undeployVerticle(instance, counter);
+      }
     }
   }
 
@@ -806,24 +827,34 @@ public class NetworkManager extends Verticle {
    * Undeploys a module component instance.
    */
   private void undeployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.undeployModule(instance.address(), new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        unwatchInstance(instance, counter);
-      }
-    });
+    String deploymentID = deploymentIDs.remove(instance.address());
+    if (deploymentID != null) {
+      cluster.undeployModule(instance.address(), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          unwatchInstance(instance, counter);
+        }
+      });
+    } else {
+      unwatchInstance(instance, counter);
+    }
   }
 
   /**
    * Undeploys a verticle component instance.
    */
   private void undeployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.undeployVerticle(instance.address(), new Handler<AsyncResult<Void>>() {
-      @Override
-      public void handle(AsyncResult<Void> result) {
-        unwatchInstance(instance, counter);
-      }
-    });
+    String deploymentID = deploymentIDs.remove(instance.address());
+    if (deploymentID != null) {
+      cluster.undeployVerticle(instance.address(), new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          unwatchInstance(instance, counter);
+        }
+      });
+    } else {
+      unwatchInstance(instance, counter);
+    }
   }
 
   /**

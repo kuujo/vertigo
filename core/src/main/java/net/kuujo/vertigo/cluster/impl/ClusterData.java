@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
+import com.hazelcast.core.MultiMap;
 
 /**
- * Server-side cluster manager.
+ * Cluster data provider.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ClusterManager {
+interface ClusterData {
 
-  /**
-   * Returns the cluster address.
-   *
-   * @return The cluster address.
-   */
-  String address();
+  <K, V> MultiMap<K, V> getMultiMap(String name);
 
-  ClusterManager start();
+  <K, V> Map<K, V> getMap(String name);
 
-  ClusterManager start(Handler<AsyncResult<Void>> doneHandler);
+  <T> Set<T> getSet(String name);
 
-  void stop();
+  <T> List<T> getList(String name);
 
-  void stop(Handler<AsyncResult<Void>> doneHandler);
+  <T> Queue<T> getQueue(String name);
 
 }

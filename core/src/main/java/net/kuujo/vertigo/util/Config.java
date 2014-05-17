@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.util;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 
@@ -43,7 +43,7 @@ public final class Config {
     }
     String cluster = config.getString("__cluster__");
     config.removeField("__cluster__");
-    return ClusterFactory.getCluster(cluster, vertx, container);
+    return new DefaultCluster(cluster, vertx, container);
   }
 
   /**

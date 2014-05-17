@@ -15,25 +15,29 @@
  */
 package net.kuujo.vertigo.cluster;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+
 /**
- * Deployment exception.
+ * Manages a server-side node.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@SuppressWarnings("serial")
-public class DeploymentException extends ClusterException {
+public interface NodeManager {
 
-  public DeploymentException(String message) {
-    super(message);
-  }
+  /**
+   * Returns the node address.
+   *
+   * @return The node address.
+   */
+  String address();
 
-  public DeploymentException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  NodeManager start();
 
-  public DeploymentException(Throwable cause) {
-    super(cause);
-  }
+  NodeManager start(Handler<AsyncResult<Void>> doneHandler);
+
+  void stop();
+
+  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }
-

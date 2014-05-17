@@ -21,8 +21,6 @@ import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
-import net.kuujo.vertigo.cluster.ClusterManager;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
 import net.kuujo.vertigo.cluster.impl.DefaultCluster;
@@ -51,9 +49,9 @@ public class CoordinatorTest extends VertigoTestVerticle {
   @Test
   public void testStartWithExistingContext() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("vertigo", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
             .setName("test-coordinator-start")
@@ -79,7 +77,7 @@ public class CoordinatorTest extends VertigoTestVerticle {
             if (result.failed()) {
               fail(result.cause().getMessage());
             } else {
-              final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, ClusterFactory.getCluster("vertigo", vertx, container));
+              final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, new DefaultCluster("vertigo", vertx, container));
               coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
                 @Override
                 public void handle(AsyncResult<InstanceContext> result) {
@@ -102,9 +100,9 @@ public class CoordinatorTest extends VertigoTestVerticle {
   @Test
   public void testPauseHandler() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("vertigo", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
             .setName("test-coordinator-pause")
@@ -130,7 +128,7 @@ public class CoordinatorTest extends VertigoTestVerticle {
             if (result.failed()) {
               fail(result.cause().getMessage());
             } else {
-              final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, ClusterFactory.getCluster("vertigo", vertx, container));
+              final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, new DefaultCluster("vertigo", vertx, container));
               coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
                 @Override
                 public void handle(AsyncResult<InstanceContext> result) {
@@ -159,9 +157,9 @@ public class CoordinatorTest extends VertigoTestVerticle {
   @Test
   public void testResumeHandler() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("vertigo", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("vertigo", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
         final NetworkContext context = DefaultNetworkContext.Builder.newBuilder()
             .setName("test-coordinator-resume")
@@ -187,7 +185,7 @@ public class CoordinatorTest extends VertigoTestVerticle {
             if (result.failed()) {
               fail(result.cause().getMessage());
             } else {
-              final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, ClusterFactory.getCluster("vertigo", vertx, container));
+              final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, new DefaultCluster("vertigo", vertx, container));
               coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
                 @Override
                 public void handle(AsyncResult<InstanceContext> result) {

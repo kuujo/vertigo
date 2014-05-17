@@ -221,7 +221,7 @@ APIs, and this step is crucial to that functionality.
 
 {:.prettyprint .lang-java}
 	output.port("out").group("foo", (group) -> {
-	    someObject.someAsyncApi((result) -> {
+	  someObject.someAsyncApi((result) -> {
 	    if (result.succeeded()) {
 	      group.send(result.result()).end();
 	    }
@@ -363,8 +363,8 @@ by that group.
 
 {:.prettyprint .lang-java}
 	input.port("in").groupHandler("foo", (group) -> {
-	  Set<Object> messages = new HashSet<>();
-	  group.messageHandler((message) -> messages.add(message));
+	  Set<String> messages = new HashSet<>();
+	  group.messageHandler((String message) -> messages.add(message));
 	  group.endHandler((m) -> System.out.println("Received " + messages.size() + " messages in group."));
 	});
 	
@@ -611,8 +611,8 @@ Groups within batches can be received in the same manner as they are with groups
 {:.prettyprint .lang-java}
 	input.port("in").batchHandler((batch) -> {
 	  batch.groupHandler("fruits", (group) -> {
-	    Set<Object> fruits = new HashSet<>();
-	    group.messageHandler((message) -> fruits.add(message));
+	    Set<String> fruits = new HashSet<>();
+	    group.messageHandler((String message) -> fruits.add(message));
 	    group.endHandler((m) -> System.out.println("Got all the fruits!"));
 	  });
 	});

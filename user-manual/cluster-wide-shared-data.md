@@ -53,12 +53,12 @@ but uses `Handler<AsyncResult<T>>` rather than return values.
 <div class="tab-pane java8">
   
 {:.prettyprint .lang-java}
-	final AsyncMap<String, String> map = cluster.getMap("foo");
+	AsyncMap<String, String> map = cluster.getMap("foo");
 	map.put("foo", "bar", (result) -> {
 	  if (result.succeeded()) {
-	    map.get("foo", (result1) -> {
-	      if (result1.succeeded()) {
-	        String foo = result1.result();
+	    map.get("foo", (resultInner) -> {
+	      if (resultInner.succeeded()) {
+	        String foo = resultInner.result();
 	      }
 	    });
 	  }
@@ -105,7 +105,7 @@ but uses `Handler<AsyncResult<T>>` rather than return values.
 <div class="tab-pane java8">
   
 {:.prettyprint .lang-java}
-	final AsyncSet<String> set = cluster.getSet("foo");
+	AsyncSet<String> set = cluster.getSet("foo");
 	set.add("bar", (result) -> {
 	  if (result.succeeded()) {
 	    set.remove("bar");
@@ -140,7 +140,7 @@ but uses `Handler<AsyncResult<T>>` rather than return values.
 <div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
-	AsyncList<String> list = cluster.getList("foo");
+	final AsyncList<String> list = cluster.getList("foo");
 	list.add("bar", new Handler<AsyncResult<Boolean>>() {
 	  public void handle(AsyncResult<Boolean> result) {
 	    if (result.succeeded()) {
@@ -207,12 +207,12 @@ but uses `Handler<AsyncResult<T>>` rather than return values.
 <div class="tab-pane java8">
   
 {:.prettyprint .lang-java}
-	final AsyncQueue<String> queue = cluster.getQueue("foo");
+	AsyncQueue<String> queue = cluster.getQueue("foo");
 	queue.add("bar", (result) -> {
 	  if (result.succeeded()) {
-	    queue.poll((result1) -> {
+	    queue.poll((resultInner) -> {
 	      if (result.succeeded()) {
-	        String value = result.result();
+	        String value = resultInner.result();
 	      }
 	    });
 	  }
@@ -293,7 +293,7 @@ data structure to which the message refers. For example, to `put` a value in the
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	// Put key "bar" to "baz" in map "foo"
@@ -320,6 +320,33 @@ data structure to which the message refers. For example, to `put` a value in the
 	        }
 	      });
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	// Put key "bar" to "baz" in map "foo"
+	JsonObject message = new JsonObject()
+	  .putString("type", "map")
+	  .putString("name", "foo")
+	  .putString("action", "put")
+	  .putString("key", "bar")
+	  .putString("value", "baz");
+	vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
+	  if (reply.body().getString("status").equals("ok")) {
+	    // Get the value of key "bar" in map "foo"
+	    JsonObject messageInner = new JsonObject()
+	      .putString("type", "map")
+	      .putString("name", "foo")
+	      .putString("action", "get")
+	      .putString("key", "bar");
+	    vertx.eventBus().send("test-cluster", messageInner, (Message<JsonObject> replyInner) -> {
+	      if (reply.body().getString("status").equals("ok")) {
+	        String value = replyInner.body().getString("result");
+	      }
+	    });
 	  }
 	});
 	

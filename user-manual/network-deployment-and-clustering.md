@@ -171,7 +171,7 @@ To send a message to a cluster simply send the message to the cluster address.
 	JsonObject message = new JsonObject()
 	    .putString("action", "check")
 	    .putString("network", "test");
-	vertx.eventBus().send("test-cluster", message, (reply) -> {
+	vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
 	  if (reply.body().getString("status").equals("ok")) {
 	    boolean isDeployed = reply.body().getBoolean("result");
 	  }
@@ -237,16 +237,26 @@ handler to the `deployNetwork` method.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
-	cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwor>>() {
+	clusterManager.deployNetwork(network, new Handler<AsyncResult<ActiveNetwor>>() {
 	  public void handle(AsyncResult<ActiveNetwork> result) {
 	    if (result.succeeded()) {
 	      ActiveNetwork network = result.result();
 	    }
 	  }
 	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+    clusterManager.deployNetwork(network, (result) -> {
+      if (result.succeeded()) {
+        ActiveNetwork network = result.result();
+      }
+    });
 	
 </div>
 <div class="tab-pane python">
@@ -266,7 +276,7 @@ to which to deploy the network.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	vertigo.deployNetwork("test-cluster", network, new Handler<AsyncResult<ActiveNetwor>>() {
@@ -274,6 +284,16 @@ to which to deploy the network.
 	    if (result.succeeded()) {
 	      ActiveNetwork network = result.result();
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	vertigo.deployNetwork("test-cluster", network, (result) -> {
+	  if (result.succeeded()) {
+	    ActiveNetwork network = result.result();
 	  }
 	});
 	
@@ -346,7 +366,7 @@ If successful, the cluster will reply with a `status` of `ok`.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	vertx.eventBus().send("test-cluster", message, new Handler<Message<JsonObject>>() {
@@ -356,6 +376,16 @@ If successful, the cluster will reply with a `status` of `ok`.
 	    }
 	  }
 	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+    vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
+      if (reply.body().getString("status").equals("ok")) {
+        // Network was successfully deployed!
+      }
+    });
 	
 </div>
 <div class="tab-pane python">
@@ -380,14 +410,24 @@ method, passing the network name as the first argument.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
-	cluster.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
+	clusterManager.undeployNetwork("test", new Handler<AsyncResult<Void>>() {
 	  public void handle(AsyncResult<Void> result) {
 	    if (result.succeeded()) {
 	      // Network has been undeployed.
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	clusterManager.undeployNetwork("test", (result) -> {
+	  if (result.succeeded()) {
+	    // Network has been undeployed.
 	  }
 	});
 	
@@ -432,7 +472,7 @@ is successful, the cluster will reply with a `status` of `ok`.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	JsonObject message = new JsonObject()
@@ -444,6 +484,20 @@ is successful, the cluster will reply with a `status` of `ok`.
 	    if (reply.body().getString("status").equals("ok")) {
 	      // Network was successfully undeployed!
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	JsonObject message = new JsonObject()
+	  .putString("action", "undeploy")
+	  .putString("type", "network")
+	  .putString("network", "test");
+	vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
+	  if (reply.body().getString("status").equals("ok")) {
+	    // Network was successfully undeployed!
 	  }
 	});
 	
@@ -466,7 +520,7 @@ To check if a network is deployed in the cluster use the `isDeployed` method.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	cluster.isDeployed("test", new Handler<AsyncResult<Boolean>>() {
@@ -474,6 +528,16 @@ To check if a network is deployed in the cluster use the `isDeployed` method.
 	    if (result.succeeded()) {
 	      boolean deployed = result.result(); // Whether the network is deployed.
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	cluster.isDeployed("test", (result) -> {
+	  if (result.succeeded()) {
+	    boolean deployed = result.result(); // Whether the network is deployed.
 	  }
 	});
 	
@@ -511,7 +575,7 @@ reply with a boolean `result` indicating whether the network is deployed in the 
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	JsonObject message = new JsonObject()
@@ -523,6 +587,20 @@ reply with a boolean `result` indicating whether the network is deployed in the 
 	    if (reply.body().getString("status").equals("ok")) {
 	      boolean deployed = reply.body().getBoolean("result");
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	JsonObject message = new JsonObject()
+	  .putString("action", "check")
+	  .putString("type", "network")
+	  .putString("network", "test");
+	vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
+	  if (reply.body().getString("status").equals("ok")) {
+	    boolean deployed = reply.body().getBoolean("result");
 	  }
 	});
 	
@@ -545,13 +623,21 @@ To list the networks running in a cluster call the `getNetworks` method.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
-	cluster.getNetworks(new Handler<AsyncResult<Collection<ActiveNetwork>>>() {
+	clusterManager.getNetworks(new Handler<AsyncResult<Collection<ActiveNetwork>>>() {
 	  public void handle(AsyncResult<ActiveNetwork> result) {
 	    ActiveNetwork network = result.result();
 	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	clusterManager.getNetworks((result) -> {
+	  ActiveNetwork network = result.result();
 	});
 	
 </div>
@@ -605,7 +691,7 @@ configuration objects for each network running in the cluster.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	JsonObject message = new JsonObject()
@@ -615,6 +701,18 @@ configuration objects for each network running in the cluster.
 	    if (reply.body().getString("status").equals("ok")) {
 	      JsonArray networks = reply.body().getArray("result");
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	JsonObject message = new JsonObject()
+	  .putStrign("action", "list");
+	vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
+	  if (reply.body().getString("status").equals("ok")) {
+	    JsonArray networks = reply.body().getArray("result");
 	  }
 	});
 	
@@ -638,13 +736,21 @@ to deploy an empty network with no components or connections.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
-	cluster.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
+	clusterManager.deployNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
 	  public void handle(AsyncResult<ActiveNetwork> result) {
 	    ActiveNetwork network = result.result();
 	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	clusterManager.deployNetwork("test", (result) -> {
+	  ActiveNetwork network = result.result();
 	});
 	
 </div>
@@ -669,7 +775,7 @@ in the `network` field rather than a JSON network configuration.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	JsonObject message = new JsonObject()
@@ -681,6 +787,20 @@ in the `network` field rather than a JSON network configuration.
 	    if (reply.body().getString("status").equals("ok")) {
 	      // Network was successfully deployed!
 	    }
+	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	JsonObject message = new JsonObject()
+	  .putString("action", "deploy")
+	  .putString("type", "network")
+	  .putString("network", "test");
+	vertx.eventBus().send("test-cluster", message, (Message<JsonObject> reply) -> {
+	  if (reply.body().getString("status").equals("ok")) {
+	    // Network was successfully deployed!
 	  }
 	});
 	
@@ -765,14 +885,23 @@ To load an active network you can call `getNetwork` on a cluster.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
-	cluster.getNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
+	clusterManager.getNetwork("test", new Handler<AsyncResult<ActiveNetwork>>() {
 	  public void handle(AsyncResult<ActiveNetwork> result) {
 	    ActiveNetwork network = result.result();
 	    network.createConnection("foo", "out", "bar", "in");
 	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	clusterManager.getNetwork("test", (result) -> {
+	  ActiveNetwork network = result.result();
+	  network.createConnection("foo", "out", "bar", "in");
 	});
 	
 </div>
@@ -793,13 +922,21 @@ when the network has been updated with the new configuration.
 
 {::options parse_block_html="true" /}
 <div class="tab-content">
-<div class="tab-pane active java java8">
+<div class="tab-pane active java">
 
 {:.prettyprint .lang-java}
 	network.createConnection("foo", "out", "bar", "in", new Handler<AsyncResult<ActiveNetwork>>() {
 	  public void handle(AsyncResult<ActiveNetwork> result) {
 	    // Connection has been added and connected.
 	  }
+	});
+	
+</div>
+<div class="tab-pane java8">
+
+{:.prettyprint .lang-java}
+	network.createConnection("foo", "out", "bar", "in", (result) -> {
+	  // Connection has been added and connected.
 	});
 	
 </div>

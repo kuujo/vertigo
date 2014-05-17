@@ -364,7 +364,7 @@ by that group.
 {:.prettyprint .lang-java}
 	input.port("in").groupHandler("foo", (group) -> {
 	  Set<String> messages = new HashSet<>();
-	  group.messageHandler((String message) -> messages.add(message));
+	  group.messageHandler(messages::add);
 	  group.endHandler((m) -> System.out.println("Received " + messages.size() + " messages in group."));
 	});
 	
@@ -515,7 +515,7 @@ On the input port side, the batch API works similarly to the group API.
 	input.port("in").batchHandler((batch) -> {
 	    // Aggregate all messages from the batch.
 	    JsonArray messages = new JsonArray();
-	    batch.messageHandler((message) -> messages.add(message));
+	    batch.messageHandler(messages::add);
 	
 	    // Send the aggregated array once the batch is ended.
 	    batch.endHandler((m) -> output.port("out").send(messages));
@@ -612,7 +612,7 @@ Groups within batches can be received in the same manner as they are with groups
 	input.port("in").batchHandler((batch) -> {
 	  batch.groupHandler("fruits", (group) -> {
 	    Set<String> fruits = new HashSet<>();
-	    group.messageHandler((String message) -> fruits.add(message));
+	    group.messageHandler(fruits::add);
 	    group.endHandler((m) -> System.out.println("Got all the fruits!"));
 	  });
 	});

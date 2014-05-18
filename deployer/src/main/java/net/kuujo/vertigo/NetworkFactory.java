@@ -20,7 +20,6 @@ import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -65,7 +64,7 @@ public class NetworkFactory implements VerticleFactory {
     String cluster = json.getString("cluster", DEFAULT_CLUSTER);
     Vertigo vertigo = new Vertigo(vertx, container);
     NetworkConfig network = vertigo.createNetwork(json);
-    Verticle verticle = new NetworkVerticle(vertigo.getCluster(cluster), network);
+    Verticle verticle = new NetworkVerticle(vertigo, cluster, network);
     verticle.setVertx(vertx);
     verticle.setContainer(container);
     return verticle;
@@ -99,17 +98,19 @@ public class NetworkFactory implements VerticleFactory {
    * Deploys a Vertigo network.
    */
   public static class NetworkVerticle extends Verticle {
-    private Cluster cluster;
-    private NetworkConfig network;
+    private final Vertigo vertigo;
+    private final String cluster;
+    private final NetworkConfig network;
 
-    public NetworkVerticle(Cluster cluster, NetworkConfig config) {
+    public NetworkVerticle(Vertigo vertigo, String cluster, NetworkConfig config) {
+      this.vertigo = vertigo;
       this.cluster = cluster;
       this.network = config;
     }
 
     @Override
     public void start(final Future<Void> startResult) {
-      cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+      vertigo.deployNetwork(cluster, network, new Handler<AsyncResult<ActiveNetwork>>() {
         @Override
         public void handle(AsyncResult<ActiveNetwork> result) {
           if (result.failed()) {

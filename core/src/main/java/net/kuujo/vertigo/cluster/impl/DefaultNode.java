@@ -64,6 +64,29 @@ public class DefaultNode implements Node {
   }
 
   @Override
+  public Node ping(final Handler<AsyncResult<Node>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "ping");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Node>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Node>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("pong")) {
+          if (result.result().body().getString("result").equals("cluster")) {
+            new DefaultFutureResult<Node>(DefaultNode.this).setHandler(resultHandler);
+          } else {
+            new DefaultFutureResult<Node>(new ClusterException("Not a valid node address.")).setHandler(resultHandler);
+          }
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
   public Node installModule(String moduleName) {
     return installModule(moduleName);
   }

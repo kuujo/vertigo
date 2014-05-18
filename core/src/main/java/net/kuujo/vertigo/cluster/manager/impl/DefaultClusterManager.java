@@ -62,6 +62,9 @@ public class DefaultClusterManager implements ClusterManager {
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {
+          case "ping":
+            doPing(message);
+            break;
           case "find":
             doFind(message);
             break;
@@ -371,6 +374,13 @@ public class DefaultClusterManager implements ClusterManager {
         }
       }
     });
+  }
+
+  /**
+   * Pings the cluster.
+   */
+  private void doPing(final Message<JsonObject> message) {
+    message.reply(new JsonObject().putString("status", "pong").putString("result", "cluster"));
   }
 
   /**

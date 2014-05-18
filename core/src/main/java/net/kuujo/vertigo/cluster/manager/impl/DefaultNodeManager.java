@@ -61,6 +61,9 @@ public class DefaultNodeManager implements NodeManager {
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {
+          case "ping":
+            doPing(message);
+            break;
           case "installed":
             doInstalled(message);
             break;
@@ -156,6 +159,13 @@ public class DefaultNodeManager implements NodeManager {
         vertx.eventBus().unregisterHandler(node, messageHandler, doneHandler);
       }
     });
+  }
+
+  /**
+   * Pings the node.
+   */
+  private void doPing(final Message<JsonObject> message) {
+    message.reply(new JsonObject().putString("status", "pong").putString("result", "node"));
   }
 
   /**

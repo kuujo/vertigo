@@ -33,6 +33,8 @@ public interface Node {
 
   String address();
 
+  Node ping(Handler<AsyncResult<Node>> resultHandler);
+
   Node installModule(String moduleName);
 
   Node installModule(String moduleName, Handler<AsyncResult<Void>> doneHandler);

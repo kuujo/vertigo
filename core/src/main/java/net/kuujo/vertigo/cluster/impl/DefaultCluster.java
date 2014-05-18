@@ -78,6 +78,29 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
+  public Cluster ping(final Handler<AsyncResult<Cluster>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "ping");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Cluster>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Cluster>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("pong")) {
+          if (result.result().body().getString("result").equals("cluster")) {
+            new DefaultFutureResult<Cluster>(DefaultCluster.this).setHandler(resultHandler);
+          } else {
+            new DefaultFutureResult<Cluster>(new ClusterException("Not a valid cluster address.")).setHandler(resultHandler);
+          }
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
   public Cluster getGroup(final String group, final Handler<AsyncResult<Group>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "find")

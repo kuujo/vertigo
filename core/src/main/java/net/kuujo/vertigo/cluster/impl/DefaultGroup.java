@@ -55,6 +55,29 @@ public class DefaultGroup implements Group {
   }
 
   @Override
+  public Group ping(final Handler<AsyncResult<Group>> resultHandler) {
+    JsonObject message = new JsonObject()
+        .putString("action", "ping");
+    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+      @Override
+      public void handle(AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Group>(new ClusterException(result.cause())).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Group>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
+        } else if (result.result().body().getString("status").equals("pong")) {
+          if (result.result().body().getString("result").equals("cluster")) {
+            new DefaultFutureResult<Group>(DefaultGroup.this).setHandler(resultHandler);
+          } else {
+            new DefaultFutureResult<Group>(new ClusterException("Not a valid group address.")).setHandler(resultHandler);
+          }
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
   public Group getNode(String node, final Handler<AsyncResult<Node>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "find")

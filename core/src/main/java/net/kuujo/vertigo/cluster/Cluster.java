@@ -44,6 +44,8 @@ public interface Cluster {
    */
   String address();
 
+  Cluster ping(Handler<AsyncResult<Cluster>> resultHandler);
+
   Cluster getGroup(String address, Handler<AsyncResult<Group>> resultHandler);
 
   Cluster getGroups(Handler<AsyncResult<Collection<Group>>> resultHandler);

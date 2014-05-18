@@ -35,6 +35,8 @@ public interface Group {
    */
   String address();
 
+  Group ping(Handler<AsyncResult<Group>> resultHandler);
+
   Group getNode(String address, Handler<AsyncResult<Node>> resultHandler);
 
   Group getNodes(Handler<AsyncResult<Collection<Node>>> resultHandler);

@@ -53,6 +53,9 @@ public class DefaultGroupManager implements GroupManager {
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {
+          case "ping":
+            doPing(message);
+            break;
           case "find":
             doFind(message);
             break;
@@ -123,6 +126,13 @@ public class DefaultGroupManager implements GroupManager {
         vertx.eventBus().unregisterHandler(group, messageHandler, doneHandler);
       }
     });
+  }
+
+  /**
+   * Pings the group.
+   */
+  private void doPing(final Message<JsonObject> message) {
+    message.reply(new JsonObject().putString("status", "pong").putString("result", "group"));
   }
 
   /**

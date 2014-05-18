@@ -42,6 +42,7 @@ import net.kuujo.vertigo.platform.ModuleIdentifier;
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.platform.PlatformManagerException;
+import net.kuujo.vertigo.util.ContextManager;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -49,7 +50,6 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.DecodeException;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.spi.Action;
-import org.vertx.java.core.spi.VertxSPI;
 import org.vertx.java.platform.Container;
 
 /**
@@ -64,13 +64,19 @@ public class DefaultPlatformManager implements PlatformManager {
   private static final String FILE_SEPARATOR = System.getProperty("file.separator");
   private static final String MOD_JSON_FILE = "mod.json";
   private static final int BUFFER_SIZE = 4096;
-  private final VertxSPI vertx;
+  private final Vertx vertx;
+  private final ContextManager context;
   private final Container container;
   private File modRoot;
 
   public DefaultPlatformManager(Vertx vertx, Container container) {
-    this.vertx = (VertxSPI) vertx;
+    this(vertx, container, new ContextManager(vertx));
+  }
+
+  public DefaultPlatformManager(Vertx vertx, Container container, ContextManager context) {
+    this.vertx = vertx;
     this.container = container;
+    this.context = context;
     String modDir = System.getProperty(MODS_DIR_PROP_NAME);
     if (modDir != null && !modDir.trim().equals("")) {
       modRoot = new File(modDir);
@@ -81,7 +87,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager getModuleInfo(final Handler<AsyncResult<Collection<ModuleInfo>>> resultHandler) {
-    vertx.executeBlocking(new Action<Collection<ModuleInfo>>() {
+    context.execute(new Action<Collection<ModuleInfo>>() {
       @Override
       public Collection<ModuleInfo> perform() {
         List<File> modDirs = locateModules();
@@ -103,7 +109,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager getModuleInfo(final String moduleName, final Handler<AsyncResult<ModuleInfo>> resultHandler) {
-    vertx.executeBlocking(new Action<ModuleInfo>() {
+    context.execute(new Action<ModuleInfo>() {
       @Override
       public ModuleInfo perform() {
         ModuleIdentifier modID = new ModuleIdentifier(moduleName);
@@ -121,7 +127,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public synchronized PlatformManager zipModule(final String moduleName, final Handler<AsyncResult<String>> doneHandler) {
-    vertx.executeBlocking(new Action<String>() {
+    context.execute(new Action<String>() {
       @Override
       public String perform() {
         File file = zipModule(new ModuleIdentifier(moduleName));
@@ -133,7 +139,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager installModule(final String zipFile, final Handler<AsyncResult<Void>> doneHandler) {
-    vertx.executeBlocking(new Action<Void>() {
+    context.execute(new Action<Void>() {
       @Override
       public Void perform() {
         File file = new File(zipFile);
@@ -149,7 +155,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager uninstallModule(final String moduleName, final Handler<AsyncResult<Void>> doneHandler) {
-    vertx.executeBlocking(new Action<Void>() {
+    context.execute(new Action<Void>() {
       @Override
       public Void perform() {
         uninstallModule(new ModuleIdentifier(moduleName));

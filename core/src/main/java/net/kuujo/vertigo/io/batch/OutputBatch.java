@@ -27,7 +27,7 @@ import net.kuujo.vertigo.io.OutputGroupSupport;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputBatch extends Batch<OutputBatch>, Output<OutputBatch>, OutputGroupSupport<OutputBatch> {
+public interface OutputBatch extends MessageBatch<OutputBatch>, Output<OutputBatch>, OutputGroupSupport<OutputBatch> {
 
   /**
    * Ends the batch.

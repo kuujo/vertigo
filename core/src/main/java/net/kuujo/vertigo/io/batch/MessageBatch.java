@@ -26,7 +26,7 @@ package net.kuujo.vertigo.io.batch;
  *
  * @param <T> The batch type.
  */
-public interface Batch<T extends Batch<T>> {
+public interface MessageBatch<T extends MessageBatch<T>> {
 
   /**
    * Returns the unique batch ID.

@@ -21,6 +21,7 @@ import java.util.Random;
 
 import net.kuujo.vertigo.cluster.manager.GroupManager;
 import net.kuujo.vertigo.platform.PlatformManager;
+import net.kuujo.vertigo.util.ContextManager;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -28,7 +29,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import org.vertx.java.core.spi.Action;
 
 import com.hazelcast.core.MultiMap;
 
@@ -40,6 +41,7 @@ import com.hazelcast.core.MultiMap;
 public class DefaultGroupManager implements GroupManager {
   private final String group;
   private final Vertx vertx;
+  private final ContextManager context;
   private final PlatformManager platform;
   private final MultiMap<String, String> groups;
   private final MultiMap<String, String> deployments;
@@ -76,9 +78,10 @@ public class DefaultGroupManager implements GroupManager {
     }
   };
 
-  public DefaultGroupManager(String group, String cluster, Vertx vertx, Container container, PlatformManager platform, ClusterListener listener, ClusterData data) {
+  public DefaultGroupManager(String group, String cluster, Vertx vertx, ContextManager context, PlatformManager platform, ClusterListener listener, ClusterData data) {
     this.group = group;
     this.vertx = vertx;
+    this.context = context;
     this.platform = platform;
     this.groups = data.getMultiMap(String.format("groups.%s", cluster));
     this.deployments = data.getMultiMap(String.format("deployments.%s", cluster));
@@ -107,9 +110,19 @@ public class DefaultGroupManager implements GroupManager {
   }
 
   @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    groups.remove(group);
-    vertx.eventBus().unregisterHandler(group, messageHandler, doneHandler);
+  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        groups.remove(group);
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        vertx.eventBus().unregisterHandler(group, messageHandler, doneHandler);
+      }
+    });
   }
 
   /**
@@ -141,12 +154,24 @@ public class DefaultGroupManager implements GroupManager {
       return;
     }
 
-    String address = String.format("%s.%s", group, nodeName);
-    if (groups.containsEntry(group, address)) {
-      message.reply(new JsonObject().putString("status", "ok").putString("result", address));
-    } else {
-      message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid node."));
-    }
+    final String address = String.format("%s.%s", group, nodeName);
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return groups.containsEntry(group, address);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else if (!result.result()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid node."));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putString("result", address));
+        }
+      }
+    });
   }
 
   /**
@@ -172,12 +197,23 @@ public class DefaultGroupManager implements GroupManager {
    * Lists nodes in the group.
    */
   private void doListNode(final Message<JsonObject> message) {
-    Collection<String> nodes = groups.get(group);
-    if (nodes == null) {
-      message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray()));
-    } else {
-      message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(nodes.toArray(new String[nodes.size()]))));
-    }
+    context.execute(new Action<Collection<String>>() {
+      @Override
+      public Collection<String> perform() {
+        return groups.get(group);
+      }
+    }, new Handler<AsyncResult<Collection<String>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<String>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else if (result.result() == null) {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new String[result.result().size()]))));
+        }
+      }
+    });
   }
 
   /**
@@ -203,38 +239,42 @@ public class DefaultGroupManager implements GroupManager {
    * Selects a node in the group.
    */
   private void doSelectNode(final Message<JsonObject> message) {
-    Object key = message.body().getValue("key");
+    final Object key = message.body().getValue("key");
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
     } else {
-      String address = selectNode(key);
-      if (address == null) {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "No nodes to select."));
-      } else {
-        message.reply(new JsonObject().putString("status", "ok").putString("result", address));
-      }
+      context.execute(new Action<String>() {
+        @Override
+        public String perform() {
+          String address = nodeSelectors.get(key);
+          if (address != null) {
+            return address;
+          }
+          Collection<String> nodes = groups.get(group);
+          int index = new Random().nextInt(nodes.size());
+          int i = 0;
+          for (String node : nodes) {
+            if (i == index) {
+              nodeSelectors.put(key, node);
+              return node;
+            }
+            i++;
+          }
+          return null;
+        }
+      }, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "No nodes to select."));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putString("result", result.result()));
+          }
+        }
+      });
     }
-  }
-
-  /**
-   * Selects a node in the group.
-   */
-  private String selectNode(Object key) {
-    String address = nodeSelectors.get(key);
-    if (address != null) {
-      return address;
-    }
-    Collection<String> nodes = groups.get(group);
-    int index = new Random().nextInt(nodes.size());
-    int i = 0;
-    for (String node : nodes) {
-      if (i == index) {
-        nodeSelectors.put(key, node);
-        return node;
-      }
-      i++;
-    }
-    return null;
   }
 
   /**
@@ -280,8 +320,19 @@ public class DefaultGroupManager implements GroupManager {
         if (result.failed()) {
           message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
         } else {
-          deployments.put(group, message.body().copy().putString("id", result.result()).encode());
-          message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+          final String deploymentID = result.result();
+          context.execute(new Action<String>() {
+            @Override
+            public String perform() {
+              deployments.put(group, message.body().copy().putString("id", deploymentID).encode());
+              return deploymentID;
+            }
+          }, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+            }
+          });
         }
       }
     });
@@ -311,7 +362,19 @@ public class DefaultGroupManager implements GroupManager {
           if (result.failed()) {
             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
           } else {
-            deployments.put(group, message.body().copy().putString("id", result.result()).encode());
+            final String deploymentID = result.result();
+            context.execute(new Action<String>() {
+              @Override
+              public String perform() {
+                deployments.put(group, message.body().copy().putString("id", deploymentID).encode());
+                return deploymentID;
+              }
+            }, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+              }
+            });
             message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
           }
         }
@@ -323,7 +386,19 @@ public class DefaultGroupManager implements GroupManager {
           if (result.failed()) {
             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
           } else {
-            deployments.put(group, message.body().copy().putString("id", result.result()).encode());
+            final String deploymentID = result.result();
+            context.execute(new Action<String>() {
+              @Override
+              public String perform() {
+                deployments.put(group, message.body().copy().putString("id", deploymentID).encode());
+                return deploymentID;
+              }
+            }, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+              }
+            });
             message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
           }
         }
@@ -357,19 +432,23 @@ public class DefaultGroupManager implements GroupManager {
    * Undeploys a module.
    */
   private void doUndeployModule(final Message<JsonObject> message) {
-    String deploymentID = message.body().getString("id");
+    final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID);
-      platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            message.reply(new JsonObject().putString("status", "ok"));
-          }
+          platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       });
     }
@@ -379,19 +458,23 @@ public class DefaultGroupManager implements GroupManager {
    * Undeploys a verticle.
    */
   private void doUndeployVerticle(final Message<JsonObject> message) {
-    String deploymentID = message.body().getString("id");
+    final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID);
-      platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            message.reply(new JsonObject().putString("status", "ok"));
-          }
+          platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       });
     }
@@ -400,19 +483,27 @@ public class DefaultGroupManager implements GroupManager {
   /**
    * Removes a deployment from the deployments map.
    */
-  private void removeDeployment(String deploymentID) {
-    Collection<String> deployments = this.deployments.get(group);
-    String deployment = null;
-    for (String sdeployment : deployments) {
-      JsonObject info = new JsonObject(sdeployment);
-      if (info.getString("id").equals(deploymentID)) {
-        deployment = sdeployment;
-        break;
+  private void removeDeployment(final String deploymentID, Handler<AsyncResult<Void>> doneHandler) {
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        Collection<String> groupDeployments = deployments.get(group);
+        if (groupDeployments != null) {
+          String deployment = null;
+          for (String sdeployment : groupDeployments) {
+            JsonObject info = new JsonObject(sdeployment);
+            if (info.getString("id").equals(deploymentID)) {
+              deployment = sdeployment;
+              break;
+            }
+          }
+          if (deployment != null) {
+            deployments.remove(group, deployment);
+          }
+        }
+        return null;
       }
-    }
-    if (deployment != null) {
-      this.deployments.remove(group, deployment);
-    }
+    }, doneHandler);
   }
 
 }

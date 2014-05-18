@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import net.kuujo.vertigo.cluster.manager.NodeManager;
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
+import net.kuujo.vertigo.util.ContextManager;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -30,8 +31,9 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.AsyncFile;
+import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import org.vertx.java.core.spi.Action;
 
 import com.hazelcast.core.MultiMap;
 
@@ -46,6 +48,7 @@ public class DefaultNodeManager implements NodeManager {
   private final String group;
   private final String cluster;
   private final Vertx vertx;
+  private final ContextManager context;
   private final PlatformManager platform;
   private final ClusterListener listener;
   private final MultiMap<String, String> nodes;
@@ -84,11 +87,12 @@ public class DefaultNodeManager implements NodeManager {
     }
   };
 
-  public DefaultNodeManager(String node, String group, String cluster, Vertx vertx, Container container, PlatformManager platform, ClusterListener listener, ClusterData data) {
+  public DefaultNodeManager(String node, String group, String cluster, Vertx vertx, ContextManager context, PlatformManager platform, ClusterListener listener, ClusterData data) {
     this.node = node;
     this.group = group;
     this.cluster = cluster;
     this.vertx = vertx;
+    this.context = context;
     this.platform = platform;
     this.listener = listener;
     this.nodes = data.getMultiMap(String.format("nodes.%s", cluster));
@@ -107,14 +111,28 @@ public class DefaultNodeManager implements NodeManager {
   }
 
   @Override
-  public NodeManager start(Handler<AsyncResult<Void>> doneHandler) {
-    if (!nodes.containsEntry(listener.nodeId(), node)) {
-      nodes.put(listener.nodeId(), node);
-    }
-    if (!groups.containsEntry(group, node)) {
-      groups.put(group, node);
-    }
-    vertx.eventBus().registerHandler(address(), messageHandler, doneHandler);
+  public NodeManager start(final Handler<AsyncResult<Void>> doneHandler) {
+    vertx.eventBus().registerHandler(node, messageHandler, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          context.execute(new Action<Void>() {
+            @Override
+            public Void perform() {
+              if (!nodes.containsEntry(listener.nodeId(), node)) {
+                nodes.put(listener.nodeId(), node);
+              }
+              if (!groups.containsEntry(group, node)) {
+                groups.put(group, node);
+              }
+              return null;
+            }
+          }, doneHandler);
+        }
+      }
+    });
     return this;
   }
 
@@ -124,10 +142,20 @@ public class DefaultNodeManager implements NodeManager {
   }
 
   @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    nodes.remove(listener.nodeId(), node);
-    groups.remove(group, node);
-    vertx.eventBus().unregisterHandler(address(), messageHandler, doneHandler);
+  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        nodes.remove(listener.nodeId(), node);
+        groups.remove(group, node);
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        vertx.eventBus().unregisterHandler(node, messageHandler, doneHandler);
+      }
+    });
   }
 
   /**
@@ -168,20 +196,27 @@ public class DefaultNodeManager implements NodeManager {
       return;
     }
 
-    File modRoot = new File(TEMP_DIR, "vertx-zip-mods");
-    File modZip = new File(modRoot, uploadID + ".zip");
-    if (!modZip.exists()) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid upload."));
-      return;
-    }
+    final File modRoot = new File(TEMP_DIR, "vertx-zip-mods");
+    final File modZip = new File(modRoot, uploadID + ".zip");
 
-    platform.installModule(modZip.getAbsolutePath(), new Handler<AsyncResult<Void>>() {
+    vertx.fileSystem().exists(modZip.getAbsolutePath(), new Handler<AsyncResult<Boolean>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
+      public void handle(AsyncResult<Boolean> result) {
         if (result.failed()) {
           message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else if (!result.result()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid upload."));
         } else {
-          message.reply(new JsonObject().putString("status", "ok"));
+          platform.installModule(modZip.getAbsolutePath(), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       }
     });
@@ -353,8 +388,19 @@ public class DefaultNodeManager implements NodeManager {
         if (result.failed()) {
           message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
         } else {
-          deployments.put(node, message.body().copy().putString("id", result.result()).encode());
-          message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+          final String deploymentID = result.result();
+          context.execute(new Action<String>() {
+            @Override
+            public String perform() {
+              deployments.put(node, message.body().copy().putString("id", deploymentID).encode());
+              return deploymentID;
+            }
+          }, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+            }
+          });
         }
       }
     });
@@ -384,8 +430,19 @@ public class DefaultNodeManager implements NodeManager {
           if (result.failed()) {
             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
           } else {
-            deployments.put(node, message.body().copy().putString("id", result.result()).encode());
-            message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+            final String deploymentID = result.result();
+            context.execute(new Action<String>() {
+              @Override
+              public String perform() {
+                deployments.put(node, message.body().copy().putString("id", deploymentID).encode());
+                return deploymentID;
+              }
+            }, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+              }
+            });
           }
         }
       });
@@ -396,8 +453,19 @@ public class DefaultNodeManager implements NodeManager {
           if (result.failed()) {
             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
           } else {
-            deployments.put(node, message.body().copy().putString("id", result.result()).encode());
-            message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+            final String deploymentID = result.result();
+            context.execute(new Action<String>() {
+              @Override
+              public String perform() {
+                deployments.put(node, message.body().copy().putString("id", deploymentID).encode());
+                return deploymentID;
+              }
+            }, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+              }
+            });
           }
         }
       });
@@ -430,19 +498,23 @@ public class DefaultNodeManager implements NodeManager {
    * Undeploys a module.
    */
   private void doUndeployModule(final Message<JsonObject> message) {
-    String deploymentID = message.body().getString("id");
+    final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID);
-      platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            message.reply(new JsonObject().putString("status", "ok"));
-          }
+          platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       });
     }
@@ -452,19 +524,23 @@ public class DefaultNodeManager implements NodeManager {
    * Undeploys a verticle.
    */
   private void doUndeployVerticle(final Message<JsonObject> message) {
-    String deploymentID = message.body().getString("id");
+    final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID);
-      platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            message.reply(new JsonObject().putString("status", "ok"));
-          }
+          platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       });
     }
@@ -473,19 +549,27 @@ public class DefaultNodeManager implements NodeManager {
   /**
    * Removes a deployment from the deployments map.
    */
-  private void removeDeployment(String deploymentID) {
-    Collection<String> deployments = this.deployments.get(node);
-    String deployment = null;
-    for (String sdeployment : deployments) {
-      JsonObject info = new JsonObject(sdeployment);
-      if (info.getString("id").equals(deploymentID)) {
-        deployment = sdeployment;
-        break;
+  private void removeDeployment(final String deploymentID, Handler<AsyncResult<Void>> doneHandler) {
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        Collection<String> nodeDeployments = deployments.get(node);
+        if (nodeDeployments != null) {
+          String deployment = null;
+          for (String sdeployment : nodeDeployments) {
+            JsonObject info = new JsonObject(sdeployment);
+            if (info.getString("id").equals(deploymentID)) {
+              deployment = sdeployment;
+              break;
+            }
+          }
+          if (deployment != null) {
+            deployments.remove(node, deployment);
+          }
+        }
+        return null;
       }
-    }
-    if (deployment != null) {
-      this.deployments.remove(node, deployment);
-    }
+    }, doneHandler);
   }
 
 }

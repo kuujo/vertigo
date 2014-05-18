@@ -20,6 +20,7 @@ import java.util.Collection;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
+import net.kuujo.vertigo.cluster.data.AsyncMultiMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.network.ActiveNetwork;
@@ -134,6 +135,8 @@ public interface Cluster {
   Cluster undeployNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);
 
   <K, V> AsyncMap<K, V> getMap(String name);
+
+  <K, V> AsyncMultiMap<K, V> getMultiMap(String name);
 
   <T> AsyncSet<T> getSet(String name);
 

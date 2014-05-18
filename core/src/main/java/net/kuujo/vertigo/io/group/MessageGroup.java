@@ -24,7 +24,7 @@ package net.kuujo.vertigo.io.group;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Group<T extends Group<T>> {
+public interface MessageGroup<T extends MessageGroup<T>> {
 
   /**
    * Returns the unique group identifier.

@@ -22,6 +22,7 @@ import net.kuujo.vertigo.cluster.manager.GroupManager;
 import net.kuujo.vertigo.cluster.manager.NodeManager;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.platform.impl.DefaultPlatformManager;
+import net.kuujo.vertigo.util.ContextManager;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -44,9 +45,9 @@ public class ClusterAgent extends Verticle {
     PlatformManager platform = new DefaultPlatformManager(vertx, container);
     ClusterListener listener = new ClusterListenerFactory(vertx).createClusterListener();
     ClusterData data = new ClusterDataFactory(vertx).createClusterData();
-    ClusterManager cluster = new DefaultClusterManager(clusterName, vertx, container, platform, listener, data);
-    GroupManager group = new DefaultGroupManager(String.format("%s.%s", clusterName, groupName), clusterName, vertx, container, platform, listener, data);
-    NodeManager node = new DefaultNodeManager(String.format("%s.%s.%s", clusterName, groupName, nodeAddress), String.format("%s.%s", clusterName, groupName), clusterName, vertx, container, platform, listener, data);
+    ClusterManager cluster = new DefaultClusterManager(clusterName, vertx, new ContextManager(vertx), platform, listener, data);
+    GroupManager group = new DefaultGroupManager(String.format("%s.%s", clusterName, groupName), clusterName, vertx, new ContextManager(vertx), platform, listener, data);
+    NodeManager node = new DefaultNodeManager(String.format("%s.%s.%s", clusterName, groupName, nodeAddress), String.format("%s.%s", clusterName, groupName), clusterName, vertx, new ContextManager(vertx), platform, listener, data);
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(3);
     counter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override

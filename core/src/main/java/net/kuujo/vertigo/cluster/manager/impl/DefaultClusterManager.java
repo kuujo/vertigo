@@ -25,14 +25,16 @@ import java.util.Set;
 
 import net.kuujo.vertigo.cluster.manager.ClusterManager;
 import net.kuujo.vertigo.platform.PlatformManager;
+import net.kuujo.vertigo.util.ContextManager;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import org.vertx.java.core.spi.Action;
 
 import com.hazelcast.core.MultiMap;
 
@@ -44,6 +46,7 @@ import com.hazelcast.core.MultiMap;
 public class DefaultClusterManager implements ClusterManager {
   private final String cluster;
   private final Vertx vertx;
+  private final ContextManager context;
   private final PlatformManager platform;
   private final ClusterListener listener;
   private final ClusterData data;
@@ -110,6 +113,36 @@ public class DefaultClusterManager implements ClusterManager {
                     break;
                   default:
                     message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid action " + action));
+                    break;
+                }
+              case "multimap":
+                switch (action) {
+                  case "put":
+                    doMultiMapPut(message);
+                    break;
+                  case "get":
+                    doMultiMapGet(message);
+                    break;
+                  case "remove":
+                    doMultiMapRemove(message);
+                    break;
+                  case "contains":
+                    doMultiMapContains(message);
+                    break;
+                  case "keys":
+                    doMultiMapKeys(message);
+                    break;
+                  case "values":
+                    doMultiMapValues(message);
+                    break;
+                  case "empty":
+                    doMultiMapIsEmpty(message);
+                    break;
+                  case "clear":
+                    doMultiMapClear(message);
+                    break;
+                  case "size":
+                    doMultiMapSize(message);
                     break;
                 }
               case "map":
@@ -259,17 +292,18 @@ public class DefaultClusterManager implements ClusterManager {
     }
   };
 
-  public DefaultClusterManager(String cluster, Vertx vertx, Container container, PlatformManager platform, ClusterListener listener, ClusterData data) {
+  public DefaultClusterManager(String cluster, Vertx vertx, ContextManager context, PlatformManager platform, ClusterListener listener, ClusterData data) {
     this.cluster = cluster;
     this.vertx = vertx;
+    this.context = context;
     this.platform = platform;
     this.listener = listener;
     this.data = data;
     this.nodes = data.getMultiMap(String.format("nodes.%s", cluster));
     this.groups = data.getMultiMap(String.format("groups.%s", cluster));
     this.deployments = data.getMultiMap(String.format("deployments.%s", cluster));
-    this.groupSelectors = data.getMap(String.format("selectors.group.%s", cluster));
-    this.nodeSelectors = data.getMap(String.format("selectors.node.%s", cluster));
+    this.groupSelectors = ((VertxInternal) vertx).clusterManager().getSyncMap(String.format("selectors.group.%s", cluster));
+    this.nodeSelectors = ((VertxInternal) vertx).clusterManager().getSyncMap(String.format("selectors.node.%s", cluster));
   }
 
   @Override
@@ -320,16 +354,23 @@ public class DefaultClusterManager implements ClusterManager {
    * Called when a node leaves the cluster.
    */
   private synchronized void doNodeLeft(final String nodeID) {
-    Collection<String> nodes = this.nodes.remove(nodeID);
-    if (nodes != null) {
-      synchronized (groups) {
-        for (String node : nodes) {
-          for (String group : groups.keySet()) {
-            groups.remove(group, node);
+    context.run(new Runnable() {
+      @Override
+      public void run() {
+        synchronized (nodes) {
+          Collection<String> removedNodes = nodes.remove(nodeID);
+          if (removedNodes != null) {
+            synchronized (groups) {
+              for (String node : removedNodes) {
+                for (String group : groups.keySet()) {
+                  groups.remove(group, node);
+                }
+              }
+            }
           }
         }
       }
-    }
+    });
   }
 
   /**
@@ -364,32 +405,59 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    String address = String.format("%s.%s", cluster, group);
-    if (groups.containsKey(address)) {
-      message.reply(new JsonObject().putString("status", "ok").putString("result", address));
-    } else {
-      message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid group."));
-    }
+    final String address = String.format("%s.%s", cluster, group);
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return groups.containsKey(address);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else if (!result.result()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid group."));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putString("result", address));
+        }
+      }
+    });
   }
 
   /**
    * Finds a node in the cluster.
    */
   private void doFindNode(final Message<JsonObject> message) {
-    String node = message.body().getString("node");
+    final String node = message.body().getString("node");
     if (node == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid node address."));
       return;
     }
 
-    for (String group : groups.keySet()) {
-      String address = String.format("%s.%s", group, node);
-      if (groups.containsEntry(group, address)) {
-        message.reply(new JsonObject().putString("status", "ok").putString("result", address));
-        return;
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
+        for (String group : groups.keySet()) {
+          String address = String.format("%s.%s", group, node);
+          if (groups.containsEntry(group, address)) {
+            return address;
+          }
+        }
+        return null;
       }
-    }
-    message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid node."));
+    }, new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else if (result.result() == null) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid node."));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putString("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -418,22 +486,46 @@ public class DefaultClusterManager implements ClusterManager {
    * Lists groups in the cluster.
    */
   private void doListGroup(final Message<JsonObject> message) {
-    JsonArray groups = new JsonArray();
-    for (String group : this.groups.keySet()) {
-      groups.addString(group);
-    }
-    message.reply(new JsonObject().putString("status", "ok").putArray("result", groups));
+    context.execute(new Action<Set<String>>() {
+      @Override
+      public Set<String> perform() {
+        return groups.keySet();
+      }
+    }, new Handler<AsyncResult<Set<String>>>() {
+      @Override
+      public void handle(AsyncResult<Set<String>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new String[result.result().size()]))));
+        }
+      }
+    });
   }
 
   /**
    * Lists nodes in the cluster.
    */
   private void doListNode(final Message<JsonObject> message) {
-    List<String> nodes = new ArrayList<>();
-    for (String group : this.groups.keySet()) {
-      nodes.addAll(groups.get(group));
-    }
-    message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(nodes.toArray(new String[nodes.size()]))));
+    context.execute(new Action<Collection<String>>() {
+      @Override
+      public Collection<String> perform() {
+        List<String> nodes = new ArrayList<>();
+        for (String group : groups.keySet()) {
+          nodes.addAll(groups.get(group));
+        }
+        return nodes;
+      }
+    }, new Handler<AsyncResult<Collection<String>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<String>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new String[result.result().size()]))));
+        }
+      }
+    });
   }
 
   /**
@@ -462,79 +554,87 @@ public class DefaultClusterManager implements ClusterManager {
    * Selects a group in the cluster.
    */
   private void doSelectGroup(final Message<JsonObject> message) {
-    Object key = message.body().getValue("key");
+    final Object key = message.body().getValue("key");
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
     } else {
-      String address = selectGroup(key);
-      if (address == null) {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "No groups to select."));
-      } else {
-        message.reply(new JsonObject().putString("status", "ok").putString("result", address));
-      }
+      context.execute(new Action<String>() {
+        @Override
+        public String perform() {
+          String address = groupSelectors.get(key);
+          if (address != null) {
+            return address;
+          }
+          Set<String> groups = DefaultClusterManager.this.groups.keySet();
+          int index = new Random().nextInt(groups.size());
+          int i = 0;
+          for (String group : groups) {
+            if (i == index) {
+              groupSelectors.put(key, group);
+              return group;
+            }
+            i++;
+          }
+          return null;
+        }
+      }, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "No groups to select."));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putString("result", result.result()));
+          }
+        }
+      });
     }
-  }
-
-  /**
-   * Selects a group in the cluster.
-   */
-  private String selectGroup(Object key) {
-    String address = groupSelectors.get(key);
-    if (address != null) {
-      return address;
-    }
-    Set<String> groups = this.groups.keySet();
-    int index = new Random().nextInt(groups.size());
-    int i = 0;
-    for (String group : groups) {
-      if (i == index) {
-        groupSelectors.put(key, group);
-        return group;
-      }
-      i++;
-    }
-    return null;
   }
 
   /**
    * Selects a node in the cluster.
    */
   private void doSelectNode(final Message<JsonObject> message) {
-    Object key = message.body().getValue("key");
+    final Object key = message.body().getValue("key");
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
     } else {
-      String address = selectNode(key);
-      if (address == null) {
-        message.reply(new JsonObject().putString("status", "error").putString("message", "No nodes to select."));
-      } else {
-        message.reply(new JsonObject().putString("status", "ok").putString("result", address));
-      }
+      context.execute(new Action<String>() {
+        @Override
+        public String perform() {
+          String address = nodeSelectors.get(key);
+          if (address != null) {
+            return address;
+          }
+          Set<String> nodes = new HashSet<>();
+          for (String group : groups.keySet()) {
+            nodes.addAll(groups.get(group));
+          }
+          int index = new Random().nextInt(nodes.size());
+          int i = 0;
+          for (String node : nodes) {
+            if (i == index) {
+              nodeSelectors.put(key, node);
+              return node;
+            }
+            i++;
+          }
+          return null;
+        }
+      }, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "No nodes to select."));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putString("result", result.result()));
+          }
+        }
+      });
     }
-  }
-
-  /**
-   * Selects a node in the cluster.
-   */
-  private String selectNode(Object key) {
-    String address = nodeSelectors.get(key);
-    if (address != null) {
-      return address;
-    }
-    Set<String> nodes = new HashSet<>();
-    for (String group : groups.keySet()) {
-      nodes.addAll(groups.get(group));
-    }
-    int index = new Random().nextInt(nodes.size());
-    int i = 0;
-    for (String node : nodes) {
-      if (i == index) {
-        nodeSelectors.put(key, node);
-        return node;
-      }
-      i++;
-    }
-    return null;
   }
 
   /**
@@ -580,8 +680,19 @@ public class DefaultClusterManager implements ClusterManager {
         if (result.failed()) {
           message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
         } else {
-          deployments.put(cluster, message.body().copy().putString("id", result.result()).encode());
-          message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+          final String deploymentID = result.result();
+          context.execute(new Action<String>() {
+            @Override
+            public String perform() {
+              deployments.put(cluster, message.body().copy().putString("id", deploymentID).encode());
+              return deploymentID;
+            }
+          }, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+            }
+          });
         }
       }
     });
@@ -611,8 +722,19 @@ public class DefaultClusterManager implements ClusterManager {
           if (result.failed()) {
             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
           } else {
-            deployments.put(cluster, message.body().copy().putString("id", result.result()).encode());
-            message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+            final String deploymentID = result.result();
+            context.execute(new Action<String>() {
+              @Override
+              public String perform() {
+                deployments.put(cluster, message.body().copy().putString("id", deploymentID).encode());
+                return deploymentID;
+              }
+            }, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+              }
+            });
           }
         }
       });
@@ -623,8 +745,19 @@ public class DefaultClusterManager implements ClusterManager {
           if (result.failed()) {
             message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
           } else {
-            deployments.put(cluster, message.body().copy().putString("id", result.result()).encode());
-            message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+            final String deploymentID = result.result();
+            context.execute(new Action<String>() {
+              @Override
+              public String perform() {
+                deployments.put(cluster, message.body().copy().putString("id", deploymentID).encode());
+                return deploymentID;
+              }
+            }, new Handler<AsyncResult<String>>() {
+              @Override
+              public void handle(AsyncResult<String> result) {
+                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
+              }
+            });
           }
         }
       });
@@ -657,19 +790,23 @@ public class DefaultClusterManager implements ClusterManager {
    * Undeploys a module.
    */
   private void doUndeployModule(final Message<JsonObject> message) {
-    String deploymentID = message.body().getString("id");
+    final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID);
-      platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            message.reply(new JsonObject().putString("status", "ok"));
-          }
+          platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       });
     }
@@ -679,19 +816,23 @@ public class DefaultClusterManager implements ClusterManager {
    * Undeploys a verticle.
    */
   private void doUndeployVerticle(final Message<JsonObject> message) {
-    String deploymentID = message.body().getString("id");
+    final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID);
-      platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            message.reply(new JsonObject().putString("status", "ok"));
-          }
+          platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                message.reply(new JsonObject().putString("status", "ok"));
+              }
+            }
+          });
         }
       });
     }
@@ -700,19 +841,27 @@ public class DefaultClusterManager implements ClusterManager {
   /**
    * Removes a deployment from the deployments map.
    */
-  private void removeDeployment(String deploymentID) {
-    Collection<String> deployments = this.deployments.get(cluster);
-    String deployment = null;
-    for (String sdeployment : deployments) {
-      JsonObject info = new JsonObject(sdeployment);
-      if (info.getString("id").equals(deploymentID)) {
-        deployment = sdeployment;
-        break;
+  private void removeDeployment(final String deploymentID, Handler<AsyncResult<Void>> doneHandler) {
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        Collection<String> clusterDeployments = deployments.get(cluster);
+        if (clusterDeployments != null) {
+          String deployment = null;
+          for (String sdeployment : clusterDeployments) {
+            JsonObject info = new JsonObject(sdeployment);
+            if (info.getString("id").equals(deploymentID)) {
+              deployment = sdeployment;
+              break;
+            }
+          }
+          if (deployment != null) {
+            deployments.remove(cluster, deployment);
+          }
+        }
+        return null;
       }
-    }
-    if (deployment != null) {
-      this.deployments.remove(cluster, deployment);
-    }
+    }, doneHandler);
   }
 
   /**
@@ -727,12 +876,22 @@ public class DefaultClusterManager implements ClusterManager {
 
     final Object value = message.body().getValue("value");
 
-    try {
-      data.getMap(formatKey("keys")).put(key, value);
-      message.reply(new JsonObject().putString("status", "ok"));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getMap(formatKey("keys")).put(key, value);
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -745,12 +904,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Object value = data.getMap(formatKey("keys")).get(key);
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", value));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getMap(formatKey("keys")).get(key);
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
+        }
+      }
+    });
   }
 
   /**
@@ -763,12 +931,22 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      data.getMap(formatKey("keys")).remove(key);
-      message.reply(new JsonObject().putString("status", "ok"));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getMap(formatKey("keys")).remove(key);
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -781,16 +959,26 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Map<Object, Long> counters = data.getMap(formatKey("counters"));
-      Long value = counters.get(name);
-      if (value == null) {
-        value = 0L;
+    context.execute(new Action<Long>() {
+      @Override
+      public Long perform() {
+        Map<Object, Long> counters = data.getMap(formatKey("counters"));
+        Long value = counters.get(name);
+        if (value == null) {
+          value = 0L;
+        }
+        return value;
       }
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", value));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    }, new Handler<AsyncResult<Long>>() {
+      @Override
+      public void handle(AsyncResult<Long> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -803,18 +991,28 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Map<Object, Long> counters = data.getMap(formatKey("counters"));
-      Long value = counters.get(name);
-      if (value == null) {
-        value = 0L;
+    context.execute(new Action<Long>() {
+      @Override
+      public Long perform() {
+        Map<Object, Long> counters = data.getMap(formatKey("counters"));
+        Long value = counters.get(name);
+        if (value == null) {
+          value = 0L;
+        }
+        value++;
+        counters.put(name, value);
+        return value;
       }
-      value++;
-      counters.put(name, value);
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", value));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    }, new Handler<AsyncResult<Long>>() {
+      @Override
+      public void handle(AsyncResult<Long> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -827,18 +1025,354 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Map<Object, Long> counters = data.getMap(formatKey("counters"));
-      Long value = counters.get(name);
-      if (value == null) {
-        value = 0L;
+    context.execute(new Action<Long>() {
+      @Override
+      public Long perform() {
+        Map<Object, Long> counters = data.getMap(formatKey("counters"));
+        Long value = counters.get(name);
+        if (value == null) {
+          value = 0L;
+        }
+        value--;
+        counters.put(name, value);
+        return value;
       }
-      value--;
-      counters.put(name, value);
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", value));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
+    }, new Handler<AsyncResult<Long>>() {
+      @Override
+      public void handle(AsyncResult<Long> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles a cluster multi-map put command.
+   */
+  private void doMultiMapPut(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
     }
+
+    final Object key = message.body().getValue("key");
+    if (key == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
+      return;
+    }
+
+    final Object value = message.body().getValue("value");
+    if (value == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No value specified."));
+      return;
+    }
+
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getMultiMap(formatKey(name)).put(key, value);
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles a cluster multi-map get command.
+   */
+  private void doMultiMapGet(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    final Object key = message.body().getValue("key");
+    if (key == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
+      return;
+    }
+
+    context.execute(new Action<Collection<Object>>() {
+      @Override
+      public Collection<Object> perform() {
+        return data.getMultiMap(formatKey(name)).get(key);
+      }
+    }, new Handler<AsyncResult<Collection<Object>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<Object>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new Object[result.result().size()]))));
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles a cluster multi-map remove command.
+   */
+  private void doMultiMapRemove(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    final Object key = message.body().getValue("key");
+    if (key == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
+      return;
+    }
+
+    final Object value = message.body().getValue("value");
+    if (value != null) {
+      context.execute(new Action<Boolean>() {
+        @Override
+        public Boolean perform() {
+          return data.getMultiMap(formatKey(name)).remove(key, value);
+        }
+      }, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+          }
+        }
+      });
+    } else {
+      context.execute(new Action<Collection<Object>>() {
+        @Override
+        public Collection<Object> perform() {
+          return data.getMultiMap(formatKey(name)).remove(key);
+        }
+      }, new Handler<AsyncResult<Collection<Object>>>() {
+        @Override
+        public void handle(AsyncResult<Collection<Object>> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new Object[result.result().size()]))));
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Handles a cluster multi-map contains command.
+   */
+  private void doMultiMapContains(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    final Object key = message.body().getValue("key");
+    final Object value = message.body().getValue("value");
+
+    if (key != null && value != null) {
+      context.execute(new Action<Boolean>() {
+        @Override
+        public Boolean perform() {
+          return data.getMultiMap(formatKey(name)).containsEntry(key, value);
+        }
+      }, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+          }
+        }
+      });
+    } else if (key != null) {
+      context.execute(new Action<Boolean>() {
+        @Override
+        public Boolean perform() {
+          return data.getMultiMap(formatKey(name)).containsKey(key);
+        }
+      }, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+          }
+        }
+      });
+    } else if (value != null) {
+      context.execute(new Action<Boolean>() {
+        @Override
+        public Boolean perform() {
+          return data.getMultiMap(formatKey(name)).containsValue(key);
+        }
+      }, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+          }
+        }
+      });
+    } else {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No key or value specified."));
+    }
+  }
+
+  /**
+   * Handles a cluster multi-map keys command.
+   */
+  private void doMultiMapKeys(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    context.execute(new Action<Set<Object>>() {
+      @Override
+      public Set<Object> perform() {
+        return data.getMultiMap(formatKey(name)).keySet();
+      }
+    }, new Handler<AsyncResult<Set<Object>>>() {
+      @Override
+      public void handle(AsyncResult<Set<Object>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new Object[result.result().size()]))));
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles a cluster multi-map values command.
+   */
+  private void doMultiMapValues(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    context.execute(new Action<Collection<Object>>() {
+      @Override
+      public Collection<Object> perform() {
+        return data.getMultiMap(formatKey(name)).values();
+      }
+    }, new Handler<AsyncResult<Collection<Object>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<Object>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new Object[result.result().size()]))));
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles cluster multi-map is empty command.
+   */
+  private void doMultiMapIsEmpty(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getMultiMap(formatKey(name)).size() == 0;
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
+  }
+
+  /**
+   * Counts the number of items in a multimap.
+   */
+  private void doMultiMapSize(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    context.execute(new Action<Integer>() {
+      @Override
+      public Integer perform() {
+        return data.getMultiMap(formatKey(name)).size();
+      }
+    }, new Handler<AsyncResult<Integer>>() {
+      @Override
+      public void handle(AsyncResult<Integer> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
+  }
+
+  /**
+   * Clears all items in a multi-map.
+   */
+  private void doMultiMapClear(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No name specified."));
+      return;
+    }
+
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getMultiMap(formatKey(name)).clear();
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -863,12 +1397,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Object result = data.getMap(formatKey(name)).put(key, value);
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getMap(formatKey(name)).put(key, value);
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -881,18 +1424,27 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    final String key = message.body().getString("key");
+    final Object key = message.body().getValue("key");
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
       return;
     }
 
-    try {
-      Object result = data.getMap(formatKey(name)).get(key);
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getMap(formatKey(name)).get(key);
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -905,18 +1457,27 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    final String key = message.body().getString("key");
+    final Object key = message.body().getValue("key");
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
       return;
     }
 
-    try {
-      Object result = data.getMap(formatKey(name)).remove(key);
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getMap(formatKey(name)).remove(key);
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -929,18 +1490,27 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    final String key = message.body().getString("key");
+    final Object key = message.body().getValue("key");
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
       return;
     }
 
-    try {
-      boolean result = data.getMap(formatKey(name)).containsKey(key);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getMap(formatKey(name)).containsKey(key);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -953,12 +1523,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Set<Object> result = data.getMap(formatKey(name)).keySet();
-      message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.toArray())));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Set<Object>>() {
+      @Override
+      public Set<Object> perform() {
+        return data.getMap(formatKey(name)).keySet();
+      }
+    }, new Handler<AsyncResult<Set<Object>>>() {
+      @Override
+      public void handle(AsyncResult<Set<Object>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new Object[result.result().size()]))));
+        }
+      }
+    });
   }
 
   /**
@@ -971,12 +1550,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Collection<Object> result = data.getMap(formatKey(name)).values();
-      message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.toArray())));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Collection<Object>>() {
+      @Override
+      public Collection<Object> perform() {
+        return data.getMap(formatKey(name)).values();
+      }
+    }, new Handler<AsyncResult<Collection<Object>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<Object>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", new JsonArray(result.result().toArray(new Object[result.result().size()]))));
+        }
+      }
+    });
   }
 
   /**
@@ -989,12 +1577,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getMap(formatKey(name)).isEmpty();
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getMap(formatKey(name)).isEmpty();
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1007,12 +1604,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      int result = data.getMap(formatKey(name)).size();
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Integer>() {
+      @Override
+      public Integer perform() {
+        return data.getMap(formatKey(name)).size();
+      }
+    }, new Handler<AsyncResult<Integer>>() {
+      @Override
+      public void handle(AsyncResult<Integer> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1025,12 +1631,22 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      data.getMap(formatKey(name)).clear();
-      message.reply(new JsonObject().putString("status", "ok"));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getMap(formatKey(name)).clear();
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -1049,12 +1665,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getList(formatKey(name)).add(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getList(formatKey(name)).add(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1073,12 +1698,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Object result = data.getList(formatKey(name)).get(index);
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getList(formatKey(name)).get(index);
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1093,23 +1727,42 @@ public class DefaultClusterManager implements ClusterManager {
 
     if (message.body().containsField("index")) {
       final int index = message.body().getInteger("index");
-      try {
-        Object result = data.getList(formatKey(name)).remove(index);
-        message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-      } catch (Exception e) {
-        message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-      }
+
+      context.execute(new Action<Object>() {
+        @Override
+        public Object perform() {
+          return data.getList(formatKey(name)).remove(index);
+        }
+      }, new Handler<AsyncResult<Object>>() {
+        @Override
+        public void handle(AsyncResult<Object> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+          }
+        }
+      });
     } else {
       final Object value = message.body().getValue("value");
       if (value == null) {
         message.reply(new JsonObject().putString("status", "error").putString("message", "No value specified."));
       } else {
-        try {
-          boolean result = data.getList(formatKey(name)).remove(value);
-          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-        } catch (Exception e) {
-          message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-        }
+        context.execute(new Action<Boolean>() {
+          @Override
+          public Boolean perform() {
+            return data.getList(formatKey(name)).remove(value);
+          }
+        }, new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> result) {
+            if (result.failed()) {
+              message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+            } else {
+              message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+            }
+          }
+        });
       }
     }
   }
@@ -1130,12 +1783,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getList(formatKey(name)).contains(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getList(formatKey(name)).contains(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1148,12 +1810,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getList(formatKey(name)).isEmpty();
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getList(formatKey(name)).isEmpty();
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1166,12 +1837,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      int result = data.getList(formatKey(name)).size();
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Integer>() {
+      @Override
+      public Integer perform() {
+        return data.getList(formatKey(name)).size();
+      }
+    }, new Handler<AsyncResult<Integer>>() {
+      @Override
+      public void handle(AsyncResult<Integer> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1184,12 +1864,22 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      data.getList(formatKey(name)).clear();
-      message.reply(new JsonObject().putString("status", "ok"));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getList(formatKey(name)).clear();
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -1208,12 +1898,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getSet(formatKey(name)).add(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getSet(formatKey(name)).add(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1230,12 +1929,21 @@ public class DefaultClusterManager implements ClusterManager {
     if (value == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No value specified."));
     } else {
-      try {
-        boolean result = data.getSet(formatKey(name)).remove(value);
-        message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-      } catch (Exception e) {
-        message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-      }
+      context.execute(new Action<Boolean>() {
+        @Override
+        public Boolean perform() {
+          return data.getSet(formatKey(name)).remove(value);
+        }
+      }, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+          }
+        }
+      });
     }
   }
 
@@ -1255,12 +1963,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getSet(formatKey(name)).contains(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getSet(formatKey(name)).contains(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1273,12 +1990,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getSet(formatKey(name)).isEmpty();
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getSet(formatKey(name)).isEmpty();
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1291,12 +2017,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      int result = data.getSet(formatKey(name)).size();
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Integer>() {
+      @Override
+      public Integer perform() {
+        return data.getSet(formatKey(name)).size();
+      }
+    }, new Handler<AsyncResult<Integer>>() {
+      @Override
+      public void handle(AsyncResult<Integer> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1309,12 +2044,22 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      data.getSet(formatKey(name)).clear();
-      message.reply(new JsonObject().putString("status", "ok"));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getSet(formatKey(name)).clear();
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -1333,12 +2078,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getQueue(formatKey(name)).add(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getQueue(formatKey(name)).add(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1355,12 +2109,22 @@ public class DefaultClusterManager implements ClusterManager {
     if (value == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No value specified."));
     } else {
-      try {
-        boolean result = data.getQueue(formatKey(name)).remove(value);
-        message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-      } catch (Exception e) {
-        message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-      }
+
+      context.execute(new Action<Boolean>() {
+        @Override
+        public Boolean perform() {
+          return data.getQueue(formatKey(name)).remove(value);
+        }
+      }, new Handler<AsyncResult<Boolean>>() {
+        @Override
+        public void handle(AsyncResult<Boolean> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+          }
+        }
+      });
     }
   }
 
@@ -1380,12 +2144,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getQueue(formatKey(name)).contains(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getQueue(formatKey(name)).contains(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1398,12 +2171,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getQueue(formatKey(name)).isEmpty();
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getQueue(formatKey(name)).isEmpty();
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1416,12 +2198,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      int result = data.getQueue(formatKey(name)).size();
-      message.reply(new JsonObject().putString("status", "ok").putNumber("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Integer>() {
+      @Override
+      public Integer perform() {
+        return data.getQueue(formatKey(name)).size();
+      }
+    }, new Handler<AsyncResult<Integer>>() {
+      @Override
+      public void handle(AsyncResult<Integer> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putNumber("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1434,12 +2225,22 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      data.getQueue(formatKey(name)).clear();
-      message.reply(new JsonObject().putString("status", "ok"));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        data.getQueue(formatKey(name)).clear();
+        return null;
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    });
   }
 
   /**
@@ -1458,12 +2259,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      boolean result = data.getQueue(formatKey(name)).offer(value);
-      message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Boolean>() {
+      @Override
+      public Boolean perform() {
+        return data.getQueue(formatKey(name)).offer(value);
+      }
+    }, new Handler<AsyncResult<Boolean>>() {
+      @Override
+      public void handle(AsyncResult<Boolean> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putBoolean("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1476,12 +2286,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Object result = data.getQueue(formatKey(name)).element();
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getQueue(formatKey(name)).element();
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1494,12 +2313,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Object result = data.getQueue(formatKey(name)).poll();
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getQueue(formatKey(name)).poll();
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
   /**
@@ -1512,12 +2340,21 @@ public class DefaultClusterManager implements ClusterManager {
       return;
     }
 
-    try {
-      Object result = data.getQueue(formatKey(name)).peek();
-      message.reply(new JsonObject().putString("status", "ok").putValue("result", result));
-    } catch (Exception e) {
-      message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
-    }
+    context.execute(new Action<Object>() {
+      @Override
+      public Object perform() {
+        return data.getQueue(formatKey(name)).peek();
+      }
+    }, new Handler<AsyncResult<Object>>() {
+      @Override
+      public void handle(AsyncResult<Object> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok").putValue("result", result.result()));
+        }
+      }
+    });
   }
 
 }

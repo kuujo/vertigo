@@ -27,11 +27,13 @@ import net.kuujo.vertigo.cluster.Node;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncList;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
+import net.kuujo.vertigo.cluster.data.AsyncMultiMap;
 import net.kuujo.vertigo.cluster.data.AsyncQueue;
 import net.kuujo.vertigo.cluster.data.AsyncSet;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncCounter;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncList;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncMap;
+import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncMultiMap;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncQueue;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncSet;
 import net.kuujo.vertigo.network.ActiveNetwork;
@@ -640,6 +642,11 @@ public class DefaultCluster implements Cluster {
   @Override
   public <K, V> AsyncMap<K, V> getMap(String name) {
     return new DefaultAsyncMap<K, V>(address, name, vertx);
+  }
+
+  @Override
+  public <K, V> AsyncMultiMap<K, V> getMultiMap(String name) {
+    return new DefaultAsyncMultiMap<K, V>(address, name, vertx);
   }
 
   @Override

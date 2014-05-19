@@ -17,7 +17,9 @@ package net.kuujo.vertigo.cluster.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.Cluster;
@@ -65,6 +67,8 @@ public class DefaultCluster implements Cluster {
   private final String address;
   private final Vertx vertx;
   private final Container container;
+  private final Map<Handler<Node>, Handler<Message<String>>> joinHandlers = new HashMap<>();
+  private final Map<Handler<Node>, Handler<Message<String>>> leaveHandlers = new HashMap<>();
 
   public DefaultCluster(String address, Vertx vertx, Container container) {
     this.address = address;
@@ -75,6 +79,74 @@ public class DefaultCluster implements Cluster {
   @Override
   public String address() {
     return address;
+  }
+
+  @Override
+  public Cluster registerJoinHandler(final Handler<Node> handler) {
+    return registerJoinHandler(handler, null);
+  }
+
+  @Override
+  public Cluster registerJoinHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = new Handler<Message<String>>() {
+      @Override
+      public void handle(Message<String> message) {
+        handler.handle(new DefaultNode(message.body(), vertx, container));
+      }
+    };
+    joinHandlers.put(handler, messageHandler);
+    vertx.eventBus().registerHandler(String.format("%s.join", address), messageHandler);
+    return this;
+  }
+
+  @Override
+  public Cluster unregisterJoinHandler(final Handler<Node> handler) {
+    return unregisterJoinHandler(handler, null);
+  }
+
+  @Override
+  public Cluster unregisterJoinHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = joinHandlers.remove(handler);
+    if (messageHandler != null) {
+      vertx.eventBus().unregisterHandler(String.format("%s.join", address), messageHandler, doneHandler);
+    } else {
+      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+    }
+    return this;
+  }
+
+  @Override
+  public Cluster registerLeaveHandler(final Handler<Node> handler) {
+    return registerLeaveHandler(handler, null);
+  }
+
+  @Override
+  public Cluster registerLeaveHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = new Handler<Message<String>>() {
+      @Override
+      public void handle(Message<String> message) {
+        handler.handle(new DefaultNode(message.body(), vertx, container));
+      }
+    };
+    leaveHandlers.put(handler, messageHandler);
+    vertx.eventBus().registerHandler(String.format("%s.leave", address), messageHandler, doneHandler);
+    return this;
+  }
+
+  @Override
+  public Cluster unregisterLeaveHandler(final Handler<Node> handler) {
+    return unregisterLeaveHandler(handler, null);
+  }
+
+  @Override
+  public Cluster unregisterLeaveHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = leaveHandlers.remove(handler);
+    if (messageHandler != null) {
+      vertx.eventBus().unregisterHandler(String.format("%s.leave", address), messageHandler, doneHandler);
+    } else {
+      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+    }
+    return this;
   }
 
   @Override
@@ -228,6 +300,29 @@ public class DefaultCluster implements Cluster {
           new DefaultFutureResult<Node>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Node>(new DefaultNode(result.result().body().getString("result"), vertx, container)).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Cluster installModule(String moduleName) {
+    return installModule(moduleName, null);
+  }
+
+  @Override
+  public Cluster installModule(final String moduleName, final Handler<AsyncResult<Void>> doneHandler) {
+    getNodes(new Handler<AsyncResult<Collection<Node>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<Node>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size()).setHandler(doneHandler);
+          for (Node node : result.result()) {
+            node.installModule(moduleName, counter);
+          }
         }
       }
     });
@@ -502,27 +597,6 @@ public class DefaultCluster implements Cluster {
           new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
           createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("result")), resultHandler);
-        }
-      }
-    });
-    return this;
-  }
-
-  @Override
-  public Cluster isDeployed(String name, final Handler<AsyncResult<Boolean>> resultHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "check")
-        .putString("type", "network")
-        .putString("network", name);
-    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
-      @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<Boolean>(new ClusterException(result.cause())).setHandler(resultHandler);
-        } else if (result.result().body().getString("status").equals("error")) {
-          new DefaultFutureResult<Boolean>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
-        } else {
-          new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(resultHandler);
         }
       }
     });

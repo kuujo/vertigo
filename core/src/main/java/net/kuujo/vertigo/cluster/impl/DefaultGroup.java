@@ -17,11 +17,14 @@ package net.kuujo.vertigo.cluster.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.kuujo.vertigo.cluster.ClusterException;
 import net.kuujo.vertigo.cluster.Group;
 import net.kuujo.vertigo.cluster.Node;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -42,6 +45,8 @@ public class DefaultGroup implements Group {
   private final String address;
   private final Vertx vertx;
   private final Container container;
+  private final Map<Handler<Node>, Handler<Message<String>>> joinHandlers = new HashMap<>();
+  private final Map<Handler<Node>, Handler<Message<String>>> leaveHandlers = new HashMap<>();
 
   public DefaultGroup(String address, Vertx vertx, Container container) {
     this.address = address;
@@ -52,6 +57,74 @@ public class DefaultGroup implements Group {
   @Override
   public String address() {
     return address;
+  }
+
+  @Override
+  public Group registerJoinHandler(final Handler<Node> handler) {
+    return registerJoinHandler(handler, null);
+  }
+
+  @Override
+  public Group registerJoinHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = new Handler<Message<String>>() {
+      @Override
+      public void handle(Message<String> message) {
+        handler.handle(new DefaultNode(message.body(), vertx, container));
+      }
+    };
+    joinHandlers.put(handler, messageHandler);
+    vertx.eventBus().registerHandler(String.format("%s.join", address), messageHandler);
+    return this;
+  }
+
+  @Override
+  public Group unregisterJoinHandler(final Handler<Node> handler) {
+    return unregisterJoinHandler(handler, null);
+  }
+
+  @Override
+  public Group unregisterJoinHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = joinHandlers.remove(handler);
+    if (messageHandler != null) {
+      vertx.eventBus().unregisterHandler(String.format("%s.join", address), messageHandler, doneHandler);
+    } else {
+      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+    }
+    return this;
+  }
+
+  @Override
+  public Group registerLeaveHandler(final Handler<Node> handler) {
+    return registerLeaveHandler(handler, null);
+  }
+
+  @Override
+  public Group registerLeaveHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = new Handler<Message<String>>() {
+      @Override
+      public void handle(Message<String> message) {
+        handler.handle(new DefaultNode(message.body(), vertx, container));
+      }
+    };
+    leaveHandlers.put(handler, messageHandler);
+    vertx.eventBus().registerHandler(String.format("%s.leave", address), messageHandler, doneHandler);
+    return this;
+  }
+
+  @Override
+  public Group unregisterLeaveHandler(final Handler<Node> handler) {
+    return unregisterLeaveHandler(handler, null);
+  }
+
+  @Override
+  public Group unregisterLeaveHandler(final Handler<Node> handler, final Handler<AsyncResult<Void>> doneHandler) {
+    Handler<Message<String>> messageHandler = leaveHandlers.remove(handler);
+    if (messageHandler != null) {
+      vertx.eventBus().unregisterHandler(String.format("%s.leave", address), messageHandler, doneHandler);
+    } else {
+      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
+    }
+    return this;
   }
 
   @Override
@@ -137,6 +210,29 @@ public class DefaultGroup implements Group {
           new DefaultFutureResult<Node>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else if (result.result().body().getString("status").equals("ok")) {
           new DefaultFutureResult<Node>(new DefaultNode(result.result().body().getString("result"), vertx, container)).setHandler(resultHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public Group installModule(String moduleName) {
+    return installModule(moduleName, null);
+  }
+
+  @Override
+  public Group installModule(final String moduleName, final Handler<AsyncResult<Void>> doneHandler) {
+    getNodes(new Handler<AsyncResult<Collection<Node>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<Node>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size()).setHandler(doneHandler);
+          for (Node node : result.result()) {
+            node.installModule(moduleName, counter);
+          }
         }
       }
     });

@@ -103,6 +103,10 @@ public interface Node {
 
   Node getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler);
 
+  Node installNetwork(JsonObject network);
+
+  Node installNetwork(JsonObject network, Handler<AsyncResult<Void>> doneHandler);
+
   Node installNetwork(NetworkConfig network);
 
   Node installNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);

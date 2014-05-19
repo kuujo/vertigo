@@ -34,12 +34,11 @@ import org.vertx.java.platform.impl.ModuleIdentifier;
  */
 public class DefaultModuleConfig implements ModuleConfig {
   private static final int DEFAULT_NUM_INSTANCES = 1;
-  private static final String DEFAULT_GROUP = "__DEFAULT__";
 
   private String name;
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
-  private String group = DEFAULT_GROUP;
+  private String group;
   private List<ComponentHook> hooks = new ArrayList<>();
   private String module;
 
@@ -95,7 +94,7 @@ public class DefaultModuleConfig implements ModuleConfig {
 
   @Override
   public ModuleConfig setGroup(String group) {
-    this.group = group != null ? group : DEFAULT_GROUP;
+    this.group = group;
     return this;
   }
 

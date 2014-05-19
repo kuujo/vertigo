@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.ClusterException;
 import net.kuujo.vertigo.cluster.Node;
 import net.kuujo.vertigo.component.ComponentConfig;
@@ -30,6 +31,7 @@ import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.platform.impl.DefaultPlatformManager;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -480,6 +482,16 @@ public class DefaultNode implements Node {
   public Node getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler) {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public Node installNetwork(JsonObject network) {
+    return installNetwork(network, null);
+  }
+
+  @Override
+  public Node installNetwork(JsonObject network, Handler<AsyncResult<Void>> doneHandler) {
+    return installNetwork(SerializerFactory.getSerializer(Config.class).deserializeObject(network, NetworkConfig.class), doneHandler);
   }
 
   @Override

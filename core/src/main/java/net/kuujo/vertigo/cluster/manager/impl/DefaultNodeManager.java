@@ -17,13 +17,28 @@ package net.kuujo.vertigo.cluster.manager.impl;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
+import net.kuujo.vertigo.Config;
+import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.manager.NodeManager;
+import net.kuujo.vertigo.impl.ContextBuilder;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.NetworkContext;
+import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
+import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.network.manager.NetworkManager;
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
+import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.ContextManager;
+import net.kuujo.vertigo.util.serialization.SerializationException;
+import net.kuujo.vertigo.util.serialization.Serializer;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -43,6 +58,7 @@ import com.hazelcast.core.MultiMap;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultNodeManager implements NodeManager {
+  private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);
   private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
   private final String node;
   private final String group;
@@ -51,9 +67,12 @@ public class DefaultNodeManager implements NodeManager {
   private final ContextManager context;
   private final PlatformManager platform;
   private final ClusterListener listener;
+  private final ClusterData data;
   private final MultiMap<String, String> nodes;
   private final MultiMap<String, String> groups;
   private final MultiMap<String, String> deployments;
+  private final Set<String> networks;
+  private final Map<String, String> managers = new HashMap<>();
 
   private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
     @Override
@@ -98,9 +117,11 @@ public class DefaultNodeManager implements NodeManager {
     this.context = context;
     this.platform = platform;
     this.listener = listener;
+    this.data = data;
     this.nodes = data.getMultiMap(String.format("nodes.%s", cluster));
     this.groups = data.getMultiMap(String.format("groups.%s", cluster));
     this.deployments = data.getMultiMap(String.format("deployments.%s", cluster));
+    this.networks = data.getSet(String.format("run.%s", cluster));
   }
 
   @Override
@@ -370,6 +391,9 @@ public class DefaultNodeManager implements NodeManager {
         case "verticle":
           doDeployVerticle(message);
           break;
+        case "network":
+          doDeployNetwork(message);
+          break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid deployment type."));
           break;
@@ -480,6 +504,145 @@ public class DefaultNodeManager implements NodeManager {
         }
       });
     }
+  }
+
+  /**
+   * Deploys a network.
+   */
+  private void doDeployNetwork(final Message<JsonObject> message) {
+    Object network = message.body().getValue("network");
+    if (network != null) {
+      if (network instanceof String) {
+        doDeployNetwork((String) network, message);
+      } else if (network instanceof JsonObject) {
+        JsonObject jsonNetwork = (JsonObject) network;
+        try {
+          NetworkConfig config = serializer.deserializeObject(jsonNetwork, NetworkConfig.class);
+          doDeployNetwork(config, message);
+        } catch (SerializationException e) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
+        }
+      } else {
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network configuration."));
+      }
+    } else {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network specified."));
+    }
+  }
+
+  /**
+   * Deploys a network from name.
+   */
+  private void doDeployNetwork(final String name, final Message<JsonObject> message) {
+    doDeployNetwork(new DefaultNetworkConfig(name), message);
+  }
+
+  /**
+   * Deploys a network from configuration.
+   */
+  private void doDeployNetwork(final NetworkConfig network, final Message<JsonObject> message) {
+    // When deploying the network, we first need to check the cluster
+    // to determine whether a network of that name is already deployed in the Vert.x
+    // cluster. If the network is already deployed, then we merge the given network
+    // configuration with the existing network configuration. If the network seems to
+    // be new, then we deploy a new network manager on the network's cluster.
+    String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, network.getName())).get(String.format("%s.%s", cluster, network.getName()));
+
+    // Create the new network context. If a context already existed in the cluster
+    // then merge the new configuration with the existing configuration. Otherwise
+    // just build a network context.
+    NetworkContext updatedContext;
+    if (scontext != null) {
+      updatedContext = ContextBuilder.buildContext(Configs.mergeNetworks(DefaultNetworkContext.fromJson(new JsonObject(scontext)).config(), network), cluster);
+    } else {
+      updatedContext = ContextBuilder.buildContext(network, cluster);
+    }
+
+    final NetworkContext context = updatedContext;
+
+    // If the network's manager is deployed then its deployment ID will have
+    // been stored in the local managers map.
+    if (!managers.containsKey(context.address())) {
+      // If the network manager hasn't yet been deployed then deploy the manager
+      // and then update the network's configuration.
+      platform.deployVerticle(NetworkManager.class.getName(), new JsonObject().putString("cluster", cluster).putString("address", context.address()), 1, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "Failed to deploy network manager."));
+          } else {
+            // Once the manager has been deployed we can add the network name to
+            // the set of networks that are deployed in the cluster.
+            final String deploymentID = result.result();
+            DefaultNodeManager.this.context.execute(new Action<Void>() {
+              @Override
+              public Void perform() {
+                networks.add(context.name());
+                return null;
+              }
+            }, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                // And store the manager's deployment ID in the local managers map.
+                managers.put(context.address(), deploymentID);
+                doDeployNetwork(context, message);
+              }
+            });
+          }
+        }
+      });
+    } else {
+      // If the network manager is already deployed in the network's cluster then
+      // simply merge and update the network's configuration.
+      doDeployNetwork(context, message);
+    }
+  }
+
+  /**
+   * Deploys a network from context.
+   */
+  private void doDeployNetwork(final NetworkContext context, final Message<JsonObject> message) {
+    final WrappedWatchableMap<String, String> data = new WrappedWatchableMap<String, String>(context.address(), this.data.<String, String>getMap(context.address()), vertx);
+
+    // When the context is set in the cluster, the network's manager will be notified
+    // via a cluster event. The manager will then unset the network's status key and
+    // update the network. Once the network has been updated (components are deployed
+    // and undeployed and connections are created or removed as necessary) the manager
+    // will reset the network's status key to the updated version. We can use this fact
+    // to determine when the configuration change is complete by watching the network's
+    // status key for the new context version.
+    data.watch(context.status(), null, new Handler<MapEvent<String, String>>() {
+      @Override
+      public void handle(MapEvent<String, String> event) {
+        // Once the network has been updated we can stop watching the network's status key.
+        // Once the status key is unwatched trigger the async handler indicating that the
+        // update is complete.
+        if (event.type().equals(MapEvent.Type.CREATE) && event.value().equals(context.version())) {
+          data.unwatch(context.status(), null, this, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              message.reply(new JsonObject().putString("status", "ok").putObject("context", DefaultNetworkContext.toJson(context)));
+            }
+          });
+        }
+      }
+    }, new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        // Once the network's status key is being watched, set the new configuration in
+        // the cluster. This change will be recognized by the network's manager which will
+        // then update the running network's configuration.
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          try {
+            data.put(context.address(), DefaultNetworkContext.toJson(context).encode());
+          } catch (Exception e) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
+          }
+        }
+      }
+    });
   }
 
   /**

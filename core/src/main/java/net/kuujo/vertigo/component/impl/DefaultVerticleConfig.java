@@ -99,7 +99,7 @@ public class DefaultVerticleConfig implements VerticleConfig {
 
   @Override
   public VerticleConfig setGroup(String group) {
-    this.group = group != null ? group : DEFAULT_GROUP;
+    this.group = group;
     return this;
   }
 

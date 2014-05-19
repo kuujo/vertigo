@@ -36,6 +36,9 @@ import org.vertx.java.platform.Verticle;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ClusterAgent extends Verticle {
+  private ClusterManager cluster;
+  private GroupManager group;
+  private NodeManager node;
 
   @Override
   public void start(final Future<Void> startResult) {
@@ -45,9 +48,9 @@ public class ClusterAgent extends Verticle {
     PlatformManager platform = new DefaultPlatformManager(vertx, container);
     ClusterListener listener = new ClusterListenerFactory(vertx).createClusterListener();
     ClusterData data = new ClusterDataFactory(vertx).createClusterData();
-    ClusterManager cluster = new DefaultClusterManager(clusterName, vertx, new ContextManager(vertx), platform, listener, data);
-    GroupManager group = new DefaultGroupManager(String.format("%s.%s", clusterName, groupName), clusterName, vertx, new ContextManager(vertx), platform, listener, data);
-    NodeManager node = new DefaultNodeManager(String.format("%s.%s.%s", clusterName, groupName, nodeAddress), String.format("%s.%s", clusterName, groupName), clusterName, vertx, new ContextManager(vertx), platform, listener, data);
+    cluster = new DefaultClusterManager(clusterName, vertx, new ContextManager(vertx), platform, listener, data);
+    group = new DefaultGroupManager(String.format("%s.%s", clusterName, groupName), clusterName, vertx, new ContextManager(vertx), platform, listener, data);
+    node = new DefaultNodeManager(String.format("%s.%s.%s", clusterName, groupName, nodeAddress), String.format("%s.%s", clusterName, groupName), clusterName, vertx, new ContextManager(vertx), platform, listener, data);
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(3);
     counter.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
@@ -62,6 +65,13 @@ public class ClusterAgent extends Verticle {
     cluster.start(counter);
     group.start(counter);
     node.start(counter);
+  }
+
+  @Override
+  public void stop() {
+    cluster.stop();
+    group.stop();
+    node.stop();
   }
 
 }

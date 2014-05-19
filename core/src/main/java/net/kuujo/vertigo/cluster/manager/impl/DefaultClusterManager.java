@@ -23,15 +23,21 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.manager.ClusterManager;
+import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.network.NetworkContext;
+import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.util.ContextManager;
+import net.kuujo.vertigo.util.serialization.SerializationException;
+import net.kuujo.vertigo.util.serialization.Serializer;
+import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.spi.Action;
@@ -44,6 +50,7 @@ import com.hazelcast.core.MultiMap;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultClusterManager implements ClusterManager {
+  private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);
   private final String cluster;
   private final Vertx vertx;
   private final ContextManager context;
@@ -53,6 +60,7 @@ public class DefaultClusterManager implements ClusterManager {
   private final MultiMap<String, String> nodes;
   private final MultiMap<String, String> groups;
   private final MultiMap<String, String> deployments;
+  private final Set<String> networks;
   private final Map<Object, String> groupSelectors;
   private final Map<Object, String> nodeSelectors;
 
@@ -305,8 +313,9 @@ public class DefaultClusterManager implements ClusterManager {
     this.nodes = data.getMultiMap(String.format("nodes.%s", cluster));
     this.groups = data.getMultiMap(String.format("groups.%s", cluster));
     this.deployments = data.getMultiMap(String.format("deployments.%s", cluster));
-    this.groupSelectors = ((VertxInternal) vertx).clusterManager().getSyncMap(String.format("selectors.group.%s", cluster));
-    this.nodeSelectors = ((VertxInternal) vertx).clusterManager().getSyncMap(String.format("selectors.node.%s", cluster));
+    this.networks = data.getSet(String.format("run.%s", cluster));
+    this.groupSelectors = data.getMap(String.format("selectors.group.%s", cluster));
+    this.nodeSelectors = data.getMap(String.format("selectors.node.%s", cluster));
   }
 
   @Override
@@ -361,13 +370,28 @@ public class DefaultClusterManager implements ClusterManager {
       @Override
       public void run() {
         synchronized (nodes) {
+          // If we were the first node to remove the nodes then we need
+          // to inform listeners that the node left the cluster over the
+          // event bus.
           Collection<String> removedNodes = nodes.remove(nodeID);
           if (removedNodes != null) {
             synchronized (groups) {
-              for (String node : removedNodes) {
-                for (String group : groups.keySet()) {
+              for (final String node : removedNodes) {
+                for (final String group : groups.keySet()) {
                   groups.remove(group, node);
+                  vertx.runOnContext(new Handler<Void>() {
+                    @Override
+                    public void handle(Void event) {
+                      vertx.eventBus().publish(String.format("%s.leave", group), node);
+                    }
+                  });
                 }
+                vertx.runOnContext(new Handler<Void>() {
+                  @Override
+                  public void handle(Void event) {
+                    vertx.eventBus().publish(String.format("%s.leave", cluster), node);
+                  }
+                });
               }
             }
           }
@@ -395,6 +419,9 @@ public class DefaultClusterManager implements ClusterManager {
           break;
         case "node":
           doFindNode(message);
+          break;
+        case "network":
+          doFindNetwork(message);
           break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid type specified."));
@@ -471,6 +498,38 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   /**
+   * Loads a network configuration.
+   */
+  private void doFindNetwork(final Message<JsonObject> message) {
+    final String name = message.body().getString("name");
+    if (name == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network name specified."));
+    } else {
+      context.execute(new Action<NetworkContext>() {
+        @Override
+        public NetworkContext perform() {
+          String scontext = data.<String, String>getMap(String.format("networks.%s", cluster)).get(String.format("%s.%s", cluster, name));
+          if (scontext != null) {
+            return DefaultNetworkContext.fromJson(new JsonObject(scontext));
+          }
+          return null;
+        }
+      }, new Handler<AsyncResult<NetworkContext>>() {
+        @Override
+        public void handle(AsyncResult<NetworkContext> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "Not a valid network."));
+          } else {
+            message.reply(new JsonObject().putString("status", "ok").putObject("result", DefaultNetworkContext.toJson(result.result())));
+          }
+        }
+      });
+    }
+  }
+
+  /**
    * Lists objects in the cluster.
    */
   private void doList(final Message<JsonObject> message) {
@@ -482,6 +541,9 @@ public class DefaultClusterManager implements ClusterManager {
           break;
         case "node":
           doListNode(message);
+          break;
+        case "network":
+          doListNetwork(message);
           break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid type specified."));
@@ -539,6 +601,38 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   /**
+   * Lists the networks running in the cluster.
+   */
+  private void doListNetwork(final Message<JsonObject> message) {
+    context.execute(new Action<List<NetworkContext>>() {
+      @Override
+      public List<NetworkContext> perform() {
+        List<NetworkContext> contexts = new ArrayList<>();
+        for (String name : networks) {
+          String scontext = data.<String, String>getMap(String.format("networks.%s", cluster)).get(String.format("%s.%s", cluster, name));
+          if (scontext != null) {
+            contexts.add(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
+          }
+        }
+        return contexts;
+      }
+    }, new Handler<AsyncResult<List<NetworkContext>>>() {
+      @Override
+      public void handle(AsyncResult<List<NetworkContext>> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          JsonArray contexts = new JsonArray();
+          for (NetworkContext context : result.result()) {
+            contexts.addObject(DefaultNetworkContext.toJson(context));
+          }
+          message.reply(new JsonObject().putString("status", "ok").putArray("result", contexts));
+        }
+      }
+    });
+  }
+
+  /**
    * Selects an object in the cluster.
    */
   private void doSelect(final Message<JsonObject> message) {
@@ -568,26 +662,7 @@ public class DefaultClusterManager implements ClusterManager {
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
     } else {
-      context.execute(new Action<String>() {
-        @Override
-        public String perform() {
-          String address = groupSelectors.get(key);
-          if (address != null) {
-            return address;
-          }
-          Set<String> groups = DefaultClusterManager.this.groups.keySet();
-          int index = new Random().nextInt(groups.size());
-          int i = 0;
-          for (String group : groups) {
-            if (i == index) {
-              groupSelectors.put(key, group);
-              return group;
-            }
-            i++;
-          }
-          return null;
-        }
-      }, new Handler<AsyncResult<String>>() {
+      selectGroup(key, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
@@ -603,6 +678,32 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   /**
+   * Selects a group in the cluster.
+   */
+  private void selectGroup(final Object key, final Handler<AsyncResult<String>> doneHandler) {
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
+        String address = groupSelectors.get(key);
+        if (address != null) {
+          return address;
+        }
+        Set<String> groups = DefaultClusterManager.this.groups.keySet();
+        int index = new Random().nextInt(groups.size());
+        int i = 0;
+        for (String group : groups) {
+          if (i == index) {
+            groupSelectors.put(key, group);
+            return group;
+          }
+          i++;
+        }
+        return null;
+      }
+    }, doneHandler);
+  }
+
+  /**
    * Selects a node in the cluster.
    */
   private void doSelectNode(final Message<JsonObject> message) {
@@ -610,29 +711,7 @@ public class DefaultClusterManager implements ClusterManager {
     if (key == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No key specified."));
     } else {
-      context.execute(new Action<String>() {
-        @Override
-        public String perform() {
-          String address = nodeSelectors.get(key);
-          if (address != null) {
-            return address;
-          }
-          Set<String> nodes = new HashSet<>();
-          for (String group : groups.keySet()) {
-            nodes.addAll(groups.get(group));
-          }
-          int index = new Random().nextInt(nodes.size());
-          int i = 0;
-          for (String node : nodes) {
-            if (i == index) {
-              nodeSelectors.put(key, node);
-              return node;
-            }
-            i++;
-          }
-          return null;
-        }
-      }, new Handler<AsyncResult<String>>() {
+      selectNode(key, new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
@@ -645,6 +724,35 @@ public class DefaultClusterManager implements ClusterManager {
         }
       });
     }
+  }
+
+  /**
+   * Selects a node.
+   */
+  private void selectNode(final Object key, final Handler<AsyncResult<String>> doneHandler) {
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
+        String address = nodeSelectors.get(key);
+        if (address != null) {
+          return address;
+        }
+        Set<String> nodes = new HashSet<>();
+        for (String group : groups.keySet()) {
+          nodes.addAll(groups.get(group));
+        }
+        int index = new Random().nextInt(nodes.size());
+        int i = 0;
+        for (String node : nodes) {
+          if (i == index) {
+            nodeSelectors.put(key, node);
+            return node;
+          }
+          i++;
+        }
+        return null;
+      }
+    }, doneHandler);
   }
 
   /**
@@ -661,6 +769,9 @@ public class DefaultClusterManager implements ClusterManager {
           break;
         case "verticle":
           doDeployVerticle(message);
+          break;
+        case "network":
+          doDeployNetwork(message);
           break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid deployment type."));
@@ -775,6 +886,56 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   /**
+   * Deploys a network.
+   */
+  private void doDeployNetwork(final Message<JsonObject> message) {
+    Object network = message.body().getValue("network");
+    if (network != null) {
+      // When deploying a network to the cluster, we first determine
+      // the node to which the network belongs by selecting a node.
+      // The node that is selected for the network is always the node
+      // to which components will be uploaded and from which components
+      // will be deployed.
+      String key;
+      if (network instanceof String) {
+        key = (String) network;
+      } else if (network instanceof JsonObject) {
+        try {
+          key = serializer.deserializeObject((JsonObject) network, NetworkConfig.class).getName();
+        } catch (SerializationException e) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
+          return;
+        }
+      } else {
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network configuration."));
+        return;
+      }
+
+      selectNode(key, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "No nodes available."));
+          } else {
+            vertx.eventBus().sendWithTimeout(result.result(), message.body(), 120000, new Handler<AsyncResult<Message<JsonObject>>>() {
+              @Override
+              public void handle(AsyncResult<Message<JsonObject>> result) {
+                if (result.failed()) {
+                  message.reply(new JsonObject().putString("status", "error").putString("message", "Failed to reach node."));
+                } else {
+                  message.reply(result.result().body());
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  /**
    * Undeploys a module or verticle.
    */
   private void doUndeploy(final Message<JsonObject> message) {
@@ -788,6 +949,9 @@ public class DefaultClusterManager implements ClusterManager {
           break;
         case "verticle":
           doUndeployVerticle(message);
+          break;
+        case "network":
+          doUndeployNetwork(message);
           break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid deployment type " + type));
@@ -872,6 +1036,13 @@ public class DefaultClusterManager implements ClusterManager {
         return null;
       }
     }, doneHandler);
+  }
+
+  /**
+   * Undeploys a network.
+   */
+  private void doUndeployNetwork(final Message<JsonObject> message) {
+    
   }
 
   /**

@@ -35,6 +35,22 @@ public interface Group {
    */
   String address();
 
+  Group registerJoinHandler(Handler<Node> handler);
+
+  Group registerJoinHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
+  Group unregisterJoinHandler(Handler<Node> handler);
+
+  Group unregisterJoinHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
+  Group registerLeaveHandler(Handler<Node> handler);
+
+  Group registerLeaveHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
+  Group unregisterLeaveHandler(Handler<Node> handler);
+
+  Group unregisterLeaveHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
   Group ping(Handler<AsyncResult<Group>> resultHandler);
 
   Group getNode(String address, Handler<AsyncResult<Node>> resultHandler);
@@ -42,6 +58,10 @@ public interface Group {
   Group getNodes(Handler<AsyncResult<Collection<Node>>> resultHandler);
 
   Group selectNode(Object key, Handler<AsyncResult<Node>> resultHandler);
+
+  Group installModule(String moduleName);
+
+  Group installModule(String moduleName, Handler<AsyncResult<Void>> doneHandler);
 
   Group deployModule(String moduleName);
 

@@ -44,6 +44,22 @@ public interface Cluster {
    */
   String address();
 
+  Cluster registerJoinHandler(Handler<Node> handler);
+
+  Cluster registerJoinHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
+  Cluster unregisterJoinHandler(Handler<Node> handler);
+
+  Cluster unregisterJoinHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
+  Cluster registerLeaveHandler(Handler<Node> handler);
+
+  Cluster registerLeaveHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
+  Cluster unregisterLeaveHandler(Handler<Node> handler);
+
+  Cluster unregisterLeaveHandler(Handler<Node> handler, Handler<AsyncResult<Void>> doneHandler);
+
   Cluster ping(Handler<AsyncResult<Cluster>> resultHandler);
 
   Cluster getGroup(String address, Handler<AsyncResult<Group>> resultHandler);
@@ -57,6 +73,10 @@ public interface Cluster {
   Cluster getNodes(Handler<AsyncResult<Collection<Node>>> resultHandler);
 
   Cluster selectNode(Object key, Handler<AsyncResult<Node>> resultHandler);
+
+  Cluster installModule(String moduleName);
+
+  Cluster installModule(String moduleName, Handler<AsyncResult<Void>> doneHandler);
 
   Cluster deployModule(String moduleName);
 
@@ -109,8 +129,6 @@ public interface Cluster {
   Cluster getNetworks(Handler<AsyncResult<Collection<ActiveNetwork>>> resultHnadler);
 
   Cluster getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler);
-
-  Cluster isDeployed(String name, Handler<AsyncResult<Boolean>> resultHandler);
 
   Cluster deployNetwork(String name);
 

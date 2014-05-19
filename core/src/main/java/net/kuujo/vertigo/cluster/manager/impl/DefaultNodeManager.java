@@ -660,6 +660,9 @@ public class DefaultNodeManager implements NodeManager {
         case "verticle":
           doUndeployVerticle(message);
           break;
+        case "network":
+          doUndeployNetwork(message);
+          break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid deployment type " + type));
           break;
@@ -743,6 +746,211 @@ public class DefaultNodeManager implements NodeManager {
         return null;
       }
     }, doneHandler);
+  }
+
+  /**
+   * Undeploys a network.
+   */
+  private void doUndeployNetwork(final Message<JsonObject> message) {
+    Object network = message.body().getValue("network");
+    if (network != null) {
+      if (network instanceof String) {
+        doUndeployNetwork((String) network, message);
+      } else if (network instanceof JsonObject) {
+        JsonObject jsonNetwork = (JsonObject) network;
+        try {
+          NetworkConfig config = serializer.deserializeObject(jsonNetwork, NetworkConfig.class);
+          doUndeployNetwork(config, message);
+        } catch (SerializationException e) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
+        }
+      } else {
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network configuration."));
+      }
+    } else {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network specified."));
+    }
+  }
+
+  /**
+   * Undeploys a network by name.
+   */
+  private void doUndeployNetwork(final String name, final Message<JsonObject> message) {
+    // First we need to load the network's context from the cluster.
+    final WrappedWatchableMap<String, String> data = new WrappedWatchableMap<String, String>(String.format("%s.%s", cluster, name), this.data.<String, String>getMap(String.format("%s.%s", cluster, name)), vertx);
+    String scontext = data.get(String.format("%s.%s", cluster, name));
+    if (scontext == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "Network is not deployed."));
+    } else {
+      // If the network's manager is deployed locally then its deployment ID
+      // will have been stored in the local managers map.
+      final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(scontext));
+      if (managers.containsKey(context.address())) {
+     // Now that we have the network's context we need to watch the network's
+        // status key before we begin undeploying the network. Once we unset the
+        // network's configuration key the network's manager will automatically
+        // begin undeploying the network.
+        data.watch(context.status(), MapEvent.Type.CHANGE, new Handler<MapEvent<String, String>>() {
+          @Override
+          public void handle(MapEvent<String, String> event) {
+            // When the network's status key is set to an empty string, that indicates
+            // that the network's manager has completely undeployed all components and
+            // connections within the network. The manager is the only element of the
+            // network left running, so we can go ahead and undeploy it.
+            if (event.value() != null && event.value().equals("")) {
+              // First, stop watching the status key so this handler doesn't accidentally
+              // get called again for some reason.
+              data.unwatch(context.status(), MapEvent.Type.CHANGE, this, new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  // Now undeploy the manager from the context cluster. Once the manager
+                  // has been undeployed the undeployment of the network is complete.
+                  platform.undeployVerticle(managers.remove(context.address()), new Handler<AsyncResult<Void>>() {
+                    @Override
+                    public void handle(AsyncResult<Void> result) {
+                      if (result.failed()) {
+                        message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+                      } else {
+                        // We can be nice and unset the status key since the manager was undeployed :-)
+                        networks.remove(context.address());
+                        data.remove(context.status());
+                        message.reply(new JsonObject().putString("status", "ok"));
+                      }
+                    }
+                  });
+                }
+              });
+            }
+          }
+        }, new Handler<AsyncResult<Void>>() {
+          @Override
+          public void handle(AsyncResult<Void> result) {
+            // Once we've started watching the status key, unset the network's context in
+            // the cluster. The network's manager will be notified of the configuration
+            // change and will begin undeploying all of its components. Once the components
+            // have been undeployed it will reset its status key.
+            if (result.failed()) {
+              message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+            } else {
+              data.remove(context.address());
+            }
+          }
+        });
+      } else {
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Network is not deployed."));
+      }
+    }
+  }
+
+  /**
+   * Undeploys a network by configuration.
+   */
+  private void doUndeployNetwork(final NetworkConfig network, final Message<JsonObject> message) {
+    // First we need to load the network's context from the cluster.
+    final WrappedWatchableMap<String, String> data = new WrappedWatchableMap<String, String>(String.format("%s.%s", cluster, network.getName()), this.data.<String, String>getMap(String.format("%s.%s", cluster, network.getName())), vertx);
+    String scontext = data.get(String.format("%s.%s", cluster, network.getName()));
+    if (scontext == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "Network is not deployed."));
+    } else {
+      // Determine whether the network's manager is deployed.
+      final NetworkContext tempContext = DefaultNetworkContext.fromJson(new JsonObject(scontext));
+      if (managers.containsKey(tempContext.address())) {
+        // If the network's manager is deployed then unmerge the given
+        // configuration from the configuration of the network that's
+        // already running. If the resulting configuration is a no-component
+        // network then that indicates that the entire network is being undeployed.
+        // Otherwise, we simply update the existing configuration and allow the
+        // network's manager to handle deployment and undeployment of components.
+        NetworkConfig updatedConfig = Configs.unmergeNetworks(tempContext.config(), network);
+        final NetworkContext context = ContextBuilder.buildContext(updatedConfig, cluster);
+
+        // If the new configuration has no components then undeploy the entire network.
+        if (context.components().isEmpty()) {
+          // We need to watch the network's status key to determine when the network's
+          // components have been completely undeployed. Once that happens it's okay
+          // to then undeploy the network's manager.
+          data.watch(context.status(), MapEvent.Type.CHANGE, new Handler<MapEvent<String, String>>() {
+            @Override
+            public void handle(MapEvent<String, String> event) {
+              // When the network's status key is set to an empty string, that indicates
+              // that the network's manager has completely undeployed all components and
+              // connections within the network. The manager is the only element of the
+              // network left running, so we can go ahead and undeploy it.
+              if (event.value() != null && event.value().equals("")) {
+                // First, stop watching the status key so this handler doesn't accidentally
+                // get called again for some reason.
+                data.unwatch(context.status(), MapEvent.Type.CHANGE, this, new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    // Now undeploy the manager from the context cluster. Once the manager
+                    // has been undeployed the undeployment of the network is complete.
+                    platform.undeployVerticle(managers.remove(context.address()), new Handler<AsyncResult<Void>>() {
+                      @Override
+                      public void handle(AsyncResult<Void> result) {
+                        if (result.failed()) {
+                          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+                        } else {
+                          // We can be nice and unset the status key since the manager was undeployed :-)
+                          data.remove(context.status());
+                          message.reply(new JsonObject().putString("status", "ok"));
+                        }
+                      }
+                    });
+                  }
+                });
+              }
+            }
+          }, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              // Once we've started watching the status key, unset the network's context in
+              // the cluster. The network's manager will be notified of the configuration
+              // change and will begin undeploying all of its components. Once the components
+              // have been undeployed it will reset its status key.
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                data.remove(context.address());
+              }
+            }
+          });
+        } else {
+          // If only a portion of the running network is being undeployed, we need
+          // to watch the network's status key for notification once the configuration
+          // change is complete.
+          data.watch(context.status(), MapEvent.Type.CHANGE, new Handler<MapEvent<String, String>>() {
+            @Override
+            public void handle(MapEvent<String, String> event) {
+              if (event.value() != null && event.value().equals(context.version())) {
+                // The network's configuration has been completely updated. Stop watching
+                // the network's status key and call the async handler.
+                data.unwatch(context.status(), null, this, new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    message.reply(new JsonObject().putString("status", "ok").putObject("context", DefaultNetworkContext.toJson(context)));
+                  }
+                });
+              }
+            }
+          }, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              // Once we've started watching the status key, update the network's context in
+              // the cluster. The network's manager will be notified of the configuration
+              // change and will begin deploying or undeploying components and connections
+              // as necessary.
+              if (result.failed()) {
+                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+              } else {
+                data.put(context.address(), DefaultNetworkContext.toJson(context).encode());
+              }
+            }
+          });
+        }
+      } else {
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Network is not deployed."));
+      }
+    }
   }
 
 }

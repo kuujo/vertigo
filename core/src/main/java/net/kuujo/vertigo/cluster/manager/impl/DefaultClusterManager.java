@@ -1047,7 +1047,51 @@ public class DefaultClusterManager implements ClusterManager {
    * Undeploys a network.
    */
   private void doUndeployNetwork(final Message<JsonObject> message) {
-    
+    Object network = message.body().getValue("network");
+    if (network != null) {
+      // When undeploying a network from the cluster, we first determine
+      // the node to which the network belongs by selecting a node.
+      // The node that is selected for the network is always the node
+      // that controls the network.
+      String key;
+      if (network instanceof String) {
+        key = (String) network;
+      } else if (network instanceof JsonObject) {
+        try {
+          key = serializer.deserializeObject((JsonObject) network, NetworkConfig.class).getName();
+        } catch (SerializationException e) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
+          return;
+        }
+      } else {
+        message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid network configuration."));
+        return;
+      }
+
+      selectNode(key, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "No nodes available."));
+          } else {
+            vertx.eventBus().sendWithTimeout(result.result(), message.body(), 120000, new Handler<AsyncResult<Message<JsonObject>>>() {
+              @Override
+              public void handle(AsyncResult<Message<JsonObject>> result) {
+                if (result.failed()) {
+                  message.reply(new JsonObject().putString("status", "error").putString("message", "Failed to reach node."));
+                } else {
+                  message.reply(result.result().body());
+                }
+              }
+            });
+          }
+        }
+      });
+    } else {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network specified."));
+    }
   }
 
   /**

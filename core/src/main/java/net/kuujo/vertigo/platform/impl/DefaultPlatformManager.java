@@ -435,8 +435,11 @@ public class DefaultPlatformManager implements PlatformManager {
         String entryName = entry.getName();
         if (!entryName.isEmpty()) {
           if (entry.isDirectory()) {
-            if (!new File(directory, entryName).mkdir()) {
-              throw new PlatformManagerException("Failed to create directory");
+            File dir = new File(directory, entryName);
+            if (!dir.exists()) {
+              if (!new File(directory, entryName).mkdir()) {
+                throw new PlatformManagerException("Failed to create directory");
+              }
             }
           } else {
             int count;

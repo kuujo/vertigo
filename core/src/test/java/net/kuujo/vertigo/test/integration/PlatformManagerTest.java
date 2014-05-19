@@ -83,6 +83,39 @@ public class PlatformManagerTest extends TestVerticle {
     });
   }
 
+  @Test
+  public void testZipInstallModule() {
+    System.setProperty("vertx.mods", "src/test/resources/test-mods");
+    final PlatformManager sourcePlatform = new DefaultPlatformManager(vertx, container);
+    vertx.fileSystem().mkdirSync("src/test/resources/server-mods", true);
+    System.setProperty("vertx.mods", "src/test/resources/server-mods");
+    final PlatformManager targetPlatform = new DefaultPlatformManager(vertx, container);
+    System.setProperty("vertx.mods", "src/test/resources/test-mods");
+    sourcePlatform.zipModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          assertTrue(result.cause().getMessage(), result.succeeded());
+        } else {
+          assertTrue(result.succeeded());
+          targetPlatform.installModule(result.result(), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                assertTrue(result.cause().getMessage(), result.succeeded());
+              } else {
+                assertTrue(result.succeeded());
+                assertTrue(vertx.fileSystem().existsSync("src/test/resources/server-mods/net.kuujo~test-mod-1~1.0"));
+                vertx.fileSystem().deleteSync("src/test/resources/server-mods", true);
+                testComplete();
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
   @AfterClass
   public static void afterClass() {
     System.setProperty("vertx.mods", "target/mods");

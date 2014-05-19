@@ -56,7 +56,6 @@ public class NetworkTest {
     assertEquals("test.py", verticle.getMain());
     assertEquals(new JsonObject(), verticle.getConfig());
     assertEquals(1, verticle.getInstances());
-    assertEquals("__DEFAULT__", verticle.getGroup());
     assertFalse(verticle.isWorker());
     assertFalse(verticle.isMultiThreaded());
   }
@@ -75,7 +74,6 @@ public class NetworkTest {
     assertEquals(1, verticle.getInstances());
     verticle.setInstances(4);
     assertEquals(4, verticle.getInstances());
-    assertEquals("__DEFAULT__", verticle.getGroup());
     verticle.setGroup("test");
     assertEquals("test", verticle.getGroup());
     assertFalse(verticle.isWorker());
@@ -107,7 +105,6 @@ public class NetworkTest {
     assertEquals("com.test~test-module~1.0", module.getModule());
     assertEquals(new JsonObject(), module.getConfig());
     assertEquals(1, module.getInstances());
-    assertEquals("__DEFAULT__", module.getGroup());
   }
 
   @Test
@@ -124,7 +121,6 @@ public class NetworkTest {
     assertEquals(1, module.getInstances());
     module.setInstances(4);
     assertEquals(4, module.getInstances());
-    assertEquals("__DEFAULT__", module.getGroup());
     module.setGroup("test");
     assertEquals("test", module.getGroup());
   }

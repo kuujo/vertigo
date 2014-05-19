@@ -18,9 +18,10 @@ package net.kuujo.vertigo.test.integration;
 import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
+import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.impl.DefaultCluster;
-import net.kuujo.vertigo.cluster.manager.impl.ClusterAgent;
+import net.kuujo.vertigo.test.PlatformInfo;
 import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
@@ -34,6 +35,7 @@ import org.vertx.java.platform.Verticle;
  *
  * @author Jordan Halterman
  */
+@PlatformInfo(cluster=true, mods="src/test/resources/server-mods")
 public class ClusterTest extends VertigoTestVerticle {
 
   public static class TestVerticle1 extends Verticle {
@@ -52,12 +54,13 @@ public class ClusterTest extends VertigoTestVerticle {
 
   @Test
   public void testDeployVerticle() {
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployVerticle(TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
+        final Cluster cluster = result.result();
+        cluster.deployVerticle(TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
@@ -70,17 +73,18 @@ public class ClusterTest extends VertigoTestVerticle {
 
   @Test
   public void testUndeployVerticle() {
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployVerticle(TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
+        final Cluster cluster = result.result();
+        cluster.deployVerticle(TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
             assertNotNull(result.result());
-            client.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
+            cluster.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
@@ -95,12 +99,13 @@ public class ClusterTest extends VertigoTestVerticle {
 
   @Test
   public void testDeployWorkerVerticle() {
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployWorkerVerticle(TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
+        final Cluster cluster = result.result();
+        cluster.deployWorkerVerticle(TestVerticle2.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
@@ -113,21 +118,57 @@ public class ClusterTest extends VertigoTestVerticle {
 
   @Test
   public void testUndeployWorkerVerticle() {
-    container.deployWorkerVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", "test"), 1, false, new Handler<AsyncResult<String>>() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        final Cluster client = new DefaultCluster("test", vertx, container);
-        client.deployWorkerVerticle(TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
+        final Cluster cluster = result.result();
+        cluster.deployWorkerVerticle(TestVerticle1.class.getName(), new JsonObject().putString("foo", "bar"), 1, false, new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             assertTrue(result.succeeded());
             assertNotNull(result.result());
-            client.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
+            cluster.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
                 testComplete();
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testInstallDeployModule() {
+    System.setProperty("vertx.mods", "src/test/resources/server-mods");
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        System.setProperty("vertx.mods", "src/test/resources/test-mods");
+        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        cluster.deployModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            assertTrue(result.failed());
+            cluster.installModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                assertTrue(result.succeeded());
+                cluster.deployModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    assertTrue(result.succeeded());
+                    assertNotNull(result.result());
+                    vertx.fileSystem().deleteSync("src/test/resources/server-mods", true);
+                    testComplete();
+                  }
+                });
               }
             });
           }

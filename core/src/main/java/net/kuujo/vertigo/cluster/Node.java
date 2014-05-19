@@ -15,11 +15,6 @@
  */
 package net.kuujo.vertigo.cluster;
 
-import java.util.Collection;
-
-import net.kuujo.vertigo.network.ActiveNetwork;
-import net.kuujo.vertigo.network.NetworkConfig;
-
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
@@ -98,37 +93,5 @@ public interface Node {
   Node undeployVerticle(String deploymentID);
 
   Node undeployVerticle(String deploymentID, Handler<AsyncResult<Void>> doneHandler);
-
-  Node getNetworks(Handler<AsyncResult<Collection<ActiveNetwork>>> resultHandler);
-
-  Node getNetwork(String name, Handler<AsyncResult<ActiveNetwork>> resultHandler);
-
-  Node installNetwork(JsonObject network);
-
-  Node installNetwork(JsonObject network, Handler<AsyncResult<Void>> doneHandler);
-
-  Node installNetwork(NetworkConfig network);
-
-  Node installNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);
-
-  Node uninstallNetwork(NetworkConfig network);
-
-  Node uninstallNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);
-
-  Node deployNetwork(String name);
-
-  Node deployNetwork(String name, Handler<AsyncResult<ActiveNetwork>> doneHandler);
-
-  Node deployNetwork(NetworkConfig network);
-
-  Node deployNetwork(NetworkConfig network, Handler<AsyncResult<ActiveNetwork>> doneHandler);
-
-  Node undeployNetwork(String name);
-
-  Node undeployNetwork(String name, Handler<AsyncResult<Void>> doneHandler);
-
-  Node undeployNetwork(NetworkConfig network);
-
-  Node undeployNetwork(NetworkConfig network, Handler<AsyncResult<Void>> doneHandler);
 
 }

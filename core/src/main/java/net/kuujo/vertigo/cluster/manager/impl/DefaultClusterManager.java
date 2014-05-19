@@ -935,6 +935,8 @@ public class DefaultClusterManager implements ClusterManager {
           }
         }
       });
+    } else {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No network specified."));
     }
   }
 

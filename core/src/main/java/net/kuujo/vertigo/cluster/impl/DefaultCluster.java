@@ -38,6 +38,8 @@ import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncMultiMap;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncQueue;
 import net.kuujo.vertigo.cluster.data.impl.DefaultAsyncSet;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.component.ModuleConfig;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
@@ -630,19 +632,56 @@ public class DefaultCluster implements Cluster {
 
   @Override
   public Cluster deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    JsonObject message = new JsonObject()
-        .putString("action", "deploy")
-        .putString("type", "network")
-        .putObject("network", SerializerFactory.getSerializer(Config.class).serializeToObject(network));
-    vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+    // When deploying a network, we first need to select the node to which
+    // the network belongs. Each network will have a randomly selected master.
+    // In order for the network to be able to distribute components across the
+    // cluster it needs to have all the installables locally installed.
+    selectNode(network.getName(), new Handler<AsyncResult<Node>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(AsyncResult<Node> result) {
         if (result.failed()) {
-          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
-        } else if (result.result().body().getString("status").equals("error")) {
-          new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
         } else {
-          createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("context")), doneHandler);
+          // Once we've selected a node we need to install all the modules to the node.
+          final Node node = result.result();
+          List<ModuleConfig> modules = new ArrayList<>();
+          for (ComponentConfig<?> component : network.getComponents()) {
+            if (component.getType().equals(ComponentConfig.Type.MODULE)) {
+              modules.add((ModuleConfig) component);
+            }
+          }
+
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(modules.size());
+          counter.setHandler(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+              } else {
+                // Once all the modules have been installed we can deploy the network.
+                JsonObject message = new JsonObject()
+                    .putString("action", "deploy")
+                    .putString("type", "network")
+                    .putObject("network", SerializerFactory.getSerializer(Config.class).serializeToObject(network));
+                vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
+                  @Override
+                  public void handle(AsyncResult<Message<JsonObject>> result) {
+                    if (result.failed()) {
+                      new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.cause())).setHandler(doneHandler);
+                    } else if (result.result().body().getString("status").equals("error")) {
+                      new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
+                    } else {
+                      createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("context")), doneHandler);
+                    }
+                  }
+                });
+              }
+            }
+          });
+
+          for (ModuleConfig module : modules) {
+            node.installModule(module.getName(), counter);
+          }
         }
       }
     });

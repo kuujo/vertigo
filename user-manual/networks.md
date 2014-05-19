@@ -199,6 +199,7 @@ TODO
 </div>
 
 The arguments to the `createConnection` method are, in order:
+
 * The source component's name
 * The source component's output port to connect
 * The target component's name

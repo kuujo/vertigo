@@ -195,7 +195,7 @@ public class Vertigo {
    */
   public Vertigo deployCluster(final String cluster, int nodes, final Handler<AsyncResult<Cluster>> doneHandler) {
     JsonObject config = new JsonObject().putString("cluster", cluster);
-    container.deployWorkerVerticle(getClusterMain(), config, nodes, false, new Handler<AsyncResult<String>>() {
+    container.deployVerticle(getClusterMain(), config, nodes, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {

@@ -156,7 +156,7 @@ public class Vertigo {
    * @return The Vertigo instance.
    */
   public Vertigo deployCluster(String cluster) {
-    return deployCluster(cluster, 1, null);
+    return deployCluster(cluster, null, 1, null);
   }
 
   /**
@@ -169,7 +169,32 @@ public class Vertigo {
    * @return The Vertigo instance.
    */
   public Vertigo deployCluster(String cluster, Handler<AsyncResult<Cluster>> doneHandler) {
-    return deployCluster(cluster, 1, doneHandler);
+    return deployCluster(cluster, null, 1, doneHandler);
+  }
+
+  /**
+   * Deploys a single node cluster to a specific cluster group.
+   *
+   * @param cluster The cluster event bus address.
+   * @param group The cluster group to which to deploy the node.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployCluster(String cluster, String group) {
+    return deployCluster(cluster, group, 1, null);
+  }
+
+  /**
+   * Deploys a single node cluster to a specific cluster group.
+   *
+   * @param cluster The cluster event bus address.
+   * @param group The cluster group to which to deploy the node.
+   * @param doneHandler An asynchronous handler to be called once the cluster
+   *        has been deployed. The handler will be called with a {@link Cluster}
+   *        which can be used to manage networks running in the cluster.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployCluster(String cluster, String group, Handler<AsyncResult<Cluster>> doneHandler) {
+    return deployCluster(cluster, group, 1, doneHandler);
   }
 
   /**
@@ -180,7 +205,7 @@ public class Vertigo {
    * @return The Vertigo instance.
    */
   public Vertigo deployCluster(String cluster, int nodes) {
-    return deployCluster(cluster, nodes, null);
+    return deployCluster(cluster, null, nodes, null);
   }
 
   /**
@@ -193,8 +218,40 @@ public class Vertigo {
    *        which can be used to manage networks running in the cluster.
    * @return The Vertigo instance.
    */
-  public Vertigo deployCluster(final String cluster, int nodes, final Handler<AsyncResult<Cluster>> doneHandler) {
-    JsonObject config = new JsonObject().putString("cluster", cluster);
+  public Vertigo deployCluster(String cluster, int nodes, Handler<AsyncResult<Cluster>> doneHandler) {
+    return deployCluster(cluster, null, nodes, doneHandler);
+  }
+
+  /**
+   * Deploys multiple cluster nodes to a specific cluster group.
+   *
+   * @param cluster The cluster event bus address.
+   * @param group The cluster group to which to deploy the nodes.
+   * @param nodes The number of nodes to deploy.
+   * @param doneHandler An asynchronous handler to be called once the cluster
+   *        has been deployed. The handler will be called with a {@link Cluster}
+   *        which can be used to manage networks running in the cluster.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployCluster(String cluster, String group, int nodes) {
+    return deployCluster(cluster, group, nodes, null);
+  }
+
+  /**
+   * Deploys multiple cluster nodes to a specific cluster group.
+   *
+   * @param cluster The cluster event bus address.
+   * @param group The cluster group to which to deploy the nodes.
+   * @param nodes The number of nodes to deploy.
+   * @param doneHandler An asynchronous handler to be called once the cluster
+   *        has been deployed. The handler will be called with a {@link Cluster}
+   *        which can be used to manage networks running in the cluster.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployCluster(final String cluster, final String group, int nodes, final Handler<AsyncResult<Cluster>> doneHandler) {
+    JsonObject config = new JsonObject()
+        .putString("cluster", cluster)
+        .putString("group", group);
     container.deployVerticle(getClusterMain(), config, nodes, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {

@@ -534,7 +534,46 @@ public class DefaultNodeManager implements NodeManager {
    * Deploys a network from name.
    */
   private void doDeployNetwork(final String name, final Message<JsonObject> message) {
-    doDeployNetwork(new DefaultNetworkConfig(name), message);
+    // When deploying a bare network, we first attempt to load any existing
+    // configuration from the cluster. This ensures that we don't overwrite
+    // a cluster configuration. In some cases, the manager can be redeployed
+    // by deploying a network name.
+    String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
+    final NetworkContext context = scontext != null ? DefaultNetworkContext.fromJson(new JsonObject(scontext)) : ContextBuilder.buildContext(new DefaultNetworkConfig(name), cluster);
+
+    // Simply deploy an empty network.
+    if (!managers.containsKey(context.address())) {
+      // If the network manager hasn't yet been deployed then deploy the manager
+      // and then update the network's configuration.
+      platform.deployVerticle(NetworkManager.class.getName(), new JsonObject().putString("cluster", cluster).putString("address", context.address()), 1, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "Failed to deploy network manager."));
+          } else {
+            // Once the manager has been deployed we can add the network name to
+            // the set of networks that are deployed in the cluster.
+            final String deploymentID = result.result();
+            DefaultNodeManager.this.context.execute(new Action<Void>() {
+              @Override
+              public Void perform() {
+                networks.add(context.name());
+                return null;
+              }
+            }, new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                // And store the manager's deployment ID in the local managers map.
+                managers.put(context.address(), deploymentID);
+                doDeployNetwork(context, message);
+              }
+            });
+          }
+        }
+      });
+    } else {
+      message.reply(new JsonObject().putString("status", "ok").putObject("context", DefaultNetworkContext.toJson(context)));
+    }
   }
 
   /**

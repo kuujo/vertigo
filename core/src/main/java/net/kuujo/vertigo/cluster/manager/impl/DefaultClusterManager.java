@@ -397,6 +397,32 @@ public class DefaultClusterManager implements ClusterManager {
                 });
               }
             }
+
+            // Check for any network masters that left the cluster.
+            synchronized (networks) {
+              for (final String name : networks) {
+                String address = nodeSelectors.get(name);
+                if (address != null && removedNodes.contains(address)) {
+                  // If the node to which the network was assigned is one of the nodes
+                  // that left the cluster then redeploy the network. If no changes
+                  // have been made to the network then this will simply result in the
+                  // network's manager being redeployed.
+                  selectNode(name, new Handler<AsyncResult<String>>() {
+                    @Override
+                    public void handle(AsyncResult<String> result) {
+                      if (result.succeeded() && result.result() != null) {
+                        // Just redeploy the network by sending a 
+                        JsonObject message = new JsonObject()
+                            .putString("action", "deploy")
+                            .putString("type", "network")
+                            .putString("network", name);
+                        vertx.eventBus().send(result.result(), message);
+                      }
+                    }
+                  });
+                }
+              }
+            }
           }
         }
       }

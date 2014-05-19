@@ -504,14 +504,14 @@ public class DefaultClusterManager implements ClusterManager {
    * Loads a network configuration.
    */
   private void doFindNetwork(final Message<JsonObject> message) {
-    final String name = message.body().getString("name");
+    final String name = message.body().getString("network");
     if (name == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No network name specified."));
     } else {
       context.execute(new Action<NetworkContext>() {
         @Override
         public NetworkContext perform() {
-          String scontext = data.<String, String>getMap(String.format("networks.%s", cluster)).get(String.format("%s.%s", cluster, name));
+          String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
           if (scontext != null) {
             return DefaultNetworkContext.fromJson(new JsonObject(scontext));
           }
@@ -612,7 +612,7 @@ public class DefaultClusterManager implements ClusterManager {
       public List<NetworkContext> perform() {
         List<NetworkContext> contexts = new ArrayList<>();
         for (String name : networks) {
-          String scontext = data.<String, String>getMap(String.format("networks.%s", cluster)).get(String.format("%s.%s", cluster, name));
+          String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
           if (scontext != null) {
             contexts.add(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
           }

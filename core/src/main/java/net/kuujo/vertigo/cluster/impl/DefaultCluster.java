@@ -630,7 +630,7 @@ public class DefaultCluster implements Cluster {
   @Override
   public Cluster getNetwork(String name, final Handler<AsyncResult<ActiveNetwork>> resultHandler) {
     JsonObject message = new JsonObject()
-        .putString("action", "load")
+        .putString("action", "find")
         .putString("type", "network")
         .putString("network", name);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {

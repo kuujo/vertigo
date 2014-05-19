@@ -97,7 +97,7 @@ public class DefaultCluster implements Cluster {
       }
     };
     joinHandlers.put(handler, messageHandler);
-    vertx.eventBus().registerHandler(String.format("%s.join", address), messageHandler);
+    vertx.eventBus().registerHandler(String.format("%s.join", address), messageHandler, doneHandler);
     return this;
   }
 

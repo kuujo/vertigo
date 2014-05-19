@@ -571,29 +571,27 @@ public class NetworkManager extends Verticle {
   /**
    * Deploys all network components.
    */
-  private void deployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
+  private void deployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> counter) {
     for (final ComponentContext<?> component : components) {
-      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(component.instances().size());
-      counter.setHandler(new Handler<AsyncResult<Void>>() {
+      deployComponent(component, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
-            complete.fail(result.cause());
+            counter.fail(result.cause());
           } else {
             data.put(component.address(), DefaultComponentContext.toJson(component).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
-                  complete.fail(result.cause());
+                  counter.fail(result.cause());
                 } else {
-                  complete.succeed();
+                  counter.succeed();
                 }
               }
             });
           }
         }
       });
-      deployComponent(component, counter);
     }
   }
 

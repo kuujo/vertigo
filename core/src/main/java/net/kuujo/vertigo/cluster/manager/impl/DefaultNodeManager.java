@@ -786,7 +786,7 @@ public class DefaultNodeManager implements NodeManager {
       // will have been stored in the local managers map.
       final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(scontext));
       if (managers.containsKey(context.address())) {
-     // Now that we have the network's context we need to watch the network's
+        // Now that we have the network's context we need to watch the network's
         // status key before we begin undeploying the network. Once we unset the
         // network's configuration key the network's manager will automatically
         // begin undeploying the network.
@@ -812,9 +812,19 @@ public class DefaultNodeManager implements NodeManager {
                         message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
                       } else {
                         // We can be nice and unset the status key since the manager was undeployed :-)
-                        networks.remove(context.address());
-                        data.remove(context.status());
-                        message.reply(new JsonObject().putString("status", "ok"));
+                        DefaultNodeManager.this.context.execute(new Action<Void>() {
+                          @Override
+                          public Void perform() {
+                            networks.remove(context.address());
+                            data.remove(context.status());
+                            return null;
+                          }
+                        }, new Handler<AsyncResult<Void>>() {
+                          @Override
+                          public void handle(AsyncResult<Void> result) {
+                            message.reply(new JsonObject().putString("status", "ok"));
+                          }
+                        });
                       }
                     }
                   });
@@ -832,7 +842,12 @@ public class DefaultNodeManager implements NodeManager {
             if (result.failed()) {
               message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
             } else {
-              data.remove(context.address());
+              DefaultNodeManager.this.context.run(new Runnable() {
+                @Override
+                public void run() {
+                  data.remove(context.address());
+                }
+              });
             }
           }
         });
@@ -891,8 +906,19 @@ public class DefaultNodeManager implements NodeManager {
                           message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
                         } else {
                           // We can be nice and unset the status key since the manager was undeployed :-)
-                          data.remove(context.status());
-                          message.reply(new JsonObject().putString("status", "ok"));
+                          DefaultNodeManager.this.context.execute(new Action<Void>() {
+                            @Override
+                            public Void perform() {
+                              networks.remove(context.address());
+                              data.remove(context.status());
+                              return null;
+                            }
+                          }, new Handler<AsyncResult<Void>>() {
+                            @Override
+                            public void handle(AsyncResult<Void> result) {
+                              message.reply(new JsonObject().putString("status", "ok"));
+                            }
+                          });
                         }
                       }
                     });
@@ -910,7 +936,12 @@ public class DefaultNodeManager implements NodeManager {
               if (result.failed()) {
                 message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
               } else {
-                data.remove(context.address());
+                DefaultNodeManager.this.context.run(new Runnable() {
+                  @Override
+                  public void run() {
+                    data.remove(context.address());
+                  }
+                });
               }
             }
           });
@@ -942,7 +973,12 @@ public class DefaultNodeManager implements NodeManager {
               if (result.failed()) {
                 message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
               } else {
-                data.put(context.address(), DefaultNetworkContext.toJson(context).encode());
+                DefaultNodeManager.this.context.run(new Runnable() {
+                  @Override
+                  public void run() {
+                    data.put(context.address(), DefaultNetworkContext.toJson(context).encode());
+                  }
+                });
               }
             }
           });

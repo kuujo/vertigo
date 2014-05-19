@@ -73,7 +73,7 @@ public class DefaultGroup implements Group {
       }
     };
     joinHandlers.put(handler, messageHandler);
-    vertx.eventBus().registerHandler(String.format("%s.join", address), messageHandler);
+    vertx.eventBus().registerHandler(String.format("%s.join", address), messageHandler, doneHandler);
     return this;
   }
 
@@ -200,7 +200,8 @@ public class DefaultGroup implements Group {
   public Group selectNode(Object key, final Handler<AsyncResult<Node>> resultHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "select")
-        .putString("type", "group");
+        .putString("type", "node")
+        .putValue("key", key);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {

@@ -230,7 +230,7 @@ public class Vertigo {
    *
    * @param cluster The cluster to which to deploy the network.
    * @param name The name of the network to deploy.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo deployNetwork(String cluster, String name) {
     return deployNetwork(cluster, name, null);
@@ -249,7 +249,7 @@ public class Vertigo {
    *        completed deployment. The handler will be called with an {@link ActiveNetwork}
    *        instance which can be used to add or remove components and connections from
    *        the network.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo deployNetwork(String cluster, final String name, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     getCluster(cluster, new Handler<AsyncResult<Cluster>>() {
@@ -275,7 +275,7 @@ public class Vertigo {
    * @param cluster The cluster to which to deploy the network.
    * @param network The JSON network configuration. For the configuration format see
    *        the project documentation.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo deployNetwork(String cluster, JsonObject network) {
     return deployNetwork(cluster, network, null);
@@ -295,7 +295,7 @@ public class Vertigo {
    *        completed deployment. The handler will be called with an {@link ActiveNetwork}
    *        instance which can be used to add or remove components and connections from
    *        the network.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo deployNetwork(String cluster, final JsonObject network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     getCluster(cluster, new Handler<AsyncResult<Cluster>>() {
@@ -324,7 +324,7 @@ public class Vertigo {
    *
    * @param cluster The cluster to which to deploy the network.
    * @param network The configuration of the network to deploy.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo deployNetwork(String cluster, NetworkConfig network) {
     return deployNetwork(cluster, network, null);
@@ -347,7 +347,7 @@ public class Vertigo {
    *        completed deployment. The handler will be called with an {@link ActiveNetwork}
    *        instance which can be used to add or remove components and connections from
    *        the network.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo deployNetwork(String cluster, final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
     getCluster(cluster, new Handler<AsyncResult<Cluster>>() {
@@ -373,7 +373,7 @@ public class Vertigo {
    *
    * @param cluster The cluster from which to undeploy the network.
    * @param name The name of the network to undeploy.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo undeployNetwork(String cluster, String name) {
     return undeployNetwork(cluster, name, null);
@@ -390,7 +390,7 @@ public class Vertigo {
    * @param cluster The cluster from which to undeploy the network.
    * @param name The name of the network to undeploy.
    * @param doneHandler An asynchronous handler to be called once the network is undeployed.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo undeployNetwork(String cluster, final String name, final Handler<AsyncResult<Void>> doneHandler) {
     getCluster(cluster, new Handler<AsyncResult<Cluster>>() {
@@ -420,7 +420,7 @@ public class Vertigo {
    * @param cluster The cluster from which to undeploy the network.
    * @param network The JSON configuration to undeploy. For the configuration format see
    *        the project documentation.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo undeployNetwork(String cluster, JsonObject network) {
     return undeployNetwork(cluster, network, null);
@@ -441,7 +441,7 @@ public class Vertigo {
    * @param network The JSON configuration to undeploy. For the configuration format see
    *        the project documentation.
    * @param doneHandler An asynchronous handler to be called once the configuration is undeployed.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo undeployNetwork(String cluster, final JsonObject network, final Handler<AsyncResult<Void>> doneHandler) {
     getCluster(cluster, new Handler<AsyncResult<Cluster>>() {
@@ -468,7 +468,7 @@ public class Vertigo {
    *
    * @param cluster The cluster from which to undeploy the network.
    * @param network The network configuration to undeploy.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo undeployNetwork(String cluster, NetworkConfig network) {
     return undeployNetwork(cluster, network, null);
@@ -486,7 +486,7 @@ public class Vertigo {
    * @param cluster The cluster from which to undeploy the network.
    * @param network The network configuration to undeploy.
    * @param doneHandler An asynchronous handler to be called once the configuration is undeployed.
-   * @return The cluster manager.
+   * @return The Vertigo instance.
    */
   public Vertigo undeployNetwork(String cluster, final NetworkConfig network, final Handler<AsyncResult<Void>> doneHandler) {
     getCluster(cluster, new Handler<AsyncResult<Cluster>>() {

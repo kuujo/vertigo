@@ -332,6 +332,29 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
+  public Cluster uninstallModule(String moduleName) {
+    return uninstallModule(moduleName, null);
+  }
+
+  @Override
+  public Cluster uninstallModule(final String moduleName, final Handler<AsyncResult<Void>> doneHandler) {
+    getNodes(new Handler<AsyncResult<Collection<Node>>>() {
+      @Override
+      public void handle(AsyncResult<Collection<Node>> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else {
+          final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size()).setHandler(doneHandler);
+          for (Node node : result.result()) {
+            node.uninstallModule(moduleName, counter);
+          }
+        }
+      }
+    });
+    return this;
+  }
+
+  @Override
   public Cluster deployModule(String moduleName) {
     return deployModule(moduleName, null, 1, null);
   }
@@ -453,6 +476,16 @@ public class DefaultCluster implements Cluster {
   }
 
   @Override
+  public Cluster deployWorkerVerticle(String main, JsonObject config) {
+    return deployWorkerVerticle(main, config, 1, false, null);
+  }
+
+  @Override
+  public Cluster deployWorkerVerticle(String main, int instances) {
+    return deployWorkerVerticle(main, null, instances, false, null);
+  }
+
+  @Override
   public Cluster deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded) {
     return deployWorkerVerticle(main, config, instances, false, null);
   }
@@ -460,6 +493,16 @@ public class DefaultCluster implements Cluster {
   @Override
   public Cluster deployWorkerVerticle(String main, Handler<AsyncResult<String>> doneHandler) {
     return deployWorkerVerticle(main, null, 1, false, doneHandler);
+  }
+
+  @Override
+  public Cluster deployWorkerVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(main, config, 1, false, doneHandler);
+  }
+
+  @Override
+  public Cluster deployWorkerVerticle(String main, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(main, null, instances, false, doneHandler);
   }
 
   @Override

@@ -111,6 +111,7 @@ public class DefaultClusterManager implements ClusterManager {
                     message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid action " + action));
                     break;
                 }
+                break;
               case "counter":
                 switch (action) {
                   case "increment":
@@ -126,6 +127,7 @@ public class DefaultClusterManager implements ClusterManager {
                     message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid action " + action));
                     break;
                 }
+                break;
               case "multimap":
                 switch (action) {
                   case "put":
@@ -156,6 +158,7 @@ public class DefaultClusterManager implements ClusterManager {
                     doMultiMapSize(message);
                     break;
                 }
+                break;
               case "map":
                 switch (action) {
                   case "put":

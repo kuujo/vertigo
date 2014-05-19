@@ -195,6 +195,7 @@ public class VertigoClassRunner extends BlockJUnit4ClassRunner {
   }
 
   @Override
+  @SuppressWarnings("resource")
   protected void runChild(FrameworkMethod method, RunNotifier notifier) {
     Class<?> testClass = getTestClass().getJavaClass();
     String methodName = method.getName();

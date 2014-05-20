@@ -242,14 +242,6 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   }
 
   @Override
-  public OutputConnection send(Buffer message) {
-    if (!ended) {
-      connection.doBatchSend(id, message);
-    }
-    return this;
-  }
-
-  @Override
   public OutputConnection send(JsonArray message) {
     if (!ended) {
       connection.doBatchSend(id, message);
@@ -259,6 +251,14 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
 
   @Override
   public OutputConnection send(JsonObject message) {
+    if (!ended) {
+      connection.doBatchSend(id, message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputConnection send(Buffer message) {
     if (!ended) {
       connection.doBatchSend(id, message);
     }

@@ -552,11 +552,6 @@ public class DefaultOutputConnection implements OutputConnection {
   }
 
   @Override
-  public OutputConnection send(Buffer message) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputConnection send(JsonObject message) {
     return doSend(message);
   }
@@ -573,6 +568,11 @@ public class DefaultOutputConnection implements OutputConnection {
 
   @Override
   public OutputConnection send(byte[] message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputConnection send(Buffer message) {
     return doSend(message);
   }
 

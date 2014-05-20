@@ -23,6 +23,7 @@ import java.io.ObjectStreamClass;
 
 import net.kuujo.vertigo.util.serialization.SerializationException;
 
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonObject;
 
 /**
@@ -65,24 +66,33 @@ public class InputDeserializer {
    * @return The message value.
    */
   public Object deserialize(JsonObject message) {
-    boolean serialized = message.getBoolean("serialized", false);
-    if (!serialized) {
+    String type = message.getString("type");
+    if (type == null) {
       return message.getValue("value");
-    }
-
-    byte[] bytes = message.getBinary("value");
-    ObjectInputStream stream = null;
-    try {
-      stream = new ThreadObjectInputStream(new ByteArrayInputStream(bytes));
-      return stream.readObject();
-    } catch (ClassNotFoundException | IOException e) {
-      throw new SerializationException(e.getMessage());
-    } finally {
-      if (stream != null) {
-        try {
-          stream.close();
-        } catch (IOException e) {
-        }
+    } else {
+      switch (type) {
+        case "buffer":
+          return new Buffer(message.getBinary("value"));
+        case "bytes":
+          return message.getBinary("value");
+        case "serialized":
+          byte[] bytes = message.getBinary("value");
+          ObjectInputStream stream = null;
+          try {
+            stream = new ThreadObjectInputStream(new ByteArrayInputStream(bytes));
+            return stream.readObject();
+          } catch (ClassNotFoundException | IOException e) {
+            throw new SerializationException(e.getMessage());
+          } finally {
+            if (stream != null) {
+              try {
+                stream.close();
+              } catch (IOException e) {
+              }
+            }
+          }
+        default:
+          return message.getValue("value");
       }
     }
   }

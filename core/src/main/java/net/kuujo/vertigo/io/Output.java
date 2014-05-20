@@ -29,7 +29,7 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Output<T extends Output<T>> {
+public interface Output<T extends Output<T>> extends OutputGroupSupport<T> {
 
   /**
    * Returns the output's Vertx instance.
@@ -175,14 +175,6 @@ public interface Output<T extends Output<T>> {
    * @param message The message to send.
    * @return The output.
    */
-  T send(Buffer message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
   T send(JsonArray message);
 
   /**
@@ -192,5 +184,13 @@ public interface Output<T extends Output<T>> {
    * @return The output.
    */
   T send(JsonObject message);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @return The output.
+   */
+  T send(Buffer message);
 
 }

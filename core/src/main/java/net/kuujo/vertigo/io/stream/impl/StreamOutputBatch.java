@@ -153,14 +153,6 @@ public class StreamOutputBatch implements OutputBatch {
   }
 
   @Override
-  public OutputBatch send(Buffer message) {
-    for (OutputConnection connection : stream.selector.select(message, batches)) {
-      connection.send(message);
-    }
-    return this;
-  }
-
-  @Override
   public OutputBatch send(JsonArray message) {
     for (OutputConnection connection : stream.selector.select(message, batches)) {
       connection.send(message);
@@ -170,6 +162,14 @@ public class StreamOutputBatch implements OutputBatch {
 
   @Override
   public OutputBatch send(JsonObject message) {
+    for (OutputConnection connection : stream.selector.select(message, batches)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputBatch send(Buffer message) {
     for (OutputConnection connection : stream.selector.select(message, batches)) {
       connection.send(message);
     }

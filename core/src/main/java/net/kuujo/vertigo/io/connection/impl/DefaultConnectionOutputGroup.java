@@ -216,11 +216,6 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   }
 
   @Override
-  public OutputGroup send(Buffer message) {
-    return doSend(message);
-  }
-
-  @Override
   public OutputGroup send(JsonObject message) {
     return doSend(message);
   }
@@ -237,6 +232,11 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
 
   @Override
   public OutputGroup send(byte[] message) {
+    return doSend(message);
+  }
+
+  @Override
+  public OutputGroup send(Buffer message) {
     return doSend(message);
   }
 

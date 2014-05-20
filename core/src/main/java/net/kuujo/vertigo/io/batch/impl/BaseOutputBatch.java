@@ -204,14 +204,6 @@ public class BaseOutputBatch implements OutputBatch {
   }
 
   @Override
-  public OutputBatch send(Buffer message) {
-    for (OutputBatch output : connections) {
-      output.send(message);
-    }
-    return this;
-  }
-
-  @Override
   public OutputBatch send(JsonObject message) {
     for (OutputBatch output : connections) {
       output.send(message);
@@ -237,6 +229,14 @@ public class BaseOutputBatch implements OutputBatch {
 
   @Override
   public OutputBatch send(byte[] message) {
+    for (OutputBatch output : connections) {
+      output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputBatch send(Buffer message) {
     for (OutputBatch output : connections) {
       output.send(message);
     }

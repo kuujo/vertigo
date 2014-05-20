@@ -64,6 +64,11 @@ public class OutputSerializer {
   public JsonObject serialize(Object message) {
     Class<?> clazz = message.getClass();
     if (eventBusTypes.contains(clazz)) {
+      if (message instanceof Buffer) {
+        return new JsonObject().putString("type", "buffer").putBinary("value", ((Buffer) message).getBytes());
+      } else if (message instanceof byte[]) {
+        return new JsonObject().putString("type", "bytes").putBinary("value", (byte[]) message);
+      }
       return new JsonObject().putValue("value", message);
     }
 
@@ -85,7 +90,7 @@ public class OutputSerializer {
     }
 
     serialized = byteStream.toByteArray();
-    return new JsonObject().putBoolean("serialized", true).putBinary("value", serialized);
+    return new JsonObject().putString("type", "serialized").putBinary("value", serialized);
   }
 
 }

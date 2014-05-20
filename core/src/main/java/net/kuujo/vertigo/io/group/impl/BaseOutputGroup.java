@@ -208,14 +208,6 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup send(Buffer message) {
-    for (OutputGroup output : connections) {
-      output.send(message);
-    }
-    return this;
-  }
-
-  @Override
   public OutputGroup send(JsonObject message) {
     for (OutputGroup output : connections) {
       output.send(message);
@@ -241,6 +233,14 @@ public class BaseOutputGroup implements OutputGroup {
 
   @Override
   public OutputGroup send(byte[] message) {
+    for (OutputGroup output : connections) {
+      output.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputGroup send(Buffer message) {
     for (OutputGroup output : connections) {
       output.send(message);
     }

@@ -252,14 +252,6 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
-  public OutputStream send(Buffer message) {
-    for (OutputConnection connection : selector.select(message, connections)) {
-      connection.send(message);
-    }
-    return this;
-  }
-
-  @Override
   public OutputStream send(JsonObject message) {
     for (OutputConnection connection : selector.select(message, connections)) {
       connection.send(message);
@@ -285,6 +277,14 @@ public class DefaultOutputStream implements OutputStream {
 
   @Override
   public OutputStream send(byte[] message) {
+    for (OutputConnection connection : selector.select(message, connections)) {
+      connection.send(message);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputStream send(Buffer message) {
     for (OutputConnection connection : selector.select(message, connections)) {
       connection.send(message);
     }

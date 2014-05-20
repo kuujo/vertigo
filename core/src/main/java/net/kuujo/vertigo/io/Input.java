@@ -25,7 +25,7 @@ import org.vertx.java.core.Vertx;
  *
  * @param <T> The input type.
  */
-public interface Input<T extends Input<T>> {
+public interface Input<T extends Input<T>> extends InputGroupSupport<T> {
 
   /**
    * Returns the input's vertx instance.

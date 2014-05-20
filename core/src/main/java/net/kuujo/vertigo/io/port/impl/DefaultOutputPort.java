@@ -469,15 +469,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort send(Buffer message) {
-    for (OutputStream stream : streams) {
-      stream.send(message);
-    }
-    triggerSend(message);
-    return this;
-  }
-
-  @Override
   public OutputPort send(JsonObject message) {
     for (OutputStream stream : streams) {
       stream.send(message);
@@ -506,6 +497,15 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public OutputPort send(byte[] message) {
+    for (OutputStream stream : streams) {
+      stream.send(message);
+    }
+    triggerSend(message);
+    return this;
+  }
+
+  @Override
+  public OutputPort send(Buffer message) {
     for (OutputStream stream : streams) {
       stream.send(message);
     }

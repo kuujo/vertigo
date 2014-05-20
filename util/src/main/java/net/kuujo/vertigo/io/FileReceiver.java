@@ -17,6 +17,8 @@ package net.kuujo.vertigo.io;
 
 import java.io.File;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.kuujo.vertigo.io.group.InputGroup;
@@ -27,7 +29,13 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.file.AsyncFile;
 
 /**
- * Input file receiver.
+ * Input file receiver.<p>
+ *
+ * This utility is intended to be used in conjuction with {@link FileSender}.
+ * The file receiver uses an {@link InputGroup} to receive file data. When
+ * a new group is created, the receiver will create a temporary file in the
+ * directory indicated by <code>java.io.tmpdir</code>. Since group messages
+ * are guaranteed to be received in order, the receiver simply appends
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -87,12 +95,14 @@ public class FileReceiver {
    * Handles a group input file.
    */
   private void handleFile(final InputGroup group) {
-    final File file = new File(tempDir, String.format("%s-%s", group.name(), UUID.randomUUID().toString()));
+    final File file = new File(tempDir, String.format("temp-%s-%s", UUID.randomUUID().toString(), group.name()));
     input.vertx().fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {
       @Override
       public void handle(AsyncResult<AsyncFile> result) {
         if (result.succeeded()) {
           handleFile(file.getAbsolutePath(), result.result(), group);
+        } else if (exceptionHandler != null) {
+          exceptionHandler.handle(result.cause());
         }
       }
     });
@@ -103,9 +113,11 @@ public class FileReceiver {
    */
   private void handleFile(final String filePath, final AsyncFile file, final InputGroup group) {
     final AtomicLong position = new AtomicLong();
+    final AtomicBoolean complete = new AtomicBoolean();
+    final AtomicInteger handlerCount = new AtomicInteger();
     group.messageHandler(new Handler<Buffer>() {
       @Override
-      public void handle(Buffer buffer) {
+      public synchronized void handle(Buffer buffer) {
         file.write(buffer, position.get(), new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
@@ -121,16 +133,51 @@ public class FileReceiver {
                 exceptionHandler.handle(result.cause());
               }
             }
+
+            // Decrement the handler count.
+            handlerCount.decrementAndGet();
+
+            // We need to handle for cases where the end handler was called
+            // before all the data was written to the file.
+            if (complete.get() && handlerCount.get() == 0) {
+              closeFile(filePath, file);
+            }
           }
         });
+        // Increment the handler count and current buffer position.
+        handlerCount.incrementAndGet();
         position.addAndGet(buffer.length());
       }
     });
     group.endHandler(new Handler<Void>() {
       @Override
       public void handle(Void event) {
-        file.close();
-        if (fileHandler != null) {
+        // If there are still handlers processing the data then wait for
+        // those handlers to complete by simply setting the complete flag.
+        complete.set(true);
+        if (handlerCount.get() == 0) {
+          closeFile(filePath, file);
+        }
+      }
+    });
+  }
+
+  /**
+   * Closes a file.
+   */
+  private void closeFile(final String filePath, AsyncFile file) {
+    file.close(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          try {
+            input.vertx().fileSystem().deleteSync(filePath);
+          } catch (Exception e) {
+          }
+          if (exceptionHandler != null) {
+            exceptionHandler.handle(result.cause());
+          }
+        } else if (fileHandler != null) {
           fileHandler.handle(filePath);
         }
       }

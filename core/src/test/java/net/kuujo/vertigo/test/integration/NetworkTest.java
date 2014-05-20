@@ -36,13 +36,10 @@ import net.kuujo.vertigo.hook.EventBusHookListener;
 import net.kuujo.vertigo.hook.IOHook;
 import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.hook.OutputHook;
-import net.kuujo.vertigo.io.FileReceiver;
-import net.kuujo.vertigo.io.FileSender;
 import net.kuujo.vertigo.io.batch.InputBatch;
 import net.kuujo.vertigo.io.batch.OutputBatch;
 import net.kuujo.vertigo.io.group.InputGroup;
 import net.kuujo.vertigo.io.group.OutputGroup;
-import net.kuujo.vertigo.io.selector.RoundRobinSelector;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
@@ -2730,55 +2727,6 @@ public class NetworkTest extends VertigoTestVerticle {
                 }
               }
             });
-          }
-        });
-      }
-    });
-  }
-
-  public static class TestFileSender extends ComponentVerticle {
-    @Override
-    public void start() {
-      FileSender sender = new FileSender(output.port("out"));
-      sender.sendFile("src/test/resources/test.txt");
-    }
-  }
-
-  public static class TestFileReceiver extends ComponentVerticle {
-    @Override
-    public void start() {
-      FileReceiver receiver = new FileReceiver(input.port("in"));
-      receiver.fileHandler(new Handler<String>() {
-        @Override
-        public void handle(String filePath) {
-          assertTrue(vertx.fileSystem().existsSync(filePath));
-          vertx.fileSystem().deleteSync(filePath);
-          testComplete();
-        }
-      });
-    }
-  }
-
-  @Test
-  public void testSendFile() {
-    final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
-      @Override
-      public void handle(AsyncResult<Cluster> result) {
-        assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork("test");
-        network.addVerticle("sender", TestFileSender.class.getName());
-        network.addVerticle("receiver", TestFileReceiver.class.getName(), 4);
-        network.createConnection("sender", "out", "receiver", "in").setSelector(new RoundRobinSelector());
-        Cluster cluster = result.result();
-        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-          @Override
-          public void handle(AsyncResult<ActiveNetwork> result) {
-            if (result.failed()) {
-              assertTrue(result.cause().getMessage(), result.succeeded());
-            } else {
-              assertTrue(result.succeeded());
-            }
           }
         });
       }

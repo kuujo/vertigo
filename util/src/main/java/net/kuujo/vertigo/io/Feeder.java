@@ -31,7 +31,7 @@ public class Feeder<T extends Output<T>> {
   private final T output;
   private final Vertx vertx;
   private Handler<T> feedHandler;
-  private boolean fed;
+  private boolean fed = true;
   private long feedDelay = DEFAULT_FEED_DELAY;
   private long feedTimer;
 
@@ -49,6 +49,7 @@ public class Feeder<T extends Output<T>> {
   private final Handler<Long> recursiveRunner = new Handler<Long>() {
     @Override
     public void handle(Long timerID) {
+      fed = true;
       doFeed();
     }
   };

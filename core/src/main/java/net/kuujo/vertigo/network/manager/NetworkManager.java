@@ -18,6 +18,7 @@ package net.kuujo.vertigo.network.manager;
 import static net.kuujo.vertigo.util.Config.buildConfig;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,12 +26,16 @@ import java.util.Map;
 import java.util.Set;
 
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.ClusterFactory;
+import net.kuujo.vertigo.cluster.Group;
+import net.kuujo.vertigo.cluster.Node;
+import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.cluster.data.MapEvent;
 import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
+import net.kuujo.vertigo.component.ModuleContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.network.NetworkContext;
@@ -90,6 +95,8 @@ public class NetworkManager extends Verticle {
   private WatchableAsyncMap<String, String> data;
   private Set<String> ready = new HashSet<>();
   private NetworkContext currentContext;
+  private AsyncMap<String, String> deploymentIDs;
+  private AsyncMap<String, String> deploymentNodes;
   private final TaskRunner tasks = new TaskRunner();
 
   private final Map<String, Handler<MapEvent<String, String>>> watchHandlers = new HashMap<>();
@@ -107,6 +114,20 @@ public class NetworkManager extends Verticle {
     }
   };
 
+  private final Handler<Node> joinHandler = new Handler<Node>() {
+    @Override
+    public void handle(Node node) {
+       doNodeJoined(node);
+    }
+  };
+
+  private final Handler<Node> leaveHandler = new Handler<Node>() {
+    @Override
+    public void handle(Node node) {
+      doNodeLeft(node);
+    }
+  };
+
   @Override
   public void start(final Future<Void> startResult) {
     address = container.config().getString("address");
@@ -121,7 +142,9 @@ public class NetworkManager extends Verticle {
       return;
     }
 
-    cluster = ClusterFactory.getCluster(scluster, vertx, container);
+    cluster = new DefaultCluster(scluster, vertx, container);
+    deploymentIDs = cluster.<String, String>getMap(String.format("deployments.%s", address));
+    deploymentNodes = cluster.<String, String>getMap(String.format("nodes.%s", address));
 
     // Load the current cluster. Regardless of the network's cluster scope,
     // we use the CLUSTER for coordination if it's available. This ensures
@@ -130,75 +153,87 @@ public class NetworkManager extends Verticle {
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
-        data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(address), vertx);
-        data.watch(address, watchHandler, new Handler<AsyncResult<Void>>() {
+        final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2);
+        counter.setHandler(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
               startResult.setFailure(result.cause());
             } else {
-              // In the event that the manager failed, the current network context
-              // will be persisted in the cluster. Attempt to retrieve it.
-              data.get(address, new Handler<AsyncResult<String>>() {
+              data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(address), vertx);
+              data.watch(address, watchHandler, new Handler<AsyncResult<Void>>() {
                 @Override
-                public void handle(AsyncResult<String> result) {
+                public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
                     startResult.setFailure(result.cause());
-                  } else if (result.result() != null) {
-                    currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
-
-                    final CountingCompletionHandler<Void> componentCounter = new CountingCompletionHandler<Void>(currentContext.components().size());
-                    componentCounter.setHandler(new Handler<AsyncResult<Void>>() {
+                  } else {
+                    // In the event that the manager failed, the current network context
+                    // will be persisted in the cluster. Attempt to retrieve it.
+                    data.get(address, new Handler<AsyncResult<String>>() {
                       @Override
-                      public void handle(AsyncResult<Void> result) {
+                      public void handle(AsyncResult<String> result) {
                         if (result.failed()) {
                           startResult.setFailure(result.cause());
-                        } else {
-                          NetworkManager.super.start(startResult);
-                        }
-                        task.complete();
-                      }
-                    });
+                        } else if (result.result() != null) {
+                          currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
 
-                    // Try to determine the current status of the network.
-                    for (ComponentContext<?> component : currentContext.components()) {
-                      final CountingCompletionHandler<Void> instanceCounter = new CountingCompletionHandler<Void>(component.instances().size());
-                      instanceCounter.setHandler(new Handler<AsyncResult<Void>>() {
-                        @Override
-                        public void handle(AsyncResult<Void> result) {
-                          if (result.failed()) {
-                            componentCounter.fail(result.cause());
-                          } else {
-                            componentCounter.succeed();
-                          }
-                        }
-                      });
-                      for (final InstanceContext instance : component.instances()) {
-                        data.containsKey(instance.status(), new Handler<AsyncResult<Boolean>>() {
-                          @Override
-                          public void handle(AsyncResult<Boolean> result) {
-                            if (result.failed()) {
-                              instanceCounter.fail(result.cause());
-                            } else if (result.result()) {
-                              handleReady(instance.address());
-                              instanceCounter.succeed();
-                            } else {
-                              handleUnready(instance.address());
-                              instanceCounter.succeed();
+                          final CountingCompletionHandler<Void> componentCounter = new CountingCompletionHandler<Void>(currentContext.components().size());
+                          componentCounter.setHandler(new Handler<AsyncResult<Void>>() {
+                            @Override
+                            public void handle(AsyncResult<Void> result) {
+                              if (result.failed()) {
+                                startResult.setFailure(result.cause());
+                              } else {
+                                NetworkManager.super.start(startResult);
+                              }
+                              task.complete();
+                            }
+                          });
+
+                          // Try to determine the current status of the network.
+                          for (ComponentContext<?> component : currentContext.components()) {
+                            final CountingCompletionHandler<Void> instanceCounter = new CountingCompletionHandler<Void>(component.instances().size());
+                            instanceCounter.setHandler(new Handler<AsyncResult<Void>>() {
+                              @Override
+                              public void handle(AsyncResult<Void> result) {
+                                if (result.failed()) {
+                                  componentCounter.fail(result.cause());
+                                } else {
+                                  componentCounter.succeed();
+                                }
+                              }
+                            });
+                            for (final InstanceContext instance : component.instances()) {
+                              data.containsKey(instance.status(), new Handler<AsyncResult<Boolean>>() {
+                                @Override
+                                public void handle(AsyncResult<Boolean> result) {
+                                  if (result.failed()) {
+                                    instanceCounter.fail(result.cause());
+                                  } else if (result.result()) {
+                                    handleReady(instance.address());
+                                    instanceCounter.succeed();
+                                  } else {
+                                    handleUnready(instance.address());
+                                    instanceCounter.succeed();
+                                  }
+                                }
+                              });
                             }
                           }
-                        });
+                        } else {
+                          task.complete();
+                          NetworkManager.super.start(startResult);
+                        }
                       }
-                    }
-                  } else {
-                    task.complete();
-                    NetworkManager.super.start(startResult);
+                    });
                   }
                 }
               });
             }
           }
         });
+        cluster.registerJoinHandler(joinHandler, counter);
+        cluster.registerLeaveHandler(leaveHandler, counter);
       }
     });
   }
@@ -219,6 +254,7 @@ public class NetworkManager extends Verticle {
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
               log.error(result.cause());
+              task.complete();
             } else {
               deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
                 @Override
@@ -253,6 +289,7 @@ public class NetworkManager extends Verticle {
           public void handle(AsyncResult<Void> result) {
             if (result.failed()) {
               log.error(result.cause());
+              task.complete();
             } else {
               if (currentContext != null) {
                 final NetworkContext runningContext = currentContext;
@@ -268,20 +305,22 @@ public class NetworkManager extends Verticle {
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
                       log.error(result.cause());
+                      task.complete();
                     } else {
                       undeployRemovedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
                             log.error(result.cause());
+                            task.complete();
                           } else {
                             deployAddedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
                               @Override
                               public void handle(AsyncResult<Void> result) {
+                                task.complete();
                                 if (result.failed()) {
                                   log.error(result.cause());
                                 } else {
-                                  task.complete();
                                   checkReady();
                                 }
                               }
@@ -296,15 +335,14 @@ public class NetworkManager extends Verticle {
               else {
                 // Just deploy the entire network if it wasn't already deployed.
                 currentContext = context;
-
                 deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
                   @Override
                   public void handle(AsyncResult<NetworkContext> result) {
+                    task.complete();
                     if (result.failed()) {
                       log.error(result.cause());
                     } else {
                       log.info("Successfully deployed network " + context.address());
-                      task.complete();
                       checkReady();
                     }
                   }
@@ -397,6 +435,7 @@ public class NetworkManager extends Verticle {
                 public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
                     log.error(result.cause());
+                    task.complete();
                   } else {
                     // Once we've finished undeploying all the components of the
                     // network, set the network's status to nothing in order to
@@ -409,11 +448,14 @@ public class NetworkManager extends Verticle {
                         } else {
                           log.info("Successfully undeployed components of " + currentContext.address());
                         }
+                        task.complete();
                       }
                     });
                   }
                 }
               });
+            } else {
+              task.complete();
             }
           }
         });
@@ -529,45 +571,84 @@ public class NetworkManager extends Verticle {
   /**
    * Deploys all network components.
    */
-  private void deployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
+  private void deployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> counter) {
     for (final ComponentContext<?> component : components) {
-      final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(component.instances().size());
-      counter.setHandler(new Handler<AsyncResult<Void>>() {
+      deployComponent(component, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
           if (result.failed()) {
-            complete.fail(result.cause());
+            counter.fail(result.cause());
           } else {
             data.put(component.address(), DefaultComponentContext.toJson(component).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
-                  complete.fail(result.cause());
+                  counter.fail(result.cause());
                 } else {
-                  complete.succeed();
+                  counter.succeed();
                 }
               }
             });
           }
         }
       });
-      deployInstances(component.instances(), counter);
+    }
+  }
+
+  /**
+   * Deploys a component.
+   */
+  private void deployComponent(ComponentContext<?> component, final Handler<AsyncResult<Void>> doneHandler) {
+    // If the component is installable then we first need to install the
+    // component to all the nodes in the cluster.
+    if (component.isModule()) {
+      final ModuleContext module = component.asModule();
+      // Make sure to install the module only to the appropriate deployment group.
+      cluster.getGroup(component.group(), new Handler<AsyncResult<Group>>() {
+        @Override
+        public void handle(AsyncResult<Group> result) {
+          if (result.failed()) {
+            new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          } else {
+            result.result().getNodes(new Handler<AsyncResult<Collection<Node>>>() {
+              @Override
+              public void handle(AsyncResult<Collection<Node>> result) {
+                if (result.failed()) {
+                  new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                } else {
+                  final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size()).setHandler(doneHandler);
+                  for (Node node : result.result()) {
+                    installModule(node, module, counter);
+                  }
+                }
+              }
+            });
+          }
+        }
+      });
+    } else {
+      deployInstances(component.instances(), doneHandler);
     }
   }
 
   /**
    * Deploys all network component instances.
    */
-  private void deployInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
+  private void deployInstances(List<InstanceContext> instances, final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(instances.size()).setHandler(doneHandler);
     for (final InstanceContext instance : instances) {
       // Before deploying the instance, check if the instance is already deployed in
       // the network's cluster.
-      cluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
+      deploymentIDs.get(instance.address(), new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<Boolean> result) {
+        public void handle(AsyncResult<String> result) {
           if (result.failed()) {
             counter.fail(result.cause());
-          } else if (result.result()) {
+          } else if (result.result() == null) {
+            // If no deployment ID has been assigned to the instance then that means it hasn't
+            // yet been deployed. Deploy the instance.
+            deployInstance(instance, counter);
+          } else {
             // Even if the instance is already deployed, update its context in the cluster.
             // It's possible that the instance's connections could have changed with the update.
             data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
@@ -580,8 +661,6 @@ public class NetworkManager extends Verticle {
                 }
               }
             });
-          } else {
-            deployInstance(instance, counter);
           }
         }
       });
@@ -595,6 +674,48 @@ public class NetworkManager extends Verticle {
     // Set the instance context in the cluster. This context will be loaded
     // and referenced by the instance once it's deployed.
     log.info(String.format("Deploying instance %d of %s", instance.number(), instance.component().name()));
+
+    // First we need to select a node from the component's deployment group
+    // to which to deploy the component.
+    // If the component doesn't specify a group then deploy to any node in the cluster.
+    if (instance.component().group() != null) {
+      cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
+        @Override
+        public void handle(AsyncResult<Group> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          } else {
+            result.result().selectNode(instance.address(), new Handler<AsyncResult<Node>>() {
+              @Override
+              public void handle(AsyncResult<Node> result) {
+                if (result.failed()) {
+                  counter.fail(result.cause());
+                } else {
+                  deployInstance(result.result(), instance, counter);
+                }
+              }
+            });
+          }
+        }
+      });
+    } else {
+      cluster.selectNode(instance.address(), new Handler<AsyncResult<Node>>() {
+        @Override
+        public void handle(AsyncResult<Node> result) {
+          if (result.failed()) {
+            counter.fail(result.cause());
+          } else {
+            deployInstance(result.result(), instance, counter);
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Deploys an instance to a specific node.
+   */
+  private void deployInstance(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
     data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -651,13 +772,27 @@ public class NetworkManager extends Verticle {
    * Deploys a module component instance in the network's cluster.
    */
   private void deployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployModuleTo(instance.address(), instance.component().group(), instance.component().asModule().module(), buildConfig(instance, cluster), 1, true, new Handler<AsyncResult<String>>() {
+    cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Group> result) {
         if (result.failed()) {
           counter.fail(result.cause());
         } else {
-          counter.succeed();
+          result.result().deployModule(instance.component().asModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                counter.fail(result.cause());
+              } else {
+                deploymentIDs.put(instance.address(), result.result(), new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    counter.succeed();
+                  }
+                });
+              }
+            }
+          });
         }
       }
     });
@@ -667,13 +802,27 @@ public class NetworkManager extends Verticle {
    * Deploys a verticle component instance in the network's cluster.
    */
   private void deployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, true, new Handler<AsyncResult<String>>() {
+    cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Group> result) {
         if (result.failed()) {
           counter.fail(result.cause());
         } else {
-          counter.succeed();
+          result.result().deployVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                counter.fail(result.cause());
+              } else {
+                deploymentIDs.put(instance.address(), result.result(), new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    counter.succeed();
+                  }
+                });
+              }
+            }
+          });
         }
       }
     });
@@ -683,16 +832,54 @@ public class NetworkManager extends Verticle {
    * Deploys a worker verticle component instance in the network's cluster.
    */
   private void deployWorkerVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.deployWorkerVerticleTo(instance.address(), instance.component().group(), instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, instance.component().asVerticle().isMultiThreaded(), true, new Handler<AsyncResult<String>>() {
+    cluster.getGroup(instance.component().group(), new Handler<AsyncResult<Group>>() {
       @Override
-      public void handle(AsyncResult<String> result) {
+      public void handle(AsyncResult<Group> result) {
         if (result.failed()) {
           counter.fail(result.cause());
         } else {
-          counter.succeed();
+          result.result().deployWorkerVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1,instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              if (result.failed()) {
+                counter.fail(result.cause());
+              } else {
+                deploymentIDs.put(instance.address(), result.result(), new Handler<AsyncResult<String>>() {
+                  @Override
+                  public void handle(AsyncResult<String> result) {
+                    counter.succeed();
+                  }
+                });
+              }
+            }
+          });
         }
       }
     });
+  }
+
+  /**
+   * Installs all modules on a node.
+   */
+  private void installModules(final Node node, final NetworkContext context, final Handler<AsyncResult<Void>> doneHandler) {
+    List<ModuleContext> modules = new ArrayList<>();
+    for (ComponentContext<?> component : context.components()) {
+      if (component.isModule()) {
+        modules.add(component.asModule());
+      }
+    }
+
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(modules.size()).setHandler(doneHandler);
+    for (ModuleContext module : modules) {
+      installModule(node, module, counter);
+    }
+  }
+
+  /**
+   * Installs a module on a node.
+   */
+  private void installModule(final Node node, final ModuleContext module, final Handler<AsyncResult<Void>> doneHandler) {
+    node.installModule(module.name(), doneHandler);
   }
 
   /**
@@ -748,22 +935,11 @@ public class NetworkManager extends Verticle {
    */
   private void undeployInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      cluster.isDeployed(instance.address(), new Handler<AsyncResult<Boolean>>() {
-        @Override
-        public void handle(AsyncResult<Boolean> result) {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else if (result.result()) {
-            if (instance.component().isModule()) {
-              undeployModule(instance, counter);
-            } else if (instance.component().isVerticle()) {
-              undeployVerticle(instance, counter);
-            }
-          } else {
-            unwatchInstance(instance, counter);
-          }
-        }
-      });
+      if (instance.component().isModule()) {
+        undeployModule(instance, counter);
+      } else if (instance.component().isVerticle()) {
+        undeployVerticle(instance, counter);
+      }
     }
   }
 
@@ -806,10 +982,21 @@ public class NetworkManager extends Verticle {
    * Undeploys a module component instance.
    */
   private void undeployModule(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.undeployModule(instance.address(), new Handler<AsyncResult<Void>>() {
+    deploymentIDs.remove(instance.address(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
-        unwatchInstance(instance, counter);
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          counter.fail(result.cause());
+        } else if (result.result() != null) {
+          cluster.undeployModule(result.result(), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              unwatchInstance(instance, counter);
+            }
+          });
+        } else {
+          unwatchInstance(instance, counter);
+        }
       }
     });
   }
@@ -818,10 +1005,21 @@ public class NetworkManager extends Verticle {
    * Undeploys a verticle component instance.
    */
   private void undeployVerticle(final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    cluster.undeployVerticle(instance.address(), new Handler<AsyncResult<Void>>() {
+    deploymentIDs.remove(instance.address(), new Handler<AsyncResult<String>>() {
       @Override
-      public void handle(AsyncResult<Void> result) {
-        unwatchInstance(instance, counter);
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          counter.fail(result.cause());
+        } else if (result.result() != null) {
+          cluster.undeployVerticle(result.result(), new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              unwatchInstance(instance, counter);
+            }
+          });
+        } else {
+          unwatchInstance(instance, counter);
+        }
       }
     });
   }
@@ -880,6 +1078,88 @@ public class NetworkManager extends Verticle {
         }
       });
     }
+  }
+
+  /**
+   * Handles a node joining the cluster.
+   */
+  private void doNodeJoined(final Node node) {
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        if (currentContext != null) {
+          log.info(String.format("%s joined the cluster. Uploading components to new node", node.address()));
+          installModules(node, currentContext, new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                log.error(result.cause());
+              } else {
+                log.info(String.format("Successfully uploaded components to %s", node.address()));
+              }
+              task.complete();
+            }
+          });
+        } else {
+          task.complete();
+        }
+      }
+    });
+  }
+
+  /**
+   * Handles a node leaving the cluster.
+   */
+  private void doNodeLeft(final Node node) {
+    tasks.runTask(new Handler<Task>() {
+      @Override
+      public void handle(final Task task) {
+        if (currentContext != null) {
+          log.info(String.format("%s left the cluster. Reassigning components", node.address()));
+          deploymentNodes.keySet(new Handler<AsyncResult<Set<String>>>() {
+            @Override
+            public void handle(AsyncResult<Set<String>> result) {
+              if (result.succeeded()) {
+                final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size());
+                counter.setHandler(new Handler<AsyncResult<Void>>() {
+                  @Override
+                  public void handle(AsyncResult<Void> result) {
+                    task.complete();
+                  }
+                });
+  
+                // If the instance was deployed on the node that left the cluster then
+                // redeploy it on a new node.
+                for (final String instanceAddress : result.result()) {
+                  deploymentNodes.get(instanceAddress, new Handler<AsyncResult<String>>() {
+                    @Override
+                    public void handle(AsyncResult<String> result) {
+                      if (result.succeeded() && result.result().equals(node.address())) {
+                        // Look up the current instance context in the cluster.
+                        data.get(instanceAddress, new Handler<AsyncResult<String>>() {
+                          @Override
+                          public void handle(AsyncResult<String> result) {
+                            if (result.succeeded() && result.result() != null) {
+                              deployInstance(DefaultInstanceContext.fromJson(new JsonObject(result.result())), counter);
+                            } else {
+                              counter.succeed();
+                            }
+                          }
+                        });
+                      } else {
+                        counter.succeed();
+                      }
+                    }
+                  });
+                }
+              }
+            }
+          });
+        } else {
+          task.complete();
+        }
+      }
+    });
   }
 
 }

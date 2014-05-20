@@ -13,27 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.manager.impl;
+
+import org.vertx.java.core.Vertx;
+
+import com.hazelcast.core.HazelcastInstance;
 
 /**
- * Deployment exception.
+ * Cluster data provider factory.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@SuppressWarnings("serial")
-public class DeploymentException extends ClusterException {
+class ClusterDataFactory {
+  private final Vertx vertx;
 
-  public DeploymentException(String message) {
-    super(message);
+  ClusterDataFactory(Vertx vertx) {
+    this.vertx = vertx;
   }
 
-  public DeploymentException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public DeploymentException(Throwable cause) {
-    super(cause);
+  /**
+   * Creates cluster data.
+   *
+   * @return A cluster data store.
+   */
+  public ClusterData createClusterData() {
+    HazelcastInstance hazelcast = ClusterListenerFactory.getHazelcastInstance();
+    if (hazelcast != null) {
+      return new HazelcastClusterData(hazelcast);
+    } else {
+      return new VertxClusterData(vertx);
+    }
   }
 
 }
-

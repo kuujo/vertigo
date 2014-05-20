@@ -30,7 +30,7 @@ import org.vertx.java.core.Handler;
  *
  * @author Jordan Halterman
  */
-public interface InputBatch extends Batch<InputBatch>, Input<InputBatch>, InputGroupSupport<InputBatch> {
+public interface InputBatch extends MessageBatch<InputBatch>, Input<InputBatch>, InputGroupSupport<InputBatch> {
 
   /**
    * Registers a start handler on the batch.

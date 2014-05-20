@@ -308,9 +308,9 @@ The cluster configuration requires a `cluster` name.
 A test cluster can also be deployed locally through the `Vertigo` API.
 
 ```java
-vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
-  public void handle(AsyncResult<ClusterManager> result) {
-    ClusterManager cluster = result.result();
+vertigo.deployCluster("test-cluster", new Handler<AsyncResult<Cluster>>() {
+  public void handle(AsyncResult<Cluster> result) {
+    Cluster cluster = result.result();
   }
 });
 ```
@@ -905,9 +905,9 @@ Vert.x `Container`.
 
 ```java
 Vertigo vertigo = new Vertigo(this);
-vertigo.deployCluster("test-cluster", new Handler<AsyncResult<ClusterManager>>() {
-  public void handle(AsyncResult<ClusterManager> result) {
-    ClusterManager cluster = result.result();
+vertigo.deployCluster("test-cluster", new Handler<AsyncResult<Cluster>>() {
+  public void handle(AsyncResult<Cluster> result) {
+    Cluster cluster = result.result();
   }
 });
 ```
@@ -916,20 +916,20 @@ There are several methods for deploying nodes or clusters within the current
 Vert.x instance.
 
 * `deployCluster(String address)`
-* `deployCluster(String address, Handler<AsyncResult<ClusterManager>> doneHandler)`
+* `deployCluster(String address, Handler<AsyncResult<Cluster>> doneHandler)`
 * `deployCluster(String address, int nodes)`
-* `deployCluster(String address, int nodes, Handler<AsyncResult<ClusterManager>> doneHandler)`
+* `deployCluster(String address, int nodes, Handler<AsyncResult<Cluster>> doneHandler)`
 
 Users should use this API rather than deploying the `ClusterAgent` verticle directly
 because the cluster agent is pluggable. To override the default cluster agent
 set the system property `net.kuujo.vertigo.cluster`.
 
 ### Referencing a cluster programmatically
-Network deployments are performed through the `ClusterManager` API. To get a
-`ClusterManager` instance for a running Vertigo cluster call the `getCluster` method
+Network deployments are performed through the `Cluster` API. To get a
+`Cluster` instance for a running Vertigo cluster call the `getCluster` method
 
 ```java
-ClusterManager cluster = vertigo.getCluster("test-cluster");
+Cluster cluster = vertigo.getCluster("test-cluster");
 ```
 
 ### Accessing a cluster through the event bus
@@ -958,7 +958,7 @@ method has an action associated with it, and the actions and their arguments wil
 be outline in the following documentation.
 
 ### Deploying a network
-To deploy a network use the `deployNetwork` methods on the `ClusterManager` for
+To deploy a network use the `deployNetwork` methods on the `Cluster` for
 the cluster to which the network should be deployed.
 
 ```java

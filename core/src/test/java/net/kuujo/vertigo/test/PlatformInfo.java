@@ -13,26 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.batch;
+package net.kuujo.vertigo.test;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Base interface for batches. Batches represent collections of messages over time.<p>
- *
- * As opposed to groups, batches are collections of messages that can be
- * sent to any target component instance. Batches simply delimit a group
- * of messages output from a given component during a time window.
+ * Vert.x platform information.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The batch type.
  */
-public interface Batch<T extends Batch<T>> {
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PlatformInfo {
 
   /**
-   * Returns the unique batch ID.
-   *
-   * @return The unique batch ID.
+   * The Vert.x mods directory.
    */
-  String id();
+  String mods() default "target/mods";
+
+  /**
+   * Whether to cluster the Vert.x platform.
+   */
+  boolean cluster() default true;
+
+  /**
+   * The Vert.x cluster manager.
+   */
+  String clusterManager() default "org.vertx.java.spi.cluster.impl.hazelcast.HazelcastClusterManagerFactory";
 
 }

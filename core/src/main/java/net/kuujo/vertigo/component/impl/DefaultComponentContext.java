@@ -54,10 +54,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value=DefaultVerticleContext.class, name="verticle")
 })
 public abstract class DefaultComponentContext<T extends ComponentContext<T>> extends BaseContext<T> implements ComponentContext<T> {
-  private static final String DEFAULT_GROUP = "__DEFAULT__";
   protected String name;
   protected String status;
-  protected String group = DEFAULT_GROUP;
+  protected String group;
   protected Map<String, Object> config;
   protected List<InstanceContext> instances = new ArrayList<>();
   protected List<ComponentHook> hooks = new ArrayList<>();

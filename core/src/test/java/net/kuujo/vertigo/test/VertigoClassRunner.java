@@ -79,7 +79,19 @@ public class VertigoClassRunner extends BlockJUnit4ClassRunner {
 
   public VertigoClassRunner(Class<?> klass) throws InitializationError {
     super(klass);
-    if (mgr == null) {
+    if (mgr != null) {
+      mgr.stop();
+    }
+    PlatformInfo info = klass.getAnnotation(PlatformInfo.class);
+    if (info != null) {
+      System.setProperty("vertx.mods", info.mods());
+      if (info.cluster()) {
+        System.setProperty("vertx.clusterManagerFactory", info.clusterManager());
+        mgr = PlatformLocator.factory.createPlatformManager(0, "localhost");
+      } else {
+        mgr = PlatformLocator.factory.createPlatformManager();
+      }
+    } else {
       mgr = PlatformLocator.factory.createPlatformManager(0, "localhost");
     }
     setTestProperties();
@@ -195,6 +207,7 @@ public class VertigoClassRunner extends BlockJUnit4ClassRunner {
   }
 
   @Override
+  @SuppressWarnings("resource")
   protected void runChild(FrameworkMethod method, RunNotifier notifier) {
     Class<?> testClass = getTestClass().getJavaClass();
     String methodName = method.getName();

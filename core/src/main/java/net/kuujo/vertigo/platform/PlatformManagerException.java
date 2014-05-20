@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.platform;
 
 import net.kuujo.vertigo.VertigoException;
 
 /**
- * Cluster manager exception.
+ * Platform manager exception.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @SuppressWarnings("serial")
-public class ClusterManagerException extends VertigoException {
+public class PlatformManagerException extends VertigoException {
 
-  public ClusterManagerException(String message) {
+  public PlatformManagerException(String message) {
     super(message);
   }
 
-  public ClusterManagerException(String message, Throwable cause) {
+  public PlatformManagerException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public ClusterManagerException(Throwable cause) {
+  public PlatformManagerException(Throwable cause) {
     super(cause);
   }
 

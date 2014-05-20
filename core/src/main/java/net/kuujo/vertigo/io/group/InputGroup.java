@@ -45,7 +45,7 @@ import org.vertx.java.core.Handler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputGroup extends Group<InputGroup>, Input<InputGroup>, InputGroupSupport<InputGroup> {
+public interface InputGroup extends MessageGroup<InputGroup>, Input<InputGroup>, InputGroupSupport<InputGroup> {
 
   /**
    * Registers a start handler on the group.

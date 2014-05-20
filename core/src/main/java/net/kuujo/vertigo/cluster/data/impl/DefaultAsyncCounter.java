@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.cluster.data.impl;
 
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
+import net.kuujo.vertigo.cluster.data.DataException;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -57,6 +58,8 @@ public class DefaultAsyncCounter implements AsyncCounter {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Long>(result.result().body().getLong("result", 0)).setHandler(doneHandler);
         }
@@ -80,6 +83,8 @@ public class DefaultAsyncCounter implements AsyncCounter {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
@@ -98,6 +103,8 @@ public class DefaultAsyncCounter implements AsyncCounter {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Long>(result.result().body().getLong("result", 0)).setHandler(doneHandler);
         }
@@ -121,6 +128,8 @@ public class DefaultAsyncCounter implements AsyncCounter {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         }
@@ -139,6 +148,8 @@ public class DefaultAsyncCounter implements AsyncCounter {
       public void handle(AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
           new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+        } else if (result.result().body().getString("status").equals("error")) {
+          new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Long>(result.result().body().getLong("result", 0)).setHandler(doneHandler);
         }

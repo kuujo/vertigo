@@ -42,7 +42,7 @@ import net.kuujo.vertigo.io.OutputGroupSupport;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputGroup extends Group<OutputGroup>, Output<OutputGroup>, OutputGroupSupport<OutputGroup> {
+public interface OutputGroup extends MessageGroup<OutputGroup>, Output<OutputGroup>, OutputGroupSupport<OutputGroup> {
 
   /**
    * Ends the output group.

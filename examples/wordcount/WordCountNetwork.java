@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Random;
 
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.ActiveNetwork;
@@ -43,10 +43,10 @@ public class WordCountNetwork extends Verticle {
    * Random word feeder.
    */
   public static class WordFeeder extends ComponentVerticle {
-    private String[] words = new String[]{
+    private final String[] words = new String[]{
       "foo", "bar", "baz", "foobar", "foobaz", "barfoo", "barbaz", "bazfoo", "bazbar"
     };
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @Override
     public void start() {
@@ -98,13 +98,13 @@ public class WordCountNetwork extends Verticle {
   @SuppressWarnings("unchecked")
   public void start(final Future<Void> startResult) {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("default", new Handler<AsyncResult<ClusterManager>>() {
+    vertigo.deployCluster("default", new Handler<AsyncResult<Cluster>>() {
       @Override
-      public void handle(AsyncResult<ClusterManager> result) {
+      public void handle(AsyncResult<Cluster> result) {
         if (result.failed()) {
           startResult.setFailure(result.cause());
         } else {
-          ClusterManager cluster = result.result();
+          Cluster cluster = result.result();
 
           NetworkConfig network = vertigo.createNetwork("word-count");
           network.addVerticle("word-feeder", WordFeeder.class.getName());

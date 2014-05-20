@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import net.kuujo.vertigo.Vertigo;
-import net.kuujo.vertigo.cluster.ClusterManager;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
 import net.kuujo.vertigo.cluster.data.AsyncMap;
 import net.kuujo.vertigo.java.ComponentVerticle;
@@ -141,14 +141,14 @@ public class FaultTolerantNetwork extends Verticle {
     // the cluster will coordinate through Hazelcast data structures,
     // otherwise the cluster will coordinate through Vert.x shared data.
     Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster("default", new Handler<AsyncResult<ClusterManager>>() {
-      public void handle(AsyncResult<ClusterManager> result) {
+    vertigo.deployCluster("default", new Handler<AsyncResult<Cluster>>() {
+      public void handle(AsyncResult<Cluster> result) {
         if (result.failed()) {
           startResult.setFailure(result.cause());
         } else {
-          // The cluster manager is used to deploy, undeploy, and
-          // reconfigure networks in the given cluster.
-          ClusterManager cluster = result.result();
+          // The cluster is used to deploy, undeploy, and
+          // reconfigure networks in a cluster.
+          Cluster cluster = result.result();
 
           // Create a new network configuration. This network uses
           // circular connections to send "ack" messages back to the

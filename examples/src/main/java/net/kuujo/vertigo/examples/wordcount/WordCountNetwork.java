@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.kuujo.vertigo.examples.wordcount;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -20,14 +22,14 @@ import java.util.Random;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.java.ComponentVerticle;
-import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.ActiveNetwork;
+import net.kuujo.vertigo.network.NetworkConfig;
 
-import org.vertx.java.platform.Verticle;
 import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Future;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Verticle;
 
 /**
  * A word count network example.
@@ -95,7 +97,6 @@ public class WordCountNetwork extends Verticle {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void start(final Future<Void> startResult) {
     final Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("default", new Handler<AsyncResult<Cluster>>() {

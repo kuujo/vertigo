@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.kuujo.vertigo.examples.faulttolerant;
+
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.cluster.data.AsyncCounter;
@@ -140,7 +142,7 @@ public class FaultTolerantNetwork extends Verticle {
     // If the current Vert.x instance is a Hazelcast clustered instance,
     // the cluster will coordinate through Hazelcast data structures,
     // otherwise the cluster will coordinate through Vert.x shared data.
-    Vertigo vertigo = new Vertigo(this);
+    final Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("default", new Handler<AsyncResult<Cluster>>() {
       public void handle(AsyncResult<Cluster> result) {
         if (result.failed()) {

@@ -35,10 +35,20 @@ public class ModuleInfo {
     this.fields = fields;
   }
 
+  /**
+   * Returns the module identifier.
+   *
+   * @return The module identifier.
+   */
   public ModuleIdentifier id() {
     return id;
   }
 
+  /**
+   * Returns the module configuration fields.
+   *
+   * @return The module configuration fields defined in <code>mod.json</code>.
+   */
   public ModuleFields fields() {
     return fields;
   }

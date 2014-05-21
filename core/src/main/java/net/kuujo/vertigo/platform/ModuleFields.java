@@ -34,6 +34,11 @@ public class ModuleFields extends org.vertx.java.platform.impl.ModuleFields {
     this.config = config;
   }
 
+  /**
+   * Returns a list of input ports defined by the module.
+   *
+   * @return A list of input ports defined by the module.
+   */
   public List<String> getInPorts() {
     List<String> ports = new ArrayList<>();
     JsonObject jsonPorts = config.getObject("ports");
@@ -50,6 +55,11 @@ public class ModuleFields extends org.vertx.java.platform.impl.ModuleFields {
     return ports;
   }
 
+  /**
+   * Returns a list of output ports defined by the module.
+   *
+   * @return A list of output ports defined by the module.
+   */
   public List<String> getOutPorts() {
     List<String> ports = new ArrayList<>();
     JsonObject jsonPorts = config.getObject("ports");

@@ -340,13 +340,13 @@ public class DefaultOutputConnection implements OutputConnection {
    * Handles a batch fail.
    */
   private void doFail(long id) {
-    // The other side of the connection has sent a message indicating that
-    // it received a message out of order. We have to resend all the messages
-    // after that point in order.
-    if (messages.containsKey(id+1)) {
-      for (long i = id+1; i <= messages.lastKey(); i++) {
-        eventBus.send(inAddress, messages.get(i));
-      }
+    // Ack all the entries before the given ID.
+    doAck(id);
+
+    // Now that all the entries before the given ID have been removed,
+    // just iterate over the messages map and resend all the messages.
+    for (Map.Entry<Long, JsonObject> message : messages.entrySet()) {
+      eventBus.send(inAddress, message.getValue());
     }
   }
 

@@ -257,7 +257,7 @@
             <configuration>
               <show>public</show>
               <excludePackageNames>net.kuujo.vertigo.network.manager:*.impl.*</excludePackageNames>
-              <reportOutputDirectory>docs</reportOutputDirectory>
+              <reportOutputDirectory>docs/0.7.0</reportOutputDirectory>
               <destDir>java</destDir>
               <aggregate>true</aggregate>
             </configuration>

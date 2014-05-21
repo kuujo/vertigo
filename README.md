@@ -3,7 +3,7 @@ Vertigo [![Build Status](https://travis-ci.org/kuujo/vertigo.png)](https://travi
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
-**[Getting Started](#getting-started) | [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/java)**
+**[Getting Started](#getting-started) | [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/0.7.0/java)**
 
 [Javascript][vertigo-js] | [Python][vertigo-python]
 

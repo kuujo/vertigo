@@ -88,7 +88,7 @@ public class WordCountNetwork extends Verticle {
         public void handle(String word) {
           Integer count = counts.get(word);
           if (count == null) count = 0;
-          count++;
+          counts.put(word, ++count);
           output.port("count").send(new JsonObject().putString("word", word).putNumber("count", count));
         }
       });

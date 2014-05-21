@@ -25,7 +25,7 @@ import org.vertx.java.core.Handler;
  *
  * @param <T> The closeable type.
  */
-public interface Closeable<T extends Closeable<T>> {
+public interface Closeable<T extends Closeable<T>> extends AutoCloseable {
 
   /**
    * Closes the stream.

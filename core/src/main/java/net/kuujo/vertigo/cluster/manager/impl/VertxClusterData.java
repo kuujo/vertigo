@@ -297,21 +297,19 @@ class VertxClusterData implements ClusterData {
 
   private static class SharedDataList<T> implements List<T> {
     private final Map<Integer, Object> map;
-    private int currentSize = 0;
   
     public SharedDataList(Map<Integer, Object> map) {
       this.map = map;
-      this.currentSize = (int) (map.containsKey(-1) ? map.get(-1) : 0);
     }
   
     @Override
     public int size() {
-      return currentSize;
+      return map.size();
     }
   
     @Override
     public boolean isEmpty() {
-      return currentSize == 0;
+      return map.isEmpty();
     }
   
     @Override
@@ -342,36 +340,55 @@ class VertxClusterData implements ClusterData {
   
     @Override
     public boolean addAll(Collection<? extends T> c) {
-      for (T value : c) {
-        add(value);
+      synchronized (map) {
+        for (T value : c) {
+          add(value);
+        }
       }
       return true;
     }
   
     @Override
     public boolean addAll(int index, Collection<? extends T> c) {
-      int i = index;
-      for (T value : c) {
-        add(i, value);
-        i++;
+      synchronized (map) {
+        int i = index;
+        for (T value : c) {
+          add(i++, value);
+        }
       }
       return true;
     }
   
     @Override
     public boolean removeAll(Collection<?> c) {
-      throw new UnsupportedOperationException("Not supported.");
+      synchronized (map) {
+        Iterator<Map.Entry<Integer, Object>> iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+          if (c.contains(iterator.next().getValue())) {
+            iterator.remove();
+          }
+        }
+      }
+      return true;
     }
   
     @Override
     public boolean retainAll(Collection<?> c) {
-      throw new UnsupportedOperationException("Not supported.");
+      synchronized (map) {
+      Iterator<Map.Entry<Integer, Object>> iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+          if (!c.contains(iterator.next().getValue())) {
+            iterator.remove();
+          }
+        }
+      }
+      return true;
     }
   
     @Override
     @SuppressWarnings("unchecked")
     public T get(int index) {
-      if (index > currentSize-1) {
+      if (index < 0 || index > map.size() - 1) {
         throw new IndexOutOfBoundsException("Index out of bounds.");
       } else {
         return (T) map.get(index);
@@ -380,22 +397,28 @@ class VertxClusterData implements ClusterData {
   
     @Override
     public boolean add(T e) {
-      map.put(currentSize, e);
-      currentSize++;
-      map.put(-1, currentSize);
+      map.put(map.size(), e);
       return true;
     }
   
     @Override
     public void add(int index, T element) {
-      map.put(currentSize, element);
-      currentSize++;
-      map.put(-1, currentSize);
+      if (index < 0 || index > map.size() - 1) {
+        throw new IndexOutOfBoundsException("Index out of bounds.");
+      } else {
+        synchronized (map) {
+          // Shift all the elements in the map up one above the index.
+          for (int i = map.size() - 1; i > index; i--) {
+            map.put(i+1, map.remove(i));
+          }
+          map.put(index, element);
+        }
+      }
     }
   
     @Override
     public int indexOf(Object o) {
-      for (int i = 0; i < currentSize; i++) {
+      for (int i = 0; i < map.size(); i++) {
         if (map.get(i).equals(o)) {
           return i;
         }
@@ -405,7 +428,7 @@ class VertxClusterData implements ClusterData {
   
     @Override
     public int lastIndexOf(Object o) {
-      for (int i = currentSize-1; i > 0; i--) {
+      for (int i = map.size() - 1; i >= 0; i--) {
         if (map.get(i).equals(o)) {
           return i;
         }
@@ -432,11 +455,10 @@ class VertxClusterData implements ClusterData {
     @SuppressWarnings("unchecked")
     public boolean remove(Object o) {
       synchronized (map) {
-        for (int i = 0; i < currentSize; i++) {
+        for (int i = 0; i < map.size(); i++) {
           T value = (T) map.get(i);
           if (value != null && value.equals(o)) {
             map.remove(i);
-            currentSize--;
             i++;
             while (map.containsKey(i)) {
               map.put(i-1, map.remove(i));
@@ -452,8 +474,6 @@ class VertxClusterData implements ClusterData {
     @Override
     public void clear() {
       map.clear();
-      currentSize = 0;
-      map.put(-1, currentSize);
     }
   
     @Override
@@ -465,7 +485,7 @@ class VertxClusterData implements ClusterData {
     @Override
     @SuppressWarnings("unchecked")
     public T remove(int index) {
-      if (index > currentSize-1) {
+      if (index < 0 || index > map.size() - 1) {
         throw new IndexOutOfBoundsException("Index out of bounds.");
       } else {
         synchronized (map) {
@@ -475,8 +495,6 @@ class VertxClusterData implements ClusterData {
             map.put(i-1, map.remove(i));
             i++;
           }
-          currentSize--;
-          map.put(-1, currentSize);
           return value;
         }
       }
@@ -491,6 +509,7 @@ class VertxClusterData implements ClusterData {
     public SharedDataQueue(Map<Integer, Object> map) {
       this.map = map;
       this.currentIndex = (int) (map.containsKey(-1) ? map.get(-1) : 0);
+      this.map.put(-1, currentIndex);
     }
 
     @Override

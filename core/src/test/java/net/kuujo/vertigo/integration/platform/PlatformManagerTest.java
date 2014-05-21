@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.test.integration;
+package net.kuujo.vertigo.integration.platform;
 
-import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.assertEquals;
+import static org.vertx.testtools.VertxAssert.assertTrue;
+import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
@@ -54,8 +57,25 @@ public class PlatformManagerTest extends TestVerticle {
           assertTrue(result.cause().getMessage(), result.succeeded());
         } else {
           assertTrue(result.succeeded());
-          assertEquals(4, result.result().size());
-          testComplete();
+          @SuppressWarnings("serial")
+          Set<String> moduleNames = new HashSet<String>() {{
+            add("net.kuujo~test-include-1~1.0");
+            add("net.kuujo~test-include-2~1.0");
+            add("net.kuujo~test-mod-1~1.0");
+            add("net.kuujo~test-mod-2~1.0");
+          }};
+          int count = 0;
+          for (ModuleInfo module : result.result()) {
+            if (moduleNames.contains(module.id().toString())) {
+              count++;
+              if (count == 4) {
+                testComplete();
+              }
+            }
+          }
+          if (count < 4) {
+            fail();
+          }
         }
       }
     });

@@ -13,30 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.test.integration;
+package net.kuujo.vertigo.integration.cluster;
 
 import static org.vertx.testtools.VertxAssert.assertNotNull;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
-import net.kuujo.vertigo.cluster.impl.DefaultCluster;
-import net.kuujo.vertigo.test.PlatformInfo;
-import net.kuujo.vertigo.test.VertigoTestVerticle;
 
+import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
+import org.vertx.testtools.JavaClassRunner;
+import org.vertx.testtools.TestVerticle;
 
 /**
- * A remote cluster test.
+ * Cluster deployment tests.
  *
  * @author Jordan Halterman
  */
-@PlatformInfo(cluster=true, mods="src/test/resources/server-mods")
-public class ClusterTest extends VertigoTestVerticle {
+@RunWith(ClusterTest.ClusterClassRunner.class)
+public class ClusterTest extends TestVerticle {
+
+  public static class ClusterClassRunner extends JavaClassRunner {
+    static {
+      System.setProperty("vertx.mods", "src/test/resources/test-mods");
+    }
+    public ClusterClassRunner(Class<?> klass) throws InitializationError {
+      super(klass);
+    }
+  }
 
   public static class TestVerticle1 extends Verticle {
     @Override
@@ -143,38 +154,52 @@ public class ClusterTest extends VertigoTestVerticle {
   }
 
   @Test
-  public void testInstallDeployModule() {
-    System.setProperty("vertx.mods", "src/test/resources/server-mods");
+  public void testDeployModule() {
     Vertigo vertigo = new Vertigo(this);
     vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        System.setProperty("vertx.mods", "src/test/resources/test-mods");
-        final Cluster cluster = new DefaultCluster("test", vertx, container);
+        final Cluster cluster = result.result();
+        cluster.deployModule("net.kuujo~test-mod-2~1.0", new Handler<AsyncResult<String>>() {
+          @Override
+          public void handle(AsyncResult<String> result) {
+            assertTrue(result.succeeded());
+          }
+        });
+      }
+    });
+  }
+
+  @Test
+  public void testUndeployModule() {
+    Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster("test", new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        final Cluster cluster = result.result();
         cluster.deployModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
-            assertTrue(result.failed());
-            cluster.installModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<Void>>() {
+            assertTrue(result.succeeded());
+            assertNotNull(result.result());
+            cluster.undeployModule(result.result(), new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 assertTrue(result.succeeded());
-                cluster.deployModule("net.kuujo~test-mod-1~1.0", new Handler<AsyncResult<String>>() {
-                  @Override
-                  public void handle(AsyncResult<String> result) {
-                    assertTrue(result.succeeded());
-                    assertNotNull(result.result());
-                    vertx.fileSystem().deleteSync("src/test/resources/server-mods", true);
-                    testComplete();
-                  }
-                });
+                testComplete();
               }
             });
           }
         });
       }
     });
+  }
+
+  @AfterClass
+  public static void after() {
+    System.clearProperty("vertx.mods");
   }
 
 }

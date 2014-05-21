@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.test.integration;
+package net.kuujo.vertigo.integration.cluster;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
@@ -33,18 +33,18 @@ import net.kuujo.vertigo.io.impl.DefaultInputContext;
 import net.kuujo.vertigo.io.impl.DefaultOutputContext;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
-import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.testtools.TestVerticle;
 
 /**
  * A component coordinator test.
  *
  * @author Jordan Halterman
  */
-public class CoordinatorTest extends VertigoTestVerticle {
+public class CoordinatorTest extends TestVerticle {
 
   @Test
   public void testStartWithExistingContext() {

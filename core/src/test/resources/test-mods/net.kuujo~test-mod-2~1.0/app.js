@@ -1,0 +1,1 @@
+org.vertx.testtools.VertxAssert.testComplete();

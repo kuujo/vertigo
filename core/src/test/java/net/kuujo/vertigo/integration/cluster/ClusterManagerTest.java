@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.test.integration;
+package net.kuujo.vertigo.integration.cluster;
 
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
@@ -27,20 +27,20 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
-import net.kuujo.vertigo.test.VertigoTestVerticle;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.testtools.TestVerticle;
 
 /**
  * A remote cluster test.
  *
  * @author Jordan Halterman
  */
-public class ClusterManagerTest extends VertigoTestVerticle {
+public class ClusterManagerTest extends TestVerticle {
 
   @Test
   public void testDeploy() {

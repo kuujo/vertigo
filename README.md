@@ -1334,12 +1334,12 @@ The `NetworkFactory` will construct the network from the json configuration file
 deploy the network to the available cluster.
 
 ## Cluster Management
-Vertigo clusters support remote deployments over the event bus through
-[Xync](http://github.com/kuujo/xync). Users can use the Vertigo cluster API to
-remotely deploy Vert.x modules and verticles from Vertigo components.
+Vertigo clusters support remote deployments of networks and modules/verticles and
+shared data access over the event bus. Vertigo provides a Java and event bus API
+for all cluster operations.
 
 ### Accessing the cluster from within a component
-The Xync cluster is made available to users through the `cluster` field within
+The Vertigo cluster is made available to users through the `cluster` field within
 the `ComponentVerticle` class. The `cluster` within any given component will always
 reference the Vertigo cluster to which the component's parent network belongs. This
 means that deployments made through the `cluster` will be separated in the same
@@ -1475,8 +1475,8 @@ map.put("foo", "bar", new Handler<AsyncResult<String>>() {
 
 If the Vert.x instance is not clustered then Vertigo maps will be backed by
 the Vert.x `ConcurrentSharedMap`. If the Vert.x instance is clustered then maps
-will be backed by Hazelcast maps that are accessed over the event bus in a Xync
-worker verticle to prevent blocking the event loop.
+will be backed by Hazelcast maps that are accessed over the event bus through
+the Vertigo cluster.
 
 ### AsyncSet
 The `AsyncSet` interface closely mimics the interface of the Java `Set` interface,
@@ -1495,8 +1495,8 @@ set.add("bar", new Handler<AsyncResult<Boolean>>() {
 
 If the Vert.x instance is not clustered then Vertigo sets will be backed by
 the Vert.x `SharedData` sets. If the Vert.x instance is clustered then sets
-will be backed by Hazelcast sets that are accessed over the event bus in a Xync
-worker verticle to prevent blocking the event loop.
+will be backed by Hazelcast sets that are accessed over the event bus through
+the Vertigo cluster.
 
 ### AsyncList
 The `AsyncList` interface closely mimics the interface of the Java `List` interface,
@@ -1516,7 +1516,7 @@ list.add("bar", new Handler<AsyncResult<Boolean>>() {
 If the Vert.x instance is not clustered then Vertigo lists will be backed by
 a custom list implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 Vert.x instance is clustered then lists will be backed by Hazelcast lists that are
-accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
+accessed over the event bus through the Vertigo cluster.
 
 ### AsyncQueue
 The `AsyncQueue` interface closely mimics the interface of the Java `Queue` interface,
@@ -1542,7 +1542,7 @@ queue.add("bar", new Handler<AsyncResult<Boolean>>() {
 If the Vert.x instance is not clustered then Vertigo queues will be backed by
 a custom queue implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 Vert.x instance is clustered then queues will be backed by Hazelcast queues that are
-accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
+accessed over the event bus through the Vertigo cluster.
 
 ### AsyncCounter
 The `AsyncCounter` facilitates generating cluster-wide counters.
@@ -1561,7 +1561,7 @@ counter.incrementAndGet(new Handler<AsyncResult<Long>>() {
 If the Vert.x instance is not clustered then Vertigo counters will be backed by
 a custom counter implementation on top of the Vert.x `ConcurrentSharedMap`. If the
 Vert.x instance is clustered then counters will be backed by Hazelcast maps that are
-accessed over the event bus in a Xync worker verticle to prevent blocking the event loop.
+accessed over the event bus through the Vertigo cluster.
 
 ### Accessing shared data over the event bus
 As with network and module/verticle deployments, cluster-wide shared data structures
@@ -1844,11 +1844,10 @@ one or more special verticles that expose an event bus interface to deploying
 modules, verticles, and complete networks as well as cluster-wide shared data.
 
 The verticle implementation that handles clustering is the
-[ClusterAgent](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/impl/ClusterAgent.java)
-The cluster agent is an extension of the [Xync](http://github.com/kuujo/xync)
-verticle. Remote module and verticle deployments, failover, and cluster-wide
-shared data are provided by the Xync verticle, while network-specific logic
-is implemented in the Vertigo `ClusterAgent`.
+[ClusterAgent](https://github.com/kuujo/vertigo/blob/master/core/src/main/java/net/kuujo/vertigo/cluster/manager/impl/ClusterAgent.java)
+The cluster agent exposes an event bus API for performing cluster operations,
+including remote module and verticle deployments, failover, and cluster-wide
+shared data, along with of course deploying and managing networks.
 
 The Vertigo cluster makes heavy use of cluster-wide shared data for coordination.
 This is the element of the cluster that supports deploying/undeploying partial

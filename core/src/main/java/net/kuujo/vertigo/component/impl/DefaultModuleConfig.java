@@ -23,6 +23,7 @@ import java.util.Map;
 import net.kuujo.vertigo.component.ModuleConfig;
 import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.util.Args;
 
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.impl.ModuleIdentifier;
@@ -47,7 +48,7 @@ public class DefaultModuleConfig implements ModuleConfig {
   }
 
   public DefaultModuleConfig(String name, String moduleName, NetworkConfig network) {
-    this.name = name;
+    setName(name);
     setModule(moduleName);
   }
 
@@ -63,6 +64,7 @@ public class DefaultModuleConfig implements ModuleConfig {
 
   @Override
   public ModuleConfig setName(String name) {
+    Args.checkNotNull(name, "component name cannot be null");
     this.name = name;
     return this;
   }
@@ -85,9 +87,7 @@ public class DefaultModuleConfig implements ModuleConfig {
 
   @Override
   public ModuleConfig setInstances(int instances) {
-    if (instances < 1) {
-      throw new IllegalArgumentException("Instances must be a positive integer.");
-    }
+    Args.checkPositive(instances, "instances must be a positive number");
     this.instances = instances;
     return this;
   }
@@ -105,7 +105,9 @@ public class DefaultModuleConfig implements ModuleConfig {
 
   @Override
   public ModuleConfig addHook(ComponentHook hook) {
-    this.hooks.add(hook);
+    if (hook != null) {
+      this.hooks.add(hook);
+    }
     return this;
   }
 
@@ -116,6 +118,7 @@ public class DefaultModuleConfig implements ModuleConfig {
 
   @Override
   public ModuleConfig setModule(String moduleName) {
+    Args.checkNotNull(moduleName, "module name cannot be null");
     // Instantiate a module identifier to force it to validate the module name.
     // If the module name is invalid then an IllegalArgumentException will be thrown.
     new ModuleIdentifier(moduleName);

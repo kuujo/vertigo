@@ -34,6 +34,7 @@ import net.kuujo.vertigo.io.connection.ConnectionConfig;
 import net.kuujo.vertigo.io.connection.impl.DefaultConnectionConfig;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.util.Args;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -52,6 +53,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   }
 
   public DefaultNetworkConfig(String name) {
+    Args.checkNotNull(name, "network name cannot be null");
     this.name = name;
   }
 
@@ -130,22 +132,22 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public ModuleConfig addModule(String name, String moduleName) {
-    return addModule(new DefaultModuleConfig(name, moduleName, this));
+    return addModule(name, moduleName, null, 1);
   }
 
   @Override
   public ModuleConfig addModule(String name, String moduleName, JsonObject config) {
-    return addModule(new DefaultModuleConfig(name, moduleName, this).setConfig(config));
+    return addModule(name, moduleName, config, 1);
   }
 
   @Override
-  public ModuleConfig addModule(String name, String moduleName, int numInstances) {
-    return addModule(new DefaultModuleConfig(name, moduleName, this).setInstances(numInstances));
+  public ModuleConfig addModule(String name, String moduleName, int instances) {
+    return addModule(name, moduleName, null, instances);
   }
 
   @Override
-  public ModuleConfig addModule(String name, String moduleName, JsonObject config, int numInstances) {
-    return addModule(new DefaultModuleConfig(name, moduleName, this).setConfig(config).setInstances(numInstances));
+  public ModuleConfig addModule(String name, String moduleName, JsonObject config, int instances) {
+    return addModule(new DefaultModuleConfig(name, moduleName, this).setConfig(config).setInstances(instances));
   }
 
   @Override
@@ -155,9 +157,12 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public ModuleConfig removeModule(String name) {
+    Args.checkNotNull(name, "component name cannot be null");
     ComponentConfig<?> component = components.get(name);
     if (!(component instanceof ModuleConfig)) {
-      throw new IllegalArgumentException("Component is not a module component.");
+      throw new IllegalArgumentException("component is not a module component.");
+    } else {
+      components.remove(name);
     }
     return (ModuleConfig) component;
   }
@@ -170,22 +175,22 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public VerticleConfig addVerticle(String name, String main) {
-    return addVerticle(new DefaultVerticleConfig(name, main, this));
+    return addVerticle(name, main, null, 1);
   }
 
   @Override
   public VerticleConfig addVerticle(String name, String main, JsonObject config) {
-    return addVerticle(new DefaultVerticleConfig(name, main, this).setConfig(config));
+    return addVerticle(name, main, config, 1);
   }
 
   @Override
-  public VerticleConfig addVerticle(String name, String main, int numInstances) {
-    return addVerticle(new DefaultVerticleConfig(name, main, this).setInstances(numInstances));
+  public VerticleConfig addVerticle(String name, String main, int instances) {
+    return addVerticle(name, main, null, instances);
   }
 
   @Override
-  public VerticleConfig addVerticle(String name, String main, JsonObject config, int numInstances) {
-    return addVerticle(new DefaultVerticleConfig(name, main, this).setConfig(config).setInstances(numInstances));
+  public VerticleConfig addVerticle(String name, String main, JsonObject config, int instances) {
+    return addVerticle(new DefaultVerticleConfig(name, main, this).setConfig(config).setInstances(instances));
   }
 
   @Override
@@ -195,9 +200,12 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public VerticleConfig removeVerticle(String name) {
+    Args.checkNotNull(name, "component name cannot be null");
     ComponentConfig<?> component = components.get(name);
     if (!(component instanceof VerticleConfig)) {
-      throw new IllegalArgumentException("Component is not a verticle component.");
+      throw new IllegalArgumentException("component is not a verticle component.");
+    } else {
+      components.remove(name);
     }
     return (VerticleConfig) component;
   }

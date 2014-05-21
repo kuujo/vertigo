@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.util.Args;
 
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
@@ -49,6 +50,7 @@ public class PortLoggerFactory {
    * @return An output port logger.
    */
   public static PortLogger getLogger(String name, OutputCollector output) {
+    Args.checkNotNull(name, "logger name cannot be null");
     Map<OutputCollector, PortLogger> loggers = PortLoggerFactory.loggers.get(name);
     if (loggers == null) {
       loggers = new HashMap<>();

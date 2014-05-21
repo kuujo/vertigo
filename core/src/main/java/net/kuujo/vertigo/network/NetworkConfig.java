@@ -62,6 +62,13 @@ public interface NetworkConfig extends Config<NetworkConfig> {
   public static final String NETWORK_COMPONENTS = "components";
 
   /**
+   * <code>connections</code> is an array defining network connection configurations. Each
+   * item in the array must be an object defining a <code>source</code> and <code>target</code>
+   * configuration.
+   */
+  public static final String NETWORK_CONNECTIONS = "connections";
+
+  /**
    * Returns the network name.<p>
    *
    * The network's name should be unique within a given cluster.

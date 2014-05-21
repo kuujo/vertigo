@@ -23,6 +23,7 @@ import java.util.Map;
 import net.kuujo.vertigo.component.VerticleConfig;
 import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.util.Args;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -52,8 +53,8 @@ public class DefaultVerticleConfig implements VerticleConfig {
   }
 
   public DefaultVerticleConfig(String name, String main, NetworkConfig network) {
-    this.name = name;
-    this.main = main;
+    setName(name);
+    setMain(main);
   }
 
   @Override
@@ -68,6 +69,7 @@ public class DefaultVerticleConfig implements VerticleConfig {
 
   @Override
   public VerticleConfig setName(String name) {
+    Args.checkNotNull(name, "component name must not be null");
     this.name = name;
     return this;
   }
@@ -90,9 +92,7 @@ public class DefaultVerticleConfig implements VerticleConfig {
 
   @Override
   public VerticleConfig setInstances(int instances) {
-    if (instances < 1) {
-      throw new IllegalArgumentException("Instances must be a positive integer.");
-    }
+    Args.checkPositive(instances, "instances must be a positive number");
     this.instances = instances;
     return this;
   }
@@ -110,7 +110,9 @@ public class DefaultVerticleConfig implements VerticleConfig {
 
   @Override
   public VerticleConfig addHook(ComponentHook hook) {
-    this.hooks.add(hook);
+    if (hook != null) {
+      this.hooks.add(hook);
+    }
     return this;
   }
 
@@ -121,6 +123,7 @@ public class DefaultVerticleConfig implements VerticleConfig {
 
   @Override
   public VerticleConfig setMain(String main) {
+    Args.checkNotNull(main, "verticle main must not be null");
     this.main = main;
     return this;
   }

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io.logging;
 
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.port.OutputPort;
+import net.kuujo.vertigo.util.Args;
 
 import org.vertx.java.core.logging.Logger;
 
@@ -79,6 +80,8 @@ public class PortLogger extends Logger {
 
   PortLogger(Logger logger, OutputCollector output) {
     super(null);
+    Args.checkNotNull(logger, "logger cannot be null");
+    Args.checkNotNull(output, "output cannot be null");
     this.logger = logger;
     this.fatal = output.port(FATAL_PORT);
     this.error = output.port(ERROR_PORT);

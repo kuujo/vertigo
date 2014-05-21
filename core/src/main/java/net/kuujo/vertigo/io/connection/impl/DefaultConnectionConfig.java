@@ -30,6 +30,7 @@ import net.kuujo.vertigo.io.selector.RandomSelector;
 import net.kuujo.vertigo.io.selector.RoundRobinSelector;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.util.Args;
 
 /**
  * Default connection configuration implementation.
@@ -63,10 +64,12 @@ public class DefaultConnectionConfig implements ConnectionConfig {
   }
 
   public DefaultConnectionConfig(String source, String out, String target, String in, Selector selector, NetworkConfig network) {
+    Args.checkNotNull(source, "connection source cannot be null");
+    Args.checkNotNull(target, "connection target cannot be null");
     this.source.setComponent(source);
-    this.source.setPort(out);
+    this.source.setPort(out != null ? out : DEFAULT_OUT_PORT);
     this.target.setComponent(target);
-    this.target.setPort(in);
+    this.target.setPort(in != null ? in : DEFAULT_IN_PORT);
     if (selector == null) {
       selector = new RoundRobinSelector();
     }
@@ -85,7 +88,9 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   @Override
   public ConnectionConfig addHook(IOHook hook) {
-    this.hooks.add(hook);
+    if (hook != null) {
+      this.hooks.add(hook);
+    }
     return this;
   }
 
@@ -136,7 +141,9 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
   @Override
   public ConnectionConfig customSelect(Selector selector) {
-    if (selector instanceof RoundRobinSelector || selector instanceof RandomSelector || selector instanceof HashSelector
+    if (selector == null) {
+      this.selector = new RoundRobinSelector();
+    } else if (selector instanceof RoundRobinSelector || selector instanceof RandomSelector || selector instanceof HashSelector
         || selector instanceof FairSelector || selector instanceof AllSelector) {
       this.selector = selector;
     } else {
@@ -177,6 +184,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
     @Override
     public Source setComponent(String component) {
+      Args.checkNotNull(component, "component cannot be null");
       this.component = component;
       return this;
     }
@@ -188,13 +196,16 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
     @Override
     public Source setPort(String port) {
+      Args.checkNotNull(port, "port cannot be null");
       this.port = port;
       return this;
     }
 
     @Override
     public Source addHook(OutputHook hook) {
-      this.hooks.add(hook);
+      if (hook != null) {
+        this.hooks.add(hook);
+      }
       return this;
     }
 
@@ -225,6 +236,7 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
     @Override
     public Target setComponent(String component) {
+      Args.checkNotNull(component, "component cannot be null");
       this.component = component;
       return this;
     }
@@ -236,13 +248,16 @@ public class DefaultConnectionConfig implements ConnectionConfig {
 
     @Override
     public Target setPort(String port) {
+      Args.checkNotNull(port, "port cannot be null");
       this.port = port;
       return this;
     }
 
     @Override
     public Target addHook(InputHook hook) {
-      this.hooks.add(hook);
+      if (hook != null) {
+        this.hooks.add(hook);
+      }
       return this;
     }
 

@@ -42,6 +42,7 @@ import net.kuujo.vertigo.platform.ModuleIdentifier;
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.platform.PlatformManagerException;
+import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.ContextManager;
 
 import org.vertx.java.core.AsyncResult;
@@ -109,6 +110,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager getModuleInfo(final String moduleName, final Handler<AsyncResult<ModuleInfo>> resultHandler) {
+    Args.checkNotNull(moduleName, "module name cannot be null");
     context.execute(new Action<ModuleInfo>() {
       @Override
       public ModuleInfo perform() {
@@ -127,6 +129,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public synchronized PlatformManager zipModule(final String moduleName, final Handler<AsyncResult<String>> doneHandler) {
+    Args.checkNotNull(moduleName, "module name cannot be null");
     context.execute(new Action<String>() {
       @Override
       public String perform() {
@@ -139,6 +142,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager installModule(final String zipFile, final Handler<AsyncResult<Void>> doneHandler) {
+    Args.checkNotNull(zipFile, "zip file cannot be null");
     context.execute(new Action<Void>() {
       @Override
       public Void perform() {
@@ -155,6 +159,7 @@ public class DefaultPlatformManager implements PlatformManager {
 
   @Override
   public PlatformManager uninstallModule(final String moduleName, final Handler<AsyncResult<Void>> doneHandler) {
+    Args.checkNotNull(moduleName, "module name cannot be null");
     context.execute(new Action<Void>() {
       @Override
       public Void perform() {

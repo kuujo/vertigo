@@ -31,6 +31,7 @@ import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.stream.OutputStream;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.io.stream.impl.DefaultOutputStream;
+import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Observer;
 import net.kuujo.vertigo.util.Task;
@@ -192,6 +193,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public OutputPort setSendQueueMaxSize(int maxSize) {
+    Args.checkPositive(maxSize, "max size must be a positive number");
     this.maxQueueSize = maxSize;
     for (OutputStream stream : streams) {
       stream.setSendQueueMaxSize(maxQueueSize);

@@ -1,4 +1,4 @@
-Vertigo
+Vertigo [![Build Status](https://travis-ci.org/kuujo/vertigo.png)](https://travis-ci.org/kuujo/vertigo)
 =======
 
 **Need support? Check out the [Vertigo Google Group][google-group]**

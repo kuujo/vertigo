@@ -18,8 +18,8 @@ package net.kuujo.vertigo.io.stream;
 import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.io.OutputBatchSupport;
-import net.kuujo.vertigo.io.OutputGroupSupport;
+import net.kuujo.vertigo.io.batch.OutputBatchSupport;
+import net.kuujo.vertigo.io.group.OutputGroupSupport;
 
 /**
  * Output stream.<p>

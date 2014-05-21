@@ -16,7 +16,6 @@
 package net.kuujo.vertigo.io.group;
 
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.io.OutputGroupSupport;
 
 /**
  * Output group represent collections of output messages.<p>
@@ -42,7 +41,7 @@ import net.kuujo.vertigo.io.OutputGroupSupport;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputGroup extends MessageGroup<OutputGroup>, Output<OutputGroup>, OutputGroupSupport<OutputGroup> {
+public interface OutputGroup extends MessageGroup<OutputGroup>, Output<OutputGroup> {
 
   /**
    * Ends the output group.

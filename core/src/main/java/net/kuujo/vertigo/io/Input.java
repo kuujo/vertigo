@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io;
 
+import net.kuujo.vertigo.io.group.InputGroupSupport;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 

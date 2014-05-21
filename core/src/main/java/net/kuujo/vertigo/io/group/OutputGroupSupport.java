@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
-
-import net.kuujo.vertigo.io.group.OutputGroup;
+package net.kuujo.vertigo.io.group;
 
 import org.vertx.java.core.Handler;
 

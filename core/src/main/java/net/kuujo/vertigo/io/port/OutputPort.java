@@ -16,9 +16,9 @@
 package net.kuujo.vertigo.io.port;
 
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.io.OutputBatchSupport;
-import net.kuujo.vertigo.io.OutputGroupSupport;
 import net.kuujo.vertigo.io.batch.OutputBatch;
+import net.kuujo.vertigo.io.batch.OutputBatchSupport;
+import net.kuujo.vertigo.io.group.OutputGroupSupport;
 
 import org.vertx.java.core.Handler;
 

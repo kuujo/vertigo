@@ -13,28 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
-
-import net.kuujo.vertigo.io.batch.InputBatch;
+package net.kuujo.vertigo.io.group;
 
 import org.vertx.java.core.Handler;
 
 /**
- * Support for receiving input batches.
+ * Support for receiving input groups.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
  * @param <T> The type to which the support belongs.
  */
-public interface InputBatchSupport<T extends InputBatchSupport<T>> {
+public interface InputGroupSupport<T extends InputGroupSupport<T>> {
 
   /**
-   * Registers a batch handler.
+   * Registers a group handler.
    *
    * @param handler The handler to register. This handler will be called
-   *        whenever a new batch is started.
+   *        whenever any group on the input is started.
    * @return The called object.
    */
-  T batchHandler(Handler<InputBatch> handler);
+  T groupHandler(Handler<InputGroup> handler);
+
+  /**
+   * Registers a group handler.
+   *
+   * @param name The name of the group for which to register the handler.
+   * @param handler The handler to register. This handler will be called
+   *        whenever a group of the given name is started.
+   * @return The called object.
+   */
+  T groupHandler(String name, Handler<InputGroup> handler);
 
 }

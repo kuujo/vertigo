@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.batch;
 
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.io.OutputGroupSupport;
+import net.kuujo.vertigo.io.group.OutputGroupSupport;
 
 /**
  * Sendable batch of messages.<p>

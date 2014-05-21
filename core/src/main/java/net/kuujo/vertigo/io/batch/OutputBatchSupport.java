@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
-
-import net.kuujo.vertigo.io.batch.OutputBatch;
+package net.kuujo.vertigo.io.batch;
 
 import org.vertx.java.core.Handler;
 

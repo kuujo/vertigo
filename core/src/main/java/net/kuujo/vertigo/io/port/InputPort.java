@@ -16,8 +16,8 @@
 package net.kuujo.vertigo.io.port;
 
 import net.kuujo.vertigo.io.Input;
-import net.kuujo.vertigo.io.InputBatchSupport;
-import net.kuujo.vertigo.io.InputGroupSupport;
+import net.kuujo.vertigo.io.batch.InputBatchSupport;
+import net.kuujo.vertigo.io.group.InputGroupSupport;
 
 /**
  * Input port on which messages are received.<p>

@@ -43,9 +43,7 @@ full-featured Java Profiler. Take a look at YourKit's leading software products:
 
 # Java User Manual
 
-**Vertigo 0.7.0-beta2 has been released!**
-
-**Note: Vertigo 0.7.0-beta2 is only compatible with Vert.x versions that use
+**Note: New Vertigo versions are only compatible with Vert.x builds that use
 Hazelcast 3.x**
 
 1. [Getting Started](#getting-started)
@@ -70,7 +68,8 @@ Hazelcast 3.x**
    * [Receiving messages on an input port](#receiving-messages-on-an-input-port)
    * [Working with message groups](#working-with-message-groups)
    * [Working with message batches](#working-with-message-batches)
-   * [Providing serializeable messages](#providing-serializeable-messages)
+   * [Providing serializable messages](#providing-serializable-messages)
+   * [Sendinging and receiving files](#sending-and-receiving-files)
 1. [Network Deployment and Clustering](#network-deployment-and-clustering)
    * [Starting a cluster from the command line](#starting-a-cluster-from-the-command-line)
    * [Starting a cluster programmatically](#starting-a-cluster-programmatically)
@@ -89,9 +88,7 @@ Hazelcast 3.x**
    * [Accessing the cluster from within a component](#accessing-the-cluster-from-within-a-component)
    * [Deploying modules and verticles to the cluster](#deploying-modules-and-verticles-to-the-cluster)
    * [Undeploying modules and verticles from the cluster](#undeploying-modules-and-verticles-from-the-cluster)
-   * [Checking if a module or verticle is deployed](#checking-if-a-module-or-verticle-is-deployed)
-   * [Deploying modules and verticles with HA](#deploying-modules-and-verticles-with-ha)
-   * [Working with HA groups](#working-with-ha-groups)
+   * [Working with cluster groups](#working-with-cluster-groups)
 1. [Cluster-wide Shared Data](#cluster-wide-shared-data)
    * [AsyncMap](#asyncmap)
    * [AsyncSet](#asyncset)
@@ -129,7 +126,7 @@ your modules via the Vert.x module system.
 <dependency>
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>0.7.0-beta2</version>
+  <version>0.7.0-beta3</version>
 </dependency>
 ```
 
@@ -141,7 +138,7 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.7.0-beta2"
+  "includes": "net.kuujo~vertigo~0.7.0-beta3"
 }
 ```
 
@@ -294,7 +291,7 @@ must be running in the Vert.x cluster. Vertigo clusters are made up of simple
 Vert.x verticles. To deploy a cluster node deploy the `vertigo-cluster` module.
 
 ```
-vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta2 -conf cluster.json
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta3 -conf cluster.json
 ```
 
 The cluster configuration requires a `cluster` name.
@@ -610,7 +607,7 @@ Internally, Vertigo will route the message to any connections as defined in the
 network configuration.
 
 Output ports also support custom message serialization.
-See [providing serializeable messages](#providing-serializeable-messages)
+See [providing serializable messages](#providing-serializable-messages)
 
 ### Receiving messages on an input port
 Input ports are referenced in the same was as output ports.
@@ -642,6 +639,9 @@ messages within a group are *guaranteed to be delivered to the same instance* of
 target component. In other words, routing is performed per-group rather than per-message.
 
 ![Groups](http://s30.postimg.org/655svvk3l/groups.png)
+
+For an interesting example of groups see the [FileSender](https://github.com/kuujo/vertigo/blob/master/util/src/main/java/net/kuujo/vertigo/io/FileSender.java)
+and [FileReceiver](https://github.com/kuujo/vertigo/blob/master/util/src/main/java/net/kuujo/vertigo/io/FileReceiver.java) utilities.
 
 When a new output group is created, Vertigo will await the completion of all groups
 of the same name that were created prior to the new group before sending the new group's
@@ -865,7 +865,7 @@ In addition to types supported by the Vert.x event bus, the Vertigo messaging
 framework supports any `Serializable` Java object.
 
 ```java
-public class MyMessage implements Serializeable {
+public class MyMessage implements Serializable {
   private String foo;
   private int bar;
 
@@ -876,6 +876,47 @@ public class MyMessage implements Serializeable {
 }
 ```
 
+### Sending and receiving files
+The Vertigo utilities helper module provides additional APIs for handling special
+cases such as sending large files through ports. The utility project's `FileSender`
+utility can send any size file on an output port using output groups.
+
+To use the file sender, simply construct a new `FileSender`, passing any `Output`
+instance (a port, batch, or group) to the sender.
+
+```java
+FileSender sender = new FileSender(output.port("file"));
+```
+
+Then, to send a file pass the string name of the file to the `sendFile` method.
+
+```java
+sender.sendFile("hello.txt");
+```
+
+On the other side, to receive a file use the `FileReceiver` utility. The file receiever
+will store a temporary file on the receiving node.
+
+```java
+FileReceiver receiver = new FileReceiver(input.port("file"));
+receiver.fileHandler(new Handler<String>() {
+  public void handle(String filePath) {
+    AsyncFile file = vertx.fileSystem().openSync(filePath);
+  }
+});
+```
+
+The `String` passed to the `fileHandler` will be the full path to the temporary file.
+Remember to delete the file once you're done with it!
+
+The `FileSender` and `FileReceiver` work by using output/input groups to stream file
+contents from one component to another. Vertigo guarantees ordering of messages
+and guarantees that all messages within a given group will go to the same target
+instance(s). To see how these helpers are implemented see the
+[FileSender](https://github.com/kuujo/vertigo/tree/master/util/src/main/java/net/kuujo/vertigo/io/FileSender.java)
+and [FileReceiver](https://github.com/kuujo/vertigo/tree/master/util/src/main/java/net/kuujo/vertigo/io/FileReceiver.java)
+classes.
+
 ## Network Deployment and Clustering
 Vertigo provides its own cluster management framework on top of the Vert.x cluster.
 Each Vertigo network will always be deployed in a Vertigo cluster. Vertigo clusters
@@ -885,10 +926,10 @@ within a Vert.x cluster and provide additional features such as failover.
 
 ### Starting a cluster from the command line
 Vertigo provides a special Vert.x module for starting a Vertigo cluster agent. To
-start a cluster node simply start the `net.kuujo~vertigo-cluster~0.7.0-beta2` module.
+start a cluster node simply start the `net.kuujo~vertigo-cluster~0.7.0-beta3` module.
 
 ```
-vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta2
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta3
 ```
 
 The cluster agent accepts a few important configuration options:
@@ -1318,7 +1359,7 @@ This feature is implemented as a Vert.x language module, so the network deployer
 be first added to your `langs.properties` file.
 
 ```
-network=net.kuujo~vertigo-deployer~0.7.0-beta2:net.kuujo.vertigo.NetworkFactory
+network=net.kuujo~vertigo-deployer~0.7.0-beta3:net.kuujo.vertigo.NetworkFactory
 .network=network
 ```
 
@@ -1356,7 +1397,7 @@ public class MyComponent extends ComponentVerticle {
 
   @Override
   public void start() {
-    cluster.deployVerticle("foo", "foo.js", new Handler<AsyncResult<String>>() {
+    cluster.deployVerticle("foo.js", new Handler<AsyncResult<String>>() {
       public void handle(AsyncResult<String> result) {
         if (result.succeeded()) {
           // Successfully deployed the verticle!
@@ -1368,79 +1409,39 @@ public class MyComponent extends ComponentVerticle {
 }
 ```
 
-The `Cluster` API differs in one important aspect from the `Container` API. Because
-cluster deployments are remote, users must provide an *explicit* deployment ID for
-each deployment. This ensures that even if the instance from which the module/verticle
-was deployed fails, the deployment can still be referenced from different Vert.x
-instances. If the deployment ID of a deployment already exists then the deployment
-will fail.
-
-The internal component cluster is the same cluster to which the component's parent network
-belongs. That means that deployment IDs are unique to each cluster. You can deploy
-a module with the deployment ID `foo` in two separate clusters at the same time.
+The `Cluster` API behaves exactly like the Vert.x `Container` API and exposes an
+identical deployment interface. But Vertigo clusters can be separated by event
+bus addresses. So, when deploying or undeploying verticles or modules, it's important
+that you communicate with the correct cluster. The cluster that is available from
+within components will always be the cluster in which the component is running.
 
 ### Undeploying modules and verticles from the cluster
 To undeploy a module or verticle from the cluster call the `undeployModule` or
-`undeployVerticle` method, using the user-defined deployment ID.
+`undeployVerticle` method just as with the Vert.x `Container`.
 
 ```java
-cluster.undeployVerticle("foo");
+cluster.undeployVerticle(deploymentID);
 ```
 
-### Deploying modules and verticles with HA
-Like Vert.x clusters, the Vertigo clusters supports HA deployments. By default, modules
-and verticles are not deployed with HA enabled.
+### Working with cluster groups
+Vertigo clusters can be separated into groups, allowing components, modules, or
+verticles to be deployed only within specific cluster groups.
+
+To get a reference to a cluster group, call the `getGroup` method on a `Cluster`
+instance.
 
 ```java
-cluster.deployVerticle("foo", "foo.js", null, 1, true);
-```
-
-The last argument in the arguments list indicates whether to deploy the deployment
-with HA. When a Vertigo cluster node fails, any deployments deployed with HA enabled
-on that node will be taken over by another node within the same group within the cluster.
-
-### Checking if a module or verticle is deployed
-Since deployment IDs in Vertigo clusters are user-defined, users can determine whether
-a module or verticle is already deployed with a specific deployment ID. To check if
-a deployment is already deployed in the cluster use the `isDeployed` method.
-
-```java
-cluster.isDeployed("foo", new Handler<AsyncResult<Boolean>>() {
-  public void handle(AsyncResult<Boolean> result) {
-    boolean deployed = result.result(); // Whether the module or verticle is deployed
+cluser.getGroup("foo", new Handler<AsyncResult<Group>>() {
+  public void handle(AsyncResult<Group> result) {
+    if (result.succeeded()) {
+      result.result().deployVerticle("bar.js");
+    }
   }
 });
 ```
 
-To check if a module or verticle is deployed over the event bus send a `check` message
-to the cluster, specifying the `module` or `verticle` as the check `type`.
-
-```
-{
-  "action": "check",
-  "type": "verticle",
-  "id": "foo"
-}
-```
-
-If the request is successful, the cluster will reply with a `result` containing a
-boolean indicating whether the deployment ID exists in the cluster.
-
-### Working with HA groups
-Vertigo's HA grouping mechanism is intentionally designed to mimic the core HA behavior.
-Each Vertigo node can be assigned to a specific HA group, and when a node fails its HA
-deployments will be taken over by another node in the same group.
-
-Modules or verticles can also be deployed directly to a specific HA group. To deploy
-a module or verticle to an HA group call the `deployModuleTo` or `deployVerticleTo`
-methods respectively, passing the target HA group as the second argument (after the
-deployment ID).
-
-```java
-cluster.deployVerticleTo("foo", "my-group", "foo.js");
-```
-
-By default, all deployments are deployed to the `__DEFAULT__` HA group.
+If the group doesn't exist in the cluster then a `ClusterException` will be
+returned to the `AsyncResult` handler.
 
 ## Cluster-wide shared data
 Cluster-wide shared data structures are made available via the same API as clustering.

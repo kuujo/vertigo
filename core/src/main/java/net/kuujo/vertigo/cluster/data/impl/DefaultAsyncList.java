@@ -93,7 +93,6 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
         if (result.failed()) {
           new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
         } else if (result.result().body().getString("status").equals("error")) {
-          System.out.println(result.result().body());
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
           new DefaultFutureResult<Boolean>(result.result().body().getBoolean("result")).setHandler(doneHandler);

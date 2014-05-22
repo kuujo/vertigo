@@ -306,6 +306,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   /**
    * Sets up the given connection.
    */
+  @SuppressWarnings("unchecked")
   private InputConnection setupConnection(InputConnection connection) {
     connection.messageHandler(messageHandler);
     for (Handler<InputBatch> handler : batchHandlers) {

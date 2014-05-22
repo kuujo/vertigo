@@ -69,6 +69,6 @@ public interface Input<T extends Input<T>> extends InputGroupSupport<T> {
    * @param handler A message handler.
    * @return The input.
    */
-  T messageHandler(Handler<?> handler);
+  <U> T messageHandler(Handler<U> handler);
 
 }

@@ -55,9 +55,8 @@ public class Pump {
   /**
    * Starts the pump.
    */
-  @SuppressWarnings("rawtypes")
   public void start() {
-    input.messageHandler(new Handler() {
+    input.messageHandler(new Handler<Object>() {
       @Override
       public void handle(Object message) {
         output.send(message);

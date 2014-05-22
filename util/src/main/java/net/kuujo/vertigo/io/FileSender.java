@@ -63,7 +63,7 @@ public class FileSender {
    * @return The file sender.
    */
   public FileSender sendFile(final AsyncFile file, final Handler<AsyncResult<Void>> doneHandler) {
-    output.group("file", new Handler<OutputGroup>() {
+    output.group("file", "file", new Handler<OutputGroup>() {
       @Override
       public void handle(OutputGroup group) {
         doSendFile(file, group, doneHandler);
@@ -99,7 +99,7 @@ public class FileSender {
         } else if (!result.result()) {
           new DefaultFutureResult<Void>(new IOException("File not found.")).setHandler(doneHandler);
         } else {
-          output.group(file.getName(), new Handler<OutputGroup>() {
+          output.group("file", file.getName(), new Handler<OutputGroup>() {
             @Override
             public void handle(final OutputGroup group) {
               output.vertx().fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {

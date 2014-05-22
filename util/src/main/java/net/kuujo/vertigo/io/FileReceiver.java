@@ -95,15 +95,22 @@ public class FileReceiver {
    * Handles a group input file.
    */
   private void handleFile(final InputGroup group) {
-    final File file = new File(tempDir, String.format("temp-%s-%s", UUID.randomUUID().toString(), group.name()));
-    input.vertx().fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {
+    // Register a group start handler. The start handler will be called
+    // with the file name. Then we can open the file.
+    group.startHandler(new Handler<String>() {
       @Override
-      public void handle(AsyncResult<AsyncFile> result) {
-        if (result.succeeded()) {
-          handleFile(file.getAbsolutePath(), result.result(), group);
-        } else if (exceptionHandler != null) {
-          exceptionHandler.handle(result.cause());
-        }
+      public void handle(String fileName) {
+        final File file = new File(tempDir, String.format("temp-%s-%s", UUID.randomUUID().toString(), fileName));
+        input.vertx().fileSystem().open(file.getAbsolutePath(), new Handler<AsyncResult<AsyncFile>>() {
+          @Override
+          public void handle(AsyncResult<AsyncFile> result) {
+            if (result.succeeded()) {
+              handleFile(file.getAbsolutePath(), result.result(), group);
+            } else if (exceptionHandler != null) {
+              exceptionHandler.handle(result.cause());
+            }
+          }
+        });
       }
     });
   }

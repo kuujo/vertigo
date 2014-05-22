@@ -715,7 +715,6 @@ output.port("out").group("foo", new Handler<OutputGroup>() {
 });
 ```
 
-
 As with receiving messages, to receive message groups register a handler on an
 input port using the `groupHandler` method, passing a group name as the first
 argument.
@@ -769,6 +768,16 @@ group.startHandler(new Handler<JsonObject>() {
   }
 });
 ```
+
+Group handlers are called in the following manner:
+* When an input group is created, the `groupHandler` will be called
+* When input group initialization arguments are received, the `startHandler` will be called.
+  This will always occur before any messages have been received by the group.
+* Once the group's `messageHandler` has been set, the `messageHandler` will begin
+  receiving messages. No messages will be received until a message handler is registered,
+  so asynchronous APIs can be called without losing messages
+* Once all messages in the group have been received and/or all child groups have completed
+  (there own `endHandler` has been called) the group's `endHandler` will be called.
 
 As with output groups, input groups can be nested, representing the same structure
 sent by an output group.
@@ -887,6 +896,16 @@ output.port("out").batch(new Handler<OutputBatch>() {
 
 Even if a batch is ended, it will not internally end and allow the next batch to
 be created until any child groups have been successfully ended.
+
+Batch handlers are called in the following manner:
+* When an input batch is created, the `batchHandler` will be called
+* When input batch initialization arguments are received, the `startHandler` will be called.
+  This will always occur before any messages have been received in the batch.
+* Once the batch's `messageHandler` has been set, the `messageHandler` will begin
+  receiving messages. No messages will be received until a message handler is registered,
+  so asynchronous APIs can be called without losing messages
+* Once all messages in the batch have been received and/or all child groups have completed
+  (there own `endHandler` has been called) the batch's `endHandler` will be called.
 
 Groups within batches can be received in the same manner as they are with groups.
 

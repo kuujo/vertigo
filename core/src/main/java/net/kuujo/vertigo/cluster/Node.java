@@ -22,6 +22,9 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Client for communicating with a single Vertigo cluster node.<p>
  *
+ * This client handles deployment of modules and verticles on a specific
+ * node within a Vertigo cluster.<p>
+ *
  * This client communicates directly with a cluster node over the event bus.
  * Users should get a <code>Node</code> instance by calling
  * {@link Cluster#getNode(String, Handler)} rather than by instantiating a

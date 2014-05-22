@@ -22,7 +22,11 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Asynchronous multi-map.
+ * Asynchronous multi-map.<p>
+ *
+ * If the current Vert.x instance is a Hazelcast clustered instance,
+ * the map will be backed by a Hazelcast map. Otherwise, the map
+ * will be backed by a Vert.x shared data map.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

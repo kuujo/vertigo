@@ -19,7 +19,11 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Asynchronous list.
+ * Asynchronous list.<p>
+ *
+ * If the current Vert.x instance is a Hazelcast clustered instance,
+ * the list will be backed by a Hazelcast list. Otherwise, the list
+ * will be backed by a Vert.x shared data map.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

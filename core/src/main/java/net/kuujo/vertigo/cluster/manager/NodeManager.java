@@ -32,12 +32,31 @@ public interface NodeManager {
    */
   String address();
 
+  /**
+   * Starts the node manager.
+   *
+   * @return The node manager.
+   */
   NodeManager start();
 
+  /**
+   * Starts the node manager.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The node manager.
+   */
   NodeManager start(Handler<AsyncResult<Void>> doneHandler);
 
+  /**
+   * Stops the node manager.
+   */
   void stop();
 
+  /**
+   * Stops the node manager.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   */
   void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

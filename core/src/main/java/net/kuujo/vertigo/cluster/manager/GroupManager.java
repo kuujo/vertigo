@@ -32,12 +32,31 @@ public interface GroupManager {
    */
   String address();
 
+  /**
+   * Starts the group manager.
+   *
+   * @return The group manager.
+   */
   GroupManager start();
 
+  /**
+   * Starts the group manager.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The group manager.
+   */
   GroupManager start(Handler<AsyncResult<Void>> doneHandler);
 
+  /**
+   * Stops the group manager.
+   */
   void stop();
 
+  /**
+   * Stops the group manager.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   */
   void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

@@ -33,6 +33,10 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Client for communicating with the Vertigo cluster.<p>
  *
+ * This client is the primary API for communicating with a Vertigo cluster.
+ * Users can use the API to deploy modules, verticles, and networks or
+ * access cluster-wide shared data.<p>
+ *
  * The Vertigo cluster is a collection of modules that coordinate and
  * communicate to remotely deploy modules and verticles and provide
  * access to cluster-wide shared data. The Vertigo cluster does not have

@@ -19,7 +19,11 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
 /**
- * Asynchronous queue.
+ * Asynchronous queue.<p>
+ *
+ * If the current Vert.x instance is a Hazelcast clustered instance,
+ * the queue will be backed by a Hazelcast queue. Otherwise, the queue
+ * will be backed by a Vert.x shared data map.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

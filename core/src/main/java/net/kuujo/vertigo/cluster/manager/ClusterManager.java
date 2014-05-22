@@ -32,12 +32,31 @@ public interface ClusterManager {
    */
   String address();
 
+  /**
+   * Starts the cluster manager.
+   *
+   * @return The cluster manager.
+   */
   ClusterManager start();
 
+  /**
+   * Starts the cluster manager.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The cluster manager.
+   */
   ClusterManager start(Handler<AsyncResult<Void>> doneHandler);
 
+  /**
+   * Stops the cluster manager.
+   */
   void stop();
 
+  /**
+   * Stops the cluster manager.
+   *
+   * @param doneHandler An asynchronous handler to be called once complete.
+   */
   void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

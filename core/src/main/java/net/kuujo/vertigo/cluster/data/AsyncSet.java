@@ -16,7 +16,11 @@
 package net.kuujo.vertigo.cluster.data;
 
 /**
- * Asynchronous set.
+ * Asynchronous set.<p>
+ *
+ * If the current Vert.x instance is a Hazelcast clustered instance,
+ * the set will be backed by a Hazelcast set. Otherwise, the set
+ * will be backed by a Vert.x shared data set.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

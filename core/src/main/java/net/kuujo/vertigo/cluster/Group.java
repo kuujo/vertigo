@@ -24,6 +24,9 @@ import org.vertx.java.core.json.JsonObject;
 /**
  * Client for communicating with cluster groups.<p>
  *
+ * This client handles deployment of modules and verticles within a
+ * group of nodes in a Vertigo cluster.<p>
+ *
  * A single Vertigo cluster can be split into deployment groups. Groups
  * allow users to specify groups of nodes on which a given module or verticle
  * can be deployed. This is an interface for operating on a single group

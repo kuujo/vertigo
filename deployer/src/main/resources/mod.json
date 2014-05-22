@@ -6,5 +6,5 @@
   "author": "Jordan Halterman",
   "keywords": ["vertigo", "deployment"],
   "homepage": "https://github.com/kuujo/vertigo",
-  "includes": "net.kuujo~vertigo~0.7.0-beta3"
+  "includes": "net.kuujo~vertigo~0.7.0-beta4-SNAPSHOT"
 }

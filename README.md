@@ -1,6 +1,9 @@
 Vertigo [![Build Status](https://travis-ci.org/kuujo/vertigo.png)](https://travis-ci.org/kuujo/vertigo)
 =======
 
+#### Vertigo 0.7.0-beta3 has been released!
+*New Vertigo versions are dependent upon Vert.x versions that use Hazelcast 3.2.1*
+
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
 **[Getting Started](#getting-started) | [Java User Manual](#java-user-manual) | [Javadoc](http://vertigo.kuujo.net/0.7.0/java)**

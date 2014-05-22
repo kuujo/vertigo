@@ -5,5 +5,5 @@
   "keywords": ["cluster manager", "shared data"],
   "homepage": "https://github.com/kuujo/vertigo",
   "main": "net.kuujo.vertigo.cluster.manager.impl.ClusterAgent",
-  "includes": "net.kuujo~vertigo~0.7.0-beta3-SNAPSHOT"
+  "includes": "net.kuujo~vertigo~0.7.0-beta4-SNAPSHOT"
 }

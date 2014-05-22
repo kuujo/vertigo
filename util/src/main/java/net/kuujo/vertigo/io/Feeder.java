@@ -74,7 +74,7 @@ public class Feeder<T extends Output<T>> {
    *
    * @param handler A handler to be called each time a message should be
    *                fed to the feeder.
-   * @return
+   * @return The feeder.
    */
   public Feeder<T> feedHandler(Handler<T> handler) {
     this.feedHandler = handler;

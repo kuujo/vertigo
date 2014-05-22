@@ -23,8 +23,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Module component context.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- * 
- * @param <T> The component type
  */
 @JsonTypeInfo(
   use=JsonTypeInfo.Id.CLASS,

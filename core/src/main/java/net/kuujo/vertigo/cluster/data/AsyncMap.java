@@ -55,8 +55,8 @@ public interface AsyncMap<K, V> {
    *
    * @param key The key to set.
    * @param value The value to set.
-   * @parram doneHandler An asynchronous handler to be called once complete. The handler
-   *                     will be called with the previous key value if any.
+   * @param doneHandler An asynchronous handler to be called once complete. The handler
+   *                    will be called with the previous key value if any.
    */
   void put(K key, V value, Handler<AsyncResult<V>> doneHandler);
 

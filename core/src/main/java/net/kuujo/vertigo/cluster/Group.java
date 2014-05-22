@@ -359,7 +359,7 @@ public interface Group {
    * deploy the module to a specific node.
    *
    * @param main The verticle main.
-   * @param instances The number of instances to deploy.
+   * @param config The verticle configuration.
    * @return The group.
    */
   Group deployVerticle(String main, JsonObject config);
@@ -374,7 +374,7 @@ public interface Group {
    * deploy the module to a specific node.
    *
    * @param main The verticle main.
-   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
    * @return The group.
    */
   Group deployVerticle(String main, int instances);

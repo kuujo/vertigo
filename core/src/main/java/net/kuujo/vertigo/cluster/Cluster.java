@@ -400,7 +400,7 @@ public interface Cluster {
    * deploy the module to a specific node.
    *
    * @param main The verticle main.
-   * @param instances The number of instances to deploy.
+   * @param config The verticle configuration.
    * @return The cluster.
    */
   Cluster deployVerticle(String main, JsonObject config);
@@ -415,7 +415,7 @@ public interface Cluster {
    * deploy the module to a specific node.
    *
    * @param main The verticle main.
-   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
    * @return The cluster.
    */
   Cluster deployVerticle(String main, int instances);
@@ -803,7 +803,6 @@ public interface Cluster {
    * configuration.
    *
    * @param name The name of the network to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the network is undeployed.
    * @return The cluster.
    */
   Cluster undeployNetwork(String name);

@@ -222,7 +222,7 @@ public interface Node {
    * The verticle must be available on the classpath of the node.
    *
    * @param main The verticle main.
-   * @param instances The number of instances to deploy.
+   * @param config The verticle configuration.
    * @return The node.
    */
   Node deployVerticle(String main, JsonObject config);
@@ -233,7 +233,7 @@ public interface Node {
    * The verticle must be available on the classpath of the node.
    *
    * @param main The verticle main.
-   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
    * @return The node.
    */
   Node deployVerticle(String main, int instances);

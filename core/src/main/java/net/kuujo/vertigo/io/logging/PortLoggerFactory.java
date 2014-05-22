@@ -35,7 +35,7 @@ public class PortLoggerFactory {
    * Creates an output port logger for the given type.
    *
    * @param clazz The type being logged.
-   * @param port The output collector to which to log messages.
+   * @param output The output to which to log messages.
    * @return An output port logger.
    */
   public static PortLogger getLogger(Class<?> clazz, OutputCollector output) {
@@ -46,7 +46,7 @@ public class PortLoggerFactory {
    * Creates an output port logger with the given name.
    *
    * @param name The logger name.
-   * @param port The output collector to which to log messages.
+   * @param output The output to which to log messages.
    * @return An output port logger.
    */
   public static PortLogger getLogger(String name, OutputCollector output) {

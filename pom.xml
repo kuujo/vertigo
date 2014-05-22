@@ -256,7 +256,7 @@
             <version>${maven.javadoc.plugin.version}</version>
             <configuration>
               <show>public</show>
-              <excludePackageNames>net.kuujo.vertigo.network.manager:*.impl.*</excludePackageNames>
+              <excludePackageNames>net.kuujo.vertigo.network.manager:net.kuujo.vertigo.util:net.kuujo.vertigo.cluster.manager:net.kuujo.vertigo.io.stream:net.kuujo.vertigo.io.connection:net.kuujo.vertigo.platform:*.impl.*</excludePackageNames>
               <reportOutputDirectory>docs/0.7.0</reportOutputDirectory>
               <destDir>java</destDir>
               <aggregate>true</aggregate>

@@ -43,6 +43,7 @@ import org.vertx.java.platform.Verticle;
  *   }
  * 
  * }
+ * }
  * </pre>
  * 
  * The component verticle works exactly the same way as all normal Vert.x
@@ -50,15 +51,14 @@ import org.vertx.java.platform.Verticle;
  * the <em>the component and the network to which it belongs have been
  * completely started</em>, so it's perfectly fine to begin sending messages.<p>
  *
- * The component also contains a reference to the cluster in which the
- * network is deployed. The <code>cluster</code> can be used to deploy
+ * The component also contains a reference to the {@link net.kuujo.vertigo.cluster.Cluster}
+ * to which the network belongs. The <code>cluster</code> can be used to deploy
  * additional modules or verticles or access cluster-wide shared data.
- * For instance, if the network was deployed to a Xync cluster, the
- * <code>cluster</code> will be a {@link net.kuujo.vertigo.cluster.HazelcastCluster}
- * which can be used to access Hazelcast data structures.<p>
+ * If Vert.x is clustered then cluster deployments will be performed remotely
+ * and shared data structures will be backed by Hazelcast.<p>
  *
  * The component also has a special <code>logger</code> which is a
- * {@link net.kuujo.vertigo.io.logging.logger.PortLogger} that is specific to
+ * {@link net.kuujo.vertigo.io.logging.PortLogger} that is specific to
  * the component instance. The port logger will log any messages to
  * the underlying Vert.x {@link org.vertx.java.core.logging.Logger}
  * as well as the corresponding output port.

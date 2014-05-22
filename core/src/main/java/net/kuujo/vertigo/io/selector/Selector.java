@@ -81,7 +81,7 @@ public interface Selector extends JsonSerializable {
    * Selects a list of connections to which to send a message.
    *
    * @param message The message being sent.
-   * @param targets A list of connections from which to select.
+   * @param connections A list of connections from which to select.
    * @return A list of selected connections.
    */
   @SuppressWarnings("rawtypes")

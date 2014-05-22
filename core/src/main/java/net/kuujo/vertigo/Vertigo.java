@@ -40,7 +40,9 @@ import org.vertx.java.platform.Verticle;
  * constructor.<p>
  *
  * <pre>
+ * {@code
  * Vertigo vertigo = new Vertigo(this);
+ * }
  * </pre><p>
  *
  * To create a new network use the {@link Vertigo#createNetwork(String)}
@@ -68,7 +70,7 @@ import org.vertx.java.platform.Verticle;
  *
  * The {@link Cluster} can be used to operate on a specific cluster,
  * or networks can be deployed to named clusters through this API. To get
- * a running cluster call the {@link Vertigo#getCluster(String)} method. To
+ * a running cluster call the {@link Vertigo#getCluster(String, Handler)} method. To
  * deploy a network to a cluster use the {@link Vertigo#deployNetwork(String, NetworkConfig)}
  * methods.<p>
  *
@@ -79,6 +81,7 @@ import org.vertx.java.platform.Verticle;
  *     ActiveNetwork network = result.result();
  *   }
  * });
+ * }
  * </pre><p>
  *
  * When a network is deployed to a cluster, the cluster first checks to determine
@@ -228,9 +231,6 @@ public class Vertigo {
    * @param cluster The cluster event bus address.
    * @param group The cluster group to which to deploy the nodes.
    * @param nodes The number of nodes to deploy.
-   * @param doneHandler An asynchronous handler to be called once the cluster
-   *        has been deployed. The handler will be called with a {@link Cluster}
-   *        which can be used to manage networks running in the cluster.
    * @return The Vertigo instance.
    */
   public Vertigo deployCluster(String cluster, String group, int nodes) {
@@ -268,7 +268,7 @@ public class Vertigo {
   /**
    * Loads a cluster.
    *
-   * @param cluster The cluster address.
+   * @param address The cluster address.
    * @param resultHandler An asynchronous handler to be called once complete.
    * @return The Vertigo instance.
    */

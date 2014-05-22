@@ -112,7 +112,7 @@ public interface ComponentContext<T extends ComponentContext<T>> extends Context
   /**
    * Gets a component instance context by instance ID.
    * 
-   * @param id The instance ID.
+   * @param instanceNumber The instance number.
    * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
   InstanceContext instance(int instanceNumber);

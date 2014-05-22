@@ -69,59 +69,59 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain) {
-    return addComponent(name, moduleOrMain, null, 1, null);
+    return this.<T>addComponent(name, moduleOrMain, null, 1, null);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config) {
-    return addComponent(name, moduleOrMain, config, 1, null);
+    return this.<T>addComponent(name, moduleOrMain, config, 1, null);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances) {
-    return addComponent(name, moduleOrMain, null, instances, null);
+    return this.<T>addComponent(name, moduleOrMain, null, instances, null);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, int instances) {
-    return addComponent(name, moduleOrMain, config, instances, null);
+    return this.<T>addComponent(name, moduleOrMain, config, instances, null);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    return addComponent(name, moduleOrMain, null, 1, doneHandler);
+    return this.<T>addComponent(name, moduleOrMain, null, 1, doneHandler);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    return addComponent(name, moduleOrMain, config, 1, doneHandler);
+    return this.<T>addComponent(name, moduleOrMain, config, 1, doneHandler);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    return addComponent(name, moduleOrMain, null, instances, doneHandler);
+    return this.<T>addComponent(name, moduleOrMain, null, instances, doneHandler);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config, int instances, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    T component = network.addComponent(name, moduleOrMain, config, instances);
+    T component = network.<T>addComponent(name, moduleOrMain, config, instances);
     cluster.deployNetwork(network, doneHandler);
     return component;
   }
 
   @Override
   public <T extends ComponentConfig<T>> T removeComponent(T component) {
-    return removeComponent(component.getName(), null);
+    return this.<T>removeComponent(component.getName(), null);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T removeComponent(T component, Handler<AsyncResult<ActiveNetwork>> doneHandler) {
-    return removeComponent(component.getName(), doneHandler);
+    return this.<T>removeComponent(component.getName(), doneHandler);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T removeComponent(String name) {
-    return removeComponent(name, null);
+    return this.<T>removeComponent(name, null);
   }
 
   @Override
@@ -129,7 +129,7 @@ public class DefaultActiveNetwork implements ActiveNetwork, Observer<NetworkCont
     // Undeploy a single component by creating a copy of the network with the
     // component as its only element. When then network is undeployed, the component
     // will be removed from the network.
-    T component = network.removeComponent(name);
+    T component = network.<T>removeComponent(name);
     NetworkConfig undeploy = new DefaultNetworkConfig(network.getName());
     undeploy.addComponent(component);
     cluster.undeployNetwork(undeploy, new Handler<AsyncResult<Void>>() {

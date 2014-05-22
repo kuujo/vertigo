@@ -101,6 +101,6 @@ public interface NetworkContext extends Context<NetworkContext> {
    * @return A component context.
    * @throws IllegalArgumentException If a component does not exist at the given name.
    */
-  <T extends ComponentContext<T>> T component(String name);
+  <T extends ComponentContext<?>> T component(String name);
 
 }

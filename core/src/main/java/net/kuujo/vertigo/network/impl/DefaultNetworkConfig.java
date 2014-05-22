@@ -73,7 +73,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends ComponentConfig<T>> T getComponent(String name) {
+  public <T extends ComponentConfig<?>> T getComponent(String name) {
     return (T) components.get(name);
   }
 
@@ -86,17 +86,17 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain) {
-    return addComponent(name, moduleOrMain, null, 1);
+    return this.<T>addComponent(name, moduleOrMain, null, 1);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, JsonObject config) {
-    return addComponent(name, moduleOrMain, config, 1);
+    return this.<T>addComponent(name, moduleOrMain, config, 1);
   }
 
   @Override
   public <T extends ComponentConfig<T>> T addComponent(String name, String moduleOrMain, int instances) {
-    return addComponent(name, moduleOrMain, null, instances);
+    return this.<T>addComponent(name, moduleOrMain, null, instances);
   }
 
   @Override
@@ -115,7 +115,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   @Override
   public <T extends ComponentConfig<T>> T removeComponent(T component) {
-    return removeComponent(component.getName());
+    return this.<T>removeComponent(component.getName());
   }
 
   @Override

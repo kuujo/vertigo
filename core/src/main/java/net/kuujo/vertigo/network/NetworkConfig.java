@@ -92,7 +92,7 @@ public interface NetworkConfig extends Config<NetworkConfig> {
    * @throws IllegalArgumentException If the given component address does not exist within
    *           the network.
    */
-  <T extends ComponentConfig<T>> T getComponent(String name);
+  <T extends ComponentConfig<?>> T getComponent(String name);
 
   /**
    * Returns a boolean indicating whether the network has a component.

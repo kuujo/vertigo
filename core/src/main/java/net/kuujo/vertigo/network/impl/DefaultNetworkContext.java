@@ -116,7 +116,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
 
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public <T extends ComponentContext<T>> T component(String name) {
+  public <T extends ComponentContext<?>> T component(String name) {
     return (T) (components.containsKey(name) ? ((DefaultComponentContext) components.get(name)).setNetworkContext(this) : null);
   }
 

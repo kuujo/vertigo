@@ -45,9 +45,14 @@ public interface OutputGroup extends MessageGroup<OutputGroup>, Output<OutputGro
 
   /**
    * Ends the output group.
-   *
-   * @return The output group.
    */
-  OutputGroup end();
+  void end();
+
+  /**
+   * Ends the output group.
+   *
+   * @param args Arguments to the group's end handler.
+   */
+  <T> void end(T args);
 
 }

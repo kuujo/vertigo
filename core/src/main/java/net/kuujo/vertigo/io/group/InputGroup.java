@@ -52,7 +52,7 @@ public interface InputGroup extends MessageGroup<InputGroup>, Input<InputGroup> 
    * @param handler A handler to be called when the group is started.
    * @return The input group.
    */
-  InputGroup startHandler(Handler<Void> handler);
+  <T> InputGroup startHandler(Handler<T> handler);
 
   /**
    * Registers an end handler on the group.
@@ -60,6 +60,6 @@ public interface InputGroup extends MessageGroup<InputGroup>, Input<InputGroup> 
    * @param handler A handler to be called when the group is ended.
    * @return The input group.
    */
-  InputGroup endHandler(Handler<Void> handler);
+  <T> InputGroup endHandler(Handler<T> handler);
 
 }

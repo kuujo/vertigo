@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.kuujo.vertigo.io.stream.impl;
 
 import java.util.ArrayList;
@@ -5,8 +20,8 @@ import java.util.List;
 import java.util.UUID;
 
 import net.kuujo.vertigo.io.batch.OutputBatch;
-import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.OutputConnection;
+import net.kuujo.vertigo.io.connection.impl.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
 
@@ -16,6 +31,11 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+/**
+ * Stream level output batch.
+ *
+ * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
+ */
 public class StreamOutputBatch implements OutputBatch {
   private final String id;
   private final DefaultOutputStream stream;
@@ -182,12 +202,17 @@ public class StreamOutputBatch implements OutputBatch {
   }
 
   @Override
-  public OutputBatch group(final String name, final Handler<OutputGroup> handler) {
+  public OutputBatch group(String name, Handler<OutputGroup> handler) {
+    return group(name, null, handler);
+  }
+
+  @Override
+  public OutputBatch group(final String name, final Object args, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     List<ConnectionOutputBatch> batches = stream.selector.select(name, this.batches);
     final int batchesSize = batches.size();
     for (ConnectionOutputBatch batch : batches) {
-      batch.group(name, new Handler<OutputGroup>() {
+      batch.group(name, args, new Handler<OutputGroup>() {
         @Override
         public void handle(OutputGroup group) {
           groups.add(group);
@@ -204,6 +229,13 @@ public class StreamOutputBatch implements OutputBatch {
   public void end() {
     for (ConnectionOutputBatch batch : batches) {
       batch.end();
+    }
+  }
+
+  @Override
+  public <T> void end(T args) {
+    for (ConnectionOutputBatch batch : batches) {
+      batch.end(args);
     }
   }
 

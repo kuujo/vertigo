@@ -316,7 +316,7 @@ public class DefaultInputConnection implements InputConnection {
         groupReady(groupID);
       }
     }
-    group.handleStart();
+    group.handleStart(deserializer.deserialize(message));
   }
 
   /**
@@ -347,7 +347,7 @@ public class DefaultInputConnection implements InputConnection {
     String groupID = message.getString("group");
     DefaultConnectionInputGroup group = groups.remove(groupID);
     if (group != null) {
-      group.handleEnd();
+      group.handleEnd(deserializer.deserialize(message));
     }
   }
 
@@ -356,14 +356,14 @@ public class DefaultInputConnection implements InputConnection {
    */
   private void doBatchStart(final JsonObject message) {
     if (currentBatch != null) {
-      currentBatch.handleEnd();
+      currentBatch.handleEnd(null);
     }
     String batchID = message.getString("batch");
     currentBatch = new DefaultConnectionInputBatch(batchID, this);
     if (batchHandler != null) {
       batchHandler.handle(currentBatch);
     }
-    currentBatch.handleStart();
+    currentBatch.handleStart(deserializer.deserialize(message));
   }
 
   /**
@@ -391,7 +391,7 @@ public class DefaultInputConnection implements InputConnection {
    */
   private void doBatchEnd(final JsonObject message) {
     if (currentBatch != null) {
-      currentBatch.handleEnd();
+      currentBatch.handleEnd(deserializer.deserialize(message));
       currentBatch = null;
     }
   }

@@ -38,7 +38,7 @@ public interface InputBatch extends MessageBatch<InputBatch>, Input<InputBatch>,
    * @param handler A handler to be called when the batch is started.
    * @return The input batch.
    */
-  InputBatch startHandler(Handler<Void> handler);
+  <T> InputBatch startHandler(Handler<T> handler);
 
   /**
    * Registers an end handler on the batch.
@@ -46,6 +46,6 @@ public interface InputBatch extends MessageBatch<InputBatch>, Input<InputBatch>,
    * @param handler A handler to be called when the batch is ended.
    * @return The input batch.
    */
-  InputBatch endHandler(Handler<Void> handler);
+  <T> InputBatch endHandler(Handler<T> handler);
 
 }

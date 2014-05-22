@@ -327,19 +327,24 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public OutputPort batch(final Handler<OutputBatch> handler) {
-    return batch(UUID.randomUUID().toString(), handler);
+  public OutputPort batch(Handler<OutputBatch> handler) {
+    return batch(UUID.randomUUID().toString(), null, handler);
   }
 
   @Override
-  public OutputPort batch(final String id, final Handler<OutputBatch> handler) {
+  public OutputPort batch(Object args, Handler<OutputBatch> handler) {
+    return batch(UUID.randomUUID().toString(), args, handler);
+  }
+
+  @Override
+  public OutputPort batch(final String id, final Object args, final Handler<OutputBatch> handler) {
     final List<OutputBatch> batches = new ArrayList<>();
     final int streamsSize = streams.size();
     if (streamsSize == 0) {
       handler.handle(new BaseOutputBatch(id, vertx, batches));
     } else {
       for (OutputStream stream : streams) {
-        stream.batch(id, new Handler<OutputBatch>() {
+        stream.batch(id, args, new Handler<OutputBatch>() {
           @Override
           public void handle(OutputBatch batch) {
             batches.add(batch);
@@ -355,18 +360,23 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public OutputPort group(Handler<OutputGroup> handler) {
-    return group(UUID.randomUUID().toString(), handler);
+    return group(UUID.randomUUID().toString(), null, handler);
   }
 
   @Override
-  public OutputPort group(final String name, final Handler<OutputGroup> handler) {
+  public OutputPort group(String name, Handler<OutputGroup> handler) {
+    return group(name, null, handler);
+  }
+
+  @Override
+  public OutputPort group(final String name, final Object args, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int streamsSize = streams.size();
     if (streamsSize == 0) {
       handler.handle(new BaseOutputGroup(name, vertx, groups));
     } else {
       for (OutputStream stream : streams) {
-        stream.group(name, new Handler<OutputGroup>() {
+        stream.group(name, args, new Handler<OutputGroup>() {
           @Override
           public void handle(OutputGroup group) {
             groups.add(group);

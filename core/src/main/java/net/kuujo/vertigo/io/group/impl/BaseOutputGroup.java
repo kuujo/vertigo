@@ -114,14 +114,19 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup group(final String name, final Handler<OutputGroup> handler) {
+  public OutputGroup group(String name, Handler<OutputGroup> handler) {
+    return group(name, null, handler);
+  }
+
+  @Override
+  public OutputGroup group(final String name, final Object args, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int connectionsSize = connections.size();
     if (connectionsSize == 0) {
       handler.handle(new BaseOutputGroup(name, vertx, groups));
     } else {
       for (OutputGroup connection : connections) {
-        connection.group(name, new Handler<OutputGroup>() {
+        connection.group(name, args, new Handler<OutputGroup>() {
           @Override
           public void handle(OutputGroup group) {
             groups.add(group);
@@ -248,11 +253,17 @@ public class BaseOutputGroup implements OutputGroup {
   }
 
   @Override
-  public OutputGroup end() {
+  public void end() {
     for (OutputGroup output : connections) {
       output.end();
     }
-    return this;
+  }
+
+  @Override
+  public <T> void end(T args) {
+    for (OutputGroup output : connections) {
+      output.end(args);
+    }
   }
 
 }

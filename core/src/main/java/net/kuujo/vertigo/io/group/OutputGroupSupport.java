@@ -49,4 +49,17 @@ public interface OutputGroupSupport<T extends OutputGroupSupport<T>> {
    */
   T group(String name, Handler<OutputGroup> handler);
 
+  /**
+   * Creates a named output group.<p>
+   *
+   * Messages sent through groups will always be sent to the same
+   * connection(s). Groups can also be nested.
+   *
+   * @param name The output group name.
+   * @param args Arguments to the group's start handler.
+   * @param handler A handler to be called once the group has been setup.
+   * @return The called object.
+   */
+  T group(String name, Object args, Handler<OutputGroup> handler);
+
 }

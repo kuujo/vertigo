@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.batch.InputBatch;
+import net.kuujo.vertigo.io.group.InputGroup;
 
 /**
- * Connection level input batch.
+ * Connection level input group.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ConnectionInputBatch extends InputBatch {
+public interface ConnectionInputGroup extends InputGroup {
 }

@@ -34,4 +34,11 @@ public interface OutputBatch extends MessageBatch<OutputBatch>, Output<OutputBat
    */
   void end();
 
+  /**
+   * Ends the batch.
+   *
+   * @param args Arguments to the batch's end handler.
+   */
+  <T> void end(T args);
+
 }

@@ -17,7 +17,6 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import java.util.UUID;
 
-import net.kuujo.vertigo.io.connection.ConnectionOutputGroup;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
 import org.vertx.java.core.Handler;
@@ -37,6 +36,7 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   private final String id;
+  private final Object args;
   private final String parent;
   private final String name;
   private final DefaultOutputConnection connection;
@@ -45,18 +45,21 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   private int children;
   private boolean started;
   private boolean ended;
+  private Object endArgs;
   private boolean closed;
 
-  public DefaultConnectionOutputGroup(String id, String name, DefaultOutputConnection connection) {
+  public DefaultConnectionOutputGroup(String id, String name, Object args, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
+    this.args = args;
     this.parent = null;
     this.connection = connection;
   }
 
-  public DefaultConnectionOutputGroup(String id, String name, String parent, DefaultOutputConnection connection) {
+  public DefaultConnectionOutputGroup(String id, String name, Object args, String parent, DefaultOutputConnection connection) {
     this.id = id;
     this.name = name;
+    this.args = args;
     this.parent = parent;
     this.connection = connection;
   }
@@ -67,7 +70,7 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   private void checkEnd() {
     if (ended && !closed && children == 0) {
       closed = true;
-      connection.doGroupEnd(id);
+      connection.doGroupEnd(id, endArgs);
       if (endHandler != null) {
         endHandler.handle((Void) null);
       }
@@ -98,7 +101,7 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
    * Starts the output group.
    */
   void start(final Handler<OutputGroup> startHandler) {
-    connection.doGroupStart(id, name, parent);
+    connection.doGroupStart(id, name, args, parent);
     this.startHandler = startHandler;
   }
 
@@ -147,8 +150,13 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   }
 
   @Override
-  public DefaultConnectionOutputGroup group(final String name, final Handler<OutputGroup> handler) {
-    DefaultConnectionOutputGroup group = connection.group(name, id, handler);
+  public DefaultConnectionOutputGroup group(String name, Handler<OutputGroup> handler) {
+    return group(name, null, handler);
+  }
+
+  @Override
+  public DefaultConnectionOutputGroup group(final String name, final Object args, final Handler<OutputGroup> handler) {
+    DefaultConnectionOutputGroup group = connection.group(name, args, id, handler);
     children++;
     group.endHandler(new VoidHandler() {
       @Override
@@ -241,10 +249,16 @@ public class DefaultConnectionOutputGroup implements ConnectionOutputGroup {
   }
 
   @Override
-  public OutputGroup end() {
+  public void end() {
     ended = true;
     checkEnd();
-    return this;
+  }
+
+  @Override
+  public <T> void end(T args) {
+    ended = true;
+    endArgs = args;
+    checkEnd();
   }
 
 }

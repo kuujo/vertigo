@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.UUID;
 
 import net.kuujo.vertigo.io.batch.OutputBatch;
-import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
+import net.kuujo.vertigo.io.connection.impl.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.impl.DefaultOutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
 import net.kuujo.vertigo.io.group.impl.BaseOutputGroup;
@@ -125,19 +125,24 @@ public class DefaultOutputStream implements OutputStream {
   }
 
   @Override
-  public OutputStream batch(final Handler<OutputBatch> handler) {
-    return batch(UUID.randomUUID().toString(), handler);
+  public OutputStream batch(Handler<OutputBatch> handler) {
+    return batch(UUID.randomUUID().toString(), null, handler);
   }
 
   @Override
-  public OutputStream batch(final String id, final Handler<OutputBatch> handler) {
+  public OutputStream batch(Object args, Handler<OutputBatch> handler) {
+    return batch(UUID.randomUUID().toString(), args, handler);
+  }
+
+  @Override
+  public OutputStream batch(final String id, final Object args, final Handler<OutputBatch> handler) {
     final List<ConnectionOutputBatch> batches = new ArrayList<>();
     final int connectionsSize = connections.size();
     if (connectionsSize == 0) {
       handler.handle(new StreamOutputBatch(id, this, batches));
     } else {
       for (OutputConnection connection : connections) {
-        connection.batch(id, new Handler<ConnectionOutputBatch>() {
+        connection.batch(id, args, new Handler<ConnectionOutputBatch>() {
           @Override
           public void handle(ConnectionOutputBatch batch) {
             batches.add(batch);
@@ -153,11 +158,16 @@ public class DefaultOutputStream implements OutputStream {
 
   @Override
   public OutputStream group(Handler<OutputGroup> handler) {
-    return group(UUID.randomUUID().toString(), handler);
+    return group(UUID.randomUUID().toString(), null, handler);
   }
 
   @Override
-  public OutputStream group(final String name, final Handler<OutputGroup> handler) {
+  public OutputStream group(String name, Handler<OutputGroup> handler) {
+    return group(name, null, handler);
+  }
+
+  @Override
+  public OutputStream group(final String name, final Object args, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     List<OutputConnection> connections = selector.select(name, this.connections);
     final int connectionsSize = connections.size();
@@ -165,7 +175,7 @@ public class DefaultOutputStream implements OutputStream {
       handler.handle(new BaseOutputGroup(name, vertx, groups));
     } else {
       for (OutputConnection connection : connections) {
-        connection.group(name, new Handler<OutputGroup>() {
+        connection.group(name, args, new Handler<OutputGroup>() {
           @Override
           public void handle(OutputGroup group) {
             groups.add(group);

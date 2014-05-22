@@ -85,9 +85,9 @@ public class FileReceiver {
    */
   private void init() {
     if (fileHandler != null) {
-      input.groupHandler(groupHandler);
+      input.groupHandler("file", groupHandler);
     } else {
-      input.groupHandler(null);
+      input.groupHandler("file", null);
     }
   }
 

@@ -13,28 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.io.connection.impl;
+
+import net.kuujo.vertigo.io.batch.InputBatch;
 
 /**
- * Connection level output batch.<p>
- *
- * The connection output batch is an extension of the {@link OutputConnection} that
- * allows batch connections to be selected during routing.
+ * Connection level input batch.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ConnectionOutputBatch extends OutputConnection {
-
-  /**
-   * Returns the batch ID.
-   *
-   * @return The unique batch ID.
-   */
-  String id();
-
-  /**
-   * Ends the batch.
-   */
-  void end();
-
+public interface ConnectionInputBatch extends InputBatch {
 }

@@ -18,7 +18,6 @@ package net.kuujo.vertigo.io.connection.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.kuujo.vertigo.io.connection.ConnectionInputGroup;
 import net.kuujo.vertigo.io.group.InputGroup;
 
 import org.vertx.java.core.Handler;
@@ -38,8 +37,10 @@ public class DefaultConnectionInputGroup implements ConnectionInputGroup {
   private final DefaultInputConnection connection;
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
-  private Handler<Void> startHandler;
-  private Handler<Void> endHandler;
+  @SuppressWarnings("rawtypes")
+  private Handler startHandler;
+  @SuppressWarnings("rawtypes")
+  private Handler endHandler;
   private Handler<InputGroup> groupHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private boolean started;
@@ -143,26 +144,28 @@ public class DefaultConnectionInputGroup implements ConnectionInputGroup {
     return this;
   }
 
-  void handleStart() {
+  @SuppressWarnings("unchecked")
+  void handleStart(Object args) {
     if (startHandler != null) {
-      startHandler.handle(null);
+      startHandler.handle(args);
     }
   }
 
   @Override
-  public InputGroup startHandler(Handler<Void> handler) {
+  public <T> InputGroup startHandler(Handler<T> handler) {
     this.startHandler = handler;
     return this;
   }
 
-  void handleEnd() {
+  @SuppressWarnings("unchecked")
+  void handleEnd(Object args) {
     if (endHandler != null) {
-      endHandler.handle(null);
+      endHandler.handle(args);
     }
   }
 
   @Override
-  public InputGroup endHandler(Handler<Void> handler) {
+  public <T> InputGroup endHandler(Handler<T> handler) {
     this.endHandler = handler;
     return this;
   }

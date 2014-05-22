@@ -63,7 +63,7 @@ public class FileSender {
    * @return The file sender.
    */
   public FileSender sendFile(final AsyncFile file, final Handler<AsyncResult<Void>> doneHandler) {
-    output.group(new Handler<OutputGroup>() {
+    output.group("file", new Handler<OutputGroup>() {
       @Override
       public void handle(OutputGroup group) {
         doSendFile(file, group, doneHandler);

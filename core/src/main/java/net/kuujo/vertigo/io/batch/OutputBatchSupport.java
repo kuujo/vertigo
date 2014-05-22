@@ -37,10 +37,20 @@ public interface OutputBatchSupport<T extends OutputBatchSupport<T>> {
   /**
    * Creates a new output batch.
    *
-   * @param id The unique output batch identifier.
+   * @param args Arguments to the batch's start handler.
    * @param handler A handler to be called once the batch has been created.
    * @return The called object.
    */
-  T batch(String id, Handler<OutputBatch> handler);
+  T batch(Object args, Handler<OutputBatch> handler);
+
+  /**
+   * Creates a new output batch.
+   *
+   * @param id The unique batch identifier.
+   * @param args Arguments to the batch's start handler.
+   * @param handler A handler to be called once the batch has been created.
+   * @return The called object.
+   */
+  T batch(String id, Object args, Handler<OutputBatch> handler);
 
 }

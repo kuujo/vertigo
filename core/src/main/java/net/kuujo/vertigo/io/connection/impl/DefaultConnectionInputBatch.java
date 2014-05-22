@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.kuujo.vertigo.io.batch.InputBatch;
-import net.kuujo.vertigo.io.connection.ConnectionInputBatch;
 import net.kuujo.vertigo.io.group.InputGroup;
 
 import org.vertx.java.core.Handler;
@@ -35,8 +34,10 @@ public class DefaultConnectionInputBatch implements ConnectionInputBatch {
   private final DefaultInputConnection connection;
   @SuppressWarnings("rawtypes")
   private Handler messageHandler;
-  private Handler<Void> startHandler;
-  private Handler<Void> endHandler;
+  @SuppressWarnings("rawtypes")
+  private Handler startHandler;
+  @SuppressWarnings("rawtypes")
+  private Handler endHandler;
   private Handler<InputGroup> groupHandler;
   private final Map<String, Handler<InputGroup>> groupHandlers = new HashMap<>();
   private boolean started;
@@ -68,14 +69,15 @@ public class DefaultConnectionInputBatch implements ConnectionInputBatch {
     return this;
   }
 
-  void handleStart() {
+  @SuppressWarnings("unchecked")
+  void handleStart(Object args) {
     if (startHandler != null) {
-      startHandler.handle(null);
+      startHandler.handle(args);
     }
   }
 
   @Override
-  public InputBatch startHandler(Handler<Void> handler) {
+  public <T> InputBatch startHandler(Handler<T> handler) {
     this.startHandler = handler;
     return this;
   }
@@ -146,14 +148,15 @@ public class DefaultConnectionInputBatch implements ConnectionInputBatch {
     return this;
   }
 
-  void handleEnd() {
+  @SuppressWarnings("unchecked")
+  void handleEnd(Object args) {
     if (endHandler != null) {
-      endHandler.handle(null);
+      endHandler.handle(args);
     }
   }
 
   @Override
-  public InputBatch endHandler(Handler<Void> handler) {
+  public <T> InputBatch endHandler(Handler<T> handler) {
     this.endHandler = handler;
     return this;
   }

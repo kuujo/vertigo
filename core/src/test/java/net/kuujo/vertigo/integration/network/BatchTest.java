@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -383,6 +384,128 @@ public class BatchTest extends TestVerticle {
         network.addVerticle("receiver", TestBatchForwardReceiver.class.getName());
         network.createConnection("sender", "out", "forwarder", "in");
         network.createConnection("forwarder", "out", "receiver", "in");
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestBatchStartArgsSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").batch(new JsonObject().putString("foo", "bar"), new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batch.send("Hello world!").end();
+        }
+      });
+    }
+  }
+
+  public static class TestBatchStartArgsReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(InputBatch batch) {
+          batch.startHandler(new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject args) {
+              assertEquals("bar", args.getString("foo"));
+              testComplete();
+            }
+          });
+          batch.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testBatchStartArgs() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestBatchStartArgsSender.class.getName());
+        network.addVerticle("receiver", TestBatchStartArgsReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestBatchEndArgsSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").batch(new Handler<OutputBatch>() {
+        @Override
+        public void handle(OutputBatch batch) {
+          batch.send("Hello world!").end(new JsonObject().putString("foo", "bar"));
+        }
+      });
+    }
+  }
+
+  public static class TestBatchEndArgsReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").batchHandler(new Handler<InputBatch>() {
+        @Override
+        public void handle(InputBatch batch) {
+          batch.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+            }
+          });
+          batch.endHandler(new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject args) {
+              assertEquals("bar", args.getString("foo"));
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testBatchEndArgs() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestBatchEndArgsSender.class.getName());
+        network.addVerticle("receiver", TestBatchEndArgsReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
         result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {

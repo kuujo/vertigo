@@ -655,6 +655,18 @@ output.port("out").group("foo", new Handler<OutputGroup>() {
 });
 ```
 
+The `group` method can also accept an arbitrary `Serializable` object as the second
+argument. This argument will be passed to the input group's `startHandler` as you'll see
+below and can be used to initialize the group.
+
+```java
+output.port("out").group("foo", new JsonObject().putString("bar", "baz"), new Handler<OutputGroup>() {
+  public void handle(OutputGroup group) {
+    group.send("foo").send("bar").send("baz").end();
+  }
+});
+```
+
 Note that the group's `end()` method *must* be called in order to indicate completion of
 the group. *Groups are fully asynchronous*, meaning they support asynchronous calls to other
 APIs, and this step is crucial to that functionality.
@@ -671,6 +683,13 @@ output.port("out").group("foo", new Handler<OutputGroup>() {
     });
   }
 });
+```
+
+The group's `end()` method can also accept an arbitrary `Serializable` object that will
+be passed to the input group's `endHandler`.
+
+```java
+group.end(new JsonObject().putString("foo", "bar"));
 ```
 
 The `OutputGroup` API exposes the same methods as the `OutputPort`. That means that groups
@@ -739,6 +758,18 @@ input.port("in").groupHandler("foo", new Handler<InputGroup>() {
 });
 ```
 
+Depending on how the group is formed, the group's `startHandler` and `endHandler`
+can each accept arbitrary `Serializable` objects. This can be useful for initialization
+and cleanup.
+
+```java
+group.startHandler(new Handler<JsonObject>() {
+  public void handle(JsonObject args) {
+    String filename = args.getString("filename");
+  }
+});
+```
+
 As with output groups, input groups can be nested, representing the same structure
 sent by an output group.
 
@@ -791,6 +822,19 @@ Just as with groups, batches need to be explicitly ended. However, only one batc
 can be open for any given connection at any given time, so that means that a new
 batch will not open until the previous batch has been ended.
 
+The `batch` method can also accept an arbitrary `Serializable` object that will
+be passed to the input batch's `startHandler`. This can be useful for initialization.
+
+Similarly, the batch's `end` method can accept an arbitrary object.
+
+```java
+output.port("out").batch(new JsonObject().putString("foo", "bar"), new Handler<OutputBatch>() {
+  public void handle(OutputBatch batch) {
+    batch.end(new JsonObject().putString("bar", "baz"));
+  }
+});
+```
+
 On the input port side, the batch API works similarly to the group API.
 
 ```java
@@ -811,6 +855,18 @@ input.port("in").batchHandler(new Handler<InputBatch>() {
         output.port("out").send(messages);
       }
     });
+  }
+});
+```
+
+The batch's `startHandler` and `endHandler` can each be called with an arbitrary
+object that is defined by the sender. So, your batch may expect a `String` file
+name during initialization for example:
+
+```java
+batch.startHandler(new Handler<String>() {
+  public void handle(String fileName) {
+    File file = new File(fileName);
   }
 });
 ```

@@ -106,18 +106,23 @@ public class BaseOutputBatch implements OutputBatch {
 
   @Override
   public OutputBatch group(Handler<OutputGroup> handler) {
-    return group(UUID.randomUUID().toString(), handler);
+    return group(UUID.randomUUID().toString(), null, handler);
   }
 
   @Override
-  public OutputBatch group(final String name, final Handler<OutputGroup> handler) {
+  public OutputBatch group(String name, Handler<OutputGroup> handler) {
+    return group(name, null, handler);
+  }
+
+  @Override
+  public OutputBatch group(final String name, final Object args, final Handler<OutputGroup> handler) {
     final List<OutputGroup> groups = new ArrayList<>();
     final int connectionsSize = connections.size();
     if (connectionsSize == 0) {
       handler.handle(new BaseOutputGroup(name, vertx, groups));
     } else {
       for (OutputBatch connection : connections) {
-        connection.group(name, new Handler<OutputGroup>() {
+        connection.group(name, args, new Handler<OutputGroup>() {
           @Override
           public void handle(OutputGroup group) {
             groups.add(group);
@@ -247,6 +252,13 @@ public class BaseOutputBatch implements OutputBatch {
   public void end() {
     for (OutputBatch output : connections) {
       output.end();
+    }
+  }
+
+  @Override
+  public <T> void end(T args) {
+    for (OutputBatch output : connections) {
+      output.end(args);
     }
   }
 

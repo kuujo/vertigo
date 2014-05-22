@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -1147,6 +1148,128 @@ public class GroupTest extends TestVerticle {
         network.addVerticle("receiver", TestNestedGroupForwardReceiver.class.getName());
         network.createConnection("sender", "out", "forwarder", "in").roundSelect();
         network.createConnection("forwarder", "out", "receiver", "in").roundSelect();
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestGroupStartArgsSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("test", new JsonObject().putString("foo", "bar"), new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!").end();
+        }
+      });
+    }
+  }
+
+  public static class TestGroupStartArgsReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("test", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          group.startHandler(new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject args) {
+              assertEquals("bar", args.getString("foo"));
+              testComplete();
+            }
+          });
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testGroupStartArgs() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestGroupStartArgsSender.class.getName());
+        network.addVerticle("receiver", TestGroupStartArgsReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
+        result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              assertTrue(result.cause().getMessage(), result.succeeded());
+            } else {
+              assertTrue(result.succeeded());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  public static class TestGroupEndArgsSender extends ComponentVerticle {
+    @Override
+    public void start() {
+      output.port("out").group("test", new Handler<OutputGroup>() {
+        @Override
+        public void handle(OutputGroup group) {
+          group.send("Hello world!").end(new JsonObject().putString("foo", "bar"));
+        }
+      });
+    }
+  }
+
+  public static class TestGroupEndArgsReceiver extends ComponentVerticle {
+    @Override
+    public void start() {
+      input.port("in").groupHandler("test", new Handler<InputGroup>() {
+        @Override
+        public void handle(InputGroup group) {
+          group.messageHandler(new Handler<String>() {
+            @Override
+            public void handle(String message) {
+              assertEquals("Hello world!", message);
+            }
+          });
+          group.endHandler(new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject args) {
+              assertEquals("bar", args.getString("foo"));
+              testComplete();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testGroupEndArgs() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        network.addVerticle("sender", TestGroupEndArgsSender.class.getName());
+        network.addVerticle("receiver", TestGroupEndArgsReceiver.class.getName());
+        network.createConnection("sender", "out", "receiver", "in");
         result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {

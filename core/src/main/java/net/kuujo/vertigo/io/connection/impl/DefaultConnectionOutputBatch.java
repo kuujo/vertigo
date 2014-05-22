@@ -17,7 +17,6 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import java.util.UUID;
 
-import net.kuujo.vertigo.io.connection.ConnectionOutputBatch;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
@@ -36,16 +35,19 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   private final String id;
+  private final Object args;
   private final DefaultOutputConnection connection;
   private Handler<ConnectionOutputBatch> startHandler;
   private Handler<Void> endHandler;
   private int children;
   private boolean started;
   private boolean ended;
+  private Object endArgs;
   private boolean closed;
 
-  public DefaultConnectionOutputBatch(String id, DefaultOutputConnection connection) {
+  public DefaultConnectionOutputBatch(String id, Object args, DefaultOutputConnection connection) {
     this.id = id;
+    this.args = args;
     this.connection = connection;
   }
 
@@ -119,7 +121,7 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   private void checkEnd() {
     if (ended && !closed && children == 0) {
       closed = true;
-      connection.doBatchEnd(id);
+      connection.doBatchEnd(id, endArgs);
       if (endHandler != null) {
         endHandler.handle((Void) null);
       }
@@ -137,7 +139,7 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
    * Starts the output batch.
    */
   void start(Handler<ConnectionOutputBatch> startHandler) {
-    connection.doBatchStart(id);
+    connection.doBatchStart(id, args);
     this.startHandler = startHandler;
   }
 
@@ -266,18 +268,23 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   }
 
   @Override
-  public OutputConnection batch(String id, Handler<ConnectionOutputBatch> handler) {
+  public OutputConnection batch(String id, Object args, Handler<ConnectionOutputBatch> handler) {
     throw new UnsupportedOperationException("Cannot batch a batch.");
   }
 
   @Override
   public OutputConnection group(Handler<OutputGroup> handler) {
-    return group(UUID.randomUUID().toString(), handler);
+    return group(UUID.randomUUID().toString(), null, handler);
   }
 
   @Override
   public OutputConnection group(String name, Handler<OutputGroup> handler) {
-    DefaultConnectionOutputGroup group = connection.group(name, id, handler);
+    return group(name, null, handler);
+  }
+
+  @Override
+  public OutputConnection group(String name, Object args, Handler<OutputGroup> handler) {
+    DefaultConnectionOutputGroup group = connection.group(name, args, id, handler);
     children++;
     group.endHandler(new VoidHandler() {
       @Override
@@ -292,6 +299,13 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   @Override
   public void end() {
     ended = true;
+    checkEnd();
+  }
+
+  @Override
+  public <T> void end(T args) {
+    ended = true;
+    endArgs = args;
     checkEnd();
   }
 

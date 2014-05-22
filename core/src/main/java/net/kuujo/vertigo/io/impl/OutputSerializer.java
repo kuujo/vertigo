@@ -62,6 +62,10 @@ public class OutputSerializer {
    * @return The serialized message.
    */
   public JsonObject serialize(Object message) {
+    if (message == null) {
+      return new JsonObject();
+    }
+
     Class<?> clazz = message.getClass();
     if (eventBusTypes.contains(clazz)) {
       if (message instanceof Buffer) {

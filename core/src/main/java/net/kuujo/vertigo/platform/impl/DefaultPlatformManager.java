@@ -465,7 +465,7 @@ public class DefaultPlatformManager implements PlatformManager {
           }
         }
       }
-    } catch (Exception e) {e.printStackTrace();
+    } catch (Exception e) {
       throw new PlatformManagerException("Failed to unzip module", e);
     } finally {
       if (deleteZip) {

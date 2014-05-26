@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.connection.OutputConnection;
@@ -57,7 +57,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
   private long currentMessage = 1;
-  private final TreeMap<Long, JsonObject> messages = new TreeMap<>();
+  private final ConcurrentSkipListMap<Long, JsonObject> messages = new ConcurrentSkipListMap<>();
   private final Map<String, DefaultConnectionOutputGroup> groups = new HashMap<>();
   private DefaultConnectionOutputBatch currentBatch;
   private boolean open;

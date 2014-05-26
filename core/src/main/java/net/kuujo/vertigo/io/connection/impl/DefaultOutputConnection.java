@@ -17,10 +17,11 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.connection.OutputConnection;
@@ -57,7 +58,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
   private long currentMessage = 1;
-  private final ConcurrentSkipListMap<Long, JsonObject> messages = new ConcurrentSkipListMap<>();
+  private final TreeMap<Long, JsonObject> messages = new TreeMap<>();
   private final Map<String, DefaultConnectionOutputGroup> groups = new HashMap<>();
   private DefaultConnectionOutputBatch currentBatch;
   private boolean open;
@@ -349,8 +350,9 @@ public class DefaultOutputConnection implements OutputConnection {
 
     // Now that all the entries before the given ID have been removed,
     // just iterate over the messages map and resend all the messages.
-    for (Map.Entry<Long, JsonObject> message : messages.entrySet()) {
-      eventBus.send(inAddress, message.getValue());
+    Iterator<Map.Entry<Long, JsonObject>> iter = messages.entrySet().iterator();
+    while (iter.hasNext()) {
+      eventBus.send(inAddress, iter.next().getValue());
     }
   }
 

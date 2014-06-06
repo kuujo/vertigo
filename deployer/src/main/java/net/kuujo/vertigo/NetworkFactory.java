@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.UUID;
 
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
@@ -41,7 +43,6 @@ import org.vertx.java.platform.VerticleFactory;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkFactory implements VerticleFactory {
-  private static final String DEFAULT_CLUSTER = "vertigo";
   private Vertx vertx;
   private Container container;
   private ClassLoader cl;
@@ -61,7 +62,7 @@ public class NetworkFactory implements VerticleFactory {
   @Override
   public Verticle createVerticle(String main) throws Exception {
     JsonObject json = loadJson(main);
-    String cluster = json.getString("cluster", DEFAULT_CLUSTER);
+    String cluster = json.getString("cluster");
     Vertigo vertigo = new Vertigo(vertx, container);
     NetworkConfig network = vertigo.createNetwork(json);
     Verticle verticle = new NetworkVerticle(vertigo, cluster, network);
@@ -110,19 +111,47 @@ public class NetworkFactory implements VerticleFactory {
 
     @Override
     public void start(final Future<Void> startResult) {
-      vertigo.deployNetwork(cluster, network, new Handler<AsyncResult<ActiveNetwork>>() {
-        @Override
-        public void handle(AsyncResult<ActiveNetwork> result) {
-          if (result.failed()) {
-            container.logger().warn("Failed to deploy network.");
-            startResult.setFailure(result.cause());
-          } else {
-            startResult.setResult((Void) null);
-            container.logger().info("Successfully deployed network.");
-            container.exit();
+      // If no cluster address was provided then deploy the network to a local cluster.
+      if (cluster == null) {
+        vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+          @Override
+          public void handle(AsyncResult<Cluster> result) {
+            if (result.failed()) {
+              startResult.setFailure(result.cause());
+            } else {
+              result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+                @Override
+                public void handle(AsyncResult<ActiveNetwork> result) {
+                  if (result.failed()) {
+                    container.logger().warn("Failed to deploy network.");
+                    startResult.setFailure(result.cause());
+                  } else {
+                    // Since the cluster is running locally, we don't need to exit.
+                    startResult.setResult((Void) null);
+                    container.logger().info("Successfully deployed network.");
+                  }
+                }
+              });
+            }
           }
-        }
-      });
+        });
+      } else {
+        vertigo.deployNetwork(cluster, network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            if (result.failed()) {
+              container.logger().warn("Failed to deploy network.");
+              startResult.setFailure(result.cause());
+            } else {
+              startResult.setResult((Void) null);
+              container.logger().info("Successfully deployed network.");
+              // When deploying the network to a remote cluster, exit the container.
+              // The network will be deployed and running on a cluster node.
+              container.exit();
+            }
+          }
+        });
+      }
     }
   }
 

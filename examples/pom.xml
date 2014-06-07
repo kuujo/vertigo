@@ -9,7 +9,7 @@
 
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo-examples</artifactId>
-  <version>0.7.0-beta3-SNAPSHOT</version>
+  <version>0.7.0-RC1-SNAPSHOT</version>
   <name>Vertigo Examples</name>
 
   <properties>

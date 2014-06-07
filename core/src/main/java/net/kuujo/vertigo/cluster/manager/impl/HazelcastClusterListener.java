@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.cluster.manager.impl;
 
+import net.kuujo.vertigo.util.ContextManager;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 
@@ -29,14 +31,14 @@ import com.hazelcast.core.MembershipListener;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 class HazelcastClusterListener implements ClusterListener, MembershipListener {
-  private final Vertx vertx;
   private final String nodeID;
+  private final ContextManager context;
   private Handler<String> joinHandler;
   private Handler<String> leaveHandler;
 
   public HazelcastClusterListener(HazelcastInstance hazelcast, Vertx vertx) {
-    this.vertx = vertx;
     this.nodeID = hazelcast.getCluster().getLocalMember().getUuid();
+    this.context = new ContextManager(vertx);
     hazelcast.getCluster().addMembershipListener(this);
   }
 
@@ -60,9 +62,9 @@ class HazelcastClusterListener implements ClusterListener, MembershipListener {
     if (joinHandler != null) {
       // This method will be called by Hazelcast so we have to make sure
       // we call the Vert.x handler on the proper context.
-      vertx.runOnContext(new Handler<Void>() {
+      context.run(new Runnable() {
         @Override
-        public void handle(Void _) {
+        public void run() {
           joinHandler.handle(event.getMember().getUuid());
         }
       });
@@ -79,9 +81,9 @@ class HazelcastClusterListener implements ClusterListener, MembershipListener {
     if (leaveHandler != null) {
       // This method will be called by Hazelcast so we have to make sure
       // we call the Vert.x handler on the proper context.
-      vertx.runOnContext(new Handler<Void>() {
+      context.run(new Runnable() {
         @Override
-        public void handle(Void _) {
+        public void run() {
           leaveHandler.handle(event.getMember().getUuid());
         }
       });

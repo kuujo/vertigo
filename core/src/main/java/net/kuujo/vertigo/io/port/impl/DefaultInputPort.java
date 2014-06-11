@@ -86,6 +86,8 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public void update(final InputPortContext update) {
+    log.debug("In port context changed, updating connections");
+
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
     // object, it could be possible that connections are simultaneously
@@ -110,6 +112,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           // and remove the connection regardless of whether the
           // close is actually successful.
           if (!exists) {
+            log.debug("Removing connection: " + connection.address());
             connection.close(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -133,6 +136,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
             }
           }
           if (!exists) {
+            log.debug("Adding connection: " + input.address());
             newConnections.add(new DefaultInputConnection(vertx, input));
           }
         }
@@ -260,6 +264,8 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       @Override
       public void handle(final Task task) {
         if (!open) {
+          log.info("Opening input port " + context.name() + " in " + context.input().instance().address());
+
           final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
           startCounter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override

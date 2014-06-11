@@ -48,6 +48,8 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.core.spi.Action;
 
 import com.hazelcast.core.MultiMap;
@@ -59,6 +61,7 @@ import com.hazelcast.core.MultiMap;
  */
 public class DefaultNodeManager implements NodeManager {
   private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);
+  private static final Logger log = LoggerFactory.getLogger(DefaultNodeManager.class);
   private static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
   private final String node;
   private final String group;
@@ -77,6 +80,10 @@ public class DefaultNodeManager implements NodeManager {
   private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
+      if (log.isDebugEnabled()) {
+        log.debug("Received message " + message.body().encode());
+      }
+
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {

@@ -86,6 +86,8 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public void update(final OutputPortContext update) {
+    log.debug("Out port context changed, updating streams");
+
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
     // object, it could be possible that connections are simultaneously
@@ -110,6 +112,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           // and remove the connection regardless of whether the
           // close is actually successful.
           if (!exists) {
+            log.debug("Removing stream: " + stream.address());
             stream.close(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
@@ -133,6 +136,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
             }
           }
           if (!exists) {
+            log.debug("Adding stream: " + output.address());
             newStreams.add(new DefaultOutputStream(vertx, output));
           }
 
@@ -247,6 +251,8 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
       @Override
       public void handle(final Task task) {
         if (!open) {
+          log.info("Opening output port " + context.name() + " in " + context.output().instance().address());
+
           streams.clear();
           open = true;
           final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(context.streams().size());

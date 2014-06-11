@@ -72,6 +72,8 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   public OutputPort port(String name) {
     OutputPort port = ports.get(name);
     if (port == null) {
+      log.debug("Lazily creating output port " + name);
+
       // Attempt to search for the port in the existing context. If the
       // port isn't an explicitly configured port then lazily create
       // and open the port. The lazy port will be empty.
@@ -97,6 +99,8 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
 
   @Override
   public void update(final OutputContext update) {
+    log.debug("Output context changed, updating ports");
+
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
     // object, it could be possible that connections are simultaneously
@@ -114,6 +118,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
             }
           }
           if (!exists) {
+            log.debug("Adding port: " + output.name());
             newPorts.add(new DefaultOutputPort(vertx, output));
           }
         }
@@ -169,6 +174,8 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
       @Override
       public void handle(final Task task) {
         if (!started) {
+          log.info("Opening output for " + context.instance().address());
+
           final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
           startCounter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override

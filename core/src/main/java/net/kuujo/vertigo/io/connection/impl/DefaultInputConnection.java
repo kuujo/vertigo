@@ -33,6 +33,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default input connection implementation.
@@ -42,6 +44,7 @@ import org.vertx.java.core.json.JsonObject;
 public class DefaultInputConnection implements InputConnection {
   private static final long BATCH_SIZE = 1000;
   private static final long MAX_BATCH_TIME = 100;
+  private final Logger log;
   private final Vertx vertx;
   private final EventBus eventBus;
   private final InputConnectionContext context;
@@ -138,6 +141,7 @@ public class DefaultInputConnection implements InputConnection {
     this.context = context;
     this.inAddress = String.format("%s.in", context.address());
     this.outAddress = String.format("%s.out", context.address());
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", DefaultInputConnection.class.getName(), context.address()));
     this.hooks = context.hooks();
   }
 
@@ -163,6 +167,7 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
+    log.info("Opening connection at " + inAddress);
     eventBus.registerHandler(inAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -207,6 +212,9 @@ public class DefaultInputConnection implements InputConnection {
     // last message that we received in order. This will allow it to
     // purge messages we've already received from its queue.
     if (open && connected) {
+      if (log.isDebugEnabled()) {
+        log.debug("Acking all messages up to: " + lastReceived);
+      }
       eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();
     }
@@ -220,6 +228,9 @@ public class DefaultInputConnection implements InputConnection {
     // This will cause the other side of the connection to resend messages
     // in order from that point on.
     if (open && connected) {
+      if (log.isDebugEnabled()) {
+        log.debug("Requesting resend of messages after: " + lastReceived);
+      }
       eventBus.send(outAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();
     }
@@ -230,6 +241,7 @@ public class DefaultInputConnection implements InputConnection {
     if (!paused) {
       paused = true;
       if (open && connected) {
+        log.debug("Pausing connection");
         eventBus.send(outAddress, new JsonObject().putString("action", "pause").putNumber("id", lastReceived));
       }
     }
@@ -241,6 +253,7 @@ public class DefaultInputConnection implements InputConnection {
     if (paused) {
       paused = false;
       if (open && connected) {
+        log.debug("Resuming connection");
         eventBus.send(outAddress, new JsonObject().putString("action", "resume").putNumber("id", lastReceived));
       }
     }
@@ -279,6 +292,9 @@ public class DefaultInputConnection implements InputConnection {
   private void doMessage(final JsonObject message) {
     Object value = deserializer.deserialize(message);
     if (value != null && messageHandler != null) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Received message: %s", value));
+      }
       messageHandler.handle(value);
     }
     for (InputHook hook : hooks) {
@@ -293,6 +309,9 @@ public class DefaultInputConnection implements InputConnection {
     String groupID = message.getString("group");
     String name = message.getString("name");
     String parentId = message.getString("parent");
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("Received group start for %s: %s", name, groupID));
+    }
     DefaultConnectionInputGroup group = new DefaultConnectionInputGroup(groupID, name, this);
     groups.put(groupID, group);
     if (parentId != null) {
@@ -323,6 +342,9 @@ public class DefaultInputConnection implements InputConnection {
    * Indicates that an input group is ready.
    */
   void groupReady(String group) {
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("Acknowledging group: %s", group));
+    }
     eventBus.send(outAddress, new JsonObject().putString("action", "group").putString("group", group));
   }
 
@@ -335,6 +357,9 @@ public class DefaultInputConnection implements InputConnection {
     if (group != null) {
       Object value = deserializer.deserialize(message);
       if (value != null) {
+        if (log.isDebugEnabled()) {
+          log.debug(String.format("Received group message for %s: %s", groupID, value));
+        }
         group.handleMessage(value);
       }
     }
@@ -347,6 +372,9 @@ public class DefaultInputConnection implements InputConnection {
     String groupID = message.getString("group");
     DefaultConnectionInputGroup group = groups.remove(groupID);
     if (group != null) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Received group end for %s: %s", group.name(), groupID));
+      }
       group.handleEnd(deserializer.deserialize(message));
     }
   }
@@ -359,6 +387,9 @@ public class DefaultInputConnection implements InputConnection {
       currentBatch.handleEnd(null);
     }
     String batchID = message.getString("batch");
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("Received batch start: %s", batchID));
+    }
     currentBatch = new DefaultConnectionInputBatch(batchID, this);
     if (batchHandler != null) {
       batchHandler.handle(currentBatch);
@@ -370,6 +401,9 @@ public class DefaultInputConnection implements InputConnection {
    * Indicates that an input batch is ready.
    */
   void batchReady(String batch) {
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("Acknowledging batch: %s", batch));
+    }
     eventBus.send(outAddress, new JsonObject().putString("action", "batch").putString("batch", batch));
   }
 
@@ -381,6 +415,9 @@ public class DefaultInputConnection implements InputConnection {
     if (currentBatch != null && currentBatch.id().equals(batchID)) {
       Object value = deserializer.deserialize(message);
       if (value != null) {
+        if (log.isDebugEnabled()) {
+          log.debug(String.format("Received batch message for %s: %s", batchID, value));
+        }
         currentBatch.handleMessage(value);
       }
     }
@@ -391,6 +428,9 @@ public class DefaultInputConnection implements InputConnection {
    */
   private void doBatchEnd(final JsonObject message) {
     if (currentBatch != null) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Received batch end for: %s", currentBatch.id()));
+      }
       currentBatch.handleEnd(deserializer.deserialize(message));
       currentBatch = null;
     }

@@ -123,12 +123,12 @@ public class NetworkFactory implements VerticleFactory {
                 @Override
                 public void handle(AsyncResult<ActiveNetwork> result) {
                   if (result.failed()) {
-                    container.logger().warn("Failed to deploy network.");
+                    container.logger().warn(result.cause());
                     startResult.setFailure(result.cause());
                   } else {
                     // Since the cluster is running locally, we don't need to exit.
                     startResult.setResult((Void) null);
-                    container.logger().info("Successfully deployed network.");
+                    container.logger().info("Successfully deployed network");
                   }
                 }
               });
@@ -140,11 +140,11 @@ public class NetworkFactory implements VerticleFactory {
           @Override
           public void handle(AsyncResult<ActiveNetwork> result) {
             if (result.failed()) {
-              container.logger().warn("Failed to deploy network.");
+              container.logger().warn(result.cause());
               startResult.setFailure(result.cause());
             } else {
               startResult.setResult((Void) null);
-              container.logger().info("Successfully deployed network.");
+              container.logger().info("Successfully deployed network");
               // When deploying the network to a remote cluster, exit the container.
               // The network will be deployed and running on a cluster node.
               container.exit();

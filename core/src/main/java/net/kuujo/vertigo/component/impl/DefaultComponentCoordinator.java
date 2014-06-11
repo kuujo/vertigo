@@ -28,6 +28,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default coordinator implementation.<p>
@@ -39,6 +41,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultComponentCoordinator implements ComponentCoordinator {
+  private final Logger log;
   private final String address;
   private final Vertx vertx;
   private Cluster cluster;
@@ -72,6 +75,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
 
   public DefaultComponentCoordinator(InstanceContext context, Vertx vertx, Cluster cluster) {
     this.address = context.address();
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", DefaultComponentCoordinator.class.getName(), address));
     this.vertx = vertx;
     this.currentContext = context;
     this.cluster = cluster;
@@ -91,6 +95,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     // we watch the component's configuration, then we attempt to load the
     // existing component configuration. Otherwise, the component's configuration
     // could potentially be set between get() and watch().
+    log.debug("start() watching key at " + address);
     data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -106,6 +111,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
                 if (result.result() != null) {
                   currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
                 }
+                log.debug("start() watching status key at " + currentContext.component().network().status());
                 data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
@@ -135,6 +141,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     if (currentContext != null && data != null) {
       // Set the status key to "ready" to indicate to the network that the
       // component is ready to start - all its connections have been opened.
+      log.debug("resume() setting status key at " + currentContext.status());
       data.put(currentContext.status(), "ready", new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -160,6 +167,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public ComponentCoordinator pause(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {
+      log.debug("pause() clearing status key at " + currentContext.status());
       data.remove(currentContext.status(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -211,6 +219,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {
+      log.debug("stop() unwatching status key at " + currentContext.component().network().status());
       data.unwatch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {

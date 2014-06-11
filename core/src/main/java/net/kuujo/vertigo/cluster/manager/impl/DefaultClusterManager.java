@@ -40,6 +40,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.core.spi.Action;
 
 import com.hazelcast.core.MultiMap;
@@ -51,6 +53,7 @@ import com.hazelcast.core.MultiMap;
  */
 public class DefaultClusterManager implements ClusterManager {
   private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);
+  private static final Logger log = LoggerFactory.getLogger(DefaultClusterManager.class);
   private final String cluster;
   private final Vertx vertx;
   private final ContextManager context;
@@ -67,6 +70,10 @@ public class DefaultClusterManager implements ClusterManager {
   private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
+      if (log.isDebugEnabled()) {
+        log.debug("Received message " + message.body().encode());
+      }
+
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {
@@ -362,13 +369,14 @@ public class DefaultClusterManager implements ClusterManager {
    * Called when a node joins the cluster.
    */
   private void doNodeJoined(final String nodeID) {
-    // Do nothing.
+    log.info(nodeID + " joined the cluster");
   }
 
   /**
    * Called when a node leaves the cluster.
    */
   private synchronized void doNodeLeft(final String nodeID) {
+    log.info(nodeID + " left the cluster");
     context.run(new Runnable() {
       @Override
       public void run() {

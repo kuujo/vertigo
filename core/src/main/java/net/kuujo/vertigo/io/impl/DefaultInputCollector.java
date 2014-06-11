@@ -75,6 +75,11 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
     // and open the port. The lazy port will be empty.
     InputPort port = ports.get(name);
     if (port == null) {
+      log.debug("Lazily creating input port " + name);
+
+      // Attempt to search for the port in the existing context. If the
+      // port isn't an explicitly configured port then lazily create
+      // and open the port. The lazy port will be empty.
       InputPortContext portContext = null;
       for (InputPortContext input : context.ports()) {
         if (input.name().equals(name)) {
@@ -97,6 +102,8 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
 
   @Override
   public void update(final InputContext update) {
+    log.debug("Input context changed, updating ports");
+
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
     // object, it could be possible that connections are simultaneously
@@ -114,6 +121,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           }
           if (!exists) {
+            log.debug("Adding port: " + input.name());
             newPorts.add(new DefaultInputPort(vertx, input));
           }
         }
@@ -171,6 +179,8 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         // If the input hasn't already been started, start the input
         // by adding and opening any necessary ports.
         if (!started) {
+          log.info("Opening input for " + context.instance().address());
+
           final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
           startCounter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override

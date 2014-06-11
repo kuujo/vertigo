@@ -29,6 +29,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.core.spi.Action;
 
 import com.hazelcast.core.MultiMap;
@@ -39,6 +41,7 @@ import com.hazelcast.core.MultiMap;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultGroupManager implements GroupManager {
+  private static final Logger log = LoggerFactory.getLogger(DefaultGroupManager.class);
   private final String group;
   private final Vertx vertx;
   private final ContextManager context;
@@ -50,6 +53,10 @@ public class DefaultGroupManager implements GroupManager {
   private final Handler<Message<JsonObject>> messageHandler = new Handler<Message<JsonObject>>() {
     @Override
     public void handle(Message<JsonObject> message) {
+      if (log.isDebugEnabled()) {
+        log.debug("Received message " + message.body().encode());
+      }
+
       String action = message.body().getString("action");
       if (action != null) {
         switch (action) {

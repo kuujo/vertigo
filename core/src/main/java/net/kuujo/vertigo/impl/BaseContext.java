@@ -61,7 +61,7 @@ public abstract class BaseContext<T extends Context<T>> implements Context<T> {
 
   @Override
   public String toString() {
-    return address();
+    return getClass().getSimpleName() + "[" + address() + "]";
   }
 
   @Override

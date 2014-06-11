@@ -40,6 +40,8 @@ import org.vertx.java.core.eventbus.ReplyFailure;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default output connection implementation.
@@ -48,6 +50,7 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultOutputConnection implements OutputConnection {
   private static final int DEFAULT_MAX_QUEUE_SIZE = 1000;
+  private final Logger log;
   private final Vertx vertx;
   private final EventBus eventBus;
   private final OutputConnectionContext context;
@@ -105,6 +108,7 @@ public class DefaultOutputConnection implements OutputConnection {
     this.hooks = context.hooks();
     this.outAddress = String.format("%s.out", context.address());
     this.inAddress = String.format("%s.in", context.address());
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", DefaultOutputConnection.class.getName(), context.address()));
   }
 
   @Override
@@ -145,6 +149,7 @@ public class DefaultOutputConnection implements OutputConnection {
     // until we get a response. This gives the other side of the connection time
     // to open and ensures that the connection doesn't claim it's open until
     // the other side has registered a handler and responded at least once.
+    log.info("Connecting to " + inAddress);
     eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "connect"), 1000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
@@ -153,12 +158,14 @@ public class DefaultOutputConnection implements OutputConnection {
           if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
             new DefaultFutureResult<Void>(failure).setHandler(doneHandler);
           } else {
+            log.debug("Connection failed, retrying");
             connect(doneHandler);
           }
         } else if (result.result().body()) {
           open = true;
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         } else {
+          log.debug("Connection failed, retrying");
           connect(doneHandler);
         }
       }
@@ -260,6 +267,7 @@ public class DefaultOutputConnection implements OutputConnection {
    * Disconnects from the other side of the connection.
    */
   private void disconnect(final Handler<AsyncResult<Void>> doneHandler) {
+    log.info("Disconnecting from " + inAddress);
     eventBus.sendWithTimeout(inAddress, new JsonObject().putString("action", "disconnect"), 5000, new Handler<AsyncResult<Message<Boolean>>>() {
       @Override
       public void handle(AsyncResult<Message<Boolean>> result) {
@@ -268,12 +276,14 @@ public class DefaultOutputConnection implements OutputConnection {
           if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
             new DefaultFutureResult<Void>(failure).setHandler(doneHandler);
           } else {
+            log.debug("Disconnect failed, retrying");
             disconnect(doneHandler);
           }
         } else if (result.result().body()) {
           open = false;
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
         } else {
+          log.debug("Disconnect failed, retrying");
           disconnect(doneHandler);
         }
       }
@@ -293,6 +303,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private void checkFull() {
     if (!full && messages.size() >= maxQueueSize) {
       full = true;
+      log.debug("Connection is full");
     }
   }
 
@@ -302,6 +313,7 @@ public class DefaultOutputConnection implements OutputConnection {
   private void checkDrain() {
     if (full && !paused && messages.size() < maxQueueSize / 2) {
       full = false;
+      log.debug("Connection is drained");
       if (drainHandler != null) {
         drainHandler.handle((Void) null);
       }
@@ -333,6 +345,9 @@ public class DefaultOutputConnection implements OutputConnection {
   private void doAck(long id) {
     // The other side of the connection has sent a message indicating which
     // messages it has seen. We can clear any messages before the indicated ID.
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("Received ack for messages up to %d, removing all previous messages from memory", id));
+    }
     if (messages.containsKey(id+1)) {
       messages.tailMap(id+1);
     } else {
@@ -345,6 +360,10 @@ public class DefaultOutputConnection implements OutputConnection {
    * Handles a batch fail.
    */
   private void doFail(long id) {
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("Received resend request for messages starting at %d", id));
+    }
+
     // Ack all the entries before the given ID.
     doAck(id);
 
@@ -360,6 +379,7 @@ public class DefaultOutputConnection implements OutputConnection {
    * Handles a connection pause.
    */
   private void doPause(long id) {
+    log.debug("Connection was paused by the other side");
     paused = true;
   }
 
@@ -368,6 +388,7 @@ public class DefaultOutputConnection implements OutputConnection {
    */
   private void doResume(long id) {
     if (paused) {
+      log.debug("Connection was resumed by the other side");
       paused = false;
       checkDrain();
     }
@@ -381,6 +402,9 @@ public class DefaultOutputConnection implements OutputConnection {
     JsonObject message = createMessage(value)
         .putString("action", "message");
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        log.debug("Sending: " + value.toString());
+      }
       eventBus.send(inAddress, message);
     }
     for (OutputHook hook : hooks) {
@@ -401,6 +425,13 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("parent", parent)
         .putString("action", "startGroup");
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        if (parent != null) {
+          log.debug(String.format("Starting group %s: %s as child of %s", name, group, parent));
+        } else {
+          log.debug(String.format("Starting group %s: %s", name, group));
+        }
+      }
       eventBus.send(inAddress, message);
     }
     checkFull();
@@ -415,6 +446,9 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("action", "group")
         .putString("group", group);
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Sending group message for %s: %s", group, value));
+      }
       eventBus.send(inAddress, message);
     }
     for (OutputHook hook : hooks) {
@@ -432,6 +466,9 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("action", "endGroup")
         .putString("group", group);
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Ending group: %s", group));
+      }
       eventBus.send(inAddress, message);
     }
     groups.remove(group);
@@ -446,6 +483,9 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("batch", batch)
         .putString("action", "startBatch");
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Starting batch: %s", batch));
+      }
       eventBus.send(inAddress, message);
     }
     checkFull();
@@ -460,6 +500,9 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("action", "batch")
         .putString("batch", batch);
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Sending batch message for %s: %s", batch, value));
+      }
       eventBus.send(inAddress, message);
     }
     for (OutputHook hook : hooks) {
@@ -477,6 +520,9 @@ public class DefaultOutputConnection implements OutputConnection {
         .putString("action", "endBatch")
         .putString("batch", batch);
     if (open && !paused) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Ending batch: %s", batch));
+      }
       eventBus.send(inAddress, message);
     }
     if (currentBatch != null && currentBatch.id().equals(batch)) {

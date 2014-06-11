@@ -1,36 +1,43 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>
 
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo-parent</artifactId>
-  <version>0.7.0-RC2-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <version>0.7.0-RC2-SNAPSHOT</version>
   <name>Vertigo</name>
   <description>A distributed event processing framework for Vert.x.</description>
   <url>http://github.com/kuujo/vertigo</url>
   <inceptionYear>2013</inceptionYear>
 
+  <parent>
+     <groupId>org.sonatype.oss</groupId>
+     <artifactId>oss-parent</artifactId>
+     <version>7</version>
+  </parent>
+
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <vertx.pullInDeps>false</vertx.pullInDeps>
+    <vertx.createFatJar>false</vertx.createFatJar>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
+    <mods.directory>target/mods</mods.directory>
 
     <vertx.version>2.1</vertx.version>
-    <testtools.version>2.0.3-final</testtools.version>
-    <junit.version>4.8.2</junit.version>
+    <vertx.testtools.version>2.0.3-final</vertx.testtools.version>
+    <junit.version>4.11</junit.version>
 
-    <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
-    <maven.failsafe.plugin.version>2.14</maven.failsafe.plugin.version>
-    <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
     <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
+    <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
+    <maven.vertx.plugin.version>2.0.6-final</maven.vertx.plugin.version>
+    <maven.surefire.plugin.version>2.14</maven.surefire.plugin.version>
+    <maven.failsafe.plugin.version>2.14</maven.failsafe.plugin.version>
+    <maven.surefire.report.plugin.version>2.14</maven.surefire.report.plugin.version>
+    <maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
     <maven.dependency.plugin.version>2.7</maven.dependency.plugin.version>
-    <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
-    <maven.javadoc.plugin.version>2.8.1</maven.javadoc.plugin.version>
   </properties>
 
   <licenses>
@@ -66,6 +73,13 @@
     <module>util</module>
   </modules>
 
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -88,91 +102,51 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>compile</scope>
+      <version>4.11</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>testtools</artifactId>
-      <version>${testtools.version}</version>
-      <scope>provided</scope>
+      <version>${vertx.testtools.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${maven.resources.plugin.version}</version>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-maven-plugin</artifactId>
+        <version>${maven.vertx.plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-platform</artifactId>
+            <version>${vertx.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertx.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-hazelcast</artifactId>
+            <version>${vertx.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
-            <id>copy-classes</id>
-            <phase>process-classes</phase>
+            <id>PullInDeps</id>
+            <phase>prepare-package</phase>
             <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${module.name}/net</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>target/classes/net</directory>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-resources</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${module.name}</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/main/resources</directory>
-                  <filtering>true</filtering>
-                  <includes>
-                    <include>mod.json</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>${maven.clean.plugin.version}</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${basedir}/build/mods</directory>
-            </fileset>
-            <fileset>
-              <directory>${basedir}/target/mods</directory>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
+              <goal>pullInDeps</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -183,102 +157,128 @@
         </configuration>
       </plugin>
       <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${maven.resources.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>copy-mod-to-target</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <overwrite>true</overwrite>
+              <outputDirectory>${mods.directory}/${module.name}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>target/classes</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.1</version><!--$NO-MVN-MAN-VER$ -->
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>${maven.dependency.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>copy-mod-dependencies-to-target</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${mods.directory}/${module.name}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-mod-dependencies-to-target-dependencies</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>target/dependencies</outputDirectory>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.surefire.plugin.version}</version>
         <configuration>
-          <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+          <includes>
+            <include>**/unit/*Test*.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven.failsafe.plugin.version}</version>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>vertx.mods</name>
+              <value>${mods.directory}</value>
+            </property>
+          </systemProperties>
+          <includes>
+            <include>**/integration/**/*Test*</include>
+          </includes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${maven.surefire.report.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>generate-test-report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report-only</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>generate-integration-test-report</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>failsafe-report-only</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${maven.surefire.report.plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven.javadoc.plugin.version}</version>
+        <configuration>
+          <aggregate>true</aggregate>
         </configuration>
       </plugin>
     </plugins>
-
-    <pluginManagement>
-      <plugins>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <versionRange>[2.7,)</versionRange>
-                    <goals>
-                      <goal>copy-dependencies</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.1</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>javadoc</id>
-      <build>
-        <plugins>
-          <plugin>
-            <inherited>true</inherited>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>${maven.javadoc.plugin.version}</version>
-            <configuration>
-              <show>public</show>
-              <excludePackageNames>net.kuujo.vertigo.network.manager:net.kuujo.vertigo.util:net.kuujo.vertigo.cluster.manager:net.kuujo.vertigo.io.stream:net.kuujo.vertigo.io.connection:net.kuujo.vertigo.platform:*.impl.*</excludePackageNames>
-              <reportOutputDirectory>docs/0.7.0</reportOutputDirectory>
-              <destDir>java</destDir>
-              <aggregate>true</aggregate>
-            </configuration>
-            <executions>
-              <execution>
-                <id>javadoc-jar</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-                <configuration>
-                  <includeDependencySources>true</includeDependencySources>
-                  <dependencySourceIncludes>
-                    <dependencySourceInclude>org.vertx.java.core:*</dependencySourceInclude>
-                  </dependencySourceIncludes>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  </reporting>
 </project>

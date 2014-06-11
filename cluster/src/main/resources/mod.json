@@ -4,6 +4,5 @@
   "author": "Jordan Halterman",
   "keywords": ["cluster manager", "shared data"],
   "homepage": "https://github.com/kuujo/vertigo",
-  "main": "net.kuujo.vertigo.cluster.manager.impl.ClusterAgent",
-  "includes": "net.kuujo~vertigo~0.7.0-RC2-SNAPSHOT"
+  "main": "net.kuujo.vertigo.cluster.manager.impl.ClusterAgent"
 }

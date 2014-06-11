@@ -10,10 +10,6 @@
   <artifactId>vertigo-deployer</artifactId>
   <name>Vertigo Deployer</name>
 
-  <properties>
-    <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>net.kuujo</groupId>
@@ -32,82 +28,21 @@
 
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${maven.resources.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>copy-classes</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${module.name}/net</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>target/classes/net</directory>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-resources</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <overwrite>true</overwrite>
-              <outputDirectory>${basedir}/target/mods/${module.name}</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/main/resources</directory>
-                  <filtering>true</filtering>
-                  <includes>
-                    <include>mod.json</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.plugin.version}</version>
         <configuration>
-          <attach>true</attach>
+          <descriptors>
+            <descriptor>src/main/assembly/mod.xml</descriptor>
+          </descriptors>
         </configuration>
         <executions>
           <execution>
-            <id>mod</id>
+            <id>assemble</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
             </goals>
-            <configuration>
-              <descriptor>src/main/assembly/mod.xml</descriptor>
-            </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>${maven.clean.plugin.version}</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${basedir}/build/mods</directory>
-            </fileset>
-            <fileset>
-              <directory>${basedir}/target/mods</directory>
-            </fileset>
-          </filesets>
-        </configuration>
       </plugin>
     </plugins>
   </build>

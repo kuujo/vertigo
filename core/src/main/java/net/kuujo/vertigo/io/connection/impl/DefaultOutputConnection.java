@@ -275,6 +275,8 @@ public class DefaultOutputConnection implements OutputConnection {
           ReplyException failure = (ReplyException) result.cause();
           if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
             new DefaultFutureResult<Void>(failure).setHandler(doneHandler);
+          } else if (failure.failureType().equals(ReplyFailure.NO_HANDLERS)) {
+            new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           } else {
             log.debug("Disconnect failed, retrying");
             disconnect(doneHandler);

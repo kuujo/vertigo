@@ -598,7 +598,7 @@ public class NetworkManager extends Verticle {
   /**
    * Deploys a component.
    */
-  private void deployComponent(ComponentContext<?> component, final Handler<AsyncResult<Void>> doneHandler) {
+  private void deployComponent(final ComponentContext<?> component, final Handler<AsyncResult<Void>> doneHandler) {
     // If the component is installable then we first need to install the
     // component to all the nodes in the cluster.
     if (component.isModule()) {
@@ -618,7 +618,17 @@ public class NetworkManager extends Verticle {
                   if (result.failed()) {
                     new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                   } else {
-                    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size()).setHandler(doneHandler);
+                    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size());
+                    counter.setHandler(new Handler<AsyncResult<Void>>() {
+                      @Override
+                      public void handle(AsyncResult<Void> result) {
+                        if (result.failed()) {
+                          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                        } else {
+                          deployInstances(component.instances(), doneHandler);
+                        }
+                      }
+                    });
                     for (Node node : result.result()) {
                       installModule(node, module, counter);
                     }
@@ -637,7 +647,17 @@ public class NetworkManager extends Verticle {
             if (result.failed()) {
               new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
             } else {
-              final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size()).setHandler(doneHandler);
+              final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(result.result().size());
+              counter.setHandler(new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> result) {
+                  if (result.failed()) {
+                    new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+                  } else {
+                    deployInstances(component.instances(), doneHandler);
+                  }
+                }
+              });
               for (Node node : result.result()) {
                 installModule(node, module, counter);
               }

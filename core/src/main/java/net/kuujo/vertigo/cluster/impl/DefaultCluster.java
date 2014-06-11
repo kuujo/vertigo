@@ -723,7 +723,7 @@ public class DefaultCluster implements Cluster {
           });
 
           for (ModuleConfig module : modules) {
-            node.installModule(module.getName(), counter);
+            node.installModule(module.getModule(), counter);
           }
         }
       }

@@ -28,11 +28,15 @@ import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 
+import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.testtools.JavaClassRunner;
 import org.vertx.testtools.TestVerticle;
 
 /**
@@ -40,7 +44,17 @@ import org.vertx.testtools.TestVerticle;
  *
  * @author Jordan Halterman
  */
+@RunWith(ClusterManagerTest.ClusterManagerClassRunner.class)
 public class ClusterManagerTest extends TestVerticle {
+
+  public static class ClusterManagerClassRunner extends JavaClassRunner {
+    static {
+      System.setProperty("vertx.mods", "src/test/resources/test-mods");
+    }
+    public ClusterManagerClassRunner(Class<?> klass) throws InitializationError {
+      super(klass);
+    }
+  }
 
   @Test
   public void testDeploy() {
@@ -314,6 +328,11 @@ public class ClusterManagerTest extends TestVerticle {
   }
 
   public static class TestWorker extends ComponentVerticle {
+  }
+
+  @AfterClass
+  public static void after() {
+    System.clearProperty("vertx.mods");
   }
 
 }

@@ -28,6 +28,7 @@ import net.kuujo.vertigo.util.Args;
 import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * Default verticle configuration implementation.
@@ -122,6 +123,7 @@ public class DefaultVerticleConfig implements VerticleConfig {
   }
 
   @Override
+  @JsonSetter("main")
   public VerticleConfig setMain(String main) {
     Args.checkNotNull(main, "verticle main must not be null");
     this.main = main;

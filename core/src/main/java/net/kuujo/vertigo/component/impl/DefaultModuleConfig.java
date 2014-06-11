@@ -28,6 +28,8 @@ import net.kuujo.vertigo.util.Args;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.impl.ModuleIdentifier;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 /**
  * Default module configuration implementation.
  *
@@ -117,6 +119,7 @@ public class DefaultModuleConfig implements ModuleConfig {
   }
 
   @Override
+  @JsonSetter("module")
   public ModuleConfig setModule(String moduleName) {
     Args.checkNotNull(moduleName, "module name cannot be null");
     // Instantiate a module identifier to force it to validate the module name.

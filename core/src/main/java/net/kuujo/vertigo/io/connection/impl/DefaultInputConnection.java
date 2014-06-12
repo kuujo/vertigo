@@ -151,6 +151,11 @@ public class DefaultInputConnection implements InputConnection {
   }
 
   @Override
+  public InputConnectionContext context() {
+    return context;
+  }
+
+  @Override
   public Vertx vertx() {
     return vertx;
   }
@@ -167,15 +172,18 @@ public class DefaultInputConnection implements InputConnection {
 
   @Override
   public InputConnection open(final Handler<AsyncResult<Void>> doneHandler) {
-    log.info("Opening connection at " + inAddress);
     eventBus.registerHandler(inAddress, internalMessageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.succeeded()) {
+          log.info(String.format("%s - Opened connection to %s", DefaultInputConnection.this, context.source()));
           if (feedbackTimerID == 0) {
+            log.debug(String.format("%s - Starting periodic ack timer with max batch interval: %d", DefaultInputConnection.this, MAX_BATCH_TIME));
             feedbackTimerID = vertx.setPeriodic(MAX_BATCH_TIME, internalTimer);
           }
           open = true;
+        } else {
+          log.warn(String.format("%s - Failed to open connection to %s", DefaultInputConnection.this, context.source()));
         }
         doneHandler.handle(result);
       }
@@ -213,7 +221,7 @@ public class DefaultInputConnection implements InputConnection {
     // purge messages we've already received from its queue.
     if (open && connected) {
       if (log.isDebugEnabled()) {
-        log.debug("Acking all messages up to: " + lastReceived);
+        log.debug(String.format("%s - Acking messages up to: %d", this, lastReceived));
       }
       eventBus.send(outAddress, new JsonObject().putString("action", "ack").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();
@@ -229,7 +237,7 @@ public class DefaultInputConnection implements InputConnection {
     // in order from that point on.
     if (open && connected) {
       if (log.isDebugEnabled()) {
-        log.debug("Requesting resend of messages after: " + lastReceived);
+        log.debug(String.format("%s - Received a message out of order: %d", this, lastReceived));
       }
       eventBus.send(outAddress, new JsonObject().putString("action", "fail").putNumber("id", lastReceived));
       lastFeedbackTime = System.currentTimeMillis();
@@ -241,7 +249,7 @@ public class DefaultInputConnection implements InputConnection {
     if (!paused) {
       paused = true;
       if (open && connected) {
-        log.debug("Pausing connection");
+        log.debug(String.format("%s - Pausing connection: %s", this, context.source()));
         eventBus.send(outAddress, new JsonObject().putString("action", "pause").putNumber("id", lastReceived));
       }
     }
@@ -253,7 +261,7 @@ public class DefaultInputConnection implements InputConnection {
     if (paused) {
       paused = false;
       if (open && connected) {
-        log.debug("Resuming connection");
+        log.debug(String.format("%s - Resuming connection: %s", this, context.source()));
         eventBus.send(outAddress, new JsonObject().putString("action", "resume").putNumber("id", lastReceived));
       }
     }
@@ -293,7 +301,7 @@ public class DefaultInputConnection implements InputConnection {
     Object value = deserializer.deserialize(message);
     if (value != null && messageHandler != null) {
       if (log.isDebugEnabled()) {
-        log.debug(String.format("Received message: %s", value));
+        log.debug(String.format("%s - Received: Message[id=%d, value=%s]", this, message.getLong("id"), value));
       }
       messageHandler.handle(value);
     }
@@ -309,12 +317,13 @@ public class DefaultInputConnection implements InputConnection {
     String groupID = message.getString("group");
     String name = message.getString("name");
     String parentId = message.getString("parent");
-    if (log.isDebugEnabled()) {
-      log.debug(String.format("Received group start for %s: %s", name, groupID));
-    }
+    Object args = deserializer.deserialize(message);
     DefaultConnectionInputGroup group = new DefaultConnectionInputGroup(groupID, name, this);
     groups.put(groupID, group);
     if (parentId != null) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("%s - Group started: Group[name=%s, group=%s, parent=%s, args=%s]", this, name, groupID, parentId, args));
+      }
       if (currentBatch != null && parentId.equals(currentBatch.id())) {
         currentBatch.handleGroup(group);
       } else {
@@ -324,6 +333,9 @@ public class DefaultInputConnection implements InputConnection {
         }
       }
     } else {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("%s - Group started: Group[name=%s, group=%s, args=%s]", this, name, groupID, args));
+      }
       // First check for a named group handler. If a named group handler isn't
       // registered then trigger the arbitrary group handler if one is registered.
       Handler<InputGroup> handler = groupHandlers.get(name);
@@ -335,7 +347,7 @@ public class DefaultInputConnection implements InputConnection {
         groupReady(groupID);
       }
     }
-    group.handleStart(deserializer.deserialize(message));
+    group.handleStart(args);
   }
 
   /**
@@ -343,7 +355,7 @@ public class DefaultInputConnection implements InputConnection {
    */
   void groupReady(String group) {
     if (log.isDebugEnabled()) {
-      log.debug(String.format("Acknowledging group: %s", group));
+      log.debug(String.format("%s - Group ready: Group[group=%s]", this, group));
     }
     eventBus.send(outAddress, new JsonObject().putString("action", "group").putString("group", group));
   }
@@ -358,7 +370,7 @@ public class DefaultInputConnection implements InputConnection {
       Object value = deserializer.deserialize(message);
       if (value != null) {
         if (log.isDebugEnabled()) {
-          log.debug(String.format("Received group message for %s: %s", groupID, value));
+          log.debug(String.format("%s - Group received: Group[group=%s, id=%d, message=%s", this, groupID, message.getLong("id"), value));
         }
         group.handleMessage(value);
       }
@@ -372,10 +384,11 @@ public class DefaultInputConnection implements InputConnection {
     String groupID = message.getString("group");
     DefaultConnectionInputGroup group = groups.remove(groupID);
     if (group != null) {
+      Object args = deserializer.deserialize(message);
       if (log.isDebugEnabled()) {
-        log.debug(String.format("Received group end for %s: %s", group.name(), groupID));
+        log.debug(String.format("%s - Group ended: Group[group=%s, args=%s]", this, group.id(), args));
       }
-      group.handleEnd(deserializer.deserialize(message));
+      group.handleEnd(args);
     }
   }
 
@@ -387,14 +400,15 @@ public class DefaultInputConnection implements InputConnection {
       currentBatch.handleEnd(null);
     }
     String batchID = message.getString("batch");
+    Object args = deserializer.deserialize(message);
     if (log.isDebugEnabled()) {
-      log.debug(String.format("Received batch start: %s", batchID));
+      log.debug(String.format("%s - Batch started: Batch[batch=%s, args=%s]", this, batchID, args));
     }
     currentBatch = new DefaultConnectionInputBatch(batchID, this);
     if (batchHandler != null) {
       batchHandler.handle(currentBatch);
     }
-    currentBatch.handleStart(deserializer.deserialize(message));
+    currentBatch.handleStart(args);
   }
 
   /**
@@ -402,7 +416,7 @@ public class DefaultInputConnection implements InputConnection {
    */
   void batchReady(String batch) {
     if (log.isDebugEnabled()) {
-      log.debug(String.format("Acknowledging batch: %s", batch));
+      log.debug(String.format("%s - Batch ready: Batch[batch=%s]", this, batch));
     }
     eventBus.send(outAddress, new JsonObject().putString("action", "batch").putString("batch", batch));
   }
@@ -416,7 +430,7 @@ public class DefaultInputConnection implements InputConnection {
       Object value = deserializer.deserialize(message);
       if (value != null) {
         if (log.isDebugEnabled()) {
-          log.debug(String.format("Received batch message for %s: %s", batchID, value));
+          log.debug(String.format("%s - Batch received: Batch[batch=%s, id=%d, message=%s]", this, batchID, message.getLong("id"), value));
         }
         currentBatch.handleMessage(value);
       }
@@ -428,10 +442,11 @@ public class DefaultInputConnection implements InputConnection {
    */
   private void doBatchEnd(final JsonObject message) {
     if (currentBatch != null) {
+      Object args = deserializer.deserialize(message);
       if (log.isDebugEnabled()) {
-        log.debug(String.format("Received batch end for: %s", currentBatch.id()));
+        log.debug(String.format("%s - Batch ended: Batch[batch=%s, args=%s]", this, currentBatch.id(), args));
       }
-      currentBatch.handleEnd(deserializer.deserialize(message));
+      currentBatch.handleEnd(args);
       currentBatch = null;
     }
   }
@@ -446,8 +461,10 @@ public class DefaultInputConnection implements InputConnection {
         connected = true;
       }
       message.reply(true);
+      log.debug(String.format("%s - Accepted connect request from %s", this, context.source()));
     } else {
       message.reply(false);
+      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, context.source()));
     }
   }
 
@@ -461,8 +478,10 @@ public class DefaultInputConnection implements InputConnection {
         connected = false;
       }
       message.reply(true);
+      log.debug(String.format("%s - Accepted disconnect request from %s", this, context.source()));
     } else {
       message.reply(false);
+      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, context.source()));
     }
   }
 
@@ -477,13 +496,20 @@ public class DefaultInputConnection implements InputConnection {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (feedbackTimerID > 0) {
+          log.debug(String.format("%s - Stopping periodic ack timer ", DefaultInputConnection.this, feedbackTimerID));
           vertx.cancelTimer(feedbackTimerID);
           feedbackTimerID = 0;
         }
         open = false;
+        log.info(String.format("%s - Closed connection from %s", DefaultInputConnection.this, context.source()));
         doneHandler.handle(result);
       }
     });
+  }
+
+  @Override
+  public String toString() {
+    return context.toString();
   }
 
 }

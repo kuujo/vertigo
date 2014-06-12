@@ -89,7 +89,7 @@ import org.vertx.java.platform.Verticle;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkManager extends Verticle {
-  private static final Logger log = LoggerFactory.getLogger(NetworkManager.class);
+  private Logger log;
   private String address;
   private Cluster cluster;
   private WatchableAsyncMap<String, String> data;
@@ -136,6 +136,8 @@ public class NetworkManager extends Verticle {
       return;
     }
 
+    log = LoggerFactory.getLogger(String.format("%s-%s", NetworkManager.class.getCanonicalName(), address));
+
     String scluster = container.config().getString("cluster");
     if (scluster == null) {
       startResult.setFailure(new IllegalArgumentException("No cluster address specified."));
@@ -150,6 +152,7 @@ public class NetworkManager extends Verticle {
     // we use the CLUSTER for coordination if it's available. This ensures
     // that identical networks cannot be deployed from separate clustered
     // Vert.x instances.
+    log.debug(String.format("%s - Scheduling manager startup task", NetworkManager.this));
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
@@ -161,6 +164,7 @@ public class NetworkManager extends Verticle {
               startResult.setFailure(result.cause());
             } else {
               data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(address), vertx);
+              log.debug(String.format("%s - start() watching key %s", NetworkManager.this, address));
               data.watch(address, watchHandler, new Handler<AsyncResult<Void>>() {
                 @Override
                 public void handle(AsyncResult<Void> result) {
@@ -169,6 +173,7 @@ public class NetworkManager extends Verticle {
                   } else {
                     // In the event that the manager failed, the current network context
                     // will be persisted in the cluster. Attempt to retrieve it.
+                    log.debug(String.format("%s - start() getting key %s", NetworkManager.this, address));
                     data.get(address, new Handler<AsyncResult<String>>() {
                       @Override
                       public void handle(AsyncResult<String> result) {
@@ -204,6 +209,7 @@ public class NetworkManager extends Verticle {
                               }
                             });
                             for (final InstanceContext instance : component.instances()) {
+                              log.debug(String.format("%s - start() checking status of %s", NetworkManager.this, instance.address()));
                               data.containsKey(instance.status(), new Handler<AsyncResult<Boolean>>() {
                                 @Override
                                 public void handle(AsyncResult<Boolean> result) {
@@ -221,6 +227,7 @@ public class NetworkManager extends Verticle {
                             }
                           }
                         } else {
+                          log.debug(String.format("%s - start() task complete", NetworkManager.this));
                           task.complete();
                           NetworkManager.super.start(startResult);
                         }
@@ -232,7 +239,13 @@ public class NetworkManager extends Verticle {
             }
           }
         });
+
+        // Register a handler to be called when a node joins the cluster.
+        log.debug(String.format("%s - start() registering cluster join handler on cluster: %s", NetworkManager.this, cluster.address()));
         cluster.registerJoinHandler(joinHandler, counter);
+
+        // Register a handler to be called when a node leaves the cluster.
+        log.debug(String.format("%s - start() registering cluster leave handler on cluster: %s", NetworkManager.this, cluster.address()));
         cluster.registerLeaveHandler(leaveHandler, counter);
       }
     });
@@ -242,7 +255,8 @@ public class NetworkManager extends Verticle {
    * Handles the creation of the network.
    */
   private void handleCreate(final NetworkContext context) {
-    log.debug("Context created in cluster " + cluster.address());
+    log.debug(String.format("%s - Network configuration created in cluster: %s", NetworkManager.this, cluster.address()));
+    log.debug(String.format("%s - Scheduling network deployment task", NetworkManager.this));
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
@@ -263,7 +277,7 @@ public class NetworkManager extends Verticle {
                   if (result.failed()) {
                     log.error(result.cause());
                   } else {
-                    log.info("Successfully deployed network " + context.address());
+                    log.info(String.format("%s - Successfully deployed network", NetworkManager.this));
                     task.complete();
                     checkReady();
                   }
@@ -280,7 +294,8 @@ public class NetworkManager extends Verticle {
    * Handles the update of the network.
    */
   private void handleUpdate(final NetworkContext context) {
-    log.debug("Context update received in cluster " + cluster.address());
+    log.debug(String.format("%s - Network configuration updated in cluster: %s", NetworkManager.this, cluster.address()));
+    log.debug(String.format("%s - Scheduling network update task", NetworkManager.this));
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
@@ -301,19 +316,20 @@ public class NetworkManager extends Verticle {
                 // We have to update all instance contexts before deploying
                 // any new components in order to ensure connections are
                 // available for startup.
-                log.info("Updating network " + currentContext.name() + " in cluster " + address);
+                log.info(String.format("%s - Updating network in cluster: %s", NetworkManager.this, address));
+                log.debug(String.format("%s - Network:%n%s", NetworkManager.this, currentContext.toString(true)));
                 updateNetwork(currentContext, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      log.error(result.cause());
+                      log.warn(result.cause());
                       task.complete();
                     } else {
                       undeployRemovedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
                         @Override
                         public void handle(AsyncResult<Void> result) {
                           if (result.failed()) {
-                            log.error(result.cause());
+                            log.warn(result.cause());
                             task.complete();
                           } else {
                             deployAddedComponents(currentContext, runningContext, new Handler<AsyncResult<Void>>() {
@@ -321,7 +337,7 @@ public class NetworkManager extends Verticle {
                               public void handle(AsyncResult<Void> result) {
                                 task.complete();
                                 if (result.failed()) {
-                                  log.error(result.cause());
+                                  log.warn(result.cause());
                                 } else {
                                   checkReady();
                                 }
@@ -337,14 +353,16 @@ public class NetworkManager extends Verticle {
               else {
                 // Just deploy the entire network if it wasn't already deployed.
                 currentContext = context;
+                log.info(String.format("%s - Deploying network in cluster: %s", NetworkManager.this, address));
+                log.debug(String.format("%s - Network:%n%s", NetworkManager.this, currentContext.toString(true)));
                 deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
                   @Override
                   public void handle(AsyncResult<NetworkContext> result) {
                     task.complete();
                     if (result.failed()) {
-                      log.error(result.cause());
+                      log.warn(result.cause());
                     } else {
-                      log.info("Successfully deployed network " + context.address());
+                      log.info(String.format("%s - Successfully deployed network", NetworkManager.this));
                       checkReady();
                     }
                   }
@@ -377,7 +395,7 @@ public class NetworkManager extends Verticle {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           } else {
-            log.info(String.format("Removed %d components from %s", removedComponents.size(), context.name()));
+            log.info(String.format("%s - Removed %d components", NetworkManager.this, removedComponents.size()));
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
@@ -407,7 +425,7 @@ public class NetworkManager extends Verticle {
           if (result.failed()) {
             new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
           } else {
-            log.info(String.format("Added %d components to %s", addedComponents.size(), context.name()));
+            log.info(String.format("%s - Added %d components", NetworkManager.this, addedComponents.size()));
             new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
           }
         }
@@ -422,7 +440,7 @@ public class NetworkManager extends Verticle {
    * Handles the deletion of the network.
    */
   private void handleDelete() {
-    log.debug("Context deleted in cluster " + cluster.address());
+    log.debug(String.format("%s - Network configuration removed from cluster: %s", NetworkManager.this, cluster.address()));
     tasks.runTask(new Handler<Task>() {
       @Override
       public void handle(final Task task) {
@@ -433,6 +451,7 @@ public class NetworkManager extends Verticle {
               log.error(result.cause());
             }
             if (currentContext != null) {
+              log.info(String.format("%s - Undeploying network", NetworkManager.this));
               undeployNetwork(currentContext, new Handler<AsyncResult<Void>>() {
                 @Override
                 public void handle(AsyncResult<Void> result) {
@@ -449,7 +468,7 @@ public class NetworkManager extends Verticle {
                         if (result.failed()) {
                           log.error(result.cause());
                         } else {
-                          log.info("Successfully undeployed components of " + currentContext.address());
+                          log.info(String.format("%s - Successfully undeployed all components", NetworkManager.this));
                         }
                         task.complete();
                       }
@@ -471,7 +490,7 @@ public class NetworkManager extends Verticle {
    */
   private void unready(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {
-      log.debug("Pausing network " + currentContext.name() + " in cluster " + cluster.address());
+      log.debug(String.format("%s - Pausing network", NetworkManager.this));
       data.remove(currentContext.status(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -489,7 +508,7 @@ public class NetworkManager extends Verticle {
    * Called when a component instance is ready.
    */
   private void handleReady(String address) {
-    log.debug("Received ready message from " + address + " in network " + currentContext.name());
+    log.debug(String.format("%s - Received ready message from %s", NetworkManager.this, address));
     ready.add(address);
     checkReady();
   }
@@ -499,7 +518,7 @@ public class NetworkManager extends Verticle {
    */
   private void checkReady() {
     if (allReady()) {
-      log.debug("All components ready in network " + currentContext.name() + ", starting components");
+      log.debug(String.format("%s - All components ready in network, starting components", NetworkManager.this));
       // Set the network's status key to the current context version. This
       // can be used by listeners to determine when a configuration change is complete.
       data.put(currentContext.status(), currentContext.version(), new Handler<AsyncResult<String>>() {
@@ -517,7 +536,7 @@ public class NetworkManager extends Verticle {
    * Called when a component instance is unready.
    */
   private void handleUnready(String address) {
-    log.debug("Received unready message from " + address + " in network " + currentContext.name());
+    log.debug(String.format("%s - Received unready message from: %s", NetworkManager.this, address));
     ready.remove(address);
     checkUnready();
   }
@@ -527,7 +546,7 @@ public class NetworkManager extends Verticle {
    */
   private void checkUnready() {
     if (!allReady()) {
-      log.debug("Components not ready in network " + currentContext.name() + ", pausing components");
+      log.debug(String.format("%s - Components not ready, pausing components", NetworkManager.this));
       data.remove(currentContext.address(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -562,7 +581,7 @@ public class NetworkManager extends Verticle {
    * Deploys a complete network.
    */
   private void deployNetwork(final NetworkContext context, final Handler<AsyncResult<NetworkContext>> doneHandler) {
-    log.debug("Deploying network " + context.toString());
+    log.debug(String.format("%s - Deploying network", NetworkManager.this));
     final CountingCompletionHandler<Void> complete = new CountingCompletionHandler<Void>(context.components().size());
     complete.setHandler(new Handler<AsyncResult<Void>>() {
       @Override
@@ -608,8 +627,8 @@ public class NetworkManager extends Verticle {
    * Deploys a component.
    */
   private void deployComponent(final ComponentContext<?> component, final Handler<AsyncResult<Void>> doneHandler) {
-    log.info(String.format("Deploying %d instances of %s", component.instances().size(), component.isModule() ? component.asModule().module() : component.asVerticle().main()));
-    log.debug("Deploying component " + component.toString());
+    log.info(String.format("%s - Deploying %d instances of %s", NetworkManager.this, component.instances().size(), component.isModule() ? component.asModule().module() : component.asVerticle().main()));
+    log.debug(String.format("%s - Deploying component:%n%s", NetworkManager.this, component.toString(true)));
     // If the component is installable then we first need to install the
     // component to all the nodes in the cluster.
     if (component.isModule()) {
@@ -818,7 +837,7 @@ public class NetworkManager extends Verticle {
    * Deploys a module component instance in the network's cluster.
    */
   private void deployModule(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    log.debug(String.format("Deploying %s to %s", instance.component().asModule().module(), node.address()));
+    log.debug(String.format("%s - Deploying %s to %s", NetworkManager.this, instance.component().asModule().module(), node.address()));
     node.deployModule(instance.component().asModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -840,7 +859,7 @@ public class NetworkManager extends Verticle {
    * Deploys a verticle component instance in the network's cluster.
    */
   private void deployVerticle(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    log.debug(String.format("Deploying %s to %s", instance.component().asVerticle().main(), node.address()));
+    log.debug(String.format("%s - Deploying %s to %s", NetworkManager.this, instance.component().asVerticle().main(), node.address()));
     node.deployVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -862,7 +881,7 @@ public class NetworkManager extends Verticle {
    * Deploys a worker verticle component instance in the network's cluster.
    */
   private void deployWorkerVerticle(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    log.debug(String.format("Deploying %s to %s", instance.component().asVerticle().main(), node.address()));
+    log.debug(String.format("%s - Deploying %s to %s", NetworkManager.this, instance.component().asVerticle().main(), node.address()));
     node.deployWorkerVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1,instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
@@ -1110,14 +1129,14 @@ public class NetworkManager extends Verticle {
       @Override
       public void handle(final Task task) {
         if (currentContext != null) {
-          log.info(String.format("%s joined the cluster. Uploading components to new node", node.address()));
+          log.info(String.format("%s - %s joined the cluster. Uploading components to new node", NetworkManager.this, node.address()));
           installModules(node, currentContext, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
               if (result.failed()) {
                 log.error(result.cause());
               } else {
-                log.info(String.format("Successfully uploaded components to %s", node.address()));
+                log.info(String.format("%s - Successfully uploaded components to %s", NetworkManager.this, node.address()));
               }
               task.complete();
             }
@@ -1137,7 +1156,7 @@ public class NetworkManager extends Verticle {
       @Override
       public void handle(final Task task) {
         if (currentContext != null) {
-          log.info(String.format("%s left the cluster. Reassigning components", node.address()));
+          log.info(String.format("%s - %s left the cluster. Reassigning components", NetworkManager.this, node.address()));
           deploymentNodes.keySet(new Handler<AsyncResult<Set<String>>>() {
             @Override
             public void handle(AsyncResult<Set<String>> result) {
@@ -1182,6 +1201,14 @@ public class NetworkManager extends Verticle {
         }
       }
     });
+  }
+
+  @Override
+  public String toString() {
+    if (currentContext != null) {
+      return String.format("Network[%s]", currentContext.name());
+    }
+    return "Network[?]";
   }
 
 }

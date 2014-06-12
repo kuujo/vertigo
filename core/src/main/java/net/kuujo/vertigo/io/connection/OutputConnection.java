@@ -48,6 +48,13 @@ import org.vertx.java.core.Handler;
 public interface OutputConnection extends Connection<OutputConnection>, Output<OutputConnection>, OutputGroupSupport<OutputConnection> {
 
   /**
+   * Returns the output connection context.
+   *
+   * @return The output connection context.
+   */
+  OutputConnectionContext context();
+
+  /**
    * Creates an output batch on the connection.
    *
    * @param id The unique batch ID.

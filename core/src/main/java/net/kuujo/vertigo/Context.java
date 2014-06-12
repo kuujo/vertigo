@@ -39,4 +39,12 @@ public interface Context<T extends Context<T>> extends Observable<T>, JsonSerial
    */
   String address();
 
+  /**
+   * Returns a formatted representation of the context.
+   *
+   * @param formatted Whether to format the context.
+   * @return A formatted representation of the context.
+   */
+  String toString(boolean formatted);
+
 }

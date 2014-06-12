@@ -43,6 +43,13 @@ import org.vertx.java.core.Handler;
 public interface InputConnection extends Connection<InputConnection>, Input<InputConnection>, InputGroupSupport<InputConnection>, InputBatchSupport<InputConnection> {
 
   /**
+   * Returns the input connection context.
+   *
+   * @return The input connection context.
+   */
+  InputConnectionContext context();
+
+  /**
    * Registers an input batch handler.
    *
    * @param handler A handler to be called when an input batch is started.

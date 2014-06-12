@@ -124,6 +124,14 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
     super.notify(this);
   }
 
+  @Override
+  public String toString() {
+    if (instance != null) {
+      return String.format("Output[%s]", instance.component().name());
+    }
+    return "Output[?]";
+  }
+
   /**
    * Output context builder.
    *

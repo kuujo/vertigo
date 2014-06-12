@@ -65,6 +65,14 @@ public abstract class BaseContext<T extends Context<T>> implements Context<T> {
   }
 
   @Override
+  public String toString(boolean formatted) {
+    if (!formatted) {
+      return toString();
+    }
+    return String.format("%s: [%n%s%n]", getClass().getSimpleName(), SerializerFactory.getSerializer(Context.class).serializeToObject(this).encodePrettily());
+  }
+
+  @Override
   public boolean equals(Object other) {
     return other instanceof BaseContext && ((BaseContext<?>) other).address().equals(address());
   }

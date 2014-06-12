@@ -35,6 +35,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.impl.DefaultFutureResult;
 import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 /**
@@ -46,6 +47,7 @@ import org.vertx.java.platform.Container;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultComponent implements Component {
+  protected final Logger log;
   protected final Vertx vertx;
   protected final Container container;
   protected final Cluster cluster;
@@ -59,6 +61,7 @@ public class DefaultComponent implements Component {
 
   protected DefaultComponent(InstanceContext context, Vertx vertx, Container container, Cluster cluster) {
     this.address = context.address();
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", DefaultComponent.class.getName(), address));
     this.vertx = vertx;
     this.container = container;
     this.context = context;
@@ -111,6 +114,7 @@ public class DefaultComponent implements Component {
     // Retrieve the component context from the coordinator (the current cluster).
     // If the context has changed due to a network configuration change, the
     // internal context and input/output connections will be automatically updated.
+    log.debug(String.format("%s - Starting cluster coordination", DefaultComponent.this));
     coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
       @Override
       public void handle(AsyncResult<InstanceContext> result) {
@@ -136,8 +140,29 @@ public class DefaultComponent implements Component {
             }
           });
 
-          output.open(ioHandler);
-          input.open(ioHandler);
+          output.open(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                log.error(String.format("%s - Failed to open component outputs", DefaultComponent.this), result.cause());
+                ioHandler.fail(result.cause());
+              } else {
+                ioHandler.succeed();
+              }
+            }
+          });
+
+          input.open(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> result) {
+              if (result.failed()) {
+                log.error(String.format("%s - Failed to open component inputs", DefaultComponent.this), result.cause());
+                ioHandler.fail(result.cause());
+              } else {
+                ioHandler.succeed();
+              }
+            }
+          });
         }
       }
     });
@@ -151,6 +176,7 @@ public class DefaultComponent implements Component {
       public void handle(Void _) {
         if (!started) {
           started = true;
+          log.debug(String.format("%s - Started", DefaultComponent.this, context.component().name(), context.number()));
           List<ComponentHook> hooks = context.component().hooks();
           for (ComponentHook hook : hooks) {
             hook.handleStart(DefaultComponent.this);
@@ -185,6 +211,11 @@ public class DefaultComponent implements Component {
       future.setResult(DefaultComponent.this);
     }
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Component[%s:%s-1]", context.component().network().name(), context.component().name(), context.number());
   }
 
 }

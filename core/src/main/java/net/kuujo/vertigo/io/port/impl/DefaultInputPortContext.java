@@ -111,6 +111,14 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
     super.notify(this);
   }
 
+  @Override
+  public String toString() {
+    if (input == null) {
+      return name();
+    }
+    return String.format("InPort[%s:%s]", input.instance().component().name(), name());
+  }
+
   /**
    * Connection context builder.
    *

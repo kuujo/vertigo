@@ -27,6 +27,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Verticle;
 
 /**
@@ -66,6 +67,7 @@ import org.vertx.java.platform.Verticle;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class ComponentVerticle extends Verticle {
+  private Logger log;
   private Component component;
   protected Vertigo vertigo;
   protected InstanceContext context;
@@ -83,7 +85,9 @@ public abstract class ComponentVerticle extends Verticle {
     input = component.input();
     output = component.output();
     vertigo = new Vertigo(this);
+    log = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), context.address()));
 
+    log.info(String.format("%s - Starting", component));
     component.start(new Handler<AsyncResult<Component>>() {
       @Override
       public void handle(AsyncResult<Component> result) {

@@ -32,6 +32,7 @@ import net.kuujo.vertigo.component.impl.DefaultModuleContext;
 import net.kuujo.vertigo.component.impl.DefaultVerticleContext;
 import net.kuujo.vertigo.hook.IOHook;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
+import net.kuujo.vertigo.io.connection.impl.DefaultConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.DefaultInputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.DefaultOutputConnectionContext;
 import net.kuujo.vertigo.io.impl.DefaultInputContext;
@@ -201,6 +202,14 @@ public final class ContextBuilder {
             DefaultInputConnectionContext.Builder inConnection = DefaultInputConnectionContext.Builder.newBuilder();
             String address = String.format("out:%s@%s.%s.%s[%d]->in:%s@%s.%s.%s[%d]", connection.getSource().getPort(), cluster, network.getName(), source.name(), sourceInstance.number(), connection.getTarget().getPort(), cluster, network.getName(), target.name(), targetInstance.number());
             inConnection.setAddress(address);
+            inConnection.setSource(DefaultConnectionContext.DefaultSourceContext.Builder.newBuilder()
+                .setComponent(connection.getSource().getComponent())
+                .setPort(connection.getSource().getPort())
+                .setInstance(sourceInstance.number()).build());
+            inConnection.setTarget(DefaultConnectionContext.DefaultTargetContext.Builder.newBuilder()
+                .setComponent(connection.getTarget().getComponent())
+                .setPort(connection.getTarget().getPort())
+                .setInstance(targetInstance.number()).build());
 
             // Add input level hooks to the input.
             inConnection.setHooks(connection.getTarget().getHooks());
@@ -218,6 +227,12 @@ public final class ContextBuilder {
             // connections maintain a many-to-one relationship with output connections.
             DefaultOutputConnectionContext.Builder outConnection = DefaultOutputConnectionContext.Builder.newBuilder();
             outConnection.setAddress(address);
+            outConnection.setSource(DefaultConnectionContext.DefaultSourceContext.Builder.newBuilder()
+                .setComponent(connection.getSource().getComponent())
+                .setPort(connection.getSource().getPort()).build());
+            outConnection.setTarget(DefaultConnectionContext.DefaultTargetContext.Builder.newBuilder()
+                .setComponent(connection.getTarget().getComponent())
+                .setPort(connection.getTarget().getPort()).build());
 
             // Add output level hooks to the output.
             outConnection.setHooks(connection.getSource().getHooks());

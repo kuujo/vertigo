@@ -37,6 +37,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 /**
  * Default output stream implementation.
@@ -44,6 +46,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputStream implements OutputStream {
+  private final Logger log;
   private final Vertx vertx;
   private final OutputStreamContext context;
   final List<OutputConnection> connections = new ArrayList<>();
@@ -53,6 +56,7 @@ public class DefaultOutputStream implements OutputStream {
   public DefaultOutputStream(Vertx vertx, OutputStreamContext context) {
     this.vertx = vertx;
     this.context = context;
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", DefaultOutputStream.class.getName(), context.port().toString()));
     for (OutputConnectionContext connection : context.connections()) {
       connections.add(new DefaultOutputConnection(vertx, connection));
     }
@@ -77,8 +81,20 @@ public class DefaultOutputStream implements OutputStream {
   @Override
   public OutputStream open(Handler<AsyncResult<Void>> doneHandler) {
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size()).setHandler(doneHandler);
-    for (OutputConnection connection : connections) {
-      connection.open(counter);
+    for (final OutputConnection connection : connections) {
+      log.debug(String.format("%s - Opening connection to: %s", this, connection.context().target()));
+      connection.open(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            log.error(String.format("%s - Failed to open connection to: %s", DefaultOutputStream.this, connection.context().target()));
+            counter.fail(result.cause());
+          } else {
+            log.info(String.format("%s - Opened connection to: %s", DefaultOutputStream.this, connection.context().target()));
+            counter.succeed();
+          }
+        }
+      });
     }
     return this;
   }
@@ -309,9 +325,26 @@ public class DefaultOutputStream implements OutputStream {
   @Override
   public void close(Handler<AsyncResult<Void>> doneHandler) {
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size()).setHandler(doneHandler);
-    for (OutputConnection connection : connections) {
-      connection.close(counter);
+    for (final OutputConnection connection : connections) {
+      log.debug(String.format("%s - Closing connection to: %s", this, connection.context().target()));
+      connection.close(new Handler<AsyncResult<Void>>() {
+        @Override
+        public void handle(AsyncResult<Void> result) {
+          if (result.failed()) {
+            log.warn(String.format("%s - Failed to close connection to: %s", DefaultOutputStream.this, connection.context().target()));
+            counter.fail(result.cause());
+          } else {
+            log.info(String.format("%s - Closed connection to: %s", DefaultOutputStream.this, connection.context().target()));
+            counter.succeed();
+          }
+        }
+      });
     }
+  }
+
+  @Override
+  public String toString() {
+    return context.toString();
   }
 
 }

@@ -91,6 +91,28 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
     }
 
     /**
+     * Sets the output source.
+     *
+     * @param source The output source.
+     * @return The context builder.
+     */
+    public Builder setSource(SourceContext source) {
+      context.source = source;
+      return this;
+    }
+
+    /**
+     * Sets the output target.
+     *
+     * @param target The output target.
+     * @return The context builder.
+     */
+    public Builder setTarget(TargetContext target) {
+      context.target = target;
+      return this;
+    }
+
+    /**
      * Sets the output hooks.
      *
      * @param hooks An array of hooks.

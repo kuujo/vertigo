@@ -86,7 +86,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
 
   @Override
   public void update(final InputPortContext update) {
-    log.debug("In port context changed, updating connections");
+    log.debug(String.format("%s - In port configuration has changed, updating connections", this));
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -112,12 +112,13 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           // and remove the connection regardless of whether the
           // close is actually successful.
           if (!exists) {
-            log.debug("Removing connection: " + connection.address());
             connection.close(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to close input connection " + connection.address());
+                  log.error(String.format("%s - Failed to close input connection: %s", DefaultInputPort.this, connection));
+                } else {
+                  log.info(String.format("%s - Closed input connection: %s", DefaultInputPort.this, connection));
                 }
               }
             });
@@ -136,7 +137,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
             }
           }
           if (!exists) {
-            log.debug("Adding connection: " + input.address());
+            log.debug(String.format("%s - Creating connection: %s", DefaultInputPort.this, input));
             newConnections.add(new DefaultInputConnection(vertx, input));
           }
         }
@@ -166,8 +167,9 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open input connection " + connection.address());
+                  log.error(String.format("%s - Failed to open input connection: %s", DefaultInputPort.this, connection));
                 } else {
+                  log.info(String.format("%s - Opened input connection: %s", DefaultInputPort.this, connection));
                   connections.add(setupConnection(connection));
                 }
               }
@@ -264,8 +266,6 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
       @Override
       public void handle(final Task task) {
         if (!open) {
-          log.info("Opening input port " + context.name() + " in " + context.input().instance().address());
-
           final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.connections().size());
           startCounter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
@@ -291,9 +291,10 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open input connection " + connection.address());
+                  log.error(String.format("%s - Failed to open input connection: %s", DefaultInputPort.this, connection));
                   startCounter.fail(result.cause());
                 } else {
+                  log.info(String.format("%s - Opened input connection: %s", DefaultInputPort.this, connection));
                   connections.add(setupConnection(connection));
                   startCounter.succeed();
                 }
@@ -314,6 +315,7 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
    */
   @SuppressWarnings("unchecked")
   private InputConnection setupConnection(InputConnection connection) {
+    log.debug(String.format("%s - Setting up connection: %s", this, connection));
     connection.messageHandler(messageHandler);
     for (Handler<InputBatch> handler : batchHandlers) {
       connection.batchHandler(handler);
@@ -357,8 +359,19 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
             }
           });
 
-          for (InputConnection connection : connections) {
-            connection.close(stopCounter);
+          for (final InputConnection connection : connections) {
+            connection.close(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.warn(String.format("%s - Failed to close input connection: %s", DefaultInputPort.this, connection));
+                  stopCounter.fail(result.cause());
+                } else {
+                  log.info(String.format("%s - Closed input connection: %s", DefaultInputPort.this, connection));
+                  stopCounter.succeed();
+                }
+              }
+            });
           }
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -366,6 +379,11 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
         }
       }
     });
+  }
+
+  @Override
+  public String toString() {
+    return context.toString();
   }
 
 }

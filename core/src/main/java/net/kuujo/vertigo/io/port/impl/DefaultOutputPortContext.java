@@ -69,6 +69,9 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
 
   @Override
   public Collection<OutputStreamContext> streams() {
+    for (OutputStreamContext stream : streams) {
+      ((DefaultOutputStreamContext) stream).setPort(this);
+    }
     return streams;
   }
 
@@ -110,6 +113,14 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String toString() {
+    if (output == null) {
+      return name();
+    }
+    return String.format("OutPort[%s:%s]", output.instance().component().name(), name());
   }
 
   /**

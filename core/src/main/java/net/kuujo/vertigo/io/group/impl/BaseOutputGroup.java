@@ -266,4 +266,9 @@ public class BaseOutputGroup implements OutputGroup {
     }
   }
 
+  @Override
+  public String toString() {
+    return String.format("Group[id=%s, name=%s]", id, name);
+  }
+
 }

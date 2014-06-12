@@ -100,6 +100,15 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
     super.notify(this);
   }
 
+  @Override
+  public String toString() {
+    if (!connections.isEmpty()) {
+      OutputConnectionContext context = connections.get(0);
+      return String.format("Stream[%s:%s->%s:%s]", context.source().component(), context.source().port(), context.target().component(), context.target().port());
+    }
+    return "Stream[?]";
+  }
+
   /**
    * Output connection context builder.
    *

@@ -46,7 +46,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputCollector implements InputCollector, Observer<InputContext> {
-  private static final Logger log = LoggerFactory.getLogger(DefaultInputCollector.class);
+  private final Logger log;
   private final Vertx vertx;
   private InputContext context;
   private final Map<String, InputPort> ports = new HashMap<>();
@@ -55,11 +55,13 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
 
   public DefaultInputCollector(Vertx vertx) {
     this.vertx = vertx;
+    this.log = LoggerFactory.getLogger(DefaultInputCollector.class);
   }
 
   public DefaultInputCollector(Vertx vertx, InputContext context) {
     this.vertx = vertx;
     this.context = context;
+    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", DefaultInputCollector.class.getName(), context.instance().component().name(), context.instance().number()));
     context.registerObserver(this);
   }
 
@@ -75,7 +77,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
     // and open the port. The lazy port will be empty.
     InputPort port = ports.get(name);
     if (port == null) {
-      log.debug("Lazily creating input port " + name);
+      log.debug(String.format("%s - Lazily creating in port: %s", this, name));
 
       // Attempt to search for the port in the existing context. If the
       // port isn't an explicitly configured port then lazily create
@@ -102,7 +104,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
 
   @Override
   public void update(final InputContext update) {
-    log.debug("Input context changed, updating ports");
+    log.info(String.format("%s - Input configuration has changed, updating ports", this));
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -121,7 +123,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           }
           if (!exists) {
-            log.debug("Adding port: " + input.name());
+            log.debug(String.format("%s - Adding in port: %s", DefaultInputCollector.this, input));
             newPorts.add(new DefaultInputPort(vertx, input));
           }
         }
@@ -140,12 +142,14 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
 
           // Iterate through each new input port and open and add the port.
           for (final InputPort port : newPorts) {
+            log.debug(String.format("%s - Opening in port: %s", DefaultInputCollector.this, port));
             port.open(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open input port " + port.name());
+                  log.error(String.format("%s - Failed to open in port: %s", DefaultInputCollector.this, port));
                 } else {
+                  log.info(String.format("%s - Opened in port: %s", DefaultInputCollector.this, port));
                   ports.put(port.name(), port);
                 }
                 counter.succeed();
@@ -179,8 +183,6 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         // If the input hasn't already been started, start the input
         // by adding and opening any necessary ports.
         if (!started) {
-          log.info("Opening input for " + context.instance().address());
-
           final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
           startCounter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
@@ -194,14 +196,17 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           });
 
-          for (InputPortContext port : context.ports()) {
+          for (final InputPortContext port : context.ports()) {
+            log.debug(String.format("%s - Opening in port: %s", DefaultInputCollector.this, port));
             if (ports.containsKey(port.name())) {
               ((DefaultInputPort) ports.get(port.name())).open(new Handler<AsyncResult<Void>>() {
                 @Override
                 public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
+                    log.error(String.format("%s - Failed to open in port: %s", DefaultInputCollector.this, port));
                     startCounter.fail(result.cause());
                   } else {
+                    log.info(String.format("%s - Opened in port: %s", DefaultInputCollector.this, port));
                     startCounter.succeed();
                   }
                 }
@@ -211,8 +216,10 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
                 @Override
                 public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
+                    log.error(String.format("%s - Failed to open in port: %s", DefaultInputCollector.this, port));
                     startCounter.fail(result.cause());
                   } else {
+                    log.info(String.format("%s - Opened in port: %s", DefaultInputCollector.this, port));
                     startCounter.succeed();
                   }
                 }
@@ -257,13 +264,16 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           });
       
-          for (InputPort port : ports.values()) {
+          for (final InputPort port : ports.values()) {
+            log.debug(String.format("%s - Closing in port: %s", DefaultInputCollector.this, port));
             port.close(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
+                  log.warn(String.format("%s - Failed to close in port: %s", DefaultInputCollector.this, port));
                   stopCounter.fail(result.cause());
                 } else {
+                  log.info(String.format("%s - Closed in port: %s", DefaultInputCollector.this, port));
                   stopCounter.succeed();
                 }
               }
@@ -275,6 +285,11 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         }
       }
     });
+  }
+
+  @Override
+  public String toString() {
+    return context.toString();
   }
 
 }

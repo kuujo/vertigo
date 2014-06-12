@@ -18,6 +18,7 @@ package net.kuujo.vertigo.io.connection.impl;
 import java.util.UUID;
 
 import net.kuujo.vertigo.io.connection.OutputConnection;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.group.OutputGroup;
 
 import org.vertx.java.core.AsyncResult;
@@ -59,6 +60,11 @@ public class DefaultConnectionOutputBatch implements ConnectionOutputBatch {
   @Override
   public String address() {
     return connection.address();
+  }
+
+  @Override
+  public OutputConnectionContext context() {
+    return connection.context();
   }
 
   @Override

@@ -86,7 +86,7 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
 
   @Override
   public void update(final OutputPortContext update) {
-    log.debug("Out port context changed, updating streams");
+    log.debug(String.format("%s - Out port configuration has changed, updating streams", this));
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -112,12 +112,13 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           // and remove the connection regardless of whether the
           // close is actually successful.
           if (!exists) {
-            log.debug("Removing stream: " + stream.address());
             stream.close(new Handler<AsyncResult<Void>>() {
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to close output stream " + stream.address());
+                  log.error(String.format("%s - Failed to close output stream: %s", DefaultOutputPort.this, stream));
+                } else {
+                  log.info(String.format("%s - Closed output stream: %s", DefaultOutputPort.this, stream));
                 }
               }
             });
@@ -136,16 +137,8 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
             }
           }
           if (!exists) {
-            log.debug("Adding stream: " + output.address());
+            log.info(String.format("%s - Creating stream: %s", DefaultOutputPort.this, output));
             newStreams.add(new DefaultOutputStream(vertx, output));
-          }
-
-          if (!exists) {
-            OutputStream stream = new DefaultOutputStream(vertx, output);
-            if (open) {
-              stream.open();
-            }
-            streams.add(stream);
           }
         }
 
@@ -174,8 +167,9 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open output stream " + stream.address());
+                  log.error(String.format("%s - Failed to open output stream: %s", DefaultOutputPort.this, stream));
                 } else {
+                  log.info(String.format("%s - Opened output stream: %s", DefaultOutputPort.this, stream));
                   streams.add(stream);
                 }
               }
@@ -251,8 +245,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
       @Override
       public void handle(final Task task) {
         if (!open) {
-          log.info("Opening output port " + context.name() + " in " + context.output().instance().address());
-
           streams.clear();
           open = true;
           final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(context.streams().size());
@@ -277,9 +269,10 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               @Override
               public void handle(AsyncResult<Void> result) {
                 if (result.failed()) {
-                  log.error("Failed to open output stream " + stream.address());
+                  log.error(String.format("%s - Failed to open output stream: %s", DefaultOutputPort.this, stream));
                   counter.fail(result.cause());
                 } else {
+                  log.info(String.format("%s - Opened output stream: %s", DefaultOutputPort.this, stream));
                   streams.add(stream);
                   counter.succeed();
                 }
@@ -321,8 +314,19 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
               task.complete();
             }
           });
-          for (OutputStream stream : streams) {
-            stream.close(counter);
+          for (final OutputStream stream : streams) {
+            stream.close(new Handler<AsyncResult<Void>>() {
+              @Override
+              public void handle(AsyncResult<Void> result) {
+                if (result.failed()) {
+                  log.warn(String.format("%s - Failed to close output stream: %s", DefaultOutputPort.this, stream));
+                  counter.fail(result.cause());
+                } else {
+                  log.info(String.format("%s - Closed output stream: %s", DefaultOutputPort.this, stream));
+                  counter.succeed();
+                }
+              }
+            });
           }
         } else {
           new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
@@ -529,6 +533,11 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
     }
     triggerSend(message);
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return context.toString();
   }
 
 }

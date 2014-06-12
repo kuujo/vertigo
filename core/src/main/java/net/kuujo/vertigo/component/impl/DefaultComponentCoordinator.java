@@ -55,6 +55,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     @Override
     public void handle(MapEvent<String, String> event) {
       if (currentContext != null && !event.type().equals(MapEvent.Type.CHANGE)) {
+        log.info(String.format("%s - Configuration change detected, updating context", DefaultComponentCoordinator.this));
         currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(event.value())));
       }
     }
@@ -64,9 +65,11 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     @Override
     public void handle(MapEvent<String, String> event) {
       if (event.type().equals(MapEvent.Type.CREATE) || event.type().equals(MapEvent.Type.UPDATE)) {
+        log.debug(String.format("%s - Resumed", DefaultComponentCoordinator.this));
         paused = false;
         checkResume();
       } else if (event.type().equals(MapEvent.Type.DELETE)) {
+        log.debug(String.format("%s - Paused", DefaultComponentCoordinator.this));
         paused = true;
         checkPause();
       }
@@ -95,7 +98,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     // we watch the component's configuration, then we attempt to load the
     // existing component configuration. Otherwise, the component's configuration
     // could potentially be set between get() and watch().
-    log.debug("start() watching key at " + address);
+    log.debug(String.format("%s - start() watching key at %s", this, address));
     data.watch(address, instanceHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -111,7 +114,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
                 if (result.result() != null) {
                   currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
                 }
-                log.debug("start() watching status key at " + currentContext.component().network().status());
+                log.debug(String.format("%s - start() watching status key at %s", DefaultComponentCoordinator.this, currentContext.component().network().status()));
                 data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
@@ -141,7 +144,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     if (currentContext != null && data != null) {
       // Set the status key to "ready" to indicate to the network that the
       // component is ready to start - all its connections have been opened.
-      log.debug("resume() setting status key at " + currentContext.status());
+      log.debug(String.format("%s - resume() setting status key at %s", DefaultComponentCoordinator.this, currentContext.status()));
       data.put(currentContext.status(), "ready", new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -167,7 +170,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public ComponentCoordinator pause(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {
-      log.debug("pause() clearing status key at " + currentContext.status());
+      log.debug(String.format("%s - pause() clearing status key at %s", DefaultComponentCoordinator.this, currentContext.status()));
       data.remove(currentContext.status(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
@@ -219,7 +222,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
     if (currentContext != null && data != null) {
-      log.debug("stop() unwatching status key at " + currentContext.component().network().status());
+      log.debug(String.format("%s - stop() unwatching status key at %s", DefaultComponentCoordinator.this, currentContext.component().network().status()));
       data.unwatch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {
         @Override
         public void handle(AsyncResult<Void> result) {
@@ -235,6 +238,11 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     } else {
       data.unwatch(address, instanceHandler, doneHandler);
     }
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Coordinator[%s]", address);
   }
 
 }

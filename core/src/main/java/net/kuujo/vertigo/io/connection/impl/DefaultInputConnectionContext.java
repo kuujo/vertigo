@@ -91,6 +91,28 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
     }
 
     /**
+     * Sets the input source.
+     *
+     * @param source The input source.
+     * @return The context builder.
+     */
+    public Builder setSource(SourceContext source) {
+      context.source = source;
+      return this;
+    }
+
+    /**
+     * Sets the input target.
+     *
+     * @param target The input target.
+     * @return The context builder.
+     */
+    public Builder setTarget(TargetContext target) {
+      context.target = target;
+      return this;
+    }
+
+    /**
      * Sets the input hooks.
      *
      * @param hooks An array of hooks.

@@ -114,6 +114,14 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
     super.notify(this);
   }
 
+  @Override
+  public String toString() {
+    if (instance != null) {
+      return String.format("Input[%s]", instance.component().name());
+    }
+    return "Input[?]";
+  }
+
   /**
    * Input context builder.
    *

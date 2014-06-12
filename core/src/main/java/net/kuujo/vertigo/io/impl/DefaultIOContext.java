@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 abstract class DefaultIOContext<T extends IOContext<T>> extends BaseContext<T> {
   protected Collection<DefaultOutputPortContext> streams = new ArrayList<>();
   @JsonIgnore
-  private DefaultInstanceContext instance;
+  protected DefaultInstanceContext instance;
 
   /**
    * Sets the input parent.

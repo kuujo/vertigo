@@ -1,8 +1,8 @@
 Vertigo [![Build Status](https://travis-ci.org/kuujo/vertigo.png)](https://travis-ci.org/kuujo/vertigo)
 =======
 
-#### Vertigo 0.7.0-beta3 has been released!
-*New Vertigo versions are dependent upon Vert.x versions that use Hazelcast 3.2.1*
+#### Vertigo 0.7.0-RC2 has been released!
+*Vertigo 0.7.0 requires Vert.x 2.1*
 
 **Need support? Check out the [Vertigo Google Group][google-group]**
 
@@ -46,8 +46,7 @@ full-featured Java Profiler. Take a look at YourKit's leading software products:
 
 # Java User Manual
 
-**Note: New Vertigo versions are only compatible with Vert.x builds that use
-Hazelcast 3.x**
+**Note: Vertigo 0.7.x requires Vert.x 2.1**
 
 1. [Getting Started](#getting-started)
    * [Setup](#setup)
@@ -129,7 +128,12 @@ your modules via the Vert.x module system.
 <dependency>
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo</artifactId>
-  <version>0.7.0-beta3</version>
+  <version>0.7.0-RC2</version>
+</dependency>
+<dependency>
+  <groupId>net.kuujo</groupId>
+  <artifactId>vertigo-util</artifactId>
+  <version>0.7.0-RC2</version>
 </dependency>
 ```
 
@@ -141,7 +145,16 @@ To use the Vertigo Java API, you can include the Vertigo module in your module's
 ```
 {
   "main": "com.mycompany.myproject.MyVerticle",
-  "includes": "net.kuujo~vertigo~0.7.0-beta3"
+  "includes": "net.kuujo~vertigo~0.7.0-RC2"
+}
+```
+
+You can also include the Vertigo utilities module which provides additional Java
+helpers for operating on Vertigo streams.
+
+```
+{
+  "includes": "net.kuujo~vertigo-util~0.7.0-RC2"
 }
 ```
 
@@ -294,7 +307,7 @@ must be running in the Vert.x cluster. Vertigo clusters are made up of simple
 Vert.x verticles. To deploy a cluster node deploy the `vertigo-cluster` module.
 
 ```
-vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta3 -conf cluster.json
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-RC2 -conf cluster.json
 ```
 
 The cluster configuration requires a `cluster` name.
@@ -1004,10 +1017,10 @@ within a Vert.x cluster and provide additional features such as failover.
 
 ### Starting a cluster from the command line
 Vertigo provides a special Vert.x module for starting a Vertigo cluster agent. To
-start a cluster node simply start the `net.kuujo~vertigo-cluster~0.7.0-beta3` module.
+start a cluster node simply start the `net.kuujo~vertigo-cluster~0.7.0-RC2` module.
 
 ```
-vertx runmod net.kuujo~vertigo-cluster~0.7.0-beta3
+vertx runmod net.kuujo~vertigo-cluster~0.7.0-RC2
 ```
 
 The cluster agent accepts a few important configuration options:
@@ -1437,7 +1450,7 @@ This feature is implemented as a Vert.x language module, so the network deployer
 be first added to your `langs.properties` file.
 
 ```
-network=net.kuujo~vertigo-deployer~0.7.0-beta3:net.kuujo.vertigo.NetworkFactory
+network=net.kuujo~vertigo-deployer~0.7.0-RC2:net.kuujo.vertigo.NetworkFactory
 .network=network
 ```
 

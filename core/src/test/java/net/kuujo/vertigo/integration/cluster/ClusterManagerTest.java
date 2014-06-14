@@ -356,18 +356,7 @@ public class ClusterManagerTest extends TestVerticle {
               @Override
               public void handle(AsyncResult<ActiveNetwork> result) {
                 assertTrue(result.succeeded());
-                NetworkConfig network = vertigo.createNetwork("test-deploy-merge");
-                network.addVerticle("feeder3", TestFeeder.class.getName());
-                network.addVerticle("worker3", TestWorker.class.getName());
-                network.createConnection("feeder3", "out", "worker3", "in");
-
-                cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
-                  @Override
-                  public void handle(AsyncResult<ActiveNetwork> result) {
-                    assertTrue(result.succeeded());
-                    testComplete();
-                  }
-                });
+                testComplete();
               }
             });
           }

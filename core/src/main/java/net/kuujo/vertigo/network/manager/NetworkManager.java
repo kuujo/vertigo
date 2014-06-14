@@ -191,6 +191,7 @@ public class NetworkManager extends Verticle {
                               } else {
                                 NetworkManager.super.start(startResult);
                               }
+                              log.debug(String.format("%s - start() task complete", NetworkManager.this));
                               task.complete();
                             }
                           });
@@ -274,12 +275,11 @@ public class NetworkManager extends Verticle {
               deployNetwork(context, new Handler<AsyncResult<NetworkContext>>() {
                 @Override
                 public void handle(AsyncResult<NetworkContext> result) {
+                  task.complete();
                   if (result.failed()) {
                     log.error(result.cause());
                   } else {
                     log.info(String.format("%s - Successfully deployed network", NetworkManager.this));
-                    task.complete();
-                    checkReady();
                   }
                 }
               });
@@ -338,8 +338,6 @@ public class NetworkManager extends Verticle {
                                 task.complete();
                                 if (result.failed()) {
                                   log.warn(result.cause());
-                                } else {
-                                  checkReady();
                                 }
                               }
                             });
@@ -363,7 +361,6 @@ public class NetworkManager extends Verticle {
                       log.warn(result.cause());
                     } else {
                       log.info(String.format("%s - Successfully deployed network", NetworkManager.this));
-                      checkReady();
                     }
                   }
                 });

@@ -493,7 +493,7 @@ public class DefaultGroup implements Group {
 
   @Override
   public String toString() {
-    return String.format("group:%s", address);
+    return String.format("Group[%s]", address);
   }
 
   @Override

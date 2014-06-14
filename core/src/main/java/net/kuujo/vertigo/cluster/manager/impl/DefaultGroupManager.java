@@ -54,7 +54,7 @@ public class DefaultGroupManager implements GroupManager {
     @Override
     public void handle(Message<JsonObject> message) {
       if (log.isDebugEnabled()) {
-        log.debug("Received message " + message.body().encode());
+        log.debug(String.format("%s - Received message %s", DefaultGroupManager.this, message.body().encode()));
       }
 
       String action = message.body().getString("action");
@@ -521,6 +521,11 @@ public class DefaultGroupManager implements GroupManager {
         return null;
       }
     }, doneHandler);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("GroupManager[%s]", group);
   }
 
 }

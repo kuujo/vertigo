@@ -71,7 +71,7 @@ public class DefaultClusterManager implements ClusterManager {
     @Override
     public void handle(Message<JsonObject> message) {
       if (log.isDebugEnabled()) {
-        log.debug("Received message " + message.body().encode());
+        log.debug(String.format("%s - Received message %s", DefaultClusterManager.this, message.body().encode()));
       }
 
       String action = message.body().getString("action");
@@ -369,14 +369,14 @@ public class DefaultClusterManager implements ClusterManager {
    * Called when a node joins the cluster.
    */
   private void doNodeJoined(final String nodeID) {
-    log.info(nodeID + " joined the cluster");
+    log.info(String.format("%s - %s joined the cluster", this, nodeID));
   }
 
   /**
    * Called when a node leaves the cluster.
    */
   private synchronized void doNodeLeft(final String nodeID) {
-    log.info(nodeID + " left the cluster");
+    log.info(String.format("%s - %s left the cluster", this, nodeID));
     context.run(new Runnable() {
       @Override
       public void run() {
@@ -2619,6 +2619,11 @@ public class DefaultClusterManager implements ClusterManager {
         }
       }
     });
+  }
+
+  @Override
+  public String toString() {
+    return String.format("ClusterManager[%s]", cluster);
   }
 
 }

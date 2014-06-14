@@ -81,7 +81,7 @@ public class DefaultNodeManager implements NodeManager {
     @Override
     public void handle(Message<JsonObject> message) {
       if (log.isDebugEnabled()) {
-        log.debug("Received message " + message.body().encode());
+        log.debug(String.format("%s - Received message %s", DefaultNodeManager.this, message.body().encode()));
       }
 
       String action = message.body().getString("action");
@@ -1033,6 +1033,11 @@ public class DefaultNodeManager implements NodeManager {
         message.reply(new JsonObject().putString("status", "error").putString("message", "Network is not deployed."));
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return String.format("NodeManager[%s]", node);
   }
 
 }

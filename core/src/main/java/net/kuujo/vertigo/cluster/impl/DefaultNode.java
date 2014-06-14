@@ -461,7 +461,7 @@ public class DefaultNode implements Node {
 
   @Override
   public String toString() {
-    return String.format("node:%s", address);
+    return String.format("Node[%s]", address);
   }
 
   @Override

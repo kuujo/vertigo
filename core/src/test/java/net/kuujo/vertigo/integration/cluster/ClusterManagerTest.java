@@ -330,6 +330,52 @@ public class ClusterManagerTest extends TestVerticle {
   public static class TestWorker extends ComponentVerticle {
   }
 
+  @Test
+  public void testDeployMerge() {
+    final Vertigo vertigo = new Vertigo(this);
+    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+      @Override
+      public void handle(AsyncResult<Cluster> result) {
+        assertTrue(result.succeeded());
+        NetworkConfig network = vertigo.createNetwork("test-deploy-merge");
+        network.addVerticle("feeder", TestFeeder.class.getName());
+        network.addVerticle("worker", TestWorker.class.getName());
+        network.createConnection("feeder", "out", "worker", "in");
+
+        final Cluster cluster = result.result();
+        cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+          @Override
+          public void handle(AsyncResult<ActiveNetwork> result) {
+            assertTrue(result.succeeded());
+            NetworkConfig network = vertigo.createNetwork("test-deploy-merge");
+            network.addVerticle("feeder2", TestFeeder.class.getName());
+            network.addVerticle("worker2", TestWorker.class.getName());
+            network.createConnection("feeder2", "out", "worker2", "in");
+
+            cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+              @Override
+              public void handle(AsyncResult<ActiveNetwork> result) {
+                assertTrue(result.succeeded());
+                NetworkConfig network = vertigo.createNetwork("test-deploy-merge");
+                network.addVerticle("feeder3", TestFeeder.class.getName());
+                network.addVerticle("worker3", TestWorker.class.getName());
+                network.createConnection("feeder3", "out", "worker3", "in");
+
+                cluster.deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
+                  @Override
+                  public void handle(AsyncResult<ActiveNetwork> result) {
+                    assertTrue(result.succeeded());
+                    testComplete();
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
   @AfterClass
   public static void after() {
     System.clearProperty("vertx.mods");

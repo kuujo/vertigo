@@ -850,7 +850,7 @@ public class DefaultCluster implements Cluster {
 
   @Override
   public String toString() {
-    return String.format("cluster:%s", address);
+    return String.format("Cluster[%s]", address);
   }
 
   @Override

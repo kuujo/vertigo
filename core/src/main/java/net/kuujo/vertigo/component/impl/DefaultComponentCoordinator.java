@@ -57,6 +57,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
       if (currentContext != null && !event.type().equals(MapEvent.Type.CHANGE)) {
         log.info(String.format("%s - Configuration change detected, updating context", DefaultComponentCoordinator.this));
         currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(event.value())));
+        resume();
       }
     }
   };

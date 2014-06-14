@@ -788,7 +788,7 @@ public class NetworkManager extends Verticle {
             final Handler<MapEvent<String, String>> watchHandler = new Handler<MapEvent<String, String>>() {
               @Override
               public void handle(MapEvent<String, String> event) {
-                if (event.type().equals(MapEvent.Type.CREATE)) {
+                if (event.type().equals(MapEvent.Type.CREATE) || event.type().equals(MapEvent.Type.UPDATE)) {
                   handleReady(instance.address());
                 } else if (event.type().equals(MapEvent.Type.DELETE)) {
                   handleUnready(instance.address());

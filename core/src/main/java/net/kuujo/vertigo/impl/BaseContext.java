@@ -82,11 +82,7 @@ public abstract class BaseContext<T extends Context<T>> implements Context<T> {
     return address().hashCode();
   }
 
-  /**
-   * Creates a copy of the context.
-   *
-   * @return A new copy of the context.
-   */
+  @Override
   @SuppressWarnings("unchecked")
   public T copy() {
     return (T) serializer.deserializeString(serializer.serializeToString(this), getClass());

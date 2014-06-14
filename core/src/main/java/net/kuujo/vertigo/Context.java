@@ -47,4 +47,11 @@ public interface Context<T extends Context<T>> extends Observable<T>, JsonSerial
    */
   String toString(boolean formatted);
 
+  /**
+   * Creates a copy of the context.
+   *
+   * @return A copy of the context and its children.
+   */
+  T copy();
+
 }

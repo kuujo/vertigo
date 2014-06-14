@@ -122,4 +122,27 @@ public class MapEvent<K, V> implements JsonSerializable {
     return (V) value;
   }
 
+  @Override
+  public int hashCode() {
+    int hashCode = 23;
+    hashCode = 37 * hashCode + type.hashCode();
+    hashCode = 37 * hashCode + key.hashCode();
+    hashCode = 37 * hashCode + value.hashCode();
+    return hashCode;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("MapEvent(%s)[%s:%s]", type, key, value);
+  }
+
+  @Override
+  public boolean equals(Object object) {
+    if (!(object instanceof MapEvent)) {
+      return false;
+    }
+    MapEvent<?, ?> event = (MapEvent<?, ?>) object;
+    return event.type.equals(type) && event.key.equals(key) && event.value.equals(value);
+  }
+
 }

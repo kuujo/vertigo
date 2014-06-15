@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.component;
 
+import net.kuujo.vertigo.service.Service;
+
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 
@@ -26,7 +28,7 @@ import org.vertx.java.core.Handler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ComponentCoordinator {
+public interface ComponentCoordinator extends Service {
 
   /**
    * Returns the instance address.
@@ -46,7 +48,7 @@ public interface ComponentCoordinator {
    *                    The handler will be called with the current instance context.
    * @return The coordinator.
    */
-  ComponentCoordinator start(Handler<AsyncResult<InstanceContext>> doneHandler);
+  void start(Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Notifies the network that the component is ready to resume.
@@ -103,13 +105,5 @@ public interface ComponentCoordinator {
    * @return The component coordinator.
    */
   ComponentCoordinator pauseHandler(Handler<Void> handler);
-
-  /**
-   * Stops the coordinator.
-   *
-   * @param doneHandler
-   *   An asynchronous handler to be called once complete.
-   */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

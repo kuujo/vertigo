@@ -92,7 +92,12 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
   }
 
   @Override
-  public ComponentCoordinator start(final Handler<AsyncResult<InstanceContext>> doneHandler) {
+  public void start() {
+    start(null);
+  }
+
+  @Override
+  public void start(final Handler<AsyncResult<Void>> doneHandler) {
     data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap(currentContext.component().network().address()), vertx);
 
     // Start watching the component's context. It's important that this
@@ -105,13 +110,13 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
       @Override
       public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
-          new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
+          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
           data.get(address, new Handler<AsyncResult<String>>() {
             @Override
             public void handle(AsyncResult<String> result) {
               if (result.failed()) {
-                new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
               } else {
                 if (result.result() != null) {
                   currentContext.notify(Contexts.<InstanceContext>deserialize(new JsonObject(result.result())));
@@ -121,9 +126,9 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
                   @Override
                   public void handle(AsyncResult<Void> result) {
                     if (result.failed()) {
-                      new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
+                      new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
                     } else {
-                      new DefaultFutureResult<InstanceContext>(currentContext).setHandler(doneHandler);
+                      new DefaultFutureResult<Void>((Void) null).setHandler(doneHandler);
                     }
                   }
                 });
@@ -133,7 +138,6 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
         }
       }
     });
-    return this;
   }
 
   @Override
@@ -219,6 +223,11 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     if (paused && pauseHandler != null) {
       pauseHandler.handle((Void) null);
     }
+  }
+
+  @Override
+  public void stop() {
+    stop(null);
   }
 
   @Override

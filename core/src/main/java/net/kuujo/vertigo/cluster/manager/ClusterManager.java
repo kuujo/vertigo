@@ -15,15 +15,14 @@
  */
 package net.kuujo.vertigo.cluster.manager;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import net.kuujo.vertigo.service.Service;
 
 /**
  * Server-side cluster manager.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ClusterManager {
+public interface ClusterManager extends Service {
 
   /**
    * Returns the cluster address.
@@ -31,32 +30,5 @@ public interface ClusterManager {
    * @return The cluster address.
    */
   String address();
-
-  /**
-   * Starts the cluster manager.
-   *
-   * @return The cluster manager.
-   */
-  ClusterManager start();
-
-  /**
-   * Starts the cluster manager.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The cluster manager.
-   */
-  ClusterManager start(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Stops the cluster manager.
-   */
-  void stop();
-
-  /**
-   * Stops the cluster manager.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

@@ -88,9 +88,9 @@ public abstract class ComponentVerticle extends Verticle {
     log = LoggerFactory.getLogger(String.format("%s-%s", getClass().getCanonicalName(), context.address()));
 
     log.info(String.format("%s - Starting", component));
-    component.start(new Handler<AsyncResult<Component>>() {
+    component.start(new Handler<AsyncResult<Void>>() {
       @Override
-      public void handle(AsyncResult<Component> result) {
+      public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           startResult.setFailure(result.cause());
         } else {

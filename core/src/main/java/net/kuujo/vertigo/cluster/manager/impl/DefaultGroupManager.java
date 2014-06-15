@@ -104,14 +104,13 @@ public class DefaultGroupManager implements GroupManager {
   }
 
   @Override
-  public GroupManager start() {
-    return start(null);
+  public void start() {
+    start(null);
   }
 
   @Override
-  public GroupManager start(Handler<AsyncResult<Void>> doneHandler) {
+  public void start(Handler<AsyncResult<Void>> doneHandler) {
     vertx.eventBus().registerHandler(group, messageHandler, doneHandler);
-    return this;
   }
 
   @Override

@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.integration.cluster;
 
-import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.fail;
 import static org.vertx.testtools.VertxAssert.testComplete;
@@ -80,13 +79,12 @@ public class CoordinatorTest extends TestVerticle {
               fail(result.cause().getMessage());
             } else {
               final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, new DefaultCluster("vertigo", vertx, container));
-              coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
+              coordinator.start(new Handler<AsyncResult<Void>>() {
                 @Override
-                public void handle(AsyncResult<InstanceContext> result) {
+                public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
                     fail(result.cause().getMessage());
                   } else {
-                    assertEquals(instance.address(), result.result().address());
                     testComplete();
                   }
                 }
@@ -132,13 +130,12 @@ public class CoordinatorTest extends TestVerticle {
               fail(result.cause().getMessage());
             } else {
               final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, new DefaultCluster("vertigo", vertx, container));
-              coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
+              coordinator.start(new Handler<AsyncResult<Void>>() {
                 @Override
-                public void handle(AsyncResult<InstanceContext> result) {
+                public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
                     fail(result.cause().getMessage());
                   } else {
-                    assertEquals(instance.address(), result.result().address());
                     coordinator.pauseHandler(new Handler<Void>() {
                       @Override
                       public void handle(Void _) {
@@ -190,13 +187,12 @@ public class CoordinatorTest extends TestVerticle {
               fail(result.cause().getMessage());
             } else {
               final ComponentCoordinator coordinator = new DefaultComponentCoordinator(instance, vertx, new DefaultCluster("vertigo", vertx, container));
-              coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
+              coordinator.start(new Handler<AsyncResult<Void>>() {
                 @Override
-                public void handle(AsyncResult<InstanceContext> result) {
+                public void handle(AsyncResult<Void> result) {
                   if (result.failed()) {
                     fail(result.cause().getMessage());
                   } else {
-                    assertEquals(instance.address(), result.result().address());
                     coordinator.resumeHandler(new Handler<Void>() {
                       @Override
                       public void handle(Void _) {

@@ -334,16 +334,15 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   @Override
-  public ClusterManager start() {
-    return start(null);
+  public void start() {
+    start(null);
   }
 
   @Override
-  public ClusterManager start(Handler<AsyncResult<Void>> doneHandler) {
+  public void start(Handler<AsyncResult<Void>> doneHandler) {
     listener.joinHandler(joinHandler);
     listener.leaveHandler(leaveHandler);
     vertx.eventBus().registerHandler(address(), messageHandler, doneHandler);
-    return this;
   }
 
   @Override

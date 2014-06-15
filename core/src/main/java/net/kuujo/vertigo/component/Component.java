@@ -19,6 +19,7 @@ import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.service.Service;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -46,7 +47,7 @@ import org.vertx.java.platform.Container;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Component {
+public interface Component extends Service {
 
   /**
    * Gets the component Vertx instance.
@@ -118,7 +119,7 @@ public interface Component {
    *
    * @return The component instance.
    */
-  Component start();
+  void start();
 
   /**
    * Starts the component.<p>
@@ -130,6 +131,6 @@ public interface Component {
    * @param doneHandler An asynchronous handler to be called once the component is started.
    * @return The component instance.
    */
-  Component start(Handler<AsyncResult<Component>> doneHandler);
+  void start(Handler<AsyncResult<Void>> doneHandler);
 
 }

@@ -15,15 +15,14 @@
  */
 package net.kuujo.vertigo.cluster.manager;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import net.kuujo.vertigo.service.Service;
 
 /**
  * Server-side group manager.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface GroupManager {
+public interface GroupManager extends Service {
 
   /**
    * Returns the group address.
@@ -31,32 +30,5 @@ public interface GroupManager {
    * @return The group address.
    */
   String address();
-
-  /**
-   * Starts the group manager.
-   *
-   * @return The group manager.
-   */
-  GroupManager start();
-
-  /**
-   * Starts the group manager.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The group manager.
-   */
-  GroupManager start(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Stops the group manager.
-   */
-  void stop();
-
-  /**
-   * Stops the group manager.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

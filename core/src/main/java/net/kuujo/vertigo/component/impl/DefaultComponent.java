@@ -115,14 +115,12 @@ public class DefaultComponent implements Component {
     // If the context has changed due to a network configuration change, the
     // internal context and input/output connections will be automatically updated.
     log.debug(String.format("%s - Starting cluster coordination", DefaultComponent.this));
-    coordinator.start(new Handler<AsyncResult<InstanceContext>>() {
+    coordinator.start(new Handler<AsyncResult<Void>>() {
       @Override
-      public void handle(AsyncResult<InstanceContext> result) {
+      public void handle(AsyncResult<Void> result) {
         if (result.failed()) {
           new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
         } else {
-          context = result.result();
-
           // We have to make sure the input and output collectors are started
           // simultaneously in order to support circular connections. If both
           // input and output aren't started at the same time then circular
@@ -188,13 +186,13 @@ public class DefaultComponent implements Component {
   }
 
   @Override
-  public Component start() {
-    return start(null);
+  public void start() {
+    start(null);
   }
 
   @Override
-  public Component start(Handler<AsyncResult<Component>> doneHandler) {
-    final Future<Component> future = new DefaultFutureResult<Component>().setHandler(doneHandler);
+  public void start(Handler<AsyncResult<Void>> doneHandler) {
+    final Future<Void> future = new DefaultFutureResult<Void>().setHandler(doneHandler);
     if (!started) {
       setup(new Handler<AsyncResult<Void>>() {
         @Override
@@ -202,15 +200,45 @@ public class DefaultComponent implements Component {
           if (result.failed()) {
             future.setFailure(result.cause());
           } else {
-            future.setResult(DefaultComponent.this);
+            future.setResult(null);
           }
         }
       });
     }
     else {
-      future.setResult(DefaultComponent.this);
+      future.setResult(null);
     }
-    return this;
+  }
+
+  @Override
+  public void stop() {
+    input.close();
+    output.close();
+  }
+
+  @Override
+  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(doneHandler);
+    input.close(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          counter.fail(result.cause());
+        } else {
+          counter.succeed();
+        }
+      }
+    });
+    output.close(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          counter.fail(result.cause());
+        } else {
+          counter.succeed();
+        }
+      }
+    });
   }
 
   @Override

@@ -137,12 +137,12 @@ public class DefaultNodeManager implements NodeManager {
   }
 
   @Override
-  public NodeManager start() {
-    return start(null);
+  public void start() {
+    start(null);
   }
 
   @Override
-  public NodeManager start(final Handler<AsyncResult<Void>> doneHandler) {
+  public void start(final Handler<AsyncResult<Void>> doneHandler) {
     vertx.eventBus().registerHandler(node, messageHandler, new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
@@ -164,7 +164,6 @@ public class DefaultNodeManager implements NodeManager {
         }
       }
     });
-    return this;
   }
 
   @Override

@@ -15,15 +15,14 @@
  */
 package net.kuujo.vertigo.cluster.manager;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import net.kuujo.vertigo.service.Service;
 
 /**
  * Manages a server-side node.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface NodeManager {
+public interface NodeManager extends Service {
 
   /**
    * Returns the node address.
@@ -31,32 +30,5 @@ public interface NodeManager {
    * @return The node address.
    */
   String address();
-
-  /**
-   * Starts the node manager.
-   *
-   * @return The node manager.
-   */
-  NodeManager start();
-
-  /**
-   * Starts the node manager.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The node manager.
-   */
-  NodeManager start(Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Stops the node manager.
-   */
-  void stop();
-
-  /**
-   * Stops the node manager.
-   *
-   * @param doneHandler An asynchronous handler to be called once complete.
-   */
-  void stop(Handler<AsyncResult<Void>> doneHandler);
 
 }

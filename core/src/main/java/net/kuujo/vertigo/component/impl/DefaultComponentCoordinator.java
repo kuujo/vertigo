@@ -22,6 +22,7 @@ import net.kuujo.vertigo.cluster.data.WatchableAsyncMap;
 import net.kuujo.vertigo.cluster.data.impl.WrappedWatchableAsyncMap;
 import net.kuujo.vertigo.component.ComponentCoordinator;
 import net.kuujo.vertigo.component.InstanceContext;
+import net.kuujo.vertigo.util.Contexts;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -56,7 +57,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
     public void handle(MapEvent<String, String> event) {
       if (currentContext != null && !event.type().equals(MapEvent.Type.CHANGE)) {
         log.info(String.format("%s - Configuration change detected, updating context", DefaultComponentCoordinator.this));
-        currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(event.value())));
+        currentContext.notify(Contexts.<InstanceContext>deserialize(new JsonObject(event.value())));
         resume();
       }
     }
@@ -113,7 +114,7 @@ public class DefaultComponentCoordinator implements ComponentCoordinator {
                 new DefaultFutureResult<InstanceContext>(result.cause()).setHandler(doneHandler);
               } else {
                 if (result.result() != null) {
-                  currentContext.notify(DefaultInstanceContext.fromJson(new JsonObject(result.result())));
+                  currentContext.notify(Contexts.<InstanceContext>deserialize(new JsonObject(result.result())));
                 }
                 log.debug(String.format("%s - start() watching status key at %s", DefaultComponentCoordinator.this, currentContext.component().network().status()));
                 data.watch(currentContext.component().network().status(), statusHandler, new Handler<AsyncResult<Void>>() {

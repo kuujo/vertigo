@@ -19,6 +19,7 @@ import net.kuujo.vertigo.cluster.ClusterException;
 import net.kuujo.vertigo.cluster.Node;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.platform.impl.DefaultPlatformManager;
+import net.kuujo.vertigo.util.Args;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -42,6 +43,7 @@ public class DefaultNode implements Node {
   private final PlatformManager platform;
 
   public DefaultNode(String address, Vertx vertx, Container container) {
+    Args.checkUriScheme(address, "%s is not a valid node address. Node addresses must be alpha-numeric, begin with a letter, and may contain the following symbols: -.+", address);
     this.address = address;
     this.vertx = vertx;
     this.platform = new DefaultPlatformManager(vertx, container);

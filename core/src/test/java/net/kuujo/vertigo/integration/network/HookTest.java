@@ -18,9 +18,6 @@ package net.kuujo.vertigo.integration.network;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-
-import java.util.UUID;
-
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
@@ -77,11 +74,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testInputHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addComponent("sender", TestSimpleSender.class.getName());
         network.addComponent("receiver", TestSimpleReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in").getTarget().addHook(new TestInputHook());
@@ -112,11 +109,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testOutputHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addComponent("sender", TestSimpleSender.class.getName());
         network.addComponent("receiver", TestSimpleReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in").getSource().addHook(new TestOutputHook());
@@ -151,11 +148,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testIOSendHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addComponent("sender", TestSimpleSender.class.getName());
         network.addComponent("receiver", TestSimpleReceiver.class.getName());
 
@@ -192,11 +189,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testIOReceiveHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addComponent("sender", TestSimpleSender.class.getName());
         network.addComponent("receiver", TestSimpleReceiver.class.getName());
 
@@ -241,11 +238,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testComponentStartHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
 
         // The start hook is added directly to a component configuration.
         network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new TestComponentStartHook());
@@ -290,11 +287,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testComponentSendHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
 
         // The component hook is added directly to a component configuration. The
         // send handler will be called each time a message is sent on *any* port.
@@ -340,11 +337,11 @@ public class HookTest extends TestVerticle {
   @Test
   public void testComponentReceiveHook() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addComponent("sender", TestSimpleSender.class.getName());
 
         // The component hook is added directly to a component configuration. The
@@ -370,7 +367,7 @@ public class HookTest extends TestVerticle {
   @Test
   public void testEventBusHookStart() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -393,7 +390,7 @@ public class HookTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+            NetworkConfig network = vertigo.createNetwork();
             network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new EventBusHook("test-hook"));
             network.addComponent("receiver", TestSimpleReceiver.class.getName());
             network.createConnection("sender", "out", "receiver", "in");
@@ -417,7 +414,7 @@ public class HookTest extends TestVerticle {
   @Test
   public void testEventBusHookSend() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -440,7 +437,7 @@ public class HookTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+            NetworkConfig network = vertigo.createNetwork();
             network.addComponent("sender", TestSimpleSender.class.getName()).addHook(new EventBusHook("test-hook"));
             network.addComponent("receiver", TestSimpleReceiver.class.getName());
             network.createConnection("sender", "out", "receiver", "in");
@@ -464,7 +461,7 @@ public class HookTest extends TestVerticle {
   @Test
   public void testEventBusHookReceive() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -487,7 +484,7 @@ public class HookTest extends TestVerticle {
           public void handle(AsyncResult<Void> result) {
             assertTrue(result.succeeded());
 
-            NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+            NetworkConfig network = vertigo.createNetwork();
             network.addComponent("sender", TestSimpleSender.class.getName());
             network.addComponent("receiver", TestSimpleReceiver.class.getName()).addHook(new EventBusHook("test-hook"));
             network.createConnection("sender", "out", "receiver", "in");

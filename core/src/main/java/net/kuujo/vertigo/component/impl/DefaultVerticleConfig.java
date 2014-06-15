@@ -37,12 +37,11 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  */
 public class DefaultVerticleConfig implements VerticleConfig {
   private static final int DEFAULT_NUM_INSTANCES = 1;
-  private static final String DEFAULT_GROUP = "__DEFAULT__";
 
   private String name;
   private Map<String, Object> config;
   private int instances = DEFAULT_NUM_INSTANCES;
-  private String group = DEFAULT_GROUP;
+  private String group;
   private List<ComponentHook> hooks = new ArrayList<>();
   private String main;
   private boolean worker = false;

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.hook;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.InstanceContext;
-import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.util.Contexts;
 
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -60,7 +60,7 @@ public class EventBusHook implements ComponentHook {
     if (this.address == null) {
       this.address = component.context().component().address();
     }
-    eventBus.publish(address, new JsonObject().putString("event", "start").putObject("context", DefaultInstanceContext.toJson(context)));
+    eventBus.publish(address, new JsonObject().putString("event", "start").putObject("context", Contexts.serialize(context)));
   }
 
   @Override
@@ -75,7 +75,7 @@ public class EventBusHook implements ComponentHook {
 
   @Override
   public void handleStop(Component subject) {
-    eventBus.publish(address, new JsonObject().putString("event", "stop").putObject("context", DefaultInstanceContext.toJson(context)));
+    eventBus.publish(address, new JsonObject().putString("event", "stop").putObject("context", Contexts.serialize(context)));
   }
 
 }

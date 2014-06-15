@@ -61,6 +61,9 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   public DefaultOutputCollector(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
     this.context = context;
+    if (!context.ports().isEmpty()) {
+      System.out.println(context.ports().iterator().next().streams());
+    }
     this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", DefaultOutputCollector.class.getName(), context.instance().component().name(), context.instance().number()));
     context.registerObserver(this);
   }
@@ -79,21 +82,15 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
       // Attempt to search for the port in the existing context. If the
       // port isn't an explicitly configured port then lazily create
       // and open the port. The lazy port will be empty.
-      OutputPortContext portContext = null;
-      for (OutputPortContext output : context.ports()) {
-        if (output.name().equals(name)) {
-          portContext = output;
-          break;
-        }
-      }
+      OutputPortContext portContext = context.port(name);
       if (portContext == null) {
         portContext = DefaultOutputPortContext.Builder.newBuilder()
             .setAddress(UUID.randomUUID().toString())
             .setName(name)
             .build();
-        DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) context).addPort((DefaultOutputPortContext) portContext);
+        DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) context).addPort(portContext);
       }
-      port = new DefaultOutputPort(vertx, portContext);
+      port = new DefaultOutputPort(vertx, context.port(name));
       ports.put(name, port.open());
     }
     return port;

@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.hook;
 
 import net.kuujo.vertigo.component.InstanceContext;
-import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
+import net.kuujo.vertigo.util.Contexts;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -51,7 +51,7 @@ public class EventBusHookListener {
         switch (event) {
           case "start":
             if (startHandler != null) {
-              startHandler.handle(DefaultInstanceContext.fromJson(message.body().getObject("context")));
+              startHandler.handle(Contexts.<InstanceContext>deserialize(message.body().getObject("context")));
             }
             break;
           case "send":
@@ -66,7 +66,7 @@ public class EventBusHookListener {
             break;
           case "stop":
             if (stopHandler != null) {
-              stopHandler.handle(DefaultInstanceContext.fromJson(message.body().getObject("context")));
+              stopHandler.handle(Contexts.<InstanceContext>deserialize(message.body().getObject("context")));
             }
             break;
         }

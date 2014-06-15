@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
-import java.util.List;
+import java.util.Collection;
 
 import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.component.ComponentContext;
@@ -66,6 +66,13 @@ public interface NetworkContext extends Context<NetworkContext> {
   NetworkConfig config();
 
   /**
+   * Returns the address of the cluster to which the network belongs.
+   *
+   * @return The address of the cluster to which the network belongs.
+   */
+  String cluster();
+
+  /**
    * Returns the network status address.<p>
    *
    * This is the address of a shared-data key that is monitored by all component
@@ -80,11 +87,11 @@ public interface NetworkContext extends Context<NetworkContext> {
   String status();
 
   /**
-   * Returns a list of network component contexts.
+   * Returns a collection of network component contexts.
    * 
-   * @return A list of network component contexts.
+   * @return A collection of network component contexts.
    */
-  List<ComponentContext<?>> components();
+  Collection<ComponentContext<?>> components();
 
   /**
    * Returns a boolean indicating whether the component exists.

@@ -20,9 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.VerticleContext;
 import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.impl.BaseContext;
+import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -40,6 +42,14 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
   private boolean worker;
   @JsonProperty("multi-threaded")
   private boolean multiThreaded;
+
+  /**
+   * Sets the component parent.
+   */
+  public DefaultVerticleContext setNetworkContext(DefaultNetworkContext network) {
+    this.network = network;
+    return this;
+  }
 
   @Override
   protected String type() {
@@ -96,8 +106,21 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      * @param context A starting verticle context.
      * @return A new verticle context builder.
      */
-    public static Builder newBuilder(DefaultVerticleContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(VerticleContext context) {
+      if (context instanceof DefaultVerticleContext) {
+        return new Builder((DefaultVerticleContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setName(context.name())
+            .setStatusAddress(context.status())
+            .setConfig(context.config())
+            .setInstances(context.instances())
+            .setGroup(context.group())
+            .setMain(context.main())
+            .setWorker(context.isWorker())
+            .setMultiThreaded(context.isMultiThreaded())
+            .setHooks(context.hooks());
+      }
     }
 
     /**
@@ -197,10 +220,10 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      * @param instances An array of instance contexts.
      * @return The context builder.
      */
-    public Builder setInstances(DefaultInstanceContext... instances) {
+    public Builder setInstances(InstanceContext... instances) {
       context.instances = new ArrayList<>();
-      for (DefaultInstanceContext instance : instances) {
-        context.instances.add(instance.setComponentContext(context));
+      for (InstanceContext instance : instances) {
+        context.instances.add(DefaultInstanceContext.Builder.newBuilder(instance).build().setComponentContext(context));
       }
       return this;
     }
@@ -211,10 +234,10 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      * @param instances A list of instance contexts.
      * @return The context builder.
      */
-    public Builder setInstances(List<DefaultInstanceContext> instances) {
+    public Builder setInstances(List<InstanceContext> instances) {
       context.instances = new ArrayList<>();
-      for (DefaultInstanceContext instance : instances) {
-        context.instances.add(instance.setComponentContext(context));
+      for (InstanceContext instance : instances) {
+        context.instances.add(DefaultInstanceContext.Builder.newBuilder(instance).build().setComponentContext(context));
       }
       return this;
     }
@@ -225,9 +248,8 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      * @param instance An instance context to add.
      * @return The context builder.
      */
-    public Builder addInstance(DefaultInstanceContext instance) {
-      instance.setComponentContext(context);
-      context.instances.add(instance);
+    public Builder addInstance(InstanceContext instance) {
+      context.instances.add(DefaultInstanceContext.Builder.newBuilder(instance).build().setComponentContext(context));
       return this;
     }
 
@@ -237,7 +259,7 @@ public class DefaultVerticleContext extends DefaultComponentContext<VerticleCont
      * @param instance An instance context to remove.
      * @return The context builder.
      */
-    public Builder removeInstance(DefaultInstanceContext instance) {
+    public Builder removeInstance(InstanceContext instance) {
       context.instances.remove(instance);
       return this;
     }

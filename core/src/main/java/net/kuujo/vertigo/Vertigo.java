@@ -22,6 +22,7 @@ import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
 import net.kuujo.vertigo.util.Configs;
+import net.kuujo.vertigo.util.ContextUri;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -117,11 +118,21 @@ public class Vertigo {
   }
 
   /**
+   * Creates a new randomy named network.
+   *
+   * @return A new network instance.
+   * @see Vertigo#createNetework(String)
+   */
+  public NetworkConfig createNetwork() {
+    return new DefaultNetworkConfig();
+  }
+
+  /**
    * Creates a new network.
    * 
    * @param name The network name.
    * @return A new network instance.
-   * @see Vertigo#createNetwork(JsonObject)
+   * @see Vertigo#createNetwork()
    */
   public NetworkConfig createNetwork(String name) {
     return new DefaultNetworkConfig(name);
@@ -150,6 +161,18 @@ public class Vertigo {
       clusterMain = ClusterAgent.class.getName();
     }
     return clusterMain;
+  }
+
+  /**
+   * Deploys a randomly named unique cluster.
+   *
+   * @param doneHandler An asynchronous handler to be called once the cluster
+   *        has been deployed. The handler will be called with a {@link Cluster}
+   *        which can be used to manage networks running in the cluster.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployCluster(Handler<AsyncResult<Cluster>> doneHandler) {
+    return deployCluster(ContextUri.createUniqueScheme(), doneHandler);
   }
 
   /**

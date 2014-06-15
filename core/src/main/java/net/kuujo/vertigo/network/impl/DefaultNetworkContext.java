@@ -24,12 +24,11 @@ import java.util.Map;
 
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.impl.DefaultComponentContext;
+import net.kuujo.vertigo.component.impl.DefaultModuleContext;
+import net.kuujo.vertigo.component.impl.DefaultVerticleContext;
 import net.kuujo.vertigo.impl.BaseContext;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
-
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * A network context which contains information regarding the complete structure of a
@@ -42,31 +41,11 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   private String name;
   private String version;
   private NetworkConfig config;
+  private String cluster;
   private String status;
-  private Map<String, ComponentContext<?>> components = new HashMap<>();
+  private Map<String, DefaultComponentContext<?>> components = new HashMap<>();
 
   private DefaultNetworkContext() {
-  }
-
-  /**
-   * Creates a network context from JSON.
-   * 
-   * @param context A JSON representation of the network context.
-   * @return A new network context instance.
-   * @throws MalformedContextException If the network context is malformed.
-   */
-  public static DefaultNetworkContext fromJson(JsonObject context) {
-    return SerializerFactory.getSerializer(BaseContext.class).deserializeObject(context.getObject("network"), DefaultNetworkContext.class);
-  }
-
-  /**
-   * Serializes a network context to JSON.
-   * 
-   * @param context The network context to serialize.
-   * @return A serialized network context.
-   */
-  public static JsonObject toJson(NetworkContext context) {
-    return new JsonObject().putObject("network", SerializerFactory.getSerializer(NetworkContext.class).serializeToObject(context));
   }
 
   @Override
@@ -85,6 +64,11 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   }
 
   @Override
+  public String cluster() {
+    return cluster;
+  }
+
+  @Override
   public String address() {
     return address;
   }
@@ -95,11 +79,10 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public List<ComponentContext<?>> components() {
+  public Collection<ComponentContext<?>> components() {
     List<ComponentContext<?>> components = new ArrayList<>();
-    for (ComponentContext<?> component : this.components.values()) {
-      components.add(((DefaultComponentContext) component).setNetworkContext(this));
+    for (DefaultComponentContext<?> component : this.components.values()) {
+      components.add(component.setNetworkContext(this));
     }
     return components;
   }
@@ -129,9 +112,9 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
       }
       components.clear();
     } else {
-      Iterator<Map.Entry<String, ComponentContext<?>>> iter = components.entrySet().iterator();
+      Iterator<Map.Entry<String, DefaultComponentContext<?>>> iter = components.entrySet().iterator();
       while (iter.hasNext()) {
-        ComponentContext component = iter.next().getValue();
+        DefaultComponentContext component = iter.next().getValue();
         ComponentContext match = null;
         for (ComponentContext c : update.components()) {
           if (component.equals(c)) {
@@ -148,12 +131,21 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
       }
   
       for (ComponentContext component : update.components()) {
-        if (!components.values().contains(component)) {
-          components.put(component.name(), component);
+        if (!components.containsKey(component.name())) {
+          if (component.isModule()) {
+            components.put(component.name(), DefaultModuleContext.Builder.newBuilder(component.asModule()).build().setNetworkContext(this));
+          } else if (component.isVerticle()) {
+            components.put(component.name(), DefaultVerticleContext.Builder.newBuilder(component.asVerticle()).build().setNetworkContext(this));
+          }
         }
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s", cluster, name);
   }
 
   @Override
@@ -191,8 +183,18 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      * @param context The starting context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultNetworkContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(NetworkContext context) {
+      if (context instanceof DefaultNetworkContext) {
+        return new Builder((DefaultNetworkContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setCluster(context.cluster())
+            .setName(context.name())
+            .setConfig(context.config())
+            .setStatusAddress(context.status())
+            .setVersion(context.version())
+            .setComponents(context.components());
+      }
     }
 
     /**
@@ -241,6 +243,17 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
     }
 
     /**
+     * Sets the network's cluster address.
+     *
+     * @param cluster The address of the cluster to which the network belongs.
+     * @return The context builder.
+     */
+    public Builder setCluster(String cluster) {
+      context.cluster = cluster;
+      return this;
+    }
+
+    /**
      * Sets the network status address.
      *
      * @param address The network status address.
@@ -257,11 +270,14 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      * @param components A list of component contexts.
      * @return The context builder.
      */
-    public Builder setComponents(Collection<DefaultComponentContext<?>> components) {
+    public Builder setComponents(Collection<ComponentContext<?>> components) {
       context.components = new HashMap<>();
-      for (DefaultComponentContext<?> component : components) {
-        component.setNetworkContext(context);
-        context.components.put(component.name(), component);
+      for (ComponentContext<?> component : components) {
+        if (component.isModule()) {
+          context.components.put(component.name(), DefaultModuleContext.Builder.newBuilder(component.asModule()).build().setNetworkContext(context));
+        } else if (component.isVerticle()) {
+          context.components.put(component.name(), DefaultVerticleContext.Builder.newBuilder(component.asVerticle()).build().setNetworkContext(context));
+        }
       }
       return this;
     }
@@ -272,12 +288,15 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      * @param component The component context to add.
      * @return The context builder.
      */
-    public Builder addComponent(DefaultComponentContext<?> component) {
-      component.setNetworkContext(context);
+    public Builder addComponent(ComponentContext<?> component) {
       if (context.components == null) {
         context.components = new HashMap<>();
       }
-      context.components.put(component.name(), component);
+      if (component.isModule()) {
+        context.components.put(component.name(), DefaultModuleContext.Builder.newBuilder(component.asModule()).build().setNetworkContext(context));
+      } else if (component.isVerticle()) {
+        context.components.put(component.name(), DefaultVerticleContext.Builder.newBuilder(component.asVerticle()).build().setNetworkContext(context));
+      }
       return this;
     }
 
@@ -287,7 +306,7 @@ public class DefaultNetworkContext extends BaseContext<NetworkContext> implement
      * @param component The component context to remove.
      * @return The context builder.
      */
-    public Builder removeComponent(DefaultComponentContext<?> component) {
+    public Builder removeComponent(ComponentContext<?> component) {
       if (context.components == null) {
         context.components = new HashMap<>();
       }

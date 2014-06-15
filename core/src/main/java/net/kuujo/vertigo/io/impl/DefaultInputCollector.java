@@ -82,21 +82,15 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
       // Attempt to search for the port in the existing context. If the
       // port isn't an explicitly configured port then lazily create
       // and open the port. The lazy port will be empty.
-      InputPortContext portContext = null;
-      for (InputPortContext input : context.ports()) {
-        if (input.name().equals(name)) {
-          portContext = input;
-          break;
-        }
-      }
+      InputPortContext portContext = context.port(name);
       if (portContext == null) {
         portContext = DefaultInputPortContext.Builder.newBuilder()
             .setAddress(UUID.randomUUID().toString())
             .setName(name)
             .build();
-        DefaultInputContext.Builder.newBuilder((DefaultInputContext) context).addPort((DefaultInputPortContext) portContext);
+        DefaultInputContext.Builder.newBuilder((DefaultInputContext) context).addPort(portContext);
       }
-      port = new DefaultInputPort(vertx, portContext);
+      port = new DefaultInputPort(vertx, context.port(name));
       ports.put(name, port.open());
     }
     return port;

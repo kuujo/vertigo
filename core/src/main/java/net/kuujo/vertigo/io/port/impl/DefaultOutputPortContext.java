@@ -38,12 +38,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class DefaultOutputPortContext extends BaseContext<OutputPortContext> implements OutputPortContext {
   private static final String DEFAULT_PORT = "default";
   private String port = DEFAULT_PORT;
-  private Collection<OutputStreamContext> streams = new ArrayList<>();
+  private Collection<DefaultOutputStreamContext> streams = new ArrayList<>();
   private List<OutputHook> hooks = new ArrayList<>();
   @JsonIgnore
   private OutputContext output;
 
-  public DefaultOutputPortContext setOutput(OutputContext output) {
+  public DefaultOutputPortContext setOutputContext(OutputContext output) {
     this.output = output;
     return this;
   }
@@ -69,8 +69,9 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
 
   @Override
   public Collection<OutputStreamContext> streams() {
-    for (OutputStreamContext stream : streams) {
-      ((DefaultOutputStreamContext) stream).setPort(this);
+    List<OutputStreamContext> streams = new ArrayList<>();
+    for (DefaultOutputStreamContext stream : this.streams) {
+      streams.add(stream.setPortContext(this));
     }
     return streams;
   }
@@ -88,7 +89,7 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
       }
       streams.clear();
     } else {
-      Iterator<OutputStreamContext> iter = streams.iterator();
+      Iterator<DefaultOutputStreamContext> iter = streams.iterator();
       while (iter.hasNext()) {
         OutputStreamContext stream = iter.next();
         OutputStreamContext match = null;
@@ -108,11 +109,16 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
   
       for (OutputStreamContext stream : update.streams()) {
         if (!streams.contains(stream)) {
-          streams.add(stream);
+          streams.add(DefaultOutputStreamContext.Builder.newBuilder(stream).build().setPortContext(this));
         }
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s@%s/%s/%d/out", output.instance().component().network().cluster(), name(), output.instance().component().network().name(), output.instance().component().name(), output.instance().number());
   }
 
   @Override
@@ -153,6 +159,23 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param context A starting port context.
      * @return A new context builder.
      */
+    public static Builder newBuilder(OutputPortContext context) {
+      if (context instanceof DefaultOutputPortContext) {
+        return new Builder((DefaultOutputPortContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setName(context.name())
+            .setHooks(context.hooks())
+            .setStreams(context.streams());
+      }
+    }
+
+    /**
+     * Creates a new context builder.
+     *
+     * @param context A starting port context.
+     * @return A new context builder.
+     */
     public static Builder newBuilder(DefaultOutputPortContext context) {
       return new Builder(context);
     }
@@ -174,10 +197,10 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connections An array of port connections.
      * @return The context builder.
      */
-    public Builder setStreams(DefaultOutputStreamContext... streams) {
+    public Builder setStreams(OutputStreamContext... streams) {
       context.streams = new ArrayList<>();
-      for (DefaultOutputStreamContext stream : streams) {
-        context.streams.add(stream.setPort(context));
+      for (OutputStreamContext stream : streams) {
+        context.streams.add(DefaultOutputStreamContext.Builder.newBuilder(stream).build().setPortContext(context));
       }
       return this;
     }
@@ -188,10 +211,10 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connections A collection of port connections.
      * @return The context builder.
      */
-    public Builder setStreams(Collection<DefaultOutputStreamContext> streams) {
+    public Builder setStreams(Collection<OutputStreamContext> streams) {
       context.streams = new ArrayList<>();
-      for (DefaultOutputStreamContext stream : streams) {
-        context.streams.add(stream.setPort(context));
+      for (OutputStreamContext stream : streams) {
+        context.streams.add(DefaultOutputStreamContext.Builder.newBuilder(stream).build().setPortContext(context));
       }
       return this;
     }
@@ -202,8 +225,8 @@ public class DefaultOutputPortContext extends BaseContext<OutputPortContext> imp
      * @param connection A port connection to add.
      * @return The context builder.
      */
-    public Builder addStream(DefaultOutputStreamContext stream) {
-      context.streams.add(stream.setPort(context));
+    public Builder addStream(OutputStreamContext stream) {
+      context.streams.add(DefaultOutputStreamContext.Builder.newBuilder(stream).build().setPortContext(context));
       return this;
     }
 

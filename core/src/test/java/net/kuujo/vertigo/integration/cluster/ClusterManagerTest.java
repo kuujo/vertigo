@@ -20,7 +20,6 @@ import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
 
 import java.util.Collection;
-import java.util.UUID;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
@@ -59,7 +58,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testDeploy() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -84,7 +83,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testDeployFromJson() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -121,7 +120,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testUndeployByName() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -158,7 +157,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testUndeployByConfig() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -195,7 +194,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testGetNetwork() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -236,7 +235,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testGetNetworks() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -277,7 +276,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testDeployWithCircularConnections() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -302,7 +301,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testDeployWithBrokenConnection() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -333,7 +332,7 @@ public class ClusterManagerTest extends TestVerticle {
   @Test
   public void testDeployMerge() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());

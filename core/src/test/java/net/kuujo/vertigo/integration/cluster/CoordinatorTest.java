@@ -33,6 +33,7 @@ import net.kuujo.vertigo.io.impl.DefaultInputContext;
 import net.kuujo.vertigo.io.impl.DefaultOutputContext;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.util.Contexts;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -57,6 +58,7 @@ public class CoordinatorTest extends TestVerticle {
             .setName("test-coordinator-start")
             .setAddress("test")
             .setStatusAddress("test.__status")
+            .setCluster("test")
             .addComponent(DefaultVerticleContext.Builder.newBuilder()
                 .setName("test")
                 .setAddress("test.test")
@@ -71,7 +73,7 @@ public class CoordinatorTest extends TestVerticle {
         final Cluster cluster = new DefaultCluster("vertigo", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test"), vertx);
 
-        data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+        data.put(instance.address(), Contexts.serialize(instance).encode(), new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             if (result.failed()) {
@@ -108,6 +110,7 @@ public class CoordinatorTest extends TestVerticle {
             .setName("test-coordinator-pause")
             .setAddress("test")
             .setStatusAddress("test.__status")
+            .setCluster("test")
             .addComponent(DefaultVerticleContext.Builder.newBuilder()
                 .setName("test")
                 .setAddress("test.test")
@@ -122,7 +125,7 @@ public class CoordinatorTest extends TestVerticle {
         final Cluster cluster = new DefaultCluster("vertigo", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test"), vertx);
 
-        data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+        data.put(instance.address(), Contexts.serialize(instance).encode(), new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             if (result.failed()) {
@@ -165,6 +168,7 @@ public class CoordinatorTest extends TestVerticle {
             .setName("test-coordinator-resume")
             .setAddress("test")
             .setStatusAddress("test.__status")
+            .setCluster("test")
             .addComponent(DefaultVerticleContext.Builder.newBuilder()
                 .setName("test")
                 .setAddress("test.test")
@@ -179,7 +183,7 @@ public class CoordinatorTest extends TestVerticle {
         final Cluster cluster = new DefaultCluster("vertigo", vertx, container);
         final WatchableAsyncMap<String, String> data = new WrappedWatchableAsyncMap<String, String>(cluster.<String, String>getMap("test"), vertx);
 
-        data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+        data.put(instance.address(), Contexts.serialize(instance).encode(), new Handler<AsyncResult<String>>() {
           @Override
           public void handle(AsyncResult<String> result) {
             if (result.failed()) {

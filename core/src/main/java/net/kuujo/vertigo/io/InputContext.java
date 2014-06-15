@@ -43,4 +43,12 @@ public interface InputContext extends IOContext<InputContext> {
    */
   Collection<InputPortContext> ports();
 
+  /**
+   * Returns the input port context for a given port.
+   *
+   * @param name The name of the port to return.
+   * @return The input port context.
+   */
+  InputPortContext port(String name);
+
 }

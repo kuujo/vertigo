@@ -15,6 +15,15 @@
  */
 package net.kuujo.vertigo.util;
 
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.impl.DefaultCluster;
+import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.component.InstanceContext;
+import net.kuujo.vertigo.component.impl.DefaultComponentFactory;
+
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
 import org.vertx.java.platform.impl.ModuleIdentifier;
 
 /**
@@ -57,6 +66,40 @@ public final class Components {
    */
   public static boolean isVerticleMain(String verticleMain) {
     return !isModuleName(verticleMain);
+  }
+
+  /**
+   * Creates a component instance for the current Vert.x instance.
+   */
+  public static Component createComponent(Vertx vertx, Container container) {
+    InstanceContext context = parseContext(container.config());
+    return new DefaultComponentFactory().setVertx(vertx).setContainer(container).createComponent(context, new DefaultCluster(context.component().network().cluster(), vertx, container));
+  }
+
+  /**
+   * Builds a verticle configuration.
+   *
+   * @param context The verticle context.
+   * @return A verticle configuration.
+   */
+  public static JsonObject buildConfig(InstanceContext context, Cluster cluster) {
+    JsonObject config = context.component().config().copy();
+    return config.putObject("__context__", Contexts.serialize(context));
+  }
+
+  /**
+   * Parses an instance context from configuration.
+   *
+   * @param config The verticle configuration.
+   * @return The verticle context.
+   */
+  private static InstanceContext parseContext(JsonObject config) {
+    JsonObject context = config.getObject("__context__");
+    if (context == null) {
+      throw new IllegalArgumentException("No component context found.");
+    }
+    config.removeField("__context__");
+    return Contexts.deserialize(context);
   }
 
 }

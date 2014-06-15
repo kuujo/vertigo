@@ -43,4 +43,12 @@ public interface OutputContext extends IOContext<OutputContext> {
    */
   Collection<OutputPortContext> ports();
 
+  /**
+   * Returns the output port context for a given port.
+   *
+   * @param name The name of the port to return.
+   * @return The output port context.
+   */
+  OutputPortContext port(String name);
+
 }

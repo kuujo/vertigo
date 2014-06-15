@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
@@ -63,11 +62,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testOneToNoneBatch() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestOneToNoneBatchSender.class.getName());
         network.createConnection("sender", "out", "receiver", "in").roundSelect();
         result.result().deployNetwork(network, new Handler<AsyncResult<ActiveNetwork>>() {
@@ -128,11 +127,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testBasicBatch() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestBasicBatchSender.class.getName());
         network.addVerticle("receiver", TestBasicBatchReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in");
@@ -208,11 +207,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testOneToManyBatch() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestOneToManyBatchSender.class.getName());
         network.addVerticle("receiver", TestOneToManyBatchReceiver.class.getName(), 4);
         network.createConnection("sender", "out", "receiver", "in").roundSelect();
@@ -280,11 +279,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testBatches() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestBatchesSender.class.getName());
         network.addVerticle("receiver", TestBatchesReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in").roundSelect();
@@ -374,11 +373,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testBatchForward() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestBatchForwardSender.class.getName());
         network.addVerticle("forwarder", TestBatchForwarder.class.getName());
         network.addVerticle("receiver", TestBatchForwardReceiver.class.getName());
@@ -437,11 +436,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testBatchStartArgs() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestBatchStartArgsSender.class.getName());
         network.addVerticle("receiver", TestBatchStartArgsReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in");
@@ -498,11 +497,11 @@ public class BatchTest extends TestVerticle {
   @Test
   public void testBatchEndArgs() {
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestBatchEndArgsSender.class.getName());
         network.addVerticle("receiver", TestBatchEndArgsReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in");

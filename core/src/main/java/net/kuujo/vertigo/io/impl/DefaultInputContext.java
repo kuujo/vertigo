@@ -17,17 +17,16 @@ package net.kuujo.vertigo.io.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.impl.BaseContext;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.io.port.impl.DefaultInputPortContext;
-import net.kuujo.vertigo.util.serialization.Serializer;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
-
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * Input context represents output information between a
@@ -38,40 +37,12 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultInputContext extends DefaultIOContext<InputContext> implements InputContext {
-  private Collection<InputPortContext> ports = new ArrayList<>();
-
-  /**
-   * Creates a new input context from JSON.
-   * 
-   * @param context A JSON representation of the input context.
-   * @return A new input context instance.
-   * @throws MalformedContextException If the JSON context is malformed.
-   */
-  public static InputContext fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(DefaultInstanceContext.class);
-    DefaultInputContext input = serializer.deserializeObject(context.getObject("input"), DefaultInputContext.class);
-    DefaultInstanceContext instance = DefaultInstanceContext.fromJson(context);
-    return input.setInstanceContext(instance);
-  }
-
-  /**
-   * Serializes an input context to JSON.
-   * 
-   * @param context The input context to serialize.
-   * @return A Json representation of the input context.
-   */
-  public static JsonObject toJson(DefaultInputContext context) {
-    Serializer serializer = SerializerFactory.getSerializer(DefaultInstanceContext.class);
-    JsonObject json = DefaultInstanceContext.toJson(context.instance());
-    return json.putObject("input", serializer.serializeToObject(context));
-  }
+  private Map<String, DefaultInputPortContext> ports = new HashMap<>();
 
   @Override
-  public Collection<InputPortContext> ports() {
-    for (InputPortContext port : ports) {
-      ((DefaultInputPortContext) port).setInput(this);
-    }
-    return ports;
+  public DefaultInputContext setInstanceContext(DefaultInstanceContext instance) {
+    this.instance = instance;
+    return this;
   }
 
   @Override
@@ -80,16 +51,35 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
   }
 
   @Override
+  public Collection<InputPortContext> ports() {
+    List<InputPortContext> ports = new ArrayList<>();
+    for (DefaultInputPortContext port : this.ports.values()) {
+      ports.add(port.setInputContext(this));
+    }
+    return ports;
+  }
+
+  @Override
+  public InputPortContext port(String name) {
+    DefaultInputPortContext port = ports.get(name);
+    if (port != null) {
+      port.setInputContext(this);
+    }
+    return port;
+  }
+
+  @Override
   public void notify(InputContext update) {
     if (update == null) {
-      for (InputPortContext port : ports) {
+      for (InputPortContext port : ports.values()) {
         port.notify(null);
       }
       ports.clear();
     } else {
-      Iterator<InputPortContext> iter = ports.iterator();
+      Iterator<Map.Entry<String, DefaultInputPortContext>> iter = ports.entrySet().iterator();
       while (iter.hasNext()) {
-        InputPortContext port = iter.next();
+        Map.Entry<String, DefaultInputPortContext> entry = iter.next();
+        DefaultInputPortContext port = entry.getValue();
         InputPortContext match = null;
         for (InputPortContext p : update.ports()) {
           if (port.name().equals(p.name())) {
@@ -106,12 +96,17 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
       }
   
       for (InputPortContext port : update.ports()) {
-        if (!ports.contains(port)) {
-          ports.add(port);
+        if (!ports.containsKey(port.name())) {
+          ports.put(port.name(), DefaultInputPortContext.Builder.newBuilder(port).build().setInputContext(this));
         }
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s/%s/%d/in", instance.component().network().cluster(), instance.component().network().name(), instance.component().name(), instance.number());
   }
 
   @Override
@@ -152,8 +147,13 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param context A starting input context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultInputContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(InputContext context) {
+      if (context instanceof DefaultInputContext) {
+        return new Builder((DefaultInputContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setPorts(context.ports());
+      }
     }
 
     /**
@@ -162,10 +162,10 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param ports An array of input port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(DefaultInputPortContext... ports) {
-      context.ports = new ArrayList<>();
-      for (DefaultInputPortContext port : ports) {
-        context.ports.add(port.setInput(context));
+    public Builder setPorts(InputPortContext... ports) {
+      context.ports = new HashMap<>();
+      for (InputPortContext port : ports) {
+        context.ports.put(port.name(), DefaultInputPortContext.Builder.newBuilder(port).build().setInputContext(context));
       }
       return this;
     }
@@ -176,10 +176,10 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param ports A collection of input port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(Collection<DefaultInputPortContext> ports) {
-      context.ports = new ArrayList<>();
-      for (DefaultInputPortContext port : ports) {
-        context.ports.add(port.setInput(context));
+    public Builder setPorts(Collection<InputPortContext> ports) {
+      context.ports = new HashMap<>();
+      for (InputPortContext port : ports) {
+        context.ports.put(port.name(), DefaultInputPortContext.Builder.newBuilder(port).build().setInputContext(context));
       }
       return this;
     }
@@ -190,8 +190,8 @@ public class DefaultInputContext extends DefaultIOContext<InputContext> implemen
      * @param port An input port context.
      * @return The context builder.
      */
-    public Builder addPort(DefaultInputPortContext port) {
-      context.ports.add(port.setInput(context));
+    public Builder addPort(InputPortContext port) {
+      context.ports.put(port.name(), DefaultInputPortContext.Builder.newBuilder(port).build().setInputContext(context));
       return this;
     }
 

@@ -13,6 +13,7 @@
   <properties>
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
     <hazelcast.version>3.2.1</hazelcast.version>
+    <codec.version>1.9</codec.version>
   </properties>
 
   <dependencies>
@@ -27,6 +28,11 @@
       <artifactId>vertx-hazelcast</artifactId>
       <version>${vertx.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${codec.version}</version>
     </dependency>
   </dependencies>
 

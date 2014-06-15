@@ -27,9 +27,9 @@ import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.manager.ClusterManager;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
-import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.util.ContextManager;
+import net.kuujo.vertigo.util.Contexts;
 import net.kuujo.vertigo.util.serialization.SerializationException;
 import net.kuujo.vertigo.util.serialization.Serializer;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
@@ -547,7 +547,7 @@ public class DefaultClusterManager implements ClusterManager {
         public NetworkContext perform() {
           String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
           if (scontext != null) {
-            return DefaultNetworkContext.fromJson(new JsonObject(scontext));
+            return Contexts.<NetworkContext>deserialize(new JsonObject(scontext));
           }
           return null;
         }
@@ -559,7 +559,7 @@ public class DefaultClusterManager implements ClusterManager {
           } else if (result.result() == null) {
             message.reply(new JsonObject().putString("status", "error").putString("message", "Not a valid network."));
           } else {
-            message.reply(new JsonObject().putString("status", "ok").putObject("result", DefaultNetworkContext.toJson(result.result())));
+            message.reply(new JsonObject().putString("status", "ok").putObject("result", Contexts.serialize(result.result())));
           }
         }
       });
@@ -648,7 +648,7 @@ public class DefaultClusterManager implements ClusterManager {
         for (String name : networks) {
           String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
           if (scontext != null) {
-            contexts.add(DefaultNetworkContext.fromJson(new JsonObject(scontext)));
+            contexts.add(Contexts.<NetworkContext>deserialize(new JsonObject(scontext)));
           }
         }
         return contexts;
@@ -661,7 +661,7 @@ public class DefaultClusterManager implements ClusterManager {
         } else {
           JsonArray contexts = new JsonArray();
           for (NetworkContext context : result.result()) {
-            contexts.addObject(DefaultNetworkContext.toJson(context));
+            contexts.addObject(Contexts.serialize(context));
           }
           message.reply(new JsonObject().putString("status", "ok").putArray("result", contexts));
         }

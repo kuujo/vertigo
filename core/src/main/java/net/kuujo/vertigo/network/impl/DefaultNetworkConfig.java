@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ModuleConfig;
@@ -35,6 +34,7 @@ import net.kuujo.vertigo.io.connection.impl.DefaultConnectionConfig;
 import net.kuujo.vertigo.io.selector.Selector;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.util.Args;
+import net.kuujo.vertigo.util.ContextUri;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -49,7 +49,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
   private List<ConnectionConfig> connections = new ArrayList<>();
 
   public DefaultNetworkConfig() {
-    name = UUID.randomUUID().toString();
+    name = ContextUri.createUniqueScheme();
   }
 
   public DefaultNetworkConfig(String name) {

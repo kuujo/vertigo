@@ -36,7 +36,7 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
   private OutputStreamContext stream;
   private List<OutputHook> hooks = new ArrayList<>();
 
-  public DefaultOutputConnectionContext setStream(OutputStreamContext stream) {
+  public DefaultOutputConnectionContext setStreamContext(OutputStreamContext stream) {
     this.stream = stream;
     return this;
   }
@@ -86,8 +86,15 @@ public class DefaultOutputConnectionContext extends DefaultConnectionContext<Out
      * @param context A starting connection context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultOutputConnectionContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(OutputConnectionContext context) {
+      if (context instanceof DefaultOutputConnectionContext) {
+        return new Builder((DefaultOutputConnectionContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setHooks(context.hooks())
+            .setSource(context.source())
+            .setTarget(context.target());
+      }
     }
 
     /**

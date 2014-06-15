@@ -30,12 +30,12 @@ import net.kuujo.vertigo.impl.ContextBuilder;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
-import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 import net.kuujo.vertigo.network.manager.NetworkManager;
 import net.kuujo.vertigo.platform.ModuleInfo;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.ContextManager;
+import net.kuujo.vertigo.util.Contexts;
 import net.kuujo.vertigo.util.serialization.SerializationException;
 import net.kuujo.vertigo.util.serialization.Serializer;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
@@ -546,7 +546,7 @@ public class DefaultNodeManager implements NodeManager {
     // a cluster configuration. In some cases, the manager can be redeployed
     // by deploying a network name.
     String scontext = data.<String, String>getMap(String.format("%s.%s", cluster, name)).get(String.format("%s.%s", cluster, name));
-    final NetworkContext context = scontext != null ? DefaultNetworkContext.fromJson(new JsonObject(scontext)) : ContextBuilder.buildContext(new DefaultNetworkConfig(name), cluster);
+    final NetworkContext context = scontext != null ? Contexts.<NetworkContext>deserialize(new JsonObject(scontext)) : ContextBuilder.buildContext(new DefaultNetworkConfig(name), cluster);
 
     // Simply deploy an empty network.
     if (!managers.containsKey(context.address())) {
@@ -579,7 +579,7 @@ public class DefaultNodeManager implements NodeManager {
         }
       });
     } else {
-      message.reply(new JsonObject().putString("status", "ok").putObject("context", DefaultNetworkContext.toJson(context)));
+      message.reply(new JsonObject().putString("status", "ok").putObject("context", Contexts.serialize(context)));
     }
   }
 
@@ -599,7 +599,7 @@ public class DefaultNodeManager implements NodeManager {
     // just build a network context.
     NetworkContext updatedContext;
     if (scontext != null) {
-      updatedContext = ContextBuilder.buildContext(Configs.mergeNetworks(DefaultNetworkContext.fromJson(new JsonObject(scontext)).config(), network), cluster);
+      updatedContext = ContextBuilder.buildContext(Configs.mergeNetworks(Contexts.<NetworkContext>deserialize(new JsonObject(scontext)).config(), network), cluster);
     } else {
       updatedContext = ContextBuilder.buildContext(network, cluster);
     }
@@ -667,7 +667,7 @@ public class DefaultNodeManager implements NodeManager {
           data.unwatch(context.status(), null, this, new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
-              message.reply(new JsonObject().putString("status", "ok").putObject("context", DefaultNetworkContext.toJson(context)));
+              message.reply(new JsonObject().putString("status", "ok").putObject("context", Contexts.serialize(context)));
             }
           });
         }
@@ -682,7 +682,7 @@ public class DefaultNodeManager implements NodeManager {
           message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
         } else {
           try {
-            data.put(context.address(), DefaultNetworkContext.toJson(context).encode());
+            data.put(context.address(), Contexts.serialize(context).encode());
           } catch (Exception e) {
             message.reply(new JsonObject().putString("status", "error").putString("message", e.getMessage()));
           }
@@ -830,7 +830,7 @@ public class DefaultNodeManager implements NodeManager {
     } else {
       // If the network's manager is deployed locally then its deployment ID
       // will have been stored in the local managers map.
-      final NetworkContext context = DefaultNetworkContext.fromJson(new JsonObject(scontext));
+      final NetworkContext context = Contexts.<NetworkContext>deserialize(new JsonObject(scontext));
       if (managers.containsKey(context.address())) {
         // Now that we have the network's context we need to watch the network's
         // status key before we begin undeploying the network. Once we unset the
@@ -914,7 +914,7 @@ public class DefaultNodeManager implements NodeManager {
       message.reply(new JsonObject().putString("status", "error").putString("message", "Network is not deployed."));
     } else {
       // Determine whether the network's manager is deployed.
-      final NetworkContext tempContext = DefaultNetworkContext.fromJson(new JsonObject(scontext));
+      final NetworkContext tempContext = Contexts.<NetworkContext>deserialize(new JsonObject(scontext));
       if (managers.containsKey(tempContext.address())) {
         // If the network's manager is deployed then unmerge the given
         // configuration from the configuration of the network that's
@@ -1004,7 +1004,7 @@ public class DefaultNodeManager implements NodeManager {
                 data.unwatch(context.status(), null, this, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> result) {
-                    message.reply(new JsonObject().putString("status", "ok").putObject("context", DefaultNetworkContext.toJson(context)));
+                    message.reply(new JsonObject().putString("status", "ok").putObject("context", Contexts.serialize(context)));
                   }
                 });
               }
@@ -1022,7 +1022,7 @@ public class DefaultNodeManager implements NodeManager {
                 DefaultNodeManager.this.context.run(new Runnable() {
                   @Override
                   public void run() {
-                    data.put(context.address(), DefaultNetworkContext.toJson(context).encode());
+                    data.put(context.address(), Contexts.serialize(context).encode());
                   }
                 });
               }

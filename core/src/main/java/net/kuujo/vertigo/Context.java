@@ -40,6 +40,13 @@ public interface Context<T extends Context<T>> extends Observable<T>, JsonSerial
   String address();
 
   /**
+   * Returns the context URI.
+   *
+   * @return The context URI.
+   */
+  String uri();
+
+  /**
    * Returns a formatted representation of the context.
    *
    * @param formatted Whether to format the context.

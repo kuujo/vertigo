@@ -17,17 +17,11 @@ package net.kuujo.vertigo.component.impl;
 
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
-import net.kuujo.vertigo.component.ModuleContext;
-import net.kuujo.vertigo.component.VerticleContext;
 import net.kuujo.vertigo.impl.BaseContext;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.impl.DefaultInputContext;
 import net.kuujo.vertigo.io.impl.DefaultOutputContext;
-import net.kuujo.vertigo.util.serialization.Serializer;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
-
-import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -40,39 +34,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public final class DefaultInstanceContext extends BaseContext<InstanceContext> implements InstanceContext {
   private int number;
   private String status;
-  private InputContext input;
-  private OutputContext output;
+  private DefaultInputContext input;
+  private DefaultOutputContext output;
   @JsonIgnore
   private ComponentContext<?> component;
 
   private DefaultInstanceContext() {
-  }
-
-  /**
-   * Creates a new instance context from JSON.
-   * 
-   * @param context A JSON representation of the instance context.
-   * @return A new instance context instance.
-   * @throws MalformedContextException If the JSON context is malformed.
-   */
-  public static DefaultInstanceContext fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(DefaultInstanceContext.class);
-    DefaultInstanceContext instance = serializer.deserializeObject(context.getObject("instance"), DefaultInstanceContext.class);
-    DefaultComponentContext<?> component = DefaultComponentContext.fromJson(context);
-    return instance.setComponentContext(component);
-  }
-
-  /**
-   * Serializes an instance context to JSON.
-   * 
-   * @param context The instance context to serialize.
-   * @return A Json representation of the instance context.
-   */
-  public static JsonObject toJson(InstanceContext context) {
-    Serializer serializer = SerializerFactory.getSerializer(DefaultInstanceContext.class);
-    JsonObject json = DefaultComponentContext.toJson(context.component().isModule() ?
-        context.<ModuleContext>component() : context.<VerticleContext>component());
-    return json.putObject("instance", serializer.serializeToObject(context));
   }
 
   /**
@@ -100,12 +67,12 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
 
   @Override
   public InputContext input() {
-    return ((DefaultInputContext) input).setInstanceContext(this);
+    return input.setInstanceContext(this);
   }
 
   @Override
   public OutputContext output() {
-    return ((DefaultOutputContext) output).setInstanceContext(this);
+    return output.setInstanceContext(this);
   }
 
   @Override
@@ -124,6 +91,11 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
       output.notify(update.output());
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s/%s/%d", component.network().cluster(), component.network().name(), component.name(), number);
   }
 
   @Override
@@ -161,8 +133,16 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
      * @param context A starting instance context.
      * @return A new instance context builder.
      */
-    public static Builder newBuilder(DefaultInstanceContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(InstanceContext context) {
+      if (context instanceof DefaultInstanceContext) {
+        return new Builder((DefaultInstanceContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setStatusAddress(context.status())
+            .setNumber(context.number())
+            .setInput(context.input())
+            .setOutput(context.output());
+      }
     }
 
     /**
@@ -193,8 +173,8 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
      * @param input An input context.
      * @return The context builder.
      */
-    public Builder setInput(DefaultInputContext input) {
-      context.input = input.setInstanceContext(context);
+    public Builder setInput(InputContext input) {
+      context.input = DefaultInputContext.Builder.newBuilder(input).build().setInstanceContext(context);
       return this;
     }
 
@@ -204,8 +184,8 @@ public final class DefaultInstanceContext extends BaseContext<InstanceContext> i
      * @param output An output context.
      * @return The context builder.
      */
-    public Builder setOutput(DefaultOutputContext output) {
-      context.output = output.setInstanceContext(context);
+    public Builder setOutput(OutputContext output) {
+      context.output = DefaultOutputContext.Builder.newBuilder(output).build().setInstanceContext(context);
       return this;
     }
   }

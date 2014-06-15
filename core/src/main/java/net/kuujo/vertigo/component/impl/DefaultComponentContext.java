@@ -26,9 +26,8 @@ import net.kuujo.vertigo.component.ModuleContext;
 import net.kuujo.vertigo.component.VerticleContext;
 import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.impl.BaseContext;
+import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
-import net.kuujo.vertigo.util.serialization.Serializer;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -58,39 +57,10 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   protected String status;
   protected String group;
   protected Map<String, Object> config;
-  protected List<InstanceContext> instances = new ArrayList<>();
+  protected List<DefaultInstanceContext> instances = new ArrayList<>();
   protected List<ComponentHook> hooks = new ArrayList<>();
-  private @JsonIgnore
-  DefaultNetworkContext network;
-
-  /**
-   * Creates a component context from JSON.
-   * 
-   * @param context A JSON representation of the component context.
-   * @return A component context instance.
-   * @throws MalformedContextException If the context is malformed.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T extends DefaultComponentContext<T>> T fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(ComponentContext.class);
-    T component = (T) serializer.deserializeObject(context.getObject("component"), ComponentContext.class);
-    DefaultNetworkContext network = DefaultNetworkContext.fromJson(context);
-    return (T) component.setNetworkContext(network);
-  }
-
-  /**
-   * Serializes a component context to JSON.
-   * 
-   * @param context The component context to serialize.
-   * @return A Json representation of the component context.
-   */
-  @SuppressWarnings("rawtypes")
-  public static JsonObject toJson(ComponentContext context) {
-    Serializer serializer = SerializerFactory.getSerializer(ComponentContext.class);
-    JsonObject json = DefaultNetworkContext.toJson(context.network());
-    json.putObject("component", serializer.serializeToObject(context));
-    return json;
-  }
+  @JsonIgnore
+  protected DefaultNetworkContext network;
 
   /**
    * Returns the component deployment type.
@@ -98,9 +68,6 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
   @JsonGetter("type")
   protected abstract String type();
 
-  /**
-   * Sets the component parent.
-   */
   @SuppressWarnings("unchecked")
   public T setNetworkContext(DefaultNetworkContext network) {
     this.network = network;
@@ -139,8 +106,9 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public List<InstanceContext> instances() {
-    for (InstanceContext instance : instances) {
-      ((DefaultInstanceContext) instance).setComponentContext(this);
+    List<InstanceContext> instances = new ArrayList<>();
+    for (DefaultInstanceContext instance : this.instances) {
+      instances.add(instance.setComponentContext(this));
     }
     return instances;
   }
@@ -152,9 +120,9 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public InstanceContext instance(int instanceNumber) {
-    for (InstanceContext instance : instances) {
+    for (DefaultInstanceContext instance : instances) {
       if (instance.number() == instanceNumber) {
-        return instance;
+        return instance.setComponentContext(this);
       }
     }
     return null;
@@ -162,9 +130,9 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public InstanceContext instance(String address) {
-    for (InstanceContext instance : instances) {
+    for (DefaultInstanceContext instance : instances) {
       if (instance.address().equals(address)) {
-        return instance;
+        return instance.setComponentContext(this);
       }
     }
     return null;
@@ -182,20 +150,16 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
 
   @Override
   public ModuleContext asModule() {
-    return (DefaultModuleContext) this;
+    return (ModuleContext) this;
   }
 
   @Override
   public VerticleContext asVerticle() {
-    return (DefaultVerticleContext) this;
+    return (VerticleContext) this;
   }
 
-  /**
-   * Returns the parent network context.
-   * 
-   * @return The parent network context.
-   */
-  public DefaultNetworkContext network() {
+  @Override
+  public NetworkContext network() {
     return network;
   }
 
@@ -208,9 +172,9 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
       }
       instances.clear();
     } else {
-      Iterator<InstanceContext> iter = instances.iterator();
+      Iterator<DefaultInstanceContext> iter = instances.iterator();
       while (iter.hasNext()) {
-        InstanceContext instance = iter.next();
+        DefaultInstanceContext instance = iter.next();
         InstanceContext match = null;
         for (InstanceContext i : update.instances()) {
           if (instance.equals(i)) {
@@ -227,6 +191,11 @@ public abstract class DefaultComponentContext<T extends ComponentContext<T>> ext
       }
     }
     super.notify((T) this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s/%s", network.cluster(), network.name(), name);
   }
 
   @Override

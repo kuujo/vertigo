@@ -15,13 +15,13 @@
  */
 package net.kuujo.vertigo.java;
 
-import static net.kuujo.vertigo.util.Factories.createComponent;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.util.Components;
 
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Future;
@@ -78,7 +78,7 @@ public abstract class ComponentVerticle extends Verticle {
 
   @Override
   public void start(final Future<Void> startResult) {
-    component = createComponent(vertx, container);
+    component = Components.createComponent(vertx, container);
     context = component.context();
     cluster = component.cluster();
     logger = component.logger();

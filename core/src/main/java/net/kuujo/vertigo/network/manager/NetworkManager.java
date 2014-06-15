@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.network.manager;
 
-import static net.kuujo.vertigo.util.Config.buildConfig;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,10 +34,9 @@ import net.kuujo.vertigo.cluster.impl.DefaultCluster;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.ModuleContext;
-import net.kuujo.vertigo.component.impl.DefaultComponentContext;
-import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.network.NetworkContext;
-import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.util.Components;
+import net.kuujo.vertigo.util.Contexts;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Task;
 import net.kuujo.vertigo.util.TaskRunner;
@@ -105,9 +102,9 @@ public class NetworkManager extends Verticle {
     @Override
     public void handle(MapEvent<String, String> event) {
       if (event.type().equals(MapEvent.Type.CREATE)) {
-        handleCreate(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
+        handleCreate(Contexts.<NetworkContext>deserialize(new JsonObject(event.value())));
       } else if (event.type().equals(MapEvent.Type.UPDATE)) {
-        handleUpdate(DefaultNetworkContext.fromJson(new JsonObject(event.value())));
+        handleUpdate(Contexts.<NetworkContext>deserialize(new JsonObject(event.value())));
       } else if (event.type().equals(MapEvent.Type.DELETE)) { 
         handleDelete();
       }
@@ -180,7 +177,7 @@ public class NetworkManager extends Verticle {
                         if (result.failed()) {
                           startResult.setFailure(result.cause());
                         } else if (result.result() != null) {
-                          currentContext = DefaultNetworkContext.fromJson(new JsonObject(result.result()));
+                          currentContext = Contexts.<NetworkContext>deserialize(new JsonObject(result.result()));
 
                           final CountingCompletionHandler<Void> componentCounter = new CountingCompletionHandler<Void>(currentContext.components().size());
                           componentCounter.setHandler(new Handler<AsyncResult<Void>>() {
@@ -596,7 +593,7 @@ public class NetworkManager extends Verticle {
   /**
    * Deploys all network components.
    */
-  private void deployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> counter) {
+  private void deployComponents(Collection<ComponentContext<?>> components, final CountingCompletionHandler<Void> counter) {
     for (final ComponentContext<?> component : components) {
       deployComponent(component, new Handler<AsyncResult<Void>>() {
         @Override
@@ -604,7 +601,7 @@ public class NetworkManager extends Verticle {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
-            data.put(component.address(), DefaultComponentContext.toJson(component).encode(), new Handler<AsyncResult<String>>() {
+            data.put(component.address(), Contexts.serialize(component).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
@@ -717,7 +714,7 @@ public class NetworkManager extends Verticle {
           } else {
             // Even if the instance is already deployed, update its context in the cluster.
             // It's possible that the instance's connections could have changed with the update.
-            data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+            data.put(instance.address(), Contexts.serialize(instance).encode(), new Handler<AsyncResult<String>>() {
               @Override
               public void handle(AsyncResult<String> result) {
                 if (result.failed()) {
@@ -778,7 +775,7 @@ public class NetworkManager extends Verticle {
    * Deploys an instance to a specific node.
    */
   private void deployInstance(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
-    data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+    data.put(instance.address(), Contexts.serialize(instance).encode(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -835,7 +832,7 @@ public class NetworkManager extends Verticle {
    */
   private void deployModule(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
     log.debug(String.format("%s - Deploying %s to %s", NetworkManager.this, instance.component().asModule().module(), node.address()));
-    node.deployModule(instance.component().asModule().module(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    node.deployModule(instance.component().asModule().module(), Components.buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -857,7 +854,7 @@ public class NetworkManager extends Verticle {
    */
   private void deployVerticle(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
     log.debug(String.format("%s - Deploying %s to %s", NetworkManager.this, instance.component().asVerticle().main(), node.address()));
-    node.deployVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
+    node.deployVerticle(instance.component().asVerticle().main(), Components.buildConfig(instance, cluster), 1, new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -879,7 +876,7 @@ public class NetworkManager extends Verticle {
    */
   private void deployWorkerVerticle(final Node node, final InstanceContext instance, final CountingCompletionHandler<Void> counter) {
     log.debug(String.format("%s - Deploying %s to %s", NetworkManager.this, instance.component().asVerticle().main(), node.address()));
-    node.deployWorkerVerticle(instance.component().asVerticle().main(), buildConfig(instance, cluster), 1,instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
+    node.deployWorkerVerticle(instance.component().asVerticle().main(), Components.buildConfig(instance, cluster), 1,instance.component().asVerticle().isMultiThreaded(), new Handler<AsyncResult<String>>() {
       @Override
       public void handle(AsyncResult<String> result) {
         if (result.failed()) {
@@ -941,7 +938,7 @@ public class NetworkManager extends Verticle {
   /**
    * Undeploys all network components.
    */
-  private void undeployComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
+  private void undeployComponents(Collection<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
     for (final ComponentContext<?> component : components) {
       final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(component.instances().size());
       counter.setHandler(new Handler<AsyncResult<Void>>() {
@@ -1083,7 +1080,7 @@ public class NetworkManager extends Verticle {
   /**
    * Updates all network components.
    */
-  private void updateComponents(List<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
+  private void updateComponents(Collection<ComponentContext<?>> components, final CountingCompletionHandler<Void> complete) {
     for (final ComponentContext<?> component : components) {
       final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(component.instances().size());
       counter.setHandler(new Handler<AsyncResult<Void>>() {
@@ -1105,7 +1102,7 @@ public class NetworkManager extends Verticle {
    */
   private void updateInstances(List<InstanceContext> instances, final CountingCompletionHandler<Void> counter) {
     for (final InstanceContext instance : instances) {
-      data.put(instance.address(), DefaultInstanceContext.toJson(instance).encode(), new Handler<AsyncResult<String>>() {
+      data.put(instance.address(), Contexts.serialize(instance).encode(), new Handler<AsyncResult<String>>() {
         @Override
         public void handle(AsyncResult<String> result) {
           if (result.failed()) {
@@ -1178,7 +1175,7 @@ public class NetworkManager extends Verticle {
                           @Override
                           public void handle(AsyncResult<String> result) {
                             if (result.succeeded() && result.result() != null) {
-                              deployInstance(DefaultInstanceContext.fromJson(new JsonObject(result.result())), counter);
+                              deployInstance(Contexts.<InstanceContext>deserialize(new JsonObject(result.result())), counter);
                             } else {
                               counter.succeed();
                             }

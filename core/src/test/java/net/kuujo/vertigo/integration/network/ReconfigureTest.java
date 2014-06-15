@@ -18,14 +18,12 @@ package net.kuujo.vertigo.integration.network;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-
-import java.util.UUID;
-
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.java.ComponentVerticle;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
+import net.kuujo.vertigo.util.Addresses;
 
 import org.junit.Test;
 import org.vertx.java.core.AsyncResult;
@@ -66,9 +64,9 @@ public class ReconfigureTest extends TestVerticle {
 
   @Test
   public void testReconfigureAddComponent() {
-    final String name = UUID.randomUUID().toString();
+    final String name = Addresses.createUniqueAddress();
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -113,9 +111,9 @@ public class ReconfigureTest extends TestVerticle {
 
   @Test
   public void testReconfigureRemoveComponent() {
-    final String name = UUID.randomUUID().toString();
+    final String name = Addresses.createUniqueAddress();
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -152,9 +150,9 @@ public class ReconfigureTest extends TestVerticle {
 
   @Test
   public void testReconfigureCreateConnection() {
-    final String name = UUID.randomUUID().toString();
+    final String name = Addresses.createUniqueAddress();
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
@@ -199,9 +197,9 @@ public class ReconfigureTest extends TestVerticle {
 
   @Test
   public void testReconfigureDestroyConnection() {
-    final String name = UUID.randomUUID().toString();
+    final String name = Addresses.createUniqueAddress();
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());

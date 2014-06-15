@@ -19,8 +19,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.util.Contexts;
 import net.kuujo.vertigo.util.Observer;
-import net.kuujo.vertigo.util.serialization.Serializer;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class BaseContext<T extends Context<T>> implements Context<T> {
-  private static final Serializer serializer = SerializerFactory.getSerializer(BaseContext.class);
   @JsonIgnore
   protected final Set<Observer<T>> observers = new HashSet<>();
   protected String version;
@@ -83,9 +82,8 @@ public abstract class BaseContext<T extends Context<T>> implements Context<T> {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public T copy() {
-    return (T) serializer.deserializeString(serializer.serializeToString(this), getClass());
+    return Contexts.deserialize(Contexts.serialize(this));
   }
 
   /**

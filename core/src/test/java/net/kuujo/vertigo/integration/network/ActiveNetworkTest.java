@@ -18,9 +18,6 @@ package net.kuujo.vertigo.integration.network;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 import static org.vertx.testtools.VertxAssert.assertTrue;
 import static org.vertx.testtools.VertxAssert.testComplete;
-
-import java.util.UUID;
-
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.java.ComponentVerticle;
@@ -68,14 +65,14 @@ public class ActiveNetworkTest extends TestVerticle {
   public void testActiveAddComponent() {
     // Deploy a randomly named cluster.
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
 
         // Create a randomly named partial network. This network will have only
         // a single component and a connection that doesn't go anywhere.
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestActiveSender.class.getName());
         network.createConnection("sender", "out", "receiver", "in");
 
@@ -113,14 +110,14 @@ public class ActiveNetworkTest extends TestVerticle {
   public void testActiveRemoveComponent() {
     // Deploy a randomly named cluster.
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
 
         // Create a randomly named network. This network will be a complete
         // network that we'll later alter once it's deployed.
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestSimpleSender.class.getName());
         network.addVerticle("receiver", TestSimpleReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in");
@@ -154,14 +151,14 @@ public class ActiveNetworkTest extends TestVerticle {
   public void testActiveCreateConnection() {
     // Deploy a randomly named cluster.
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
 
         // Create a randomly named partial network. This is a network that has
         // two components but no connections.
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestActiveSender.class.getName());
         network.addVerticle("receiver", TestActiveReceiver.class.getName());
 
@@ -201,13 +198,13 @@ public class ActiveNetworkTest extends TestVerticle {
   public void testActiveDestroyConnection() {
     // Deploy a randomly named cluster.
     final Vertigo vertigo = new Vertigo(this);
-    vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+    vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
       @Override
       public void handle(AsyncResult<Cluster> result) {
         assertTrue(result.succeeded());
 
         // Create a randomly named complete network.
-        NetworkConfig network = vertigo.createNetwork(UUID.randomUUID().toString());
+        NetworkConfig network = vertigo.createNetwork();
         network.addVerticle("sender", TestSimpleSender.class.getName());
         network.addVerticle("receiver", TestSimpleReceiver.class.getName());
         network.createConnection("sender", "out", "receiver", "in");

@@ -26,7 +26,6 @@ import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.ModuleConfig;
 import net.kuujo.vertigo.component.VerticleConfig;
-import net.kuujo.vertigo.component.impl.DefaultComponentContext;
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.component.impl.DefaultModuleContext;
 import net.kuujo.vertigo.component.impl.DefaultVerticleContext;
@@ -71,11 +70,12 @@ public final class ContextBuilder {
     context.setVersion(UUID.randomUUID().toString());
     context.setAddress(String.format("%s.%s", cluster, network.getName()));
     context.setConfig(network);
+    context.setCluster(cluster);
     context.setStatusAddress(String.format("%s.%s.__status", cluster, network.getName()));
 
     // Set up network components without inputs. Inputs are stored in a map so
     // that they can be set up after all component instances have been set up.
-    Map<String, DefaultComponentContext<?>> components = new HashMap<>();
+    Map<String, ComponentContext<?>> components = new HashMap<>();
     for (ComponentConfig<?> component : network.getComponents()) {
       if (component.getType().equals(ComponentConfig.Type.MODULE)) {
         // Set up basic module configuration options.
@@ -90,7 +90,7 @@ public final class ContextBuilder {
         module.setHooks(component.getHooks());
 
         // Set up module instances.
-        List<DefaultInstanceContext> instances = new ArrayList<>();
+        List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getInstances(); i++) {
           DefaultInstanceContext.Builder instance = DefaultInstanceContext.Builder.newBuilder();
           instance.setAddress(String.format("%s-%d", address, i));
@@ -118,7 +118,7 @@ public final class ContextBuilder {
         verticle.setHooks(component.getHooks());
 
         // Set up module instances.
-        List<DefaultInstanceContext> instances = new ArrayList<>();
+        List<InstanceContext> instances = new ArrayList<>();
         for (int i = 1; i <= component.getInstances(); i++) {
           DefaultInstanceContext.Builder instance = DefaultInstanceContext.Builder.newBuilder();
           instance.setAddress(String.format("%s-%d", address, i));
@@ -155,18 +155,18 @@ public final class ContextBuilder {
           DefaultOutputPortContext.Builder output = null;
           for (OutputPortContext port : sourceInstance.output().ports()) {
             if (port.name().equals(connection.getSource().getPort())) {
-              output = DefaultOutputPortContext.Builder.newBuilder((DefaultOutputPortContext) port);
+              output = DefaultOutputPortContext.Builder.newBuilder(port);
               break;
             }
           }
 
           // If the output port doesn't already exist then add it.
           if (output == null) {
-            DefaultOutputPortContext port = DefaultOutputPortContext.Builder.newBuilder()
+            OutputPortContext port = DefaultOutputPortContext.Builder.newBuilder()
                 .setAddress(String.format("out:%s@%s.%s.%s[%d]", connection.getSource().getPort(), cluster, network.getName(), source.name(), sourceInstance.number()))
                 .setName(connection.getSource().getPort())
                 .build();
-            DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) sourceInstance.output())
+            DefaultOutputContext.Builder.newBuilder(sourceInstance.output())
                 .addPort(port).build();
             output = DefaultOutputPortContext.Builder.newBuilder(port);
           }
@@ -182,18 +182,18 @@ public final class ContextBuilder {
             DefaultInputPortContext.Builder input = null;
             for (InputPortContext port : targetInstance.input().ports()) {
               if (port.name().equals(connection.getTarget().getPort())) {
-                input = DefaultInputPortContext.Builder.newBuilder((DefaultInputPortContext) port);
+                input = DefaultInputPortContext.Builder.newBuilder(port);
                 break;
               }
             }
 
             // If the input port doesn't already exist then add it.
             if (input == null) {
-              DefaultInputPortContext port = DefaultInputPortContext.Builder.newBuilder()
+              InputPortContext port = DefaultInputPortContext.Builder.newBuilder()
                   .setAddress(String.format("in:%s@%s.%s.%s[%d]", connection.getTarget().getPort(), cluster, network.getName(), target.name(), targetInstance.number()))
                   .setName(connection.getTarget().getPort())
                   .build();
-              DefaultInputContext.Builder.newBuilder((DefaultInputContext) targetInstance.input())
+              DefaultInputContext.Builder.newBuilder(targetInstance.input())
                   .addPort(port).build();
               input = DefaultInputPortContext.Builder.newBuilder(port);
             }

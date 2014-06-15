@@ -45,8 +45,9 @@ import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.network.impl.DefaultActiveNetwork;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
-import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
+import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.Configs;
+import net.kuujo.vertigo.util.Contexts;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
@@ -73,6 +74,7 @@ public class DefaultCluster implements Cluster {
   private final Map<Handler<Node>, Handler<Message<String>>> leaveHandlers = new HashMap<>();
 
   public DefaultCluster(String address, Vertx vertx, Container container) {
+    Args.checkUriScheme(address, "%s is not a valid cluster address. Cluster addresses must be alpha-numeric, begin with a letter, and may contain the following symbols: -.+", address);
     this.address = address;
     this.vertx = vertx;
     this.container = container;
@@ -609,7 +611,7 @@ public class DefaultCluster implements Cluster {
             }
           });
           for (Object jsonNetwork : jsonNetworks) {
-            createActiveNetwork(DefaultNetworkContext.fromJson((JsonObject) jsonNetwork), new Handler<AsyncResult<ActiveNetwork>>() {
+            createActiveNetwork(Contexts.<NetworkContext>deserialize((JsonObject) jsonNetwork), new Handler<AsyncResult<ActiveNetwork>>() {
               @Override
               public void handle(AsyncResult<ActiveNetwork> result) {
                 if (result.failed()) {
@@ -641,7 +643,7 @@ public class DefaultCluster implements Cluster {
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
-          createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("result")), resultHandler);
+          createActiveNetwork(Contexts.<NetworkContext>deserialize(result.result().body().getObject("result")), resultHandler);
         }
       }
     });
@@ -714,7 +716,7 @@ public class DefaultCluster implements Cluster {
                     } else if (result.result().body().getString("status").equals("error")) {
                       new DefaultFutureResult<ActiveNetwork>(new ClusterException(result.result().body().getString("message"))).setHandler(doneHandler);
                     } else {
-                      createActiveNetwork(DefaultNetworkContext.fromJson(result.result().body().getObject("context")), doneHandler);
+                      createActiveNetwork(Contexts.<NetworkContext>deserialize(result.result().body().getObject("context")), doneHandler);
                     }
                   }
                 });
@@ -803,7 +805,7 @@ public class DefaultCluster implements Cluster {
       public void handle(Message<JsonObject> message) {
         String event = message.body().getString("type");
         if (event.equals("change") && message.body().getString("value") != null) {
-          active.update(DefaultNetworkContext.fromJson(new JsonObject(message.body().getString("value"))));
+          active.update(Contexts.<NetworkContext>deserialize(new JsonObject(message.body().getString("value"))));
         }
       }
     }, new Handler<AsyncResult<Void>>() {

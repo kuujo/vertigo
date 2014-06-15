@@ -39,6 +39,11 @@ public abstract class DefaultConnectionContext<T extends ConnectionContext<T>> e
   }
 
   @Override
+  public String uri() {
+    return null;
+  }
+
+  @Override
   public String toString() {
     return String.format("Connection[%s-%d:%s->%s-%d:%s]", source.component(), source.instance(), source.port(), target.component(), target.instance(), target.port());
   }
@@ -74,6 +79,11 @@ public abstract class DefaultConnectionContext<T extends ConnectionContext<T>> e
     @Override
     public int instance() {
       return instance;
+    }
+
+    @Override
+    public String uri() {
+      return null;
     }
 
     @Override

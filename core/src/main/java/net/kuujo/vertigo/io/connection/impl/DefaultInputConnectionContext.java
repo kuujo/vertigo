@@ -36,7 +36,7 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
   private InputPortContext port;
   private List<InputHook> hooks = new ArrayList<>();
 
-  public DefaultInputConnectionContext setPort(InputPortContext port) {
+  public DefaultInputConnectionContext setPortContext(InputPortContext port) {
     this.port = port;
     return this;
   }
@@ -86,8 +86,15 @@ public class DefaultInputConnectionContext extends DefaultConnectionContext<Inpu
      * @param context A starting connection context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultInputConnectionContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(InputConnectionContext context) {
+      if (context instanceof DefaultInputConnectionContext) {
+        return new Builder((DefaultInputConnectionContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setHooks(context.hooks())
+            .setSource(context.source())
+            .setTarget(context.target());
+      }
     }
 
     /**

@@ -35,12 +35,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext> implements OutputStreamContext {
-  private List<OutputConnectionContext> connections = new ArrayList<>();
+  private List<DefaultOutputConnectionContext> connections = new ArrayList<>();
   private Selector selector = new RoundRobinSelector();
   @JsonIgnore
   private OutputPortContext port;
 
-  public DefaultOutputStreamContext setPort(OutputPortContext port) {
+  public DefaultOutputStreamContext setPortContext(OutputPortContext port) {
     this.port = port;
     return this;
   }
@@ -62,6 +62,10 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
 
   @Override
   public List<OutputConnectionContext> connections() {
+    List<OutputConnectionContext> connections = new ArrayList<>();
+    for (DefaultOutputConnectionContext connection : this.connections) {
+      connections.add(connection.setStreamContext(this));
+    }
     return connections;
   }
 
@@ -73,7 +77,7 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
       }
       connections.clear();
     } else {
-      Iterator<OutputConnectionContext> iter = connections.iterator();
+      Iterator<DefaultOutputConnectionContext> iter = connections.iterator();
       while (iter.hasNext()) {
         OutputConnectionContext connection = iter.next();
         OutputConnectionContext match = null;
@@ -93,11 +97,16 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
   
       for (OutputConnectionContext connection : update.connections()) {
         if (!connections.contains(connection)) {
-          connections.add(connection);
+          connections.add(DefaultOutputConnectionContext.Builder.newBuilder(connection).build().setStreamContext(this));
         }
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return null;
   }
 
   @Override
@@ -139,8 +148,13 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
      * @param context A starting connection context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultOutputStreamContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(OutputStreamContext context) {
+      if (context instanceof DefaultOutputStreamContext) {
+        return new Builder((DefaultOutputStreamContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setSelector(context.selector());
+      }
     }
 
     /**
@@ -149,8 +163,8 @@ public class DefaultOutputStreamContext extends BaseContext<OutputStreamContext>
      * @param connection The connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(DefaultOutputConnectionContext connection) {
-      context.connections.add(connection.setStream(context));
+    public Builder addConnection(OutputConnectionContext connection) {
+      context.connections.add(DefaultOutputConnectionContext.Builder.newBuilder(connection).build().setStreamContext(context));
       return this;
     }
 

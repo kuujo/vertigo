@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.util;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * Validation utilities.
  *
@@ -90,6 +93,64 @@ public final class Args {
    */
   public static void checkPositive(int number, String message, Object... args) {
     if (number < 0) {
+      throw new IllegalArgumentException(String.format(message, args));
+    }
+  }
+
+  /**
+   * Validates that an argument is a valid URI.
+   *
+   * @param uri The value to check.
+   */
+  public static void checkUri(String uri) {
+    try {
+      new URI(uri);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  /**
+   * Validates that an argument is a valid URI.
+   *
+   * @param uri The value to check.
+   * @param message An exception message.
+   * @param args Exception message arguments.
+   */
+  public static void checkUri(String uri, String message, Object... args) {
+    try {
+      new URI(uri);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(String.format(message, args), e);
+    }
+  }
+
+  /**
+   * Validates that an argument is a valid URI scheme.
+   *
+   * @param scheme The value to check.
+   */
+  public static void checkUriScheme(String scheme) {
+    String uri = String.format("%s://null", scheme);
+    try {
+      new URI(uri);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  /**
+   * Validates that an argument is a valid URI scheme.
+   *
+   * @param scheme The value to check.
+   * @param message An exception message.
+   * @param args Exception message arguments.
+   */
+  public static void checkUriScheme(String scheme, String message, Object... args) {
+    String uri = String.format("%s://null", scheme);
+    try {
+      new URI(uri);
+    } catch (URISyntaxException e) {
       throw new IllegalArgumentException(String.format(message, args));
     }
   }

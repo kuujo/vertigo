@@ -24,6 +24,7 @@ import java.util.Map;
 import net.kuujo.vertigo.cluster.ClusterException;
 import net.kuujo.vertigo.cluster.Group;
 import net.kuujo.vertigo.cluster.Node;
+import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import org.vertx.java.core.AsyncResult;
@@ -49,6 +50,7 @@ public class DefaultGroup implements Group {
   private final Map<Handler<Node>, Handler<Message<String>>> leaveHandlers = new HashMap<>();
 
   public DefaultGroup(String address, Vertx vertx, Container container) {
+    Args.checkUriScheme(address, "%s is not a valid cluster group. Group addresses must be alpha-numeric, begin with a letter, and may contain the following symbols: -.+", address);
     this.address = address;
     this.vertx = vertx;
     this.container = container;

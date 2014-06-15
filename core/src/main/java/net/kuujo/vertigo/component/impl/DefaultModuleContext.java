@@ -20,9 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import net.kuujo.vertigo.component.InstanceContext;
 import net.kuujo.vertigo.component.ModuleContext;
 import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.impl.BaseContext;
+import net.kuujo.vertigo.network.impl.DefaultNetworkContext;
 
 import org.vertx.java.core.json.JsonObject;
 
@@ -35,6 +37,14 @@ import org.vertx.java.core.json.JsonObject;
  */
 public class DefaultModuleContext extends DefaultComponentContext<ModuleContext> implements ModuleContext {
   private String module;
+
+  /**
+   * Sets the component parent.
+   */
+  public DefaultModuleContext setNetworkContext(DefaultNetworkContext network) {
+    this.network = network;
+    return this;
+  }
 
   @Override
   protected String type() {
@@ -85,8 +95,19 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @param context A starting module context.
      * @return A new module context builder.
      */
-    public static Builder newBuilder(DefaultModuleContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(ModuleContext context) {
+      if (context instanceof DefaultModuleContext) {
+        return new Builder((DefaultModuleContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setName(context.name())
+            .setStatusAddress(context.status())
+            .setConfig(context.config())
+            .setInstances(context.instances())
+            .setGroup(context.group())
+            .setModule(context.module())
+            .setHooks(context.hooks());
+      }
     }
 
     /**
@@ -161,10 +182,10 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @param instances An array of instance contexts.
      * @return The context builder.
      */
-    public Builder setInstances(DefaultInstanceContext... instances) {
+    public Builder setInstances(InstanceContext... instances) {
       context.instances = new ArrayList<>();
-      for (DefaultInstanceContext instance : instances) {
-        context.instances.add(instance.setComponentContext(context));
+      for (InstanceContext instance : instances) {
+        context.instances.add(DefaultInstanceContext.Builder.newBuilder(instance).build().setComponentContext(context));
       }
       return this;
     }
@@ -175,10 +196,10 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @param instances A list of instance contexts.
      * @return The context builder.
      */
-    public Builder setInstances(List<DefaultInstanceContext> instances) {
+    public Builder setInstances(List<InstanceContext> instances) {
       context.instances = new ArrayList<>();
-      for (DefaultInstanceContext instance : instances) {
-        context.instances.add(instance.setComponentContext(context));
+      for (InstanceContext instance : instances) {
+        context.instances.add(DefaultInstanceContext.Builder.newBuilder(instance).build().setComponentContext(context));
       }
       return this;
     }
@@ -189,8 +210,8 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @param instance An instance context to add.
      * @return The context builder.
      */
-    public Builder addInstance(DefaultInstanceContext instance) {
-      context.instances.add(instance.setComponentContext(context));
+    public Builder addInstance(InstanceContext instance) {
+      context.instances.add(DefaultInstanceContext.Builder.newBuilder(instance).build().setComponentContext(context));
       return this;
     }
 
@@ -200,7 +221,7 @@ public class DefaultModuleContext extends DefaultComponentContext<ModuleContext>
      * @param instance An instance context to remove.
      * @return The context builder.
      */
-    public Builder removeInstance(DefaultInstanceContext instance) {
+    public Builder removeInstance(InstanceContext instance) {
       context.instances.remove(instance);
       return this;
     }

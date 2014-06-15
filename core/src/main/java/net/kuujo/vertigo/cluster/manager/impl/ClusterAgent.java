@@ -43,7 +43,7 @@ public class ClusterAgent extends Verticle {
   @Override
   public void start(final Future<Void> startResult) {
     String clusterName = container.config().getString("cluster", "vertigo");
-    String groupName = container.config().getString("group", "__DEFAULT__");
+    String groupName = container.config().getString("group", "DEFAULT");
     String nodeAddress = container.config().getString("node", UUID.randomUUID().toString());
     PlatformManager platform = new DefaultPlatformManager(vertx, container);
     ClusterListener listener = new ClusterListenerFactory(vertx).createClusterListener();

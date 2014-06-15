@@ -17,17 +17,16 @@ package net.kuujo.vertigo.io.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import net.kuujo.vertigo.component.impl.DefaultInstanceContext;
 import net.kuujo.vertigo.impl.BaseContext;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.port.impl.DefaultOutputPortContext;
-import net.kuujo.vertigo.util.serialization.Serializer;
-import net.kuujo.vertigo.util.serialization.SerializerFactory;
-
-import org.vertx.java.core.json.JsonObject;
 
 /**
  * Output context represents output information between a
@@ -37,32 +36,12 @@ import org.vertx.java.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class DefaultOutputContext extends DefaultIOContext<OutputContext> implements OutputContext {
-  private Collection<OutputPortContext> ports = new ArrayList<>();
+  private Map<String, DefaultOutputPortContext> ports = new HashMap<>();
 
-  /**
-   * Creates a new output context from JSON.
-   * 
-   * @param context A JSON representation of the output context.
-   * @return A new output context instance.
-   * @throws MalformedContextException If the JSON context is malformed.
-   */
-  public static DefaultOutputContext fromJson(JsonObject context) {
-    Serializer serializer = SerializerFactory.getSerializer(DefaultInstanceContext.class);
-    DefaultOutputContext output = serializer.deserializeObject(context.getObject("output"), DefaultOutputContext.class);
-    DefaultInstanceContext instance = DefaultInstanceContext.fromJson(context);
-    return (DefaultOutputContext) output.setInstanceContext(instance);
-  }
-
-  /**
-   * Serializes an output context to JSON.
-   * 
-   * @param context The IO context to serialize.
-   * @return A Json representation of the IO context.
-   */
-  public static JsonObject toJson(DefaultOutputContext context) {
-    Serializer serializer = SerializerFactory.getSerializer(DefaultInstanceContext.class);
-    JsonObject json = DefaultInstanceContext.toJson(context.instance());
-    return json.putObject("output", serializer.serializeToObject(context));
+  @Override
+  public DefaultOutputContext setInstanceContext(DefaultInstanceContext instance) {
+    this.instance = instance;
+    return this;
   }
 
   @Override
@@ -70,29 +49,36 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
     return null;
   }
 
-  /**
-   * Returns the output's port contexts.
-   *
-   * @return A collection of output port contexts.
-   */
+  @Override
   public Collection<OutputPortContext> ports() {
-    for (OutputPortContext port : ports) {
-      ((DefaultOutputPortContext) port).setOutput(this);
+    List<OutputPortContext> ports = new ArrayList<>();
+    for (DefaultOutputPortContext port : this.ports.values()) {
+      ports.add(port.setOutputContext(this));
     }
     return ports;
   }
 
   @Override
+  public OutputPortContext port(String name) {
+    DefaultOutputPortContext port = ports.get(name);
+    if (port != null) {
+      port.setOutputContext(this);
+    }
+    return port;
+  }
+
+  @Override
   public void notify(OutputContext update) {
     if (update == null) {
-      for (OutputPortContext port : ports) {
+      for (OutputPortContext port : ports.values()) {
         port.notify(null);
       }
       ports.clear();
     } else {
-      Iterator<OutputPortContext> iter = ports.iterator();
+      Iterator<Map.Entry<String, DefaultOutputPortContext>> iter = ports.entrySet().iterator();
       while (iter.hasNext()) {
-        OutputPortContext port = iter.next();
+        Map.Entry<String, DefaultOutputPortContext> entry = iter.next();
+        DefaultOutputPortContext port = entry.getValue();
         OutputPortContext match = null;
         for (OutputPortContext p : update.ports()) {
           if (port.name().equals(p.name())) {
@@ -107,21 +93,19 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
           iter.remove();
         }
       }
-  
+
       for (OutputPortContext port : update.ports()) {
-        boolean exists = false;
-        for (OutputPortContext p : ports) {
-          if (p.name().equals(port.name())) {
-            exists = true;
-            break;
-          }
-        }
-        if (!exists) {
-          ports.add(port);
+        if (!ports.containsKey(port.name())) {
+          ports.put(port.name(), DefaultOutputPortContext.Builder.newBuilder(port).build().setOutputContext(this));
         }
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s/%s/%d/out", instance.component().network().cluster(), instance.component().network().name(), instance.component().name(), instance.number());
   }
 
   @Override
@@ -162,8 +146,13 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param context A starting output context.
      * @return A new context builder.
      */
-    public static Builder newBuilder(DefaultOutputContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(OutputContext context) {
+      if (context instanceof DefaultOutputContext) {
+        return new Builder((DefaultOutputContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setPorts(context.ports());
+      }
     }
 
     /**
@@ -172,10 +161,10 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param ports An array of output port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(DefaultOutputPortContext... ports) {
-      context.ports = new ArrayList<>();
-      for (DefaultOutputPortContext port : ports) {
-        context.ports.add(port.setOutput(context));
+    public Builder setPorts(OutputPortContext... ports) {
+      context.ports = new HashMap<>();
+      for (OutputPortContext port : ports) {
+        context.ports.put(port.name(), DefaultOutputPortContext.Builder.newBuilder(port).build().setOutputContext(context));
       }
       return this;
     }
@@ -186,10 +175,10 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param ports A collection of output port contexts.
      * @return The context builder.
      */
-    public Builder setPorts(Collection<DefaultOutputPortContext> ports) {
-      context.ports = new ArrayList<>();
-      for (DefaultOutputPortContext port : ports) {
-        context.ports.add(port.setOutput(context));
+    public Builder setPorts(Collection<OutputPortContext> ports) {
+      context.ports = new HashMap<>();
+      for (OutputPortContext port : ports) {
+        context.ports.put(port.name(), DefaultOutputPortContext.Builder.newBuilder(port).build().setOutputContext(context));
       }
       return this;
     }
@@ -200,8 +189,8 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @param port An output port context.
      * @return The context builder.
      */
-    public Builder addPort(DefaultOutputPortContext port) {
-      context.ports.add(port.setOutput(context));
+    public Builder addPort(OutputPortContext port) {
+      context.ports.put(port.name(), DefaultOutputPortContext.Builder.newBuilder(port).build().setOutputContext(context));
       return this;
     }
 
@@ -212,7 +201,7 @@ public class DefaultOutputContext extends DefaultIOContext<OutputContext> implem
      * @return The context builder.
      */
     public Builder removePort(OutputPortContext port) {
-      context.ports.remove(port);
+      context.ports.remove(port.name());
       return this;
     }
   }

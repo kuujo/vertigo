@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.UUID;
 
 import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.network.ActiveNetwork;
@@ -113,7 +112,7 @@ public class NetworkFactory implements VerticleFactory {
     public void start(final Future<Void> startResult) {
       // If no cluster address was provided then deploy the network to a local cluster.
       if (cluster == null) {
-        vertigo.deployCluster(UUID.randomUUID().toString(), new Handler<AsyncResult<Cluster>>() {
+        vertigo.deployCluster(new Handler<AsyncResult<Cluster>>() {
           @Override
           public void handle(AsyncResult<Cluster> result) {
             if (result.failed()) {

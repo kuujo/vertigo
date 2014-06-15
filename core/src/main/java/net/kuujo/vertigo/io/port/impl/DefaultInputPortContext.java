@@ -37,12 +37,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class DefaultInputPortContext extends BaseContext<InputPortContext> implements InputPortContext {
   private String port;
-  private Collection<InputConnectionContext> connections = new ArrayList<>();
+  private Collection<DefaultInputConnectionContext> connections = new ArrayList<>();
   private List<InputHook> hooks = new ArrayList<>();
   @JsonIgnore
   private InputContext input;
 
-  public DefaultInputPortContext setInput(InputContext input) {
+  public DefaultInputPortContext setInputContext(InputContext input) {
     this.input = input;
     return this;
   }
@@ -68,6 +68,10 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
 
   @Override
   public Collection<InputConnectionContext> connections() {
+    List<InputConnectionContext> connections = new ArrayList<>();
+    for (DefaultInputConnectionContext connection : this.connections) {
+      connections.add(connection.setPortContext(this));
+    }
     return connections;
   }
 
@@ -84,7 +88,7 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
       }
       connections.clear();
     } else {
-      Iterator<InputConnectionContext> iter = connections.iterator();
+      Iterator<DefaultInputConnectionContext> iter = connections.iterator();
       while (iter.hasNext()) {
         InputConnectionContext connection = iter.next();
         InputConnectionContext match = null;
@@ -104,11 +108,16 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
   
       for (InputConnectionContext connection : update.connections()) {
         if (!connections.contains(connection)) {
-          connections.add(connection);
+          connections.add(DefaultInputConnectionContext.Builder.newBuilder(connection).build().setPortContext(this));
         }
       }
     }
     super.notify(this);
+  }
+
+  @Override
+  public String uri() {
+    return String.format("%s://%s@%s/%s/%d/in", input.instance().component().network().cluster(), name(), input.instance().component().network().name(), input.instance().component().name(), input.instance().number());
   }
 
   @Override
@@ -149,8 +158,15 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param context A starting input port context.
      * @return A new input port context builder.
      */
-    public static Builder newBuilder(DefaultInputPortContext context) {
-      return new Builder(context);
+    public static Builder newBuilder(InputPortContext context) {
+      if (context instanceof DefaultInputPortContext) {
+        return new Builder((DefaultInputPortContext) context);
+      } else {
+        return new Builder().setAddress(context.address())
+            .setName(context.name())
+            .setHooks(context.hooks())
+            .setConnections(context.connections());
+      }
     }
 
     /**
@@ -170,10 +186,10 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param connections An array of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(DefaultInputConnectionContext... connections) {
+    public Builder setConnections(InputConnectionContext... connections) {
       context.connections = new ArrayList<>();
-      for (DefaultInputConnectionContext connection : connections) {
-        context.connections.add(connection.setPort(context));
+      for (InputConnectionContext connection : connections) {
+        context.connections.add(DefaultInputConnectionContext.Builder.newBuilder(connection).build().setPortContext(context));
       }
       return this;
     }
@@ -184,10 +200,10 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param connections A collection of port connections.
      * @return The context builder.
      */
-    public Builder setConnections(Collection<DefaultInputConnectionContext> connections) {
+    public Builder setConnections(Collection<InputConnectionContext> connections) {
       context.connections = new ArrayList<>();
-      for (DefaultInputConnectionContext connection : connections) {
-        context.connections.add(connection.setPort(context));
+      for (InputConnectionContext connection : connections) {
+        context.connections.add(DefaultInputConnectionContext.Builder.newBuilder(connection).build().setPortContext(context));
       }
       return this;
     }
@@ -198,8 +214,8 @@ public class DefaultInputPortContext extends BaseContext<InputPortContext> imple
      * @param connection A port connection to add.
      * @return The context builder.
      */
-    public Builder addConnection(DefaultInputConnectionContext connection) {
-      context.connections.add(connection.setPort(context));
+    public Builder addConnection(InputConnectionContext connection) {
+      context.connections.add(DefaultInputConnectionContext.Builder.newBuilder(connection).build().setPortContext(context));
       return this;
     }
 

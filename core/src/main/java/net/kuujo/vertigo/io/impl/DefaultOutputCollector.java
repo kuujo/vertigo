@@ -61,9 +61,6 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   public DefaultOutputCollector(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
     this.context = context;
-    if (!context.ports().isEmpty()) {
-      System.out.println(context.ports().iterator().next().streams());
-    }
     this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", DefaultOutputCollector.class.getName(), context.instance().component().name(), context.instance().number()));
     context.registerObserver(this);
   }

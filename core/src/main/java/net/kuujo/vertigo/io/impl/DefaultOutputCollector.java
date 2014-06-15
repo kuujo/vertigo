@@ -94,8 +94,12 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
   }
 
   @Override
-  public void update(final OutputContext update) {
+  public void update(OutputContext context) {
     log.debug(String.format("%s - Output context changed, updating ports", this));
+
+    // Copy the context in order to ensure that future changes via the
+    // observer will not effect this update.
+    final OutputContext update = context.copy();
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -114,8 +118,11 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
             }
           }
           if (!exists) {
-            log.debug(String.format("%s - Adding out port: %s", DefaultOutputCollector.this, output));
-            newPorts.add(new DefaultOutputPort(vertx, output));
+            OutputPortContext port = DefaultOutputCollector.this.context.port(output.name());
+            if (port != null) {
+              log.debug(String.format("%s - Adding out port: %s", DefaultOutputCollector.this, output));
+              newPorts.add(new DefaultOutputPort(vertx, port));
+            }
           }
         }
 

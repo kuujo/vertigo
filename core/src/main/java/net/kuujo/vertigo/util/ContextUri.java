@@ -164,11 +164,7 @@ public class ContextUri {
    * @return The context port defined in the URI.
    */
   public String getPort() {
-    String port = uri.getUserInfo();
-    if (port == null) {
-      throw new IllegalArgumentException(uri + " does not specify a port");
-    }
-    return port;
+    return uri.getUserInfo();
   }
 
   /**

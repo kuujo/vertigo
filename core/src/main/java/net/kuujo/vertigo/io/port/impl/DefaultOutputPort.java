@@ -85,8 +85,12 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
   }
 
   @Override
-  public void update(final OutputPortContext update) {
+  public void update(OutputPortContext context) {
     log.debug(String.format("%s - Out port configuration has changed, updating streams", this));
+
+    // Copy the context in order to ensure that future changes via the
+    // observer will not effect this update.
+    final OutputPortContext update = context.copy();
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -152,7 +156,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           counter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
-              DefaultOutputPort.this.hooks = update.hooks();
               task.complete();
             }
           });
@@ -182,7 +185,6 @@ public class DefaultOutputPort implements OutputPort, Observer<OutputPortContext
           for (OutputStream stream : newStreams) {
             streams.add(stream);
           }
-          DefaultOutputPort.this.hooks = update.hooks();
           task.complete();
         }
       }

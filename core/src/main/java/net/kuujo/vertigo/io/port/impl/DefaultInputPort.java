@@ -85,8 +85,12 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
   }
 
   @Override
-  public void update(final InputPortContext update) {
+  public void update(InputPortContext context) {
     log.debug(String.format("%s - In port configuration has changed, updating connections", this));
+
+    // Copy the context in order to ensure that future changes via the
+    // observer will not effect this update.
+    final InputPortContext update = context.copy();
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -152,7 +156,6 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           counter.setHandler(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {
-              DefaultInputPort.this.hooks = update.hooks();
               task.complete();
             }
           });
@@ -182,7 +185,6 @@ public class DefaultInputPort implements InputPort, Observer<InputPortContext> {
           for (InputConnection connection : newConnections) {
             connections.add(setupConnection(connection));
           }
-          DefaultInputPort.this.hooks = update.hooks();
           task.complete();
         }
       }

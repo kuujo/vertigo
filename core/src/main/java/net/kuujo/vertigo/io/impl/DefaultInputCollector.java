@@ -97,8 +97,12 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
   }
 
   @Override
-  public void update(final InputContext update) {
+  public void update(InputContext context) {
     log.info(String.format("%s - Input configuration has changed, updating ports", this));
+
+    // Copy the context in order to ensure that future changes via the
+    // observer will not effect this update.
+    final InputContext update = context.copy();
 
     // All updates are run sequentially to prevent race conditions
     // during configuration changes. Without essentially locking the
@@ -117,8 +121,11 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
             }
           }
           if (!exists) {
-            log.debug(String.format("%s - Adding in port: %s", DefaultInputCollector.this, input));
-            newPorts.add(new DefaultInputPort(vertx, input));
+            InputPortContext port = DefaultInputCollector.this.context.port(input.name());
+            if (port != null) {
+              log.debug(String.format("%s - Adding in port: %s", DefaultInputCollector.this, input));
+              newPorts.add(new DefaultInputPort(vertx, port));
+            }
           }
         }
 

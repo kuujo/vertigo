@@ -15,17 +15,9 @@
  */
 package net.kuujo.vertigo.component.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.kuujo.vertigo.component.VerticleConfig;
-import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.util.Args;
-
-import org.vertx.java.core.json.JsonObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -35,14 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultVerticleConfig implements VerticleConfig {
-  private static final int DEFAULT_NUM_INSTANCES = 1;
-
-  private String name;
-  private Map<String, Object> config;
-  private int instances = DEFAULT_NUM_INSTANCES;
-  private String group;
-  private List<ComponentHook> hooks = new ArrayList<>();
+public class DefaultVerticleConfig extends DefaultComponentConfig<VerticleConfig> implements VerticleConfig {
   private String main;
   private boolean worker = false;
   @JsonProperty("multi-threaded")
@@ -60,65 +45,6 @@ public class DefaultVerticleConfig implements VerticleConfig {
   @Override
   public Type getType() {
     return Type.VERTICLE;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public VerticleConfig setName(String name) {
-    Args.checkNotNull(name, "component name must not be null");
-    this.name = name;
-    return this;
-  }
-
-  @Override
-  public JsonObject getConfig() {
-    return config != null ? new JsonObject(config) : new JsonObject();
-  }
-
-  @Override
-  public VerticleConfig setConfig(JsonObject config) {
-    this.config = config != null ? config.toMap() : new HashMap<String, Object>();
-    return this;
-  }
-
-  @Override
-  public int getInstances() {
-    return instances;
-  }
-
-  @Override
-  public VerticleConfig setInstances(int instances) {
-    Args.checkPositive(instances, "instances must be a positive number");
-    this.instances = instances;
-    return this;
-  }
-
-  @Override
-  public VerticleConfig setGroup(String group) {
-    this.group = group;
-    return this;
-  }
-
-  @Override
-  public String getGroup() {
-    return group;
-  }
-
-  @Override
-  public VerticleConfig addHook(ComponentHook hook) {
-    if (hook != null) {
-      this.hooks.add(hook);
-    }
-    return this;
-  }
-
-  @Override
-  public List<ComponentHook> getHooks() {
-    return hooks;
   }
 
   @Override

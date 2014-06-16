@@ -15,17 +15,10 @@
  */
 package net.kuujo.vertigo.component.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.kuujo.vertigo.component.ModuleConfig;
-import net.kuujo.vertigo.hook.ComponentHook;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.util.Args;
 
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.impl.ModuleIdentifier;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -35,14 +28,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultModuleConfig implements ModuleConfig {
-  private static final int DEFAULT_NUM_INSTANCES = 1;
-
-  private String name;
-  private Map<String, Object> config;
-  private int instances = DEFAULT_NUM_INSTANCES;
-  private String group;
-  private List<ComponentHook> hooks = new ArrayList<>();
+public class DefaultModuleConfig extends DefaultComponentConfig<ModuleConfig> implements ModuleConfig {
   private String module;
 
   public DefaultModuleConfig() {
@@ -57,65 +43,6 @@ public class DefaultModuleConfig implements ModuleConfig {
   @Override
   public Type getType() {
     return Type.MODULE;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public ModuleConfig setName(String name) {
-    Args.checkNotNull(name, "component name cannot be null");
-    this.name = name;
-    return this;
-  }
-
-  @Override
-  public JsonObject getConfig() {
-    return config != null ? new JsonObject(config) : new JsonObject();
-  }
-
-  @Override
-  public ModuleConfig setConfig(JsonObject config) {
-    this.config = config != null ? config.toMap() : new HashMap<String, Object>();
-    return this;
-  }
-
-  @Override
-  public int getInstances() {
-    return instances;
-  }
-
-  @Override
-  public ModuleConfig setInstances(int instances) {
-    Args.checkPositive(instances, "instances must be a positive number");
-    this.instances = instances;
-    return this;
-  }
-
-  @Override
-  public ModuleConfig setGroup(String group) {
-    this.group = group;
-    return this;
-  }
-
-  @Override
-  public String getGroup() {
-    return group;
-  }
-
-  @Override
-  public ModuleConfig addHook(ComponentHook hook) {
-    if (hook != null) {
-      this.hooks.add(hook);
-    }
-    return this;
-  }
-
-  @Override
-  public List<ComponentHook> getHooks() {
-    return hooks;
   }
 
   @Override

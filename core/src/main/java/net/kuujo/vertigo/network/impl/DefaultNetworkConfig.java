@@ -54,6 +54,7 @@ public class DefaultNetworkConfig implements NetworkConfig {
 
   public DefaultNetworkConfig(String name) {
     Args.checkNotNull(name, "network name cannot be null");
+    Args.checkUriScheme(name, "%s is not a valid network address. Network addresses must be alpha-numeric, begin with a letter, and may contain the following symbols: -.+", name);
     this.name = name;
   }
 

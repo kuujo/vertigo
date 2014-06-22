@@ -88,7 +88,10 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
         DefaultOutputContext.Builder.newBuilder((DefaultOutputContext) context).addPort(portContext);
       }
       port = new DefaultOutputPort(vertx, context.port(name));
-      ports.put(name, port.open());
+      if (started) {
+        port.open();
+      }
+      ports.put(name, port);
     }
     return port;
   }
@@ -110,14 +113,7 @@ public class DefaultOutputCollector implements OutputCollector, Observer<OutputC
       public void handle(final Task task) {
         final List<OutputPort> newPorts = new ArrayList<>();
         for (OutputPortContext output : update.ports()) {
-          boolean exists = false;
-          for (OutputPort port : ports.values()) {
-            if (port.name().equals(output.name())) {
-              exists = true;
-              break;
-            }
-          }
-          if (!exists) {
+          if (!ports.containsKey(output.name())) {
             OutputPortContext port = DefaultOutputCollector.this.context.port(output.name());
             if (port != null) {
               log.debug(String.format("%s - Adding out port: %s", DefaultOutputCollector.this, output));

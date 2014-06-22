@@ -91,7 +91,10 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
         DefaultInputContext.Builder.newBuilder((DefaultInputContext) context).addPort(portContext);
       }
       port = new DefaultInputPort(vertx, context.port(name));
-      ports.put(name, port.open());
+      if (started) {
+        port.open();
+      }
+      ports.put(name, port);
     }
     return port;
   }
@@ -113,14 +116,7 @@ public class DefaultInputCollector implements InputCollector, Observer<InputCont
       public void handle(final Task task) {
         final List<InputPort> newPorts = new ArrayList<>();
         for (InputPortContext input : update.ports()) {
-          boolean exists = false;
-          for (InputPort port : ports.values()) {
-            if (port.name().equals(input.name())) {
-              exists = true;
-              break;
-            }
-          }
-          if (!exists) {
+          if (!ports.containsKey(input.name())) {
             InputPortContext port = DefaultInputCollector.this.context.port(input.name());
             if (port != null) {
               log.debug(String.format("%s - Adding in port: %s", DefaultInputCollector.this, input));

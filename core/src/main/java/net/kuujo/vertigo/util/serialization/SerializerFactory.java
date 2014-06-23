@@ -87,7 +87,7 @@ public abstract class SerializerFactory {
    * @return A serializer instance.
    */
   public static Serializer getSerializer(Class<?> type) {
-    Class<?> serializable = findSerializableType(type);
+    Class<?> serializable = lookupSerializableType(type);
     Serializer serializer = serializers.get(serializable);
     if (serializer == null) {
       serializer = getInstance().createSerializer(serializable);
@@ -97,46 +97,36 @@ public abstract class SerializerFactory {
   }
 
   /**
-   * Iterates over the class hierarchy searching for the base serializable type.
+   * Looks up the serializable type for the given type.
    */
-  private static Class<?> findSerializableType(Class<?> type) {
-    if (serializableTypes.containsKey(type)) {
-      return serializableTypes.get(type);
+  private static Class<?> lookupSerializableType(Class<?> type) {
+    Class<?> serializableType = serializableTypes.get(type);
+    if (serializableType != null) {
+      return serializableType;
     }
-
-    Class<?> current = type;
-    while (current != null && current != Object.class) {
-      Class<?> serializable = findSerializableInterface(current);
-      if (serializable != null) {
-        serializableTypes.put(type, serializable);
-        return serializable;
-      }
-      current = current.getSuperclass();
+    serializableType = findSerializableType(type);
+    if (serializableType != null) {
+      serializableTypes.put(type, serializableType);
+      return serializableType;
     }
-    throw new SerializationException("Invalid serializable type.");
+    return type;
   }
 
   /**
-   * Recursively iterates over the interface hierarchy to find the base serializable
-   * interface. This is the interface that initially extends the Serializable interface
-   * and it used to group serializers together.
+   * Iterates over the class hierarchy searching for the base serializable type.
    */
-  private static Class<?> findSerializableInterface(Class<?> type) {
-    Class<?>[] interfaces = type.getInterfaces();
-    if (interfaces.length > 0) {
-      for (Class<?> iface : interfaces) {
+  private static Class<?> findSerializableType(Class<?> type) {
+    while (type != null && type != Object.class) {
+      for (Class<?> iface : type.getInterfaces()) {
         if (iface == JsonSerializable.class) {
-          return type;
+          return iface;
         }
-      }
-
-      for (Class<?> iface : interfaces) {
         Class<?> serializable = findSerializableType(iface);
         if (serializable != null) {
           return serializable;
         }
       }
-      return null;
+      type = type.getSuperclass();
     }
     return null;
   }

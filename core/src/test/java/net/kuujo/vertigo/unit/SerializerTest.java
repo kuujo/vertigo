@@ -16,9 +16,7 @@
 package net.kuujo.vertigo.unit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import net.kuujo.vertigo.util.serialization.JsonSerializable;
-import net.kuujo.vertigo.util.serialization.SerializationException;
 import net.kuujo.vertigo.util.serialization.Serializer;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
 
@@ -50,15 +48,6 @@ public class SerializerTest {
     assertEquals(serializer1, serializer2);
     Serializer serializer3 = SerializerFactory.getSerializer(SomeExtendingInterface.class);
     assertEquals(serializer1, serializer3);
-  }
-
-  @Test
-  public void testFindSerializerFail() {
-    try {
-      SerializerFactory.getSerializer(SomeOtherInterface.class);
-      fail("Returned invalid serializer.");
-    } catch (SerializationException e) {
-    }
   }
 
 }

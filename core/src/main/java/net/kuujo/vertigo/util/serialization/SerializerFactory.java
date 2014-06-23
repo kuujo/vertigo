@@ -119,7 +119,7 @@ public abstract class SerializerFactory {
     while (type != null && type != Object.class) {
       for (Class<?> iface : type.getInterfaces()) {
         if (iface == JsonSerializable.class) {
-          return iface;
+          return type;
         }
         Class<?> serializable = findSerializableType(iface);
         if (serializable != null) {

@@ -37,7 +37,7 @@ class ClusterDataFactory {
    * @return A cluster data store.
    */
   public ClusterData createClusterData() {
-    HazelcastInstance hazelcast = ClusterListenerFactory.getHazelcastInstance();
+    HazelcastInstance hazelcast = ClusterListenerFactory.getHazelcastInstance(vertx);
     if (hazelcast != null) {
       return new HazelcastClusterData(hazelcast);
     } else {

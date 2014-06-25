@@ -15,10 +15,12 @@
  */
 package net.kuujo.vertigo.cluster.manager.impl;
 
-import org.vertx.java.core.Vertx;
+import java.lang.reflect.Field;
 
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.core.Hazelcast;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.impl.VertxInternal;
+import org.vertx.java.core.spi.cluster.ClusterManager;
+
 import com.hazelcast.core.HazelcastInstance;
 
 /**
@@ -34,15 +36,23 @@ class ClusterListenerFactory {
   }
 
   /**
-   * Returns the Vert.x Hazelcast instance.
+   * Returns the Vert.x Hazelcast instance if one exists.
    *
-   * @return The Vert.x Hazelcast instance.
+   * @param vertx The current Vert.x instance.
+   * @return The Vert.x Hazelcast instance if Vert.x is clustered.
    */
-  static HazelcastInstance getHazelcastInstance() {
-    for (HazelcastInstance instance : Hazelcast.getAllHazelcastInstances()) {
-      MapConfig map = instance.getConfig().findMapConfig("subs");
-      if (map != null && map.getName().equals("subs")) {
-        return instance;
+  static HazelcastInstance getHazelcastInstance(Vertx vertx) {
+    VertxInternal vertxInternal = (VertxInternal) vertx;
+    ClusterManager clusterManager = vertxInternal.clusterManager();
+    if (clusterManager != null) {
+      Class<?> clazz = clusterManager.getClass();
+      Field field;
+      try {
+        field = clazz.getDeclaredField("hazelcast");
+        field.setAccessible(true);
+        return HazelcastInstance.class.cast(field.get(clusterManager));
+      } catch (Exception e) {
+        return null;
       }
     }
     return null;
@@ -54,7 +64,7 @@ class ClusterListenerFactory {
    * @return A new cluster listener.
    */
   public ClusterListener createClusterListener() {
-    HazelcastInstance hazelcast = getHazelcastInstance();
+    HazelcastInstance hazelcast = getHazelcastInstance(vertx);
     if (hazelcast != null) {
       return new HazelcastClusterListener(hazelcast, vertx);
     } else {

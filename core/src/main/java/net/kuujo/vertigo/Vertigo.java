@@ -21,6 +21,7 @@ import net.kuujo.vertigo.cluster.manager.impl.ClusterAgent;
 import net.kuujo.vertigo.network.ActiveNetwork;
 import net.kuujo.vertigo.network.NetworkConfig;
 import net.kuujo.vertigo.network.impl.DefaultNetworkConfig;
+import net.kuujo.vertigo.util.Addresses;
 import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.ContextUri;
 
@@ -298,6 +299,145 @@ public class Vertigo {
   public Vertigo getCluster(String address, Handler<AsyncResult<Cluster>> resultHandler) {
     Cluster cluster = new DefaultCluster(address, vertx, container);
     cluster.ping(resultHandler);
+    return this;
+  }
+
+  /**
+   * Deploys a bare network to an anonymous local-only cluster.<p>
+   *
+   * The network will be deployed with no components and no connections. You
+   * can add components and connections to the network with an {@link ActiveNetwork}
+   * instance.
+   *
+   * @param name The name of the network to deploy.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployNetwork(String name) {
+    return deployNetwork(name, (Handler<AsyncResult<ActiveNetwork>>) null);
+  }
+
+  /**
+   * Deploys a bare network to an anonymous local-only cluster.<p>
+   *
+   * The network will be deployed with no components and no connections. You
+   * can add components and connections to the network with an {@link ActiveNetwork}
+   * instance.
+   *
+   * @param name The name of the network to deploy.
+   * @param doneHandler An asynchronous handler to be called once the network has
+   *        completed deployment. The handler will be called with an {@link ActiveNetwork}
+   *        instance which can be used to add or remove components and connections from
+   *        the network.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployNetwork(final String name, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    final String cluster = Addresses.createUniqueAddress();
+    container.deployVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", cluster).putBoolean("local", true), new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+        } else {
+          deployNetwork(cluster, name, doneHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Deploys a json network to an anonynous local-only cluster.<p>
+   *
+   * The JSON network configuration will be converted to a {@link NetworkConfig} before
+   * being deployed to the cluster. The conversion is done synchronously, so if the
+   * configuration is invalid then this method may throw an exception.
+   *
+   * @param network The JSON network configuration. For the configuration format see
+   *        the project documentation.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployNetwork(JsonObject network) {
+    return deployNetwork(network, null);
+  }
+
+  /**
+   * Deploys a json network to an anonynous local-only cluster.<p>
+   *
+   * The JSON network configuration will be converted to a {@link NetworkConfig} before
+   * being deployed to the cluster. The conversion is done synchronously, so if the
+   * configuration is invalid then this method may throw an exception.
+   *
+   * @param network The JSON network configuration. For the configuration format see
+   *        the project documentation.
+   * @param doneHandler An asynchronous handler to be called once the network has
+   *        completed deployment. The handler will be called with an {@link ActiveNetwork}
+   *        instance which can be used to add or remove components and connections from
+   *        the network.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployNetwork(final JsonObject network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    final String cluster = Addresses.createUniqueAddress();
+    container.deployVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", cluster).putBoolean("local", true), new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+        } else {
+          deployNetwork(cluster, network, doneHandler);
+        }
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Deploys a network to an anonymous local-only cluster.<p>
+   *
+   * If the given network configuration's name matches the name of a network
+   * that is already running in the cluster then the given configuration will
+   * be <b>merged</b> with the running network's configuration. This allows networks
+   * to be dynamically updated with partial configurations. If the configuration
+   * matches the already running configuration then no changes will occur, so it's
+   * not necessary to check whether a network is already running if the configuration
+   * has not been altered.
+   *
+   * @param network The configuration of the network to deploy.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployNetwork(NetworkConfig network) {
+    return deployNetwork(network, null);
+  }
+
+  /**
+   * Deploys a network to an anonymous local-only cluster.<p>
+   *
+   * If the given network configuration's name matches the name of a network
+   * that is already running in the cluster then the given configuration will
+   * be <b>merged</b> with the running network's configuration. This allows networks
+   * to be dynamically updated with partial configurations. If the configuration
+   * matches the already running configuration then no changes will occur, so it's
+   * not necessary to check whether a network is already running if the configuration
+   * has not been altered.
+   *
+   * @param network The configuration of the network to deploy.
+   * @param doneHandler An asynchronous handler to be called once the network has
+   *        completed deployment. The handler will be called with an {@link ActiveNetwork}
+   *        instance which can be used to add or remove components and connections from
+   *        the network.
+   * @return The Vertigo instance.
+   */
+  public Vertigo deployNetwork(final NetworkConfig network, final Handler<AsyncResult<ActiveNetwork>> doneHandler) {
+    final String cluster = Addresses.createUniqueAddress();
+    container.deployVerticle(ClusterAgent.class.getName(), new JsonObject().putString("cluster", cluster).putBoolean("local", true), new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          new DefaultFutureResult<ActiveNetwork>(result.cause()).setHandler(doneHandler);
+        } else {
+          deployNetwork(cluster, network, doneHandler);
+        }
+      }
+    });
     return this;
   }
 

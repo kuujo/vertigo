@@ -34,9 +34,11 @@ class ClusterDataFactory {
   /**
    * Creates cluster data.
    *
+   * @param localOnly Indicates whether to force the cluster to be local only.
    * @return A cluster data store.
    */
-  public ClusterData createClusterData() {
+  public ClusterData createClusterData(boolean localOnly) {
+    if (localOnly) return new VertxClusterData(vertx);
     HazelcastInstance hazelcast = ClusterListenerFactory.getHazelcastInstance(vertx);
     if (hazelcast != null) {
       return new HazelcastClusterData(hazelcast);

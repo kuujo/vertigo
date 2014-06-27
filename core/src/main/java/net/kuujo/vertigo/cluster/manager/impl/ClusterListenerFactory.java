@@ -61,9 +61,11 @@ class ClusterListenerFactory {
   /**
    * Creates a cluster listener.
    *
+   * @param localOnly Indicates whether to force the cluster to be local only.
    * @return A new cluster listener.
    */
-  public ClusterListener createClusterListener() {
+  public ClusterListener createClusterListener(boolean localOnly) {
+    if (localOnly) return new NoClusterListener();
     HazelcastInstance hazelcast = getHazelcastInstance(vertx);
     if (hazelcast != null) {
       return new HazelcastClusterListener(hazelcast, vertx);

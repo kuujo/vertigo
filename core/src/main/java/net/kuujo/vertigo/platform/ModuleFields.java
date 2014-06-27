@@ -35,6 +35,16 @@ public class ModuleFields extends org.vertx.java.platform.impl.ModuleFields {
   }
 
   /**
+   * Returns the value of an arbitray field in the configuration file.
+   *
+   * @param name The name of the field to return.
+   * @return The value of the field as defined in the configuration file.
+   */
+  public <T> T getField(String name) {
+    return config.getValue(name);
+  }
+
+  /**
    * Returns a list of input ports defined by the module.
    *
    * @return A list of input ports defined by the module.

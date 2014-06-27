@@ -33,13 +33,23 @@ class NoClusterListener implements ClusterListener {
   }
 
   @Override
-  public void joinHandler(Handler<String> handler) {
-    // Do nothing.
+  public void registerJoinHandler(Handler<String> handler) {
+    // Do nothing useful.
   }
 
   @Override
-  public void leaveHandler(Handler<String> handler) {
-    // Do nothing.
+  public void unregisterJoinHandler(Handler<String> handler) {
+    // Do nothing useful.
+  }
+
+  @Override
+  public void registerLeaveHandler(Handler<String> handler) {
+    // Do nothing useful.
+  }
+
+  @Override
+  public void unregisterLeaveHandler(Handler<String> handler) {
+    // Do nothing useful.
   }
 
 }

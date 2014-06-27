@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.cluster.manager.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.kuujo.vertigo.util.ContextManager;
 
 import org.vertx.java.core.Handler;
@@ -33,8 +36,8 @@ import com.hazelcast.core.MembershipListener;
 class HazelcastClusterListener implements ClusterListener, MembershipListener {
   private final String nodeID;
   private final ContextManager context;
-  private Handler<String> joinHandler;
-  private Handler<String> leaveHandler;
+  private final Set<Handler<String>> joinHandlers = new HashSet<>();
+  private final Set<Handler<String>> leaveHandlers = new HashSet<>();
 
   public HazelcastClusterListener(HazelcastInstance hazelcast, Vertx vertx) {
     this.nodeID = hazelcast.getCluster().getLocalMember().getUuid();
@@ -48,24 +51,34 @@ class HazelcastClusterListener implements ClusterListener, MembershipListener {
   }
 
   @Override
-  public void joinHandler(Handler<String> handler) {
-    joinHandler = handler;
+  public void registerJoinHandler(Handler<String> handler) {
+    joinHandlers.add(handler);
   }
 
   @Override
-  public void leaveHandler(Handler<String> handler) {
-    leaveHandler = handler;
+  public void unregisterJoinHandler(Handler<String> handler) {
+    joinHandlers.remove(handler);
+  }
+
+  @Override
+  public void registerLeaveHandler(Handler<String> handler) {
+    leaveHandlers.add(handler);
+  }
+
+  @Override
+  public void unregisterLeaveHandler(Handler<String> handler) {
+    leaveHandlers.remove(handler);
   }
 
   @Override
   public void memberAdded(final MembershipEvent event) {
-    if (joinHandler != null) {
-      // This method will be called by Hazelcast so we have to make sure
-      // we call the Vert.x handler on the proper context.
+    // This method will be called from the Hazelcast context so we have
+    // to make sure we call Vert.x handlers on the proper context.
+    for (final Handler<String> handler : joinHandlers) {
       context.run(new Runnable() {
         @Override
         public void run() {
-          joinHandler.handle(event.getMember().getUuid());
+          handler.handle(event.getMember().getUuid());
         }
       });
     }
@@ -78,13 +91,13 @@ class HazelcastClusterListener implements ClusterListener, MembershipListener {
 
   @Override
   public void memberRemoved(final MembershipEvent event) {
-    if (leaveHandler != null) {
-      // This method will be called by Hazelcast so we have to make sure
-      // we call the Vert.x handler on the proper context.
+    // This method will be called from the Hazelcast context so we have
+    // to make sure we call Vert.x handlers on the proper context.
+    for (final Handler<String> handler : leaveHandlers) {
       context.run(new Runnable() {
         @Override
         public void run() {
-          leaveHandler.handle(event.getMember().getUuid());
+          handler.handle(event.getMember().getUuid());
         }
       });
     }

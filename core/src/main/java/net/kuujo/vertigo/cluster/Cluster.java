@@ -324,6 +324,21 @@ public interface Cluster {
    * the cluster. You can also select a node using the helper methods provided.
    *
    * @param moduleName The name of the module to deploy.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param ha Indicates whether to deploy the module with HA.
+   * @return The cluster.
+   */
+  Cluster deployModule(String moduleName, JsonObject config, int instances, boolean ha);
+
+  /**
+   * Deploys a module to the cluster.<p>
+   *
+   * The module must be available on whichever node receives the deploy message.
+   * This means ideally the module should be installed on <em>all</em> nodes in
+   * the cluster. You can also select a node using the helper methods provided.
+   *
+   * @param moduleName The name of the module to deploy.
    * @param doneHandler A handler to be called once the module has been deployed.
    *        The handler will be called with the unique deployment ID if successful.
    * @return The cluster.
@@ -375,6 +390,23 @@ public interface Cluster {
    * @return The cluster.
    */
   Cluster deployModule(String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a module to the cluster.<p>
+   *
+   * The module must be available on whichever node receives the deploy message.
+   * This means ideally the module should be installed on <em>all</em> nodes in
+   * the cluster. You can also select a node using the helper methods provided.
+   *
+   * @param moduleName The name of the module to deploy.
+   * @param config The module configuration.
+   * @param instances The number of instances to deploy.
+   * @param ha Indicates whether to deploy the module with HA.
+   * @param doneHandler A handler to be called once the module has been deployed.
+   *        The handler will be called with the unique deployment ID if successful.
+   * @return The cluster.
+   */
+  Cluster deployModule(String moduleName, JsonObject config, int instances, boolean ha, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Deploys a verticle to the cluster.<p>
@@ -446,6 +478,23 @@ public interface Cluster {
    * deploy the module to a specific node.
    *
    * @param main The verticle main.
+   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
+   * @param ha Indicates whether to deploy the verticle with HA.
+   * @return The cluster.
+   */
+  Cluster deployVerticle(String main, JsonObject config, int instances, boolean ha);
+
+  /**
+   * Deploys a verticle to the cluster.<p>
+   *
+   * The verticle must be available on whichever node receives the deploy message.
+   * If the verticle is not available on the classpath, a {@link ClusterException}
+   * will occur. You can deploy a verticle to a specific node by using the node
+   * selection API, or by wrapping a verticle in a module Vertigo can upload and
+   * deploy the module to a specific node.
+   *
+   * @param main The verticle main.
    * @param doneHandler A handler to be called once the verticle has been deployed.
    *        The handler will be called with the unique deployment ID if successful.
    * @return The cluster.
@@ -503,6 +552,25 @@ public interface Cluster {
    * @return The cluster.
    */
   Cluster deployVerticle(String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a verticle to the cluster.<p>
+   *
+   * The verticle must be available on whichever node receives the deploy message.
+   * If the verticle is not available on the classpath, a {@link ClusterException}
+   * will occur. You can deploy a verticle to a specific node by using the node
+   * selection API, or by wrapping a verticle in a module Vertigo can upload and
+   * deploy the module to a specific node.
+   *
+   * @param main The verticle main.
+   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
+   * @param ha Indicates whether to deploy the verticle with HA.
+   * @param doneHandler A handler to be called once the verticle has been deployed.
+   *        The handler will be called with the unique deployment ID if successful.
+   * @return The cluster.
+   */
+  Cluster deployVerticle(String main, JsonObject config, int instances, boolean ha, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Deploys a worker verticle to the cluster.<p>
@@ -575,6 +643,24 @@ public interface Cluster {
    * deploy the module to a specific node.
    *
    * @param main The verticle main.
+   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
+   * @param multiThreaded Indicates whether the worker should be multi-threaded.
+   * @param ha Indicates whether to deploy the verticle with HA.
+   * @return The cluster.
+   */
+  Cluster deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, boolean ha);
+
+  /**
+   * Deploys a worker verticle to the cluster.<p>
+   *
+   * The verticle must be available on whichever node receives the deploy message.
+   * If the verticle is not available on the classpath, a {@link ClusterException}
+   * will occur. You can deploy a verticle to a specific node by using the node
+   * selection API, or by wrapping a verticle in a module Vertigo can upload and
+   * deploy the module to a specific node.
+   *
+   * @param main The verticle main.
    * @param doneHandler A handler to be called once the verticle has been deployed.
    *        The handler will be called with the unique deployment ID if successful.
    * @return The cluster.
@@ -633,6 +719,26 @@ public interface Cluster {
    * @return The cluster.
    */
   Cluster deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler);
+
+  /**
+   * Deploys a worker verticle to the cluster.<p>
+   *
+   * The verticle must be available on whichever node receives the deploy message.
+   * If the verticle is not available on the classpath, a {@link ClusterException}
+   * will occur. You can deploy a verticle to a specific node by using the node
+   * selection API, or by wrapping a verticle in a module Vertigo can upload and
+   * deploy the module to a specific node.
+   *
+   * @param main The verticle main.
+   * @param config The verticle configuration.
+   * @param instances The number of instances to deploy.
+   * @param multiThreaded Indicates whether the worker should be multi-threaded.
+   * @param ha Indicates whether to deploy the verticle with HA.
+   * @param doneHandler A handler to be called once the verticle has been deployed.
+   *        The handler will be called with the unique deployment ID if successful.
+   * @return The cluster.
+   */
+  Cluster deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, Handler<AsyncResult<String>> doneHandler);
 
   /**
    * Undeploys a module from the cluster.<p>

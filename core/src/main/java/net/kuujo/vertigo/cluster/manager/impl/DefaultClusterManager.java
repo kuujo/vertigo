@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import net.kuujo.vertigo.Config;
 import net.kuujo.vertigo.cluster.manager.ClusterManager;
@@ -30,6 +33,7 @@ import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.platform.PlatformManager;
 import net.kuujo.vertigo.util.ContextManager;
 import net.kuujo.vertigo.util.Contexts;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.serialization.SerializationException;
 import net.kuujo.vertigo.util.serialization.Serializer;
 import net.kuujo.vertigo.util.serialization.SerializerFactory;
@@ -38,6 +42,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.eventbus.ReplyException;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -55,6 +60,7 @@ public class DefaultClusterManager implements ClusterManager {
   private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);
   private static final Logger log = LoggerFactory.getLogger(DefaultClusterManager.class);
   private final String cluster;
+  private final String internal = UUID.randomUUID().toString();
   private final Vertx vertx;
   private final ContextManager context;
   private final PlatformManager platform;
@@ -299,6 +305,20 @@ public class DefaultClusterManager implements ClusterManager {
     }
   };
 
+  private final Handler<Message<JsonObject>> internalHandler = new Handler<Message<JsonObject>>() {
+    @Override
+    public void handle(Message<JsonObject> message) {
+      String action = message.body().getString("action");
+      if (action != null) {
+        switch (action) {
+          case "undeploy":
+            doInternalUndeploy(message);
+            break;
+        }
+      }
+    }
+  };
+
   private final Handler<String> joinHandler = new Handler<String>() {
     @Override
     public void handle(String nodeID) {
@@ -340,9 +360,11 @@ public class DefaultClusterManager implements ClusterManager {
 
   @Override
   public void start(Handler<AsyncResult<Void>> doneHandler) {
-    listener.joinHandler(joinHandler);
-    listener.leaveHandler(leaveHandler);
-    vertx.eventBus().registerHandler(address(), messageHandler, doneHandler);
+    listener.registerJoinHandler(joinHandler);
+    listener.registerLeaveHandler(leaveHandler);
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(doneHandler);
+    vertx.eventBus().registerHandler(internal, internalHandler, counter);
+    vertx.eventBus().registerHandler(address(), messageHandler, counter);
   }
 
   @Override
@@ -351,10 +373,38 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   @Override
-  public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    listener.joinHandler(null);
-    listener.leaveHandler(null);
-    vertx.eventBus().unregisterHandler(address(), messageHandler, doneHandler);
+  public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    listener.unregisterJoinHandler(null);
+    listener.unregisterLeaveHandler(null);
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(AsyncResult<Void> result) {
+        clearDeployments(doneHandler);
+      }
+    });
+    vertx.eventBus().unregisterHandler(internal, internalHandler, counter);
+    vertx.eventBus().unregisterHandler(address(), messageHandler, counter);
+  }
+
+  /**
+   * When the cluster is shutdown properly we need to remove deployments
+   * from the deployments map in order to ensure that deployments aren't
+   * redeployed if this node leaves the cluster.
+   */
+  private void clearDeployments(final Handler<AsyncResult<Void>> doneHandler) {
+    context.execute(new Action<Void>() {
+      @Override
+      public Void perform() {
+        Collection<String> sdeploymentsInfo = deployments.get(cluster);
+        for (String sdeploymentInfo : sdeploymentsInfo) {
+          JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
+          if (deploymentInfo.getString("address").equals(internal)) {
+            deployments.remove(cluster, sdeploymentInfo);
+          }
+        }
+        return null;
+      }
+    }, doneHandler);
   }
 
   /**
@@ -418,7 +468,7 @@ public class DefaultClusterManager implements ClusterManager {
                     @Override
                     public void handle(AsyncResult<String> result) {
                       if (result.succeeded() && result.result() != null) {
-                        // Just redeploy the network by sending a 
+                        // Just redeploy the network by sending a deploy message to the appropriate node.
                         JsonObject message = new JsonObject()
                             .putString("action", "deploy")
                             .putString("type", "network")
@@ -427,6 +477,22 @@ public class DefaultClusterManager implements ClusterManager {
                       }
                     }
                   });
+                }
+              }
+            }
+
+            // Redeploy any failed deployments.
+            synchronized (deployments) {
+              Collection<String> sdeploymentsInfo = deployments.get(cluster);
+              for (final String sdeploymentInfo : sdeploymentsInfo) {
+                final JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
+                // If the deployment node is equal to the node that left the cluster then
+                // remove the deployment from the deployments list and attempt to redeploy it.
+                if (deploymentInfo.getString("node").equals(nodeID)) {
+                  // If the deployment is an HA deployment then attempt to redeploy it on this node.
+                  if (deployments.remove(cluster, sdeploymentInfo) && deploymentInfo.getBoolean("ha", false)) {
+                    doRedeploy(deploymentInfo);
+                  }
                 }
               }
             }
@@ -831,28 +897,7 @@ public class DefaultClusterManager implements ClusterManager {
       config = new JsonObject();
     }
     int instances = message.body().getInteger("instances", 1);
-    platform.deployModule(moduleName, config, instances, new Handler<AsyncResult<String>>() {
-      @Override
-      public void handle(AsyncResult<String> result) {
-        if (result.failed()) {
-          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-        } else {
-          final String deploymentID = result.result();
-          context.execute(new Action<String>() {
-            @Override
-            public String perform() {
-              deployments.put(cluster, message.body().copy().putString("id", deploymentID).encode());
-              return deploymentID;
-            }
-          }, new Handler<AsyncResult<String>>() {
-            @Override
-            public void handle(AsyncResult<String> result) {
-              message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
-            }
-          });
-        }
-      }
-    });
+    platform.deployModule(moduleName, config, instances, createDeploymentHandler(message));
   }
 
   /**
@@ -873,52 +918,113 @@ public class DefaultClusterManager implements ClusterManager {
     boolean worker = message.body().getBoolean("worker", false);
     if (worker) {
       boolean multiThreaded = message.body().getBoolean("multi-threaded", false);
-      platform.deployWorkerVerticle(main, config, instances, multiThreaded, new Handler<AsyncResult<String>>() {
-        @Override
-        public void handle(AsyncResult<String> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            final String deploymentID = result.result();
-            context.execute(new Action<String>() {
-              @Override
-              public String perform() {
-                deployments.put(cluster, message.body().copy().putString("id", deploymentID).encode());
-                return deploymentID;
-              }
-            }, new Handler<AsyncResult<String>>() {
-              @Override
-              public void handle(AsyncResult<String> result) {
-                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
-              }
-            });
-          }
-        }
-      });
+      platform.deployWorkerVerticle(main, config, instances, multiThreaded, createDeploymentHandler(message));
     } else {
-      platform.deployVerticle(main, config, instances, new Handler<AsyncResult<String>>() {
-        @Override
-        public void handle(AsyncResult<String> result) {
-          if (result.failed()) {
-            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-          } else {
-            final String deploymentID = result.result();
-            context.execute(new Action<String>() {
-              @Override
-              public String perform() {
-                deployments.put(cluster, message.body().copy().putString("id", deploymentID).encode());
-                return deploymentID;
-              }
-            }, new Handler<AsyncResult<String>>() {
-              @Override
-              public void handle(AsyncResult<String> result) {
-                message.reply(new JsonObject().putString("status", "ok").putString("id", deploymentID));
-              }
-            });
-          }
-        }
-      });
+      platform.deployVerticle(main, config, instances, createDeploymentHandler(message));
     }
+  }
+
+  /**
+   * Creates a platform deployment handler.
+   */
+  private Handler<AsyncResult<String>> createDeploymentHandler(final Message<JsonObject> message) {
+    return new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          addNewDeployment(result.result(), message.body(), new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              message.reply(new JsonObject().putString("status", "ok").putString("id", result.result()));
+            }
+          });
+        }
+      }
+    };
+  }
+
+  /**
+   * Adds a deployment to the cluster deployments map.
+   */
+  private void addNewDeployment(final String deploymentID, final JsonObject deploymentInfo, Handler<AsyncResult<String>> doneHandler) {
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
+        deployments.put(cluster, deploymentInfo.copy()
+            .putString("id", deploymentID)
+            .putString("realID", deploymentID)
+            .putString("address", internal)
+            .putString("node", listener.nodeId()).encode());
+        return deploymentID;
+      }
+    }, doneHandler);
+  }
+
+  /**
+   * Redeploys a deployment.
+   */
+  private void doRedeploy(final JsonObject deploymentInfo) {
+    if (deploymentInfo.getString("type").equals("module")) {
+      log.info(String.format("%s - redeploying module %s", DefaultClusterManager.this, deploymentInfo.getString("module")));
+      final CountDownLatch latch = new CountDownLatch(1);
+      platform.deployModule(deploymentInfo.getString("module"), deploymentInfo.getObject("config", new JsonObject()), deploymentInfo.getInteger("instances", 1), createRedeployHandler(deploymentInfo, latch));
+      try {
+        latch.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+      }
+    } else if (deploymentInfo.getString("type").equals("verticle")) {
+      log.info(String.format("%s - redeploying verticle %s", DefaultClusterManager.this, deploymentInfo.getString("main")));
+      final CountDownLatch latch = new CountDownLatch(1);
+      if (deploymentInfo.getBoolean("worker", false)) {
+        platform.deployWorkerVerticle(deploymentInfo.getString("main"), deploymentInfo.getObject("config", new JsonObject()), deploymentInfo.getInteger("instances", 1), deploymentInfo.getBoolean("multi-threaded"), createRedeployHandler(deploymentInfo, latch));
+      } else {
+        platform.deployVerticle(deploymentInfo.getString("main"), deploymentInfo.getObject("config", new JsonObject()), deploymentInfo.getInteger("instances", 1), createRedeployHandler(deploymentInfo, latch));
+      }
+      try {
+        latch.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+      }
+    }
+  }
+
+  /**
+   * Creates a redeploy handler.
+   */
+  private Handler<AsyncResult<String>> createRedeployHandler(final JsonObject deploymentInfo, final CountDownLatch latch) {
+    return new Handler<AsyncResult<String>>() {
+      @Override
+      public void handle(AsyncResult<String> result) {
+        if (result.failed()) {
+          log.error(result.cause());
+          latch.countDown();
+        } else {
+          addMappedDeployment(result.result(), deploymentInfo, new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> result) {
+              latch.countDown();
+            }
+          });
+        }
+      }
+    };
+  }
+
+  /**
+   * Adds a changed deployment to the deployments map.
+   */
+  private void addMappedDeployment(final String deploymentID, final JsonObject deploymentInfo, Handler<AsyncResult<String>> doneHandler) {
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
+        deploymentInfo.putString("realID", deploymentID);
+        deploymentInfo.putString("node", listener.nodeId());
+        deploymentInfo.putString("address", internal);
+        deployments.put(cluster, deploymentInfo.encode());
+        return deploymentID;
+      }
+    }, doneHandler);
   }
 
   /**
@@ -977,19 +1083,82 @@ public class DefaultClusterManager implements ClusterManager {
    * Undeploys a module or verticle.
    */
   private void doUndeploy(final Message<JsonObject> message) {
+    // If we're undeploying a network then it needs to be handled differently by
+    // selecting the node on which the network is deployed.
+    String type = message.body().getString("type");
+    if (type.equals("network")) {
+      doUndeployNetwork(message);
+      return;
+    }
+
+    final String deploymentID = message.body().getString("id");
+    if (deploymentID == null) {
+      message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
+    } else {
+      findDeploymentAddress(deploymentID, new Handler<AsyncResult<String>>() {
+        @Override
+        public void handle(AsyncResult<String> result) {
+          if (result.failed()) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+          } else if (result.result() == null) {
+            message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid deployment " + deploymentID));
+          } else {
+            vertx.eventBus().sendWithTimeout(result.result(), message.body(), 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
+              @Override
+              public void handle(AsyncResult<Message<JsonObject>> result) {
+                if (result.failed()) {
+                  message.fail(((ReplyException) result.cause()).failureCode(), result.cause().getMessage());
+                } else {
+                  message.reply(result.result().body());
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Locates the internal address of the node on which a deployment is deployed.
+   */
+  private void findDeploymentAddress(final String deploymentID, Handler<AsyncResult<String>> resultHandler) {
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
+        synchronized (deployments) {
+          JsonObject locatedInfo = null;
+          Collection<String> sdeploymentsInfo = deployments.get(cluster);
+          for (String sdeploymentInfo : sdeploymentsInfo) {
+            JsonObject deploymentInfo = new JsonObject(sdeploymentInfo);
+            if (deploymentInfo.getString("id").equals(deploymentID)) {
+              locatedInfo = deploymentInfo;
+              break;
+            }
+          }
+          if (locatedInfo != null) {
+            return locatedInfo.getString("address");
+          }
+          return null;
+        }
+      }
+    }, resultHandler);
+  }
+
+  /**
+   * Internally undeploys a module/verticle.
+   */
+  private void doInternalUndeploy(final Message<JsonObject> message) {
     String type = message.body().getString("type");
     if (type == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment type specified."));
     } else {
       switch (type) {
         case "module":
-          doUndeployModule(message);
+          doInternalUndeployModule(message);
           break;
         case "verticle":
-          doUndeployVerticle(message);
-          break;
-        case "network":
-          doUndeployNetwork(message);
+          doInternalUndeployVerticle(message);
           break;
         default:
           message.reply(new JsonObject().putString("status", "error").putString("message", "Invalid deployment type " + type));
@@ -1001,24 +1170,15 @@ public class DefaultClusterManager implements ClusterManager {
   /**
    * Undeploys a module.
    */
-  private void doUndeployModule(final Message<JsonObject> message) {
+  private void doInternalUndeployModule(final Message<JsonObject> message) {
     final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<Void> result) {
-          platform.undeployModule(deploymentID, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-              } else {
-                message.reply(new JsonObject().putString("status", "ok"));
-              }
-            }
-          });
+        public void handle(AsyncResult<String> result) {
+          platform.undeployModule(result.succeeded() && result.result() != null ? result.result() : deploymentID, createUndeployHandler(message));
         }
       });
     }
@@ -1027,36 +1187,43 @@ public class DefaultClusterManager implements ClusterManager {
   /**
    * Undeploys a verticle.
    */
-  private void doUndeployVerticle(final Message<JsonObject> message) {
+  private void doInternalUndeployVerticle(final Message<JsonObject> message) {
     final String deploymentID = message.body().getString("id");
     if (deploymentID == null) {
       message.reply(new JsonObject().putString("status", "error").putString("message", "No deployment ID specified."));
     } else {
-      removeDeployment(deploymentID, new Handler<AsyncResult<Void>>() {
+      removeDeployment(deploymentID, new Handler<AsyncResult<String>>() {
         @Override
-        public void handle(AsyncResult<Void> result) {
-          platform.undeployVerticle(deploymentID, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
-              } else {
-                message.reply(new JsonObject().putString("status", "ok"));
-              }
-            }
-          });
+        public void handle(AsyncResult<String> result) {
+          platform.undeployVerticle(result.succeeded() && result.result() != null ? result.result() : deploymentID, createUndeployHandler(message));
         }
       });
     }
   }
 
   /**
-   * Removes a deployment from the deployments map.
+   * Creates a platform undeploy handler.
    */
-  private void removeDeployment(final String deploymentID, Handler<AsyncResult<Void>> doneHandler) {
-    context.execute(new Action<Void>() {
+  private Handler<AsyncResult<Void>> createUndeployHandler(final Message<JsonObject> message) {
+    return new Handler<AsyncResult<Void>>() {
       @Override
-      public Void perform() {
+      public void handle(AsyncResult<Void> result) {
+        if (result.failed()) {
+          message.reply(new JsonObject().putString("status", "error").putString("message", result.cause().getMessage()));
+        } else {
+          message.reply(new JsonObject().putString("status", "ok"));
+        }
+      }
+    };
+  }
+
+  /**
+   * Removes a deployment from the deployments map and returns the real deploymentID.
+   */
+  private void removeDeployment(final String deploymentID, Handler<AsyncResult<String>> doneHandler) {
+    context.execute(new Action<String>() {
+      @Override
+      public String perform() {
         Collection<String> clusterDeployments = deployments.get(cluster);
         if (clusterDeployments != null) {
           String deployment = null;
@@ -1069,6 +1236,7 @@ public class DefaultClusterManager implements ClusterManager {
           }
           if (deployment != null) {
             deployments.remove(cluster, deployment);
+            return new JsonObject(deployment).getString("realID");
           }
         }
         return null;

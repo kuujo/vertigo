@@ -267,47 +267,58 @@ public class DefaultGroup implements Group {
 
   @Override
   public Group deployModule(String moduleName) {
-    return deployModule(moduleName, null, 1, null);
+    return deployModule(moduleName, null, 1, false, null);
   }
 
   @Override
   public Group deployModule(String moduleName, JsonObject config) {
-    return deployModule(moduleName, config, 1, null);
+    return deployModule(moduleName, config, 1, false, null);
   }
 
   @Override
   public Group deployModule(String moduleName, int instances) {
-    return deployModule(moduleName, null, instances, null);
+    return deployModule(moduleName, null, instances, false, null);
   }
 
   @Override
   public Group deployModule(String moduleName, JsonObject config, int instances) {
-    return deployModule(moduleName, config, instances, null);
+    return deployModule(moduleName, config, instances, false, null);
+  }
+
+  @Override
+  public Group deployModule(String moduleName, JsonObject config, int instances, boolean ha) {
+    return deployModule(moduleName, config, instances, false, null);
   }
 
   @Override
   public Group deployModule(String moduleName, Handler<AsyncResult<String>> doneHandler) {
-    return deployModule(moduleName, null, 1, doneHandler);
+    return deployModule(moduleName, null, 1, false, doneHandler);
   }
 
   @Override
   public Group deployModule(String moduleName, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployModule(moduleName, config, 1, doneHandler);
+    return deployModule(moduleName, config, 1, false, doneHandler);
   }
 
   @Override
   public Group deployModule(String moduleName, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployModule(moduleName, null, instances, doneHandler);
+    return deployModule(moduleName, null, instances, false, doneHandler);
   }
 
   @Override
-  public Group deployModule(String moduleName, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+  public Group deployModule(String moduleName, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployModule(moduleName, config, instances, false, doneHandler);
+  }
+
+  @Override
+  public Group deployModule(String moduleName, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("type", "module")
         .putString("module", moduleName)
         .putObject("config", config != null ? config : new JsonObject())
-        .putNumber("instances", instances);
+        .putNumber("instances", instances)
+        .putBoolean("ha", ha);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -325,47 +336,58 @@ public class DefaultGroup implements Group {
 
   @Override
   public Group deployVerticle(String main) {
-    return deployVerticle(main, null, 1, null);
+    return deployVerticle(main, null, 1, false, null);
   }
 
   @Override
   public Group deployVerticle(String main, JsonObject config) {
-    return deployVerticle(main, config, 1, null);
+    return deployVerticle(main, config, 1, false, null);
   }
 
   @Override
   public Group deployVerticle(String main, int instances) {
-    return deployVerticle(main, null, instances, null);
+    return deployVerticle(main, null, instances, false, null);
   }
 
   @Override
   public Group deployVerticle(String main, JsonObject config, int instances) {
-    return deployVerticle(main, config, instances, null);
+    return deployVerticle(main, config, instances, false, null);
+  }
+
+  @Override
+  public Group deployVerticle(String main, JsonObject config, int instances, boolean ha) {
+    return deployVerticle(main, config, instances, false, null);
   }
 
   @Override
   public Group deployVerticle(String main, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticle(main, null, 1, doneHandler);
+    return deployVerticle(main, null, 1, false, doneHandler);
   }
 
   @Override
   public Group deployVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticle(main, config, 1, doneHandler);
+    return deployVerticle(main, config, 1, false, doneHandler);
   }
 
   @Override
   public Group deployVerticle(String main, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployVerticle(main, null, instances, doneHandler);
+    return deployVerticle(main, null, instances, false, doneHandler);
   }
 
   @Override
-  public Group deployVerticle(String main, JsonObject config, int instances, final Handler<AsyncResult<String>> doneHandler) {
+  public Group deployVerticle(String main, JsonObject config, int instances, Handler<AsyncResult<String>> doneHandler) {
+    return deployVerticle(main, config, instances, false, doneHandler);
+  }
+
+  @Override
+  public Group deployVerticle(String main, JsonObject config, int instances, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("type", "verticle")
         .putString("main", main)
         .putObject("config", config != null ? config : new JsonObject())
-        .putNumber("instances", instances);
+        .putNumber("instances", instances)
+        .putBoolean("ha", ha);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {
@@ -383,41 +405,51 @@ public class DefaultGroup implements Group {
 
   @Override
   public Group deployWorkerVerticle(String main) {
-    return deployWorkerVerticle(main, null, 1, false, null);
+    return deployWorkerVerticle(main, null, 1, false, false, null);
   }
 
   @Override
   public Group deployWorkerVerticle(String main, JsonObject config) {
-    return deployWorkerVerticle(main, config, 1, false, null);
+    return deployWorkerVerticle(main, config, 1, false, false, null);
   }
 
   @Override
   public Group deployWorkerVerticle(String main, int instances) {
-    return deployWorkerVerticle(main, null, instances, false, null);
+    return deployWorkerVerticle(main, null, instances, false, false, null);
   }
 
   @Override
   public Group deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded) {
-    return deployWorkerVerticle(main, config, instances, false, null);
+    return deployWorkerVerticle(main, config, instances, multiThreaded, false, null);
+  }
+
+  @Override
+  public Group deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, boolean ha) {
+    return deployWorkerVerticle(main, config, instances, multiThreaded, ha, null);
   }
 
   @Override
   public Group deployWorkerVerticle(String main, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticle(main, null, 1, false, doneHandler);
+    return deployWorkerVerticle(main, null, 1, false, false, doneHandler);
   }
 
   @Override
   public Group deployWorkerVerticle(String main, JsonObject config, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticle(main, config, 1, false, doneHandler);
+    return deployWorkerVerticle(main, config, 1, false, false, doneHandler);
   }
 
   @Override
   public Group deployWorkerVerticle(String main, int instances, Handler<AsyncResult<String>> doneHandler) {
-    return deployWorkerVerticle(main, null, instances, false, doneHandler);
+    return deployWorkerVerticle(main, null, instances, false, false, doneHandler);
   }
 
   @Override
-  public Group deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, final Handler<AsyncResult<String>> doneHandler) {
+  public Group deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, Handler<AsyncResult<String>> doneHandler) {
+    return deployWorkerVerticle(main, config, instances, multiThreaded, false, doneHandler);
+  }
+
+  @Override
+  public Group deployWorkerVerticle(String main, JsonObject config, int instances, boolean multiThreaded, boolean ha, final Handler<AsyncResult<String>> doneHandler) {
     JsonObject message = new JsonObject()
         .putString("action", "deploy")
         .putString("type", "verticle")
@@ -425,7 +457,8 @@ public class DefaultGroup implements Group {
         .putObject("config", config != null ? config : new JsonObject())
         .putNumber("instances", instances)
         .putBoolean("worker", true)
-        .putBoolean("multi-threaded", multiThreaded);
+        .putBoolean("multi-threaded", multiThreaded)
+        .putBoolean("ha", ha);
     vertx.eventBus().sendWithTimeout(address, message, DEFAULT_REPLY_TIMEOUT, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       public void handle(AsyncResult<Message<JsonObject>> result) {

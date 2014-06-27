@@ -24,10 +24,39 @@ import org.vertx.java.core.Handler;
  */
 interface ClusterListener {
 
+  /**
+   * Returns the local unique node ID.
+   *
+   * @return The node ID of the local node.
+   */
   String nodeId();
 
-  void joinHandler(Handler<String> handler);
+  /**
+   * Registers a cluster join handler.
+   *
+   * @param handler The handler to register.
+   */
+  void registerJoinHandler(Handler<String> handler);
 
-  void leaveHandler(Handler<String> handler);
+  /**
+   * Unregisters a cluster join handler.
+   *
+   * @param handler The handler to unregister.
+   */
+  void unregisterJoinHandler(Handler<String> handler);
+
+  /**
+   * Registers a cluster leave handler.
+   *
+   * @param handler The handler to register.
+   */
+  void registerLeaveHandler(Handler<String> handler);
+
+  /**
+   * Unregisters a cluster leave handler.
+   *
+   * @param handler The handler to unregister.
+   */
+  void unregisterLeaveHandler(Handler<String> handler);
 
 }

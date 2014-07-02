@@ -31,33 +31,35 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class DefaultAsyncCounter implements AsyncCounter {
-  private final String address;
-  private final String name;
+public class DefaultAsyncCounter extends AsyncDataStructure implements AsyncCounter {
   private final EventBus eventBus;
 
   public DefaultAsyncCounter(String address, String name, Vertx vertx) {
-    this.address = address;
-    this.name = name;
+    super(address, name, vertx);
     this.eventBus = vertx.eventBus();
   }
 
   @Override
-  public String name() {
-    return name;
-  }
-
-  @Override
   public void get(final Handler<AsyncResult<Long>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "get")
         .putString("type", "counter")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                get(doneHandler);
+              } else {
+                new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -74,15 +76,25 @@ public class DefaultAsyncCounter implements AsyncCounter {
 
   @Override
   public void increment(final Handler<AsyncResult<Void>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "increment")
         .putString("type", "counter")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                increment(doneHandler);
+              } else {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -94,15 +106,25 @@ public class DefaultAsyncCounter implements AsyncCounter {
 
   @Override
   public void incrementAndGet(final Handler<AsyncResult<Long>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "increment")
         .putString("type", "counter")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                incrementAndGet(doneHandler);
+              } else {
+                new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -119,15 +141,25 @@ public class DefaultAsyncCounter implements AsyncCounter {
 
   @Override
   public void decrement(final Handler<AsyncResult<Void>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "decrement")
         .putString("type", "counter")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                decrement(doneHandler);
+              } else {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -139,15 +171,25 @@ public class DefaultAsyncCounter implements AsyncCounter {
 
   @Override
   public void decrementAndGet(final Handler<AsyncResult<Long>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "decrement")
         .putString("type", "counter")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                decrementAndGet(doneHandler);
+              } else {
+                new DefaultFutureResult<Long>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Long>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {

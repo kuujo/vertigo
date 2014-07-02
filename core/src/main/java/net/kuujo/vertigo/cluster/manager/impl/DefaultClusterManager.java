@@ -60,12 +60,14 @@ public class DefaultClusterManager implements ClusterManager {
   private static final Serializer serializer = SerializerFactory.getSerializer(Config.class);
   private static final Logger log = LoggerFactory.getLogger(DefaultClusterManager.class);
   private final String cluster;
+  private final String local = UUID.randomUUID().toString();
   private final String internal = UUID.randomUUID().toString();
   private final Vertx vertx;
   private final ContextManager context;
   private final PlatformManager platform;
   private final ClusterListener listener;
   private final ClusterData data;
+  private final Set<String> registry;
   private final MultiMap<String, String> nodes;
   private final MultiMap<String, String> groups;
   private final MultiMap<String, String> deployments;
@@ -340,6 +342,7 @@ public class DefaultClusterManager implements ClusterManager {
     this.platform = platform;
     this.listener = listener;
     this.data = data;
+    this.registry = vertx.sharedData().getSet(cluster);
     this.nodes = data.getMultiMap(String.format("nodes.%s", cluster));
     this.groups = data.getMultiMap(String.format("groups.%s", cluster));
     this.deployments = data.getMultiMap(String.format("deployments.%s", cluster));
@@ -359,12 +362,35 @@ public class DefaultClusterManager implements ClusterManager {
   }
 
   @Override
-  public void start(Handler<AsyncResult<Void>> doneHandler) {
+  public void start(final Handler<AsyncResult<Void>> doneHandler) {
     listener.registerJoinHandler(joinHandler);
     listener.registerLeaveHandler(leaveHandler);
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(doneHandler);
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(2);
+    counter.setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(final AsyncResult<Void> result) {
+        if (result.failed()) {
+          stop(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> stopResult) {
+              doneHandler.handle(result);
+            }
+          });
+        } else {
+          // A local handler is registered which allows components on the local node
+          // to access the cluster quicker by preventing messages from going across
+          // the network if possible.
+          vertx.eventBus().registerHandler(local, messageHandler, counter);
+          synchronized (registry) {
+            registry.add(local);
+          }
+          doneHandler.handle(result);
+        }
+      }
+    });
+
     vertx.eventBus().registerHandler(internal, internalHandler, counter);
-    vertx.eventBus().registerHandler(address(), messageHandler, counter);
+    vertx.eventBus().registerHandler(cluster, messageHandler, counter);
   }
 
   @Override
@@ -374,16 +400,20 @@ public class DefaultClusterManager implements ClusterManager {
 
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    synchronized (registry) {
+      registry.remove(local);
+    }
     listener.unregisterJoinHandler(null);
     listener.unregisterLeaveHandler(null);
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(new Handler<AsyncResult<Void>>() {
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(3).setHandler(new Handler<AsyncResult<Void>>() {
       @Override
       public void handle(AsyncResult<Void> result) {
         clearDeployments(doneHandler);
       }
     });
+    vertx.eventBus().unregisterHandler(local, messageHandler, counter);
     vertx.eventBus().unregisterHandler(internal, internalHandler, counter);
-    vertx.eventBus().unregisterHandler(address(), messageHandler, counter);
+    vertx.eventBus().unregisterHandler(cluster, messageHandler, counter);
   }
 
   /**

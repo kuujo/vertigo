@@ -33,20 +33,12 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @param <T> The list data type.
  */
-public class DefaultAsyncList<T> implements AsyncList<T> {
-  private final String address;
-  private final String name;
+public class DefaultAsyncList<T> extends AsyncDataStructure implements AsyncList<T> {
   private final EventBus eventBus;
 
   public DefaultAsyncList(String address, String name, Vertx vertx) {
-    this.address = address;
-    this.name = name;
+    super(address, name, vertx);
     this.eventBus = vertx.eventBus();
-  }
-
-  @Override
-  public String name() {
-    return name;
   }
 
   @Override
@@ -55,7 +47,8 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
   }
 
   @Override
-  public void add(T value, final Handler<AsyncResult<Boolean>> doneHandler) {
+  public void add(final T value, final Handler<AsyncResult<Boolean>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "add")
         .putString("type", "list")
@@ -63,9 +56,18 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
         .putValue("value", value);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                add(value, doneHandler);
+              } else {
+                new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -81,7 +83,8 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
   }
 
   @Override
-  public void remove(T value, final Handler<AsyncResult<Boolean>> doneHandler) {
+  public void remove(final T value, final Handler<AsyncResult<Boolean>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "remove")
         .putString("type", "list")
@@ -89,9 +92,18 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
         .putValue("value", value);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                remove(value, doneHandler);
+              } else {
+                new DefaultFutureResult<Boolean>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -107,7 +119,8 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
   }
 
   @Override
-  public void remove(int index, final Handler<AsyncResult<T>> doneHandler) {
+  public void remove(final int index, final Handler<AsyncResult<T>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "remove")
         .putString("type", "list")
@@ -116,9 +129,17 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
-        if (result.failed()) {
-          new DefaultFutureResult<T>(result.cause()).setHandler(doneHandler);
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
+        if (result.failed()) {resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+          @Override
+          public void handle(AsyncResult<Boolean> resetResult) {
+            if (resetResult.succeeded() && resetResult.result()) {
+              remove(index, doneHandler);
+            } else {
+              new DefaultFutureResult<T>(result.cause()).setHandler(doneHandler);
+            }
+          }
+        });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<T>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -129,7 +150,8 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
   }
 
   @Override
-  public void contains(Object value, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public void contains(final Object value, final Handler<AsyncResult<Boolean>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "contains")
         .putString("type", "list")
@@ -137,9 +159,18 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
         .putValue("value", value);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                contains(value, resultHandler);
+              } else {
+                new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -151,15 +182,25 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
 
   @Override
   public void size(final Handler<AsyncResult<Integer>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "size")
         .putString("type", "list")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                size(resultHandler);
+              } else {
+                new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Integer>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -171,15 +212,25 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
 
   @Override
   public void isEmpty(final Handler<AsyncResult<Boolean>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "empty")
         .putString("type", "list")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                isEmpty(resultHandler);
+              } else {
+                new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -196,15 +247,25 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
 
   @Override
   public void clear(final Handler<AsyncResult<Void>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "clear")
         .putString("type", "list")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                clear(doneHandler);
+              } else {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -215,7 +276,8 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
   }
 
   @Override
-  public void get(int index, final Handler<AsyncResult<T>> resultHandler) {
+  public void get(final int index, final Handler<AsyncResult<T>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "get")
         .putString("type", "list")
@@ -224,9 +286,18 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<T>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                get(index, resultHandler);
+              } else {
+                new DefaultFutureResult<T>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<T>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -242,7 +313,8 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
   }
 
   @Override
-  public void set(int index, T value, final Handler<AsyncResult<Void>> doneHandler) {
+  public void set(final int index, final T value, final Handler<AsyncResult<Void>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
       .putString("action", "set")
       .putString("type", "list")
@@ -251,9 +323,18 @@ public class DefaultAsyncList<T> implements AsyncList<T> {
       .putValue("value", value);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                set(index, value, doneHandler);
+              } else {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {

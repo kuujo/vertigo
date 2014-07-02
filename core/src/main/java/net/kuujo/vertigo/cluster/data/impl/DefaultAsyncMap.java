@@ -41,20 +41,12 @@ import org.vertx.java.core.json.JsonObject;
  * @param <K> The map key type.
  * @param <V> The map value type.
  */
-public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
-  private final String address;
-  private final String name;
+public class DefaultAsyncMap<K, V> extends AsyncDataStructure implements AsyncMap<K, V> {
   private final EventBus eventBus;
 
   public DefaultAsyncMap(String address, String name, Vertx vertx) {
-    this.address = address;
-    this.name = name;
+    super(address, name, vertx);
     this.eventBus = vertx.eventBus();
-  }
-
-  @Override
-  public String name() {
-    return name;
   }
 
   @Override
@@ -63,7 +55,8 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
   }
 
   @Override
-  public void put(K key, V value, final Handler<AsyncResult<V>> doneHandler) {
+  public void put(final K key, final V value, final Handler<AsyncResult<V>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "put")
         .putString("type", "map")
@@ -73,9 +66,18 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<V>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                put(key, value, doneHandler);
+              } else {
+                new DefaultFutureResult<V>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<V>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {
@@ -86,7 +88,8 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
   }
 
   @Override
-  public void get(K key, final Handler<AsyncResult<V>> resultHandler) {
+  public void get(final K key, final Handler<AsyncResult<V>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "get")
         .putString("type", "map")
@@ -95,9 +98,18 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<V>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                get(key, resultHandler);
+              } else {
+                new DefaultFutureResult<V>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<V>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -113,7 +125,8 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
   }
 
   @Override
-  public void remove(K key, final Handler<AsyncResult<V>> resultHandler) {
+  public void remove(final K key, final Handler<AsyncResult<V>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "remove")
         .putString("type", "map")
@@ -122,9 +135,18 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<V>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                remove(key, resultHandler);
+              } else {
+                new DefaultFutureResult<V>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<V>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -135,7 +157,8 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
   }
 
   @Override
-  public void containsKey(K key, final Handler<AsyncResult<Boolean>> resultHandler) {
+  public void containsKey(final K key, final Handler<AsyncResult<Boolean>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "contains")
         .putString("type", "map")
@@ -143,9 +166,18 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
         .putValue("key", key);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                containsKey(key, resultHandler);
+              } else {
+                new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -157,6 +189,7 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
 
   @Override
   public void keySet(final Handler<AsyncResult<Set<K>>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "keys")
         .putString("type", "map")
@@ -164,9 +197,18 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Set<K>>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                keySet(resultHandler);
+              } else {
+                new DefaultFutureResult<Set<K>>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Set<K>>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -187,6 +229,7 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
 
   @Override
   public void values(final Handler<AsyncResult<Collection<V>>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "values")
         .putString("type", "map")
@@ -194,9 +237,18 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
       @SuppressWarnings("unchecked")
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Collection<V>>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                values(resultHandler);
+              } else {
+                new DefaultFutureResult<Collection<V>>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Collection<V>>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -217,15 +269,25 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
 
   @Override
   public void size(final Handler<AsyncResult<Integer>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "size")
         .putString("type", "map")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                size(resultHandler);
+              } else {
+                new DefaultFutureResult<Integer>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Integer>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -237,15 +299,25 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
 
   @Override
   public void isEmpty(final Handler<AsyncResult<Boolean>> resultHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "empty")
         .putString("type", "map")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                isEmpty(resultHandler);
+              } else {
+                new DefaultFutureResult<Boolean>(result.cause()).setHandler(resultHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Boolean>(new DataException(result.result().body().getString("message"))).setHandler(resultHandler);
         } else {
@@ -262,15 +334,25 @@ public class DefaultAsyncMap<K, V> implements AsyncMap<K, V> {
 
   @Override
   public void clear(final Handler<AsyncResult<Void>> doneHandler) {
+    checkAddress();
     JsonObject message = new JsonObject()
         .putString("action", "clear")
         .putString("type", "map")
         .putString("name", name);
     eventBus.sendWithTimeout(address, message, 30000, new Handler<AsyncResult<Message<JsonObject>>>() {
       @Override
-      public void handle(AsyncResult<Message<JsonObject>> result) {
+      public void handle(final AsyncResult<Message<JsonObject>> result) {
         if (result.failed()) {
-          new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+          resetLocalAddress(new Handler<AsyncResult<Boolean>>() {
+            @Override
+            public void handle(AsyncResult<Boolean> resetResult) {
+              if (resetResult.succeeded() && resetResult.result()) {
+                clear(doneHandler);
+              } else {
+                new DefaultFutureResult<Void>(result.cause()).setHandler(doneHandler);
+              }
+            }
+          });
         } else if (result.result().body().getString("status").equals("error")) {
           new DefaultFutureResult<Void>(new DataException(result.result().body().getString("message"))).setHandler(doneHandler);
         } else {

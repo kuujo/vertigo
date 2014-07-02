@@ -18,6 +18,7 @@ package net.kuujo.vertigo.cluster.manager.impl;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -48,8 +49,10 @@ import com.hazelcast.core.MultiMap;
 public class DefaultGroupManager implements GroupManager {
   private static final Logger log = LoggerFactory.getLogger(DefaultGroupManager.class);
   private final String group;
+  private final String local = UUID.randomUUID().toString();
   private final String internal = UUID.randomUUID().toString();
   private final Vertx vertx;
+  private final Set<String> registry;
   private final ContextManager context;
   private final PlatformManager platform;
   private final ClusterListener listener;
@@ -129,6 +132,7 @@ public class DefaultGroupManager implements GroupManager {
     this.context = context;
     this.platform = platform;
     this.listener = listener;
+    this.registry = vertx.sharedData().getSet(group);
     this.groups = data.getMultiMap(String.format("groups.%s", cluster));
     this.deployments = data.getMultiMap(String.format("deployments.%s", cluster));
     this.nodeSelectors = data.getMap(String.format("selectors.node.%s", group));
@@ -145,10 +149,33 @@ public class DefaultGroupManager implements GroupManager {
   }
 
   @Override
-  public void start(Handler<AsyncResult<Void>> doneHandler) {
+  public void start(final Handler<AsyncResult<Void>> doneHandler) {
     listener.registerJoinHandler(joinHandler);
     listener.registerLeaveHandler(leaveHandler);
-    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(doneHandler);
+    final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(2);
+    counter.setHandler(new Handler<AsyncResult<Void>>() {
+      @Override
+      public void handle(final AsyncResult<Void> result) {
+        if (result.failed()) {
+          stop(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> stopResult) {
+              doneHandler.handle(result);
+            }
+          });
+        } else {
+          // A local handler is registered which allows components on the local node
+          // to access the cluster quicker by preventing messages from going across
+          // the network if possible.
+          vertx.eventBus().registerHandler(local, messageHandler, counter);
+          synchronized (registry) {
+            registry.add(local);
+          }
+          doneHandler.handle(result);
+        }
+      }
+    });
+
     vertx.eventBus().registerHandler(internal, internalHandler, counter);
     vertx.eventBus().registerHandler(group, messageHandler, counter);
   }
@@ -160,6 +187,9 @@ public class DefaultGroupManager implements GroupManager {
 
   @Override
   public void stop(final Handler<AsyncResult<Void>> doneHandler) {
+    synchronized (registry) {
+      registry.remove(local);
+    }
     context.execute(new Action<Void>() {
       @Override
       public Void perform() {
@@ -172,12 +202,13 @@ public class DefaultGroupManager implements GroupManager {
         vertx.eventBus().unregisterHandler(group, messageHandler, doneHandler);
         listener.unregisterJoinHandler(null);
         listener.unregisterLeaveHandler(null);
-        final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(new Handler<AsyncResult<Void>>() {
+        final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(3).setHandler(new Handler<AsyncResult<Void>>() {
           @Override
           public void handle(AsyncResult<Void> result) {
             clearDeployments(doneHandler);
           }
         });
+        vertx.eventBus().unregisterHandler(local, messageHandler, counter);
         vertx.eventBus().unregisterHandler(internal, internalHandler, counter);
         vertx.eventBus().unregisterHandler(group, messageHandler, counter);
       }

@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.io;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 /**
  * An openable type.

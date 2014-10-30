@@ -13,30 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package net.kuujo.vertigo.io;
 
-import io.vertx.core.AsyncResult;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
+import io.vertx.core.streams.ReadStream;
 
 /**
- * Closeable type.
+ * Vertigo port consumer.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The closeable type.
  */
-public interface Closeable<T extends Closeable<T>> extends AutoCloseable {
+@VertxGen
+public interface Consumer<T> extends ReadStream<T> {
+
+  @Override
+  Consumer<T> exceptionHandler(Handler<Throwable> handler);
+
+  @Override
+  Consumer<T> handler(Handler<T> handler);
+
+  @Override
+  Consumer<T> pause();
+
+  @Override
+  Consumer<T> resume();
+
+  @Override
+  Consumer<T> endHandler(Handler<Void> handler);
 
   /**
-   * Closes the stream.
-   */
-  void close();
-
-  /**
-   * Closes the stream.
+   * Returns the name of the port to which the consumer belongs.
    *
-   * @param doneHandler An asynchronous handler to be called once complete.
+   * @return The name of the port to which the consumer belongs.
    */
-  void close(Handler<AsyncResult<Void>> doneHandler);
+  String port();
+
+  /**
+   * Returns a read stream for messages received on the port.
+   *
+   * @return A port message read stream.
+   */
+  ReadStream<T> messageStream();
 
 }

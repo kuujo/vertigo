@@ -15,15 +15,12 @@
  */
 package net.kuujo.vertigo.hook;
 
-import net.kuujo.vertigo.util.serialization.JsonSerializable;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.io.Serializable;
 
 /**
  * Base type for hooking into Vertigo events.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="hook")
-public interface Hook extends JsonSerializable {
+public interface Hook extends Serializable {
 }

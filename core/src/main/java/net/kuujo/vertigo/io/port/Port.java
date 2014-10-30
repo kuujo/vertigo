@@ -30,7 +30,7 @@ import net.kuujo.vertigo.io.Openable;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Port<T extends Port<T>> extends Openable<T>, Closeable<T> {
+public interface Port<T extends Port<T, U>, U> extends Openable<T>, Closeable<T> {
 
   /**
    * Returns the port name.

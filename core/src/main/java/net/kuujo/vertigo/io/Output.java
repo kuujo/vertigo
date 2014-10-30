@@ -15,14 +15,6 @@
  */
 package net.kuujo.vertigo.io;
 
-import net.kuujo.vertigo.io.group.OutputGroupSupport;
-
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-
 /**
  * Output interface.<p>
  *
@@ -31,168 +23,13 @@ import org.vertx.java.core.json.JsonObject;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Output<T extends Output<T>> extends OutputGroupSupport<T> {
+public interface Output<T extends Output<T, U>, U> {
 
   /**
-   * Returns the output's Vertx instance.
+   * Returns an output producer.
    *
-   * @return A vertx instance.
+   * @return An output producer.
    */
-  Vertx vertx();
-
-  /**
-   * Returns the current connection send queue size.
-   *
-   * @return The current connection send queue size.
-   */
-  int size();
-
-  /**
-   * Sets the send queue max size.
-   *
-   * @param maxSize The send queue max size.
-   * @return The send stream.
-   */
-  T setSendQueueMaxSize(int maxSize);
-
-  /**
-   * Returns the send queue max size.
-   *
-   * @return The send queue max size.
-   */
-  int getSendQueueMaxSize();
-
-  /**
-   * Returns a boolean indicating whether the send queue is full.
-   *
-   * @return Indicates whether the send queue is full.
-   */
-  boolean sendQueueFull();
-
-  /**
-   * Sets a drain handler on the output.<p>
-   *
-   * When the output's send queue becomes full, the output will be temporarily
-   * paused while its output queue is empty. Once the queue size decreases
-   * back to 50% of the maximum queue size the drain handler will be called
-   * so that normal operation can resume.
-   *
-   * @param handler A handler to be called when the stream is prepared to accept
-   *        new messages.
-   * @return The send stream.
-   */
-  T drainHandler(Handler<Void> handler);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Object message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(String message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Short message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Integer message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Long message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Float message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Double message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Boolean message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Byte message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(byte[] message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Character message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(JsonArray message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(JsonObject message);
-
-  /**
-   * Sends a message on the output.
-   *
-   * @param message The message to send.
-   * @return The output.
-   */
-  T send(Buffer message);
+  Producer<U> producer();
 
 }

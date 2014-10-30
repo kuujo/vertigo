@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.hook;
 
-import net.kuujo.vertigo.component.Component;
+import net.kuujo.vertigo.component.ComponentInstance;
 
 /**
  * Hook type for component events.<p>
@@ -33,13 +33,13 @@ public interface ComponentHook extends IOHook {
    *
    * @param component The component that was started.
    */
-  void handleStart(Component component);
+  void handleStart(ComponentInstance component);
 
   /**
    * Called when the component has stopped.
    *
    * @param component The component that was stopped.
    */
-  void handleStop(Component component);
+  void handleStop(ComponentInstance component);
 
 }

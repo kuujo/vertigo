@@ -15,9 +15,8 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.Input;
-import net.kuujo.vertigo.io.batch.InputBatchSupport;
-import net.kuujo.vertigo.io.group.InputGroupSupport;
 
 /**
  * Input port on which messages are received.<p>
@@ -29,5 +28,6 @@ import net.kuujo.vertigo.io.group.InputGroupSupport;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputPort extends Port<InputPort>, Input<InputPort>, InputGroupSupport<InputPort>, InputBatchSupport<InputPort> {
+@VertxGen
+public interface InputPort<T> extends Port<InputPort<T>, T>, Input<InputPort<T>, T> {
 }

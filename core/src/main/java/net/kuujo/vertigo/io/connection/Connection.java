@@ -39,11 +39,4 @@ public interface Connection<T extends Connection<T>> extends Openable<T>, Closea
    */
   String address();
 
-  /**
-   * Returns the current connection size.
-   *
-   * @return The current connection size.
-   */
-  int size();
-
 }

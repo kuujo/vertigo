@@ -13,22 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.io.connection;
+
+import net.kuujo.vertigo.hook.OutputHook;
+import net.kuujo.vertigo.io.stream.OutputStreamInfo;
+
+import java.util.List;
 
 /**
- * Basic input interface.
+ * Output connection context represents a single instance's output to
+ * an instance of another component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionDescriptor> {
 
   /**
-   * Returns an input consumer.
+   * Returns the parent output stream context.
    *
-   * @return The input consumer.
+   * @return The parent stream context.
    */
-  Consumer<U> consumer();
+  OutputStreamInfo stream();
+
+  /**
+   * Returns a list of output hooks.
+   *
+   * @return A list of output hooks.
+   */
+  List<OutputHook> hooks();
 
 }

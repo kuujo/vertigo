@@ -13,22 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package net.kuujo.vertigo.io;
 
+import io.vertx.core.Handler;
+import io.vertx.core.streams.WriteStream;
+
 /**
- * Basic input interface.
+ * Output port producer.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface Producer<T> extends WriteStream<T> {
+
+  @Override
+  Producer<T> exceptionHandler(Handler<Throwable> handler);
+
+  @Override
+  Producer<T> write(T data);
 
   /**
-   * Returns an input consumer.
+   * Produces a message.
    *
-   * @return The input consumer.
+   * @param message The message to send.
+   * @return the port producer.
    */
-  Consumer<U> consumer();
+  Producer<T> produce(T message);
+
+  @Override
+  Producer<T> drainHandler(Handler<Void> handler);
 
 }

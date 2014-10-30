@@ -15,20 +15,31 @@
  */
 package net.kuujo.vertigo.io;
 
+import net.kuujo.vertigo.io.port.OutputPortInfo;
+
+import java.util.Collection;
+
 /**
- * Basic input interface.
+ * Output context is a wrapper around output port information for
+ * a single component instance.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface OutputInfo extends IOInfo<OutputInfo> {
 
   /**
-   * Returns an input consumer.
+   * Returns the output's port contexts.
    *
-   * @return The input consumer.
+   * @return A collection of output port contexts.
    */
-  Consumer<U> consumer();
+  Collection<OutputPortInfo> ports();
+
+  /**
+   * Returns the output port context for a given port.
+   *
+   * @param name The name of the port to return.
+   * @return The output port context.
+   */
+  OutputPortInfo port(String name);
 
 }

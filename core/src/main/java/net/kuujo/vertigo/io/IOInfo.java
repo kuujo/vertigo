@@ -15,20 +15,21 @@
  */
 package net.kuujo.vertigo.io;
 
+import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.InstanceInfo;
+
 /**
- * Basic input interface.
+ * Input/output context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface IOInfo<T extends IOInfo<T>> extends TypeInfo<T> {
 
   /**
-   * Returns an input consumer.
+   * Returns the parent instance context.
    *
-   * @return The input consumer.
+   * @return The parent instance context.
    */
-  Consumer<U> consumer();
+  InstanceInfo instance();
 
 }

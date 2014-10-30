@@ -1,9 +1,0 @@
-{
-  "main": "App.java",
-  "author": "Jordan Halterman",
-  "website": "http://github.com/kuujo/vertigo",
-  "ports": {
-    "in": ["in"],
-    "out": ["out"]
-  }
-}

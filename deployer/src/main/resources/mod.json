@@ -1,9 +1,0 @@
-{
-  "system": true,
-  "resident": true,
-  "description": "Command-line deployment for Vertigo networks",
-  "licenses": ["The Apache Software License Version 2.0"],
-  "author": "Jordan Halterman",
-  "keywords": ["vertigo", "deployment"],
-  "homepage": "https://github.com/kuujo/vertigo"
-}

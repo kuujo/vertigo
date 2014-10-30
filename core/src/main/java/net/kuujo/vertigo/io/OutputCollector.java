@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io;
 
 import java.util.Collection;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.port.OutputPort;
 
 /**
@@ -27,6 +28,7 @@ import net.kuujo.vertigo.io.port.OutputPort;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface OutputCollector extends IOCollector<OutputCollector> {
 
   /**
@@ -46,6 +48,6 @@ public interface OutputCollector extends IOCollector<OutputCollector> {
    * @param name The name of the port to load.
    * @return An output port.
    */
-  OutputPort port(String name);
+  <T> OutputPort<T> port(String name);
 
 }

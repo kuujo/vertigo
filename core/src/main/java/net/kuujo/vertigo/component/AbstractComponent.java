@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.component;
+
+import io.vertx.core.AbstractVerticle;
 
 /**
- * Basic input interface.
+ * Abstract Java component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
-
-  /**
-   * Returns an input consumer.
-   *
-   * @return The input consumer.
-   */
-  Consumer<U> consumer();
-
+public abstract class AbstractComponent extends AbstractVerticle implements Component {
 }

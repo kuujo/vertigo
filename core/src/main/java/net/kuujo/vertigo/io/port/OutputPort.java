@@ -15,12 +15,8 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.io.batch.OutputBatch;
-import net.kuujo.vertigo.io.batch.OutputBatchSupport;
-import net.kuujo.vertigo.io.group.OutputGroupSupport;
-
-import org.vertx.java.core.Handler;
 
 /**
  * Output port to which messages are sent.<p>
@@ -36,14 +32,6 @@ import org.vertx.java.core.Handler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputPort extends Port<OutputPort>, Output<OutputPort>, OutputBatchSupport<OutputPort>, OutputGroupSupport<OutputPort> {
-
-  /**
-   * Creates a new batch.
-   *
-   * @param handler A handler to be called when the batch is created.
-   * @return The output batch.
-   */
-  OutputPort batch(Handler<OutputBatch> handler);
-
+@VertxGen
+public interface OutputPort<T> extends Port<OutputPort<T>, T>, Output<OutputPort<T>, T> {
 }

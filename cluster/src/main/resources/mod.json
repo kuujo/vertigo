@@ -1,8 +1,0 @@
-{
-  "description": "Fault-tolerant cluster manager for Vertigo",
-  "licenses": ["The Apache Software License Version 2.0"],
-  "author": "Jordan Halterman",
-  "keywords": ["cluster manager", "shared data"],
-  "homepage": "https://github.com/kuujo/vertigo",
-  "main": "net.kuujo.vertigo.cluster.manager.impl.ClusterAgent"
-}

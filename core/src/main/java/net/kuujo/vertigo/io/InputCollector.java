@@ -15,9 +15,10 @@
  */
 package net.kuujo.vertigo.io;
 
-import java.util.Collection;
-
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.port.InputPort;
+
+import java.util.Collection;
 
 /**
  * Interface for receiving messages on input ports.<p>
@@ -27,6 +28,7 @@ import net.kuujo.vertigo.io.port.InputPort;
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface InputCollector extends IOCollector<InputCollector> {
 
   /**
@@ -46,6 +48,6 @@ public interface InputCollector extends IOCollector<InputCollector> {
    * @param name The name of the port to load.
    * @return The input port.
    */
-  InputPort port(String name);
+  <T> InputPort<T> port(String name);
 
 }

@@ -18,22 +18,20 @@ package net.kuujo.vertigo.io.stream;
 import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.io.batch.OutputBatchSupport;
-import net.kuujo.vertigo.io.group.OutputGroupSupport;
 
 /**
  * Output stream.<p>
  *
  * The output stream represents a group of connections between the current
  * component instance and multiple instances of another component. Each stream
- * uses an internal {@link net.kuujo.vertigo.io.selector.Selector} to select
+ * uses an internal {@link net.kuujo.vertigo.io.partitioner.Partitioner} to select
  * connections to which to send each message. Each message sent on a stream
  * can be sent to a single connection or it can be copied to multiple connections
  * based on the selector implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputStream extends Output<OutputStream>, OutputBatchSupport<OutputStream>, OutputGroupSupport<OutputStream>, Openable<OutputStream>, Closeable<OutputStream> {
+public interface OutputStream<T> extends Output<OutputStream<T>, T>, Openable<OutputStream<T>>, Closeable<OutputStream<T>> {
 
   /**
    * Returns the output stream address.

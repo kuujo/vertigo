@@ -5,9 +5,9 @@
   <groupId>net.kuujo</groupId>
   <artifactId>vertigo-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.7.0-RC4-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <name>Vertigo</name>
-  <description>A distributed event processing framework for Vert.x.</description>
+  <description>A fault-tolerant distributed event processing framework for Vert.x.</description>
   <url>http://github.com/kuujo/vertigo</url>
   <inceptionYear>2013</inceptionYear>
 
@@ -24,8 +24,8 @@
     <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
     <mods.directory>target/mods</mods.directory>
 
-    <vertx.version>2.1</vertx.version>
-    <vertx.testtools.version>2.0.3-final</vertx.testtools.version>
+    <vertx.version>3.0.0-SNAPSHOT</vertx.version>
+    <codegen.version>1.0-SNAPSHOT</codegen.version>
     <junit.version>4.11</junit.version>
 
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
@@ -35,7 +35,7 @@
     <maven.surefire.plugin.version>2.14</maven.surefire.plugin.version>
     <maven.failsafe.plugin.version>2.14</maven.failsafe.plugin.version>
     <maven.surefire.report.plugin.version>2.14</maven.surefire.report.plugin.version>
-    <maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
+    <maven.javadoc.plugin.version>2.10.1</maven.javadoc.plugin.version>
     <maven.dependency.plugin.version>2.7</maven.dependency.plugin.version>
   </properties>
 
@@ -67,9 +67,6 @@
 
   <modules>
     <module>core</module>
-    <module>cluster</module>
-    <module>deployer</module>
-    <module>util</module>
   </modules>
 
   <repositories>
@@ -84,30 +81,17 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version>${vertx.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-platform</artifactId>
-      <version>${vertx.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-hazelcast</artifactId>
-      <version>${vertx.version}</version>
-      <scope>provided</scope>
+      <artifactId>codegen</artifactId>
+      <version>${codegen.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>testtools</artifactId>
-      <version>${vertx.testtools.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -121,18 +105,14 @@
         <dependencies>
           <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-platform</artifactId>
-            <version>${vertx.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
             <version>${vertx.version}</version>
           </dependency>
           <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-hazelcast</artifactId>
-            <version>${vertx.version}</version>
+            <artifactId>codegen</artifactId>
+            <version>${codegen.version}</version>
+            <optional>true</optional>
           </dependency>
         </dependencies>
         <executions>
@@ -151,8 +131,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven.compiler.plugin.version}</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -314,8 +294,8 @@
             <version>${maven.javadoc.plugin.version}</version>
             <configuration>
               <show>public</show>
-              <excludePackageNames>net.kuujo.vertigo.network.manager:net.kuujo.vertigo.util:net.kuujo.vertigo.cluster.manager:net.kuujo.vertigo.io.stream:net.kuujo.vertigo.io.connection:net.kuujo.vertigo.platform:*.impl.*</excludePackageNames>
-              <reportOutputDirectory>docs/0.7.0</reportOutputDirectory>
+              <excludePackageNames>*.impl.*</excludePackageNames>
+              <reportOutputDirectory>docs/1.0.0</reportOutputDirectory>
               <destDir>java</destDir>
               <aggregate>true</aggregate>
             </configuration>

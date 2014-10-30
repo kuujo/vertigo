@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.io.port;
+
+import net.kuujo.vertigo.TypeInfo;
 
 /**
- * Basic input interface.
+ * Base context for input and output port contexts.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *
- * @param <T> The input type.
+ * @param <T> The port type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface PortInfo<T extends PortInfo<T>> extends TypeInfo<T> {
 
   /**
-   * Returns an input consumer.
+   * Returns the port name.
    *
-   * @return The input consumer.
+   * @return The port name.
    */
-  Consumer<U> consumer();
+  String name();
 
 }

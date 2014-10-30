@@ -13,22 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo;
+
+import java.io.Serializable;
 
 /**
- * Basic input interface.
- *
+ * Immutable configuration information for Vertigo types.
+ * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface TypeInfo<T extends TypeInfo<T>> extends Serializable {
 
   /**
-   * Returns an input consumer.
+   * Returns the type ID.
    *
-   * @return The input consumer.
+   * @return The type ID.
    */
-  Consumer<U> consumer();
+  String id();
+
+  /**
+   * Returns a formatted representation of the type info.
+   *
+   * @param formatted Whether to format the type info.
+   * @return A formatted representation of the type info.
+   */
+  String toString(boolean formatted);
+
+  /**
+   * Creates a copy of the type info.
+   *
+   * @return A copy of the type info and its children.
+   */
+  T copy();
 
 }

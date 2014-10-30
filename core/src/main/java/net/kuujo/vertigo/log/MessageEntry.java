@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2013-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.log;
 
 /**
- * Basic input interface.
+ * Component event message entry.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public interface MessageEntry<T> extends Entry {
 
   /**
-   * Returns an input consumer.
+   * Returns the connection on which the message was received.
    *
-   * @return The input consumer.
+   * @return The connection on which the message was received.
    */
-  Consumer<U> consumer();
+  String connection();
+
+  /**
+   * Returns the port on which the message was received.
+   *
+   * @return The port on which the message was received.
+   */
+  String port();
+
+  /**
+   * Returns the entry message.
+   *
+   * @return The entry message.
+   */
+  T message();
 
 }

@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.io;
 
-import net.kuujo.vertigo.io.port.Port;
-
 /**
  * Input/output collector.<p>
  *
@@ -27,14 +25,4 @@ import net.kuujo.vertigo.io.port.Port;
  * @param <T> The collector type.
  */
 public interface IOCollector<T extends IOCollector<T>> extends Openable<T>, Closeable<T> {
-
-  /**
-   * Returns a named port.
-   *
-   * @param name The port name.
-   * @return A named port.
-   */
-  @SuppressWarnings("rawtypes")
-  Port port(String name);
-
 }

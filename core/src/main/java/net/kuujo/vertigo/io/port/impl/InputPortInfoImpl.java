@@ -13,33 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+
+package net.kuujo.vertigo.io.port.impl;
 
 import net.kuujo.vertigo.hook.InputHook;
+import net.kuujo.vertigo.io.InputInfo;
+import net.kuujo.vertigo.io.connection.InputConnectionInfo;
 import net.kuujo.vertigo.io.port.InputPortInfo;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
- * Input connection context represents a single instance's input from
- * an instance of another component.
+ * Input port info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo> {
+public class InputPortInfoImpl extends BasePortInfoImpl<InputPortInfo> implements InputPortInfo {
+  private InputInfo input;
+  private List<InputConnectionInfo> connections = new ArrayList<>();
+  private List<InputHook> hooks = new ArrayList<>();
 
-  /**
-   * Returns the parent input port context.
-   *
-   * @return The parent port context.
-   */
-  InputPortInfo port();
+  @Override
+  public InputInfo input() {
+    return input;
+  }
 
-  /**
-   * Returns a list of input hooks.
-   *
-   * @return A list of input hooks.
-   */
-  List<InputHook> hooks();
+  @Override
+  public Collection<InputConnectionInfo> connections() {
+    return connections;
+  }
+
+  @Override
+  public List<InputHook> hooks() {
+    return hooks;
+  }
 
 }

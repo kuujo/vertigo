@@ -45,13 +45,6 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
   String name();
 
   /**
-   * Returns the component status address.
-   *
-   * @return The component status address.
-   */
-  String status();
-
-  /**
    * Returns the verticle main.
    *
    * @return The verticle main.
@@ -88,12 +81,12 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
   InstanceInfo instance(int instanceNumber);
 
   /**
-   * Gets a component instance context by instance address.
+   * Gets a component instance context by instance id.
    * 
-   * @param address The instance address.
+   * @param id The instance id.
    * @return A component instance or <code>null</code> if the instance doesn't exist.
    */
-  InstanceInfo instance(String address);
+  InstanceInfo instance(String id);
 
   /**
    * Returns a boolean indicating whether the verticle is a worker verticle.

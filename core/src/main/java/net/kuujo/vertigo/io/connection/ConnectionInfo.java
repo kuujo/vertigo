@@ -26,6 +26,13 @@ import net.kuujo.vertigo.TypeInfo;
 public interface ConnectionInfo<T extends ConnectionInfo<T>> extends TypeInfo<T> {
 
   /**
+   * Returns the unique connection address.
+   *
+   * @return The unique connection address.
+   */
+  String address();
+
+  /**
    * Returns the connection source.
    *
    * @return The connection source.

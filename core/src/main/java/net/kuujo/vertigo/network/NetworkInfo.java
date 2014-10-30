@@ -59,27 +59,6 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
   Network config();
 
   /**
-   * Returns the address of the cluster to which the network belongs.
-   *
-   * @return The address of the cluster to which the network belongs.
-   */
-  String cluster();
-
-  /**
-   * Returns the network status address.<p>
-   *
-   * This is the address of a shared-data key that is monitored by all component
-   * instances in the cluster. When the key is set, components know that the
-   * network is considered stable. During a network configuration change, the
-   * network manager will unset the status address, notifying components that
-   * the network is no longer stable until the key is reset. This is the mechanism
-   * used by Vertigo to perform coordination between components.
-   *
-   * @return The network status address.
-   */
-  String status();
-
-  /**
    * Returns a collection of network component contexts.
    * 
    * @return A collection of network component contexts.
@@ -101,6 +80,6 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * @return A component context.
    * @throws IllegalArgumentException If a component does not exist at the given name.
    */
-  <T extends ComponentInfo> T component(String name);
+  ComponentInfo component(String name);
 
 }

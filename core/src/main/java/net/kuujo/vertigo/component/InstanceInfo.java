@@ -44,16 +44,6 @@ public interface InstanceInfo extends TypeInfo<InstanceInfo> {
   int number();
 
   /**
-   * Returns the instance address.<p>
-   *
-   * This is simply a unique identifier used to identify the component
-   * across all networks.
-   *
-   * @return The instance address.
-   */
-  String address();
-
-  /**
    * Returns the instance input context.
    *
    * @return The instance input context.
@@ -72,7 +62,6 @@ public interface InstanceInfo extends TypeInfo<InstanceInfo> {
    * 
    * @return The parent component context.
    */
-  @SuppressWarnings("rawtypes")
-  <T extends ComponentInfo> T component();
+  ComponentInfo component();
 
 }

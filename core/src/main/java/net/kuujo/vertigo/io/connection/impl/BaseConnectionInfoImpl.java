@@ -13,33 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.hook.OutputHook;
-import net.kuujo.vertigo.io.stream.OutputStreamInfo;
+package net.kuujo.vertigo.io.connection.impl;
 
-import java.util.List;
+import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
 
 /**
- * Output connection context represents a single instance's output to
- * an instance of another component.
+ * Connection info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInfo> {
+public abstract class BaseConnectionInfoImpl<T extends ConnectionInfo<T>> extends BaseTypeInfoImpl<T> implements ConnectionInfo<T> {
+  protected String address;
+  protected SourceInfo source;
+  protected TargetInfo target;
 
-  /**
-   * Returns the parent output stream context.
-   *
-   * @return The parent stream context.
-   */
-  OutputStreamInfo stream();
+  @Override
+  public String address() {
+    return address;
+  }
 
-  /**
-   * Returns a list of output hooks.
-   *
-   * @return A list of output hooks.
-   */
-  List<OutputHook> hooks();
+  @Override
+  public SourceInfo source() {
+    return source;
+  }
+
+  @Override
+  public TargetInfo target() {
+    return target;
+  }
 
 }

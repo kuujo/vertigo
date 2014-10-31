@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,34 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.log;
+
+package net.kuujo.vertigo.io;
+
+import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.MultiMap;
 
 /**
- * Component event message entry.
+ * Vertigo message.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface MessageEntry<T> extends Entry {
+@VertxGen
+public interface VertigoMessage<T> {
 
   /**
-   * Returns the connection on which the message was received.
+   * Returns the name of the port on which the message was received.
    *
-   * @return The connection on which the message was received.
-   */
-  String connection();
-
-  /**
-   * Returns the port on which the message was received.
-   *
-   * @return The port on which the message was received.
+   * @return The name of the port on which the message was received.
    */
   String port();
 
   /**
-   * Returns the entry message.
+   * Returns the message body.
    *
-   * @return The entry message.
+   * @return The message body.
    */
-  T message();
+  T body();
+
+  /**
+   * Returns the message headers.
+   *
+   * @return The message headers.
+   */
+  MultiMap headers();
 
 }

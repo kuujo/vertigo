@@ -26,13 +26,13 @@ import io.vertx.core.streams.ReadStream;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface Consumer<T> extends ReadStream<T> {
+public interface Consumer<T> extends ReadStream<VertigoMessage<T>> {
 
   @Override
   Consumer<T> exceptionHandler(Handler<Throwable> handler);
 
   @Override
-  Consumer<T> handler(Handler<T> handler);
+  Consumer<T> handler(Handler<VertigoMessage<T>> handler);
 
   @Override
   Consumer<T> pause();
@@ -55,6 +55,6 @@ public interface Consumer<T> extends ReadStream<T> {
    *
    * @return A port message read stream.
    */
-  ReadStream<T> messageStream();
+  ReadStream<T> bodyStream();
 
 }

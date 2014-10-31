@@ -17,9 +17,6 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.Options;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.hook.ComponentHook;
-
-import java.util.List;
 
 /**
  * Components are synonymous with Vert.x verticles.
@@ -171,20 +168,5 @@ public interface ComponentOptions {
    *         verticle is not a worker verticle then <code>false</code> will be returned.
    */
   boolean isMultiThreaded();
-
-  /**
-   * Adds a hook to the component.
-   *
-   * @param hook The hook to add.
-   * @return The component configuration.
-   */
-  ComponentOptions addHook(ComponentHook hook);
-
-  /**
-   * Returns a list of component hooks.
-   *
-   * @return A list of component hooks.
-   */
-  List<ComponentHook> getHooks();
 
 }

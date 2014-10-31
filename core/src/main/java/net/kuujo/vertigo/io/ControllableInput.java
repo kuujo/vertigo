@@ -16,31 +16,33 @@
 
 package net.kuujo.vertigo.io;
 
-import io.vertx.core.Handler;
-import io.vertx.core.streams.WriteStream;
-
 /**
- * Output port producer.
+ * Controllable input.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Producer<T> extends WriteStream<T> {
-
-  @Override
-  Producer<T> exceptionHandler(Handler<Throwable> handler);
-
-  @Override
-  Producer<T> write(T data);
+public interface ControllableInput<T extends Input<T, U>, U> extends Input<T, U> {
 
   /**
-   * Produces a message.
+   * Pauses the input.<p>
    *
-   * @param message The message to send.
-   * @return the port producer.
+   * When the input is paused, messages received by the input will be buffered,
+   * so it is important that inputs not be paused for too long if messages
+   * continue to flow.
+   *
+   * @return The input.
    */
-  Producer<T> produce(T message);
+  T pause();
 
-  @Override
-  Producer<T> drainHandler(Handler<Void> handler);
+  /**
+   * Resumes receiving data on the input.<p>
+   *
+   * When the input is resumed, any messages that were buffered during the pause
+   * will be processed first. Once the input's buffer is empty it will resume
+   * normal operation.
+   *
+   * @return The input.
+   */
+  T resume();
 
 }

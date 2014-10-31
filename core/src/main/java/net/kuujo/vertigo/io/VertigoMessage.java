@@ -28,6 +28,20 @@ import io.vertx.core.MultiMap;
 public interface VertigoMessage<T> {
 
   /**
+   * Returns the unique message identifier.
+   *
+   * @return The unique message identifier.
+   */
+  String id();
+
+  /**
+   * Returns the message connection index.
+   *
+   * @return The message connection index.
+   */
+  long index();
+
+  /**
    * Returns the name of the port on which the message was received.
    *
    * @return The name of the port on which the message was received.

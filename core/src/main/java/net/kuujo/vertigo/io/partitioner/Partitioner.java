@@ -15,7 +15,8 @@
  */
 package net.kuujo.vertigo.io.partitioner;
 
-import net.kuujo.vertigo.io.connection.Connection;
+import io.vertx.core.MultiMap;
+import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 
 import java.io.Serializable;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
  *
  * Connection selectors are used to route messages between multiple instances
  * of a component. When a message is sent on an output stream, the stream's
- * selector will select a connection or set of connections to which to copy
+ * selector will partition a connection or set of connections to which to copy
  * the message.<p>
  *
  * Vertigo supports custom selector implementations. To implement a custom
@@ -69,11 +70,10 @@ public interface Partitioner extends Serializable {
   /**
    * Selects a list of connections to which to send a message.
    *
-   * @param message The message being sent.
-   * @param connections A list of connections from which to select.
+   * @param headers The message headers being sent.
+   * @param connections A list of connections from which to partition.
    * @return A list of selected connections.
    */
-  @SuppressWarnings("rawtypes")
-  <T extends Connection> List<T> select(Object message, List<T> connections);
+  List<OutputConnectionInfo> partition(MultiMap headers, List<OutputConnectionInfo> connections);
 
 }

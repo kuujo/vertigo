@@ -15,10 +15,11 @@
  */
 package net.kuujo.vertigo.io.partitioner;
 
+import io.vertx.core.MultiMap;
+import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
+
 import java.util.List;
 import java.util.Random;
-
-import net.kuujo.vertigo.io.connection.Connection;
 
 /**
  * Selector that sends messages to a random connection.<p>
@@ -34,8 +35,7 @@ public class RandomPartitioner implements Partitioner {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public <T extends Connection> List<T> select(Object message, List<T> connections) {
+  public List<OutputConnectionInfo> partition(MultiMap headers, List<OutputConnectionInfo> connections) {
     int index = rand.nextInt(connections.size());
     return connections.subList(index, index+1);
   }

@@ -15,9 +15,11 @@
  */
 package net.kuujo.vertigo.io.partitioner;
 
-import java.util.List;
+import io.vertx.core.MultiMap;
+import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 
-import net.kuujo.vertigo.io.connection.Connection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Selector that sends messages based on a simple mod-hash algorithm.<p>
@@ -29,11 +31,23 @@ import net.kuujo.vertigo.io.connection.Connection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class HashPartitioner implements Partitioner {
+  private String header;
+
+  public HashPartitioner() {
+  }
+
+  public HashPartitioner(String header) {
+    this.header = header;
+  }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public <T extends Connection> List<T> select(Object message, List<T> connections) {
-    int index = Math.abs(message.hashCode() % connections.size());
+  @SuppressWarnings("unchecked")
+  public List<OutputConnectionInfo> partition(MultiMap headers, List<OutputConnectionInfo> connections) {
+    Object value = headers.get(header);
+    if (header == null) {
+      return Collections.EMPTY_LIST;
+    }
+    int index = Math.abs(value.hashCode() % connections.size());
     return connections.subList(index, index+1);
   }
 

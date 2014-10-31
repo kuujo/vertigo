@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.io.Output;
+import net.kuujo.vertigo.io.ControllableOutput;
 
 /**
  * Output connection.<p>
@@ -41,7 +41,7 @@ import net.kuujo.vertigo.io.Output;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputConnection<T> extends Connection<OutputConnection<T>>, Output<OutputConnection<T>, T> {
+public interface OutputConnection<T> extends Connection<OutputConnection<T>>, ControllableOutput<OutputConnection<T>, T> {
 
   /**
    * Returns the output connection info.

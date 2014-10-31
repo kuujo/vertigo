@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.io.Input;
+import net.kuujo.vertigo.io.ControllableInput;
 
 /**
  * Input connection represents the receiving side of a connection
@@ -35,7 +35,7 @@ import net.kuujo.vertigo.io.Input;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputConnection<T> extends Connection<InputConnection<T>>, Input<InputConnection<T>, T> {
+public interface InputConnection<T> extends Connection<InputConnection<T>>, ControllableInput<InputConnection<T>, T> {
 
   /**
    * Returns the input connection info.

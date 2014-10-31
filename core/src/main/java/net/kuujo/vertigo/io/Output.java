@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io;
 
+import io.vertx.core.MultiMap;
+
 /**
  * Output interface.<p>
  *
@@ -26,10 +28,20 @@ package net.kuujo.vertigo.io;
 public interface Output<T extends Output<T, U>, U> {
 
   /**
-   * Returns an output producer.
+   * Sends a message on the output.
    *
-   * @return An output producer.
+   * @param message The message to send.
+   * @return The output instance.
    */
-  Producer<U> producer();
+  T send(U message);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @param headers The message headers.
+   * @return The output instance.
+   */
+  T send(U message, MultiMap headers);
 
 }

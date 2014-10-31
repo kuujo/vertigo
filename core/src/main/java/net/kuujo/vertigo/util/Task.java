@@ -13,25 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.util;
 
-import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 
 /**
- * Basic input interface.
+ * A running task.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The input type.
  */
-public interface Input<T extends Input<T, U>, U> {
+public class Task {
+  private static final Logger log = LoggerFactory.getLogger(Task.class);
+  private final TaskRunner runner;
+
+  public Task(TaskRunner runner) {
+    this.runner = runner;
+  }
 
   /**
-   * Registers a message handler on the input.
-   *
-   * @param handler An input message handler.
-   * @return The input instance.
+   * Fails the task.
    */
-  T messageHandler(Handler<VertigoMessage<U>> handler);
+  public void fail(Throwable t) {
+    log.error(t);
+    runner.complete(this);
+  }
+
+  /**
+   * Completes the task.
+   */
+  public void complete() {
+    runner.complete(this);
+  }
 
 }

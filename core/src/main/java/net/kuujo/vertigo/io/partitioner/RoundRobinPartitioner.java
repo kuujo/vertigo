@@ -15,9 +15,10 @@
  */
 package net.kuujo.vertigo.io.partitioner;
 
-import java.util.List;
+import io.vertx.core.MultiMap;
+import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 
-import net.kuujo.vertigo.io.connection.Connection;
+import java.util.List;
 
 /**
  * Selector that sends messages to connections using a simple round-robin algorithm.<p>
@@ -34,8 +35,7 @@ public class RoundRobinPartitioner implements Partitioner {
   }
 
   @Override
-  @SuppressWarnings("rawtypes")
-  public <T extends Connection> List<T> select(Object message, List<T> connections) {
+  public List<OutputConnectionInfo> partition(MultiMap headers, List<OutputConnectionInfo> connections) {
     int index = current++ % connections.size();
     return connections.subList(index, index+1);
   }

@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo;
 
-import org.vertx.java.core.VertxException;
+import io.vertx.core.VertxException;
 
 /**
  * Base Vertigo exception.

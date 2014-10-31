@@ -16,12 +16,8 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Output connection info implementation.
@@ -30,16 +26,10 @@ import java.util.List;
  */
 public class OutputConnectionInfoImpl extends BaseConnectionInfoImpl<OutputConnectionInfo> implements OutputConnectionInfo {
   private OutputStreamInfo stream;
-  private List<OutputHook> hooks = new ArrayList<>();
 
   @Override
   public OutputStreamInfo stream() {
     return stream;
-  }
-
-  @Override
-  public List<OutputHook> hooks() {
-    return hooks;
   }
 
 }

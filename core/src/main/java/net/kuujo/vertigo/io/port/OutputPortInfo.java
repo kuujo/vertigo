@@ -15,12 +15,10 @@
  */
 package net.kuujo.vertigo.io.port;
 
-import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Output port context represents a set of output connections for a single
@@ -43,12 +41,5 @@ public interface OutputPortInfo extends PortInfo<OutputPortInfo> {
    * @return A collection of streams in the port.
    */
   Collection<OutputStreamInfo> streams();
-
-  /**
-   * Returns a list of output hooks.
-   *
-   * @return A list of port output hooks.
-   */
-  List<OutputHook> hooks();
 
 }

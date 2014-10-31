@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
-import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.connection.InputConnectionInfo;
 import net.kuujo.vertigo.io.port.InputPortInfo;
@@ -33,7 +32,6 @@ import java.util.List;
 public class InputPortInfoImpl extends BasePortInfoImpl<InputPortInfo> implements InputPortInfo {
   private InputInfo input;
   private List<InputConnectionInfo> connections = new ArrayList<>();
-  private List<InputHook> hooks = new ArrayList<>();
 
   @Override
   public InputInfo input() {
@@ -43,11 +41,6 @@ public class InputPortInfoImpl extends BasePortInfoImpl<InputPortInfo> implement
   @Override
   public Collection<InputConnectionInfo> connections() {
     return connections;
-  }
-
-  @Override
-  public List<InputHook> hooks() {
-    return hooks;
   }
 
 }

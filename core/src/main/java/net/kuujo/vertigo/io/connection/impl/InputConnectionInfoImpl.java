@@ -16,12 +16,8 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.io.connection.InputConnectionInfo;
 import net.kuujo.vertigo.io.port.InputPortInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Input connection info implementation.
@@ -30,16 +26,10 @@ import java.util.List;
  */
 public class InputConnectionInfoImpl extends BaseConnectionInfoImpl<InputConnectionInfo> implements InputConnectionInfo {
   private InputPortInfo port;
-  private List<InputHook> hooks = new ArrayList<>();
 
   @Override
   public InputPortInfo port() {
     return port;
-  }
-
-  @Override
-  public List<InputHook> hooks() {
-    return hooks;
   }
 
 }

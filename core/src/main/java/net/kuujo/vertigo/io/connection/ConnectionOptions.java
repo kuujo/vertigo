@@ -16,13 +16,9 @@
 package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.Options;
-import net.kuujo.vertigo.hook.IOHook;
-import net.kuujo.vertigo.hook.InputHook;
-import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.partitioner.Partitioner;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -79,21 +75,6 @@ public interface ConnectionOptions extends Serializable {
    * @return The connection target info.
    */
   Target getTarget();
-
-  /**
-   * Adds an input/output hook to the connection.
-   *
-   * @param hook The hook to add.
-   * @return The connection configuration.
-   */
-  ConnectionOptions addHook(IOHook hook);
-
-  /**
-   * Returns a list of connection hooks.
-   *
-   * @return A list of hooks for the connection.
-   */
-  List<IOHook> getHooks();
 
   /**
    * Returns the connection partitioner.
@@ -200,21 +181,6 @@ public interface ConnectionOptions extends Serializable {
      */
     Source setPort(String port);
 
-    /**
-     * Adds an output hook to the source.
-     *
-     * @param hook The hook to add.
-     * @return The source instance.
-     */
-    Source addHook(OutputHook hook);
-
-    /**
-     * Returns a list of output hooks.
-     *
-     * @return A list of hooks for the output.
-     */
-    List<OutputHook> getHooks();
-
   }
 
   /**
@@ -263,21 +229,6 @@ public interface ConnectionOptions extends Serializable {
      * @return The target instance.
      */
     Target setPort(String port);
-
-    /**
-     * Adds an input hook to the target.
-     *
-     * @param hook The hook to add.
-     * @return The target instance.
-     */
-    Target addHook(InputHook hook);
-
-    /**
-     * Returns a list of input hooks.
-     *
-     * @return A list of hooks for the input.
-     */
-    List<InputHook> getHooks();
 
   }
 

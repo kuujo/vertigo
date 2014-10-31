@@ -15,10 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.hook.InputHook;
 import net.kuujo.vertigo.io.port.InputPortInfo;
-
-import java.util.List;
 
 /**
  * Input connection context represents a single instance's input from
@@ -34,12 +31,5 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    * @return The parent port context.
    */
   InputPortInfo port();
-
-  /**
-   * Returns a list of input hooks.
-   *
-   * @return A list of input hooks.
-   */
-  List<InputHook> hooks();
 
 }

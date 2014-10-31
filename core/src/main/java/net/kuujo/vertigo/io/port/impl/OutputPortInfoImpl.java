@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
-import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
@@ -33,7 +32,6 @@ import java.util.List;
 public class OutputPortInfoImpl extends BasePortInfoImpl<OutputPortInfo> implements OutputPortInfo {
   private OutputInfo output;
   private List<OutputStreamInfo> streams = new ArrayList<>();
-  private List<OutputHook> hooks = new ArrayList<>();
 
   @Override
   public OutputInfo output() {
@@ -43,11 +41,6 @@ public class OutputPortInfoImpl extends BasePortInfoImpl<OutputPortInfo> impleme
   @Override
   public Collection<OutputStreamInfo> streams() {
     return streams;
-  }
-
-  @Override
-  public List<OutputHook> hooks() {
-    return hooks;
   }
 
 }

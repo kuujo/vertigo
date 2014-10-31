@@ -15,10 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.hook.OutputHook;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
-
-import java.util.List;
 
 /**
  * Output connection context represents a single instance's output to
@@ -34,12 +31,5 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    * @return The parent stream context.
    */
   OutputStreamInfo stream();
-
-  /**
-   * Returns a list of output hooks.
-   *
-   * @return A list of output hooks.
-   */
-  List<OutputHook> hooks();
 
 }

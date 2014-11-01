@@ -18,6 +18,7 @@ package net.kuujo.vertigo.network;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.network.impl.NetworkInfoImpl;
 
 import java.util.Collection;
 
@@ -32,6 +33,25 @@ import java.util.Collection;
  */
 @VertxGen
 public interface NetworkInfo extends TypeInfo<NetworkInfo> {
+
+  /**
+   * Returns a network info builder.
+   *
+   * @return A new network info builder.
+   */
+  static TypeInfo.Builder<NetworkInfo> builder() {
+    return new NetworkInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new network info builder.
+   *
+   * @param network An existing network info object to wrap.
+   * @return A network info builder wrapper
+   */
+  static TypeInfo.Builder<NetworkInfo> builder(NetworkInfo network) {
+    return new NetworkInfoImpl.Builder((NetworkInfoImpl) network);
+  }
 
   /**
    * Returns the network name.<p>

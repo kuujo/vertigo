@@ -17,35 +17,33 @@ package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.io.connection.impl.TargetInfoImpl;
 
 /**
- * Connection contexts represent a direct connection between two instances
- * of separate components.<p>
+ * Connection target info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ConnectionInfo<T extends ConnectionInfo<T>> extends TypeInfo<T> {
+public interface TargetInfo extends EndpointInfo<TargetInfo> {
 
   /**
-   * Returns the unique connection address.
+   * Returns a new target info builder.
    *
-   * @return The unique connection address.
+   * @return A new target info builder.
    */
-  String address();
+  static TypeInfo.Builder<TargetInfo> builder() {
+    return new TargetInfoImpl.Builder();
+  }
 
   /**
-   * Returns the connection source.
+   * Returns a new target info builder.
    *
-   * @return The connection source.
+   * @param target An existing target info object.
+   * @return A target info builder wrapper.
    */
-  SourceInfo source();
-
-  /**
-   * Returns the connection target.
-   *
-   * @return The connection target.
-   */
-  TargetInfo target();
+  static TypeInfo.Builder<TargetInfo> builder(TargetInfo target) {
+    return new TargetInfoImpl.Builder((TargetInfoImpl) target);
+  }
 
 }

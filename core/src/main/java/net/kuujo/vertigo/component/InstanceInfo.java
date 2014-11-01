@@ -17,6 +17,7 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.impl.InstanceInfoImpl;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 
@@ -35,6 +36,25 @@ import net.kuujo.vertigo.io.OutputInfo;
  */
 @VertxGen
 public interface InstanceInfo extends TypeInfo<InstanceInfo> {
+
+  /**
+   * Returns a new instance info builder.
+   *
+   * @return A new instance info builder.
+   */
+  static TypeInfo.Builder<InstanceInfo> builder() {
+    return new InstanceInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new instance info builder.
+   *
+   * @param instance An existing instance info object to wrap.
+   * @return An instance info builder wrapper.
+   */
+  static TypeInfo.Builder<InstanceInfo> builder(InstanceInfo instance) {
+    return new InstanceInfoImpl.Builder((InstanceInfoImpl) instance);
+  }
 
   /**
    * Returns the instance number.

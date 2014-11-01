@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io;
 
+import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.io.impl.OutputInfoImpl;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 
 import java.util.Collection;
@@ -26,6 +28,25 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputInfo extends IOInfo<OutputInfo> {
+
+  /**
+   * Returns a new output info builder.
+   *
+   * @return A new output info builder.
+   */
+  static TypeInfo.Builder<OutputInfo> builder() {
+    return new OutputInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new output info builder.
+   *
+   * @param output An existing output info object to wrap.
+   * @return An output info builder wrapper.
+   */
+  static TypeInfo.Builder<OutputInfo> builder(OutputInfo output) {
+    return new OutputInfoImpl.Builder((OutputInfoImpl) output);
+  }
 
   /**
    * Returns the output's port contexts.

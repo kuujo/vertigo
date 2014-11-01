@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.io.connection.impl.OutputConnectionInfoImpl;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
 
 /**
@@ -24,6 +26,25 @@ import net.kuujo.vertigo.io.stream.OutputStreamInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInfo> {
+
+  /**
+   * Returns a new output connection info builder.
+   *
+   * @return A new output connection info builder.
+   */
+  static TypeInfo.Builder<OutputConnectionInfo> builder() {
+    return new OutputConnectionInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new output connection info builder.
+   *
+   * @param connection An existing output connection info object to wrap.
+   * @return An output connection info builder wrapper.
+   */
+  static TypeInfo.Builder<OutputConnectionInfo> builder(OutputConnectionInfo connection) {
+    return new OutputConnectionInfoImpl.Builder((OutputConnectionInfoImpl) connection);
+  }
 
   /**
    * Returns the parent output stream context.

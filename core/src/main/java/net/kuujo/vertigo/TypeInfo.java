@@ -46,4 +46,20 @@ public interface TypeInfo<T extends TypeInfo<T>> extends Serializable {
    */
   T copy();
 
+  /**
+   * Type info builder.
+   *
+   * @param <T> The type built by the builder.
+   */
+  public static interface Builder<T extends TypeInfo<T>> {
+
+    /**
+     * Builds the instance.
+     *
+     * @return The built type info instance.
+     */
+    T build();
+
+  }
+
 }

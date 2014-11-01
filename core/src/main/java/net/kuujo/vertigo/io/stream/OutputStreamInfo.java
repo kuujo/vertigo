@@ -15,10 +15,12 @@
  */
 package net.kuujo.vertigo.io.stream;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.io.partitioner.Partitioner;
+import net.kuujo.vertigo.io.stream.impl.OutputStreamInfoImpl;
 
 import java.util.List;
 
@@ -30,7 +32,27 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
+
+  /**
+   * Returns a new output stream info builder.
+   *
+   * @return A new output stream info builder.
+   */
+  static TypeInfo.Builder<OutputStreamInfo> builder() {
+    return new OutputStreamInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new output stream info builder.
+   *
+   * @param stream An existing output stream info object to wrap.
+   * @return An output stream builder wrapper.
+   */
+  static TypeInfo.Builder<OutputStreamInfo> builder(OutputStreamInfo stream) {
+    return new OutputStreamInfoImpl.Builder((OutputStreamInfoImpl) stream);
+  }
 
   /**
    * Returns the parent output port context.

@@ -16,8 +16,11 @@
 
 package net.kuujo.vertigo.io.impl;
 
+import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.InstanceInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
+import net.kuujo.vertigo.util.Args;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,6 +42,101 @@ public class OutputInfoImpl extends BaseIOInfoImpl<OutputInfo> implements Output
   @Override
   public OutputPortInfo port(String name) {
     return ports.get(name);
+  }
+
+  /**
+   * Output info builder.
+   */
+  public static class Builder implements TypeInfo.Builder<OutputInfo> {
+    private final OutputInfoImpl output;
+
+    public Builder() {
+      output = new OutputInfoImpl();
+    }
+
+    public Builder(OutputInfoImpl input) {
+      this.output = input;
+    }
+
+    /**
+     * Adds an output port.
+     *
+     * @param port The output port info.
+     * @return The output info builder.
+     */
+    public Builder addPort(OutputPortInfo port) {
+      Args.checkNotNull(port, "port cannot be null");
+      output.ports.put(port.name(), port);
+      return this;
+    }
+
+    /**
+     * Removes an output port.
+     *
+     * @param port The output port info.
+     * @return The output info builder.
+     */
+    public Builder removePort(OutputPortInfo port) {
+      Args.checkNotNull(port, "port cannot be null");
+      output.ports.remove(port.name());
+      return this;
+    }
+
+    /**
+     * Sets all output ports.
+     *
+     * @param ports A collection of output port info.
+     * @return The output info builder.
+     */
+    public Builder setPorts(OutputPortInfo... ports) {
+      output.ports.clear();
+      for (OutputPortInfo port : ports) {
+        output.ports.put(port.name(), port);
+      }
+      return this;
+    }
+
+    /**
+     * Sets all output ports.
+     *
+     * @param ports A collection of output port info.
+     * @return The output info builder.
+     */
+    public Builder setPorts(Collection<OutputPortInfo> ports) {
+      Args.checkNotNull(ports, "ports cannot be null");
+      output.ports.clear();
+      for (OutputPortInfo port : ports) {
+        output.ports.put(port.name(), port);
+      }
+      return this;
+    }
+
+    /**
+     * Clears all output ports.
+     *
+     * @return The output info builder.
+     */
+    public Builder clearPorts() {
+      output.ports.clear();
+      return this;
+    }
+
+    /**
+     * Sets the parent instance info.
+     *
+     * @param instance The parent instance info.
+     * @return The output info builder.
+     */
+    public Builder setInstance(InstanceInfo instance) {
+      Args.checkNotNull(instance, "instance cannot be null");
+      output.instance = instance;
+      return this;
+    }
+
+    @Override
+    public OutputInfoImpl build() {
+      return output;
+    }
   }
 
 }

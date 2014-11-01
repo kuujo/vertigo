@@ -15,8 +15,11 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.codegen.annotations.VertxGen;
+import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.connection.InputConnectionInfo;
+import net.kuujo.vertigo.io.port.impl.InputPortInfoImpl;
 
 import java.util.Collection;
 
@@ -26,7 +29,27 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface InputPortInfo extends PortInfo<InputPortInfo> {
+
+  /**
+   * Returns a new input port info builder.
+   *
+   * @return A new input port info builder.
+   */
+  static TypeInfo.Builder<InputPortInfo> builder() {
+    return new InputPortInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new input port info builder.
+   *
+   * @param port An existing input port info builder to wrap.
+   * @return An input port info builder wrapper.
+   */
+  static TypeInfo.Builder<InputPortInfo> builder(InputPortInfo port) {
+    return new InputPortInfoImpl.Builder((InputPortInfoImpl) port);
+  }
 
   /**
    * Returns the parent input context.

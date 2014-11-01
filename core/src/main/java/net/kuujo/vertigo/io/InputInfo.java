@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io;
 
+import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.io.impl.InputInfoImpl;
 import net.kuujo.vertigo.io.port.InputPortInfo;
 
 import java.util.Collection;
@@ -26,6 +28,25 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputInfo extends IOInfo<InputInfo> {
+
+  /**
+   * Returns a new input info builder.
+   *
+   * @return A new input info builder.
+   */
+  static TypeInfo.Builder<InputInfo> builder() {
+    return new InputInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new input info builder.
+   *
+   * @param input An existing input info object to wrap.
+   * @return An input info builder wrapper.
+   */
+  static TypeInfo.Builder<InputInfo> builder(InputInfo input) {
+    return new InputInfoImpl.Builder((InputInfoImpl) input);
+  }
 
   /**
    * Returns the input's port contexts.

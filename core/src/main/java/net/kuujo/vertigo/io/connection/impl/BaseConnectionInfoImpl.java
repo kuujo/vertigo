@@ -18,6 +18,8 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
+import net.kuujo.vertigo.io.connection.SourceInfo;
+import net.kuujo.vertigo.io.connection.TargetInfo;
 
 /**
  * Connection info implementation.

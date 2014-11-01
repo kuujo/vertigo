@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.io.connection.impl.InputConnectionInfoImpl;
 import net.kuujo.vertigo.io.port.InputPortInfo;
 
 /**
@@ -24,6 +26,25 @@ import net.kuujo.vertigo.io.port.InputPortInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo> {
+
+  /**
+   * Returns a new input connection info builder.
+   *
+   * @return A new input connection info builder.
+   */
+  static TypeInfo.Builder<InputConnectionInfo> builder() {
+    return new InputConnectionInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new input connection info builder.
+   *
+   * @param connection An existing input connection info object to wrap.
+   * @return An input connection info builder wrapper.
+   */
+  static TypeInfo.Builder<InputConnectionInfo> builder(InputConnectionInfo connection) {
+    return new InputConnectionInfoImpl.Builder((InputConnectionInfoImpl) connection);
+  }
 
   /**
    * Returns the parent input port context.

@@ -18,7 +18,7 @@ package net.kuujo.vertigo.component;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.hook.ComponentHook;
+import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.network.NetworkInfo;
 
 import java.util.List;
@@ -38,7 +38,26 @@ import java.util.List;
 public interface ComponentInfo extends TypeInfo<ComponentInfo> {
 
   /**
-   * Reurns the component name.
+   * Returns a new component info builder.
+   *
+   * @return A new component info builder.
+   */
+  static TypeInfo.Builder<ComponentInfo> builder() {
+    return new ComponentInfoImpl.Builder();
+  }
+
+  /**
+   * Returns a new component info builder.
+   *
+   * @param component An existing component info object to wrap.
+   * @return A component info builder wrapper.
+   */
+  static TypeInfo.Builder<ComponentInfo> builder(ComponentInfo component) {
+    return new ComponentInfoImpl.Builder((ComponentInfoImpl) component);
+  }
+
+  /**
+   * Returns the component name.
    *
    * @return The component name.
    */
@@ -102,13 +121,6 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * @return Indicates whether the verticle is a worker and is multi-threaded.
    */
   boolean isMultiThreaded();
-
-  /**
-   * Returns a list of component hooks.
-   *
-   * @return A list of component hooks.
-   */
-  List<ComponentHook> hooks();
 
   /**
    * Returns the parent network context.

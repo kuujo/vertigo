@@ -19,9 +19,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.ConnectionOptions;
 import net.kuujo.vertigo.io.connection.SourceOptions;
 import net.kuujo.vertigo.io.connection.TargetOptions;
@@ -76,7 +74,7 @@ public interface Network extends Serializable {
    * 
    * @return A list of network components.
    */
-  Collection<ComponentInfo> getComponents();
+  Collection<ComponentOptions> getComponents();
 
   /**
    * Gets a component by name.
@@ -86,7 +84,7 @@ public interface Network extends Serializable {
    * @throws IllegalArgumentException If the given component address does not exist within
    *           the network.
    */
-  ComponentInfo getComponent(String name);
+  ComponentOptions getComponent(String name);
 
   /**
    * Returns a boolean indicating whether the network has a component.
@@ -190,7 +188,7 @@ public interface Network extends Serializable {
    *
    * @return A collection of connections in the network.
    */
-  Collection<ConnectionInfo> getConnections();
+  Collection<ConnectionOptions> getConnections();
 
   /**
    * Creates a connection between two components.

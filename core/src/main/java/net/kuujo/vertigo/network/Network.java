@@ -137,6 +137,15 @@ public interface Network extends Serializable {
   /**
    * Adds a component to the network.
    *
+   * @param options The component options.
+   * @return The network definition.
+   */
+  @Fluent
+  Network addComponent(ComponentOptions options);
+
+  /**
+   * Adds a component to the network.
+   *
    * @param main The component verticle main.
    * @return The network definition.
    */

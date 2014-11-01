@@ -69,6 +69,7 @@ public class ComponentOptions implements Serializable {
   public static final String COMPONENT_MULTI_THREADED = "multi-threaded";
 
   private String name;
+  private Component component;
   private String main;
   private JsonObject config;
   private int instances;
@@ -114,6 +115,26 @@ public class ComponentOptions implements Serializable {
   public ComponentOptions setName(String name) {
     this.name = name;
     return this;
+  }
+
+  /**
+   * Sets the component instance.
+   *
+   * @param component The component instance.
+   * @return The component options.
+   */
+  public ComponentOptions setComponent(Component component) {
+    this.component = component;
+    return this;
+  }
+
+  /**
+   * Returns the component instance.
+   *
+   * @return The component instance.
+   */
+  public Component getComponent() {
+    return component;
   }
 
   /**

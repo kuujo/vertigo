@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.stream.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 import net.kuujo.vertigo.io.partitioner.Partitioner;
@@ -57,7 +56,7 @@ public class OutputStreamInfoImpl extends BaseTypeInfoImpl<OutputStreamInfo> imp
   /**
    * Output stream info builder.
    */
-  public static class Builder implements TypeInfo.Builder<OutputStreamInfo> {
+  public static class Builder implements OutputStreamInfo.Builder {
     private final OutputStreamInfoImpl stream;
 
     public Builder() {
@@ -68,59 +67,34 @@ public class OutputStreamInfoImpl extends BaseTypeInfoImpl<OutputStreamInfo> imp
       this.stream = stream;
     }
 
-    /**
-     * Adds a connection to the stream.
-     *
-     * @param connection The output connection info to add.
-     * @return The output stream info builder.
-     */
+    @Override
     public Builder addConnection(OutputConnectionInfo connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       stream.connections.add(connection);
       return this;
     }
 
-    /**
-     * Removes a connection from the stream.
-     *
-     * @param connection The output connection info to remove.
-     * @return The output stream info builder.
-     */
+    @Override
     public Builder removeConnection(OutputConnectionInfo connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       stream.connections.remove(connection);
       return this;
     }
 
-    /**
-     * Sets all connections on the stream.
-     *
-     * @param connections A collection of output connection info to add.
-     * @return The output stream info builder.
-     */
+    @Override
     public Builder setConnections(OutputConnectionInfo... connections) {
       stream.connections = new ArrayList<>(Arrays.asList(connections));
       return this;
     }
 
-    /**
-     * Sets all connections on the stream.
-     *
-     * @param connections A collection of output connection info to add.
-     * @return The output stream info builder.
-     */
+    @Override
     public Builder setConnections(Collection<OutputConnectionInfo> connections) {
       Args.checkNotNull(connections, "connections cannot be null");
       stream.connections = new ArrayList<>(connections);
       return this;
     }
 
-    /**
-     * Sets the parent output port.
-     *
-     * @param port The output port info.
-     * @return The output stream info builder.
-     */
+    @Override
     public Builder setPort(OutputPortInfo port) {
       Args.checkNotNull(port, "port cannot be null");
       stream.port = port;

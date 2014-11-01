@@ -21,6 +21,7 @@ import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.network.NetworkInfo;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    *
    * @return A new component info builder.
    */
-  static TypeInfo.Builder<ComponentInfo> builder() {
+  static Builder builder() {
     return new ComponentInfoImpl.Builder();
   }
 
@@ -69,6 +70,13 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * @return The verticle main.
    */
   String main();
+
+  /**
+   * Returns the verticle component.
+   *
+   * @return The verticle component instance.
+   */
+  Component component();
 
   /**
    * Gets the component configuration.
@@ -128,5 +136,114 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * @return The parent network context.
    */
   NetworkInfo network();
+
+  /**
+   * Component info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<ComponentInfo> {
+
+    /**
+     * Sets the component name.
+     *
+     * @param name The component name.
+     * @return The component info builder.
+     */
+    Builder setName(String name);
+
+    /**
+     * Sets the component main.
+     *
+     * @param main The component main.
+     * @return The component info builder.
+     */
+    Builder setMain(String main);
+
+    /**
+     * Sets the component instance.
+     *
+     * @param component The component instance.
+     * @return The component info builder.
+     */
+    Builder setComponent(Component component);
+
+    /**
+     * Sets the component configuration.
+     *
+     * @param config The component configuration.
+     * @return The component info builder.
+     */
+    Builder setConfig(JsonObject config);
+
+    /**
+     * Sets whether the component should be deployed as a worker.
+     *
+     * @param isWorker Indicates whether to deploy the component as a worker.
+     * @return The component info builder.
+     */
+    Builder setWorker(boolean isWorker);
+
+    /**
+     * Sets whether the component should be deployed in a multi-threaded context.
+     *
+     * @param isMultiThreaded Indicates whether to deploy the component as multi-threaded.
+     * @return The component info builder.
+     */
+    Builder setMultiThreaded(boolean isMultiThreaded);
+
+    /**
+     * Sets the component options.
+     *
+     * @param options Component options.
+     * @return The component builder.
+     */
+    Builder setOptions(ComponentOptions options);
+
+    /**
+     * Adds an instance to the component info.
+     *
+     * @param instance The instance info to add.
+     * @return The component info builder.
+     */
+    Builder addInstance(InstanceInfo instance);
+
+    /**
+     * Removes an instance from the component info.
+     *
+     * @param instance The instance info to remove.
+     * @return The component info builder.
+     */
+    Builder removeInstance(InstanceInfo instance);
+
+    /**
+     * Sets the component instances.
+     *
+     * @param instances A collection of instance info to add.
+     * @return The component info builder.
+     */
+    Builder setInstances(InstanceInfo... instances);
+
+    /**
+     * Sets the component instances.
+     *
+     * @param instances A collection of instance info to add.
+     * @return The component info builder.
+     */
+    Builder setInstances(Collection<InstanceInfo> instances);
+
+    /**
+     * Clears all component instance info.
+     *
+     * @return The component info builder.
+     */
+    Builder clearInstances();
+
+    /**
+     * Sets the parent network info.
+     *
+     * @param network The parent network info.
+     * @return The component info builder.
+     */
+    Builder setNetwork(NetworkInfo network);
+  }
 
 }

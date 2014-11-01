@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.component.InstanceInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
@@ -47,7 +46,7 @@ public class OutputInfoImpl extends BaseIOInfoImpl<OutputInfo> implements Output
   /**
    * Output info builder.
    */
-  public static class Builder implements TypeInfo.Builder<OutputInfo> {
+  public static class Builder implements OutputInfo.Builder {
     private final OutputInfoImpl output;
 
     public Builder() {
@@ -58,36 +57,21 @@ public class OutputInfoImpl extends BaseIOInfoImpl<OutputInfo> implements Output
       this.output = input;
     }
 
-    /**
-     * Adds an output port.
-     *
-     * @param port The output port info.
-     * @return The output info builder.
-     */
+    @Override
     public Builder addPort(OutputPortInfo port) {
       Args.checkNotNull(port, "port cannot be null");
       output.ports.put(port.name(), port);
       return this;
     }
 
-    /**
-     * Removes an output port.
-     *
-     * @param port The output port info.
-     * @return The output info builder.
-     */
+    @Override
     public Builder removePort(OutputPortInfo port) {
       Args.checkNotNull(port, "port cannot be null");
       output.ports.remove(port.name());
       return this;
     }
 
-    /**
-     * Sets all output ports.
-     *
-     * @param ports A collection of output port info.
-     * @return The output info builder.
-     */
+    @Override
     public Builder setPorts(OutputPortInfo... ports) {
       output.ports.clear();
       for (OutputPortInfo port : ports) {
@@ -96,12 +80,7 @@ public class OutputInfoImpl extends BaseIOInfoImpl<OutputInfo> implements Output
       return this;
     }
 
-    /**
-     * Sets all output ports.
-     *
-     * @param ports A collection of output port info.
-     * @return The output info builder.
-     */
+    @Override
     public Builder setPorts(Collection<OutputPortInfo> ports) {
       Args.checkNotNull(ports, "ports cannot be null");
       output.ports.clear();
@@ -111,22 +90,13 @@ public class OutputInfoImpl extends BaseIOInfoImpl<OutputInfo> implements Output
       return this;
     }
 
-    /**
-     * Clears all output ports.
-     *
-     * @return The output info builder.
-     */
+    @Override
     public Builder clearPorts() {
       output.ports.clear();
       return this;
     }
 
-    /**
-     * Sets the parent instance info.
-     *
-     * @param instance The parent instance info.
-     * @return The output info builder.
-     */
+    @Override
     public Builder setInstance(InstanceInfo instance) {
       Args.checkNotNull(instance, "instance cannot be null");
       output.instance = instance;

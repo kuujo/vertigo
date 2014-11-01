@@ -32,7 +32,7 @@ public interface SourceInfo extends EndpointInfo<SourceInfo> {
    *
    * @return A new source info builder.
    */
-  static TypeInfo.Builder<SourceInfo> builder() {
+  static Builder builder() {
     return new SourceInfoImpl.Builder();
   }
 
@@ -42,8 +42,38 @@ public interface SourceInfo extends EndpointInfo<SourceInfo> {
    * @param source The source info to wrap.
    * @return The source info builder wrapper.
    */
-  static TypeInfo.Builder<SourceInfo> builder(SourceInfo source) {
+  static Builder builder(SourceInfo source) {
     return new SourceInfoImpl.Builder((SourceInfoImpl) source);
+  }
+
+  /**
+   * Source info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<SourceInfo> {
+
+    /**
+     * Sets the source component.
+     *
+     * @param component The source component name.
+     * @return The source info builder.
+     */
+    Builder setComponent(String component);
+
+    /**
+     * Sets the source port.
+     *
+     * @param port The source port name.
+     * @return The source info builder.
+     */
+    Builder setPort(String port);
+
+    /**
+     * Sets the source instance.
+     *
+     * @param instance The source instance number.
+     * @return The source info builder.
+     */
+    Builder setInstance(int instance);
   }
 
 }

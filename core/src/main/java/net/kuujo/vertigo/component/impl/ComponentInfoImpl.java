@@ -16,8 +16,9 @@
 package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.component.InstanceInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.network.NetworkInfo;
@@ -33,6 +34,7 @@ import java.util.*;
 public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implements ComponentInfo {
   private String name;
   private String main;
+  private Component component;
   private JsonObject config;
   private List<InstanceInfo> instances = new ArrayList<>();
   private boolean worker;
@@ -47,6 +49,11 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   @Override
   public String main() {
     return main;
+  }
+
+  @Override
+  public Component component() {
+    return component;
   }
 
   @Override
@@ -106,7 +113,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   /**
    * Component info builder.
    */
-  public static class Builder implements TypeInfo.Builder<ComponentInfo> {
+  public static class Builder implements ComponentInfo.Builder {
     private final ComponentInfoImpl component;
 
     public Builder() {
@@ -117,69 +124,62 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
       this.component = component;
     }
 
-    /**
-     * Sets the component name.
-     *
-     * @param name The component name.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setName(String name) {
       Args.checkNotNull(name, "name cannot be null");
       component.name = name;
       return this;
     }
 
-    /**
-     * Sets the component main.
-     *
-     * @param main The component main.
-     * @return The component info builder.
-     */
+    @Override
+    public Builder setComponent(Component component) {
+      Args.checkNotNull(component, "component cannot be null");
+      this.component.component = component;
+      return this;
+    }
+
+    @Override
     public Builder setMain(String main) {
       Args.checkNotNull(main, "main cannot be null");
       component.main = main;
       return this;
     }
 
-    /**
-     * Sets the component configuration.
-     *
-     * @param config The component configuration.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setConfig(JsonObject config) {
       component.config = config;
       return this;
     }
 
-    /**
-     * Sets whether the component should be deployed as a worker.
-     *
-     * @param isWorker Indicates whether to deploy the component as a worker.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setWorker(boolean isWorker) {
       component.worker = isWorker;
       return this;
     }
 
-    /**
-     * Sets whether the component should be deployed in a multi-threaded context.
-     *
-     * @param isMultiThreaded Indicates whether to deploy the component as multi-threaded.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setMultiThreaded(boolean isMultiThreaded) {
       component.multiThreaded = isMultiThreaded;
       return this;
     }
 
-    /**
-     * Adds an instance to the component info.
-     *
-     * @param instance The instance info to add.
-     * @return The component info builder.
-     */
+    @Override
+    public Builder setOptions(ComponentOptions options) {
+      if (options.getName() != null) {
+        component.name = options.getName();
+      }
+      if (options.getMain() != null) {
+        component.main = options.getMain();
+      }
+      if (options.getConfig() != null) {
+        component.config = options.getConfig();
+      }
+      component.worker = options.isWorker();
+      component.multiThreaded = options.isMultiThreaded();
+      return this;
+    }
+
+    @Override
     public Builder addInstance(InstanceInfo instance) {
       Args.checkNotNull(instance, "instance cannot be null");
       for (InstanceInfo info : component.instances) {
@@ -191,12 +191,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
       return this;
     }
 
-    /**
-     * Removes an instance from the component info.
-     *
-     * @param instance The instance info to remove.
-     * @return The component info builder.
-     */
+     @Override
     public Builder removeInstance(InstanceInfo instance) {
       Args.checkNotNull(instance, "instance cannot be null");
       Iterator<InstanceInfo> iterator = component.instances.iterator();
@@ -208,45 +203,26 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
       return this;
     }
 
-    /**
-     * Sets the component instances.
-     *
-     * @param instances A collection of instance info to add.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setInstances(InstanceInfo... instances) {
       component.instances = new ArrayList<>(Arrays.asList(instances));
       return this;
     }
 
-    /**
-     * Sets the component instances.
-     *
-     * @param instances A collection of instance info to add.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setInstances(Collection<InstanceInfo> instances) {
       Args.checkNotNull(instances, "instances cannot be null");
       component.instances = new ArrayList<>(instances);
       return this;
     }
 
-    /**
-     * Clears all component instance info.
-     *
-     * @return The component info builder.
-     */
+    @Override
     public Builder clearInstances() {
       component.instances.clear();
       return this;
     }
 
-    /**
-     * Sets the parent network info.
-     *
-     * @param network The parent network info.
-     * @return The component info builder.
-     */
+    @Override
     public Builder setNetwork(NetworkInfo network) {
       Args.checkNotNull(network, "network cannot be null");
       component.network = network;
@@ -258,7 +234,6 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
      */
     private void checkFields() {
       Args.checkNotNull(component.name, "name cannot be null");
-      Args.checkNotNull(component.main, "main cannot be null");
     }
 
     @Override

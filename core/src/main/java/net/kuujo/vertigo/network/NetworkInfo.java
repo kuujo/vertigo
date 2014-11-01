@@ -39,7 +39,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    *
    * @return A new network info builder.
    */
-  static TypeInfo.Builder<NetworkInfo> builder() {
+  static Builder builder() {
     return new NetworkInfoImpl.Builder();
   }
 
@@ -49,7 +49,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * @param network An existing network info object to wrap.
    * @return A network info builder wrapper
    */
-  static TypeInfo.Builder<NetworkInfo> builder(NetworkInfo network) {
+  static Builder builder(NetworkInfo network) {
     return new NetworkInfoImpl.Builder((NetworkInfoImpl) network);
   }
 
@@ -101,5 +101,67 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * @throws IllegalArgumentException If a component does not exist at the given name.
    */
   ComponentInfo component(String name);
+
+  /**
+   * Network info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<NetworkInfo> {
+
+    /**
+     * Sets the network name.
+     *
+     * @param name The unique network name.
+     * @return The network info builder.
+     */
+    Builder setName(String name);
+
+    /**
+     * Sets the network version.
+     *
+     * @param version The network version.
+     * @return The network info builder.
+     */
+    Builder setVersion(String version);
+
+    /**
+     * Sets the network configuration.
+     *
+     * @param config The network configuration.
+     * @return The network info builder.
+     */
+    Builder setConfig(Network config);
+
+    /**
+     * Adds a component to the network info.
+     *
+     * @param component The component info to add.
+     * @return The network info builder.
+     */
+    Builder addComponent(ComponentInfo component);
+
+    /**
+     * Removes a component from the network info.
+     *
+     * @param component The component info to remove.
+     * @return The network info builder.
+     */
+    Builder removeComponent(ComponentInfo component);
+
+    /**
+     * Sets the network components.
+     *
+     * @param components A collection of network component info.
+     * @return The network info builder.
+     */
+    Builder setComponents(ComponentInfo... components);
+
+    /**
+     * Sets the network components.
+     *
+     * @param components A collection of network component info.
+     * @return The network info builder.
+     */
+    Builder setComponents(Collection<ComponentInfo> components);
+  }
 
 }

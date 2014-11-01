@@ -42,7 +42,7 @@ public interface InstanceInfo extends TypeInfo<InstanceInfo> {
    *
    * @return A new instance info builder.
    */
-  static TypeInfo.Builder<InstanceInfo> builder() {
+  static Builder builder() {
     return new InstanceInfoImpl.Builder();
   }
 
@@ -52,7 +52,7 @@ public interface InstanceInfo extends TypeInfo<InstanceInfo> {
    * @param instance An existing instance info object to wrap.
    * @return An instance info builder wrapper.
    */
-  static TypeInfo.Builder<InstanceInfo> builder(InstanceInfo instance) {
+  static Builder builder(InstanceInfo instance) {
     return new InstanceInfoImpl.Builder((InstanceInfoImpl) instance);
   }
 
@@ -83,5 +83,43 @@ public interface InstanceInfo extends TypeInfo<InstanceInfo> {
    * @return The parent component context.
    */
   ComponentInfo component();
+
+  /**
+   * Instance info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<InstanceInfo> {
+
+    /**
+     * Sets the instance number.
+     *
+     * @param number The instance number.
+     * @return The instance info builder.
+     */
+    Builder setNumber(int number);
+
+    /**
+     * Sets the instance input info.
+     *
+     * @param input The instance input info.
+     * @return The instance info builder.
+     */
+    Builder setInput(InputInfo input);
+
+    /**
+     * Sets the instance output info.
+     *
+     * @param output The instance output info.
+     * @return The instance info builder.
+     */
+    Builder setOutput(OutputInfo output);
+
+    /**
+     * Sets the instance component info.
+     *
+     * @param component The instance component info.
+     * @return The instance info builder.
+     */
+    Builder setComponent(ComponentInfo component);
+  }
 
 }

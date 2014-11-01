@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.connection.OutputConnectionInfo;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
@@ -39,7 +38,7 @@ public class OutputConnectionInfoImpl extends BaseConnectionInfoImpl<OutputConne
   /**
    * Output connection info builder.
    */
-  public static class Builder implements TypeInfo.Builder<OutputConnectionInfo> {
+  public static class Builder implements OutputConnectionInfo.Builder {
     private OutputConnectionInfoImpl connection;
 
     public Builder() {
@@ -50,48 +49,28 @@ public class OutputConnectionInfoImpl extends BaseConnectionInfoImpl<OutputConne
       this.connection = connection;
     }
 
-    /**
-     * Sets the connection address.
-     *
-     * @param address The connection address.
-     * @return The output connection info builder.
-     */
+    @Override
     public Builder setAddress(String address) {
       Args.checkNotNull(address, "address cannot be null");
       connection.address = address;
       return this;
     }
 
-    /**
-     * Sets the connection source info.
-     *
-     * @param source The connection source info.
-     * @return The output connection info builder.
-     */
+    @Override
     public Builder setSource(SourceInfo source) {
       Args.checkNotNull(source, "source cannot be null");
       connection.source = source;
       return this;
     }
 
-    /**
-     * Sets the connection target info.
-     *
-     * @param target The connection target info.
-     * @return The output connection info builder.
-     */
+    @Override
     public Builder setTarget(TargetInfo target) {
       Args.checkNotNull(target, "target cannot be null");
       connection.target = target;
       return this;
     }
 
-    /**
-     * Sets the parent output stream info.
-     *
-     * @param stream The parent output stream info.
-     * @return The output connection info builder.
-     */
+    @Override
     public Builder setStream(OutputStreamInfo stream) {
       Args.checkNotNull(stream, "stream cannot be null");
       connection.stream = stream;

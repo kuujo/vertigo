@@ -37,7 +37,7 @@ public interface OutputPortInfo extends PortInfo<OutputPortInfo> {
    *
    * @return A new output port info builder.
    */
-  static TypeInfo.Builder<OutputPortInfo> builder() {
+  static Builder builder() {
     return new OutputPortInfoImpl.Builder();
   }
 
@@ -47,7 +47,7 @@ public interface OutputPortInfo extends PortInfo<OutputPortInfo> {
    * @param port An existing output port info object to wrap.
    * @return An output port info builder wrapper.
    */
-  static TypeInfo.Builder<OutputPortInfo> builder(OutputPortInfo port) {
+  static Builder builder(OutputPortInfo port) {
     return new OutputPortInfoImpl.Builder((OutputPortInfoImpl) port);
   }
 
@@ -64,5 +64,51 @@ public interface OutputPortInfo extends PortInfo<OutputPortInfo> {
    * @return A collection of streams in the port.
    */
   Collection<OutputStreamInfo> streams();
+
+  /**
+   * Output port info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<OutputPortInfo> {
+
+    /**
+     * Adds a stream to the output.
+     *
+     * @param stream The output stream info to add.
+     * @return The output port info builder.
+     */
+    Builder addStream(OutputStreamInfo stream);
+
+    /**
+     * Removes a stream from the output.
+     *
+     * @param stream The output stream info to remove.
+     * @return The output port info builder.
+     */
+    Builder removeStream(OutputStreamInfo stream);
+
+    /**
+     * Sets all streams on the output.
+     *
+     * @param streams A collection of output stream info to add.
+     * @return The output port info builder.
+     */
+    Builder setStreams(OutputStreamInfo... streams);
+
+    /**
+     * Sets all streams on the output.
+     *
+     * @param streams A collection of output stream info to add.
+     * @return The output port info builder.
+     */
+    Builder setStreams(Collection<OutputStreamInfo> streams);
+
+    /**
+     * Sets the parent output info.
+     *
+     * @param output The parent output info.
+     * @return The output port info builder.
+     */
+    Builder setOutput(OutputInfo output);
+  }
 
 }

@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.connection.InputConnectionInfo;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
@@ -39,7 +38,7 @@ public class InputConnectionInfoImpl extends BaseConnectionInfoImpl<InputConnect
   /**
    * Input connection info builder.
    */
-  public static class Builder implements TypeInfo.Builder<InputConnectionInfo> {
+  public static class Builder implements InputConnectionInfo.Builder {
     private InputConnectionInfoImpl connection;
 
     public Builder() {
@@ -50,48 +49,28 @@ public class InputConnectionInfoImpl extends BaseConnectionInfoImpl<InputConnect
       this.connection = connection;
     }
 
-    /**
-     * Sets the connection address.
-     *
-     * @param address The connection address.
-     * @return The input connection info builder.
-     */
+    @Override
     public Builder setAddress(String address) {
       Args.checkNotNull(address, "address cannot be null");
       connection.address = address;
       return this;
     }
 
-    /**
-     * Sets the connection source info.
-     *
-     * @param source The connection source info.
-     * @return The input connection info builder.
-     */
+    @Override
     public Builder setSource(SourceInfo source) {
       Args.checkNotNull(source, "source cannot be null");
       connection.source = source;
       return this;
     }
 
-    /**
-     * Sets the connection target info.
-     *
-     * @param target The connection target info.
-     * @return The input connection info builder.
-     */
+    @Override
     public Builder setTarget(TargetInfo target) {
       Args.checkNotNull(target, "target cannot be null");
       connection.target = target;
       return this;
     }
 
-    /**
-     * Sets the parent input port info.
-     *
-     * @param port The parent input port info.
-     * @return The input connection info builder.
-     */
+    @Override
     public Builder setPort(InputPortInfo port) {
       Args.checkNotNull(port, "port cannot be null");
       connection.port = port;

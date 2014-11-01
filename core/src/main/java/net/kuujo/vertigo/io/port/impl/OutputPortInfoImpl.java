@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
@@ -49,7 +48,7 @@ public class OutputPortInfoImpl extends BasePortInfoImpl<OutputPortInfo> impleme
   /**
    * Output port info builder.
    */
-  public static class Builder implements TypeInfo.Builder<OutputPortInfo> {
+  public static class Builder implements OutputPortInfo.Builder {
     private final OutputPortInfoImpl port;
 
     public Builder() {
@@ -60,59 +59,34 @@ public class OutputPortInfoImpl extends BasePortInfoImpl<OutputPortInfo> impleme
       this.port = port;
     }
 
-    /**
-     * Adds a stream to the output.
-     *
-     * @param stream The output stream info to add.
-     * @return The output port info builder.
-     */
+    @Override
     public Builder addStream(OutputStreamInfo stream) {
       Args.checkNotNull(stream, "stream cannot be null");
       port.streams.add(stream);
       return this;
     }
 
-    /**
-     * Removes a stream from the output.
-     *
-     * @param stream The output stream info to remove.
-     * @return The output port info builder.
-     */
+    @Override
     public Builder removeStream(OutputStreamInfo stream) {
       Args.checkNotNull(stream, "stream cannot be null");
       port.streams.remove(stream);
       return this;
     }
 
-    /**
-     * Sets all streams on the output.
-     *
-     * @param streams A collection of output stream info to add.
-     * @return The output port info builder.
-     */
+    @Override
     public Builder setStreams(OutputStreamInfo... streams) {
       port.streams = new HashSet<>(Arrays.asList(streams));
       return this;
     }
 
-    /**
-     * Sets all streams on the output.
-     *
-     * @param streams A collection of output stream info to add.
-     * @return The output port info builder.
-     */
+    @Override
     public Builder setStreams(Collection<OutputStreamInfo> streams) {
       Args.checkNotNull(streams, "streams cannot be null");
       port.streams = new HashSet<>(streams);
       return this;
     }
 
-    /**
-     * Sets the parent output info.
-     *
-     * @param output The parent output info.
-     * @return The output port info builder.
-     */
+    @Override
     public Builder setOutput(OutputInfo output) {
       Args.checkNotNull(output, "output cannot be null");
       port.output = output;

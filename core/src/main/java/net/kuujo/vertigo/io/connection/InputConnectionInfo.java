@@ -32,7 +32,7 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    *
    * @return A new input connection info builder.
    */
-  static TypeInfo.Builder<InputConnectionInfo> builder() {
+  static Builder builder() {
     return new InputConnectionInfoImpl.Builder();
   }
 
@@ -42,7 +42,7 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    * @param connection An existing input connection info object to wrap.
    * @return An input connection info builder wrapper.
    */
-  static TypeInfo.Builder<InputConnectionInfo> builder(InputConnectionInfo connection) {
+  static Builder builder(InputConnectionInfo connection) {
     return new InputConnectionInfoImpl.Builder((InputConnectionInfoImpl) connection);
   }
 
@@ -52,5 +52,43 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    * @return The parent port context.
    */
   InputPortInfo port();
+
+  /**
+   * Input connection info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<InputConnectionInfo> {
+
+    /**
+     * Sets the connection address.
+     *
+     * @param address The connection address.
+     * @return The input connection info builder.
+     */
+    Builder setAddress(String address);
+
+    /**
+     * Sets the connection source info.
+     *
+     * @param source The connection source info.
+     * @return The input connection info builder.
+     */
+    Builder setSource(SourceInfo source);
+
+    /**
+     * Sets the connection target info.
+     *
+     * @param target The connection target info.
+     * @return The input connection info builder.
+     */
+    Builder setTarget(TargetInfo target);
+
+    /**
+     * Sets the parent input port info.
+     *
+     * @param port The parent input port info.
+     * @return The input connection info builder.
+     */
+    Builder setPort(InputPortInfo port);
+  }
 
 }

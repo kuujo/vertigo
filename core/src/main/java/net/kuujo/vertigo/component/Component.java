@@ -17,10 +17,12 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.core.Verticle;
 
+import java.io.Serializable;
+
 /**
  * Vertigo component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Component extends Verticle {
+public interface Component extends Verticle, Serializable {
 }

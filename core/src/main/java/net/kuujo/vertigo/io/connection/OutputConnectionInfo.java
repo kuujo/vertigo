@@ -32,7 +32,7 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    *
    * @return A new output connection info builder.
    */
-  static TypeInfo.Builder<OutputConnectionInfo> builder() {
+  static Builder builder() {
     return new OutputConnectionInfoImpl.Builder();
   }
 
@@ -42,7 +42,7 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    * @param connection An existing output connection info object to wrap.
    * @return An output connection info builder wrapper.
    */
-  static TypeInfo.Builder<OutputConnectionInfo> builder(OutputConnectionInfo connection) {
+  static Builder builder(OutputConnectionInfo connection) {
     return new OutputConnectionInfoImpl.Builder((OutputConnectionInfoImpl) connection);
   }
 
@@ -52,5 +52,43 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    * @return The parent stream context.
    */
   OutputStreamInfo stream();
+
+  /**
+   * Output connection info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<OutputConnectionInfo> {
+
+    /**
+     * Sets the connection address.
+     *
+     * @param address The connection address.
+     * @return The output connection info builder.
+     */
+    Builder setAddress(String address);
+
+    /**
+     * Sets the connection source info.
+     *
+     * @param source The connection source info.
+     * @return The output connection info builder.
+     */
+    Builder setSource(SourceInfo source);
+
+    /**
+     * Sets the connection target info.
+     *
+     * @param target The connection target info.
+     * @return The output connection info builder.
+     */
+    Builder setTarget(TargetInfo target);
+
+    /**
+     * Sets the parent output stream info.
+     *
+     * @param stream The parent output stream info.
+     * @return The output connection info builder.
+     */
+    Builder setStream(OutputStreamInfo stream);
+  }
 
 }

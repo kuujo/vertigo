@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.InstanceInfo;
 import net.kuujo.vertigo.io.impl.OutputInfoImpl;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 
@@ -34,7 +35,7 @@ public interface OutputInfo extends IOInfo<OutputInfo> {
    *
    * @return A new output info builder.
    */
-  static TypeInfo.Builder<OutputInfo> builder() {
+  static Builder builder() {
     return new OutputInfoImpl.Builder();
   }
 
@@ -44,7 +45,7 @@ public interface OutputInfo extends IOInfo<OutputInfo> {
    * @param output An existing output info object to wrap.
    * @return An output info builder wrapper.
    */
-  static TypeInfo.Builder<OutputInfo> builder(OutputInfo output) {
+  static Builder builder(OutputInfo output) {
     return new OutputInfoImpl.Builder((OutputInfoImpl) output);
   }
 
@@ -62,5 +63,58 @@ public interface OutputInfo extends IOInfo<OutputInfo> {
    * @return The output port context.
    */
   OutputPortInfo port(String name);
+
+  /**
+   * Output info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<OutputInfo> {
+
+    /**
+     * Adds an output port.
+     *
+     * @param port The output port info.
+     * @return The output info builder.
+     */
+    Builder addPort(OutputPortInfo port);
+
+    /**
+     * Removes an output port.
+     *
+     * @param port The output port info.
+     * @return The output info builder.
+     */
+    Builder removePort(OutputPortInfo port);
+
+    /**
+     * Sets all output ports.
+     *
+     * @param ports A collection of output port info.
+     * @return The output info builder.
+     */
+    Builder setPorts(OutputPortInfo... ports);
+
+    /**
+     * Sets all output ports.
+     *
+     * @param ports A collection of output port info.
+     * @return The output info builder.
+     */
+    Builder setPorts(Collection<OutputPortInfo> ports);
+
+    /**
+     * Clears all output ports.
+     *
+     * @return The output info builder.
+     */
+    Builder clearPorts();
+
+    /**
+     * Sets the parent instance info.
+     *
+     * @param instance The parent instance info.
+     * @return The output info builder.
+     */
+    Builder setInstance(InstanceInfo instance);
+  }
 
 }

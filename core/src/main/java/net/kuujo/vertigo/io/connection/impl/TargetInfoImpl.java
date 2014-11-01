@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.io.connection.TargetInfo;
 
@@ -47,7 +46,7 @@ public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements Targ
   /**
    * Target info builder.
    */
-  public static class Builder implements TypeInfo.Builder<TargetInfo> {
+  public static class Builder implements TargetInfo.Builder {
     private final TargetInfoImpl target;
 
     public Builder() {
@@ -58,34 +57,19 @@ public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements Targ
       this.target = source;
     }
 
-    /**
-     * Sets the target component.
-     *
-     * @param component The target component name.
-     * @return The target info builder.
-     */
+    @Override
     public Builder setComponent(String component) {
       target.component = component;
       return this;
     }
 
-    /**
-     * Sets the target port.
-     *
-     * @param port The target port name.
-     * @return The target info builder.
-     */
+    @Override
     public Builder setPort(String port) {
       target.port = port;
       return this;
     }
 
-    /**
-     * Sets the target instance.
-     *
-     * @param instance The target instance number.
-     * @return The target info builder.
-     */
+    @Override
     public Builder setInstance(int instance) {
       target.instance = instance;
       return this;

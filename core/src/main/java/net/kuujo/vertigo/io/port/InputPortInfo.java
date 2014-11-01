@@ -37,7 +37,7 @@ public interface InputPortInfo extends PortInfo<InputPortInfo> {
    *
    * @return A new input port info builder.
    */
-  static TypeInfo.Builder<InputPortInfo> builder() {
+  static Builder builder() {
     return new InputPortInfoImpl.Builder();
   }
 
@@ -47,7 +47,7 @@ public interface InputPortInfo extends PortInfo<InputPortInfo> {
    * @param port An existing input port info builder to wrap.
    * @return An input port info builder wrapper.
    */
-  static TypeInfo.Builder<InputPortInfo> builder(InputPortInfo port) {
+  static Builder builder(InputPortInfo port) {
     return new InputPortInfoImpl.Builder((InputPortInfoImpl) port);
   }
 
@@ -64,5 +64,51 @@ public interface InputPortInfo extends PortInfo<InputPortInfo> {
    * @return A list of input connections.
    */
   Collection<InputConnectionInfo> connections();
+
+  /**
+   * Input port info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<InputPortInfo> {
+
+    /**
+     * Adds a connection to the port.
+     *
+     * @param connection The input connection info.
+     * @return The input port info builder.
+     */
+    Builder addConnection(InputConnectionInfo connection);
+
+    /**
+     * Removes a connection from the port.
+     *
+     * @param connection The input connection info.
+     * @return The input port info builder.
+     */
+    Builder removeConnection(InputConnectionInfo connection);
+
+    /**
+     * Sets all connections on the port.
+     *
+     * @param connections A collection of input connection info.
+     * @return The input port info builder.
+     */
+    Builder setConnections(InputConnectionInfo... connections);
+
+    /**
+     * Sets all connections on the port.
+     *
+     * @param connections A collection of input connection info.
+     * @return The input port info builder.
+     */
+    Builder setConnections(Collection<InputConnectionInfo> connections);
+
+    /**
+     * Sets the parent input.
+     *
+     * @param input The parent input.
+     * @return The input port builder.
+     */
+    Builder setInput(InputInfo input);
+  }
 
 }

@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.network.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.network.Network;
@@ -71,7 +70,7 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
   /**
    * Network info builder.
    */
-  public static class Builder implements TypeInfo.Builder<NetworkInfo> {
+  public static class Builder implements NetworkInfo.Builder {
     private final NetworkInfoImpl network;
 
     public Builder() {
@@ -82,72 +81,42 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
       this.network = network;
     }
 
-    /**
-     * Sets the network name.
-     *
-     * @param name The unique network name.
-     * @return The network info builder.
-     */
+    @Override
     public Builder setName(String name) {
       Args.checkNotNull(name, "name cannot be null");
       network.name = name;
       return this;
     }
 
-    /**
-     * Sets the network version.
-     *
-     * @param version The network version.
-     * @return The network info builder.
-     */
+    @Override
     public Builder setVersion(String version) {
       Args.checkNotNull(version, "version cannot be null");
       network.version = version;
       return this;
     }
 
-    /**
-     * Sets the network configuration.
-     *
-     * @param config The network configuration.
-     * @return The network info builder.
-     */
+    @Override
     public Builder setConfig(Network config) {
       Args.checkNotNull(config, "configuration cannot be null");
       network.config = config;
       return this;
     }
 
-    /**
-     * Adds a component to the network info.
-     *
-     * @param component The component info to add.
-     * @return The network info builder.
-     */
+    @Override
     public Builder addComponent(ComponentInfo component) {
       Args.checkNotNull(component, "component cannot be null");
       network.components.put(component.name(), component);
       return this;
     }
 
-    /**
-     * Removes a component from the network info.
-     *
-     * @param component The component info to remove.
-     * @return The network info builder.
-     */
+    @Override
     public Builder removeComponent(ComponentInfo component) {
       Args.checkNotNull(component, "component cannot be null");
       network.components.remove(component.name());
       return this;
     }
 
-    /**
-     * Sets the network components.
-     *
-     * @param components A collection of network component info.
-     * @return The network info builder.
-     */
+    @Override
     public Builder setComponents(ComponentInfo... components) {
       network.components.clear();
       for (ComponentInfo component : components) {
@@ -156,12 +125,7 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
       return this;
     }
 
-    /**
-     * Sets the network components.
-     *
-     * @param components A collection of network component info.
-     * @return The network info builder.
-     */
+    @Override
     public Builder setComponents(Collection<ComponentInfo> components) {
       Args.checkNotNull(components, "components cannot be null");
       network.components.clear();

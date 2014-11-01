@@ -22,6 +22,7 @@ import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.io.partitioner.Partitioner;
 import net.kuujo.vertigo.io.stream.impl.OutputStreamInfoImpl;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    *
    * @return A new output stream info builder.
    */
-  static TypeInfo.Builder<OutputStreamInfo> builder() {
+  static Builder builder() {
     return new OutputStreamInfoImpl.Builder();
   }
 
@@ -50,7 +51,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    * @param stream An existing output stream info object to wrap.
    * @return An output stream builder wrapper.
    */
-  static TypeInfo.Builder<OutputStreamInfo> builder(OutputStreamInfo stream) {
+  static Builder builder(OutputStreamInfo stream) {
     return new OutputStreamInfoImpl.Builder((OutputStreamInfoImpl) stream);
   }
 
@@ -74,5 +75,51 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    * @return A list of output connections.
    */
   List<OutputConnectionInfo> connections();
+
+  /**
+   * Output stream info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<OutputStreamInfo> {
+
+    /**
+     * Adds a connection to the stream.
+     *
+     * @param connection The output connection info to add.
+     * @return The output stream info builder.
+     */
+    Builder addConnection(OutputConnectionInfo connection);
+
+    /**
+     * Removes a connection from the stream.
+     *
+     * @param connection The output connection info to remove.
+     * @return The output stream info builder.
+     */
+    Builder removeConnection(OutputConnectionInfo connection);
+
+    /**
+     * Sets all connections on the stream.
+     *
+     * @param connections A collection of output connection info to add.
+     * @return The output stream info builder.
+     */
+    Builder setConnections(OutputConnectionInfo... connections);
+
+    /**
+     * Sets all connections on the stream.
+     *
+     * @param connections A collection of output connection info to add.
+     * @return The output stream info builder.
+     */
+    Builder setConnections(Collection<OutputConnectionInfo> connections);
+
+    /**
+     * Sets the parent output port.
+     *
+     * @param port The output port info.
+     * @return The output stream info builder.
+     */
+    Builder setPort(OutputPortInfo port);
+  }
 
 }

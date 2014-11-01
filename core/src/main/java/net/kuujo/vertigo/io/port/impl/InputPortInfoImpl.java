@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.connection.InputConnectionInfo;
 import net.kuujo.vertigo.io.port.InputPortInfo;
@@ -49,7 +48,7 @@ public class InputPortInfoImpl extends BasePortInfoImpl<InputPortInfo> implement
   /**
    * Input port info builder.
    */
-  public static class Builder implements TypeInfo.Builder<InputPortInfo> {
+  public static class Builder implements InputPortInfo.Builder {
     private final InputPortInfoImpl port;
 
     public Builder() {
@@ -60,59 +59,34 @@ public class InputPortInfoImpl extends BasePortInfoImpl<InputPortInfo> implement
       this.port = port;
     }
 
-    /**
-     * Adds a connection to the port.
-     *
-     * @param connection The input connection info.
-     * @return The input port info builder.
-     */
+    @Override
     public Builder addConnection(InputConnectionInfo connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       port.connections.add(connection);
       return this;
     }
 
-    /**
-     * Removes a connection from the port.
-     *
-     * @param connection The input connection info.
-     * @return The input port info builder.
-     */
+    @Override
     public Builder removeConnection(InputConnectionInfo connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       port.connections.remove(connection);
       return this;
     }
 
-    /**
-     * Sets all connections on the port.
-     *
-     * @param connections A collection of input connection info.
-     * @return The input port info builder.
-     */
+    @Override
     public Builder setConnections(InputConnectionInfo... connections) {
       port.connections = new ArrayList<>(Arrays.asList(connections));
       return this;
     }
 
-    /**
-     * Sets all connections on the port.
-     *
-     * @param connections A collection of input connection info.
-     * @return The input port info builder.
-     */
+    @Override
     public Builder setConnections(Collection<InputConnectionInfo> connections) {
       Args.checkNotNull(connections, "connections cannot be null");
       port.connections = new ArrayList<>(connections);
       return this;
     }
 
-    /**
-     * Sets the parent input.
-     *
-     * @param input The parent input.
-     * @return The input port builder.
-     */
+    @Override
     public Builder setInput(InputInfo input) {
       Args.checkNotNull(input, "input cannot be null");
       port.input = input;

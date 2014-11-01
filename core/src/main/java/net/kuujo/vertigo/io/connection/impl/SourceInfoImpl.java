@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 
@@ -47,7 +46,7 @@ public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements Sour
   /**
    * Source info builder.
    */
-  public static class Builder implements TypeInfo.Builder<SourceInfo> {
+  public static class Builder implements SourceInfo.Builder {
     private final SourceInfoImpl source;
 
     public Builder() {
@@ -58,34 +57,19 @@ public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements Sour
       this.source = source;
     }
 
-    /**
-     * Sets the source component.
-     *
-     * @param component The source component name.
-     * @return The source info builder.
-     */
+    @Override
     public Builder setComponent(String component) {
       source.component = component;
       return this;
     }
 
-    /**
-     * Sets the source port.
-     *
-     * @param port The source port name.
-     * @return The source info builder.
-     */
+    @Override
     public Builder setPort(String port) {
       source.port = port;
       return this;
     }
 
-    /**
-     * Sets the source instance.
-     *
-     * @param instance The source instance number.
-     * @return The source info builder.
-     */
+    @Override
     public Builder setInstance(int instance) {
       source.instance = instance;
       return this;

@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.InstanceInfo;
 import net.kuujo.vertigo.io.impl.InputInfoImpl;
 import net.kuujo.vertigo.io.port.InputPortInfo;
 
@@ -34,7 +35,7 @@ public interface InputInfo extends IOInfo<InputInfo> {
    *
    * @return A new input info builder.
    */
-  static TypeInfo.Builder<InputInfo> builder() {
+  static Builder builder() {
     return new InputInfoImpl.Builder();
   }
 
@@ -44,7 +45,7 @@ public interface InputInfo extends IOInfo<InputInfo> {
    * @param input An existing input info object to wrap.
    * @return An input info builder wrapper.
    */
-  static TypeInfo.Builder<InputInfo> builder(InputInfo input) {
+  static Builder builder(InputInfo input) {
     return new InputInfoImpl.Builder((InputInfoImpl) input);
   }
 
@@ -62,5 +63,58 @@ public interface InputInfo extends IOInfo<InputInfo> {
    * @return The input port context.
    */
   InputPortInfo port(String name);
+
+  /**
+   * Input info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<InputInfo> {
+
+    /**
+     * Adds an input port.
+     *
+     * @param port The input port info.
+     * @return The input info builder.
+     */
+    Builder addPort(InputPortInfo port);
+
+    /**
+     * Removes an input port.
+     *
+     * @param port The input port info.
+     * @return The input info builder.
+     */
+    Builder removePort(InputPortInfo port);
+
+    /**
+     * Sets all input ports.
+     *
+     * @param ports A collection of input port info.
+     * @return The input info builder.
+     */
+    Builder setPorts(InputPortInfo... ports);
+
+    /**
+     * Sets all input ports.
+     *
+     * @param ports A collection of input port info.
+     * @return The input info builder.
+     */
+    Builder setPorts(Collection<InputPortInfo> ports);
+
+    /**
+     * Clears all input ports.
+     *
+     * @return The input info builder.
+     */
+    Builder clearPorts();
+
+    /**
+     * Sets the parent instance info.
+     *
+     * @param instance The parent instance info.
+     * @return The input info builder.
+     */
+    Builder setInstance(InstanceInfo instance);
+  }
 
 }

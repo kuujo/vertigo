@@ -32,7 +32,7 @@ public interface TargetInfo extends EndpointInfo<TargetInfo> {
    *
    * @return A new target info builder.
    */
-  static TypeInfo.Builder<TargetInfo> builder() {
+  static Builder builder() {
     return new TargetInfoImpl.Builder();
   }
 
@@ -42,8 +42,38 @@ public interface TargetInfo extends EndpointInfo<TargetInfo> {
    * @param target An existing target info object.
    * @return A target info builder wrapper.
    */
-  static TypeInfo.Builder<TargetInfo> builder(TargetInfo target) {
+  static Builder builder(TargetInfo target) {
     return new TargetInfoImpl.Builder((TargetInfoImpl) target);
+  }
+
+  /**
+   * Target info builder.
+   */
+  public static interface Builder extends TypeInfo.Builder<TargetInfo> {
+
+    /**
+     * Sets the target component.
+     *
+     * @param component The target component name.
+     * @return The target info builder.
+     */
+    Builder setComponent(String component);
+
+    /**
+     * Sets the target port.
+     *
+     * @param port The target port name.
+     * @return The target info builder.
+     */
+    Builder setPort(String port);
+
+    /**
+     * Sets the target instance.
+     *
+     * @param instance The target instance number.
+     * @return The target info builder.
+     */
+    Builder setInstance(int instance);
   }
 
 }

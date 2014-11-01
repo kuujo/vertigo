@@ -28,7 +28,6 @@ import net.kuujo.vertigo.io.connection.TargetOptions;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Network configuration.<p>
@@ -77,7 +76,7 @@ public interface Network extends Serializable {
    * 
    * @return A list of network components.
    */
-  List<ComponentInfo> getComponents();
+  Collection<ComponentInfo> getComponents();
 
   /**
    * Gets a component by name.
@@ -100,6 +99,25 @@ public interface Network extends Serializable {
   /**
    * Adds a component to the network.
    *
+   * @param component The component verticle.
+   * @return The network definition.
+   */
+  @GenIgnore
+  Network addComponent(Component component);
+
+  /**
+   * Adds a component to the network.
+   *
+   * @param component The component verticle.
+   * @param options The component options.
+   * @return The network definition.
+   */
+  @GenIgnore
+  Network addComponent(Component component, ComponentOptions options);
+
+  /**
+   * Adds a component to the network.
+   *
    * @param name The component name.
    * @param component The component verticle.
    * @return The network definition.
@@ -117,6 +135,25 @@ public interface Network extends Serializable {
    */
   @GenIgnore
   Network addComponent(String name, Component component, ComponentOptions options);
+
+  /**
+   * Adds a component to the network.
+   *
+   * @param main The component verticle main.
+   * @return The network definition.
+   */
+  @Fluent
+  Network addComponent(String main);
+
+  /**
+   * Adds a component to the network.
+   *
+   * @param main The component verticle main.
+   * @param options The component options.
+   * @return The network definition.
+   */
+  @Fluent
+  Network addComponent(String main, ComponentOptions options);
 
   /**
    * Adds a component to the network.

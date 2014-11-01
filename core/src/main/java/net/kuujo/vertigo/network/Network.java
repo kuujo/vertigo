@@ -23,6 +23,8 @@ import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.ConnectionOptions;
+import net.kuujo.vertigo.io.connection.SourceOptions;
+import net.kuujo.vertigo.io.connection.TargetOptions;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -156,7 +158,7 @@ public interface Network extends Serializable {
   /**
    * Creates a connection between two components.
    *
-   * @param connection The new connection.
+   * @param connection The new connection options.
    * @return The network definition.
    */
   @Fluent
@@ -165,48 +167,12 @@ public interface Network extends Serializable {
   /**
    * Creates a connection between two components.
    *
-   * @param source The source component.
-   * @param target The target component.
+   * @param source The source connection options.
+   * @param target The target connection options.
    * @return The network definition.
    */
   @Fluent
-  Network createConnection(String source, String target);
-
-  /**
-   * Creates a connection between two components.
-   *
-   * @param source The source component.
-   * @param target The target component.
-   * @param options The connection options.
-   * @return The network definition.
-   */
-  @Fluent
-  Network createConnection(String source, String target, ConnectionOptions options);
-
-  /**
-   * Creates a connection between two components.
-   *
-   * @param source The source component.
-   * @param out The source output port.
-   * @param target The target component.
-   * @param in The target output port.
-   * @return The network definition.
-   */
-  @Fluent
-  Network createConnection(String source, String out, String target, String in);
-
-  /**
-   * Creates a connection between two components.
-   *
-   * @param source The source component.
-   * @param out The source output port.
-   * @param target The target component.
-   * @param in The target output port.
-   * @param options The connection options.
-   * @return The network definition.
-   */
-  @Fluent
-  Network createConnection(String source, String out, String target, String in, ConnectionOptions options);
+  Network createConnection(SourceOptions source, TargetOptions target);
 
   /**
    * Destroys a connection between two components.
@@ -216,27 +182,5 @@ public interface Network extends Serializable {
    */
   @Fluent
   Network destroyConnection(ConnectionOptions connection);
-
-  /**
-   * Destroys a connection between two components.
-   *
-   * @param source The source component name and port.
-   * @param target The target component name and port.
-   * @return The network definition.
-   */
-  @Fluent
-  Network destroyConnection(String source, String target);
-
-  /**
-   * Destroys a connection between two components.
-   *
-   * @param source The source component name.
-   * @param out The source component out port.
-   * @param target The target component name.
-   * @param in The target component in port.
-   * @return The network definition.
-   */
-  @Fluent
-  Network destroyConnection(String source, String out, String target, String in);
 
 }

@@ -16,7 +16,8 @@
 package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.Options;
-import net.kuujo.vertigo.io.partitioner.Partitioner;
+import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.partitioner.*;
 
 import java.io.Serializable;
 
@@ -31,26 +32,19 @@ import java.io.Serializable;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @Options
-public interface ConnectionOptions extends Serializable {
+public class ConnectionOptions implements Serializable {
 
   /**
    * <code>source</code> is an object defining the connection source. See the
-   * {@link Source} documentation for details on the source structure.
+   * {@link SourceOptions} documentation for details on the source structure.
    */
   public static final String CONNECTION_SOURCE = "source";
 
   /**
    * <code>target</code> is an object defining the connection target. See the
-   * {@link Target} documentation for details on the target structure.
+   * {@link TargetOptions} documentation for details on the target structure.
    */
   public static final String CONNECTION_TARGET = "target";
-
-  /**
-   * <code>hooks</code> is an array defining connection hooks. Each element in the array
-   * must be an object containing a <code>hook</code> field which indicates the hook
-   * class name.
-   */
-  public static final String CONNECTION_HOOKS = "hooks";
 
   /**
    * <code>partitioner</code> is an object defining the connection partitioner. The partitioner
@@ -62,26 +56,99 @@ public interface ConnectionOptions extends Serializable {
    */
   public static final String CONNECTION_PARTITIONER = "partitioner";
 
+  private SourceOptions source;
+  private TargetOptions target;
+  private Partitioner partitioner;
+
+  public ConnectionOptions() {
+  }
+
+  public ConnectionOptions(ConnectionOptions options) {
+    this.source = options.getSource();
+    this.target = options.getTarget();
+    this.partitioner = options.getPartitioner();
+  }
+
+  public ConnectionOptions(JsonObject options) {
+    this.source = new SourceOptions(options.getJsonObject(CONNECTION_SOURCE));
+    this.target = new TargetOptions(options.getJsonObject(CONNECTION_TARGET));
+    String partitioner = options.getString(CONNECTION_PARTITIONER);
+    if (partitioner != null) {
+      switch (partitioner) {
+        case "round":
+          this.partitioner = new RoundRobinPartitioner();
+          break;
+        case "random":
+          this.partitioner = new RandomPartitioner();
+          break;
+        case "hash":
+          String header = options.getString("partitionHeader");
+          if (header != null) {
+            this.partitioner = new HashPartitioner(header);
+          } else {
+            this.partitioner = new RoundRobinPartitioner();
+          }
+          break;
+        case "all":
+          this.partitioner = new AllPartitioner();
+          break;
+        default:
+          this.partitioner = new RoundRobinPartitioner();
+          break;
+      }
+    } else {
+      this.partitioner = new RoundRobinPartitioner();
+    }
+  }
+
+  /**
+   * Sets the connection source.
+   *
+   * @param source The connection source.
+   * @return The connection options.
+   */
+  public ConnectionOptions setSource(SourceOptions source) {
+    this.source = source;
+    return this;
+  }
+
   /**
    * Returns the connection source.
    *
-   * @return The connection source info.
+   * @return The connection source.
    */
-  Source getSource();
+  public SourceOptions getSource() {
+    return source;
+  }
+
+  /**
+   * Sets the connection target.
+   *
+   * @param target The connection target.
+   * @return The connection options.
+   */
+  public ConnectionOptions setTarget(TargetOptions target) {
+    this.target = target;
+    return this;
+  }
 
   /**
    * Returns the connection target.
    *
-   * @return The connection target info.
+   * @return The connection target.
    */
-  Target getTarget();
+  public TargetOptions getTarget() {
+    return target;
+  }
 
   /**
    * Returns the connection partitioner.
    *
    * @return The connection selector.
    */
-  Partitioner getPartitioner();
+  public Partitioner getPartitioner() {
+    return partitioner;
+  }
 
   /**
    * Sets the connection partitioner.
@@ -89,42 +156,51 @@ public interface ConnectionOptions extends Serializable {
    * @param partitioner The partitioner with which to partition individual connections.
    * @return The connection configuration.
    */
-  ConnectionOptions setPartitioner(Partitioner partitioner);
+  public ConnectionOptions setPartitioner(Partitioner partitioner) {
+    this.partitioner = partitioner;
+    return this;
+  }
 
   /**
    * Sets a round-robin partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionOptions roundPartition();
+  public ConnectionOptions roundPartition() {
+    this.partitioner = new RoundRobinPartitioner();
+    return this;
+  }
 
   /**
    * Sets a random partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionOptions randomPartition();
+  public ConnectionOptions randomPartition() {
+    this.partitioner = new RandomPartitioner();
+    return this;
+  }
 
   /**
    * Sets a mod-hash based partitioner on the connection.
    *
+   * @param header The hash header.
    * @return The connection configuration.
    */
-  ConnectionOptions hashPartition();
-
-  /**
-   * Sets a fair partitioner on the connection.
-   *
-   * @return The connection configuration.
-   */
-  ConnectionOptions fairPartition();
+  public ConnectionOptions hashPartition(String header) {
+    this.partitioner = new HashPartitioner(header);
+    return this;
+  }
 
   /**
    * Sets an all partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionOptions allPartition();
+  public ConnectionOptions allPartition() {
+    this.partitioner = new AllPartitioner();
+    return this;
+  }
 
   /**
    * Sets a custom partitioner on the connection.
@@ -132,104 +208,9 @@ public interface ConnectionOptions extends Serializable {
    * @param partitioner The custom selector to set.
    * @return The connection configuration.
    */
-  ConnectionOptions partition(Partitioner partitioner);
-
-  /**
-   * Connection source.
-   *
-   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
-   */
-  public static interface Source {
-
-    /**
-     * <code>component</code> indicates the source component name.
-     */
-    public static final String SOURCE_COMPONENT = "component";
-
-    /**
-     * <code>port</code> indicates the source output port.
-     */
-    public static final String SOURCE_PORT = "port";
-
-    /**
-     * Returns the connection source component.
-     *
-     * @return The source component name.
-     */
-    String getComponent();
-
-    /**
-     * Sets the connection source component.
-     *
-     * @param component The connection source component.
-     * @return The source instance.
-     */
-    Source setComponent(String component);
-
-    /**
-     * Returns the connection source port.
-     *
-     * @return The connection source port.
-     */
-    String getPort();
-
-    /**
-     * Sets the connection source port.
-     *
-     * @param port The connection source port.
-     * @return The source instance.
-     */
-    Source setPort(String port);
-
-  }
-
-  /**
-   * Connection target.
-   *
-   * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
-   */
-  public static interface Target {
-
-    /**
-     * <code>component</code> indicates the target component name.
-     */
-    public static final String SOURCE_COMPONENT = "component";
-
-    /**
-     * <code>port</code> indicates the target output port.
-     */
-    public static final String SOURCE_PORT = "port";
-
-    /**
-     * Returns the connection target component.
-     *
-     * @return The target component name.
-     */
-    String getComponent();
-
-    /**
-     * Sets the connection target component.
-     *
-     * @param component The connection target component.
-     * @return The target instance.
-     */
-    Target setComponent(String component);
-
-    /**
-     * Returns the connection target port.
-     *
-     * @return The connection target port.
-     */
-    String getPort();
-
-    /**
-     * Sets the connection target port.
-     *
-     * @param port The connection target port.
-     * @return The target instance.
-     */
-    Target setPort(String port);
-
+  public ConnectionOptions partition(Partitioner partitioner) {
+    this.partitioner = partitioner;
+    return this;
   }
 
 }

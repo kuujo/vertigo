@@ -22,7 +22,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class Endpoint<T extends Endpoint<T>> {
+public class EndpointOptions<T extends EndpointOptions<T>> {
 
   /**
    * <code>component</code> indicates the endpoint component name.
@@ -37,15 +37,15 @@ public class Endpoint<T extends Endpoint<T>> {
   protected String component;
   protected String port;
 
-  protected Endpoint() {
+  protected EndpointOptions() {
   }
 
-  protected Endpoint(T endpoint) {
+  protected EndpointOptions(T endpoint) {
     this.component = endpoint.getComponent();
     this.port = endpoint.getPort();
   }
 
-  protected Endpoint(JsonObject endpoint) {
+  protected EndpointOptions(JsonObject endpoint) {
     this.component = endpoint.getString(ENDPOINT_COMPONENT);
     this.port = endpoint.getString(ENDPOINT_PORT);
   }

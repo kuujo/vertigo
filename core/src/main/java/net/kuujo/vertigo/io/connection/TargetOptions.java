@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @Options
-public class TargetOptions extends Endpoint<TargetOptions> {
+public class TargetOptions extends EndpointOptions<TargetOptions> {
 
   /**
    * <code>component</code> indicates the target component name.

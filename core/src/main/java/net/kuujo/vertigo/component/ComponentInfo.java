@@ -23,6 +23,7 @@ import net.kuujo.vertigo.network.NetworkInfo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A component context which contains information regarding each component partition within
@@ -122,6 +123,13 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * @return Indicates whether the verticle is a worker and is multi-threaded.
    */
   boolean isMultiThreaded();
+
+  /**
+   * Returns the component resources.
+   *
+   * @return The component resources.
+   */
+  Set<String> resources();
 
   /**
    * Returns the parent network info.
@@ -229,6 +237,38 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
      * @return The component info builder.
      */
     Builder clearPartitions();
+
+    /**
+     * Adds a resource to the component.
+     *
+     * @param resource The resource to add.
+     * @return The component info builder.
+     */
+    Builder addResource(String resource);
+
+    /**
+     * Removes a resource from the component.
+     *
+     * @param resource The resource to remove.
+     * @return The component info builder.
+     */
+    Builder removeResource(String resource);
+
+    /**
+     * Sets the component resources.
+     *
+     * @param resources The component resources.
+     * @return The component info builder.
+     */
+    Builder setResources(String... resources);
+
+    /**
+     * Sets the component resources.
+     *
+     * @param resources The component resources.
+     * @return The component info builder.
+     */
+    Builder setResources(Collection<String> resources);
 
     /**
      * Sets the parent network info.

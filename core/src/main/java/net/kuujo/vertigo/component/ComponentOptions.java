@@ -16,9 +16,14 @@
 package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.Options;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Components are synonymous with Vert.x verticles.
@@ -68,13 +73,19 @@ public class ComponentOptions implements Serializable {
    */
   public static final String COMPONENT_MULTI_THREADED = "multi-threaded";
 
+  /**
+   * <code>resources</code> is a list of resources that should be distributed with this
+   * component when clustering.
+   */
+  public static final String COMPONENT_RESOURCES = "resources";
+
   private String name;
-  private Component component;
   private String main;
   private JsonObject config;
   private int partitions;
   private boolean worker;
   private boolean multiThreaded;
+  private Set<String> resources = new HashSet<>();
 
   public ComponentOptions() {
   }
@@ -86,8 +97,10 @@ public class ComponentOptions implements Serializable {
     this.partitions = options.getPartitions();
     this.worker = options.isWorker();
     this.multiThreaded = options.isMultiThreaded();
+    this.resources = new HashSet<>(options.getResources());
   }
 
+  @SuppressWarnings("unchecked")
   public ComponentOptions(JsonObject options) {
     this.name = options.getString(COMPONENT_NAME);
     this.main = options.getString(COMPONENT_MAIN);
@@ -95,6 +108,7 @@ public class ComponentOptions implements Serializable {
     this.partitions = options.getInteger(COMPONENT_PARTITIONS);
     this.worker = options.getBoolean(COMPONENT_WORKER);
     this.multiThreaded = options.getBoolean(COMPONENT_MULTI_THREADED);
+    this.resources = new HashSet<String>(options.getJsonArray(COMPONENT_RESOURCES, new JsonArray()).getList());
   }
 
   /**
@@ -115,26 +129,6 @@ public class ComponentOptions implements Serializable {
   public ComponentOptions setName(String name) {
     this.name = name;
     return this;
-  }
-
-  /**
-   * Sets the component instance.
-   *
-   * @param component The component instance.
-   * @return The component options.
-   */
-  public ComponentOptions setComponent(Component component) {
-    this.component = component;
-    return this;
-  }
-
-  /**
-   * Returns the component instance.
-   *
-   * @return The component instance.
-   */
-  public Component getComponent() {
-    return component;
   }
 
   /**
@@ -241,6 +235,59 @@ public class ComponentOptions implements Serializable {
    */
   public boolean isMultiThreaded() {
     return multiThreaded;
+  }
+
+  /**
+   * Adds a resource to the component.
+   *
+   * @param resource The resource to add.
+   * @return The component options.
+   */
+  public ComponentOptions addResource(String resource) {
+    this.resources.add(resource);
+    return this;
+  }
+
+  /**
+   * Removes a resource from the component.
+   *
+   * @param resource The resource to remove.
+   * @return The component options.
+   */
+  public ComponentOptions removeResource(String resource) {
+    this.resources.remove(resource);
+    return this;
+  }
+
+  /**
+   * Sets the component resources.
+   *
+   * @param resources The component resources.
+   * @return The component options.
+   */
+  public ComponentOptions setResources(String... resources) {
+    this.resources = new HashSet<>(Arrays.asList(resources));
+    return this;
+  }
+
+  /**
+   * Sets the component resources.
+   *
+   * @param resources The component resources.
+   * @return The component options.
+   */
+  public ComponentOptions setResources(Collection<String> resources) {
+    this.resources = new HashSet<>(resources);
+    return this;
+  }
+
+  /**
+   * Returns the component resources.
+   *
+   * @return The component resources.
+   */
+  public Set<String> getResources() {
+    return resources;
   }
 
 }

@@ -15,9 +15,6 @@
  */
 package net.kuujo.vertigo.util;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 /**
  * Validation utilities.
  *
@@ -98,59 +95,25 @@ public final class Args {
   }
 
   /**
-   * Validates that an argument is a valid URI.
+   * Checks an arbitrary condition.
    *
-   * @param uri The value to check.
+   * @param check The condition result.
    */
-  public static void checkUri(String uri) {
-    try {
-      new URI(uri);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException(e);
+  public static void check(boolean check) {
+    if (!check) {
+      throw new IllegalArgumentException();
     }
   }
 
   /**
-   * Validates that an argument is a valid URI.
+   * Checks an arbitrary condition.
    *
-   * @param uri The value to check.
+   * @param check The condition result.
    * @param message An exception message.
    * @param args Exception message arguments.
    */
-  public static void checkUri(String uri, String message, Object... args) {
-    try {
-      new URI(uri);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException(String.format(message, args), e);
-    }
-  }
-
-  /**
-   * Validates that an argument is a valid URI scheme.
-   *
-   * @param scheme The value to check.
-   */
-  public static void checkUriScheme(String scheme) {
-    String uri = String.format("%s://null", scheme);
-    try {
-      new URI(uri);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException(e);
-    }
-  }
-
-  /**
-   * Validates that an argument is a valid URI scheme.
-   *
-   * @param scheme The value to check.
-   * @param message An exception message.
-   * @param args Exception message arguments.
-   */
-  public static void checkUriScheme(String scheme, String message, Object... args) {
-    String uri = String.format("%s://null", scheme);
-    try {
-      new URI(uri);
-    } catch (URISyntaxException e) {
+  public static void check(boolean check, String message, Object... args) {
+    if (!check) {
       throw new IllegalArgumentException(String.format(message, args));
     }
   }

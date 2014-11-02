@@ -39,6 +39,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   private List<PartitionInfo> partitions = new ArrayList<>();
   private boolean worker;
   private boolean multiThreaded;
+  private Set<String> resources = new HashSet<>();
   private NetworkInfo network;
 
   @Override
@@ -98,6 +99,11 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   @Override
   public boolean isMultiThreaded() {
     return multiThreaded;
+  }
+
+  @Override
+  public Set<String> resources() {
+    return resources;
   }
 
   @Override
@@ -214,6 +220,30 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
     @Override
     public Builder clearPartitions() {
       component.partitions.clear();
+      return this;
+    }
+
+    @Override
+    public Builder addResource(String resource) {
+      component.resources.add(resource);
+      return this;
+    }
+
+    @Override
+    public Builder removeResource(String resource) {
+      component.resources.remove(resource);
+      return this;
+    }
+
+    @Override
+    public Builder setResources(String... resources) {
+      component.resources = new HashSet<>(Arrays.asList(resources));
+      return this;
+    }
+
+    @Override
+    public Builder setResources(Collection<String> resources) {
+      component.resources = new HashSet<>(resources);
       return this;
     }
 

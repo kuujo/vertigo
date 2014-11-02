@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.connection.ConnectionOptions;
 import net.kuujo.vertigo.connection.SourceOptions;
@@ -72,32 +71,8 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public Network addComponent(Component component) {
-    components.add(new ComponentOptions().setComponent(component));
-    return this;
-  }
-
-  @Override
-  public Network addComponent(Component component, ComponentOptions options) {
-    components.add(options.setComponent(component));
-    return this;
-  }
-
-  @Override
   public Network addComponent(ComponentOptions options) {
     components.add(options);
-    return this;
-  }
-
-  @Override
-  public Network addComponent(String name, Component component) {
-    components.add(new ComponentOptions().setName(name).setComponent(component));
-    return this;
-  }
-
-  @Override
-  public Network addComponent(String name, Component component, ComponentOptions options) {
-    components.add(options.setName(name).setComponent(component));
     return this;
   }
 

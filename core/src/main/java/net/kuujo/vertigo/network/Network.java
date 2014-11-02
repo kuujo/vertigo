@@ -16,9 +16,7 @@
 package net.kuujo.vertigo.network;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.connection.ConnectionOptions;
 import net.kuujo.vertigo.connection.SourceOptions;
@@ -93,46 +91,6 @@ public interface Network extends Serializable {
    * @return Indicates whether the component exists in the network.
    */
   boolean hasComponent(String name);
-
-  /**
-   * Adds a component to the network.
-   *
-   * @param component The component verticle.
-   * @return The network definition.
-   */
-  @GenIgnore
-  Network addComponent(Component component);
-
-  /**
-   * Adds a component to the network.
-   *
-   * @param component The component verticle.
-   * @param options The component options.
-   * @return The network definition.
-   */
-  @GenIgnore
-  Network addComponent(Component component, ComponentOptions options);
-
-  /**
-   * Adds a component to the network.
-   *
-   * @param name The component name.
-   * @param component The component verticle.
-   * @return The network definition.
-   */
-  @GenIgnore
-  Network addComponent(String name, Component component);
-
-  /**
-   * Adds a component to the network.
-   *
-   * @param name The component name.
-   * @param component The component verticle.
-   * @param options The component options.
-   * @return The network definition.
-   */
-  @GenIgnore
-  Network addComponent(String name, Component component, ComponentOptions options);
 
   /**
    * Adds a component to the network.

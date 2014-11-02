@@ -17,9 +17,9 @@ package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.io.connection.ConnectionOptions;
-import net.kuujo.vertigo.io.connection.SourceOptions;
-import net.kuujo.vertigo.io.connection.TargetOptions;
+import net.kuujo.vertigo.connection.ConnectionOptions;
+import net.kuujo.vertigo.connection.SourceOptions;
+import net.kuujo.vertigo.connection.TargetOptions;
 import net.kuujo.vertigo.network.Network;
 
 import java.util.ArrayList;

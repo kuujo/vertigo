@@ -18,8 +18,8 @@ package net.kuujo.vertigo.component.impl;
 import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.io.InputInfo;
-import net.kuujo.vertigo.io.OutputInfo;
+import net.kuujo.vertigo.input.InputInfo;
+import net.kuujo.vertigo.output.OutputInfo;
 import net.kuujo.vertigo.util.Args;
 
 /**

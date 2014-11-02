@@ -18,8 +18,8 @@ package net.kuujo.vertigo.component;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.component.impl.PartitionInfoImpl;
-import net.kuujo.vertigo.io.InputInfo;
-import net.kuujo.vertigo.io.OutputInfo;
+import net.kuujo.vertigo.input.InputInfo;
+import net.kuujo.vertigo.output.OutputInfo;
 
 /**
  * A component partition context which contains information regarding a specific component

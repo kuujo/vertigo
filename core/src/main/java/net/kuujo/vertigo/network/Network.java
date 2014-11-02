@@ -20,9 +20,9 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.io.connection.ConnectionOptions;
-import net.kuujo.vertigo.io.connection.SourceOptions;
-import net.kuujo.vertigo.io.connection.TargetOptions;
+import net.kuujo.vertigo.connection.ConnectionOptions;
+import net.kuujo.vertigo.connection.SourceOptions;
+import net.kuujo.vertigo.connection.TargetOptions;
 
 import java.io.Serializable;
 import java.util.Collection;

@@ -21,8 +21,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
-import net.kuujo.vertigo.io.InputCollector;
-import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.input.InputCollector;
+import net.kuujo.vertigo.output.OutputCollector;
 
 /**
  * The component is the primary unit of processing in Vertigo. Vertigo

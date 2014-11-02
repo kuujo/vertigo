@@ -15,6 +15,9 @@
  */
 package net.kuujo.vertigo.io;
 
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
+
 /**
  * Input/output collector.<p>
  *

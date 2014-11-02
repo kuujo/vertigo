@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.util;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -25,15 +25,15 @@ import io.vertx.core.Handler;
  *
  * @param <T> The closeable type.
  */
-public interface Closeable<T extends Closeable<T>> extends AutoCloseable {
+public interface Closeable<T extends Closeable<T>> {
 
   /**
-   * Closes the stream.
+   * Closes the object.
    */
   void close();
 
   /**
-   * Closes the stream.
+   * Closes the object.
    *
    * @param doneHandler An asynchronous handler to be called once complete.
    */

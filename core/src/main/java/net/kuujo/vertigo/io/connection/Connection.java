@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.io.Closeable;
-import net.kuujo.vertigo.io.Openable;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * Connection between two partitions of two components.<p>

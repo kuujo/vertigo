@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.io.stream;
 
-import net.kuujo.vertigo.io.Closeable;
+import net.kuujo.vertigo.util.Closeable;
 import net.kuujo.vertigo.io.ControllableOutput;
-import net.kuujo.vertigo.io.Openable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * Output stream.<p>

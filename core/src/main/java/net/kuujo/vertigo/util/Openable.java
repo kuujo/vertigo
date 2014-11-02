@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io;
+package net.kuujo.vertigo.util;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -28,17 +28,17 @@ import io.vertx.core.Handler;
 public interface Openable<T extends Openable<T>> {
 
   /**
-   * Opens the stream.
+   * Opens the object.
    *
-   * @return The stream.
+   * @return The opened object.
    */
   T open();
 
   /**
-   * Opens the stream.
+   * Opens the object.
    *
    * @param doneHandler An asynchronous handler to be called once complete.
-   * @return The stream.
+   * @return The opened object.
    */
   T open(Handler<AsyncResult<Void>> doneHandler);
 

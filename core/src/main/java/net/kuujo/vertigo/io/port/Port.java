@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.io.port;
 
-import net.kuujo.vertigo.io.Closeable;
-import net.kuujo.vertigo.io.Openable;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * Input/output port.<p>

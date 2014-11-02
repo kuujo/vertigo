@@ -20,6 +20,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
@@ -91,25 +92,25 @@ public interface ComponentInstance {
 
   /**
    * Starts the component.
+   *
+   * @return The component instance.
    */
-  void start();
+  @Fluent
+  ComponentInstance start();
 
   /**
    * Starts the component.
    *
    * @param doneHandler An asynchronous handler to be called once the component is started.
-   * @return The component context.
+   * @return The component instance.
    */
   @Fluent
   ComponentInstance start(Handler<AsyncResult<Void>> doneHandler);
 
   /**
    * Stops the component.
-   *
-   * @return The component context.
    */
-  @Fluent
-  ComponentInstance stop();
+  void stop();
 
   /**
    * Stops the component.

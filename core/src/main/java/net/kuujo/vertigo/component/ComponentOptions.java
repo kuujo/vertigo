@@ -23,7 +23,7 @@ import java.io.Serializable;
 /**
  * Components are synonymous with Vert.x verticles.
  * Each component can have its own configuration and any number
- * of instances.
+ * of partitions.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -50,10 +50,10 @@ public class ComponentOptions implements Serializable {
   public static final String COMPONENT_CONFIG = "config";
 
   /**
-   * <code>instances</code> is a number indicating the number of instances of the
+   * <code>partitions</code> is a number indicating the number of partitions of the
    * component to deploy. Defaults to <code>1</code>
    */
-  public static final String COMPONENT_INSTANCES = "instances";
+  public static final String COMPONENT_PARTITIONS = "partitions";
 
   /**
    * <code>worker</code> is a boolean indicating whether this verticle should be deployed
@@ -72,7 +72,7 @@ public class ComponentOptions implements Serializable {
   private Component component;
   private String main;
   private JsonObject config;
-  private int instances;
+  private int partitions;
   private boolean worker;
   private boolean multiThreaded;
 
@@ -83,7 +83,7 @@ public class ComponentOptions implements Serializable {
     this.name = options.getName();
     this.main = options.getMain();
     this.config = options.getConfig();
-    this.instances = options.getInstances();
+    this.partitions = options.getPartitions();
     this.worker = options.isWorker();
     this.multiThreaded = options.isMultiThreaded();
   }
@@ -92,7 +92,7 @@ public class ComponentOptions implements Serializable {
     this.name = options.getString(COMPONENT_NAME);
     this.main = options.getString(COMPONENT_MAIN);
     this.config = options.getJsonObject(COMPONENT_CONFIG);
-    this.instances = options.getInteger(COMPONENT_INSTANCES);
+    this.partitions = options.getInteger(COMPONENT_PARTITIONS);
     this.worker = options.getBoolean(COMPONENT_WORKER);
     this.multiThreaded = options.getBoolean(COMPONENT_MULTI_THREADED);
   }
@@ -182,22 +182,22 @@ public class ComponentOptions implements Serializable {
   }
 
   /**
-   * Returns the number of component instances to deploy within the network.
+   * Returns the number of component partitions to deploy within the network.
    * 
-   * @return The number of component instances.
+   * @return The number of component partitions.
    */
-  public int getInstances() {
-    return instances;
+  public int getPartitions() {
+    return partitions;
   }
 
   /**
-   * Sets the number of component instances to deploy within the network.
+   * Sets the number of component partitions to deploy within the network.
    * 
-   * @param instances The number of component instances.
+   * @param partitions The number of component partitions.
    * @return The component configuration.
    */
-  public ComponentOptions setInstances(int instances) {
-    this.instances = instances;
+  public ComponentOptions setPartitions(int partitions) {
+    this.partitions = partitions;
     return this;
   }
 

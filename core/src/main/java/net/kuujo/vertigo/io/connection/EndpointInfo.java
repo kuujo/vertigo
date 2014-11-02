@@ -43,10 +43,10 @@ public interface EndpointInfo<T extends EndpointInfo<T>> extends TypeInfo<T> {
   String port();
 
   /**
-   * Returns the endpoint instance number.
+   * Returns the endpoint partition number.
    *
-   * @return The endpoint instance number.
+   * @return The endpoint partition number.
    */
-  int instance();
+  int partition();
 
 }

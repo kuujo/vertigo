@@ -19,10 +19,10 @@ import net.kuujo.vertigo.io.Closeable;
 import net.kuujo.vertigo.io.Openable;
 
 /**
- * Connection between two instances of two components.<p>
+ * Connection between two partitions of two components.<p>
  *
  * When a connection is created between two components, each component
- * instance will create a single connection for each instance of the
+ * partition will create a single connection for each partition of the
  * component to which it is connected. Connections are inherently
  * uni-directional, so each connection has an input and an output side.
  *

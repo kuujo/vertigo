@@ -68,12 +68,12 @@ public interface SourceInfo extends EndpointInfo<SourceInfo> {
     Builder setPort(String port);
 
     /**
-     * Sets the source instance.
+     * Sets the source partition.
      *
-     * @param instance The source instance number.
+     * @param partition The source partition number.
      * @return The source info builder.
      */
-    Builder setInstance(int instance);
+    Builder setPartition(int partition);
   }
 
 }

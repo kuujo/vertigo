@@ -21,7 +21,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.component.ComponentInstance;
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.InputCollectorImpl;
@@ -29,18 +29,18 @@ import net.kuujo.vertigo.io.impl.OutputCollectorImpl;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**
- * Component instance implementation.
+ * Component partition implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ComponentInstanceImpl implements ComponentInstance {
   private final Vertx vertx;
-  private final InstanceInfo info;
+  private final PartitionInfo info;
   private final InputCollector input;
   private final OutputCollector output;
   private final Logger logger;
 
-  public ComponentInstanceImpl(Vertx vertx, InstanceInfo instance) {
+  public ComponentInstanceImpl(Vertx vertx, PartitionInfo instance) {
     this.vertx = vertx;
     this.info = instance;
     this.input = new InputCollectorImpl(vertx, instance.input());
@@ -54,7 +54,7 @@ public class ComponentInstanceImpl implements ComponentInstance {
   }
 
   @Override
-  public InstanceInfo info() {
+  public PartitionInfo info() {
     return info;
   }
 

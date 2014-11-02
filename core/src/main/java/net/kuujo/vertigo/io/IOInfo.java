@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 
 /**
  * Input/output context.
@@ -26,10 +26,10 @@ import net.kuujo.vertigo.component.InstanceInfo;
 public interface IOInfo<T extends IOInfo<T>> extends TypeInfo<T> {
 
   /**
-   * Returns the parent instance context.
+   * Returns the parent partition context.
    *
-   * @return The parent instance context.
+   * @return The parent partition context.
    */
-  InstanceInfo instance();
+  PartitionInfo partition();
 
 }

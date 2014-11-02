@@ -68,12 +68,12 @@ public interface TargetInfo extends EndpointInfo<TargetInfo> {
     Builder setPort(String port);
 
     /**
-     * Sets the target instance.
+     * Sets the target partition.
      *
-     * @param instance The target instance number.
+     * @param partition The target partition number.
      * @return The target info builder.
      */
-    Builder setInstance(int instance);
+    Builder setPartition(int partition);
   }
 
 }

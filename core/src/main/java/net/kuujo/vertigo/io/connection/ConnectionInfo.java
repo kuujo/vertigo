@@ -19,7 +19,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
 
 /**
- * Connection contexts represent a direct connection between two instances
+ * Connection contexts represent a direct connection between two partitions
  * of separate components.<p>
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>

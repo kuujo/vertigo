@@ -31,7 +31,7 @@ public interface Output<T extends Output<T, U>, U> {
    * Sends a message on the output.
    *
    * @param message The message to send.
-   * @return The output instance.
+   * @return The output partition.
    */
   T send(U message);
 
@@ -40,7 +40,7 @@ public interface Output<T extends Output<T, U>, U> {
    *
    * @param message The message to send.
    * @param headers The message headers.
-   * @return The output instance.
+   * @return The output partition.
    */
   T send(U message, MultiMap headers);
 

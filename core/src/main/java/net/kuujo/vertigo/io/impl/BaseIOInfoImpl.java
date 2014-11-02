@@ -16,7 +16,7 @@
 
 package net.kuujo.vertigo.io.impl;
 
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.io.IOInfo;
 
@@ -26,11 +26,11 @@ import net.kuujo.vertigo.io.IOInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class BaseIOInfoImpl<T extends IOInfo<T>> extends BaseTypeInfoImpl<T> implements IOInfo<T> {
-  protected InstanceInfo instance;
+  protected PartitionInfo partition;
 
   @Override
-  public InstanceInfo instance() {
-    return instance;
+  public PartitionInfo partition() {
+    return partition;
   }
 
 }

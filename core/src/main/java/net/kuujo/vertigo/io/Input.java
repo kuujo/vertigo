@@ -30,7 +30,7 @@ public interface Input<T extends Input<T, U>, U> {
    * Registers a message handler on the input.
    *
    * @param handler An input message handler.
-   * @return The input instance.
+   * @return The input partition.
    */
   T messageHandler(Handler<VertigoMessage<U>> handler);
 

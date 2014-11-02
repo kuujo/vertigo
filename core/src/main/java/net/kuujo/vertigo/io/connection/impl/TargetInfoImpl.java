@@ -26,7 +26,7 @@ import net.kuujo.vertigo.io.connection.TargetInfo;
 public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements TargetInfo {
   private String component;
   private String port;
-  private int instance;
+  private int partition;
 
   @Override
   public String component() {
@@ -39,8 +39,8 @@ public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements Targ
   }
 
   @Override
-  public int instance() {
-    return instance;
+  public int partition() {
+    return partition;
   }
 
   /**
@@ -70,8 +70,8 @@ public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements Targ
     }
 
     @Override
-    public Builder setInstance(int instance) {
-      target.instance = instance;
+    public Builder setPartition(int partition) {
+      target.partition = partition;
       return this;
     }
 

@@ -20,7 +20,7 @@ import net.kuujo.vertigo.io.ControllableOutput;
 /**
  * Output connection.<p>
  *
- * Output connections represent a direct connection between two instances
+ * Output connections represent a direct connection between two partitions
  * of separate components. Each output connection points to a single
  * input connection which receives messages from this connection and this
  * connection only.<p>

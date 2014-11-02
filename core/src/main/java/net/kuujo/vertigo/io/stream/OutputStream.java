@@ -23,7 +23,7 @@ import net.kuujo.vertigo.io.Openable;
  * Output stream.<p>
  *
  * The output stream represents a group of connections between the current
- * component instance and multiple instances of another component. Each stream
+ * component partition and multiple partitions of another component. Each stream
  * uses an internal {@link net.kuujo.vertigo.io.partitioner.Partitioner} to partition
  * connections to which to send each message. Each message sent on a stream
  * can be sent to a single connection or it can be copied to multiple connections

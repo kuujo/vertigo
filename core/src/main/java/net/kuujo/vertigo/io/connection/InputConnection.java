@@ -19,7 +19,7 @@ import net.kuujo.vertigo.io.ControllableInput;
 
 /**
  * Input connection represents the receiving side of a connection
- * between two instances of two components.<p>
+ * between two partitions of two components.<p>
  *
  * Messages on input connections must be received in order. Output
  * and input connections keep track of message order by tagging and

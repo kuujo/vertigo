@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.impl;
 
 import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
@@ -27,7 +27,7 @@ import net.kuujo.vertigo.util.Args;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InstanceInfoImpl extends BaseTypeInfoImpl<InstanceInfo> implements InstanceInfo {
+public class PartitionInfoImpl extends BaseTypeInfoImpl<PartitionInfo> implements PartitionInfo {
   private int number;
   private InputInfo input;
   private OutputInfo output;
@@ -56,20 +56,20 @@ public class InstanceInfoImpl extends BaseTypeInfoImpl<InstanceInfo> implements 
   /**
    * Instance info builder.
    */
-  public static class Builder implements InstanceInfo.Builder {
-    private final InstanceInfoImpl instance;
+  public static class Builder implements PartitionInfo.Builder {
+    private final PartitionInfoImpl instance;
 
     public Builder() {
-      instance = new InstanceInfoImpl();
+      instance = new PartitionInfoImpl();
     }
 
-    public Builder(InstanceInfoImpl instance) {
+    public Builder(PartitionInfoImpl instance) {
       this.instance = instance;
     }
 
     @Override
     public Builder setNumber(int number) {
-      Args.checkPositive(number, "instance number must be positive");
+      Args.checkPositive(number, "partition number must be positive");
       instance.number = number;
       return this;
     }
@@ -96,7 +96,7 @@ public class InstanceInfoImpl extends BaseTypeInfoImpl<InstanceInfo> implements 
     }
 
     @Override
-    public InstanceInfoImpl build() {
+    public PartitionInfoImpl build() {
       return instance;
     }
   }

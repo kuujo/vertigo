@@ -25,7 +25,7 @@ import java.util.Collection;
 
 /**
  * Input port context represents a set of input connections for a single
- * port within a single instance of a component.
+ * port within a single partition of a component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

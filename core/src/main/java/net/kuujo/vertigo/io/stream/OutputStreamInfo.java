@@ -27,9 +27,9 @@ import java.util.List;
 
 /**
  * The output stream context represents a set of output connections
- * from one component instance to all instances of another component.
+ * from one component partition to all partitions of another component.
  * The context contains information about how to dispatch messages
- * between the group of target component instances.
+ * between the group of target component partitions.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

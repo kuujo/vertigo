@@ -26,7 +26,7 @@ import net.kuujo.vertigo.io.connection.SourceInfo;
 public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements SourceInfo {
   private String component;
   private String port;
-  private int instance;
+  private int partition;
 
   @Override
   public String component() {
@@ -39,8 +39,8 @@ public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements Sour
   }
 
   @Override
-  public int instance() {
-    return instance;
+  public int partition() {
+    return partition;
   }
 
   /**
@@ -70,8 +70,8 @@ public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements Sour
     }
 
     @Override
-    public Builder setInstance(int instance) {
-      source.instance = instance;
+    public Builder setPartition(int partition) {
+      source.partition = partition;
       return this;
     }
 

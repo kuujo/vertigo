@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Connection selector.<p>
  *
- * Connection selectors are used to route messages between multiple instances
+ * Connection selectors are used to route messages between multiple partitions
  * of a component. When a message is sent on an output stream, the stream's
  * selector will partition a connection or set of connections to which to copy
  * the message.<p>

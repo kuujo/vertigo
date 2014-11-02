@@ -63,7 +63,7 @@ public class EndpointOptions<T extends EndpointOptions<T>> {
    * Sets the endpoint component.
    *
    * @param component The endpoint component.
-   * @return The endpoint instance.
+   * @return The endpoint partition.
    */
   @SuppressWarnings("unchecked")
   public T setComponent(String component) {
@@ -84,7 +84,7 @@ public class EndpointOptions<T extends EndpointOptions<T>> {
    * Sets the endpoint port.
    *
    * @param port The endpoint port.
-   * @return The endpoint instance.
+   * @return The endpoint partition.
    */
   @SuppressWarnings("unchecked")
   public T setPort(String port) {

@@ -24,9 +24,9 @@ import java.io.Serializable;
 /**
  * A connection represents a link between two components within a network.<p>
  *
- * When a connection is created, each instance of the source component
- * will be setup to send messages to each instance of the target component.
- * How messages are routed to multiple target instances can be configured
+ * When a connection is created, each partition of the source component
+ * will be setup to send messages to each partition of the target component.
+ * How messages are routed to multiple target partitions can be configured
  * using selectors.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>

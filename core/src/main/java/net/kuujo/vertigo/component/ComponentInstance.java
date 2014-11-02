@@ -20,7 +20,6 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
@@ -49,21 +48,21 @@ import net.kuujo.vertigo.io.OutputCollector;
 public interface ComponentInstance {
 
   /**
-   * Gets the component Vertx instance.
+   * Gets the component Vertx partition.
    *
-   * @return The component Vertx instance.
+   * @return The component Vertx partition.
    */
   Vertx vertx();
 
   /**
-   * Returns the component instance info.
+   * Returns the component partition info.
    *
-   * The instance info can be used to retrieve useful information about an
+   * The partition info can be used to retrieve useful information about an
    * entire network.
    *
-   * @return The instance info.
+   * @return The partition info.
    */
-  InstanceInfo info();
+  PartitionInfo info();
 
   /**
    * Returns the component's {@link InputCollector}. This is the element of the
@@ -82,18 +81,18 @@ public interface ComponentInstance {
   OutputCollector output();
 
   /**
-   * Returns the instance logger. This is a special logger that references the
-   * Vertigo component instance and can allow for fine grained control of logging
+   * Returns the partition logger. This is a special logger that references the
+   * Vertigo component partition and can allow for fine grained control of logging
    * within Vertigo components.
    *
-   * @return The logger for the component instance.
+   * @return The logger for the component partition.
    */
   Logger logger();
 
   /**
    * Starts the component.
    *
-   * @return The component instance.
+   * @return The component partition.
    */
   @Fluent
   ComponentInstance start();
@@ -102,7 +101,7 @@ public interface ComponentInstance {
    * Starts the component.
    *
    * @param doneHandler An asynchronous handler to be called once the component is started.
-   * @return The component instance.
+   * @return The component partition.
    */
   @Fluent
   ComponentInstance start(Handler<AsyncResult<Void>> doneHandler);

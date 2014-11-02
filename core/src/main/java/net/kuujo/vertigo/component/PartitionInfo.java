@@ -17,63 +17,63 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.impl.InstanceInfoImpl;
+import net.kuujo.vertigo.component.impl.PartitionInfoImpl;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 
 /**
- * A component instance context which contains information regarding a specific component
- * (module or verticle) instance within a network.<p>
+ * A component partition context which contains information regarding a specific component
+ * (module or verticle) partition within a network.<p>
  *
- * The instance context is the primary immutable configuration used by
- * each instance of a component verticle or module to construct its input
+ * The partition context is the primary immutable configuration used by
+ * each partition of a component verticle or module to construct its input
  * and output ports/connections. Note that the context is observable, and
- * component instance observe the context for changes within the cluster
+ * component partition observe the context for changes within the cluster
  * in order to support runtime network configuration changes by automatically
  * updating their input and output connections when the context changes.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InstanceInfo extends TypeInfo<InstanceInfo> {
+public interface PartitionInfo extends TypeInfo<PartitionInfo> {
 
   /**
-   * Returns a new instance info builder.
+   * Returns a new partition info builder.
    *
-   * @return A new instance info builder.
+   * @return A new partition info builder.
    */
   static Builder builder() {
-    return new InstanceInfoImpl.Builder();
+    return new PartitionInfoImpl.Builder();
   }
 
   /**
-   * Returns a new instance info builder.
+   * Returns a new partition info builder.
    *
-   * @param instance An existing instance info object to wrap.
-   * @return An instance info builder wrapper.
+   * @param partition An existing partition info object to wrap.
+   * @return An partition info builder wrapper.
    */
-  static Builder builder(InstanceInfo instance) {
-    return new InstanceInfoImpl.Builder((InstanceInfoImpl) instance);
+  static Builder builder(PartitionInfo partition) {
+    return new PartitionInfoImpl.Builder((PartitionInfoImpl) partition);
   }
 
   /**
-   * Returns the instance number.
+   * Returns the partition number.
    * 
-   * @return The instance number.
+   * @return The partition number.
    */
   int number();
 
   /**
-   * Returns the instance input context.
+   * Returns the partition input context.
    *
-   * @return The instance input context.
+   * @return The partition input context.
    */
   InputInfo input();
 
   /**
-   * Returns the instance output context.
+   * Returns the partition output context.
    *
-   * @return The instance output context.
+   * @return The partition output context.
    */
   OutputInfo output();
 
@@ -87,37 +87,37 @@ public interface InstanceInfo extends TypeInfo<InstanceInfo> {
   /**
    * Instance info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<InstanceInfo> {
+  public static interface Builder extends TypeInfo.Builder<PartitionInfo> {
 
     /**
-     * Sets the instance number.
+     * Sets the partition number.
      *
-     * @param number The instance number.
-     * @return The instance info builder.
+     * @param number The partition number.
+     * @return The partition info builder.
      */
     Builder setNumber(int number);
 
     /**
-     * Sets the instance input info.
+     * Sets the partition input info.
      *
-     * @param input The instance input info.
-     * @return The instance info builder.
+     * @param input The partition input info.
+     * @return The partition info builder.
      */
     Builder setInput(InputInfo input);
 
     /**
-     * Sets the instance output info.
+     * Sets the partition output info.
      *
-     * @param output The instance output info.
-     * @return The instance info builder.
+     * @param output The partition output info.
+     * @return The partition info builder.
      */
     Builder setOutput(OutputInfo output);
 
     /**
-     * Sets the instance component info.
+     * Sets the partition component info.
      *
-     * @param component The instance component info.
-     * @return The instance info builder.
+     * @param component The partition component info.
+     * @return The partition info builder.
      */
     Builder setComponent(ComponentInfo component);
   }

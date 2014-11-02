@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.io.impl.OutputInfoImpl;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 
@@ -24,7 +24,7 @@ import java.util.Collection;
 
 /**
  * Output context is a wrapper around output port information for
- * a single component instance.
+ * a single component partition.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -109,12 +109,12 @@ public interface OutputInfo extends IOInfo<OutputInfo> {
     Builder clearPorts();
 
     /**
-     * Sets the parent instance info.
+     * Sets the parent partition info.
      *
-     * @param instance The parent instance info.
+     * @param partition The parent partition info.
      * @return The output info builder.
      */
-    Builder setInstance(InstanceInfo instance);
+    Builder setPartition(PartitionInfo partition);
   }
 
 }

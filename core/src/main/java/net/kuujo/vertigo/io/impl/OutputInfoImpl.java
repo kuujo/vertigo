@@ -16,7 +16,7 @@
 
 package net.kuujo.vertigo.io.impl;
 
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.util.Args;
@@ -97,9 +97,9 @@ public class OutputInfoImpl extends BaseIOInfoImpl<OutputInfo> implements Output
     }
 
     @Override
-    public Builder setInstance(InstanceInfo instance) {
-      Args.checkNotNull(instance, "instance cannot be null");
-      output.instance = instance;
+    public Builder setPartition(PartitionInfo partition) {
+      Args.checkNotNull(partition, "partition cannot be null");
+      output.partition = partition;
       return this;
     }
 

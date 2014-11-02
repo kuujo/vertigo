@@ -20,8 +20,8 @@ import net.kuujo.vertigo.io.connection.impl.OutputConnectionInfoImpl;
 import net.kuujo.vertigo.io.stream.OutputStreamInfo;
 
 /**
- * Output connection context represents a single instance's output to
- * an instance of another component.
+ * Output connection context represents a single partition's output to
+ * an partition of another component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

@@ -20,8 +20,8 @@ import net.kuujo.vertigo.io.connection.impl.InputConnectionInfoImpl;
 import net.kuujo.vertigo.io.port.InputPortInfo;
 
 /**
- * Input connection context represents a single instance's input from
- * an instance of another component.
+ * Input connection context represents a single partition's input from
+ * an partition of another component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

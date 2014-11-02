@@ -23,8 +23,8 @@ import java.util.List;
 /**
  * Selector that sends messages on all connections.<p>
  *
- * The *all* selector dispatches messages to all instances of a component.
- * Thus, if a component has four instances, all four component workers will
+ * The *all* selector dispatches messages to all partitions of a component.
+ * Thus, if a component has four partitions, all four component workers will
  * receive every message emitted to that component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>

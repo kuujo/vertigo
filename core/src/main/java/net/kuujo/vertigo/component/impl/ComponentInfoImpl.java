@@ -19,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.component.InstanceInfo;
+import net.kuujo.vertigo.component.PartitionInfo;
 import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
 import net.kuujo.vertigo.network.NetworkInfo;
 import net.kuujo.vertigo.util.Args;
@@ -36,7 +36,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   private String main;
   private Component component;
   private JsonObject config;
-  private List<InstanceInfo> instances = new ArrayList<>();
+  private List<PartitionInfo> partitions = new ArrayList<>();
   private boolean worker;
   private boolean multiThreaded;
   private NetworkInfo network;
@@ -62,20 +62,15 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   }
 
   @Override
-  public List<InstanceInfo> instances() {
-    return instances;
+  public List<PartitionInfo> partitions() {
+    return partitions;
   }
 
   @Override
-  public int numInstances() {
-    return instances.size();
-  }
-
-  @Override
-  public InstanceInfo instance(int instanceNumber) {
-    InstanceInfo instance = null;
-    for (InstanceInfo info : instances) {
-      if (info.number() == instanceNumber) {
+  public PartitionInfo partition(int partitionNumber) {
+    PartitionInfo instance = null;
+    for (PartitionInfo info : partitions) {
+      if (info.number() == partitionNumber) {
         instance = info;
         break;
       }
@@ -84,9 +79,9 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   }
 
   @Override
-  public InstanceInfo instance(String id) {
-    InstanceInfo instance = null;
-    for (InstanceInfo info : instances) {
+  public PartitionInfo partition(String id) {
+    PartitionInfo instance = null;
+    for (PartitionInfo info : partitions) {
       if (info.id().equals(id)) {
         instance = info;
         break;
@@ -180,23 +175,23 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
     }
 
     @Override
-    public Builder addInstance(InstanceInfo instance) {
-      Args.checkNotNull(instance, "instance cannot be null");
-      for (InstanceInfo info : component.instances) {
-        if (info.id().equals(instance.id()) || info.number() == instance.number()) {
+    public Builder addPartition(PartitionInfo partition) {
+      Args.checkNotNull(partition, "partition cannot be null");
+      for (PartitionInfo info : component.partitions) {
+        if (info.id().equals(partition.id()) || info.number() == partition.number()) {
           return this;
         }
       }
-      component.instances.add(instance);
+      component.partitions.add(partition);
       return this;
     }
 
      @Override
-    public Builder removeInstance(InstanceInfo instance) {
-      Args.checkNotNull(instance, "instance cannot be null");
-      Iterator<InstanceInfo> iterator = component.instances.iterator();
+    public Builder removePartition(PartitionInfo partition) {
+      Args.checkNotNull(partition, "partition cannot be null");
+      Iterator<PartitionInfo> iterator = component.partitions.iterator();
       while (iterator.hasNext()) {
-        if (iterator.next().id().equals(instance.id())) {
+        if (iterator.next().id().equals(partition.id())) {
           iterator.remove();
         }
       }
@@ -204,21 +199,21 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
     }
 
     @Override
-    public Builder setInstances(InstanceInfo... instances) {
-      component.instances = new ArrayList<>(Arrays.asList(instances));
+    public Builder setPartitions(PartitionInfo... partitions) {
+      component.partitions = new ArrayList<>(Arrays.asList(partitions));
       return this;
     }
 
     @Override
-    public Builder setInstances(Collection<InstanceInfo> instances) {
-      Args.checkNotNull(instances, "instances cannot be null");
-      component.instances = new ArrayList<>(instances);
+    public Builder setPartitions(Collection<PartitionInfo> partitions) {
+      Args.checkNotNull(partitions, "partitions cannot be null");
+      component.partitions = new ArrayList<>(partitions);
       return this;
     }
 
     @Override
-    public Builder clearInstances() {
-      component.instances.clear();
+    public Builder clearPartitions() {
+      component.partitions.clear();
       return this;
     }
 

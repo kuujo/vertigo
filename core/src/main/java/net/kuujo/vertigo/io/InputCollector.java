@@ -24,7 +24,7 @@ import java.util.Collection;
  * Interface for receiving messages on input ports.<p>
  * 
  * The input collector is the primary interface for receiving input within a component
- * instance. Input collectors are simple wrappers around {@link InputPort} instances.
+ * partition. Input collectors are simple wrappers around {@link InputPort} instances.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

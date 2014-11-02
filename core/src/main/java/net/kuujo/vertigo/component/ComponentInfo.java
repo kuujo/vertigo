@@ -25,13 +25,13 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * A component context which contains information regarding each component instance within
+ * A component context which contains information regarding each component partition within
  * a single network component.<p>
  *
  * Contexts are immutable as they are constructed once a network has been deployed.
  * The component context is not actually used by any Vertigo object, but is a
- * wrapper around multiple {@link InstanceInfo} instances, with each instance
- * representing an instance of the component - a Vert.x verticle or module.<p>
+ * wrapper around multiple {@link PartitionInfo} partitions, with each partition
+ * representing an partition of the component - a Vert.x verticle or module.<p>
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -74,7 +74,7 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
   /**
    * Returns the verticle component.
    *
-   * @return The verticle component instance.
+   * @return The verticle component partition.
    */
   Component component();
 
@@ -86,34 +86,27 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
   JsonObject config();
 
   /**
-   * Gets a list of all component instance contexts.
+   * Gets a list of all component partition info.
    * 
-   * @return A list of component instance contexts.
+   * @return A list of component partition info.
    */
-  List<InstanceInfo> instances();
+  List<PartitionInfo> partitions();
 
   /**
-   * Returns the number of component instances.
+   * Gets component partition info by partition ID.
    * 
-   * @return The number of component instances.
+   * @param partitionNumber The partition number.
+   * @return A component partition or <code>null</code> if the partition doesn't exist.
    */
-  int numInstances();
+  PartitionInfo partition(int partitionNumber);
 
   /**
-   * Gets a component instance context by instance ID.
+   * Gets component partition info by partition id.
    * 
-   * @param instanceNumber The instance number.
-   * @return A component instance or <code>null</code> if the instance doesn't exist.
+   * @param id The partition id.
+   * @return A component partition or <code>null</code> if the partition doesn't exist.
    */
-  InstanceInfo instance(int instanceNumber);
-
-  /**
-   * Gets a component instance context by instance id.
-   * 
-   * @param id The instance id.
-   * @return A component instance or <code>null</code> if the instance doesn't exist.
-   */
-  InstanceInfo instance(String id);
+  PartitionInfo partition(String id);
 
   /**
    * Returns a boolean indicating whether the verticle is a worker verticle.
@@ -131,9 +124,9 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
   boolean isMultiThreaded();
 
   /**
-   * Returns the parent network context.
+   * Returns the parent network info.
    * 
-   * @return The parent network context.
+   * @return The parent network info.
    */
   NetworkInfo network();
 
@@ -159,9 +152,9 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
     Builder setMain(String main);
 
     /**
-     * Sets the component instance.
+     * Sets the component partition.
      *
-     * @param component The component instance.
+     * @param component The component partition.
      * @return The component info builder.
      */
     Builder setComponent(Component component);
@@ -183,7 +176,7 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
     Builder setWorker(boolean isWorker);
 
     /**
-     * Sets whether the component should be deployed in a multi-threaded context.
+     * Sets whether the component should be deployed in a multi-threaded info.
      *
      * @param isMultiThreaded Indicates whether to deploy the component as multi-threaded.
      * @return The component info builder.
@@ -199,43 +192,43 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
     Builder setOptions(ComponentOptions options);
 
     /**
-     * Adds an instance to the component info.
+     * Adds an partition to the component info.
      *
-     * @param instance The instance info to add.
+     * @param partition The partition info to add.
      * @return The component info builder.
      */
-    Builder addInstance(InstanceInfo instance);
+    Builder addPartition(PartitionInfo partition);
 
     /**
-     * Removes an instance from the component info.
+     * Removes an partition from the component info.
      *
-     * @param instance The instance info to remove.
+     * @param partition The partition info to remove.
      * @return The component info builder.
      */
-    Builder removeInstance(InstanceInfo instance);
+    Builder removePartition(PartitionInfo partition);
 
     /**
-     * Sets the component instances.
+     * Sets the component partitions.
      *
-     * @param instances A collection of instance info to add.
+     * @param partitions A collection of partition info to add.
      * @return The component info builder.
      */
-    Builder setInstances(InstanceInfo... instances);
+    Builder setPartitions(PartitionInfo... partitions);
 
     /**
-     * Sets the component instances.
+     * Sets the component partitions.
      *
-     * @param instances A collection of instance info to add.
+     * @param partitions A collection of partition info to add.
      * @return The component info builder.
      */
-    Builder setInstances(Collection<InstanceInfo> instances);
+    Builder setPartitions(Collection<PartitionInfo> partitions);
 
     /**
-     * Clears all component instance info.
+     * Clears all component partition info.
      *
      * @return The component info builder.
      */
-    Builder clearInstances();
+    Builder clearPartitions();
 
     /**
      * Sets the parent network info.

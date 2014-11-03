@@ -62,7 +62,7 @@ public interface ComponentInstance {
    *
    * @return The partition context.
    */
-  PartitionInfo context();
+  PartitionContext context();
 
   /**
    * Returns the component's {@link InputCollector}. This is the element of the

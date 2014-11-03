@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * Contexts are immutable as they are constructed once a network has been deployed.
  * The component context is not actually used by any Vertigo object, but is a
- * wrapper around multiple {@link PartitionInfo} partitions, with each partition
+ * wrapper around multiple {@link PartitionContext} partitions, with each partition
  * representing an partition of the component - a Vert.x verticle or module.<p>
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
@@ -91,7 +91,7 @@ public interface ComponentContext extends Context<ComponentContext> {
    * 
    * @return A list of component partition context.
    */
-  List<PartitionInfo> partitions();
+  List<PartitionContext> partitions();
 
   /**
    * Gets component partition context by partition ID.
@@ -99,7 +99,7 @@ public interface ComponentContext extends Context<ComponentContext> {
    * @param partitionNumber The partition number.
    * @return A component partition or <code>null</code> if the partition doesn't exist.
    */
-  PartitionInfo partition(int partitionNumber);
+  PartitionContext partition(int partitionNumber);
 
   /**
    * Gets component partition context by partition id.
@@ -107,7 +107,7 @@ public interface ComponentContext extends Context<ComponentContext> {
    * @param id The partition id.
    * @return A component partition or <code>null</code> if the partition doesn't exist.
    */
-  PartitionInfo partition(String id);
+  PartitionContext partition(String id);
 
   /**
    * Returns a boolean indicating whether the verticle is a worker verticle.
@@ -197,7 +197,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * @param partition The partition context to add.
      * @return The component context builder.
      */
-    Builder addPartition(PartitionInfo partition);
+    Builder addPartition(PartitionContext partition);
 
     /**
      * Removes an partition from the component context.
@@ -205,7 +205,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * @param partition The partition context to remove.
      * @return The component context builder.
      */
-    Builder removePartition(PartitionInfo partition);
+    Builder removePartition(PartitionContext partition);
 
     /**
      * Sets the component partitions.
@@ -213,7 +213,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * @param partitions A collection of partition context to add.
      * @return The component context builder.
      */
-    Builder setPartitions(PartitionInfo... partitions);
+    Builder setPartitions(PartitionContext... partitions);
 
     /**
      * Sets the component partitions.
@@ -221,7 +221,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * @param partitions A collection of partition context to add.
      * @return The component context builder.
      */
-    Builder setPartitions(Collection<PartitionInfo> partitions);
+    Builder setPartitions(Collection<PartitionContext> partitions);
 
     /**
      * Clears all component partition context.

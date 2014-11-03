@@ -17,7 +17,7 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.Context;
-import net.kuujo.vertigo.component.impl.PartitionInfoImpl;
+import net.kuujo.vertigo.component.impl.PartitionContextImpl;
 import net.kuujo.vertigo.input.InputContext;
 import net.kuujo.vertigo.output.OutputContext;
 
@@ -35,7 +35,7 @@ import net.kuujo.vertigo.output.OutputContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface PartitionInfo extends Context<PartitionInfo> {
+public interface PartitionContext extends Context<PartitionContext> {
 
   /**
    * Returns a new partition context builder.
@@ -43,7 +43,7 @@ public interface PartitionInfo extends Context<PartitionInfo> {
    * @return A new partition context builder.
    */
   static Builder builder() {
-    return new PartitionInfoImpl.Builder();
+    return new PartitionContextImpl.Builder();
   }
 
   /**
@@ -52,8 +52,8 @@ public interface PartitionInfo extends Context<PartitionInfo> {
    * @param partition An existing partition context object to wrap.
    * @return An partition context builder wrapper.
    */
-  static Builder builder(PartitionInfo partition) {
-    return new PartitionInfoImpl.Builder((PartitionInfoImpl) partition);
+  static Builder builder(PartitionContext partition) {
+    return new PartitionContextImpl.Builder((PartitionContextImpl) partition);
   }
 
   /**
@@ -87,7 +87,7 @@ public interface PartitionInfo extends Context<PartitionInfo> {
   /**
    * Instance context builder.
    */
-  public static interface Builder extends Context.Builder<PartitionInfo> {
+  public static interface Builder extends Context.Builder<Builder, PartitionContext> {
 
     /**
      * Sets the partition number.

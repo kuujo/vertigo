@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.impl;
 
 import net.kuujo.vertigo.component.ComponentContext;
-import net.kuujo.vertigo.component.PartitionInfo;
+import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.input.InputContext;
 import net.kuujo.vertigo.output.OutputContext;
@@ -27,7 +27,7 @@ import net.kuujo.vertigo.util.Args;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class PartitionInfoImpl extends BaseContextImpl<PartitionInfo> implements PartitionInfo {
+public class PartitionContextImpl extends BaseContextImpl<PartitionContext> implements PartitionContext {
   private int number;
   private InputContext input;
   private OutputContext output;
@@ -56,48 +56,55 @@ public class PartitionInfoImpl extends BaseContextImpl<PartitionInfo> implements
   /**
    * Instance context builder.
    */
-  public static class Builder implements PartitionInfo.Builder {
-    private final PartitionInfoImpl instance;
+  public static class Builder implements PartitionContext.Builder {
+    private final PartitionContextImpl partition;
 
     public Builder() {
-      instance = new PartitionInfoImpl();
+      partition = new PartitionContextImpl();
     }
 
-    public Builder(PartitionInfoImpl instance) {
-      this.instance = instance;
+    public Builder(PartitionContextImpl partition) {
+      this.partition = partition;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      partition.id = id;
+      return this;
     }
 
     @Override
     public Builder setNumber(int number) {
       Args.checkPositive(number, "partition number must be positive");
-      instance.number = number;
+      partition.number = number;
       return this;
     }
 
     @Override
     public Builder setInput(InputContext input) {
       Args.checkNotNull(input, "input cannot be null");
-      instance.input = input;
+      partition.input = input;
       return this;
     }
 
     @Override
     public Builder setOutput(OutputContext output) {
       Args.checkNotNull(output, "output cannot be null");
-      instance.output = output;
+      partition.output = output;
       return this;
     }
 
     @Override
     public Builder setComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
-      instance.component = component;
+      partition.component = component;
       return this;
     }
 
     @Override
-    public PartitionInfoImpl build() {
-      return instance;
+    public PartitionContextImpl build() {
+      return partition;
     }
   }
 

@@ -19,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.component.PartitionInfo;
+import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Args;
@@ -36,7 +36,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   private String main;
   private Component component;
   private JsonObject config;
-  private List<PartitionInfo> partitions = new ArrayList<>();
+  private List<PartitionContext> partitions = new ArrayList<>();
   private boolean worker;
   private boolean multiThreaded;
   private Set<String> resources = new HashSet<>();
@@ -63,14 +63,14 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   }
 
   @Override
-  public List<PartitionInfo> partitions() {
+  public List<PartitionContext> partitions() {
     return partitions;
   }
 
   @Override
-  public PartitionInfo partition(int partitionNumber) {
-    PartitionInfo instance = null;
-    for (PartitionInfo info : partitions) {
+  public PartitionContext partition(int partitionNumber) {
+    PartitionContext instance = null;
+    for (PartitionContext info : partitions) {
       if (info.number() == partitionNumber) {
         instance = info;
         break;
@@ -80,9 +80,9 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   }
 
   @Override
-  public PartitionInfo partition(String id) {
-    PartitionInfo instance = null;
-    for (PartitionInfo info : partitions) {
+  public PartitionContext partition(String id) {
+    PartitionContext instance = null;
+    for (PartitionContext info : partitions) {
       if (info.id().equals(id)) {
         instance = info;
         break;
@@ -181,10 +181,10 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public Builder addPartition(PartitionInfo partition) {
+    public Builder addPartition(PartitionContext partition) {
       Args.checkNotNull(partition, "partition cannot be null");
-      for (PartitionInfo info : component.partitions) {
-        if (info.id().equals(partition.id()) || info.number() == partition.number()) {
+      for (PartitionContext context : component.partitions) {
+        if (context.id().equals(partition.id()) || context.number() == partition.number()) {
           return this;
         }
       }
@@ -193,9 +193,9 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
      @Override
-    public Builder removePartition(PartitionInfo partition) {
+    public Builder removePartition(PartitionContext partition) {
       Args.checkNotNull(partition, "partition cannot be null");
-      Iterator<PartitionInfo> iterator = component.partitions.iterator();
+      Iterator<PartitionContext> iterator = component.partitions.iterator();
       while (iterator.hasNext()) {
         if (iterator.next().id().equals(partition.id())) {
           iterator.remove();
@@ -205,13 +205,13 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public Builder setPartitions(PartitionInfo... partitions) {
+    public Builder setPartitions(PartitionContext... partitions) {
       component.partitions = new ArrayList<>(Arrays.asList(partitions));
       return this;
     }
 
     @Override
-    public Builder setPartitions(Collection<PartitionInfo> partitions) {
+    public Builder setPartitions(Collection<PartitionContext> partitions) {
       Args.checkNotNull(partitions, "partitions cannot be null");
       component.partitions = new ArrayList<>(partitions);
       return this;

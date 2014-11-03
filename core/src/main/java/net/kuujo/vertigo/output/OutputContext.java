@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.output;
 
 import net.kuujo.vertigo.Context;
-import net.kuujo.vertigo.component.PartitionInfo;
+import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.output.impl.OutputContextImpl;
 import net.kuujo.vertigo.output.port.OutputPortContext;
 
@@ -54,7 +54,7 @@ public interface OutputContext extends Context<OutputContext> {
    *
    * @return The parent partition context.
    */
-  PartitionInfo partition();
+  PartitionContext partition();
 
   /**
    * Returns the output's port contexts.
@@ -121,7 +121,7 @@ public interface OutputContext extends Context<OutputContext> {
      * @param partition The parent partition context.
      * @return The output context builder.
      */
-    Builder setPartition(PartitionInfo partition);
+    Builder setPartition(PartitionContext partition);
   }
 
 }

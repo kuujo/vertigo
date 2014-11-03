@@ -22,7 +22,7 @@ import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.connection.SourceContext;
 
 /**
- * Connection info implementation.
+ * Connection context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

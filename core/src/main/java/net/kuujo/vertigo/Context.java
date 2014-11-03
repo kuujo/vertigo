@@ -32,33 +32,41 @@ public interface Context<T extends Context<T>> extends Serializable {
   String id();
 
   /**
-   * Returns a formatted representation of the type info.
+   * Returns a formatted representation of the type context.
    *
-   * @param formatted Whether to format the type info.
-   * @return A formatted representation of the type info.
+   * @param formatted Whether to format the type context.
+   * @return A formatted representation of the type context.
    */
   String toString(boolean formatted);
 
   /**
-   * Creates a copy of the type info.
+   * Creates a copy of the type context.
    *
-   * @return A copy of the type info and its children.
+   * @return A copy of the type context and its children.
    */
   T copy();
 
   /**
-   * Type info builder.
+   * Type context builder.
    *
    * @param <T> The type built by the builder.
    */
-  public static interface Builder<T extends Context<T>> {
+  public static interface Builder<T extends Builder<T, U>, U extends Context<U>> {
+
+    /**
+     * Sets the unique context ID.
+     *
+     * @param id The unique context ID.
+     * @return The context builder.
+     */
+    T setId(String id);
 
     /**
      * Builds the instance.
      *
-     * @return The built type info instance.
+     * @return The built type context instance.
      */
-    T build();
+    U build();
 
   }
 

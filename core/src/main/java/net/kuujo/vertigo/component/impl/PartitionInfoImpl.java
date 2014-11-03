@@ -23,7 +23,7 @@ import net.kuujo.vertigo.output.OutputContext;
 import net.kuujo.vertigo.util.Args;
 
 /**
- * Instance info implementation.
+ * Instance context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -54,7 +54,7 @@ public class PartitionInfoImpl extends BaseContextImpl<PartitionInfo> implements
   }
 
   /**
-   * Instance info builder.
+   * Instance context builder.
    */
   public static class Builder implements PartitionInfo.Builder {
     private final PartitionInfoImpl instance;

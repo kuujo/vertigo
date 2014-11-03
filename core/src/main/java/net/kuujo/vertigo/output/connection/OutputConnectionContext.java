@@ -31,19 +31,19 @@ import net.kuujo.vertigo.output.stream.OutputStreamContext;
 public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
 
   /**
-   * Returns a new output connection info builder.
+   * Returns a new output connection context builder.
    *
-   * @return A new output connection info builder.
+   * @return A new output connection context builder.
    */
   static Builder builder() {
     return new OutputConnectionContextImpl.Builder();
   }
 
   /**
-   * Returns a new output connection info builder.
+   * Returns a new output connection context builder.
    *
-   * @param connection An existing output connection info object to wrap.
-   * @return An output connection info builder wrapper.
+   * @param connection An existing output connection context object to wrap.
+   * @return An output connection context builder wrapper.
    */
   static Builder builder(OutputConnectionContext connection) {
     return new OutputConnectionContextImpl.Builder((OutputConnectionContextImpl) connection);
@@ -57,39 +57,39 @@ public interface OutputConnectionContext extends ConnectionContext<OutputConnect
   OutputStreamContext stream();
 
   /**
-   * Output connection info builder.
+   * Output connection context builder.
    */
-  public static interface Builder extends Context.Builder<OutputConnectionContext> {
+  public static interface Builder extends Context.Builder<Builder, OutputConnectionContext> {
 
     /**
      * Sets the connection address.
      *
      * @param address The connection address.
-     * @return The output connection info builder.
+     * @return The output connection context builder.
      */
     Builder setAddress(String address);
 
     /**
-     * Sets the connection source info.
+     * Sets the connection source context.
      *
-     * @param source The connection source info.
-     * @return The output connection info builder.
+     * @param source The connection source context.
+     * @return The output connection context builder.
      */
     Builder setSource(SourceContext source);
 
     /**
-     * Sets the connection target info.
+     * Sets the connection target context.
      *
-     * @param target The connection target info.
-     * @return The output connection info builder.
+     * @param target The connection target context.
+     * @return The output connection context builder.
      */
     Builder setTarget(TargetContext target);
 
     /**
-     * Sets the parent output stream info.
+     * Sets the parent output stream context.
      *
-     * @param stream The parent output stream info.
-     * @return The output connection info builder.
+     * @param stream The parent output stream context.
+     * @return The output connection context builder.
      */
     Builder setStream(OutputStreamContext stream);
   }

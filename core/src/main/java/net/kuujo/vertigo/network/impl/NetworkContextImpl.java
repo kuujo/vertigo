@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Network info implementation.
+ * Network context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -68,7 +68,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
   }
 
   /**
-   * Network info builder.
+   * Network context builder.
    */
   public static class Builder implements NetworkContext.Builder {
     private final NetworkContextImpl network;
@@ -79,6 +79,13 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
 
     public Builder(NetworkContextImpl network) {
       this.network = network;
+    }
+
+    @Override
+    public NetworkContext.Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      network.id = id;
+      return this;
     }
 
     @Override

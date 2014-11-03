@@ -31,19 +31,19 @@ import java.util.Collection;
 public interface InputContext extends Context<InputContext> {
 
   /**
-   * Returns a new input info builder.
+   * Returns a new input context builder.
    *
-   * @return A new input info builder.
+   * @return A new input context builder.
    */
   static Builder builder() {
     return new InputContextImpl.Builder();
   }
 
   /**
-   * Returns a new input info builder.
+   * Returns a new input context builder.
    *
-   * @param input An existing input info object to wrap.
-   * @return An input info builder wrapper.
+   * @param input An existing input context object to wrap.
+   * @return An input context builder wrapper.
    */
   static Builder builder(InputContext input) {
     return new InputContextImpl.Builder((InputContextImpl) input);
@@ -72,54 +72,54 @@ public interface InputContext extends Context<InputContext> {
   InputPortContext port(String name);
 
   /**
-   * Input info builder.
+   * Input context builder.
    */
-  public static interface Builder extends Context.Builder<InputContext> {
+  public static interface Builder extends Context.Builder<Builder, InputContext> {
 
     /**
      * Adds an input port.
      *
-     * @param port The input port info.
-     * @return The input info builder.
+     * @param port The input port context.
+     * @return The input context builder.
      */
     Builder addPort(InputPortContext port);
 
     /**
      * Removes an input port.
      *
-     * @param port The input port info.
-     * @return The input info builder.
+     * @param port The input port context.
+     * @return The input context builder.
      */
     Builder removePort(InputPortContext port);
 
     /**
      * Sets all input ports.
      *
-     * @param ports A collection of input port info.
-     * @return The input info builder.
+     * @param ports A collection of input port context.
+     * @return The input context builder.
      */
     Builder setPorts(InputPortContext... ports);
 
     /**
      * Sets all input ports.
      *
-     * @param ports A collection of input port info.
-     * @return The input info builder.
+     * @param ports A collection of input port context.
+     * @return The input context builder.
      */
     Builder setPorts(Collection<InputPortContext> ports);
 
     /**
      * Clears all input ports.
      *
-     * @return The input info builder.
+     * @return The input context builder.
      */
     Builder clearPorts();
 
     /**
-     * Sets the parent partition info.
+     * Sets the parent partition context.
      *
-     * @param partition The parent partition info.
-     * @return The input info builder.
+     * @param partition The parent partition context.
+     * @return The input context builder.
      */
     Builder setPartition(PartitionInfo partition);
   }

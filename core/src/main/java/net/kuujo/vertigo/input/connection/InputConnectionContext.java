@@ -31,19 +31,19 @@ import net.kuujo.vertigo.input.port.InputPortContext;
 public interface InputConnectionContext extends ConnectionContext<InputConnectionContext> {
 
   /**
-   * Returns a new input connection info builder.
+   * Returns a new input connection context builder.
    *
-   * @return A new input connection info builder.
+   * @return A new input connection context builder.
    */
   static Builder builder() {
     return new InputConnectionContextImpl.Builder();
   }
 
   /**
-   * Returns a new input connection info builder.
+   * Returns a new input connection context builder.
    *
-   * @param connection An existing input connection info object to wrap.
-   * @return An input connection info builder wrapper.
+   * @param connection An existing input connection context object to wrap.
+   * @return An input connection context builder wrapper.
    */
   static Builder builder(InputConnectionContext connection) {
     return new InputConnectionContextImpl.Builder((InputConnectionContextImpl) connection);
@@ -57,39 +57,39 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
   InputPortContext port();
 
   /**
-   * Input connection info builder.
+   * Input connection context builder.
    */
-  public static interface Builder extends Context.Builder<InputConnectionContext> {
+  public static interface Builder extends Context.Builder<Builder, InputConnectionContext> {
 
     /**
      * Sets the connection address.
      *
      * @param address The connection address.
-     * @return The input connection info builder.
+     * @return The input connection context builder.
      */
     Builder setAddress(String address);
 
     /**
-     * Sets the connection source info.
+     * Sets the connection source context.
      *
-     * @param source The connection source info.
-     * @return The input connection info builder.
+     * @param source The connection source context.
+     * @return The input connection context builder.
      */
     Builder setSource(SourceContext source);
 
     /**
-     * Sets the connection target info.
+     * Sets the connection target context.
      *
-     * @param target The connection target info.
-     * @return The input connection info builder.
+     * @param target The connection target context.
+     * @return The input connection context builder.
      */
     Builder setTarget(TargetContext target);
 
     /**
-     * Sets the parent input port info.
+     * Sets the parent input port context.
      *
-     * @param port The parent input port info.
-     * @return The input connection info builder.
+     * @param port The parent input port context.
+     * @return The input connection context builder.
      */
     Builder setPort(InputPortContext port);
   }

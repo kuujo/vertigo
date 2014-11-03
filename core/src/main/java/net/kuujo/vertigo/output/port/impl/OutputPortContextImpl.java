@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Output port info implementation.
+ * Output port context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -53,7 +53,7 @@ public class OutputPortContextImpl extends BaseContextImpl<OutputPortContext> im
   }
 
   /**
-   * Output port info builder.
+   * Output port context builder.
    */
   public static class Builder implements OutputPortContext.Builder {
     private final OutputPortContextImpl port;
@@ -64,6 +64,13 @@ public class OutputPortContextImpl extends BaseContextImpl<OutputPortContext> im
 
     public Builder(OutputPortContextImpl port) {
       this.port = port;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      port.id = id;
+      return this;
     }
 
     @Override

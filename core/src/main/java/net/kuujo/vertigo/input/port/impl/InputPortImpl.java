@@ -112,7 +112,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
           task.complete();
         });
 
-        // Add all connections from the connection info.
+        // Add all connections from the connection context.
         // Only add connections to the connections list once the connection
         // has been opened. This ensures that we don't attempt to send messages
         // on a close connection.

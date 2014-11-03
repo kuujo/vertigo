@@ -42,15 +42,15 @@ import java.util.Map;
 public class InputCollectorImpl implements InputCollector {
   private final Logger log;
   private final Vertx vertx;
-  private InputContext info;
+  private InputContext context;
   private final Map<String, InputPort> ports = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
   private boolean open;
 
-  public InputCollectorImpl(Vertx vertx, InputContext info) {
+  public InputCollectorImpl(Vertx vertx, InputContext context) {
     this.vertx = vertx;
-    this.info = info;
-    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", InputCollectorImpl.class.getName(), info.partition().component().name(), info.partition().number()));
+    this.context = context;
+    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", InputCollectorImpl.class.getName(), context.partition().component().name(), context.partition().number()));
   }
 
   @Override
@@ -66,7 +66,14 @@ public class InputCollectorImpl implements InputCollector {
       if (open) {
         throw new IllegalStateException("cannot declare port on locked input collector");
       }
-      port = new InputPortImpl<>(vertx, InputPortContext.builder().setName(name).build());
+      port = new InputPortImpl<>(vertx, InputPortContext.builder().setId(
+        String.format(
+          "%s:%s:%d:%s",
+          context.partition().component().network().name(),
+          context.partition().component().name(),
+          context.partition().number(),
+          name
+        )).setName(name).build());
       ports.put(name, port);
     }
     return port;
@@ -83,13 +90,13 @@ public class InputCollectorImpl implements InputCollector {
     // by queueing open/close operations as tasks.
     tasks.runTask((task) -> {
       if (!open) {
-        final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(info.ports().size());
+        final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
         startCounter.setHandler((result) -> {
           doneHandler.handle(result);
           task.complete();
         });
 
-        for (final InputPortContext port : info.ports()) {
+        for (final InputPortContext port : context.ports()) {
           log.debug(String.format("%s - Opening in port: %s", InputCollectorImpl.this, port));
           if (ports.containsKey(port.name())) {
             ports.get(port.name()).open((result) -> {
@@ -164,7 +171,7 @@ public class InputCollectorImpl implements InputCollector {
 
   @Override
   public String toString() {
-    return info.toString();
+    return context.toString();
   }
 
 }

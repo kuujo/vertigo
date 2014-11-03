@@ -19,7 +19,7 @@ package net.kuujo.vertigo.impl;
 import net.kuujo.vertigo.Context;
 
 /**
- * Base type info implementation.
+ * Base type context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */

@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Output stream info implementation.
+ * Output stream context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -54,7 +54,7 @@ public class OutputStreamContextImpl extends BaseContextImpl<OutputStreamContext
   }
 
   /**
-   * Output stream info builder.
+   * Output stream context builder.
    */
   public static class Builder implements OutputStreamContext.Builder {
     private final OutputStreamContextImpl stream;
@@ -65,6 +65,13 @@ public class OutputStreamContextImpl extends BaseContextImpl<OutputStreamContext
 
     public Builder(OutputStreamContextImpl stream) {
       this.stream = stream;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      stream.id = id;
+      return this;
     }
 
     @Override

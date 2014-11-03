@@ -20,7 +20,7 @@ import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.connection.impl.SourceContextImpl;
 
 /**
- * Connection source info.
+ * Connection source context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -28,34 +28,34 @@ import net.kuujo.vertigo.connection.impl.SourceContextImpl;
 public interface SourceContext extends EndpointContext<SourceContext> {
 
   /**
-   * Returns a new source info builder.
+   * Returns a new source context builder.
    *
-   * @return A new source info builder.
+   * @return A new source context builder.
    */
   static Builder builder() {
     return new SourceContextImpl.Builder();
   }
 
   /**
-   * Returns a new source info builder.
+   * Returns a new source context builder.
    *
-   * @param source The source info to wrap.
-   * @return The source info builder wrapper.
+   * @param source The source context to wrap.
+   * @return The source context builder wrapper.
    */
   static Builder builder(SourceContext source) {
     return new SourceContextImpl.Builder((SourceContextImpl) source);
   }
 
   /**
-   * Source info builder.
+   * Source context builder.
    */
-  public static interface Builder extends Context.Builder<SourceContext> {
+  public static interface Builder extends Context.Builder<Builder, SourceContext> {
 
     /**
      * Sets the source component.
      *
      * @param component The source component name.
-     * @return The source info builder.
+     * @return The source context builder.
      */
     Builder setComponent(String component);
 
@@ -63,7 +63,7 @@ public interface SourceContext extends EndpointContext<SourceContext> {
      * Sets the source port.
      *
      * @param port The source port name.
-     * @return The source info builder.
+     * @return The source context builder.
      */
     Builder setPort(String port);
 
@@ -71,7 +71,7 @@ public interface SourceContext extends EndpointContext<SourceContext> {
      * Sets the source partition.
      *
      * @param partition The source partition number.
-     * @return The source info builder.
+     * @return The source context builder.
      */
     Builder setPartition(int partition);
   }

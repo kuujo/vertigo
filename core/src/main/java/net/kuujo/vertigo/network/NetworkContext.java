@@ -35,19 +35,19 @@ import java.util.Collection;
 public interface NetworkContext extends Context<NetworkContext> {
 
   /**
-   * Returns a network info builder.
+   * Returns a network context builder.
    *
-   * @return A new network info builder.
+   * @return A new network context builder.
    */
   static Builder builder() {
     return new NetworkContextImpl.Builder();
   }
 
   /**
-   * Returns a new network info builder.
+   * Returns a new network context builder.
    *
-   * @param network An existing network info object to wrap.
-   * @return A network info builder wrapper
+   * @param network An existing network context object to wrap.
+   * @return A network context builder wrapper
    */
   static Builder builder(NetworkContext network) {
     return new NetworkContextImpl.Builder((NetworkContextImpl) network);
@@ -103,15 +103,15 @@ public interface NetworkContext extends Context<NetworkContext> {
   ComponentContext component(String name);
 
   /**
-   * Network info builder.
+   * Network context builder.
    */
-  public static interface Builder extends Context.Builder<NetworkContext> {
+  public static interface Builder extends Context.Builder<Builder, NetworkContext> {
 
     /**
      * Sets the network name.
      *
      * @param name The unique network name.
-     * @return The network info builder.
+     * @return The network context builder.
      */
     Builder setName(String name);
 
@@ -119,7 +119,7 @@ public interface NetworkContext extends Context<NetworkContext> {
      * Sets the network version.
      *
      * @param version The network version.
-     * @return The network info builder.
+     * @return The network context builder.
      */
     Builder setVersion(String version);
 
@@ -127,39 +127,39 @@ public interface NetworkContext extends Context<NetworkContext> {
      * Sets the network configuration.
      *
      * @param config The network configuration.
-     * @return The network info builder.
+     * @return The network context builder.
      */
     Builder setConfig(Network config);
 
     /**
-     * Adds a component to the network info.
+     * Adds a component to the network context.
      *
-     * @param component The component info to add.
-     * @return The network info builder.
+     * @param component The component context to add.
+     * @return The network context builder.
      */
     Builder addComponent(ComponentContext component);
 
     /**
-     * Removes a component from the network info.
+     * Removes a component from the network context.
      *
-     * @param component The component info to remove.
-     * @return The network info builder.
+     * @param component The component context to remove.
+     * @return The network context builder.
      */
     Builder removeComponent(ComponentContext component);
 
     /**
      * Sets the network components.
      *
-     * @param components A collection of network component info.
-     * @return The network info builder.
+     * @param components A collection of network component context.
+     * @return The network context builder.
      */
     Builder setComponents(ComponentContext... components);
 
     /**
      * Sets the network components.
      *
-     * @param components A collection of network component info.
-     * @return The network info builder.
+     * @param components A collection of network component context.
+     * @return The network context builder.
      */
     Builder setComponents(Collection<ComponentContext> components);
   }

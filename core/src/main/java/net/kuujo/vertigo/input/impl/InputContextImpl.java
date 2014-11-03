@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Input info implementation.
+ * Input context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -51,7 +51,7 @@ public class InputContextImpl extends BaseContextImpl<InputContext> implements I
   }
 
   /**
-   * Input info builder.
+   * Input context builder.
    */
   public static class Builder implements InputContext.Builder {
     private final InputContextImpl input;
@@ -62,6 +62,13 @@ public class InputContextImpl extends BaseContextImpl<InputContext> implements I
 
     public Builder(InputContextImpl input) {
       this.input = input;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      input.id = id;
+      return this;
     }
 
     @Override

@@ -33,19 +33,19 @@ import java.util.Collection;
 public interface OutputPortContext extends Context<OutputPortContext> {
 
   /**
-   * Returns a new output port info builder.
+   * Returns a new output port context builder.
    *
-   * @return A new output port info builder.
+   * @return A new output port context builder.
    */
   static Builder builder() {
     return new OutputPortContextImpl.Builder();
   }
 
   /**
-   * Returns a new output port info builder.
+   * Returns a new output port context builder.
    *
-   * @param port An existing output port info object to wrap.
-   * @return An output port info builder wrapper.
+   * @param port An existing output port context object to wrap.
+   * @return An output port context builder wrapper.
    */
   static Builder builder(OutputPortContext port) {
     return new OutputPortContextImpl.Builder((OutputPortContextImpl) port);
@@ -73,9 +73,9 @@ public interface OutputPortContext extends Context<OutputPortContext> {
   Collection<OutputStreamContext> streams();
 
   /**
-   * Output port info builder.
+   * Output port context builder.
    */
-  public static interface Builder extends Context.Builder<OutputPortContext> {
+  public static interface Builder extends Context.Builder<Builder, OutputPortContext> {
 
     /**
      * Sets the port name.
@@ -88,40 +88,40 @@ public interface OutputPortContext extends Context<OutputPortContext> {
     /**
      * Adds a stream to the output.
      *
-     * @param stream The output stream info to add.
-     * @return The output port info builder.
+     * @param stream The output stream context to add.
+     * @return The output port context builder.
      */
     Builder addStream(OutputStreamContext stream);
 
     /**
      * Removes a stream from the output.
      *
-     * @param stream The output stream info to remove.
-     * @return The output port info builder.
+     * @param stream The output stream context to remove.
+     * @return The output port context builder.
      */
     Builder removeStream(OutputStreamContext stream);
 
     /**
      * Sets all streams on the output.
      *
-     * @param streams A collection of output stream info to add.
-     * @return The output port info builder.
+     * @param streams A collection of output stream context to add.
+     * @return The output port context builder.
      */
     Builder setStreams(OutputStreamContext... streams);
 
     /**
      * Sets all streams on the output.
      *
-     * @param streams A collection of output stream info to add.
-     * @return The output port info builder.
+     * @param streams A collection of output stream context to add.
+     * @return The output port context builder.
      */
     Builder setStreams(Collection<OutputStreamContext> streams);
 
     /**
-     * Sets the parent output info.
+     * Sets the parent output context.
      *
-     * @param output The parent output info.
-     * @return The output port info builder.
+     * @param output The parent output context.
+     * @return The output port context builder.
      */
     Builder setOutput(OutputContext output);
   }

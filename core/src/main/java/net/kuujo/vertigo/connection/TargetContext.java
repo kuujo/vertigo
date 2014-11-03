@@ -20,7 +20,7 @@ import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.connection.impl.TargetContextImpl;
 
 /**
- * Connection target info.
+ * Connection target context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -28,34 +28,34 @@ import net.kuujo.vertigo.connection.impl.TargetContextImpl;
 public interface TargetContext extends EndpointContext<TargetContext> {
 
   /**
-   * Returns a new target info builder.
+   * Returns a new target context builder.
    *
-   * @return A new target info builder.
+   * @return A new target context builder.
    */
   static Builder builder() {
     return new TargetContextImpl.Builder();
   }
 
   /**
-   * Returns a new target info builder.
+   * Returns a new target context builder.
    *
-   * @param target An existing target info object.
-   * @return A target info builder wrapper.
+   * @param target An existing target context object.
+   * @return A target context builder wrapper.
    */
   static Builder builder(TargetContext target) {
     return new TargetContextImpl.Builder((TargetContextImpl) target);
   }
 
   /**
-   * Target info builder.
+   * Target context builder.
    */
-  public static interface Builder extends Context.Builder<TargetContext> {
+  public static interface Builder extends Context.Builder<Builder, TargetContext> {
 
     /**
      * Sets the target component.
      *
      * @param component The target component name.
-     * @return The target info builder.
+     * @return The target context builder.
      */
     Builder setComponent(String component);
 
@@ -63,7 +63,7 @@ public interface TargetContext extends EndpointContext<TargetContext> {
      * Sets the target port.
      *
      * @param port The target port name.
-     * @return The target info builder.
+     * @return The target context builder.
      */
     Builder setPort(String port);
 
@@ -71,7 +71,7 @@ public interface TargetContext extends EndpointContext<TargetContext> {
      * Sets the target partition.
      *
      * @param partition The target partition number.
-     * @return The target info builder.
+     * @return The target context builder.
      */
     Builder setPartition(int partition);
   }

@@ -37,18 +37,18 @@ import java.util.List;
 public interface OutputStreamContext extends Context<OutputStreamContext> {
 
   /**
-   * Returns a new output stream info builder.
+   * Returns a new output stream context builder.
    *
-   * @return A new output stream info builder.
+   * @return A new output stream context builder.
    */
   static Builder builder() {
     return new OutputStreamContextImpl.Builder();
   }
 
   /**
-   * Returns a new output stream info builder.
+   * Returns a new output stream context builder.
    *
-   * @param stream An existing output stream info object to wrap.
+   * @param stream An existing output stream context object to wrap.
    * @return An output stream builder wrapper.
    */
   static Builder builder(OutputStreamContext stream) {
@@ -77,47 +77,47 @@ public interface OutputStreamContext extends Context<OutputStreamContext> {
   List<OutputConnectionContext> connections();
 
   /**
-   * Output stream info builder.
+   * Output stream context builder.
    */
-  public static interface Builder extends Context.Builder<OutputStreamContext> {
+  public static interface Builder extends Context.Builder<Builder, OutputStreamContext> {
 
     /**
      * Adds a connection to the stream.
      *
-     * @param connection The output connection info to add.
-     * @return The output stream info builder.
+     * @param connection The output connection context to add.
+     * @return The output stream context builder.
      */
     Builder addConnection(OutputConnectionContext connection);
 
     /**
      * Removes a connection from the stream.
      *
-     * @param connection The output connection info to remove.
-     * @return The output stream info builder.
+     * @param connection The output connection context to remove.
+     * @return The output stream context builder.
      */
     Builder removeConnection(OutputConnectionContext connection);
 
     /**
      * Sets all connections on the stream.
      *
-     * @param connections A collection of output connection info to add.
-     * @return The output stream info builder.
+     * @param connections A collection of output connection context to add.
+     * @return The output stream context builder.
      */
     Builder setConnections(OutputConnectionContext... connections);
 
     /**
      * Sets all connections on the stream.
      *
-     * @param connections A collection of output connection info to add.
-     * @return The output stream info builder.
+     * @param connections A collection of output connection context to add.
+     * @return The output stream context builder.
      */
     Builder setConnections(Collection<OutputConnectionContext> connections);
 
     /**
      * Sets the parent output port.
      *
-     * @param port The output port info.
-     * @return The output stream info builder.
+     * @param port The output port context.
+     * @return The output stream context builder.
      */
     Builder setPort(OutputPortContext port);
   }

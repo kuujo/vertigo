@@ -39,9 +39,9 @@ import net.kuujo.vertigo.input.ControllableInput;
 public interface InputConnection<T> extends Connection<InputConnection<T>>, ControllableInput<InputConnection<T>, T> {
 
   /**
-   * Returns the input connection info.
+   * Returns the input connection context.
    *
-   * @return The input connection info.
+   * @return The input connection context.
    */
   InputConnectionContext info();
 

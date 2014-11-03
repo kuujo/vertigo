@@ -40,21 +40,21 @@ import java.util.Set;
 public interface ComponentContext extends Context<ComponentContext> {
 
   /**
-   * Returns a new component info builder.
+   * Returns a new component context builder.
    *
-   * @return A new component info builder.
+   * @return A new component context builder.
    */
   static Builder builder() {
     return new ComponentContextImpl.Builder();
   }
 
   /**
-   * Returns a new component info builder.
+   * Returns a new component context builder.
    *
-   * @param component An existing component info object to wrap.
-   * @return A component info builder wrapper.
+   * @param component An existing component context object to wrap.
+   * @return A component context builder wrapper.
    */
-  static Context.Builder<ComponentContext> builder(ComponentContext component) {
+  static Builder builder(ComponentContext component) {
     return new ComponentContextImpl.Builder((ComponentContextImpl) component);
   }
 
@@ -87,14 +87,14 @@ public interface ComponentContext extends Context<ComponentContext> {
   JsonObject config();
 
   /**
-   * Gets a list of all component partition info.
+   * Gets a list of all component partition context.
    * 
-   * @return A list of component partition info.
+   * @return A list of component partition context.
    */
   List<PartitionInfo> partitions();
 
   /**
-   * Gets component partition info by partition ID.
+   * Gets component partition context by partition ID.
    * 
    * @param partitionNumber The partition number.
    * @return A component partition or <code>null</code> if the partition doesn't exist.
@@ -102,7 +102,7 @@ public interface ComponentContext extends Context<ComponentContext> {
   PartitionInfo partition(int partitionNumber);
 
   /**
-   * Gets component partition info by partition id.
+   * Gets component partition context by partition id.
    * 
    * @param id The partition id.
    * @return A component partition or <code>null</code> if the partition doesn't exist.
@@ -132,22 +132,22 @@ public interface ComponentContext extends Context<ComponentContext> {
   Set<String> resources();
 
   /**
-   * Returns the parent network info.
+   * Returns the parent network context.
    * 
-   * @return The parent network info.
+   * @return The parent network context.
    */
   NetworkContext network();
 
   /**
-   * Component info builder.
+   * Component context builder.
    */
-  public static interface Builder extends Context.Builder<ComponentContext> {
+  public static interface Builder extends Context.Builder<Builder, ComponentContext> {
 
     /**
      * Sets the component name.
      *
      * @param name The component name.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setName(String name);
 
@@ -155,23 +155,15 @@ public interface ComponentContext extends Context<ComponentContext> {
      * Sets the component main.
      *
      * @param main The component main.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setMain(String main);
-
-    /**
-     * Sets the component partition.
-     *
-     * @param component The component partition.
-     * @return The component info builder.
-     */
-    Builder setComponent(Component component);
 
     /**
      * Sets the component configuration.
      *
      * @param config The component configuration.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setConfig(JsonObject config);
 
@@ -179,15 +171,15 @@ public interface ComponentContext extends Context<ComponentContext> {
      * Sets whether the component should be deployed as a worker.
      *
      * @param isWorker Indicates whether to deploy the component as a worker.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setWorker(boolean isWorker);
 
     /**
-     * Sets whether the component should be deployed in a multi-threaded info.
+     * Sets whether the component should be deployed in a multi-threaded context.
      *
      * @param isMultiThreaded Indicates whether to deploy the component as multi-threaded.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setMultiThreaded(boolean isMultiThreaded);
 
@@ -200,41 +192,41 @@ public interface ComponentContext extends Context<ComponentContext> {
     Builder setOptions(ComponentOptions options);
 
     /**
-     * Adds an partition to the component info.
+     * Adds an partition to the component context.
      *
-     * @param partition The partition info to add.
-     * @return The component info builder.
+     * @param partition The partition context to add.
+     * @return The component context builder.
      */
     Builder addPartition(PartitionInfo partition);
 
     /**
-     * Removes an partition from the component info.
+     * Removes an partition from the component context.
      *
-     * @param partition The partition info to remove.
-     * @return The component info builder.
+     * @param partition The partition context to remove.
+     * @return The component context builder.
      */
     Builder removePartition(PartitionInfo partition);
 
     /**
      * Sets the component partitions.
      *
-     * @param partitions A collection of partition info to add.
-     * @return The component info builder.
+     * @param partitions A collection of partition context to add.
+     * @return The component context builder.
      */
     Builder setPartitions(PartitionInfo... partitions);
 
     /**
      * Sets the component partitions.
      *
-     * @param partitions A collection of partition info to add.
-     * @return The component info builder.
+     * @param partitions A collection of partition context to add.
+     * @return The component context builder.
      */
     Builder setPartitions(Collection<PartitionInfo> partitions);
 
     /**
-     * Clears all component partition info.
+     * Clears all component partition context.
      *
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder clearPartitions();
 
@@ -242,7 +234,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * Adds a resource to the component.
      *
      * @param resource The resource to add.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder addResource(String resource);
 
@@ -250,7 +242,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * Removes a resource from the component.
      *
      * @param resource The resource to remove.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder removeResource(String resource);
 
@@ -258,7 +250,7 @@ public interface ComponentContext extends Context<ComponentContext> {
      * Sets the component resources.
      *
      * @param resources The component resources.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setResources(String... resources);
 
@@ -266,15 +258,15 @@ public interface ComponentContext extends Context<ComponentContext> {
      * Sets the component resources.
      *
      * @param resources The component resources.
-     * @return The component info builder.
+     * @return The component context builder.
      */
     Builder setResources(Collection<String> resources);
 
     /**
-     * Sets the parent network info.
+     * Sets the parent network context.
      *
-     * @param network The parent network info.
-     * @return The component info builder.
+     * @param network The parent network context.
+     * @return The component context builder.
      */
     Builder setNetwork(NetworkContext network);
   }

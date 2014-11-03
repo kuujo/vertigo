@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Input port info implementation.
+ * Input port context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -53,7 +53,7 @@ public class InputPortContextImpl extends BaseContextImpl<InputPortContext> impl
   }
 
   /**
-   * Input port info builder.
+   * Input port context builder.
    */
   public static class Builder implements InputPortContext.Builder {
     private final InputPortContextImpl port;
@@ -64,6 +64,13 @@ public class InputPortContextImpl extends BaseContextImpl<InputPortContext> impl
 
     public Builder(InputPortContextImpl port) {
       this.port = port;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      port.id = id;
+      return this;
     }
 
     @Override

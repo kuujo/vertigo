@@ -20,7 +20,7 @@ package net.kuujo.vertigo.connection;
 import net.kuujo.vertigo.Context;
 
 /**
- * Connection endpoint info.
+ * Connection endpoint context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  *

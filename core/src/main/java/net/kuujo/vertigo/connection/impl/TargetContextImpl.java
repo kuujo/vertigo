@@ -17,9 +17,10 @@ package net.kuujo.vertigo.connection.impl;
 
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.connection.TargetContext;
+import net.kuujo.vertigo.util.Args;
 
 /**
- * Connection source info implementation.
+ * Connection source context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -44,7 +45,7 @@ public class TargetContextImpl extends BaseContextImpl<TargetContext> implements
   }
 
   /**
-   * Target info builder.
+   * Target context builder.
    */
   public static class Builder implements TargetContext.Builder {
     private final TargetContextImpl target;
@@ -55,6 +56,13 @@ public class TargetContextImpl extends BaseContextImpl<TargetContext> implements
 
     public Builder(TargetContextImpl source) {
       this.target = source;
+    }
+
+    @Override
+    public TargetContext.Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      target.id = id;
+      return this;
     }
 
     @Override

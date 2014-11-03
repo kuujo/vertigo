@@ -33,19 +33,19 @@ import java.util.Collection;
 public interface InputPortContext extends Context<InputPortContext> {
 
   /**
-   * Returns a new input port info builder.
+   * Returns a new input port context builder.
    *
-   * @return A new input port info builder.
+   * @return A new input port context builder.
    */
   static Builder builder() {
     return new InputPortContextImpl.Builder();
   }
 
   /**
-   * Returns a new input port info builder.
+   * Returns a new input port context builder.
    *
-   * @param port An existing input port info builder to wrap.
-   * @return An input port info builder wrapper.
+   * @param port An existing input port context builder to wrap.
+   * @return An input port context builder wrapper.
    */
   static Builder builder(InputPortContext port) {
     return new InputPortContextImpl.Builder((InputPortContextImpl) port);
@@ -73,9 +73,9 @@ public interface InputPortContext extends Context<InputPortContext> {
   Collection<InputConnectionContext> connections();
 
   /**
-   * Input port info builder.
+   * Input port context builder.
    */
-  public static interface Builder extends Context.Builder<InputPortContext> {
+  public static interface Builder extends Context.Builder<Builder, InputPortContext> {
 
     /**
      * Sets the port name.
@@ -88,32 +88,32 @@ public interface InputPortContext extends Context<InputPortContext> {
     /**
      * Adds a connection to the port.
      *
-     * @param connection The input connection info.
-     * @return The input port info builder.
+     * @param connection The input connection context.
+     * @return The input port context builder.
      */
     Builder addConnection(InputConnectionContext connection);
 
     /**
      * Removes a connection from the port.
      *
-     * @param connection The input connection info.
-     * @return The input port info builder.
+     * @param connection The input connection context.
+     * @return The input port context builder.
      */
     Builder removeConnection(InputConnectionContext connection);
 
     /**
      * Sets all connections on the port.
      *
-     * @param connections A collection of input connection info.
-     * @return The input port info builder.
+     * @param connections A collection of input connection context.
+     * @return The input port context builder.
      */
     Builder setConnections(InputConnectionContext... connections);
 
     /**
      * Sets all connections on the port.
      *
-     * @param connections A collection of input connection info.
-     * @return The input port info builder.
+     * @param connections A collection of input connection context.
+     * @return The input port context builder.
      */
     Builder setConnections(Collection<InputConnectionContext> connections);
 

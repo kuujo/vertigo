@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Output info implementation.
+ * Output context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -51,7 +51,7 @@ public class OutputContextImpl extends BaseContextImpl<OutputContext> implements
   }
 
   /**
-   * Output info builder.
+   * Output context builder.
    */
   public static class Builder implements OutputContext.Builder {
     private final OutputContextImpl output;
@@ -62,6 +62,13 @@ public class OutputContextImpl extends BaseContextImpl<OutputContext> implements
 
     public Builder(OutputContextImpl input) {
       this.output = input;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      output.id = id;
+      return this;
     }
 
     @Override

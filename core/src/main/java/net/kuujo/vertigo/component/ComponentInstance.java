@@ -55,14 +55,14 @@ public interface ComponentInstance {
   Vertx vertx();
 
   /**
-   * Returns the component partition info.
+   * Returns the component partition context.
    *
-   * The partition info can be used to retrieve useful information about an
+   * The partition context can be used to retrieve useful information about an
    * entire network.
    *
-   * @return The partition info.
+   * @return The partition context.
    */
-  PartitionInfo info();
+  PartitionInfo context();
 
   /**
    * Returns the component's {@link InputCollector}. This is the element of the

@@ -24,7 +24,7 @@ import net.kuujo.vertigo.output.stream.OutputStreamContext;
 import net.kuujo.vertigo.util.Args;
 
 /**
- * Output connection info implementation.
+ * Output connection context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -37,7 +37,7 @@ public class OutputConnectionContextImpl extends BaseConnectionContextImpl<Outpu
   }
 
   /**
-   * Output connection info builder.
+   * Output connection context builder.
    */
   public static class Builder implements OutputConnectionContext.Builder {
     private OutputConnectionContextImpl connection;
@@ -48,6 +48,13 @@ public class OutputConnectionContextImpl extends BaseConnectionContextImpl<Outpu
 
     public Builder(OutputConnectionContextImpl connection) {
       this.connection = connection;
+    }
+
+    @Override
+    public OutputConnectionContext.Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      connection.id = id;
+      return this;
     }
 
     @Override

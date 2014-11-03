@@ -27,7 +27,7 @@ import net.kuujo.vertigo.util.Args;
 import java.util.*;
 
 /**
- * Component info implementation.
+ * Component context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -112,7 +112,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   }
 
   /**
-   * Component info builder.
+   * Component context builder.
    */
   public static class Builder implements ComponentContext.Builder {
     private final ComponentContextImpl component;
@@ -126,16 +126,16 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public Builder setName(String name) {
-      Args.checkNotNull(name, "name cannot be null");
-      component.name = name;
+    public ComponentContext.Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      component.id = id;
       return this;
     }
 
     @Override
-    public Builder setComponent(Component component) {
-      Args.checkNotNull(component, "component cannot be null");
-      this.component.component = component;
+    public Builder setName(String name) {
+      Args.checkNotNull(name, "name cannot be null");
+      component.name = name;
       return this;
     }
 

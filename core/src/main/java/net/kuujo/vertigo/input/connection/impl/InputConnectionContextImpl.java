@@ -24,7 +24,7 @@ import net.kuujo.vertigo.connection.impl.BaseConnectionContextImpl;
 import net.kuujo.vertigo.util.Args;
 
 /**
- * Input connection info implementation.
+ * Input connection context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -37,7 +37,7 @@ public class InputConnectionContextImpl extends BaseConnectionContextImpl<InputC
   }
 
   /**
-   * Input connection info builder.
+   * Input connection context builder.
    */
   public static class Builder implements InputConnectionContext.Builder {
     private InputConnectionContextImpl connection;
@@ -48,6 +48,13 @@ public class InputConnectionContextImpl extends BaseConnectionContextImpl<InputC
 
     public Builder(InputConnectionContextImpl connection) {
       this.connection = connection;
+    }
+
+    @Override
+    public Builder setId(String id) {
+      Args.checkNotNull(id, "id cannot be null");
+      connection.id = id;
+      return this;
     }
 
     @Override

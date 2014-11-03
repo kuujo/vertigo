@@ -38,19 +38,19 @@ import net.kuujo.vertigo.output.OutputContext;
 public interface PartitionInfo extends Context<PartitionInfo> {
 
   /**
-   * Returns a new partition info builder.
+   * Returns a new partition context builder.
    *
-   * @return A new partition info builder.
+   * @return A new partition context builder.
    */
   static Builder builder() {
     return new PartitionInfoImpl.Builder();
   }
 
   /**
-   * Returns a new partition info builder.
+   * Returns a new partition context builder.
    *
-   * @param partition An existing partition info object to wrap.
-   * @return An partition info builder wrapper.
+   * @param partition An existing partition context object to wrap.
+   * @return An partition context builder wrapper.
    */
   static Builder builder(PartitionInfo partition) {
     return new PartitionInfoImpl.Builder((PartitionInfoImpl) partition);
@@ -85,7 +85,7 @@ public interface PartitionInfo extends Context<PartitionInfo> {
   ComponentContext component();
 
   /**
-   * Instance info builder.
+   * Instance context builder.
    */
   public static interface Builder extends Context.Builder<PartitionInfo> {
 
@@ -93,31 +93,31 @@ public interface PartitionInfo extends Context<PartitionInfo> {
      * Sets the partition number.
      *
      * @param number The partition number.
-     * @return The partition info builder.
+     * @return The partition context builder.
      */
     Builder setNumber(int number);
 
     /**
-     * Sets the partition input info.
+     * Sets the partition input context.
      *
-     * @param input The partition input info.
-     * @return The partition info builder.
+     * @param input The partition input context.
+     * @return The partition context builder.
      */
     Builder setInput(InputContext input);
 
     /**
-     * Sets the partition output info.
+     * Sets the partition output context.
      *
-     * @param output The partition output info.
-     * @return The partition info builder.
+     * @param output The partition output context.
+     * @return The partition context builder.
      */
     Builder setOutput(OutputContext output);
 
     /**
-     * Sets the partition component info.
+     * Sets the partition component context.
      *
-     * @param component The partition component info.
-     * @return The partition info builder.
+     * @param component The partition component context.
+     * @return The partition context builder.
      */
     Builder setComponent(ComponentContext component);
   }

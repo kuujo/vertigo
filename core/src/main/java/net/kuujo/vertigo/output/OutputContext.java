@@ -31,19 +31,19 @@ import java.util.Collection;
 public interface OutputContext extends Context<OutputContext> {
 
   /**
-   * Returns a new output info builder.
+   * Returns a new output context builder.
    *
-   * @return A new output info builder.
+   * @return A new output context builder.
    */
   static Builder builder() {
     return new OutputContextImpl.Builder();
   }
 
   /**
-   * Returns a new output info builder.
+   * Returns a new output context builder.
    *
-   * @param output An existing output info object to wrap.
-   * @return An output info builder wrapper.
+   * @param output An existing output context object to wrap.
+   * @return An output context builder wrapper.
    */
   static Builder builder(OutputContext output) {
     return new OutputContextImpl.Builder((OutputContextImpl) output);
@@ -72,54 +72,54 @@ public interface OutputContext extends Context<OutputContext> {
   OutputPortContext port(String name);
 
   /**
-   * Output info builder.
+   * Output context builder.
    */
-  public static interface Builder extends Context.Builder<OutputContext> {
+  public static interface Builder extends Context.Builder<Builder, OutputContext> {
 
     /**
      * Adds an output port.
      *
-     * @param port The output port info.
-     * @return The output info builder.
+     * @param port The output port context.
+     * @return The output context builder.
      */
     Builder addPort(OutputPortContext port);
 
     /**
      * Removes an output port.
      *
-     * @param port The output port info.
-     * @return The output info builder.
+     * @param port The output port context.
+     * @return The output context builder.
      */
     Builder removePort(OutputPortContext port);
 
     /**
      * Sets all output ports.
      *
-     * @param ports A collection of output port info.
-     * @return The output info builder.
+     * @param ports A collection of output port context.
+     * @return The output context builder.
      */
     Builder setPorts(OutputPortContext... ports);
 
     /**
      * Sets all output ports.
      *
-     * @param ports A collection of output port info.
-     * @return The output info builder.
+     * @param ports A collection of output port context.
+     * @return The output context builder.
      */
     Builder setPorts(Collection<OutputPortContext> ports);
 
     /**
      * Clears all output ports.
      *
-     * @return The output info builder.
+     * @return The output context builder.
      */
     Builder clearPorts();
 
     /**
-     * Sets the parent partition info.
+     * Sets the parent partition context.
      *
-     * @param partition The parent partition info.
-     * @return The output info builder.
+     * @param partition The parent partition context.
+     * @return The output context builder.
      */
     Builder setPartition(PartitionInfo partition);
   }

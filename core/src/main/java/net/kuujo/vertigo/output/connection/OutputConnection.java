@@ -45,9 +45,9 @@ import net.kuujo.vertigo.output.ControllableOutput;
 public interface OutputConnection<T> extends Connection<OutputConnection<T>>, ControllableOutput<OutputConnection<T>, T> {
 
   /**
-   * Returns the output connection info.
+   * Returns the output connection context.
    *
-   * @return The output connection info.
+   * @return The output connection context.
    */
   OutputConnectionContext info();
 

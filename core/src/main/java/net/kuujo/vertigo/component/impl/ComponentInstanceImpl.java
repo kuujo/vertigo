@@ -35,17 +35,17 @@ import net.kuujo.vertigo.util.CountingCompletionHandler;
  */
 public class ComponentInstanceImpl implements ComponentInstance {
   private final Vertx vertx;
-  private final PartitionInfo info;
+  private final PartitionInfo context;
   private final InputCollector input;
   private final OutputCollector output;
   private final Logger logger;
 
-  public ComponentInstanceImpl(Vertx vertx, PartitionInfo instance) {
+  public ComponentInstanceImpl(Vertx vertx, PartitionInfo context) {
     this.vertx = vertx;
-    this.info = instance;
-    this.input = new InputCollectorImpl(vertx, instance.input());
-    this.output = new OutputCollectorImpl(vertx, instance.output());
-    this.logger = LoggerFactory.getLogger(String.format("%s-%s", ComponentInstance.class.getName(), instance.id()));
+    this.context = context;
+    this.input = new InputCollectorImpl(vertx, context.input());
+    this.output = new OutputCollectorImpl(vertx, context.output());
+    this.logger = LoggerFactory.getLogger(String.format("%s-%s", ComponentInstance.class.getName(), context.id()));
   }
 
   @Override
@@ -54,8 +54,8 @@ public class ComponentInstanceImpl implements ComponentInstance {
   }
 
   @Override
-  public PartitionInfo info() {
-    return info;
+  public PartitionInfo context() {
+    return context;
   }
 
   @Override

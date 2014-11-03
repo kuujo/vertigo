@@ -17,7 +17,10 @@ package net.kuujo.vertigo;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.ServiceHelper;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
@@ -43,10 +46,10 @@ public interface Vertigo {
   /**
    * Creates a new Vertigo instance.
    *
-   * @param options The Vert.x options.
+   * @param options The Vertigo options.
    * @return The Vertigo instance.
    */
-  static Vertigo vertigo(VertxOptions options) {
+  static Vertigo vertigo(VertigoOptions options) {
     return factory.vertigo(options);
   }
 
@@ -63,10 +66,10 @@ public interface Vertigo {
   /**
    * Asynchronously creates a new Vertigo instance.
    *
-   * @param options The Vert.x options.
+   * @param options The Vertigo options.
    * @param resultHandler An asynchronous handler to be called once complete.
    */
-  static void vertigoAsync(VertxOptions options, Handler<AsyncResult<Vertigo>> resultHandler) {
+  static void vertigoAsync(VertigoOptions options, Handler<AsyncResult<Vertigo>> resultHandler) {
     factory.vertigoAsync(options, resultHandler);
   }
 

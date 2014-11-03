@@ -18,8 +18,8 @@ package net.kuujo.vertigo.spi;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import net.kuujo.vertigo.Vertigo;
+import net.kuujo.vertigo.VertigoOptions;
 
 /**
  * Vertigo factory.
@@ -38,10 +38,10 @@ public interface VertigoFactory {
   /**
    * Creates a new Vertigo instance.
    *
-   * @param options The Vert.x options.
+   * @param options The Vertigo options.
    * @return The Vertigo instance.
    */
-  Vertigo vertigo(VertxOptions options);
+  Vertigo vertigo(VertigoOptions options);
 
   /**
    * Creates a new Vertigo instance.
@@ -54,9 +54,9 @@ public interface VertigoFactory {
   /**
    * Asynchronously creates a new Vertigo instance.
    *
-   * @param options The Vert.x options.
+   * @param options The Vertigo options.
    * @param resultHandler An asynchronous handler to be called once complete.
    */
-  void vertigoAsync(VertxOptions options, Handler<AsyncResult<Vertigo>> resultHandler);
+  void vertigoAsync(VertigoOptions options, Handler<AsyncResult<Vertigo>> resultHandler);
 
 }

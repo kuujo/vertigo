@@ -16,10 +16,10 @@
 
 package net.kuujo.vertigo.network.impl;
 
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
+import net.kuujo.vertigo.component.ComponentContext;
+import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.NetworkInfo;
+import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.Collection;
@@ -31,11 +31,11 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements NetworkInfo {
+public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implements NetworkContext {
   private String name;
   private String version;
   private Network config;
-  private Map<String, ComponentInfo> components = new HashMap<>();
+  private Map<String, ComponentContext> components = new HashMap<>();
 
   @Override
   public String name() {
@@ -53,7 +53,7 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
   }
 
   @Override
-  public Collection<ComponentInfo> components() {
+  public Collection<ComponentContext> components() {
     return components.values();
   }
 
@@ -63,21 +63,21 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
   }
 
   @Override
-  public ComponentInfo component(String name) {
+  public ComponentContext component(String name) {
     return components.get(name);
   }
 
   /**
    * Network info builder.
    */
-  public static class Builder implements NetworkInfo.Builder {
-    private final NetworkInfoImpl network;
+  public static class Builder implements NetworkContext.Builder {
+    private final NetworkContextImpl network;
 
     public Builder() {
-      network = new NetworkInfoImpl();
+      network = new NetworkContextImpl();
     }
 
-    public Builder(NetworkInfoImpl network) {
+    public Builder(NetworkContextImpl network) {
       this.network = network;
     }
 
@@ -103,33 +103,33 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
     }
 
     @Override
-    public Builder addComponent(ComponentInfo component) {
+    public Builder addComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
       network.components.put(component.name(), component);
       return this;
     }
 
     @Override
-    public Builder removeComponent(ComponentInfo component) {
+    public Builder removeComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
       network.components.remove(component.name());
       return this;
     }
 
     @Override
-    public Builder setComponents(ComponentInfo... components) {
+    public Builder setComponents(ComponentContext... components) {
       network.components.clear();
-      for (ComponentInfo component : components) {
+      for (ComponentContext component : components) {
         network.components.put(component.name(), component);
       }
       return this;
     }
 
     @Override
-    public Builder setComponents(Collection<ComponentInfo> components) {
+    public Builder setComponents(Collection<ComponentContext> components) {
       Args.checkNotNull(components, "components cannot be null");
       network.components.clear();
-      for (ComponentInfo component : components) {
+      for (ComponentContext component : components) {
         network.components.put(component.name(), component);
       }
       return this;
@@ -146,7 +146,7 @@ public class NetworkInfoImpl extends BaseTypeInfoImpl<NetworkInfo> implements Ne
     }
 
     @Override
-    public NetworkInfo build() {
+    public NetworkContext build() {
       checkFields();
       return network;
     }

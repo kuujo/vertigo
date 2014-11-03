@@ -20,9 +20,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.output.ControllableOutput;
 import net.kuujo.vertigo.output.port.OutputPort;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
+import net.kuujo.vertigo.output.port.OutputPortContext;
 import net.kuujo.vertigo.output.stream.OutputStream;
-import net.kuujo.vertigo.output.stream.OutputStreamInfo;
+import net.kuujo.vertigo.output.stream.OutputStreamContext;
 import net.kuujo.vertigo.output.stream.impl.OutputStreamImpl;
 import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
@@ -40,14 +40,14 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   private static final Logger log = LoggerFactory.getLogger(OutputPortImpl.class);
   private static final int DEFAULT_SEND_QUEUE_MAX_SIZE = 10000;
   private final Vertx vertx;
-  private OutputPortInfo info;
+  private OutputPortContext info;
   private final List<OutputStream<T>> streams = new ArrayList<>();
   private final TaskRunner tasks = new TaskRunner();
   private int maxQueueSize = DEFAULT_SEND_QUEUE_MAX_SIZE;
   private Handler<Void> drainHandler;
   private boolean open;
 
-  public OutputPortImpl(Vertx vertx, OutputPortInfo info) {
+  public OutputPortImpl(Vertx vertx, OutputPortContext info) {
     this.vertx = vertx;
     this.info = info;
   }
@@ -127,7 +127,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
         // Only add streams to the stream list once the stream has been
         // opened. This helps ensure that we don't attempt to send messages
         // on a closed stream.
-        for (OutputStreamInfo output : info.streams()) {
+        for (OutputStreamContext output : info.streams()) {
           final OutputStream<T> stream = new OutputStreamImpl<>(vertx, output);
           stream.setSendQueueMaxSize(maxQueueSize);
           stream.drainHandler(drainHandler);

@@ -15,15 +15,15 @@
  */
 package net.kuujo.vertigo.connection.impl;
 
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.connection.TargetInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.connection.TargetContext;
 
 /**
  * Connection source info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements TargetInfo {
+public class TargetContextImpl extends BaseContextImpl<TargetContext> implements TargetContext {
   private String component;
   private String port;
   private int partition;
@@ -46,14 +46,14 @@ public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements Targ
   /**
    * Target info builder.
    */
-  public static class Builder implements TargetInfo.Builder {
-    private final TargetInfoImpl target;
+  public static class Builder implements TargetContext.Builder {
+    private final TargetContextImpl target;
 
     public Builder() {
-      target = new TargetInfoImpl();
+      target = new TargetContextImpl();
     }
 
-    public Builder(TargetInfoImpl source) {
+    public Builder(TargetContextImpl source) {
       this.target = source;
     }
 
@@ -76,7 +76,7 @@ public class TargetInfoImpl extends BaseTypeInfoImpl<TargetInfo> implements Targ
     }
 
     @Override
-    public TargetInfoImpl build() {
+    public TargetContextImpl build() {
       return target;
     }
   }

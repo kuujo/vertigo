@@ -16,20 +16,20 @@
 
 package net.kuujo.vertigo.connection.impl;
 
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.connection.ConnectionInfo;
-import net.kuujo.vertigo.connection.SourceInfo;
-import net.kuujo.vertigo.connection.TargetInfo;
+import net.kuujo.vertigo.connection.ConnectionContext;
+import net.kuujo.vertigo.connection.TargetContext;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.connection.SourceContext;
 
 /**
  * Connection info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public abstract class BaseConnectionInfoImpl<T extends ConnectionInfo<T>> extends BaseTypeInfoImpl<T> implements ConnectionInfo<T> {
+public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T>> extends BaseContextImpl<T> implements ConnectionContext<T> {
   protected String address;
-  protected SourceInfo source;
-  protected TargetInfo target;
+  protected SourceContext source;
+  protected TargetContext target;
 
   @Override
   public String address() {
@@ -37,12 +37,12 @@ public abstract class BaseConnectionInfoImpl<T extends ConnectionInfo<T>> extend
   }
 
   @Override
-  public SourceInfo source() {
+  public SourceContext source() {
     return source;
   }
 
   @Override
-  public TargetInfo target() {
+  public TargetContext target() {
     return target;
   }
 

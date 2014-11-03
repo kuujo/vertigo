@@ -43,6 +43,6 @@ public interface InputConnection<T> extends Connection<InputConnection<T>>, Cont
    *
    * @return The input connection info.
    */
-  InputConnectionInfo info();
+  InputConnectionContext info();
 
 }

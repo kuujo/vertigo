@@ -17,9 +17,9 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
-import net.kuujo.vertigo.network.NetworkInfo;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.component.impl.ComponentContextImpl;
+import net.kuujo.vertigo.network.NetworkContext;
 
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +37,7 @@ import java.util.Set;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ComponentInfo extends TypeInfo<ComponentInfo> {
+public interface ComponentContext extends Context<ComponentContext> {
 
   /**
    * Returns a new component info builder.
@@ -45,7 +45,7 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * @return A new component info builder.
    */
   static Builder builder() {
-    return new ComponentInfoImpl.Builder();
+    return new ComponentContextImpl.Builder();
   }
 
   /**
@@ -54,8 +54,8 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * @param component An existing component info object to wrap.
    * @return A component info builder wrapper.
    */
-  static TypeInfo.Builder<ComponentInfo> builder(ComponentInfo component) {
-    return new ComponentInfoImpl.Builder((ComponentInfoImpl) component);
+  static Context.Builder<ComponentContext> builder(ComponentContext component) {
+    return new ComponentContextImpl.Builder((ComponentContextImpl) component);
   }
 
   /**
@@ -136,12 +136,12 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
    * 
    * @return The parent network info.
    */
-  NetworkInfo network();
+  NetworkContext network();
 
   /**
    * Component info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<ComponentInfo> {
+  public static interface Builder extends Context.Builder<ComponentContext> {
 
     /**
      * Sets the component name.
@@ -276,7 +276,7 @@ public interface ComponentInfo extends TypeInfo<ComponentInfo> {
      * @param network The parent network info.
      * @return The component info builder.
      */
-    Builder setNetwork(NetworkInfo network);
+    Builder setNetwork(NetworkContext network);
   }
 
 }

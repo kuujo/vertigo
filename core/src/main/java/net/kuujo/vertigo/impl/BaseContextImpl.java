@@ -16,14 +16,14 @@
 
 package net.kuujo.vertigo.impl;
 
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.Context;
 
 /**
  * Base type info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public abstract class BaseTypeInfoImpl<T extends TypeInfo<T>> implements TypeInfo<T> {
+public abstract class BaseContextImpl<T extends Context<T>> implements Context<T> {
   protected String id;
 
   @Override

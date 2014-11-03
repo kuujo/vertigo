@@ -20,7 +20,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.NetworkInfo;
+import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.spi.VertigoFactory;
 
 /**
@@ -118,10 +118,10 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(final String name, final Handler<AsyncResult<NetworkInfo>> doneHandler);
+  Vertigo deployNetwork(final String name, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
-   * Deploys a json network to an anonynous local-only cluster.<p>
+   * Deploys a json network to an anonymous local-only cluster.<p>
    *
    * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
    * being deployed to the cluster. The conversion is done synchronously, so if the
@@ -135,7 +135,7 @@ public interface Vertigo {
   Vertigo deployNetwork(JsonObject network);
 
   /**
-   * Deploys a json network to an anonynous local-only cluster.<p>
+   * Deploys a json network to an anonymous local-only cluster.<p>
    *
    * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
    * being deployed to the cluster. The conversion is done synchronously, so if the
@@ -148,7 +148,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(final JsonObject network, final Handler<AsyncResult<NetworkInfo>> doneHandler);
+  Vertigo deployNetwork(final JsonObject network, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Deploys a network to an anonymous local-only cluster.<p>
@@ -184,7 +184,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(final Network network, final Handler<AsyncResult<NetworkInfo>> doneHandler);
+  Vertigo deployNetwork(final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Deploys a bare network to a specific cluster.<p>
@@ -210,7 +210,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(String cluster, final String name, final Handler<AsyncResult<NetworkInfo>> doneHandler);
+  Vertigo deployNetwork(String cluster, final String name, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Deploys a json network to a specific cluster.<p>
@@ -242,7 +242,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(String cluster, final JsonObject network, final Handler<AsyncResult<NetworkInfo>> doneHandler);
+  Vertigo deployNetwork(String cluster, final JsonObject network, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Deploys a network to a specific cluster.<p>
@@ -280,7 +280,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(String cluster, final Network network, final Handler<AsyncResult<NetworkInfo>> doneHandler);
+  Vertigo deployNetwork(String cluster, final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Undeploys a complete network from the given cluster.<p>

@@ -23,12 +23,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.input.ControllableInput;
+import net.kuujo.vertigo.input.port.InputPortContext;
 import net.kuujo.vertigo.message.VertigoMessage;
 import net.kuujo.vertigo.input.connection.InputConnection;
-import net.kuujo.vertigo.input.connection.InputConnectionInfo;
+import net.kuujo.vertigo.input.connection.InputConnectionContext;
 import net.kuujo.vertigo.input.connection.impl.InputConnectionImpl;
 import net.kuujo.vertigo.input.port.InputPort;
-import net.kuujo.vertigo.input.port.InputPortInfo;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.TaskRunner;
 
@@ -43,7 +43,7 @@ import java.util.List;
 public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPort<T>, T> {
   private static final Logger log = LoggerFactory.getLogger(InputPortImpl.class);
   private final Vertx vertx;
-  private InputPortInfo info;
+  private InputPortContext info;
   private final List<InputConnection<T>> connections = new ArrayList<>();
   private final TaskRunner tasks = new TaskRunner();
   @SuppressWarnings("rawtypes")
@@ -51,7 +51,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
   private boolean open;
   private boolean paused;
 
-  public InputPortImpl(Vertx vertx, InputPortInfo info) {
+  public InputPortImpl(Vertx vertx, InputPortContext info) {
     this.vertx = vertx;
     this.info = info;
   }
@@ -113,7 +113,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
         // has been opened. This ensures that we don't attempt to send messages
         // on a close connection.
         connections.clear();
-        for (InputConnectionInfo connectionInfo : info.connections()) {
+        for (InputConnectionContext connectionInfo : info.connections()) {
           final InputConnection<T> connection = new InputConnectionImpl<>(vertx, connectionInfo);
           connection.open((result) -> {
             if (result.failed()) {

@@ -16,10 +16,10 @@
 
 package net.kuujo.vertigo.input.port.impl;
 
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.input.InputInfo;
-import net.kuujo.vertigo.input.connection.InputConnectionInfo;
-import net.kuujo.vertigo.input.port.InputPortInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.input.InputContext;
+import net.kuujo.vertigo.input.connection.InputConnectionContext;
+import net.kuujo.vertigo.input.port.InputPortContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.ArrayList;
@@ -32,10 +32,10 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputPortInfoImpl extends BaseTypeInfoImpl<InputPortInfo> implements InputPortInfo {
+public class InputPortContextImpl extends BaseContextImpl<InputPortContext> implements InputPortContext {
   private String name;
-  private InputInfo input;
-  private List<InputConnectionInfo> connections = new ArrayList<>();
+  private InputContext input;
+  private List<InputConnectionContext> connections = new ArrayList<>();
 
   @Override
   public String name() {
@@ -43,65 +43,65 @@ public class InputPortInfoImpl extends BaseTypeInfoImpl<InputPortInfo> implement
   }
 
   @Override
-  public InputInfo input() {
+  public InputContext input() {
     return input;
   }
 
   @Override
-  public Collection<InputConnectionInfo> connections() {
+  public Collection<InputConnectionContext> connections() {
     return connections;
   }
 
   /**
    * Input port info builder.
    */
-  public static class Builder implements InputPortInfo.Builder {
-    private final InputPortInfoImpl port;
+  public static class Builder implements InputPortContext.Builder {
+    private final InputPortContextImpl port;
 
     public Builder() {
-      port = new InputPortInfoImpl();
+      port = new InputPortContextImpl();
     }
 
-    public Builder(InputPortInfoImpl port) {
+    public Builder(InputPortContextImpl port) {
       this.port = port;
     }
 
     @Override
-    public Builder addConnection(InputConnectionInfo connection) {
+    public Builder addConnection(InputConnectionContext connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       port.connections.add(connection);
       return this;
     }
 
     @Override
-    public Builder removeConnection(InputConnectionInfo connection) {
+    public Builder removeConnection(InputConnectionContext connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       port.connections.remove(connection);
       return this;
     }
 
     @Override
-    public Builder setConnections(InputConnectionInfo... connections) {
+    public Builder setConnections(InputConnectionContext... connections) {
       port.connections = new ArrayList<>(Arrays.asList(connections));
       return this;
     }
 
     @Override
-    public Builder setConnections(Collection<InputConnectionInfo> connections) {
+    public Builder setConnections(Collection<InputConnectionContext> connections) {
       Args.checkNotNull(connections, "connections cannot be null");
       port.connections = new ArrayList<>(connections);
       return this;
     }
 
     @Override
-    public Builder setInput(InputInfo input) {
+    public Builder setInput(InputContext input) {
       Args.checkNotNull(input, "input cannot be null");
       port.input = input;
       return this;
     }
 
     @Override
-    public InputPortInfoImpl build() {
+    public InputPortContextImpl build() {
       return port;
     }
   }

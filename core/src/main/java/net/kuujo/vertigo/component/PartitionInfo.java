@@ -16,10 +16,10 @@
 package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.component.impl.PartitionInfoImpl;
-import net.kuujo.vertigo.input.InputInfo;
-import net.kuujo.vertigo.output.OutputInfo;
+import net.kuujo.vertigo.input.InputContext;
+import net.kuujo.vertigo.output.OutputContext;
 
 /**
  * A component partition context which contains information regarding a specific component
@@ -35,7 +35,7 @@ import net.kuujo.vertigo.output.OutputInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface PartitionInfo extends TypeInfo<PartitionInfo> {
+public interface PartitionInfo extends Context<PartitionInfo> {
 
   /**
    * Returns a new partition info builder.
@@ -68,26 +68,26 @@ public interface PartitionInfo extends TypeInfo<PartitionInfo> {
    *
    * @return The partition input context.
    */
-  InputInfo input();
+  InputContext input();
 
   /**
    * Returns the partition output context.
    *
    * @return The partition output context.
    */
-  OutputInfo output();
+  OutputContext output();
 
   /**
    * Returns the parent component context.
    * 
    * @return The parent component context.
    */
-  ComponentInfo component();
+  ComponentContext component();
 
   /**
    * Instance info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<PartitionInfo> {
+  public static interface Builder extends Context.Builder<PartitionInfo> {
 
     /**
      * Sets the partition number.
@@ -103,7 +103,7 @@ public interface PartitionInfo extends TypeInfo<PartitionInfo> {
      * @param input The partition input info.
      * @return The partition info builder.
      */
-    Builder setInput(InputInfo input);
+    Builder setInput(InputContext input);
 
     /**
      * Sets the partition output info.
@@ -111,7 +111,7 @@ public interface PartitionInfo extends TypeInfo<PartitionInfo> {
      * @param output The partition output info.
      * @return The partition info builder.
      */
-    Builder setOutput(OutputInfo output);
+    Builder setOutput(OutputContext output);
 
     /**
      * Sets the partition component info.
@@ -119,7 +119,7 @@ public interface PartitionInfo extends TypeInfo<PartitionInfo> {
      * @param component The partition component info.
      * @return The partition info builder.
      */
-    Builder setComponent(ComponentInfo component);
+    Builder setComponent(ComponentContext component);
   }
 
 }

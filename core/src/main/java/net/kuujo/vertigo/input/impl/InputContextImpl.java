@@ -17,9 +17,9 @@
 package net.kuujo.vertigo.input.impl;
 
 import net.kuujo.vertigo.component.PartitionInfo;
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.input.InputInfo;
-import net.kuujo.vertigo.input.port.InputPortInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.input.InputContext;
+import net.kuujo.vertigo.input.port.InputPortContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.Collection;
@@ -31,9 +31,9 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputInfoImpl extends BaseTypeInfoImpl<InputInfo> implements InputInfo {
+public class InputContextImpl extends BaseContextImpl<InputContext> implements InputContext {
   private PartitionInfo partition;
-  private Map<String, InputPortInfo> ports = new HashMap<>();
+  private Map<String, InputPortContext> ports = new HashMap<>();
 
   @Override
   public PartitionInfo partition() {
@@ -41,57 +41,57 @@ public class InputInfoImpl extends BaseTypeInfoImpl<InputInfo> implements InputI
   }
 
   @Override
-  public Collection<InputPortInfo> ports() {
+  public Collection<InputPortContext> ports() {
     return ports.values();
   }
 
   @Override
-  public InputPortInfo port(String name) {
+  public InputPortContext port(String name) {
     return ports.get(name);
   }
 
   /**
    * Input info builder.
    */
-  public static class Builder implements InputInfo.Builder {
-    private final InputInfoImpl input;
+  public static class Builder implements InputContext.Builder {
+    private final InputContextImpl input;
 
     public Builder() {
-      input = new InputInfoImpl();
+      input = new InputContextImpl();
     }
 
-    public Builder(InputInfoImpl input) {
+    public Builder(InputContextImpl input) {
       this.input = input;
     }
 
     @Override
-    public Builder addPort(InputPortInfo port) {
+    public Builder addPort(InputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       input.ports.put(port.name(), port);
       return this;
     }
 
     @Override
-    public Builder removePort(InputPortInfo port) {
+    public Builder removePort(InputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       input.ports.remove(port.name());
       return this;
     }
 
     @Override
-    public Builder setPorts(InputPortInfo... ports) {
+    public Builder setPorts(InputPortContext... ports) {
       input.ports.clear();
-      for (InputPortInfo port : ports) {
+      for (InputPortContext port : ports) {
         input.ports.put(port.name(), port);
       }
       return this;
     }
 
     @Override
-    public Builder setPorts(Collection<InputPortInfo> ports) {
+    public Builder setPorts(Collection<InputPortContext> ports) {
       Args.checkNotNull(ports, "ports cannot be null");
       input.ports.clear();
-      for (InputPortInfo port : ports) {
+      for (InputPortContext port : ports) {
         input.ports.put(port.name(), port);
       }
       return this;
@@ -111,7 +111,7 @@ public class InputInfoImpl extends BaseTypeInfoImpl<InputInfo> implements InputI
     }
 
     @Override
-    public InputInfoImpl build() {
+    public InputContextImpl build() {
       return input;
     }
   }

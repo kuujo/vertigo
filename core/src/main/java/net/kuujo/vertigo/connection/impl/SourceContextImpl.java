@@ -15,15 +15,15 @@
  */
 package net.kuujo.vertigo.connection.impl;
 
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.connection.SourceInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.connection.SourceContext;
 
 /**
  * Connection source info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements SourceInfo {
+public class SourceContextImpl extends BaseContextImpl<SourceContext> implements SourceContext {
   private String component;
   private String port;
   private int partition;
@@ -46,14 +46,14 @@ public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements Sour
   /**
    * Source info builder.
    */
-  public static class Builder implements SourceInfo.Builder {
-    private final SourceInfoImpl source;
+  public static class Builder implements SourceContext.Builder {
+    private final SourceContextImpl source;
 
     public Builder() {
-      source = new SourceInfoImpl();
+      source = new SourceContextImpl();
     }
 
-    public Builder(SourceInfoImpl source) {
+    public Builder(SourceContextImpl source) {
       this.source = source;
     }
 
@@ -76,7 +76,7 @@ public class SourceInfoImpl extends BaseTypeInfoImpl<SourceInfo> implements Sour
     }
 
     @Override
-    public SourceInfoImpl build() {
+    public SourceContextImpl build() {
       return source;
     }
   }

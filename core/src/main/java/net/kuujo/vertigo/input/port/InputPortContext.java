@@ -16,10 +16,10 @@
 package net.kuujo.vertigo.input.port;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.input.InputInfo;
-import net.kuujo.vertigo.input.connection.InputConnectionInfo;
-import net.kuujo.vertigo.input.port.impl.InputPortInfoImpl;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.input.InputContext;
+import net.kuujo.vertigo.input.connection.InputConnectionContext;
+import net.kuujo.vertigo.input.port.impl.InputPortContextImpl;
 
 import java.util.Collection;
 
@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputPortInfo extends TypeInfo<InputPortInfo> {
+public interface InputPortContext extends Context<InputPortContext> {
 
   /**
    * Returns a new input port info builder.
@@ -38,7 +38,7 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
    * @return A new input port info builder.
    */
   static Builder builder() {
-    return new InputPortInfoImpl.Builder();
+    return new InputPortContextImpl.Builder();
   }
 
   /**
@@ -47,8 +47,8 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
    * @param port An existing input port info builder to wrap.
    * @return An input port info builder wrapper.
    */
-  static Builder builder(InputPortInfo port) {
-    return new InputPortInfoImpl.Builder((InputPortInfoImpl) port);
+  static Builder builder(InputPortContext port) {
+    return new InputPortContextImpl.Builder((InputPortContextImpl) port);
   }
 
   /**
@@ -63,19 +63,19 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
    *
    * @return The parent input context.
    */
-  InputInfo input();
+  InputContext input();
 
   /**
    * Returns a collection of input port connections.
    *
    * @return A list of input connections.
    */
-  Collection<InputConnectionInfo> connections();
+  Collection<InputConnectionContext> connections();
 
   /**
    * Input port info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<InputPortInfo> {
+  public static interface Builder extends Context.Builder<InputPortContext> {
 
     /**
      * Adds a connection to the port.
@@ -83,7 +83,7 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
      * @param connection The input connection info.
      * @return The input port info builder.
      */
-    Builder addConnection(InputConnectionInfo connection);
+    Builder addConnection(InputConnectionContext connection);
 
     /**
      * Removes a connection from the port.
@@ -91,7 +91,7 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
      * @param connection The input connection info.
      * @return The input port info builder.
      */
-    Builder removeConnection(InputConnectionInfo connection);
+    Builder removeConnection(InputConnectionContext connection);
 
     /**
      * Sets all connections on the port.
@@ -99,7 +99,7 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
      * @param connections A collection of input connection info.
      * @return The input port info builder.
      */
-    Builder setConnections(InputConnectionInfo... connections);
+    Builder setConnections(InputConnectionContext... connections);
 
     /**
      * Sets all connections on the port.
@@ -107,7 +107,7 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
      * @param connections A collection of input connection info.
      * @return The input port info builder.
      */
-    Builder setConnections(Collection<InputConnectionInfo> connections);
+    Builder setConnections(Collection<InputConnectionContext> connections);
 
     /**
      * Sets the parent input.
@@ -115,7 +115,7 @@ public interface InputPortInfo extends TypeInfo<InputPortInfo> {
      * @param input The parent input.
      * @return The input port builder.
      */
-    Builder setInput(InputInfo input);
+    Builder setInput(InputContext input);
   }
 
 }

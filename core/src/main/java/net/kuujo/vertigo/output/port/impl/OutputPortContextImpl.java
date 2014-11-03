@@ -16,10 +16,10 @@
 
 package net.kuujo.vertigo.output.port.impl;
 
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.output.OutputInfo;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
-import net.kuujo.vertigo.output.stream.OutputStreamInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.output.OutputContext;
+import net.kuujo.vertigo.output.port.OutputPortContext;
+import net.kuujo.vertigo.output.stream.OutputStreamContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.Arrays;
@@ -32,10 +32,10 @@ import java.util.Set;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputPortInfoImpl extends BaseTypeInfoImpl<OutputPortInfo> implements OutputPortInfo {
+public class OutputPortContextImpl extends BaseContextImpl<OutputPortContext> implements OutputPortContext {
   private String name;
-  private OutputInfo output;
-  private Set<OutputStreamInfo> streams = new HashSet<>();
+  private OutputContext output;
+  private Set<OutputStreamContext> streams = new HashSet<>();
 
   @Override
   public String name() {
@@ -43,65 +43,65 @@ public class OutputPortInfoImpl extends BaseTypeInfoImpl<OutputPortInfo> impleme
   }
 
   @Override
-  public OutputInfo output() {
+  public OutputContext output() {
     return output;
   }
 
   @Override
-  public Collection<OutputStreamInfo> streams() {
+  public Collection<OutputStreamContext> streams() {
     return streams;
   }
 
   /**
    * Output port info builder.
    */
-  public static class Builder implements OutputPortInfo.Builder {
-    private final OutputPortInfoImpl port;
+  public static class Builder implements OutputPortContext.Builder {
+    private final OutputPortContextImpl port;
 
     public Builder() {
-      port = new OutputPortInfoImpl();
+      port = new OutputPortContextImpl();
     }
 
-    public Builder(OutputPortInfoImpl port) {
+    public Builder(OutputPortContextImpl port) {
       this.port = port;
     }
 
     @Override
-    public Builder addStream(OutputStreamInfo stream) {
+    public Builder addStream(OutputStreamContext stream) {
       Args.checkNotNull(stream, "stream cannot be null");
       port.streams.add(stream);
       return this;
     }
 
     @Override
-    public Builder removeStream(OutputStreamInfo stream) {
+    public Builder removeStream(OutputStreamContext stream) {
       Args.checkNotNull(stream, "stream cannot be null");
       port.streams.remove(stream);
       return this;
     }
 
     @Override
-    public Builder setStreams(OutputStreamInfo... streams) {
+    public Builder setStreams(OutputStreamContext... streams) {
       port.streams = new HashSet<>(Arrays.asList(streams));
       return this;
     }
 
     @Override
-    public Builder setStreams(Collection<OutputStreamInfo> streams) {
+    public Builder setStreams(Collection<OutputStreamContext> streams) {
       Args.checkNotNull(streams, "streams cannot be null");
       port.streams = new HashSet<>(streams);
       return this;
     }
 
     @Override
-    public Builder setOutput(OutputInfo output) {
+    public Builder setOutput(OutputContext output) {
       Args.checkNotNull(output, "output cannot be null");
       port.output = output;
       return this;
     }
 
     @Override
-    public OutputPortInfoImpl build() {
+    public OutputPortContextImpl build() {
       return port;
     }
   }

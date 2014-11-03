@@ -17,11 +17,11 @@ package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
-import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.component.PartitionInfo;
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.network.NetworkInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.*;
@@ -31,7 +31,7 @@ import java.util.*;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implements ComponentInfo {
+public class ComponentContextImpl extends BaseContextImpl<ComponentContext> implements ComponentContext {
   private String name;
   private String main;
   private Component component;
@@ -40,7 +40,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   private boolean worker;
   private boolean multiThreaded;
   private Set<String> resources = new HashSet<>();
-  private NetworkInfo network;
+  private NetworkContext network;
 
   @Override
   public String name() {
@@ -107,21 +107,21 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
   }
 
   @Override
-  public NetworkInfo network() {
+  public NetworkContext network() {
     return network;
   }
 
   /**
    * Component info builder.
    */
-  public static class Builder implements ComponentInfo.Builder {
-    private final ComponentInfoImpl component;
+  public static class Builder implements ComponentContext.Builder {
+    private final ComponentContextImpl component;
 
     public Builder() {
-      component = new ComponentInfoImpl();
+      component = new ComponentContextImpl();
     }
 
-    public Builder(ComponentInfoImpl component) {
+    public Builder(ComponentContextImpl component) {
       this.component = component;
     }
 
@@ -248,7 +248,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
     }
 
     @Override
-    public Builder setNetwork(NetworkInfo network) {
+    public Builder setNetwork(NetworkContext network) {
       Args.checkNotNull(network, "network cannot be null");
       component.network = network;
       return this;
@@ -262,7 +262,7 @@ public class ComponentInfoImpl extends BaseTypeInfoImpl<ComponentInfo> implement
     }
 
     @Override
-    public ComponentInfoImpl build() {
+    public ComponentContextImpl build() {
       checkFields();
       return component;
     }

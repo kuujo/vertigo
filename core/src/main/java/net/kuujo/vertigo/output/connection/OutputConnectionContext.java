@@ -15,12 +15,12 @@
  */
 package net.kuujo.vertigo.output.connection;
 
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.connection.ConnectionInfo;
-import net.kuujo.vertigo.connection.SourceInfo;
-import net.kuujo.vertigo.connection.TargetInfo;
-import net.kuujo.vertigo.output.connection.impl.OutputConnectionInfoImpl;
-import net.kuujo.vertigo.output.stream.OutputStreamInfo;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.connection.ConnectionContext;
+import net.kuujo.vertigo.connection.SourceContext;
+import net.kuujo.vertigo.connection.TargetContext;
+import net.kuujo.vertigo.output.connection.impl.OutputConnectionContextImpl;
+import net.kuujo.vertigo.output.stream.OutputStreamContext;
 
 /**
  * Output connection context represents a single partition's output to
@@ -28,7 +28,7 @@ import net.kuujo.vertigo.output.stream.OutputStreamInfo;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInfo> {
+public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
 
   /**
    * Returns a new output connection info builder.
@@ -36,7 +36,7 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    * @return A new output connection info builder.
    */
   static Builder builder() {
-    return new OutputConnectionInfoImpl.Builder();
+    return new OutputConnectionContextImpl.Builder();
   }
 
   /**
@@ -45,8 +45,8 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    * @param connection An existing output connection info object to wrap.
    * @return An output connection info builder wrapper.
    */
-  static Builder builder(OutputConnectionInfo connection) {
-    return new OutputConnectionInfoImpl.Builder((OutputConnectionInfoImpl) connection);
+  static Builder builder(OutputConnectionContext connection) {
+    return new OutputConnectionContextImpl.Builder((OutputConnectionContextImpl) connection);
   }
 
   /**
@@ -54,12 +54,12 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
    *
    * @return The parent stream context.
    */
-  OutputStreamInfo stream();
+  OutputStreamContext stream();
 
   /**
    * Output connection info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<OutputConnectionInfo> {
+  public static interface Builder extends Context.Builder<OutputConnectionContext> {
 
     /**
      * Sets the connection address.
@@ -75,7 +75,7 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
      * @param source The connection source info.
      * @return The output connection info builder.
      */
-    Builder setSource(SourceInfo source);
+    Builder setSource(SourceContext source);
 
     /**
      * Sets the connection target info.
@@ -83,7 +83,7 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
      * @param target The connection target info.
      * @return The output connection info builder.
      */
-    Builder setTarget(TargetInfo target);
+    Builder setTarget(TargetContext target);
 
     /**
      * Sets the parent output stream info.
@@ -91,7 +91,7 @@ public interface OutputConnectionInfo extends ConnectionInfo<OutputConnectionInf
      * @param stream The parent output stream info.
      * @return The output connection info builder.
      */
-    Builder setStream(OutputStreamInfo stream);
+    Builder setStream(OutputStreamContext stream);
   }
 
 }

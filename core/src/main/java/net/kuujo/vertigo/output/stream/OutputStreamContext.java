@@ -16,11 +16,11 @@
 package net.kuujo.vertigo.output.stream;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.output.connection.OutputConnectionInfo;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.output.connection.OutputConnectionContext;
 import net.kuujo.vertigo.output.partitioner.Partitioner;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
-import net.kuujo.vertigo.output.stream.impl.OutputStreamInfoImpl;
+import net.kuujo.vertigo.output.port.OutputPortContext;
+import net.kuujo.vertigo.output.stream.impl.OutputStreamContextImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +34,7 @@ import java.util.List;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
+public interface OutputStreamContext extends Context<OutputStreamContext> {
 
   /**
    * Returns a new output stream info builder.
@@ -42,7 +42,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    * @return A new output stream info builder.
    */
   static Builder builder() {
-    return new OutputStreamInfoImpl.Builder();
+    return new OutputStreamContextImpl.Builder();
   }
 
   /**
@@ -51,8 +51,8 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    * @param stream An existing output stream info object to wrap.
    * @return An output stream builder wrapper.
    */
-  static Builder builder(OutputStreamInfo stream) {
-    return new OutputStreamInfoImpl.Builder((OutputStreamInfoImpl) stream);
+  static Builder builder(OutputStreamContext stream) {
+    return new OutputStreamContextImpl.Builder((OutputStreamContextImpl) stream);
   }
 
   /**
@@ -60,7 +60,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    *
    * @return The parent port context.
    */
-  OutputPortInfo port();
+  OutputPortContext port();
 
   /**
    * Returns the stream connection partitioner.
@@ -74,12 +74,12 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
    *
    * @return A list of output connections.
    */
-  List<OutputConnectionInfo> connections();
+  List<OutputConnectionContext> connections();
 
   /**
    * Output stream info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<OutputStreamInfo> {
+  public static interface Builder extends Context.Builder<OutputStreamContext> {
 
     /**
      * Adds a connection to the stream.
@@ -87,7 +87,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
      * @param connection The output connection info to add.
      * @return The output stream info builder.
      */
-    Builder addConnection(OutputConnectionInfo connection);
+    Builder addConnection(OutputConnectionContext connection);
 
     /**
      * Removes a connection from the stream.
@@ -95,7 +95,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
      * @param connection The output connection info to remove.
      * @return The output stream info builder.
      */
-    Builder removeConnection(OutputConnectionInfo connection);
+    Builder removeConnection(OutputConnectionContext connection);
 
     /**
      * Sets all connections on the stream.
@@ -103,7 +103,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
      * @param connections A collection of output connection info to add.
      * @return The output stream info builder.
      */
-    Builder setConnections(OutputConnectionInfo... connections);
+    Builder setConnections(OutputConnectionContext... connections);
 
     /**
      * Sets all connections on the stream.
@@ -111,7 +111,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
      * @param connections A collection of output connection info to add.
      * @return The output stream info builder.
      */
-    Builder setConnections(Collection<OutputConnectionInfo> connections);
+    Builder setConnections(Collection<OutputConnectionContext> connections);
 
     /**
      * Sets the parent output port.
@@ -119,7 +119,7 @@ public interface OutputStreamInfo extends TypeInfo<OutputStreamInfo> {
      * @param port The output port info.
      * @return The output stream info builder.
      */
-    Builder setPort(OutputPortInfo port);
+    Builder setPort(OutputPortContext port);
   }
 
 }

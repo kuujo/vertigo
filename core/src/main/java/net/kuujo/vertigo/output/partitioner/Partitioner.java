@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.output.partitioner;
 
 import io.vertx.core.MultiMap;
-import net.kuujo.vertigo.output.connection.OutputConnectionInfo;
+import net.kuujo.vertigo.output.connection.OutputConnectionContext;
 
 import java.io.Serializable;
 import java.util.List;
@@ -69,6 +69,6 @@ public interface Partitioner extends Serializable {
    * @param connections A list of connections from which to partition.
    * @return A list of selected connections.
    */
-  List<OutputConnectionInfo> partition(MultiMap headers, List<OutputConnectionInfo> connections);
+  List<OutputConnectionContext> partition(MultiMap headers, List<OutputConnectionContext> connections);
 
 }

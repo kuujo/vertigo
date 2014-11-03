@@ -15,11 +15,11 @@
  */
 package net.kuujo.vertigo.component.impl;
 
-import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.PartitionInfo;
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.input.InputInfo;
-import net.kuujo.vertigo.output.OutputInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.input.InputContext;
+import net.kuujo.vertigo.output.OutputContext;
 import net.kuujo.vertigo.util.Args;
 
 /**
@@ -27,11 +27,11 @@ import net.kuujo.vertigo.util.Args;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class PartitionInfoImpl extends BaseTypeInfoImpl<PartitionInfo> implements PartitionInfo {
+public class PartitionInfoImpl extends BaseContextImpl<PartitionInfo> implements PartitionInfo {
   private int number;
-  private InputInfo input;
-  private OutputInfo output;
-  private ComponentInfo component;
+  private InputContext input;
+  private OutputContext output;
+  private ComponentContext component;
 
   @Override
   public int number() {
@@ -39,17 +39,17 @@ public class PartitionInfoImpl extends BaseTypeInfoImpl<PartitionInfo> implement
   }
 
   @Override
-  public InputInfo input() {
+  public InputContext input() {
     return input;
   }
 
   @Override
-  public OutputInfo output() {
+  public OutputContext output() {
     return output;
   }
 
   @Override
-  public ComponentInfo component() {
+  public ComponentContext component() {
     return component;
   }
 
@@ -75,21 +75,21 @@ public class PartitionInfoImpl extends BaseTypeInfoImpl<PartitionInfo> implement
     }
 
     @Override
-    public Builder setInput(InputInfo input) {
+    public Builder setInput(InputContext input) {
       Args.checkNotNull(input, "input cannot be null");
       instance.input = input;
       return this;
     }
 
     @Override
-    public Builder setOutput(OutputInfo output) {
+    public Builder setOutput(OutputContext output) {
       Args.checkNotNull(output, "output cannot be null");
       instance.output = output;
       return this;
     }
 
     @Override
-    public Builder setComponent(ComponentInfo component) {
+    public Builder setComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
       instance.component = component;
       return this;

@@ -28,7 +28,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.message.VertigoMessage;
 import net.kuujo.vertigo.input.connection.InputConnection;
-import net.kuujo.vertigo.input.connection.InputConnectionInfo;
+import net.kuujo.vertigo.input.connection.InputConnectionContext;
 import net.kuujo.vertigo.message.impl.VertigoMessageImpl;
 
 /**
@@ -52,7 +52,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
   private final Logger log;
   private final Vertx vertx;
   private final EventBus eventBus;
-  private final InputConnectionInfo info;
+  private final InputConnectionContext info;
   private final String inAddress;
   private final String outAddress;
   private MessageConsumer<T> consumer;
@@ -99,7 +99,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
     }
   };
 
-  public InputConnectionImpl(Vertx vertx, InputConnectionInfo info) {
+  public InputConnectionImpl(Vertx vertx, InputConnectionContext info) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.info = info;
@@ -114,7 +114,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
   }
 
   @Override
-  public InputConnectionInfo info() {
+  public InputConnectionContext info() {
     return info;
   }
 

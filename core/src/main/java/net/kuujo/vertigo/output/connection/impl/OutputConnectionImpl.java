@@ -22,7 +22,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.output.connection.OutputConnection;
-import net.kuujo.vertigo.output.connection.OutputConnectionInfo;
+import net.kuujo.vertigo.output.connection.OutputConnectionContext;
 
 import java.util.TreeMap;
 import java.util.UUID;
@@ -47,7 +47,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
   private final Logger log;
   private final Vertx vertx;
   private final EventBus eventBus;
-  private final OutputConnectionInfo info;
+  private final OutputConnectionContext info;
   private final String outAddress;
   private final String inAddress;
   private MessageConsumer<Long> consumer;
@@ -82,7 +82,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
     }
   };
 
-  public OutputConnectionImpl(Vertx vertx, OutputConnectionInfo info) {
+  public OutputConnectionImpl(Vertx vertx, OutputConnectionContext info) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.info = info;
@@ -98,7 +98,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
   }
 
   @Override
-  public OutputConnectionInfo info() {
+  public OutputConnectionContext info() {
     return info;
   }
 

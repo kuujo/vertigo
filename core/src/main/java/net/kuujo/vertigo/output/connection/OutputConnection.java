@@ -49,6 +49,6 @@ public interface OutputConnection<T> extends Connection<OutputConnection<T>>, Co
    *
    * @return The output connection info.
    */
-  OutputConnectionInfo info();
+  OutputConnectionContext info();
 
 }

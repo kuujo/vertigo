@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo.output;
 
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.component.PartitionInfo;
-import net.kuujo.vertigo.output.impl.OutputInfoImpl;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
+import net.kuujo.vertigo.output.impl.OutputContextImpl;
+import net.kuujo.vertigo.output.port.OutputPortContext;
 
 import java.util.Collection;
 
@@ -28,7 +28,7 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputInfo extends TypeInfo<OutputInfo> {
+public interface OutputContext extends Context<OutputContext> {
 
   /**
    * Returns a new output info builder.
@@ -36,7 +36,7 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
    * @return A new output info builder.
    */
   static Builder builder() {
-    return new OutputInfoImpl.Builder();
+    return new OutputContextImpl.Builder();
   }
 
   /**
@@ -45,8 +45,8 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
    * @param output An existing output info object to wrap.
    * @return An output info builder wrapper.
    */
-  static Builder builder(OutputInfo output) {
-    return new OutputInfoImpl.Builder((OutputInfoImpl) output);
+  static Builder builder(OutputContext output) {
+    return new OutputContextImpl.Builder((OutputContextImpl) output);
   }
 
   /**
@@ -61,7 +61,7 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
    *
    * @return A collection of output port contexts.
    */
-  Collection<OutputPortInfo> ports();
+  Collection<OutputPortContext> ports();
 
   /**
    * Returns the output port context for a given port.
@@ -69,12 +69,12 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
    * @param name The name of the port to return.
    * @return The output port context.
    */
-  OutputPortInfo port(String name);
+  OutputPortContext port(String name);
 
   /**
    * Output info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<OutputInfo> {
+  public static interface Builder extends Context.Builder<OutputContext> {
 
     /**
      * Adds an output port.
@@ -82,7 +82,7 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
      * @param port The output port info.
      * @return The output info builder.
      */
-    Builder addPort(OutputPortInfo port);
+    Builder addPort(OutputPortContext port);
 
     /**
      * Removes an output port.
@@ -90,7 +90,7 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
      * @param port The output port info.
      * @return The output info builder.
      */
-    Builder removePort(OutputPortInfo port);
+    Builder removePort(OutputPortContext port);
 
     /**
      * Sets all output ports.
@@ -98,7 +98,7 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
      * @param ports A collection of output port info.
      * @return The output info builder.
      */
-    Builder setPorts(OutputPortInfo... ports);
+    Builder setPorts(OutputPortContext... ports);
 
     /**
      * Sets all output ports.
@@ -106,7 +106,7 @@ public interface OutputInfo extends TypeInfo<OutputInfo> {
      * @param ports A collection of output port info.
      * @return The output info builder.
      */
-    Builder setPorts(Collection<OutputPortInfo> ports);
+    Builder setPorts(Collection<OutputPortContext> ports);
 
     /**
      * Clears all output ports.

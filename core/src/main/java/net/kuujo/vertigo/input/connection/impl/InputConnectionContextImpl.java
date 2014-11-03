@@ -14,39 +14,39 @@
  * limitations under the License.
  */
 
-package net.kuujo.vertigo.output.connection.impl;
+package net.kuujo.vertigo.input.connection.impl;
 
-import net.kuujo.vertigo.connection.impl.BaseConnectionInfoImpl;
-import net.kuujo.vertigo.output.connection.OutputConnectionInfo;
-import net.kuujo.vertigo.connection.SourceInfo;
-import net.kuujo.vertigo.connection.TargetInfo;
-import net.kuujo.vertigo.output.stream.OutputStreamInfo;
+import net.kuujo.vertigo.connection.TargetContext;
+import net.kuujo.vertigo.input.connection.InputConnectionContext;
+import net.kuujo.vertigo.connection.SourceContext;
+import net.kuujo.vertigo.input.port.InputPortContext;
+import net.kuujo.vertigo.connection.impl.BaseConnectionContextImpl;
 import net.kuujo.vertigo.util.Args;
 
 /**
- * Output connection info implementation.
+ * Input connection info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputConnectionInfoImpl extends BaseConnectionInfoImpl<OutputConnectionInfo> implements OutputConnectionInfo {
-  private OutputStreamInfo stream;
+public class InputConnectionContextImpl extends BaseConnectionContextImpl<InputConnectionContext> implements InputConnectionContext {
+  private InputPortContext port;
 
   @Override
-  public OutputStreamInfo stream() {
-    return stream;
+  public InputPortContext port() {
+    return port;
   }
 
   /**
-   * Output connection info builder.
+   * Input connection info builder.
    */
-  public static class Builder implements OutputConnectionInfo.Builder {
-    private OutputConnectionInfoImpl connection;
+  public static class Builder implements InputConnectionContext.Builder {
+    private InputConnectionContextImpl connection;
 
     public Builder() {
-      connection = new OutputConnectionInfoImpl();
+      connection = new InputConnectionContextImpl();
     }
 
-    public Builder(OutputConnectionInfoImpl connection) {
+    public Builder(InputConnectionContextImpl connection) {
       this.connection = connection;
     }
 
@@ -58,28 +58,28 @@ public class OutputConnectionInfoImpl extends BaseConnectionInfoImpl<OutputConne
     }
 
     @Override
-    public Builder setSource(SourceInfo source) {
+    public Builder setSource(SourceContext source) {
       Args.checkNotNull(source, "source cannot be null");
       connection.source = source;
       return this;
     }
 
     @Override
-    public Builder setTarget(TargetInfo target) {
+    public Builder setTarget(TargetContext target) {
       Args.checkNotNull(target, "target cannot be null");
       connection.target = target;
       return this;
     }
 
     @Override
-    public Builder setStream(OutputStreamInfo stream) {
-      Args.checkNotNull(stream, "stream cannot be null");
-      connection.stream = stream;
+    public Builder setPort(InputPortContext port) {
+      Args.checkNotNull(port, "port cannot be null");
+      connection.port = port;
       return this;
     }
 
     @Override
-    public OutputConnectionInfoImpl build() {
+    public InputConnectionContext build() {
       return connection;
     }
   }

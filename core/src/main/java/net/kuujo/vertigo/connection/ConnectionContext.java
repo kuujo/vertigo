@@ -13,40 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.kuujo.vertigo.connection;
 
-
-import net.kuujo.vertigo.TypeInfo;
+import io.vertx.codegen.annotations.VertxGen;
+import net.kuujo.vertigo.Context;
 
 /**
- * Connection endpoint info.
+ * Connection contexts represent a direct connection between two partitions
+ * of separate components.<p>
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The endpoint type.
  */
-public interface EndpointInfo<T extends EndpointInfo<T>> extends TypeInfo<T> {
+@VertxGen
+public interface ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
 
   /**
-   * Returns the endpoint component name.
+   * Returns the unique connection address.
    *
-   * @return The endpoint component name.
+   * @return The unique connection address.
    */
-  String component();
+  String address();
 
   /**
-   * Returns the endpoint port name.
+   * Returns the connection source.
    *
-   * @return The endpoint port name.
+   * @return The connection source.
    */
-  String port();
+  SourceContext source();
 
   /**
-   * Returns the endpoint partition number.
+   * Returns the connection target.
    *
-   * @return The endpoint partition number.
+   * @return The connection target.
    */
-  int partition();
+  TargetContext target();
 
 }

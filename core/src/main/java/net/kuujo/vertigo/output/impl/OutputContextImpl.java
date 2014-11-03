@@ -17,8 +17,9 @@
 package net.kuujo.vertigo.output.impl;
 
 import net.kuujo.vertigo.component.PartitionInfo;
-import net.kuujo.vertigo.output.OutputInfo;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.output.OutputContext;
+import net.kuujo.vertigo.output.port.OutputPortContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.Collection;
@@ -30,9 +31,9 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputInfoImpl implements OutputInfo {
+public class OutputContextImpl extends BaseContextImpl<OutputContext> implements OutputContext {
   private PartitionInfo partition;
-  private Map<String, OutputPortInfo> ports = new HashMap<>();
+  private Map<String, OutputPortContext> ports = new HashMap<>();
 
   @Override
   public PartitionInfo partition() {
@@ -40,57 +41,57 @@ public class OutputInfoImpl implements OutputInfo {
   }
 
   @Override
-  public Collection<OutputPortInfo> ports() {
+  public Collection<OutputPortContext> ports() {
     return ports.values();
   }
 
   @Override
-  public OutputPortInfo port(String name) {
+  public OutputPortContext port(String name) {
     return ports.get(name);
   }
 
   /**
    * Output info builder.
    */
-  public static class Builder implements OutputInfo.Builder {
-    private final OutputInfoImpl output;
+  public static class Builder implements OutputContext.Builder {
+    private final OutputContextImpl output;
 
     public Builder() {
-      output = new OutputInfoImpl();
+      output = new OutputContextImpl();
     }
 
-    public Builder(OutputInfoImpl input) {
+    public Builder(OutputContextImpl input) {
       this.output = input;
     }
 
     @Override
-    public Builder addPort(OutputPortInfo port) {
+    public Builder addPort(OutputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       output.ports.put(port.name(), port);
       return this;
     }
 
     @Override
-    public Builder removePort(OutputPortInfo port) {
+    public Builder removePort(OutputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       output.ports.remove(port.name());
       return this;
     }
 
     @Override
-    public Builder setPorts(OutputPortInfo... ports) {
+    public Builder setPorts(OutputPortContext... ports) {
       output.ports.clear();
-      for (OutputPortInfo port : ports) {
+      for (OutputPortContext port : ports) {
         output.ports.put(port.name(), port);
       }
       return this;
     }
 
     @Override
-    public Builder setPorts(Collection<OutputPortInfo> ports) {
+    public Builder setPorts(Collection<OutputPortContext> ports) {
       Args.checkNotNull(ports, "ports cannot be null");
       output.ports.clear();
-      for (OutputPortInfo port : ports) {
+      for (OutputPortContext port : ports) {
         output.ports.put(port.name(), port);
       }
       return this;
@@ -110,7 +111,7 @@ public class OutputInfoImpl implements OutputInfo {
     }
 
     @Override
-    public OutputInfoImpl build() {
+    public OutputContextImpl build() {
       return output;
     }
   }

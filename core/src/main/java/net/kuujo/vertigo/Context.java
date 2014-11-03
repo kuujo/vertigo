@@ -22,7 +22,7 @@ import java.io.Serializable;
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeInfo<T extends TypeInfo<T>> extends Serializable {
+public interface Context<T extends Context<T>> extends Serializable {
 
   /**
    * Returns the type ID.
@@ -51,7 +51,7 @@ public interface TypeInfo<T extends TypeInfo<T>> extends Serializable {
    *
    * @param <T> The type built by the builder.
    */
-  public static interface Builder<T extends TypeInfo<T>> {
+  public static interface Builder<T extends Context<T>> {
 
     /**
      * Builds the instance.

@@ -16,62 +16,62 @@
 package net.kuujo.vertigo.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.connection.impl.SourceInfoImpl;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.connection.impl.TargetContextImpl;
 
 /**
- * Connection source info.
+ * Connection target info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface SourceInfo extends EndpointInfo<SourceInfo> {
+public interface TargetContext extends EndpointContext<TargetContext> {
 
   /**
-   * Returns a new source info builder.
+   * Returns a new target info builder.
    *
-   * @return A new source info builder.
+   * @return A new target info builder.
    */
   static Builder builder() {
-    return new SourceInfoImpl.Builder();
+    return new TargetContextImpl.Builder();
   }
 
   /**
-   * Returns a new source info builder.
+   * Returns a new target info builder.
    *
-   * @param source The source info to wrap.
-   * @return The source info builder wrapper.
+   * @param target An existing target info object.
+   * @return A target info builder wrapper.
    */
-  static Builder builder(SourceInfo source) {
-    return new SourceInfoImpl.Builder((SourceInfoImpl) source);
+  static Builder builder(TargetContext target) {
+    return new TargetContextImpl.Builder((TargetContextImpl) target);
   }
 
   /**
-   * Source info builder.
+   * Target info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<SourceInfo> {
+  public static interface Builder extends Context.Builder<TargetContext> {
 
     /**
-     * Sets the source component.
+     * Sets the target component.
      *
-     * @param component The source component name.
-     * @return The source info builder.
+     * @param component The target component name.
+     * @return The target info builder.
      */
     Builder setComponent(String component);
 
     /**
-     * Sets the source port.
+     * Sets the target port.
      *
-     * @param port The source port name.
-     * @return The source info builder.
+     * @param port The target port name.
+     * @return The target info builder.
      */
     Builder setPort(String port);
 
     /**
-     * Sets the source partition.
+     * Sets the target partition.
      *
-     * @param partition The source partition number.
-     * @return The source info builder.
+     * @param partition The target partition number.
+     * @return The target info builder.
      */
     Builder setPartition(int partition);
   }

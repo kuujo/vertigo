@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.output.partitioner;
 
 import io.vertx.core.MultiMap;
-import net.kuujo.vertigo.output.connection.OutputConnectionInfo;
+import net.kuujo.vertigo.output.connection.OutputConnectionContext;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class AllPartitioner implements Partitioner {
   }
 
   @Override
-  public List<OutputConnectionInfo> partition(MultiMap headers, List<OutputConnectionInfo> connections) {
+  public List<OutputConnectionContext> partition(MultiMap headers, List<OutputConnectionContext> connections) {
     return connections;
   }
 

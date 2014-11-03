@@ -16,11 +16,11 @@
 
 package net.kuujo.vertigo.output.stream.impl;
 
-import net.kuujo.vertigo.impl.BaseTypeInfoImpl;
-import net.kuujo.vertigo.output.connection.OutputConnectionInfo;
+import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.output.connection.OutputConnectionContext;
 import net.kuujo.vertigo.output.partitioner.Partitioner;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
-import net.kuujo.vertigo.output.stream.OutputStreamInfo;
+import net.kuujo.vertigo.output.port.OutputPortContext;
+import net.kuujo.vertigo.output.stream.OutputStreamContext;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.ArrayList;
@@ -33,13 +33,13 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputStreamInfoImpl extends BaseTypeInfoImpl<OutputStreamInfo> implements OutputStreamInfo {
-  private OutputPortInfo port;
+public class OutputStreamContextImpl extends BaseContextImpl<OutputStreamContext> implements OutputStreamContext {
+  private OutputPortContext port;
   private Partitioner partitioner;
-  private List<OutputConnectionInfo> connections = new ArrayList<>();
+  private List<OutputConnectionContext> connections = new ArrayList<>();
 
   @Override
-  public OutputPortInfo port() {
+  public OutputPortContext port() {
     return port;
   }
 
@@ -49,60 +49,60 @@ public class OutputStreamInfoImpl extends BaseTypeInfoImpl<OutputStreamInfo> imp
   }
 
   @Override
-  public List<OutputConnectionInfo> connections() {
+  public List<OutputConnectionContext> connections() {
     return connections;
   }
 
   /**
    * Output stream info builder.
    */
-  public static class Builder implements OutputStreamInfo.Builder {
-    private final OutputStreamInfoImpl stream;
+  public static class Builder implements OutputStreamContext.Builder {
+    private final OutputStreamContextImpl stream;
 
     public Builder() {
-      stream = new OutputStreamInfoImpl();
+      stream = new OutputStreamContextImpl();
     }
 
-    public Builder(OutputStreamInfoImpl stream) {
+    public Builder(OutputStreamContextImpl stream) {
       this.stream = stream;
     }
 
     @Override
-    public Builder addConnection(OutputConnectionInfo connection) {
+    public Builder addConnection(OutputConnectionContext connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       stream.connections.add(connection);
       return this;
     }
 
     @Override
-    public Builder removeConnection(OutputConnectionInfo connection) {
+    public Builder removeConnection(OutputConnectionContext connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       stream.connections.remove(connection);
       return this;
     }
 
     @Override
-    public Builder setConnections(OutputConnectionInfo... connections) {
+    public Builder setConnections(OutputConnectionContext... connections) {
       stream.connections = new ArrayList<>(Arrays.asList(connections));
       return this;
     }
 
     @Override
-    public Builder setConnections(Collection<OutputConnectionInfo> connections) {
+    public Builder setConnections(Collection<OutputConnectionContext> connections) {
       Args.checkNotNull(connections, "connections cannot be null");
       stream.connections = new ArrayList<>(connections);
       return this;
     }
 
     @Override
-    public Builder setPort(OutputPortInfo port) {
+    public Builder setPort(OutputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       stream.port = port;
       return this;
     }
 
     @Override
-    public OutputStreamInfoImpl build() {
+    public OutputStreamContextImpl build() {
       return stream;
     }
   }

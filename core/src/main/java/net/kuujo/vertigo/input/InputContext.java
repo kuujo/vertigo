@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo.input;
 
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.component.PartitionInfo;
-import net.kuujo.vertigo.input.impl.InputInfoImpl;
-import net.kuujo.vertigo.input.port.InputPortInfo;
+import net.kuujo.vertigo.input.impl.InputContextImpl;
+import net.kuujo.vertigo.input.port.InputPortContext;
 
 import java.util.Collection;
 
@@ -28,7 +28,7 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputInfo extends TypeInfo<InputInfo> {
+public interface InputContext extends Context<InputContext> {
 
   /**
    * Returns a new input info builder.
@@ -36,7 +36,7 @@ public interface InputInfo extends TypeInfo<InputInfo> {
    * @return A new input info builder.
    */
   static Builder builder() {
-    return new InputInfoImpl.Builder();
+    return new InputContextImpl.Builder();
   }
 
   /**
@@ -45,8 +45,8 @@ public interface InputInfo extends TypeInfo<InputInfo> {
    * @param input An existing input info object to wrap.
    * @return An input info builder wrapper.
    */
-  static Builder builder(InputInfo input) {
-    return new InputInfoImpl.Builder((InputInfoImpl) input);
+  static Builder builder(InputContext input) {
+    return new InputContextImpl.Builder((InputContextImpl) input);
   }
 
   /**
@@ -61,7 +61,7 @@ public interface InputInfo extends TypeInfo<InputInfo> {
    *
    * @return A collection of input port contexts.
    */
-  Collection<InputPortInfo> ports();
+  Collection<InputPortContext> ports();
 
   /**
    * Returns the input port context for a given port.
@@ -69,12 +69,12 @@ public interface InputInfo extends TypeInfo<InputInfo> {
    * @param name The name of the port to return.
    * @return The input port context.
    */
-  InputPortInfo port(String name);
+  InputPortContext port(String name);
 
   /**
    * Input info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<InputInfo> {
+  public static interface Builder extends Context.Builder<InputContext> {
 
     /**
      * Adds an input port.
@@ -82,7 +82,7 @@ public interface InputInfo extends TypeInfo<InputInfo> {
      * @param port The input port info.
      * @return The input info builder.
      */
-    Builder addPort(InputPortInfo port);
+    Builder addPort(InputPortContext port);
 
     /**
      * Removes an input port.
@@ -90,7 +90,7 @@ public interface InputInfo extends TypeInfo<InputInfo> {
      * @param port The input port info.
      * @return The input info builder.
      */
-    Builder removePort(InputPortInfo port);
+    Builder removePort(InputPortContext port);
 
     /**
      * Sets all input ports.
@@ -98,7 +98,7 @@ public interface InputInfo extends TypeInfo<InputInfo> {
      * @param ports A collection of input port info.
      * @return The input info builder.
      */
-    Builder setPorts(InputPortInfo... ports);
+    Builder setPorts(InputPortContext... ports);
 
     /**
      * Sets all input ports.
@@ -106,7 +106,7 @@ public interface InputInfo extends TypeInfo<InputInfo> {
      * @param ports A collection of input port info.
      * @return The input info builder.
      */
-    Builder setPorts(Collection<InputPortInfo> ports);
+    Builder setPorts(Collection<InputPortContext> ports);
 
     /**
      * Clears all input ports.

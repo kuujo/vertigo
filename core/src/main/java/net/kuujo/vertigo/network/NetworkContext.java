@@ -16,9 +16,9 @@
 package net.kuujo.vertigo.network;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.network.impl.NetworkInfoImpl;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.component.ComponentContext;
+import net.kuujo.vertigo.network.impl.NetworkContextImpl;
 
 import java.util.Collection;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface NetworkInfo extends TypeInfo<NetworkInfo> {
+public interface NetworkContext extends Context<NetworkContext> {
 
   /**
    * Returns a network info builder.
@@ -40,7 +40,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * @return A new network info builder.
    */
   static Builder builder() {
-    return new NetworkInfoImpl.Builder();
+    return new NetworkContextImpl.Builder();
   }
 
   /**
@@ -49,8 +49,8 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * @param network An existing network info object to wrap.
    * @return A network info builder wrapper
    */
-  static Builder builder(NetworkInfo network) {
-    return new NetworkInfoImpl.Builder((NetworkInfoImpl) network);
+  static Builder builder(NetworkContext network) {
+    return new NetworkContextImpl.Builder((NetworkContextImpl) network);
   }
 
   /**
@@ -83,7 +83,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * 
    * @return A collection of network component contexts.
    */
-  Collection<ComponentInfo> components();
+  Collection<ComponentContext> components();
 
   /**
    * Returns a boolean indicating whether the component exists.
@@ -100,12 +100,12 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
    * @return A component context.
    * @throws IllegalArgumentException If a component does not exist at the given name.
    */
-  ComponentInfo component(String name);
+  ComponentContext component(String name);
 
   /**
    * Network info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<NetworkInfo> {
+  public static interface Builder extends Context.Builder<NetworkContext> {
 
     /**
      * Sets the network name.
@@ -137,7 +137,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
      * @param component The component info to add.
      * @return The network info builder.
      */
-    Builder addComponent(ComponentInfo component);
+    Builder addComponent(ComponentContext component);
 
     /**
      * Removes a component from the network info.
@@ -145,7 +145,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
      * @param component The component info to remove.
      * @return The network info builder.
      */
-    Builder removeComponent(ComponentInfo component);
+    Builder removeComponent(ComponentContext component);
 
     /**
      * Sets the network components.
@@ -153,7 +153,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
      * @param components A collection of network component info.
      * @return The network info builder.
      */
-    Builder setComponents(ComponentInfo... components);
+    Builder setComponents(ComponentContext... components);
 
     /**
      * Sets the network components.
@@ -161,7 +161,7 @@ public interface NetworkInfo extends TypeInfo<NetworkInfo> {
      * @param components A collection of network component info.
      * @return The network info builder.
      */
-    Builder setComponents(Collection<ComponentInfo> components);
+    Builder setComponents(Collection<ComponentContext> components);
   }
 
 }

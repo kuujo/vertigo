@@ -15,12 +15,12 @@
  */
 package net.kuujo.vertigo.input.connection;
 
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.connection.ConnectionInfo;
-import net.kuujo.vertigo.connection.SourceInfo;
-import net.kuujo.vertigo.connection.TargetInfo;
-import net.kuujo.vertigo.input.connection.impl.InputConnectionInfoImpl;
-import net.kuujo.vertigo.input.port.InputPortInfo;
+import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.connection.ConnectionContext;
+import net.kuujo.vertigo.connection.SourceContext;
+import net.kuujo.vertigo.connection.TargetContext;
+import net.kuujo.vertigo.input.connection.impl.InputConnectionContextImpl;
+import net.kuujo.vertigo.input.port.InputPortContext;
 
 /**
  * Input connection context represents a single partition's input from
@@ -28,7 +28,7 @@ import net.kuujo.vertigo.input.port.InputPortInfo;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo> {
+public interface InputConnectionContext extends ConnectionContext<InputConnectionContext> {
 
   /**
    * Returns a new input connection info builder.
@@ -36,7 +36,7 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    * @return A new input connection info builder.
    */
   static Builder builder() {
-    return new InputConnectionInfoImpl.Builder();
+    return new InputConnectionContextImpl.Builder();
   }
 
   /**
@@ -45,8 +45,8 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    * @param connection An existing input connection info object to wrap.
    * @return An input connection info builder wrapper.
    */
-  static Builder builder(InputConnectionInfo connection) {
-    return new InputConnectionInfoImpl.Builder((InputConnectionInfoImpl) connection);
+  static Builder builder(InputConnectionContext connection) {
+    return new InputConnectionContextImpl.Builder((InputConnectionContextImpl) connection);
   }
 
   /**
@@ -54,12 +54,12 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
    *
    * @return The parent port context.
    */
-  InputPortInfo port();
+  InputPortContext port();
 
   /**
    * Input connection info builder.
    */
-  public static interface Builder extends TypeInfo.Builder<InputConnectionInfo> {
+  public static interface Builder extends Context.Builder<InputConnectionContext> {
 
     /**
      * Sets the connection address.
@@ -75,7 +75,7 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
      * @param source The connection source info.
      * @return The input connection info builder.
      */
-    Builder setSource(SourceInfo source);
+    Builder setSource(SourceContext source);
 
     /**
      * Sets the connection target info.
@@ -83,7 +83,7 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
      * @param target The connection target info.
      * @return The input connection info builder.
      */
-    Builder setTarget(TargetInfo target);
+    Builder setTarget(TargetContext target);
 
     /**
      * Sets the parent input port info.
@@ -91,7 +91,7 @@ public interface InputConnectionInfo extends ConnectionInfo<InputConnectionInfo>
      * @param port The parent input port info.
      * @return The input connection info builder.
      */
-    Builder setPort(InputPortInfo port);
+    Builder setPort(InputPortContext port);
   }
 
 }

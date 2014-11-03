@@ -22,9 +22,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.output.OutputInfo;
+import net.kuujo.vertigo.output.OutputContext;
 import net.kuujo.vertigo.output.port.OutputPort;
-import net.kuujo.vertigo.output.port.OutputPortInfo;
+import net.kuujo.vertigo.output.port.OutputPortContext;
 import net.kuujo.vertigo.output.port.impl.OutputPortImpl;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.TaskRunner;
@@ -41,12 +41,12 @@ import java.util.Map;
 public class OutputCollectorImpl implements OutputCollector {
   private final Logger log;
   private final Vertx vertx;
-  private OutputInfo context;
+  private OutputContext context;
   private final Map<String, OutputPort> ports = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
   private boolean started;
 
-  public OutputCollectorImpl(Vertx vertx, OutputInfo context) {
+  public OutputCollectorImpl(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
     this.context = context;
     this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", OutputCollectorImpl.class.getName(), context.instance().component().name(), context.instance().number()));
@@ -81,7 +81,7 @@ public class OutputCollectorImpl implements OutputCollector {
           task.complete();
         });
 
-        for (OutputPortInfo output : context.ports()) {
+        for (OutputPortContext output : context.ports()) {
           if (ports.containsKey(output.name())) {
             ports.get(output.name()).open(startCounter);
           } else {

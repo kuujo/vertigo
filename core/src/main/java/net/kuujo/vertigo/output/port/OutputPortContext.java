@@ -78,6 +78,14 @@ public interface OutputPortContext extends Context<OutputPortContext> {
   public static interface Builder extends Context.Builder<OutputPortContext> {
 
     /**
+     * Sets the port name.
+     *
+     * @param name The output port name.
+     * @return The output port builder.
+     */
+    Builder setName(String name);
+
+    /**
      * Adds a stream to the output.
      *
      * @param stream The output stream info to add.

@@ -30,6 +30,7 @@ import net.kuujo.vertigo.message.VertigoMessage;
 import net.kuujo.vertigo.input.connection.InputConnection;
 import net.kuujo.vertigo.input.connection.InputConnectionContext;
 import net.kuujo.vertigo.message.impl.VertigoMessageImpl;
+import net.kuujo.vertigo.util.Args;
 
 /**
  * Input connection implementation.
@@ -228,6 +229,9 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
 
   @Override
   public InputConnection<T> messageHandler(Handler<VertigoMessage<T>> handler) {
+    if (open && handler == null) {
+      throw new IllegalStateException("cannot set null handler on locked connection");
+    }
     this.messageHandler = handler;
     return this;
   }

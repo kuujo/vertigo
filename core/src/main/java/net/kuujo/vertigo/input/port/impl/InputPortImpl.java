@@ -23,12 +23,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.input.ControllableInput;
-import net.kuujo.vertigo.input.port.InputPortContext;
-import net.kuujo.vertigo.message.VertigoMessage;
 import net.kuujo.vertigo.input.connection.InputConnection;
 import net.kuujo.vertigo.input.connection.InputConnectionContext;
 import net.kuujo.vertigo.input.connection.impl.InputConnectionImpl;
 import net.kuujo.vertigo.input.port.InputPort;
+import net.kuujo.vertigo.input.port.InputPortContext;
+import net.kuujo.vertigo.message.VertigoMessage;
+import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.TaskRunner;
 
@@ -81,6 +82,9 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
 
   @Override
   public InputPort<T> messageHandler(final Handler<VertigoMessage<T>> handler) {
+    if (open && handler == null) {
+      throw new IllegalStateException("cannot unset handler on locked port");
+    }
     this.messageHandler = handler;
     for (InputConnection<T> connection : connections) {
       connection.messageHandler(messageHandler);
@@ -163,6 +167,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
           if (result.succeeded()) {
             connections.clear();
           }
+          open = false;
           doneHandler.handle(result);
           task.complete();
         });

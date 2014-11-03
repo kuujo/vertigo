@@ -67,6 +67,13 @@ public class InputPortContextImpl extends BaseContextImpl<InputPortContext> impl
     }
 
     @Override
+    public Builder setName(String name) {
+      Args.checkNotNull(name, "name cannot be null");
+      port.name = name;
+      return this;
+    }
+
+    @Override
     public Builder addConnection(InputConnectionContext connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       port.connections.add(connection);

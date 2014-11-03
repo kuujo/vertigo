@@ -45,7 +45,7 @@ public class InputCollectorImpl implements InputCollector {
   private InputContext info;
   private final Map<String, InputPort> ports = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
-  private boolean started;
+  private boolean open;
 
   public InputCollectorImpl(Vertx vertx, InputContext info) {
     this.vertx = vertx;
@@ -61,8 +61,15 @@ public class InputCollectorImpl implements InputCollector {
   @Override
   @SuppressWarnings("unchecked")
   public <T> InputPort<T> port(String name) {
-    // TODO: Lazily create ports.
-    return ports.get(name);
+    InputPort<T> port = ports.get(name);
+    if (port == null) {
+      if (open) {
+        throw new IllegalStateException("cannot declare port on locked input collector");
+      }
+      port = new InputPortImpl<>(vertx, InputPortContext.builder().setName(name).build());
+      ports.put(name, port);
+    }
+    return port;
   }
 
   @Override
@@ -75,7 +82,7 @@ public class InputCollectorImpl implements InputCollector {
     // Prevent the object from being opened and closed simultaneously
     // by queueing open/close operations as tasks.
     tasks.runTask((task) -> {
-      if (!started) {
+      if (!open) {
         final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(info.ports().size());
         startCounter.setHandler((result) -> {
           doneHandler.handle(result);
@@ -106,7 +113,7 @@ public class InputCollectorImpl implements InputCollector {
             }));
           }
         }
-        started = true;
+        open = true;
       } else {
         doneHandler.handle(Future.completedFuture());
         task.complete();
@@ -125,12 +132,12 @@ public class InputCollectorImpl implements InputCollector {
     // Prevent the object from being opened and closed simultaneously
     // by queueing open/close operations as tasks.
     tasks.runTask((task) -> {
-      if (started) {
+      if (open) {
         final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
         stopCounter.setHandler((result) -> {
           if (result.succeeded()) {
             ports.clear();
-            started = false;
+            open = false;
           }
           doneHandler.handle(result);
           task.complete();

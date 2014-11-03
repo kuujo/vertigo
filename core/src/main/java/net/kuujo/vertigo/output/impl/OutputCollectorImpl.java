@@ -44,12 +44,12 @@ public class OutputCollectorImpl implements OutputCollector {
   private OutputContext context;
   private final Map<String, OutputPort> ports = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
-  private boolean started;
+  private boolean open;
 
   public OutputCollectorImpl(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
     this.context = context;
-    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", OutputCollectorImpl.class.getName(), context.instance().component().name(), context.instance().number()));
+    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", OutputCollectorImpl.class.getName(), context.partition().component().name(), context.partition().number()));
   }
 
   @Override
@@ -60,8 +60,15 @@ public class OutputCollectorImpl implements OutputCollector {
   @Override
   @SuppressWarnings("unchecked")
   public <T> OutputPort<T> port(String name) {
-    // TODO: Lazily create ports.
-    return ports.get(name);
+    OutputPort<T> port = ports.get(name);
+    if (port == null) {
+      if (open) {
+        throw new IllegalStateException("cannot declare port on locked output collector");
+      }
+      port = new OutputPortImpl<>(vertx, OutputPortContext.builder().setName(name).build());
+      ports.put(name, port);
+    }
+    return port;
   }
 
   @Override
@@ -74,7 +81,7 @@ public class OutputCollectorImpl implements OutputCollector {
     // Prevent the object from being opened and closed simultaneously
     // by queueing open/close operations as tasks.
     tasks.runTask((task) -> {
-      if (!started) {
+      if (!open) {
         final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
         startCounter.setHandler((result) -> {
           doneHandler.handle(result);
@@ -99,7 +106,7 @@ public class OutputCollectorImpl implements OutputCollector {
             });
           }
         }
-        started = true;
+        open = true;
       } else {
         doneHandler.handle(Future.completedFuture());
         task.complete();
@@ -118,12 +125,12 @@ public class OutputCollectorImpl implements OutputCollector {
     // Prevent the object from being opened and closed simultaneously
     // by queueing open/close operations as tasks.
     tasks.runTask((task) -> {
-      if (started) {
+      if (open) {
         final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
         stopCounter.setHandler((result) -> {
           if (result.succeeded()) {
             ports.clear();
-            started = false;
+            open = false;
           }
           doneHandler.handle(result);
           task.complete();

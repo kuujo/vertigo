@@ -67,6 +67,13 @@ public class OutputPortContextImpl extends BaseContextImpl<OutputPortContext> im
     }
 
     @Override
+    public Builder setName(String name) {
+      Args.checkNotNull(name, "name cannot be null");
+      port.name = name;
+      return this;
+    }
+
+    @Override
     public Builder addStream(OutputStreamContext stream) {
       Args.checkNotNull(stream, "stream cannot be null");
       port.streams.add(stream);

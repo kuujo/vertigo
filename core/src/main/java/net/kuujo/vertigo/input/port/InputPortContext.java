@@ -78,6 +78,14 @@ public interface InputPortContext extends Context<InputPortContext> {
   public static interface Builder extends Context.Builder<InputPortContext> {
 
     /**
+     * Sets the port name.
+     *
+     * @param name The port name.
+     * @return The input port context builder.
+     */
+    Builder setName(String name);
+
+    /**
      * Adds a connection to the port.
      *
      * @param connection The input connection info.

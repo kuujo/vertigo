@@ -15,10 +15,12 @@
  */
 package net.kuujo.vertigo.network.impl;
 
-import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.connection.ConnectionOptions;
-import net.kuujo.vertigo.connection.SourceOptions;
-import net.kuujo.vertigo.connection.TargetOptions;
+import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.impl.ComponentDefinitionImpl;
+import net.kuujo.vertigo.connection.ConnectionDefinition;
+import net.kuujo.vertigo.connection.SourceDefinition;
+import net.kuujo.vertigo.connection.TargetDefinition;
+import net.kuujo.vertigo.connection.impl.ConnectionDefinitionImpl;
 import net.kuujo.vertigo.network.NetworkDefinition;
 
 import java.util.ArrayList;
@@ -33,8 +35,8 @@ import java.util.List;
  */
 public class NetworkDefinitionImpl implements NetworkDefinition {
   private final String name;
-  private final List<ComponentOptions> components = new ArrayList<>();
-  private final List<ConnectionOptions> connections = new ArrayList<>();
+  private final List<ComponentDefinition> components = new ArrayList<>();
+  private final List<ConnectionDefinition> connections = new ArrayList<>();
 
   public NetworkDefinitionImpl(String name) {
     this.name = name;
@@ -46,13 +48,13 @@ public class NetworkDefinitionImpl implements NetworkDefinition {
   }
 
   @Override
-  public Collection<ComponentOptions> getComponents() {
+  public Collection<ComponentDefinition> getComponents() {
     return components;
   }
 
   @Override
-  public ComponentOptions getComponent(String name) {
-    for (ComponentOptions component : components) {
+  public ComponentDefinition getComponent(String name) {
+    for (ComponentDefinition component : components) {
       if (component.getName().equals(name)) {
         return component;
       }
@@ -62,7 +64,7 @@ public class NetworkDefinitionImpl implements NetworkDefinition {
 
   @Override
   public boolean hasComponent(String name) {
-    for (ComponentOptions component : components) {
+    for (ComponentDefinition component : components) {
       if (component.getName().equals(name)) {
         return true;
       }
@@ -71,67 +73,63 @@ public class NetworkDefinitionImpl implements NetworkDefinition {
   }
 
   @Override
-  public NetworkDefinition addComponent(ComponentOptions options) {
-    components.add(options);
-    return this;
+  public ComponentDefinition addComponent(String name) {
+    ComponentDefinition component = new ComponentDefinitionImpl(name);
+    components.add(component);
+    return component;
   }
 
   @Override
-  public NetworkDefinition addComponent(String main) {
-    components.add(new ComponentOptions().setMain(main));
-    return this;
+  public ComponentDefinition addComponent(ComponentDefinition component) {
+    components.add(component);
+    return component;
   }
 
   @Override
-  public NetworkDefinition addComponent(String main, ComponentOptions options) {
-    components.add(options.setMain(main));
-    return this;
-  }
-
-  @Override
-  public NetworkDefinition addComponent(String name, String main) {
-    components.add(new ComponentOptions().setName(name).setMain(main));
-    return this;
-  }
-
-  @Override
-  public NetworkDefinition addComponent(String name, String main, ComponentOptions options) {
-    components.add(options.setName(name).setMain(main));
-    return this;
-  }
-
-  @Override
-  public NetworkDefinition removeComponent(String name) {
-    Iterator<ComponentOptions> iterator = components.iterator();
+  public ComponentDefinition removeComponent(String name) {
+    Iterator<ComponentDefinition> iterator = components.iterator();
     while (iterator.hasNext()) {
-      ComponentOptions options = iterator.next();
-      if (options.getName() != null && options.getName().equals(name)) {
+      ComponentDefinition component = iterator.next();
+      if (component.getName() != null && component.getName().equals(name)) {
         iterator.remove();
+        return component;
       }
     }
-    return this;
+    return null;
   }
 
   @Override
-  public Collection<ConnectionOptions> getConnections() {
+  public ComponentDefinition removeComponent(ComponentDefinition component) {
+    Iterator<ComponentDefinition> iterator = components.iterator();
+    while (iterator.hasNext()) {
+      ComponentDefinition definition = iterator.next();
+      if (definition.equals(component)) {
+        iterator.remove();
+        return component;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public Collection<ConnectionDefinition> getConnections() {
     return connections;
   }
 
   @Override
-  public NetworkDefinition createConnection(ConnectionOptions connection) {
+  public ConnectionDefinition createConnection(ConnectionDefinition connection) {
     connections.add(connection);
-    return this;
+    return connection;
   }
 
   @Override
-  public NetworkDefinition createConnection(SourceOptions source, TargetOptions target) {
-    connections.add(new ConnectionOptions().setSource(source).setTarget(target));
-    return this;
+  public ConnectionDefinition createConnection(SourceDefinition source, TargetDefinition target) {
+    return createConnection(new ConnectionDefinitionImpl().setSource(source).setTarget(target));
   }
 
   @Override
-  public NetworkDefinition destroyConnection(ConnectionOptions connection) {
-    Iterator<ConnectionOptions> iterator = connections.iterator();
+  public NetworkDefinition destroyConnection(ConnectionDefinition connection) {
+    Iterator<ConnectionDefinition> iterator = connections.iterator();
     while (iterator.hasNext()) {
       if (iterator.next().equals(connection)) {
         iterator.remove();

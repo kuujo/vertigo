@@ -15,14 +15,13 @@
  */
 package net.kuujo.vertigo.network;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.component.ComponentOptions;
-import net.kuujo.vertigo.connection.ConnectionOptions;
-import net.kuujo.vertigo.connection.SourceOptions;
-import net.kuujo.vertigo.connection.TargetOptions;
+import net.kuujo.vertigo.Definition;
+import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.connection.ConnectionDefinition;
+import net.kuujo.vertigo.connection.SourceDefinition;
+import net.kuujo.vertigo.connection.TargetDefinition;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -35,7 +34,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface NetworkDefinition extends Serializable {
+public interface NetworkDefinition extends Definition {
 
   /**
    * <code>name</code> is a string indicating the unique network name. This is the
@@ -46,8 +45,8 @@ public interface NetworkDefinition extends Serializable {
   /**
    * <code>components</code> is an object defining network component configurations. Each
    * item in the object must be keyed by the unique component address, with each item
-   * being an object containing the component configuration. See the {@link net.kuujo.vertigo.component.ComponentOptions}
-   * class for component configuration options.
+   * being an object containing the component configuration. See the
+   * {@link net.kuujo.vertigo.component.ComponentDefinition} interface for configuration options.
    */
   public static final String NETWORK_COMPONENTS = "components";
 
@@ -72,7 +71,7 @@ public interface NetworkDefinition extends Serializable {
    * 
    * @return A list of network components.
    */
-  Collection<ComponentOptions> getComponents();
+  Collection<ComponentDefinition> getComponents();
 
   /**
    * Gets a component by name.
@@ -82,7 +81,7 @@ public interface NetworkDefinition extends Serializable {
    * @throws IllegalArgumentException If the given component address does not exist within
    *           the network.
    */
-  ComponentOptions getComponent(String name);
+  ComponentDefinition getComponent(String name);
 
   /**
    * Returns a boolean indicating whether the network has a component.
@@ -95,51 +94,18 @@ public interface NetworkDefinition extends Serializable {
   /**
    * Adds a component to the network.
    *
-   * @param options The component options.
-   * @return The network definition.
-   */
-  @Fluent
-  NetworkDefinition addComponent(ComponentOptions options);
-
-  /**
-   * Adds a component to the network.
-   *
-   * @param main The component verticle main.
-   * @return The network definition.
-   */
-  @Fluent
-  NetworkDefinition addComponent(String main);
-
-  /**
-   * Adds a component to the network.
-   *
-   * @param main The component verticle main.
-   * @param options The component options.
-   * @return The network definition.
-   */
-  @Fluent
-  NetworkDefinition addComponent(String main, ComponentOptions options);
-
-  /**
-   * Adds a component to the network.
-   *
    * @param name The component name.
-   * @param main The component verticle main.
    * @return The network definition.
    */
-  @Fluent
-  NetworkDefinition addComponent(String name, String main);
+  ComponentDefinition addComponent(String name);
 
   /**
    * Adds a component to the network.
    *
-   * @param name The component name.
-   * @param main The component verticle main.
-   * @param options The component options.
+   * @param component The component definition.
    * @return The network definition.
    */
-  @Fluent
-  NetworkDefinition addComponent(String name, String main, ComponentOptions options);
+  ComponentDefinition addComponent(ComponentDefinition component);
 
   /**
    * Removes a component from the network.
@@ -147,15 +113,22 @@ public interface NetworkDefinition extends Serializable {
    * @param name The component name.
    * @return The network definition.
    */
-  @Fluent
-  NetworkDefinition removeComponent(String name);
+  ComponentDefinition removeComponent(String name);
+
+  /**
+   * Removes a component from the network.
+   *
+   * @param component The component definition.
+   * @return The network definition.
+   */
+  ComponentDefinition removeComponent(ComponentDefinition component);
 
   /**
    * Returns a collection of network connections.
    *
    * @return A collection of connections in the network.
    */
-  Collection<ConnectionOptions> getConnections();
+  Collection<ConnectionDefinition> getConnections();
 
   /**
    * Creates a connection between two components.
@@ -163,8 +136,7 @@ public interface NetworkDefinition extends Serializable {
    * @param connection The new connection options.
    * @return The network definition.
    */
-  @Fluent
-  NetworkDefinition createConnection(ConnectionOptions connection);
+  ConnectionDefinition createConnection(ConnectionDefinition connection);
 
   /**
    * Creates a connection between two components.
@@ -173,8 +145,7 @@ public interface NetworkDefinition extends Serializable {
    * @param target The target connection options.
    * @return The network definition.
    */
-  @Fluent
-  NetworkDefinition createConnection(SourceOptions source, TargetOptions target);
+  ConnectionDefinition createConnection(SourceDefinition source, TargetDefinition target);
 
   /**
    * Destroys a connection between two components.
@@ -182,7 +153,6 @@ public interface NetworkDefinition extends Serializable {
    * @param connection The connection to destroy.
    * @return The network definition.
    */
-  @Fluent
-  NetworkDefinition destroyConnection(ConnectionOptions connection);
+  NetworkDefinition destroyConnection(ConnectionDefinition connection);
 
 }

@@ -15,16 +15,12 @@
  */
 package net.kuujo.vertigo.connection;
 
-import io.vertx.codegen.annotations.Options;
-import io.vertx.core.json.JsonObject;
-
 /**
  * Connection target options.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@Options
-public class TargetOptions extends EndpointOptions<TargetOptions> {
+public interface TargetDefinition extends EndpointDefinition<TargetDefinition> {
 
   /**
    * <code>component</code> indicates the target component name.
@@ -35,17 +31,5 @@ public class TargetOptions extends EndpointOptions<TargetOptions> {
    * <code>port</code> indicates the target output port.
    */
   public static final String TARGET_PORT = "port";
-
-  public TargetOptions() {
-    super();
-  }
-
-  public TargetOptions(JsonObject target) {
-    super(target);
-  }
-
-  public TargetOptions(TargetOptions target) {
-    super(target);
-  }
 
 }

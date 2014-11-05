@@ -15,14 +15,14 @@
  */
 package net.kuujo.vertigo.connection;
 
-import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.Definition;
 
 /**
  * Connection endpoint.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class EndpointOptions<T extends EndpointOptions<T>> {
+public interface EndpointDefinition<T extends EndpointDefinition<T>> extends Definition {
 
   /**
    * <code>component</code> indicates the endpoint component name.
@@ -34,30 +34,12 @@ public class EndpointOptions<T extends EndpointOptions<T>> {
    */
   public static final String ENDPOINT_PORT = "port";
 
-  protected String component;
-  protected String port;
-
-  protected EndpointOptions() {
-  }
-
-  protected EndpointOptions(T endpoint) {
-    this.component = endpoint.getComponent();
-    this.port = endpoint.getPort();
-  }
-
-  protected EndpointOptions(JsonObject endpoint) {
-    this.component = endpoint.getString(ENDPOINT_COMPONENT);
-    this.port = endpoint.getString(ENDPOINT_PORT);
-  }
-
   /**
    * Returns the endpoint component.
    *
    * @return The component name.
    */
-  public String getComponent() {
-    return component;
-  }
+  String getComponent();
 
   /**
    * Sets the endpoint component.
@@ -66,19 +48,14 @@ public class EndpointOptions<T extends EndpointOptions<T>> {
    * @return The endpoint partition.
    */
   @SuppressWarnings("unchecked")
-  public T setComponent(String component) {
-    this.component = component;
-    return (T) this;
-  }
+  T setComponent(String component);
 
   /**
    * Returns the endpoint port.
    *
    * @return The endpoint port.
    */
-  public String getPort() {
-    return port;
-  }
+  String getPort();
 
   /**
    * Sets the endpoint port.
@@ -87,9 +64,6 @@ public class EndpointOptions<T extends EndpointOptions<T>> {
    * @return The endpoint partition.
    */
   @SuppressWarnings("unchecked")
-  public T setPort(String port) {
-    this.port = port;
-    return (T) this;
-  }
+  T setPort(String port);
 
 }

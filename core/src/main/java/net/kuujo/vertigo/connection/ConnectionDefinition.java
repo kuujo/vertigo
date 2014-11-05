@@ -15,11 +15,8 @@
  */
 package net.kuujo.vertigo.connection;
 
-import io.vertx.codegen.annotations.Options;
-import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.output.partitioner.*;
-
-import java.io.Serializable;
+import net.kuujo.vertigo.Definition;
+import net.kuujo.vertigo.output.partitioner.Partitioner;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -31,18 +28,17 @@ import java.io.Serializable;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@Options
-public class ConnectionOptions implements Serializable {
+public interface ConnectionDefinition extends Definition {
 
   /**
    * <code>source</code> is an object defining the connection source. See the
-   * {@link SourceOptions} documentation for details on the source structure.
+   * {@link SourceDefinition} documentation for details on the source structure.
    */
   public static final String CONNECTION_SOURCE = "source";
 
   /**
    * <code>target</code> is an object defining the connection target. See the
-   * {@link TargetOptions} documentation for details on the target structure.
+   * {@link TargetDefinition} documentation for details on the target structure.
    */
   public static final String CONNECTION_TARGET = "target";
 
@@ -56,70 +52,20 @@ public class ConnectionOptions implements Serializable {
    */
   public static final String CONNECTION_PARTITIONER = "partitioner";
 
-  private SourceOptions source;
-  private TargetOptions target;
-  private Partitioner partitioner;
-
-  public ConnectionOptions() {
-  }
-
-  public ConnectionOptions(ConnectionOptions options) {
-    this.source = options.getSource();
-    this.target = options.getTarget();
-    this.partitioner = options.getPartitioner();
-  }
-
-  public ConnectionOptions(JsonObject options) {
-    this.source = new SourceOptions(options.getJsonObject(CONNECTION_SOURCE));
-    this.target = new TargetOptions(options.getJsonObject(CONNECTION_TARGET));
-    String partitioner = options.getString(CONNECTION_PARTITIONER);
-    if (partitioner != null) {
-      switch (partitioner) {
-        case "round":
-          this.partitioner = new RoundRobinPartitioner();
-          break;
-        case "random":
-          this.partitioner = new RandomPartitioner();
-          break;
-        case "hash":
-          String header = options.getString("partitionHeader");
-          if (header != null) {
-            this.partitioner = new HashPartitioner(header);
-          } else {
-            this.partitioner = new RoundRobinPartitioner();
-          }
-          break;
-        case "all":
-          this.partitioner = new AllPartitioner();
-          break;
-        default:
-          this.partitioner = new RoundRobinPartitioner();
-          break;
-      }
-    } else {
-      this.partitioner = new RoundRobinPartitioner();
-    }
-  }
-
   /**
    * Sets the connection source.
    *
    * @param source The connection source.
    * @return The connection options.
    */
-  public ConnectionOptions setSource(SourceOptions source) {
-    this.source = source;
-    return this;
-  }
+  ConnectionDefinition setSource(SourceDefinition source);
 
   /**
    * Returns the connection source.
    *
    * @return The connection source.
    */
-  public SourceOptions getSource() {
-    return source;
-  }
+  SourceDefinition getSource();
 
   /**
    * Sets the connection target.
@@ -127,28 +73,21 @@ public class ConnectionOptions implements Serializable {
    * @param target The connection target.
    * @return The connection options.
    */
-  public ConnectionOptions setTarget(TargetOptions target) {
-    this.target = target;
-    return this;
-  }
+  ConnectionDefinition setTarget(TargetDefinition target);
 
   /**
    * Returns the connection target.
    *
    * @return The connection target.
    */
-  public TargetOptions getTarget() {
-    return target;
-  }
+  TargetDefinition getTarget();
 
   /**
    * Returns the connection partitioner.
    *
    * @return The connection selector.
    */
-  public Partitioner getPartitioner() {
-    return partitioner;
-  }
+  Partitioner getPartitioner();
 
   /**
    * Sets the connection partitioner.
@@ -156,30 +95,21 @@ public class ConnectionOptions implements Serializable {
    * @param partitioner The partitioner with which to partition individual connections.
    * @return The connection configuration.
    */
-  public ConnectionOptions setPartitioner(Partitioner partitioner) {
-    this.partitioner = partitioner;
-    return this;
-  }
+  ConnectionDefinition setPartitioner(Partitioner partitioner);
 
   /**
    * Sets a round-robin partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  public ConnectionOptions roundPartition() {
-    this.partitioner = new RoundRobinPartitioner();
-    return this;
-  }
+  ConnectionDefinition roundPartition();
 
   /**
    * Sets a random partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  public ConnectionOptions randomPartition() {
-    this.partitioner = new RandomPartitioner();
-    return this;
-  }
+  ConnectionDefinition randomPartition();
 
   /**
    * Sets a mod-hash based partitioner on the connection.
@@ -187,20 +117,14 @@ public class ConnectionOptions implements Serializable {
    * @param header The hash header.
    * @return The connection configuration.
    */
-  public ConnectionOptions hashPartition(String header) {
-    this.partitioner = new HashPartitioner(header);
-    return this;
-  }
+  ConnectionDefinition hashPartition(String header);
 
   /**
    * Sets an all partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  public ConnectionOptions allPartition() {
-    this.partitioner = new AllPartitioner();
-    return this;
-  }
+  ConnectionDefinition allPartition();
 
   /**
    * Sets a custom partitioner on the connection.
@@ -208,9 +132,6 @@ public class ConnectionOptions implements Serializable {
    * @param partitioner The custom selector to set.
    * @return The connection configuration.
    */
-  public ConnectionOptions partition(Partitioner partitioner) {
-    this.partitioner = partitioner;
-    return this;
-  }
+  ConnectionDefinition partition(Partitioner partitioner);
 
 }

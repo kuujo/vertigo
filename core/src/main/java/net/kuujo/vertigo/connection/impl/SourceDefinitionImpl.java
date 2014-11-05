@@ -13,28 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network;
+package net.kuujo.vertigo.connection.impl;
 
-import io.vertx.codegen.annotations.Options;
 import io.vertx.core.json.JsonObject;
-
-import java.io.Serializable;
+import net.kuujo.vertigo.connection.SourceDefinition;
 
 /**
- * Network configuration options.
+ * Connection source options.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@Options
-public class NetworkOptions implements Serializable {
+public class SourceDefinitionImpl extends EndpointDefinitionImpl<SourceDefinition> implements SourceDefinition {
 
-  public NetworkOptions() {
+  /**
+   * <code>component</code> indicates the source component name.
+   */
+  public static final String SOURCE_COMPONENT = "component";
+
+  /**
+   * <code>port</code> indicates the source output port.
+   */
+  public static final String SOURCE_PORT = "port";
+
+  public SourceDefinitionImpl() {
+    super();
   }
 
-  public NetworkOptions(NetworkOptions options) {
+  public SourceDefinitionImpl(SourceDefinitionImpl source) {
+    super(source);
   }
 
-  public NetworkOptions(JsonObject options) {
+  public SourceDefinitionImpl(JsonObject source) {
+    super(source);
   }
 
 }

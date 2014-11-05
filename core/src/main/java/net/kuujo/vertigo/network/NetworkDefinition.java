@@ -35,7 +35,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface Network extends Serializable {
+public interface NetworkDefinition extends Serializable {
 
   /**
    * <code>name</code> is a string indicating the unique network name. This is the
@@ -99,7 +99,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network addComponent(ComponentOptions options);
+  NetworkDefinition addComponent(ComponentOptions options);
 
   /**
    * Adds a component to the network.
@@ -108,7 +108,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network addComponent(String main);
+  NetworkDefinition addComponent(String main);
 
   /**
    * Adds a component to the network.
@@ -118,7 +118,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network addComponent(String main, ComponentOptions options);
+  NetworkDefinition addComponent(String main, ComponentOptions options);
 
   /**
    * Adds a component to the network.
@@ -128,7 +128,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network addComponent(String name, String main);
+  NetworkDefinition addComponent(String name, String main);
 
   /**
    * Adds a component to the network.
@@ -139,7 +139,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network addComponent(String name, String main, ComponentOptions options);
+  NetworkDefinition addComponent(String name, String main, ComponentOptions options);
 
   /**
    * Removes a component from the network.
@@ -148,7 +148,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network removeComponent(String name);
+  NetworkDefinition removeComponent(String name);
 
   /**
    * Returns a collection of network connections.
@@ -164,7 +164,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network createConnection(ConnectionOptions connection);
+  NetworkDefinition createConnection(ConnectionOptions connection);
 
   /**
    * Creates a connection between two components.
@@ -174,7 +174,7 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network createConnection(SourceOptions source, TargetOptions target);
+  NetworkDefinition createConnection(SourceOptions source, TargetOptions target);
 
   /**
    * Destroys a connection between two components.
@@ -183,6 +183,6 @@ public interface Network extends Serializable {
    * @return The network definition.
    */
   @Fluent
-  Network destroyConnection(ConnectionOptions connection);
+  NetworkDefinition destroyConnection(ConnectionOptions connection);
 
 }

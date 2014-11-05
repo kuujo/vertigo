@@ -19,7 +19,7 @@ import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.connection.ConnectionOptions;
 import net.kuujo.vertigo.connection.SourceOptions;
 import net.kuujo.vertigo.connection.TargetOptions;
-import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.NetworkDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,12 +31,12 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class NetworkImpl implements Network {
+public class NetworkDefinitionImpl implements NetworkDefinition {
   private final String name;
   private final List<ComponentOptions> components = new ArrayList<>();
   private final List<ConnectionOptions> connections = new ArrayList<>();
 
-  public NetworkImpl(String name) {
+  public NetworkDefinitionImpl(String name) {
     this.name = name;
   }
 
@@ -71,37 +71,37 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public Network addComponent(ComponentOptions options) {
+  public NetworkDefinition addComponent(ComponentOptions options) {
     components.add(options);
     return this;
   }
 
   @Override
-  public Network addComponent(String main) {
+  public NetworkDefinition addComponent(String main) {
     components.add(new ComponentOptions().setMain(main));
     return this;
   }
 
   @Override
-  public Network addComponent(String main, ComponentOptions options) {
+  public NetworkDefinition addComponent(String main, ComponentOptions options) {
     components.add(options.setMain(main));
     return this;
   }
 
   @Override
-  public Network addComponent(String name, String main) {
+  public NetworkDefinition addComponent(String name, String main) {
     components.add(new ComponentOptions().setName(name).setMain(main));
     return this;
   }
 
   @Override
-  public Network addComponent(String name, String main, ComponentOptions options) {
+  public NetworkDefinition addComponent(String name, String main, ComponentOptions options) {
     components.add(options.setName(name).setMain(main));
     return this;
   }
 
   @Override
-  public Network removeComponent(String name) {
+  public NetworkDefinition removeComponent(String name) {
     Iterator<ComponentOptions> iterator = components.iterator();
     while (iterator.hasNext()) {
       ComponentOptions options = iterator.next();
@@ -118,19 +118,19 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public Network createConnection(ConnectionOptions connection) {
+  public NetworkDefinition createConnection(ConnectionOptions connection) {
     connections.add(connection);
     return this;
   }
 
   @Override
-  public Network createConnection(SourceOptions source, TargetOptions target) {
+  public NetworkDefinition createConnection(SourceOptions source, TargetOptions target) {
     connections.add(new ConnectionOptions().setSource(source).setTarget(target));
     return this;
   }
 
   @Override
-  public Network destroyConnection(ConnectionOptions connection) {
+  public NetworkDefinition destroyConnection(ConnectionOptions connection) {
     Iterator<ConnectionOptions> iterator = connections.iterator();
     while (iterator.hasNext()) {
       if (iterator.next().equals(connection)) {

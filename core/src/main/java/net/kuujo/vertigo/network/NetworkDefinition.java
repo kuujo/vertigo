@@ -18,9 +18,9 @@ package net.kuujo.vertigo.network;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.Definition;
 import net.kuujo.vertigo.component.ComponentDefinition;
-import net.kuujo.vertigo.connection.ConnectionDefinition;
-import net.kuujo.vertigo.connection.SourceDefinition;
-import net.kuujo.vertigo.connection.TargetDefinition;
+import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.SourceDefinition;
+import net.kuujo.vertigo.io.connection.TargetDefinition;
 
 import java.util.Collection;
 

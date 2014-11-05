@@ -18,8 +18,8 @@ package net.kuujo.vertigo.component.impl;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
-import net.kuujo.vertigo.input.InputContext;
-import net.kuujo.vertigo.output.OutputContext;
+import net.kuujo.vertigo.io.InputContext;
+import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.util.Args;
 
 /**

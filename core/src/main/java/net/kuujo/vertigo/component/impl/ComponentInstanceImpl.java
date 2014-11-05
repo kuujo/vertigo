@@ -22,10 +22,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.component.ComponentInstance;
 import net.kuujo.vertigo.component.PartitionContext;
-import net.kuujo.vertigo.input.InputCollector;
-import net.kuujo.vertigo.output.OutputCollector;
-import net.kuujo.vertigo.input.impl.InputCollectorImpl;
-import net.kuujo.vertigo.output.impl.OutputCollectorImpl;
+import net.kuujo.vertigo.io.InputCollector;
+import net.kuujo.vertigo.io.OutputCollector;
+import net.kuujo.vertigo.io.impl.InputCollectorImpl;
+import net.kuujo.vertigo.io.impl.OutputCollectorImpl;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**

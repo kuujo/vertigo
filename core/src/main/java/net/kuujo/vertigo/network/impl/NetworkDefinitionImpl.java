@@ -17,10 +17,10 @@ package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.component.ComponentDefinition;
 import net.kuujo.vertigo.component.impl.ComponentDefinitionImpl;
-import net.kuujo.vertigo.connection.ConnectionDefinition;
-import net.kuujo.vertigo.connection.SourceDefinition;
-import net.kuujo.vertigo.connection.TargetDefinition;
-import net.kuujo.vertigo.connection.impl.ConnectionDefinitionImpl;
+import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.SourceDefinition;
+import net.kuujo.vertigo.io.connection.TargetDefinition;
+import net.kuujo.vertigo.io.connection.impl.ConnectionDefinitionImpl;
 import net.kuujo.vertigo.network.NetworkDefinition;
 
 import java.util.ArrayList;

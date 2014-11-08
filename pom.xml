@@ -21,8 +21,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <vertx.pullInDeps>false</vertx.pullInDeps>
     <vertx.createFatJar>false</vertx.createFatJar>
-    <module.name>${project.groupId}~${project.artifactId}~${project.version}</module.name>
-    <mods.directory>target/mods</mods.directory>
 
     <vertx.version>3.0.0-SNAPSHOT</vertx.version>
     <codegen.version>1.0-SNAPSHOT</codegen.version>
@@ -136,57 +134,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${maven.resources.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>copy-mod-to-target</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <overwrite>true</overwrite>
-              <outputDirectory>${mods.directory}/${module.name}</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>target/classes</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>${maven.dependency.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>copy-mod-dependencies-to-target</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${mods.directory}/${module.name}/lib</outputDirectory>
-              <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-mod-dependencies-to-target-dependencies</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>target/dependencies</outputDirectory>
-              <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven.surefire.plugin.version}</version>
@@ -201,12 +148,6 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven.failsafe.plugin.version}</version>
         <configuration>
-          <systemProperties>
-            <property>
-              <name>vertx.mods</name>
-              <value>${mods.directory}</value>
-            </property>
-          </systemProperties>
           <includes>
             <include>**/integration/**/*Test*</include>
           </includes>

@@ -18,6 +18,8 @@ package net.kuujo.vertigo.network;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.builder.NetworkBuilder;
+import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentDefinition;
 import net.kuujo.vertigo.io.connection.ConnectionDefinition;
 import net.kuujo.vertigo.io.connection.SourceDefinition;
@@ -57,6 +59,15 @@ public interface Network extends Json.Serializable {
   static final String NETWORK_CONNECTIONS = "connections";
 
   /**
+   * Constructs a new network object.
+   *
+   * @return A new uniquely identified network configuration.
+   */
+  static Network network() {
+    return new NetworkImpl();
+  }
+
+  /**
    * Constructs a network object from file-based configuration.
    *
    * @param configName The network configuration file name.
@@ -75,6 +86,25 @@ public interface Network extends Json.Serializable {
    */
   static Network network(JsonObject network) {
     return Json.deserialize(network, NetworkImpl.class);
+  }
+
+  /**
+   * Returns a new network builder.
+   *
+   * @return A new network builder.
+   */
+  static NetworkBuilder builder() {
+    return new NetworkBuilderImpl();
+  }
+
+  /**
+   * Returns a new network builder.
+   *
+   * @param id The unique network ID.
+   * @return The network builder.
+   */
+  static NetworkBuilder builder(String id) {
+    return new NetworkBuilderImpl(id);
   }
 
   /**
@@ -102,28 +132,28 @@ public interface Network extends Json.Serializable {
   /**
    * Gets a component by name.
    *
-   * @param name The component name.
+   * @param id The component id.
    * @return The component definition.
-   * @throws IllegalArgumentException If the given component address does not exist within
+   * @throws IllegalArgumentException If the given component id does not exist within
    *           the network.
    */
-  ComponentDefinition getComponent(String name);
+  ComponentDefinition getComponent(String id);
 
   /**
    * Returns a boolean indicating whether the network has a component.
    *
-   * @param name The component name.
+   * @param id The component id.
    * @return Indicates whether the component exists in the network.
    */
-  boolean hasComponent(String name);
+  boolean hasComponent(String id);
 
   /**
    * Adds a component to the network.
    *
-   * @param name The component name.
+   * @param id The component id.
    * @return The component definition.
    */
-  ComponentDefinition addComponent(String name);
+  ComponentDefinition addComponent(String id);
 
   /**
    * Adds a component to the network.

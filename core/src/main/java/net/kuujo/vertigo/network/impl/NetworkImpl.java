@@ -23,8 +23,10 @@ import net.kuujo.vertigo.io.connection.TargetDefinition;
 import net.kuujo.vertigo.io.connection.impl.ConnectionDefinitionImpl;
 import net.kuujo.vertigo.network.Network;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.UUID;
 
 /**
  * Network implementation.
@@ -33,13 +35,15 @@ import java.util.Iterator;
  */
 public class NetworkImpl implements Network {
   private String id;
-  private final Collection<ComponentDefinition> components;
-  private final Collection<ConnectionDefinition> connections;
+  private final Collection<ComponentDefinition> components = new ArrayList<>();
+  private final Collection<ConnectionDefinition> connections = new ArrayList<>();
 
-  public NetworkImpl(String id, Collection<ComponentDefinition> components, Collection<ConnectionDefinition> connections) {
+  public NetworkImpl() {
+    this(UUID.randomUUID().toString());
+  }
+
+  public NetworkImpl(String id) {
     this.id = id;
-    this.components = components;
-    this.connections = connections;
   }
 
   @Override
@@ -61,7 +65,7 @@ public class NetworkImpl implements Network {
   @Override
   public ComponentDefinition getComponent(String name) {
     for (ComponentDefinition component : components) {
-      if (component.getName().equals(name)) {
+      if (component.getId().equals(name)) {
         return component;
       }
     }
@@ -71,7 +75,7 @@ public class NetworkImpl implements Network {
   @Override
   public boolean hasComponent(String name) {
     for (ComponentDefinition component : components) {
-      if (component.getName().equals(name)) {
+      if (component.getId().equals(name)) {
         return true;
       }
     }
@@ -96,7 +100,7 @@ public class NetworkImpl implements Network {
     Iterator<ComponentDefinition> iterator = components.iterator();
     while (iterator.hasNext()) {
       ComponentDefinition component = iterator.next();
-      if (component.getName() != null && component.getName().equals(name)) {
+      if (component.getId() != null && component.getId().equals(name)) {
         iterator.remove();
         return component;
       }

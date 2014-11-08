@@ -29,7 +29,7 @@ import java.util.Set;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ComponentDefinitionImpl implements ComponentDefinition {
-  private String name;
+  private String id;
   private String main;
   private JsonObject config;
   private int partitions;
@@ -42,18 +42,18 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   public ComponentDefinitionImpl() {
   }
 
-  public ComponentDefinitionImpl(String name) {
-    this.name = name;
+  public ComponentDefinitionImpl(String id) {
+    this.id = id;
   }
 
   @Override
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
   }
 
   @Override
-  public ComponentDefinition setName(String name) {
-    this.name = name;
+  public ComponentDefinition setId(String id) {
+    this.id = id;
     return this;
   }
 

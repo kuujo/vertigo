@@ -76,7 +76,7 @@ public interface NetworkContext extends Context<NetworkContext> {
    *
    * @return The network configuration.
    */
-  NetworkBuilder config();
+  Network config();
 
   /**
    * Returns a collection of network component contexts.
@@ -129,7 +129,7 @@ public interface NetworkContext extends Context<NetworkContext> {
      * @param config The network configuration.
      * @return The network context builder.
      */
-    Builder setConfig(NetworkBuilder config);
+    Builder setConfig(Network config);
 
     /**
      * Adds a component to the network context.

@@ -28,10 +28,10 @@ import java.util.Set;
 public interface ComponentDefinition {
 
   /**
-   * <code>name</code> is a string indicating the network unique component name. This
+   * <code>id</code> is a string indicating the network unique component id. This
    * name is used as the basis for generating unique event bus addresses.
    */
-  public static final String COMPONENT_NAME = "name";
+  public static final String COMPONENT_ID = "id";
 
   /**
    * <code>main</code> is a string indicating the verticle main. This field is required
@@ -84,19 +84,19 @@ public interface ComponentDefinition {
   public static final String COMPONENT_RESOURCES = "resources";
 
   /**
-   * Returns the component name.
+   * Returns the component ID.
    *
-   * @return The component name.
+   * @return The component ID.
    */
-  String getName();
+  String getId();
 
   /**
-   * Sets the component name.
+   * Sets the component ID.
    *
-   * @param name The component name.
+   * @param id The component ID.
    * @return The component definition.
    */
-  ComponentDefinition setName(String name);
+  ComponentDefinition setId(String id);
 
   /**
    * Returns the component main.

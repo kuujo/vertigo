@@ -18,7 +18,7 @@ package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
-import net.kuujo.vertigo.network.NetworkBuilder;
+import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Args;
 
@@ -34,7 +34,7 @@ import java.util.Map;
 public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implements NetworkContext {
   private String name;
   private String version;
-  private NetworkBuilder config;
+  private Network config;
   private Map<String, ComponentContext> components = new HashMap<>();
 
   @Override
@@ -48,7 +48,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
   }
 
   @Override
-  public NetworkBuilder config() {
+  public Network config() {
     return config;
   }
 
@@ -103,7 +103,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     }
 
     @Override
-    public Builder setConfig(NetworkBuilder config) {
+    public Builder setConfig(Network config) {
       Args.checkNotNull(config, "configuration cannot be null");
       network.config = config;
       return this;

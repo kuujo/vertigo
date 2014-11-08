@@ -15,32 +15,31 @@
  */
 package net.kuujo.vertigo.network;
 
-import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Definition;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentDefinition;
 import net.kuujo.vertigo.io.connection.ConnectionDefinition;
 import net.kuujo.vertigo.io.connection.SourceDefinition;
 import net.kuujo.vertigo.io.connection.TargetDefinition;
+import net.kuujo.vertigo.network.impl.NetworkImpl;
+import net.kuujo.vertigo.util.Configs;
+import net.kuujo.vertigo.util.Json;
 
 import java.util.Collection;
 
 /**
- * Network configuration.<p>
- *
- * The network configuration defines a collection of components
- * (Vert.x modules and verticles) that can be connected together in
- * a meaningful way.
+ * Vertigo network.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface NetworkDefinition extends Definition {
+public interface Network extends Json.Serializable {
 
   /**
    * <code>name</code> is a string indicating the unique network name. This is the
    * address at which the network will monitor network components. This field is required.
    */
-  public static final String NETWORK_NAME = "name";
+  static final String NETWORK_NAME = "name";
 
   /**
    * <code>components</code> is an object defining network component configurations. Each
@@ -48,36 +47,63 @@ public interface NetworkDefinition extends Definition {
    * being an object containing the component configuration. See the
    * {@link net.kuujo.vertigo.component.ComponentDefinition} interface for configuration options.
    */
-  public static final String NETWORK_COMPONENTS = "components";
+  static final String NETWORK_COMPONENTS = "components";
 
   /**
    * <code>connections</code> is an array defining network connection configurations. Each
    * item in the array must be an object defining a <code>source</code> and <code>target</code>
    * configuration.
    */
-  public static final String NETWORK_CONNECTIONS = "connections";
+  static final String NETWORK_CONNECTIONS = "connections";
 
   /**
-   * Returns the network name.<p>
+   * Constructs a network object from file-based configuration.
    *
-   * The network's name should be unique within a given cluster.
-   * 
-   * @return The network name.
+   * @param configName The network configuration file name.
+   * @return The constructed network object.
    */
-  String getName();
+  static Network network(String configName) {
+    Config config = ConfigFactory.load(Thread.currentThread().getContextClassLoader(), configName);
+    return network(Configs.configObjectToJson(config));
+  }
+
+  /**
+   * Constructs a network object from a JSON configuration.
+   *
+   * @param network The JSON network definition.
+   * @return The constructed network object.
+   */
+  static Network network(JsonObject network) {
+    return Json.deserialize(network, NetworkImpl.class);
+  }
+
+  /**
+   * Returns the unique network ID.
+   *
+   * @return The unique network ID.
+   */
+  String getId();
+
+  /**
+   * Sets the unique network ID.
+   *
+   * @param id The unique network ID.
+   * @return The network configuration.
+   */
+  Network setId(String id);
 
   /**
    * Gets a list of network components.
-   * 
+   *
    * @return A list of network components.
    */
   Collection<ComponentDefinition> getComponents();
 
   /**
    * Gets a component by name.
-   * 
+   *
    * @param name The component name.
-   * @return The component configuration.
+   * @return The component definition.
    * @throws IllegalArgumentException If the given component address does not exist within
    *           the network.
    */
@@ -95,7 +121,7 @@ public interface NetworkDefinition extends Definition {
    * Adds a component to the network.
    *
    * @param name The component name.
-   * @return The network definition.
+   * @return The component definition.
    */
   ComponentDefinition addComponent(String name);
 
@@ -103,7 +129,7 @@ public interface NetworkDefinition extends Definition {
    * Adds a component to the network.
    *
    * @param component The component definition.
-   * @return The network definition.
+   * @return The component definition.
    */
   ComponentDefinition addComponent(ComponentDefinition component);
 
@@ -111,7 +137,7 @@ public interface NetworkDefinition extends Definition {
    * Removes a component from the network.
    *
    * @param name The component name.
-   * @return The network definition.
+   * @return The component definition.
    */
   ComponentDefinition removeComponent(String name);
 
@@ -119,7 +145,7 @@ public interface NetworkDefinition extends Definition {
    * Removes a component from the network.
    *
    * @param component The component definition.
-   * @return The network definition.
+   * @return The component definition.
    */
   ComponentDefinition removeComponent(ComponentDefinition component);
 
@@ -134,7 +160,7 @@ public interface NetworkDefinition extends Definition {
    * Creates a connection between two components.
    *
    * @param connection The new connection options.
-   * @return The network definition.
+   * @return The connection definition.
    */
   ConnectionDefinition createConnection(ConnectionDefinition connection);
 
@@ -143,7 +169,7 @@ public interface NetworkDefinition extends Definition {
    *
    * @param source The source connection options.
    * @param target The target connection options.
-   * @return The network definition.
+   * @return The connection definition.
    */
   ConnectionDefinition createConnection(SourceDefinition source, TargetDefinition target);
 
@@ -151,8 +177,8 @@ public interface NetworkDefinition extends Definition {
    * Destroys a connection between two components.
    *
    * @param connection The connection to destroy.
-   * @return The network definition.
+   * @return The connection definition.
    */
-  NetworkDefinition destroyConnection(ConnectionDefinition connection);
+  ConnectionDefinition destroyConnection(ConnectionDefinition connection);
 
 }

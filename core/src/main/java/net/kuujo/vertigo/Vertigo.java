@@ -22,7 +22,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.network.NetworkDefinition;
+import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.spi.VertigoFactory;
 
@@ -79,7 +79,7 @@ public interface Vertigo {
    * @return A new network instance.
    * @see Vertigo#createNetwork(String)
    */
-  NetworkDefinition createNetwork();
+  Network createNetwork();
 
   /**
    * Creates a new network.
@@ -88,7 +88,7 @@ public interface Vertigo {
    * @return A new network instance.
    * @see Vertigo#createNetwork()
    */
-  NetworkDefinition createNetwork(String name);
+  Network createNetwork(String name);
 
   /**
    * Creates a network configuration from json.
@@ -97,7 +97,7 @@ public interface Vertigo {
    * @return A network configuration.
    * @see Vertigo#createNetwork(String)
    */
-  NetworkDefinition createNetwork(JsonObject json);
+  Network createNetwork(JsonObject json);
 
   /**
    * Deploys a bare network to an anonymous local-only cluster.<p>
@@ -126,7 +126,7 @@ public interface Vertigo {
   /**
    * Deploys a json network to an anonymous local-only cluster.<p>
    *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.NetworkDefinition} before
+   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
    * being deployed to the cluster. The conversion is done synchronously, so if the
    * configuration is invalid then this method may throw an exception.
    *
@@ -140,7 +140,7 @@ public interface Vertigo {
   /**
    * Deploys a json network to an anonymous local-only cluster.<p>
    *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.NetworkDefinition} before
+   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
    * being deployed to the cluster. The conversion is done synchronously, so if the
    * configuration is invalid then this method may throw an exception.
    *
@@ -168,7 +168,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(NetworkDefinition network);
+  Vertigo deployNetwork(Network network);
 
   /**
    * Deploys a network to an anonymous local-only cluster.<p>
@@ -187,7 +187,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(final NetworkDefinition network, final Handler<AsyncResult<NetworkContext>> doneHandler);
+  Vertigo deployNetwork(final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Deploys a bare network to a specific cluster.<p>
@@ -218,7 +218,7 @@ public interface Vertigo {
   /**
    * Deploys a json network to a specific cluster.<p>
    *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.NetworkDefinition} before
+   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
    * being deployed to the cluster. The conversion is done synchronously, so if the
    * configuration is invalid then this method may throw an exception.
    *
@@ -233,7 +233,7 @@ public interface Vertigo {
   /**
    * Deploys a json network to a specific cluster.<p>
    *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.NetworkDefinition} before
+   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
    * being deployed to the cluster. The conversion is done synchronously, so if the
    * configuration is invalid then this method may throw an exception.
    *
@@ -263,7 +263,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(String cluster, NetworkDefinition network);
+  Vertigo deployNetwork(String cluster, Network network);
 
   /**
    * Deploys a network to a specific cluster.<p>
@@ -283,7 +283,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(String cluster, final NetworkDefinition network, final Handler<AsyncResult<NetworkContext>> doneHandler);
+  Vertigo deployNetwork(String cluster, final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler);
 
   /**
    * Undeploys a complete network from the given cluster.<p>
@@ -319,7 +319,7 @@ public interface Vertigo {
   /**
    * Undeploys a network from the given cluster from a json configuration.<p>
    *
-   * The JSON configuration will immediately be converted to a {@link net.kuujo.vertigo.network.NetworkDefinition} prior
+   * The JSON configuration will immediately be converted to a {@link net.kuujo.vertigo.network.Network} prior
    * to undeploying the network. In order to undeploy the entire network, the configuration
    * should be the same as the deployed configuration. Vertigo will use configuration
    * components to determine whether two configurations are identical. If the given
@@ -338,7 +338,7 @@ public interface Vertigo {
   /**
    * Undeploys a network from the given cluster from a json configuration.<p>
    *
-   * The JSON configuration will immediately be converted to a {@link net.kuujo.vertigo.network.NetworkDefinition} prior
+   * The JSON configuration will immediately be converted to a {@link net.kuujo.vertigo.network.Network} prior
    * to undeploying the network. In order to undeploy the entire network, the configuration
    * should be the same as the deployed configuration. Vertigo will use configuration
    * components to determine whether two configurations are identical. If the given
@@ -359,7 +359,7 @@ public interface Vertigo {
    * Undeploys a network from the given cluster.<p>
    *
    * This method supports both partial and complete undeployment of networks. When
-   * undeploying networks by specifying a {@link net.kuujo.vertigo.network.NetworkDefinition}, the network configuration
+   * undeploying networks by specifying a {@link net.kuujo.vertigo.network.Network}, the network configuration
    * should contain all components and connections that are being undeployed. If the
    * configuration's components and connections match all deployed components and
    * connections then the entire network will be undeployed.
@@ -369,13 +369,13 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo undeployNetwork(String cluster, NetworkDefinition network);
+  Vertigo undeployNetwork(String cluster, Network network);
 
   /**
    * Undeploys a network from the given cluster.<p>
    *
    * This method supports both partial and complete undeployment of networks. When
-   * undeploying networks by specifying a {@link net.kuujo.vertigo.network.NetworkDefinition}, the network configuration
+   * undeploying networks by specifying a {@link net.kuujo.vertigo.network.Network}, the network configuration
    * should contain all components and connections that are being undeployed. If the
    * configuration's components and connections match all deployed components and
    * connections then the entire network will be undeployed.
@@ -386,7 +386,7 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo undeployNetwork(String cluster, final NetworkDefinition network, final Handler<AsyncResult<Void>> doneHandler);
+  Vertigo undeployNetwork(String cluster, final Network network, final Handler<AsyncResult<Void>> doneHandler);
 
   static final VertigoFactory factory = ServiceHelper.loadFactory(VertigoFactory.class);
 

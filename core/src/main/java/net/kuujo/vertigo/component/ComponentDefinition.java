@@ -83,7 +83,6 @@ public interface ComponentDefinition {
    */
   public static final String COMPONENT_RESOURCES = "resources";
 
-
   /**
    * Returns the component name.
    *

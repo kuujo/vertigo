@@ -15,14 +15,14 @@
  */
 package net.kuujo.vertigo;
 
-import java.io.Serializable;
+import net.kuujo.vertigo.util.Json;
 
 /**
  * Immutable configuration information for Vertigo types.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Context<T extends Context<T>> extends Serializable {
+public interface Context<T extends Context<T>> extends Json.Serializable {
 
   /**
    * Returns the type ID.

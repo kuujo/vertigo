@@ -32,7 +32,7 @@ import net.kuujo.vertigo.io.OutputCollector;
  *
  * Components receive messages on input ports and send messages on output
  * ports, but component-to-component relationships are defined externally
- * to the component implementation in the {@link net.kuujo.vertigo.network.NetworkDefinition}. This means
+ * to the component implementation in the {@link net.kuujo.vertigo.network.NetworkBuilder}. This means
  * that when a message is sent to an output port, the component doesn't
  * know where the message will go. Instead, Vertigo handles message routing
  * internally, abstracting relationship details from component implementations.<p>

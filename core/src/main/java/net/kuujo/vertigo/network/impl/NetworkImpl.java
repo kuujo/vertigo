@@ -21,30 +21,36 @@ import net.kuujo.vertigo.io.connection.ConnectionDefinition;
 import net.kuujo.vertigo.io.connection.SourceDefinition;
 import net.kuujo.vertigo.io.connection.TargetDefinition;
 import net.kuujo.vertigo.io.connection.impl.ConnectionDefinitionImpl;
-import net.kuujo.vertigo.network.NetworkDefinition;
+import net.kuujo.vertigo.network.Network;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Network implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class NetworkDefinitionImpl implements NetworkDefinition {
-  private final String name;
-  private final List<ComponentDefinition> components = new ArrayList<>();
-  private final List<ConnectionDefinition> connections = new ArrayList<>();
+public class NetworkImpl implements Network {
+  private String id;
+  private final Collection<ComponentDefinition> components;
+  private final Collection<ConnectionDefinition> connections;
 
-  public NetworkDefinitionImpl(String name) {
-    this.name = name;
+  public NetworkImpl(String id, Collection<ComponentDefinition> components, Collection<ConnectionDefinition> connections) {
+    this.id = id;
+    this.components = components;
+    this.connections = connections;
   }
 
   @Override
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
+  }
+
+  @Override
+  public Network setId(String id) {
+    this.id = id;
+    return this;
   }
 
   @Override
@@ -128,14 +134,16 @@ public class NetworkDefinitionImpl implements NetworkDefinition {
   }
 
   @Override
-  public NetworkDefinition destroyConnection(ConnectionDefinition connection) {
+  public ConnectionDefinition destroyConnection(ConnectionDefinition connection) {
     Iterator<ConnectionDefinition> iterator = connections.iterator();
     while (iterator.hasNext()) {
-      if (iterator.next().equals(connection)) {
+      ConnectionDefinition c = iterator.next();
+      if (c.equals(connection)) {
         iterator.remove();
+        return c;
       }
     }
-    return this;
+    return null;
   }
 
 }

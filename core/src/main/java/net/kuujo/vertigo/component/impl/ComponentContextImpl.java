@@ -18,7 +18,6 @@ package net.kuujo.vertigo.component.impl;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentContext;
-import net.kuujo.vertigo.component.ComponentOptions;
 import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.network.NetworkContext;
@@ -161,22 +160,6 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     @Override
     public Builder setMultiThreaded(boolean isMultiThreaded) {
       component.multiThreaded = isMultiThreaded;
-      return this;
-    }
-
-    @Override
-    public Builder setOptions(ComponentOptions options) {
-      if (options.getName() != null) {
-        component.name = options.getName();
-      }
-      if (options.getMain() != null) {
-        component.main = options.getMain();
-      }
-      if (options.getConfig() != null) {
-        component.config = options.getConfig();
-      }
-      component.worker = options.isWorker();
-      component.multiThreaded = options.isMultiThreaded();
       return this;
     }
 

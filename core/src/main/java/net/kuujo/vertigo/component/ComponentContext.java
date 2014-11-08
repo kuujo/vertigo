@@ -184,14 +184,6 @@ public interface ComponentContext extends Context<ComponentContext> {
     Builder setMultiThreaded(boolean isMultiThreaded);
 
     /**
-     * Sets the component options.
-     *
-     * @param options Component options.
-     * @return The component builder.
-     */
-    Builder setOptions(ComponentOptions options);
-
-    /**
      * Adds an partition to the component context.
      *
      * @param partition The partition context to add.

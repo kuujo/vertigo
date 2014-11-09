@@ -25,6 +25,10 @@ import net.kuujo.vertigo.io.connection.SourceDescriptor;
  */
 public class SourceDescriptorImpl extends EndpointDescriptorImpl implements SourceDescriptor {
 
+  public SourceDescriptorImpl(SourceDescriptor source) {
+    super(source);
+  }
+
   public SourceDescriptorImpl(JsonObject source) {
     super(source);
   }

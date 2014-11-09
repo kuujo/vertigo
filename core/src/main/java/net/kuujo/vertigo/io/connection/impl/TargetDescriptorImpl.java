@@ -25,6 +25,10 @@ import net.kuujo.vertigo.io.connection.TargetDescriptor;
  */
 public class TargetDescriptorImpl extends EndpointDescriptorImpl implements TargetDescriptor {
 
+  public TargetDescriptorImpl(TargetDescriptor target) {
+    super(target);
+  }
+
   public TargetDescriptorImpl(JsonObject target) {
     super(target);
   }

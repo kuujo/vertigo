@@ -31,6 +31,12 @@ public class ConnectionDescriptorImpl implements ConnectionDescriptor {
   private final TargetDescriptor target;
   private final Partitioner partitioner;
 
+  public ConnectionDescriptorImpl(ConnectionDescriptor connection) {
+    this.source = connection.source();
+    this.target = connection.target();
+    this.partitioner = connection.partitioner();
+  }
+
   public ConnectionDescriptorImpl(JsonObject connection) {
     JsonObject source = connection.getJsonObject("source");
     if (source == null) {

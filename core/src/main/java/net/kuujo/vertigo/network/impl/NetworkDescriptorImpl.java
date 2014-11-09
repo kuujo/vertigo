@@ -38,6 +38,12 @@ public class NetworkDescriptorImpl implements NetworkDescriptor {
   private final List<ComponentDescriptor> components;
   private final List<ConnectionDescriptor> connections;
 
+  public NetworkDescriptorImpl(NetworkDescriptor network) {
+    this.id = network.id();
+    this.components = new ArrayList<>(network.components());
+    this.connections = new ArrayList<>(network.connections());
+  }
+
   public NetworkDescriptorImpl(JsonObject network) {
     this.id = Args.checkNotNull(network.getString("id"));
     JsonArray components = Args.checkNotNull(network.getJsonArray("components"));

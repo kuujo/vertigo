@@ -41,6 +41,18 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
   private final Set<String> output;
   private final List<String> resources;
 
+  public ComponentDescriptorImpl(ComponentDescriptor component) {
+    this.id = component.id();
+    this.main = component.main();
+    this.config = component.config();
+    this.partitions = component.partitions();
+    this.worker = component.worker();
+    this.multiThreaded = component.multiThreaded();
+    this.input = component.input();
+    this.output = component.output();
+    this.resources = component.resources();
+  }
+
   @SuppressWarnings("unchecked")
   public ComponentDescriptorImpl(JsonObject component) {
     this.id = component.getString("id", UUID.randomUUID().toString());

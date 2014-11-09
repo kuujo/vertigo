@@ -28,6 +28,11 @@ abstract class EndpointDescriptorImpl implements EndpointDescriptor {
   private final String component;
   private final String port;
 
+  protected EndpointDescriptorImpl(EndpointDescriptor endpoint) {
+    this.component = endpoint.component();
+    this.port = endpoint.port();
+  }
+
   protected EndpointDescriptorImpl(JsonObject endpoint) {
     this.component = Args.checkNotNull(endpoint.getString("component"));
     this.port = Args.checkNotNull(endpoint.getString("port"));

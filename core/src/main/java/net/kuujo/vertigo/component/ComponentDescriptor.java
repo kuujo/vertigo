@@ -18,6 +18,7 @@ package net.kuujo.vertigo.component;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Component descriptor.
@@ -123,6 +124,20 @@ public interface ComponentDescriptor {
    * @return Whether the component is multi-threaded.
    */
   boolean multiThreaded();
+
+  /**
+   * Returns a set of explicitly defined component input ports.
+   *
+   * @return A set of explicitly defined component input ports.
+   */
+  Set<String> input();
+
+  /**
+   * Returns a set of explicitly defined component output ports.
+   *
+   * @return A set of explicitly defined component output ports.
+   */
+  Set<String> output();
 
   /**
    * Returns a list of component resources.

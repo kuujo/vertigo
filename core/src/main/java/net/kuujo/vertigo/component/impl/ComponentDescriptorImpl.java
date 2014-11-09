@@ -20,7 +20,9 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentDescriptor;
 import net.kuujo.vertigo.util.Args;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -35,6 +37,8 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
   private final int partitions;
   private final boolean worker;
   private final boolean multiThreaded;
+  private final Set<String> input;
+  private final Set<String> output;
   private final List<String> resources;
 
   @SuppressWarnings("unchecked")
@@ -45,6 +49,8 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
     this.partitions = component.getInteger("partitions", 1);
     this.worker = component.getBoolean("worker");
     this.multiThreaded = component.getBoolean("multi-threaded");
+    this.input = new HashSet(component.getJsonArray("input", new JsonArray()).getList());
+    this.output = new HashSet(component.getJsonArray("output", new JsonArray()).getList());
     this.resources = component.getJsonArray("resources", new JsonArray()).getList();
   }
 
@@ -76,6 +82,16 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
   @Override
   public boolean multiThreaded() {
     return multiThreaded;
+  }
+
+  @Override
+  public Set<String> input() {
+    return input;
+  }
+
+  @Override
+  public Set<String> output() {
+    return output;
   }
 
   @Override

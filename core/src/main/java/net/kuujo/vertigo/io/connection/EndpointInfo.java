@@ -15,14 +15,14 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.Definition;
+import net.kuujo.vertigo.TypeInfo;
 
 /**
  * Connection endpoint.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface EndpointDefinition<T extends EndpointDefinition<T>> extends Definition {
+public interface EndpointInfo<T extends EndpointInfo<T>> extends TypeInfo {
 
   /**
    * <code>component</code> indicates the endpoint component name.

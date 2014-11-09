@@ -17,7 +17,7 @@ package net.kuujo.vertigo.builder.impl;
 
 import net.kuujo.vertigo.builder.ConnectionTargetBuilder;
 import net.kuujo.vertigo.builder.ConnectionTargetComponentBuilder;
-import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
 
 import java.util.Collection;
 
@@ -28,9 +28,9 @@ import java.util.Collection;
  */
 public class InitialConnectionTargetBuilderImpl implements ConnectionTargetBuilder {
   private final NetworkBuilderImpl network;
-  private final Collection<ConnectionDefinition> connections;
+  private final Collection<ConnectionInfo> connections;
 
-  public InitialConnectionTargetBuilderImpl(NetworkBuilderImpl network, Collection<ConnectionDefinition> connections) {
+  public InitialConnectionTargetBuilderImpl(NetworkBuilderImpl network, Collection<ConnectionInfo> connections) {
     this.network = network;
     this.connections = connections;
   }

@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.Definition;
+import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.partition.Partitioner;
 
 /**
@@ -28,42 +28,42 @@ import net.kuujo.vertigo.io.partition.Partitioner;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ConnectionDefinition extends Definition {
+public interface ConnectionInfo extends TypeInfo {
 
   /**
    * Sets the connection source.
    *
    * @param source The connection source.
-   * @return The connection options.
+   * @return The connection info.
    */
-  ConnectionDefinition setSource(SourceDefinition source);
+  ConnectionInfo setSource(SourceInfo source);
 
   /**
    * Returns the connection source.
    *
    * @return The connection source.
    */
-  SourceDefinition getSource();
+  SourceInfo getSource();
 
   /**
    * Sets the connection target.
    *
    * @param target The connection target.
-   * @return The connection options.
+   * @return The connection info.
    */
-  ConnectionDefinition setTarget(TargetDefinition target);
+  ConnectionInfo setTarget(TargetInfo target);
 
   /**
    * Returns the connection target.
    *
    * @return The connection target.
    */
-  TargetDefinition getTarget();
+  TargetInfo getTarget();
 
   /**
    * Returns the connection partitioner.
    *
-   * @return The connection selector.
+   * @return The connection partitioner.
    */
   Partitioner getPartitioner();
 
@@ -73,21 +73,21 @@ public interface ConnectionDefinition extends Definition {
    * @param partitioner The partitioner with which to partition individual connections.
    * @return The connection configuration.
    */
-  ConnectionDefinition setPartitioner(Partitioner partitioner);
+  ConnectionInfo setPartitioner(Partitioner partitioner);
 
   /**
    * Sets a round-robin partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionDefinition roundPartition();
+  ConnectionInfo roundPartition();
 
   /**
    * Sets a random partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionDefinition randomPartition();
+  ConnectionInfo randomPartition();
 
   /**
    * Sets a mod-hash based partitioner on the connection.
@@ -95,14 +95,14 @@ public interface ConnectionDefinition extends Definition {
    * @param header The hash header.
    * @return The connection configuration.
    */
-  ConnectionDefinition hashPartition(String header);
+  ConnectionInfo hashPartition(String header);
 
   /**
    * Sets an all partitioner on the connection.
    *
    * @return The connection configuration.
    */
-  ConnectionDefinition allPartition();
+  ConnectionInfo allPartition();
 
   /**
    * Sets a custom partitioner on the connection.
@@ -110,6 +110,6 @@ public interface ConnectionDefinition extends Definition {
    * @param partitioner The custom selector to set.
    * @return The connection configuration.
    */
-  ConnectionDefinition partition(Partitioner partitioner);
+  ConnectionInfo partition(Partitioner partitioner);
 
 }

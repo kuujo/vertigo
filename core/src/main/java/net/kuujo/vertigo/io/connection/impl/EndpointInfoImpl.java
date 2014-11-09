@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.EndpointDefinition;
+import net.kuujo.vertigo.io.connection.EndpointInfo;
 import net.kuujo.vertigo.io.connection.EndpointDescriptor;
 
 /**
@@ -23,7 +23,7 @@ import net.kuujo.vertigo.io.connection.EndpointDescriptor;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class EndpointDefinitionImpl<T extends EndpointDefinition<T>> implements EndpointDefinition<T> {
+public class EndpointInfoImpl<T extends EndpointInfo<T>> implements EndpointInfo<T> {
 
   /**
    * <code>component</code> indicates the endpoint component name.
@@ -38,15 +38,15 @@ public class EndpointDefinitionImpl<T extends EndpointDefinition<T>> implements 
   protected String component;
   protected String port;
 
-  protected EndpointDefinitionImpl() {
+  protected EndpointInfoImpl() {
   }
 
-  protected EndpointDefinitionImpl(T endpoint) {
+  protected EndpointInfoImpl(T endpoint) {
     this.component = endpoint.getComponent();
     this.port = endpoint.getPort();
   }
 
-  protected EndpointDefinitionImpl(EndpointDescriptor endpoint) {
+  protected EndpointInfoImpl(EndpointDescriptor endpoint) {
     this.component = endpoint.component();
     this.port = endpoint.port();
   }

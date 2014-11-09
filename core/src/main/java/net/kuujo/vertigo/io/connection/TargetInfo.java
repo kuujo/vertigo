@@ -16,9 +16,9 @@
 package net.kuujo.vertigo.io.connection;
 
 /**
- * Connection source options.
+ * Connection target options.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface SourceDefinition extends EndpointDefinition<SourceDefinition> {
+public interface TargetInfo extends EndpointInfo<TargetInfo> {
 }

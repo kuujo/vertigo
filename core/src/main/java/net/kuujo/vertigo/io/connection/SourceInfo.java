@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
-
-import net.kuujo.vertigo.util.Json;
+package net.kuujo.vertigo.io.connection;
 
 /**
- * Base type for definitions.
+ * Connection source options.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Definition extends Json.Serializable {
+public interface SourceInfo extends EndpointInfo<SourceInfo> {
 }

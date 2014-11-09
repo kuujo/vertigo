@@ -17,7 +17,7 @@ package net.kuujo.vertigo.builder.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.*;
-import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
 
 import java.util.Collection;
 
@@ -29,10 +29,10 @@ import java.util.Collection;
 public class ConnectionSourceComponentBuilderImpl implements ConnectionSourceComponentBuilder {
   private final NetworkBuilderImpl network;
   private final ComponentBuilder component;
-  private final Collection<ConnectionDefinition> connections;
-  private final ConnectionDefinition connection;
+  private final Collection<ConnectionInfo> connections;
+  private final ConnectionInfo connection;
 
-  public ConnectionSourceComponentBuilderImpl(NetworkBuilderImpl network, ComponentBuilder component, Collection<ConnectionDefinition> connections, ConnectionDefinition connection) {
+  public ConnectionSourceComponentBuilderImpl(NetworkBuilderImpl network, ComponentBuilder component, Collection<ConnectionInfo> connections, ConnectionInfo connection) {
     this.network = network;
     this.component = component;
     this.connections = connections;

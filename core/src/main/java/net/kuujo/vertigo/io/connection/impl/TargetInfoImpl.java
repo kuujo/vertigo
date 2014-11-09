@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.TargetDefinition;
+import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.io.connection.TargetDescriptor;
 
 /**
@@ -23,7 +23,7 @@ import net.kuujo.vertigo.io.connection.TargetDescriptor;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TargetDefinitionImpl extends EndpointDefinitionImpl<TargetDefinition> implements TargetDefinition {
+public class TargetInfoImpl extends EndpointInfoImpl<TargetInfo> implements TargetInfo {
 
   /**
    * <code>component</code> indicates the target component name.
@@ -35,15 +35,15 @@ public class TargetDefinitionImpl extends EndpointDefinitionImpl<TargetDefinitio
    */
   public static final String TARGET_PORT = "port";
 
-  public TargetDefinitionImpl() {
+  public TargetInfoImpl() {
     super();
   }
 
-  public TargetDefinitionImpl(TargetDefinition target) {
+  public TargetInfoImpl(TargetInfo target) {
     super(target);
   }
 
-  public TargetDefinitionImpl(TargetDescriptor target) {
+  public TargetInfoImpl(TargetDescriptor target) {
     super(target);
   }
 

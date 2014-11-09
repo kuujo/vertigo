@@ -20,7 +20,7 @@ import net.kuujo.vertigo.builder.ComponentBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
 import net.kuujo.vertigo.builder.NetworkBuilder;
-import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.ComponentInfo;
 
 /**
  * Component builder implementation.
@@ -29,9 +29,9 @@ import net.kuujo.vertigo.component.ComponentDefinition;
  */
 public class ComponentBuilderImpl implements ComponentBuilder {
   private final NetworkBuilder network;
-  private final ComponentDefinition component;
+  private final ComponentInfo component;
 
-  public ComponentBuilderImpl(NetworkBuilder network, ComponentDefinition component) {
+  public ComponentBuilderImpl(NetworkBuilder network, ComponentInfo component) {
     this.network = network;
     this.component = component;
   }

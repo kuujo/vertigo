@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.ComponentDescriptor;
 
 import java.util.Arrays;
@@ -25,11 +25,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Component definition implementation.
+ * Component info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ComponentDefinitionImpl implements ComponentDefinition {
+public class ComponentInfoImpl implements ComponentInfo {
   private String id;
   private String main;
   private JsonObject config;
@@ -38,14 +38,14 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   private boolean multiThreaded;
   private Set<String> resources = new HashSet<>();
 
-  public ComponentDefinitionImpl() {
+  public ComponentInfoImpl() {
   }
 
-  public ComponentDefinitionImpl(String id) {
+  public ComponentInfoImpl(String id) {
     this.id = id;
   }
 
-  public ComponentDefinitionImpl(ComponentDefinition component) {
+  public ComponentInfoImpl(ComponentInfo component) {
     this.id = component.getId();
     this.main = component.getMain();
     this.config = component.getConfig();
@@ -55,7 +55,7 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
     this.resources = new HashSet<>(component.getResources());
   }
 
-  public ComponentDefinitionImpl(ComponentDescriptor component) {
+  public ComponentInfoImpl(ComponentDescriptor component) {
     this.id = component.id();
     this.main = component.main();
     this.config = component.config();
@@ -71,7 +71,7 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   }
 
   @Override
-  public ComponentDefinition setId(String id) {
+  public ComponentInfo setId(String id) {
     this.id = id;
     return this;
   }
@@ -82,7 +82,7 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   }
 
   @Override
-  public ComponentDefinition setMain(String main) {
+  public ComponentInfo setMain(String main) {
     this.main = main;
     return this;
   }
@@ -93,7 +93,7 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   }
 
   @Override
-  public ComponentDefinition setConfig(JsonObject config) {
+  public ComponentInfo setConfig(JsonObject config) {
     this.config = config;
     return this;
   }
@@ -104,7 +104,7 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   }
 
   @Override
-  public ComponentDefinition setPartitions(int partitions) {
+  public ComponentInfo setPartitions(int partitions) {
     this.partitions = partitions;
     return this;
   }
@@ -115,7 +115,7 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   }
 
   @Override
-  public ComponentDefinition setWorker(boolean worker) {
+  public ComponentInfo setWorker(boolean worker) {
     this.worker = worker;
     return this;
   }
@@ -126,31 +126,31 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   }
 
   @Override
-  public ComponentDefinition setMultiThreaded(boolean multiThreaded) {
+  public ComponentInfo setMultiThreaded(boolean multiThreaded) {
     this.multiThreaded = multiThreaded;
     return this;
   }
 
   @Override
-  public ComponentDefinition addResource(String resource) {
+  public ComponentInfo addResource(String resource) {
     resources.add(resource);
     return this;
   }
 
   @Override
-  public ComponentDefinition removeResource(String resource) {
+  public ComponentInfo removeResource(String resource) {
     resources.remove(resource);
     return this;
   }
 
   @Override
-  public ComponentDefinition setResources(String... resources) {
+  public ComponentInfo setResources(String... resources) {
     this.resources = new HashSet<>(Arrays.asList(resources));
     return this;
   }
 
   @Override
-  public ComponentDefinition setResources(Collection<String> resources) {
+  public ComponentInfo setResources(Collection<String> resources) {
     this.resources = new HashSet<>(resources);
     return this;
   }

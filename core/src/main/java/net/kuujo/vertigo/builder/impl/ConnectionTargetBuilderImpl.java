@@ -17,9 +17,9 @@ package net.kuujo.vertigo.builder.impl;
 
 import net.kuujo.vertigo.builder.ConnectionTargetBuilder;
 import net.kuujo.vertigo.builder.ConnectionTargetComponentBuilder;
-import net.kuujo.vertigo.io.connection.ConnectionDefinition;
-import net.kuujo.vertigo.io.connection.impl.ConnectionDefinitionImpl;
-import net.kuujo.vertigo.io.connection.impl.TargetDefinitionImpl;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
+import net.kuujo.vertigo.io.connection.impl.ConnectionInfoImpl;
+import net.kuujo.vertigo.io.connection.impl.TargetInfoImpl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,20 +32,20 @@ import java.util.List;
  */
 public class ConnectionTargetBuilderImpl implements ConnectionTargetBuilder {
   private final NetworkBuilderImpl network;
-  private final Collection<ConnectionDefinition> connections;
+  private final Collection<ConnectionInfo> connections;
 
-  public ConnectionTargetBuilderImpl(NetworkBuilderImpl network, Collection<ConnectionDefinition> connections) {
+  public ConnectionTargetBuilderImpl(NetworkBuilderImpl network, Collection<ConnectionInfo> connections) {
     this.network = network;
     this.connections = connections;
   }
 
   @Override
   public ConnectionTargetComponentBuilder component(String id) {
-    List<ConnectionDefinition> newConnections = new ArrayList<>();
-    for (ConnectionDefinition connection : connections) {
-      newConnections.add(network.network.createConnection(new ConnectionDefinitionImpl()
+    List<ConnectionInfo> newConnections = new ArrayList<>();
+    for (ConnectionInfo connection : connections) {
+      newConnections.add(network.network.createConnection(new ConnectionInfoImpl()
         .setSource(connection.getSource())
-        .setTarget(new TargetDefinitionImpl().setComponent(id))
+        .setTarget(new TargetInfoImpl().setComponent(id))
         .setPartitioner(connection.getPartitioner())));
     }
     return new ConnectionTargetComponentBuilderImpl(network, network.component(id), newConnections);

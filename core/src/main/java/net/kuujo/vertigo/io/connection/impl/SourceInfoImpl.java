@@ -15,7 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.SourceDefinition;
+import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.SourceDescriptor;
 
 /**
@@ -23,7 +23,7 @@ import net.kuujo.vertigo.io.connection.SourceDescriptor;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class SourceDefinitionImpl extends EndpointDefinitionImpl<SourceDefinition> implements SourceDefinition {
+public class SourceInfoImpl extends EndpointInfoImpl<SourceInfo> implements SourceInfo {
 
   /**
    * <code>component</code> indicates the source component name.
@@ -35,15 +35,15 @@ public class SourceDefinitionImpl extends EndpointDefinitionImpl<SourceDefinitio
    */
   public static final String SOURCE_PORT = "port";
 
-  public SourceDefinitionImpl() {
+  public SourceInfoImpl() {
     super();
   }
 
-  public SourceDefinitionImpl(SourceDefinition source) {
+  public SourceInfoImpl(SourceInfo source) {
     super(source);
   }
 
-  public SourceDefinitionImpl(SourceDescriptor source) {
+  public SourceInfoImpl(SourceDescriptor source) {
     super(source);
   }
 

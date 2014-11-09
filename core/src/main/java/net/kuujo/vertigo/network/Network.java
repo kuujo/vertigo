@@ -19,13 +19,13 @@ import io.vertx.core.ServiceHelper;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
-import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.spi.ComponentLocator;
-import net.kuujo.vertigo.component.impl.ComponentDefinitionImpl;
 import net.kuujo.vertigo.component.impl.ComponentDescriptorImpl;
-import net.kuujo.vertigo.io.connection.ConnectionDefinition;
-import net.kuujo.vertigo.io.connection.SourceDefinition;
-import net.kuujo.vertigo.io.connection.TargetDefinition;
+import net.kuujo.vertigo.io.connection.SourceInfo;
+import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.network.impl.NetworkDescriptorImpl;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
 import net.kuujo.vertigo.spi.NetworkLocator;
@@ -62,7 +62,7 @@ public interface Network extends Json.Serializable {
   /**
    * Constructs a network object from a JSON configuration.
    *
-   * @param network The JSON network definition.
+   * @param network The JSON network configuration.
    * @return The constructed network object.
    */
   static Network network(JsonObject network) {
@@ -75,18 +75,18 @@ public interface Network extends Json.Serializable {
    * @param component The component configuration name.
    * @return The constructed component configuration.
    */
-  static ComponentDefinition component(String component) {
-    return new ComponentDefinitionImpl(componentLocator.locateComponent(component));
+  static ComponentInfo component(String component) {
+    return new ComponentInfoImpl(componentLocator.locateComponent(component));
   }
 
   /**
    * Constructs a component object from a JSON configuration.
    *
-   * @param component The JSON component definition.
+   * @param component The JSON component configuration.
    * @return The constructed component configuration.
    */
-  static ComponentDefinition component(JsonObject component) {
-    return new ComponentDefinitionImpl(new ComponentDescriptorImpl(component));
+  static ComponentInfo component(JsonObject component) {
+    return new ComponentInfoImpl(new ComponentDescriptorImpl(component));
   }
 
   /**
@@ -128,17 +128,17 @@ public interface Network extends Json.Serializable {
    *
    * @return A list of network components.
    */
-  Collection<ComponentDefinition> getComponents();
+  Collection<ComponentInfo> getComponents();
 
   /**
    * Gets a component by name.
    *
    * @param id The component id.
-   * @return The component definition.
+   * @return The component info.
    * @throws IllegalArgumentException If the given component id does not exist within
    *           the network.
    */
-  ComponentDefinition getComponent(String id);
+  ComponentInfo getComponent(String id);
 
   /**
    * Returns a boolean indicating whether the network has a component.
@@ -152,65 +152,65 @@ public interface Network extends Json.Serializable {
    * Adds a component to the network.
    *
    * @param id The component id.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition addComponent(String id);
+  ComponentInfo addComponent(String id);
 
   /**
    * Adds a component to the network.
    *
-   * @param component The component definition.
-   * @return The component definition.
+   * @param component The component info.
+   * @return The component info.
    */
-  ComponentDefinition addComponent(ComponentDefinition component);
+  ComponentInfo addComponent(ComponentInfo component);
 
   /**
    * Removes a component from the network.
    *
    * @param name The component name.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition removeComponent(String name);
+  ComponentInfo removeComponent(String name);
 
   /**
    * Removes a component from the network.
    *
-   * @param component The component definition.
-   * @return The component definition.
+   * @param component The component info.
+   * @return The component info.
    */
-  ComponentDefinition removeComponent(ComponentDefinition component);
+  ComponentInfo removeComponent(ComponentInfo component);
 
   /**
    * Returns a collection of network connections.
    *
    * @return A collection of connections in the network.
    */
-  Collection<ConnectionDefinition> getConnections();
+  Collection<ConnectionInfo> getConnections();
 
   /**
    * Creates a connection between two components.
    *
    * @param connection The new connection options.
-   * @return The connection definition.
+   * @return The connection info.
    */
-  ConnectionDefinition createConnection(ConnectionDefinition connection);
+  ConnectionInfo createConnection(ConnectionInfo connection);
 
   /**
    * Creates a connection between two components.
    *
    * @param source The source connection options.
    * @param target The target connection options.
-   * @return The connection definition.
+   * @return The connection info.
    */
-  ConnectionDefinition createConnection(SourceDefinition source, TargetDefinition target);
+  ConnectionInfo createConnection(SourceInfo source, TargetInfo target);
 
   /**
    * Destroys a connection between two components.
    *
    * @param connection The connection to destroy.
-   * @return The connection definition.
+   * @return The connection info.
    */
-  ConnectionDefinition destroyConnection(ConnectionDefinition connection);
+  ConnectionInfo destroyConnection(ConnectionInfo connection);
 
   static NetworkLocator networkLocator = ServiceHelper.loadFactory(NetworkLocator.class);
   static ComponentLocator componentLocator = ServiceHelper.loadFactory(ComponentLocator.class);

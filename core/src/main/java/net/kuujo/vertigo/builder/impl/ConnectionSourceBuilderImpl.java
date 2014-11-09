@@ -17,8 +17,8 @@ package net.kuujo.vertigo.builder.impl;
 
 import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
-import net.kuujo.vertigo.io.connection.ConnectionDefinition;
-import net.kuujo.vertigo.io.connection.impl.ConnectionDefinitionImpl;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
+import net.kuujo.vertigo.io.connection.impl.ConnectionInfoImpl;
 
 import java.util.Collection;
 
@@ -29,16 +29,16 @@ import java.util.Collection;
  */
 public class ConnectionSourceBuilderImpl implements ConnectionSourceBuilder {
   private final NetworkBuilderImpl network;
-  private final Collection<ConnectionDefinition> connections;
+  private final Collection<ConnectionInfo> connections;
 
-  public ConnectionSourceBuilderImpl(NetworkBuilderImpl network, Collection<ConnectionDefinition> connections) {
+  public ConnectionSourceBuilderImpl(NetworkBuilderImpl network, Collection<ConnectionInfo> connections) {
     this.network = network;
     this.connections = connections;
   }
 
   @Override
   public ConnectionSourceComponentBuilder component(String id) {
-    ConnectionDefinition connection = network.network.createConnection(new ConnectionDefinitionImpl());
+    ConnectionInfo connection = network.network.createConnection(new ConnectionInfoImpl());
     connections.add(connection);
     return new ConnectionSourceComponentBuilderImpl(network, network.component(id), connections, connection);
   }

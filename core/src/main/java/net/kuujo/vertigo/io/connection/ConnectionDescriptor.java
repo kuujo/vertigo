@@ -26,13 +26,13 @@ public interface ConnectionDescriptor {
 
   /**
    * <code>source</code> is an object defining the connection source. See the
-   * {@link SourceDefinition} documentation for details on the source structure.
+   * {@link SourceInfo} documentation for details on the source structure.
    */
   public static final String CONNECTION_SOURCE = "source";
 
   /**
    * <code>target</code> is an object defining the connection target. See the
-   * {@link TargetDefinition} documentation for details on the target structure.
+   * {@link TargetInfo} documentation for details on the target structure.
    */
   public static final String CONNECTION_TARGET = "target";
 

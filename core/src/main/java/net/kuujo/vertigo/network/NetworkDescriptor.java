@@ -37,7 +37,7 @@ public interface NetworkDescriptor {
    * <code>components</code> is an object defining network component configurations. Each
    * item in the object must be keyed by the unique component address, with each item
    * being an object containing the component configuration. See the
-   * {@link net.kuujo.vertigo.component.ComponentDefinition} interface for configuration options.
+   * {@link net.kuujo.vertigo.component.ComponentInfo} interface for configuration options.
    */
   static final String NETWORK_COMPONENTS = "components";
 

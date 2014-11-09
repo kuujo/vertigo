@@ -15,10 +15,10 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.ConnectionDescriptor;
-import net.kuujo.vertigo.io.connection.SourceDefinition;
-import net.kuujo.vertigo.io.connection.TargetDefinition;
+import net.kuujo.vertigo.io.connection.SourceInfo;
+import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.io.partition.*;
 
 /**
@@ -31,23 +31,23 @@ import net.kuujo.vertigo.io.partition.*;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ConnectionDefinitionImpl implements ConnectionDefinition {
+public class ConnectionInfoImpl implements ConnectionInfo {
 
   /**
    * <code>source</code> is an object defining the connection source. See the
-   * {@link net.kuujo.vertigo.io.connection.SourceDefinition} documentation for details on the source structure.
+   * {@link net.kuujo.vertigo.io.connection.SourceInfo} documentation for details on the source structure.
    */
   public static final String CONNECTION_SOURCE = "source";
 
   /**
    * <code>target</code> is an object defining the connection target. See the
-   * {@link net.kuujo.vertigo.io.connection.TargetDefinition} documentation for details on the target structure.
+   * {@link net.kuujo.vertigo.io.connection.TargetInfo} documentation for details on the target structure.
    */
   public static final String CONNECTION_TARGET = "target";
 
   /**
    * <code>partitioner</code> is an object defining the connection partitioner. The partitioner
-   * definition should contain a <code>type</code> which indicates the partitioner type,
+   * configuration should contain a <code>type</code> which indicates the partitioner type,
    * e.g. <code>round-robin</code>, <code>random</code>, <code>hash</code>, <code>fair</code>,
    * <code>all</code>, or <code>custom</code>. If a <code>custom</code> selector is indicated
    * then an additional <code>selector</code> field must be provided which indicates the
@@ -55,44 +55,44 @@ public class ConnectionDefinitionImpl implements ConnectionDefinition {
    */
   public static final String CONNECTION_PARTITIONER = "partitioner";
 
-  private SourceDefinition source;
-  private TargetDefinition target;
+  private SourceInfo source;
+  private TargetInfo target;
   private Partitioner partitioner;
 
-  public ConnectionDefinitionImpl() {
+  public ConnectionInfoImpl() {
   }
 
-  public ConnectionDefinitionImpl(ConnectionDefinition connection) {
+  public ConnectionInfoImpl(ConnectionInfo connection) {
     this.source = connection.getSource();
     this.target = connection.getTarget();
     this.partitioner = connection.getPartitioner();
   }
 
-  public ConnectionDefinitionImpl(ConnectionDescriptor connection) {
-    this.source = new SourceDefinitionImpl(connection.source());
-    this.target = new TargetDefinitionImpl(connection.target());
+  public ConnectionInfoImpl(ConnectionDescriptor connection) {
+    this.source = new SourceInfoImpl(connection.source());
+    this.target = new TargetInfoImpl(connection.target());
     this.partitioner = connection.partitioner();
   }
 
   @Override
-  public ConnectionDefinitionImpl setSource(SourceDefinition source) {
+  public ConnectionInfoImpl setSource(SourceInfo source) {
     this.source = source;
     return this;
   }
 
   @Override
-  public SourceDefinition getSource() {
+  public SourceInfo getSource() {
     return source;
   }
 
   @Override
-  public ConnectionDefinitionImpl setTarget(TargetDefinition target) {
+  public ConnectionInfoImpl setTarget(TargetInfo target) {
     this.target = target;
     return this;
   }
 
   @Override
-  public TargetDefinition getTarget() {
+  public TargetInfo getTarget() {
     return target;
   }
 
@@ -102,37 +102,37 @@ public class ConnectionDefinitionImpl implements ConnectionDefinition {
   }
 
   @Override
-  public ConnectionDefinitionImpl setPartitioner(Partitioner partitioner) {
+  public ConnectionInfoImpl setPartitioner(Partitioner partitioner) {
     this.partitioner = partitioner;
     return this;
   }
 
   @Override
-  public ConnectionDefinitionImpl roundPartition() {
+  public ConnectionInfoImpl roundPartition() {
     this.partitioner = new RoundRobinPartitioner();
     return this;
   }
 
   @Override
-  public ConnectionDefinitionImpl randomPartition() {
+  public ConnectionInfoImpl randomPartition() {
     this.partitioner = new RandomPartitioner();
     return this;
   }
 
   @Override
-  public ConnectionDefinitionImpl hashPartition(String header) {
+  public ConnectionInfoImpl hashPartition(String header) {
     this.partitioner = new HashPartitioner(header);
     return this;
   }
 
   @Override
-  public ConnectionDefinitionImpl allPartition() {
+  public ConnectionInfoImpl allPartition() {
     this.partitioner = new AllPartitioner();
     return this;
   }
 
   @Override
-  public ConnectionDefinitionImpl partition(Partitioner partitioner) {
+  public ConnectionInfoImpl partition(Partitioner partitioner) {
     this.partitioner = partitioner;
     return this;
   }

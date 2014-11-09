@@ -21,11 +21,11 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Component definition.
+ * Component info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ComponentDefinition {
+public interface ComponentInfo {
 
   /**
    * Returns the component ID.
@@ -38,9 +38,9 @@ public interface ComponentDefinition {
    * Sets the component ID.
    *
    * @param id The component ID.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition setId(String id);
+  ComponentInfo setId(String id);
 
   /**
    * Returns the component main.
@@ -53,9 +53,9 @@ public interface ComponentDefinition {
    * Sets the component main.
    *
    * @param main The component main.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition setMain(String main);
+  ComponentInfo setMain(String main);
 
   /**
    * Returns the component configuration.
@@ -68,9 +68,9 @@ public interface ComponentDefinition {
    * Sets the component configuration.
    *
    * @param config The component configuration.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition setConfig(JsonObject config);
+  ComponentInfo setConfig(JsonObject config);
 
   /**
    * Returns the number of component partitions.
@@ -83,9 +83,9 @@ public interface ComponentDefinition {
    * Sets the number of component partitions.
    *
    * @param partitions The number of component partitions.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition setPartitions(int partitions);
+  ComponentInfo setPartitions(int partitions);
 
   /**
    * Returns whether the component is a worker.
@@ -98,9 +98,9 @@ public interface ComponentDefinition {
    * Sets whether the component is a worker.
    *
    * @param worker Whether the component is a worker.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition setWorker(boolean worker);
+  ComponentInfo setWorker(boolean worker);
 
   /**
    * Returns whether the component is multi-threaded.
@@ -113,9 +113,9 @@ public interface ComponentDefinition {
    * Sets whether the component is multi-threaded.
    *
    * @param multiThreaded Whether the component is multi-threaded.
-   * @return The component definition.
+   * @return The component info.
    */
-  ComponentDefinition setMultiThreaded(boolean multiThreaded);
+  ComponentInfo setMultiThreaded(boolean multiThreaded);
 
   /**
    * Adds a resource to the component.
@@ -123,7 +123,7 @@ public interface ComponentDefinition {
    * @param resource The resource to add.
    * @return The component options.
    */
-  ComponentDefinition addResource(String resource);
+  ComponentInfo addResource(String resource);
 
   /**
    * Removes a resource from the component.
@@ -131,7 +131,7 @@ public interface ComponentDefinition {
    * @param resource The resource to remove.
    * @return The component options.
    */
-  ComponentDefinition removeResource(String resource);
+  ComponentInfo removeResource(String resource);
 
   /**
    * Sets the component resources.
@@ -139,7 +139,7 @@ public interface ComponentDefinition {
    * @param resources The component resources.
    * @return The component options.
    */
-  ComponentDefinition setResources(String... resources);
+  ComponentInfo setResources(String... resources);
 
   /**
    * Sets the component resources.
@@ -147,7 +147,7 @@ public interface ComponentDefinition {
    * @param resources The component resources.
    * @return The component options.
    */
-  ComponentDefinition setResources(Collection<String> resources);
+  ComponentInfo setResources(Collection<String> resources);
 
   /**
    * Returns the component resources.

@@ -20,16 +20,15 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.component.impl.ComponentDescriptorImpl;
 import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.spi.ComponentLocator;
-import net.kuujo.vertigo.component.impl.ComponentDescriptorImpl;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.network.impl.NetworkDescriptorImpl;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
+import net.kuujo.vertigo.spi.ComponentLocator;
 import net.kuujo.vertigo.spi.NetworkLocator;
-import net.kuujo.vertigo.util.Json;
 
 import java.util.Collection;
 
@@ -38,7 +37,7 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Network extends Json.Serializable {
+public interface Network {
 
   /**
    * Constructs a new network object.

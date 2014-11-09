@@ -15,12 +15,10 @@
  */
 package net.kuujo.vertigo;
 
-import net.kuujo.vertigo.util.Json;
-
 /**
  * Base type for definitions.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeInfo extends Json.Serializable {
+public interface TypeInfo {
 }

@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.component;
 
 /**
- * Connection source options.
+ * Component locator.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface SourceDefinition extends EndpointDefinition<SourceDefinition> {
+public interface ComponentLocator {
+
+  /**
+   * Locates the given component descriptor on the classpath.
+   *
+   * @param component The component descriptor to locate.
+   * @return The loaded component descriptor.
+   */
+  ComponentDescriptor locateComponent(String component);
+
 }

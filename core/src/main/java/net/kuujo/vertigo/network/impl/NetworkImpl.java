@@ -16,12 +16,15 @@
 package net.kuujo.vertigo.network.impl;
 
 import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.ComponentDescriptor;
 import net.kuujo.vertigo.component.impl.ComponentDefinitionImpl;
 import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.ConnectionDescriptor;
 import net.kuujo.vertigo.io.connection.SourceDefinition;
 import net.kuujo.vertigo.io.connection.TargetDefinition;
 import net.kuujo.vertigo.io.connection.impl.ConnectionDefinitionImpl;
 import net.kuujo.vertigo.network.Network;
+import net.kuujo.vertigo.network.NetworkDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +47,16 @@ public class NetworkImpl implements Network {
 
   public NetworkImpl(String id) {
     this.id = id;
+  }
+
+  public NetworkImpl(NetworkDescriptor network) {
+    this.id = network.id();
+    for (ComponentDescriptor component : network.components()) {
+      this.components.add(new ComponentDefinitionImpl(component));
+    }
+    for (ConnectionDescriptor connection : network.connections()) {
+      this.connections.add(new ConnectionDefinitionImpl(connection));
+    }
   }
 
   @Override

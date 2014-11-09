@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
-
-import net.kuujo.vertigo.io.connection.SourceDefinition;
-import net.kuujo.vertigo.io.connection.SourceDescriptor;
+package net.kuujo.vertigo.io.connection;
 
 /**
- * Connection source options.
+ * Connection source descriptor.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class SourceDefinitionImpl extends EndpointDefinitionImpl<SourceDefinition> implements SourceDefinition {
+public interface SourceDescriptor extends EndpointDescriptor {
 
   /**
    * <code>component</code> indicates the source component name.
@@ -34,17 +31,5 @@ public class SourceDefinitionImpl extends EndpointDefinitionImpl<SourceDefinitio
    * <code>port</code> indicates the source output port.
    */
   public static final String SOURCE_PORT = "port";
-
-  public SourceDefinitionImpl() {
-    super();
-  }
-
-  public SourceDefinitionImpl(SourceDefinition source) {
-    super(source);
-  }
-
-  public SourceDefinitionImpl(SourceDescriptor source) {
-    super(source);
-  }
 
 }

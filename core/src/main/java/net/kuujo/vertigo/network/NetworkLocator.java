@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.network;
 
 /**
- * Connection source options.
+ * Network locator.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface SourceDefinition extends EndpointDefinition<SourceDefinition> {
+public interface NetworkLocator {
+
+  /**
+   * Loads a network descriptor for the given network.
+   *
+   * @param network The network for which to load the descriptor.
+   * @return The network descriptor.
+   */
+  NetworkDescriptor locateNetwork(String network);
+
 }

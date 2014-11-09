@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.ConnectionDefinition;
+import net.kuujo.vertigo.io.connection.ConnectionDescriptor;
 import net.kuujo.vertigo.io.connection.SourceDefinition;
 import net.kuujo.vertigo.io.connection.TargetDefinition;
 import net.kuujo.vertigo.io.partition.*;
@@ -62,42 +62,16 @@ public class ConnectionDefinitionImpl implements ConnectionDefinition {
   public ConnectionDefinitionImpl() {
   }
 
-  public ConnectionDefinitionImpl(ConnectionDefinitionImpl options) {
-    this.source = options.getSource();
-    this.target = options.getTarget();
-    this.partitioner = options.getPartitioner();
+  public ConnectionDefinitionImpl(ConnectionDefinition connection) {
+    this.source = connection.getSource();
+    this.target = connection.getTarget();
+    this.partitioner = connection.getPartitioner();
   }
 
-  public ConnectionDefinitionImpl(JsonObject definition) {
-    this.source = new SourceDefinitionImpl(definition.getJsonObject(CONNECTION_SOURCE));
-    this.target = new TargetDefinitionImpl(definition.getJsonObject(CONNECTION_TARGET));
-    String partitioner = definition.getString(CONNECTION_PARTITIONER);
-    if (partitioner != null) {
-      switch (partitioner) {
-        case "round":
-          this.partitioner = new RoundRobinPartitioner();
-          break;
-        case "random":
-          this.partitioner = new RandomPartitioner();
-          break;
-        case "hash":
-          String header = definition.getString("partitionHeader");
-          if (header != null) {
-            this.partitioner = new HashPartitioner(header);
-          } else {
-            this.partitioner = new RoundRobinPartitioner();
-          }
-          break;
-        case "all":
-          this.partitioner = new AllPartitioner();
-          break;
-        default:
-          this.partitioner = new RoundRobinPartitioner();
-          break;
-      }
-    } else {
-      this.partitioner = new RoundRobinPartitioner();
-    }
+  public ConnectionDefinitionImpl(ConnectionDescriptor connection) {
+    this.source = new SourceDefinitionImpl(connection.source());
+    this.target = new TargetDefinitionImpl(connection.target());
+    this.partitioner = connection.partitioner();
   }
 
   @Override

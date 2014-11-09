@@ -27,10 +27,11 @@ public final class Args {
    *
    * @param value The value to check.
    */
-  public static void checkNull(Object value) {
+  public static <T> T checkNull(T value) {
     if (value != null) {
       throw new IllegalArgumentException();
     }
+    return null;
   }
 
   /**
@@ -40,10 +41,11 @@ public final class Args {
    * @param message An exception message.
    * @param args Exception message arguments.
    */
-  public static void checkNull(Object value, String message, Object... args) {
+  public static <T> T checkNull(T value, String message, Object... args) {
     if (value != null) {
       throw new IllegalArgumentException(String.format(message, args));
     }
+    return null;
   }
 
   /**
@@ -51,10 +53,11 @@ public final class Args {
    *
    * @param value The value to check.
    */
-  public static void checkNotNull(Object value) {
+  public static <T> T checkNotNull(T value) {
     if (value == null) {
       throw new NullPointerException();
     }
+    return value;
   }
 
   /**
@@ -64,10 +67,11 @@ public final class Args {
    * @param message An exception message.
    * @param args Exception message arguments.
    */
-  public static void checkNotNull(Object value, String message, Object... args) {
+  public static <T> T checkNotNull(T value, String message, Object... args) {
     if (value == null) {
       throw new NullPointerException(String.format(message, args));
     }
+    return value;
   }
 
   /**
@@ -75,10 +79,11 @@ public final class Args {
    *
    * @param number The value to check.
    */
-  public static void checkPositive(int number) {
+  public static int checkPositive(int number) {
     if (number < 0) {
       throw new IllegalArgumentException();
     }
+    return number;
   }
 
   /**
@@ -88,10 +93,11 @@ public final class Args {
    * @param message An exception message.
    * @param args Exception message arguments.
    */
-  public static void checkPositive(int number, String message, Object... args) {
+  public static int checkPositive(int number, String message, Object... args) {
     if (number < 0) {
       throw new IllegalArgumentException(String.format(message, args));
     }
+    return number;
   }
 
   /**

@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
-
-import net.kuujo.vertigo.io.connection.TargetDefinition;
-import net.kuujo.vertigo.io.connection.TargetDescriptor;
+package net.kuujo.vertigo.io.connection;
 
 /**
- * Connection target options.
+ * Immutable connection target descriptor.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TargetDefinitionImpl extends EndpointDefinitionImpl<TargetDefinition> implements TargetDefinition {
+public interface TargetDescriptor extends EndpointDescriptor {
 
   /**
    * <code>component</code> indicates the target component name.
@@ -34,17 +31,5 @@ public class TargetDefinitionImpl extends EndpointDefinitionImpl<TargetDefinitio
    * <code>port</code> indicates the target output port.
    */
   public static final String TARGET_PORT = "port";
-
-  public TargetDefinitionImpl() {
-    super();
-  }
-
-  public TargetDefinitionImpl(TargetDefinition target) {
-    super(target);
-  }
-
-  public TargetDefinitionImpl(TargetDescriptor target) {
-    super(target);
-  }
 
 }

@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.EndpointDefinition;
+import net.kuujo.vertigo.io.connection.EndpointDescriptor;
 
 /**
  * Connection endpoint.
@@ -46,9 +46,9 @@ public class EndpointDefinitionImpl<T extends EndpointDefinition<T>> implements 
     this.port = endpoint.getPort();
   }
 
-  protected EndpointDefinitionImpl(JsonObject endpoint) {
-    this.component = endpoint.getString(ENDPOINT_COMPONENT);
-    this.port = endpoint.getString(ENDPOINT_PORT);
+  protected EndpointDefinitionImpl(EndpointDescriptor endpoint) {
+    this.component = endpoint.component();
+    this.port = endpoint.port();
   }
 
   @Override

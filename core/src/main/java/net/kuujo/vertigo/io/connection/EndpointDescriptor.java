@@ -16,9 +16,24 @@
 package net.kuujo.vertigo.io.connection;
 
 /**
- * Connection source options.
+ * Base endpoint descriptor.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface SourceDefinition extends EndpointDefinition<SourceDefinition> {
+public interface EndpointDescriptor {
+
+  /**
+   * Returns the endpoint component ID.
+   *
+   * @return The endpoint component ID.
+   */
+  String component();
+
+  /**
+   * Returns the endpoint port.
+   *
+   * @return The endpoint port.
+   */
+  String port();
+
 }

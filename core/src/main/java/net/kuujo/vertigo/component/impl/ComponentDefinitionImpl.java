@@ -17,6 +17,7 @@ package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.ComponentDescriptor;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,8 +36,6 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   private int partitions;
   private boolean worker;
   private boolean multiThreaded;
-  private boolean stateful;
-  private int replication = 1;
   private Set<String> resources = new HashSet<>();
 
   public ComponentDefinitionImpl() {
@@ -44,6 +43,26 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
 
   public ComponentDefinitionImpl(String id) {
     this.id = id;
+  }
+
+  public ComponentDefinitionImpl(ComponentDefinition component) {
+    this.id = component.getId();
+    this.main = component.getMain();
+    this.config = component.getConfig();
+    this.partitions = component.getPartitions();
+    this.worker = component.isWorker();
+    this.multiThreaded = component.isMultiThreaded();
+    this.resources = new HashSet<>(component.getResources());
+  }
+
+  public ComponentDefinitionImpl(ComponentDescriptor component) {
+    this.id = component.id();
+    this.main = component.main();
+    this.config = component.config();
+    this.partitions = component.partitions();
+    this.worker = component.worker();
+    this.multiThreaded = component.multiThreaded();
+    this.resources = new HashSet<>(component.resources());
   }
 
   @Override
@@ -109,28 +128,6 @@ public class ComponentDefinitionImpl implements ComponentDefinition {
   @Override
   public ComponentDefinition setMultiThreaded(boolean multiThreaded) {
     this.multiThreaded = multiThreaded;
-    return this;
-  }
-
-  @Override
-  public boolean isStateful() {
-    return stateful;
-  }
-
-  @Override
-  public ComponentDefinition setStateful(boolean stateful) {
-    this.stateful = stateful;
-    return this;
-  }
-
-  @Override
-  public int getReplication() {
-    return replication;
-  }
-
-  @Override
-  public ComponentDefinition setReplication(int replication) {
-    this.replication = replication;
     return this;
   }
 

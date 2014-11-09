@@ -15,18 +15,19 @@
  */
 package net.kuujo.vertigo.network;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigValueFactory;
+import io.vertx.core.ServiceHelper;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentDefinition;
+import net.kuujo.vertigo.component.ComponentLocator;
+import net.kuujo.vertigo.component.impl.ComponentDefinitionImpl;
+import net.kuujo.vertigo.component.impl.ComponentDescriptorImpl;
 import net.kuujo.vertigo.io.connection.ConnectionDefinition;
 import net.kuujo.vertigo.io.connection.SourceDefinition;
 import net.kuujo.vertigo.io.connection.TargetDefinition;
+import net.kuujo.vertigo.network.impl.NetworkDescriptorImpl;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
-import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.Json;
 
 import java.util.Collection;
@@ -37,27 +38,6 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Network extends Json.Serializable {
-
-  /**
-   * <code>name</code> is a string indicating the unique network name. This is the
-   * address at which the network will monitor network components. This field is required.
-   */
-  static final String NETWORK_NAME = "name";
-
-  /**
-   * <code>components</code> is an object defining network component configurations. Each
-   * item in the object must be keyed by the unique component address, with each item
-   * being an object containing the component configuration. See the
-   * {@link net.kuujo.vertigo.component.ComponentDefinition} interface for configuration options.
-   */
-  static final String NETWORK_COMPONENTS = "components";
-
-  /**
-   * <code>connections</code> is an array defining network connection configurations. Each
-   * item in the array must be an object defining a <code>source</code> and <code>target</code>
-   * configuration.
-   */
-  static final String NETWORK_CONNECTIONS = "connections";
 
   /**
    * Constructs a new network object.
@@ -71,13 +51,11 @@ public interface Network extends Json.Serializable {
   /**
    * Constructs a network object from file-based configuration.
    *
-   * @param configName The network configuration file name.
+   * @param network The network configuration name.
    * @return The constructed network object.
    */
-  static Network network(String configName) {
-    Config config = ConfigFactory.parseResourcesAnySyntax(configName)
-      .withFallback(ConfigFactory.empty().withValue("vertigo.network", ConfigValueFactory.fromAnyRef(configName)));
-    return network(Configs.configObjectToJson(config));
+  static Network network(String network) {
+    return new NetworkImpl(networkLocator.locateNetwork(network));
   }
 
   /**
@@ -87,7 +65,27 @@ public interface Network extends Json.Serializable {
    * @return The constructed network object.
    */
   static Network network(JsonObject network) {
-    return Json.deserialize(network, NetworkImpl.class);
+    return new NetworkImpl(new NetworkDescriptorImpl(network));
+  }
+
+  /**
+   * Constructs a component object from file-based configuration.
+   *
+   * @param component The component configuration name.
+   * @return The constructed component configuration.
+   */
+  static ComponentDefinition component(String component) {
+    return new ComponentDefinitionImpl(componentLocator.locateComponent(component));
+  }
+
+  /**
+   * Constructs a component object from a JSON configuration.
+   *
+   * @param component The JSON component definition.
+   * @return The constructed component configuration.
+   */
+  static ComponentDefinition component(JsonObject component) {
+    return new ComponentDefinitionImpl(new ComponentDescriptorImpl(component));
   }
 
   /**
@@ -212,5 +210,8 @@ public interface Network extends Json.Serializable {
    * @return The connection definition.
    */
   ConnectionDefinition destroyConnection(ConnectionDefinition connection);
+
+  static NetworkLocator networkLocator = ServiceHelper.loadFactory(NetworkLocator.class);
+  static ComponentLocator componentLocator = ServiceHelper.loadFactory(ComponentLocator.class);
 
 }

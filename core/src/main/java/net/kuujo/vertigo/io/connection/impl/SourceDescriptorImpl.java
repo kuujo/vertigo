@@ -15,36 +15,18 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.TargetDefinition;
-import net.kuujo.vertigo.io.connection.TargetDescriptor;
+import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.connection.SourceDescriptor;
 
 /**
- * Connection target options.
+ * Source descriptor implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TargetDefinitionImpl extends EndpointDefinitionImpl<TargetDefinition> implements TargetDefinition {
+public class SourceDescriptorImpl extends EndpointDescriptorImpl implements SourceDescriptor {
 
-  /**
-   * <code>component</code> indicates the target component name.
-   */
-  public static final String TARGET_COMPONENT = "component";
-
-  /**
-   * <code>port</code> indicates the target output port.
-   */
-  public static final String TARGET_PORT = "port";
-
-  public TargetDefinitionImpl() {
-    super();
-  }
-
-  public TargetDefinitionImpl(TargetDefinition target) {
-    super(target);
-  }
-
-  public TargetDefinitionImpl(TargetDescriptor target) {
-    super(target);
+  public SourceDescriptorImpl(JsonObject source) {
+    super(source);
   }
 
 }

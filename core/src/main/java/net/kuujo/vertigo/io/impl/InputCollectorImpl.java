@@ -99,7 +99,7 @@ public class InputCollectorImpl implements InputCollector {
         for (final InputPortContext port : context.ports()) {
           log.debug(String.format("%s - Opening in port: %s", InputCollectorImpl.this, port));
           if (ports.containsKey(port.name())) {
-            ports.get(port.name()).open((result) -> {
+            ports.get(port.name()).open((Handler<AsyncResult<Void>>)(result) -> {
               if (result.failed()) {
                 log.error(String.format("%s - Failed to open in port: %s", InputCollectorImpl.this, port));
                 startCounter.fail(result.cause());
@@ -109,7 +109,7 @@ public class InputCollectorImpl implements InputCollector {
               }
             });
           } else {
-            ports.put(port.name(), new InputPortImpl(vertx, port).open((result) -> {
+            ports.put(port.name(), new InputPortImpl(vertx, port).open((Handler<AsyncResult<Void>>)(result) -> {
               if (result.failed()) {
                 log.error(String.format("%s - Failed to open in port: %s", InputCollectorImpl.this, port));
                 startCounter.fail(result.cause());
@@ -152,7 +152,7 @@ public class InputCollectorImpl implements InputCollector {
 
         for (final InputPort port : ports.values()) {
           log.debug(String.format("%s - Closing in port: %s", InputCollectorImpl.this, port));
-          port.close((result) -> {
+          port.close((Handler<AsyncResult<Void>>)(result) -> {
             if (result.failed()) {
               log.warn(String.format("%s - Failed to close in port: %s", InputCollectorImpl.this, port));
               stopCounter.fail(result.cause());

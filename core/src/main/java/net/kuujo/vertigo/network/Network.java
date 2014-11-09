@@ -17,6 +17,7 @@ package net.kuujo.vertigo.network;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValueFactory;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
@@ -29,6 +30,8 @@ import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.Json;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Vertigo network.
@@ -74,7 +77,9 @@ public interface Network extends Json.Serializable {
    * @return The constructed network object.
    */
   static Network network(String configName) {
-    Config config = ConfigFactory.load(Thread.currentThread().getContextClassLoader(), configName);
+    Map<String, Object> values = new HashMap<>();
+    values.put("network", configName);
+    Config config = ConfigFactory.load(Thread.currentThread().getContextClassLoader(), configName).withFallback(ConfigValueFactory.fromMap(values));
     return network(Configs.configObjectToJson(config));
   }
 

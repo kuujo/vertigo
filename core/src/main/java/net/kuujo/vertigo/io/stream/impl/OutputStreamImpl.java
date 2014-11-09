@@ -71,7 +71,7 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size()).setHandler(doneHandler);
     for (final OutputConnection connection : connections.values()) {
       log.debug(String.format("%s - Opening connection to: %s", this, connection.info().target()));
-      connection.open((result) -> {
+      connection.open((Handler<AsyncResult<Void>>)(result) -> {
         if (result.failed()) {
           log.error(String.format("%s - Failed to open connection to: %s", OutputStreamImpl.this, connection.info().target()));
           counter.fail(result.cause());
@@ -159,7 +159,7 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size()).setHandler(doneHandler);
     for (final OutputConnection connection : connections.values()) {
       log.debug(String.format("%s - Closing connection to: %s", this, connection.info().target()));
-      connection.close((result) -> {
+      connection.close((Handler<AsyncResult<Void>>)(result) -> {
         if (result.failed()) {
           log.warn(String.format("%s - Failed to close connection to: %s", OutputStreamImpl.this, connection.info().target()));
           counter.fail(result.cause());

@@ -101,7 +101,7 @@ public class OutputCollectorImpl implements OutputCollector {
           } else {
             final OutputPort port = new OutputPortImpl(vertx, output);
             log.debug(String.format("%s - Opening out port: %s", OutputCollectorImpl.this, output));
-            port.open((result) -> {
+            port.open((Handler<AsyncResult<Void>>)(result) -> {
               if (result.failed()) {
                 log.error(String.format("%s - Failed to open out port: %s", OutputCollectorImpl.this, port));
                 startCounter.fail(result.cause());
@@ -145,7 +145,7 @@ public class OutputCollectorImpl implements OutputCollector {
 
         for (final OutputPort output : ports.values()) {
           log.debug(String.format("%s - Closing out port: %s", OutputCollectorImpl.this, output));
-          output.close((result) -> {
+          output.close((Handler<AsyncResult<Void>>)(result) -> {
             if (result.failed()) {
               log.warn(String.format("%s - Failed to close out port: %s", OutputCollectorImpl.this, output));
               stopCounter.fail(result.cause());

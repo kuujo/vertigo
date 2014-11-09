@@ -172,7 +172,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
         });
 
         for (final InputConnection connection : connections) {
-          connection.close((result) -> {
+          connection.close((Handler<AsyncResult<Void>>)(result) -> {
             if (result.failed()) {
               log.warn(String.format("%s - Failed to close input connection: %s", InputPortImpl.this, connection));
               stopCounter.fail(result.cause());

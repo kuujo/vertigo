@@ -16,13 +16,12 @@
 package net.kuujo.vertigo.util;
 
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigList;
 import com.typesafe.config.ConfigValue;
 import com.typesafe.config.ConfigValueType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,13 +41,18 @@ public final class Configs {
   public static JsonObject configObjectToJson(Config config) {
     JsonObject json = new JsonObject();
     for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
+      String key = entry.getKey();
       ConfigValue value = entry.getValue();
+      if (key.contains(".")) {
+        key = key.substring(0, key.indexOf("."));
+        value = config.getValue(key);
+      }
       if (value.valueType().equals(ConfigValueType.OBJECT)) {
-        json.put(entry.getKey(), configObjectToJson(((ConfigObject) value.unwrapped()).toConfig()));
+        json.put(key, configObjectToJson(config.getConfig(key)));
       } else if (value.valueType().equals(ConfigValueType.LIST)) {
-        json.put(entry.getKey(), configListToJson((List<? extends ConfigValue>) value.unwrapped()));
+        json.put(key, configListToJson(config.getList(key)));
       } else  {
-        json.put(entry.getKey(), value.unwrapped());
+        json.put(key, value.unwrapped());
       }
     }
     return json;
@@ -61,13 +65,13 @@ public final class Configs {
    * @return The converted configuration.
    */
   @SuppressWarnings("unchecked")
-  private static JsonArray configListToJson(List<? extends ConfigValue> configs) {
+  private static JsonArray configListToJson(ConfigList configs) {
     JsonArray json = new JsonArray();
     for (ConfigValue value : configs) {
       if (value.valueType().equals(ConfigValueType.OBJECT)) {
-        json.add(configObjectToJson(((ConfigObject) value.unwrapped()).toConfig()));
+        json.add(configObjectToJson((Config) value));
       } else if (value.valueType().equals(ConfigValueType.LIST)) {
-        json.add(configListToJson((List<? extends ConfigValue>) value.unwrapped()));
+        json.add(configListToJson((ConfigList) value));
       } else {
         json.add(value.unwrapped());
       }

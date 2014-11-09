@@ -30,8 +30,6 @@ import net.kuujo.vertigo.util.Configs;
 import net.kuujo.vertigo.util.Json;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Vertigo network.
@@ -77,9 +75,8 @@ public interface Network extends Json.Serializable {
    * @return The constructed network object.
    */
   static Network network(String configName) {
-    Map<String, Object> values = new HashMap<>();
-    values.put("network", configName);
-    Config config = ConfigFactory.load(Thread.currentThread().getContextClassLoader(), configName).withFallback(ConfigValueFactory.fromMap(values));
+    Config config = ConfigFactory.parseResourcesAnySyntax(configName)
+      .withFallback(ConfigFactory.empty().withValue("vertigo.network", ConfigValueFactory.fromAnyRef(configName)));
     return network(Configs.configObjectToJson(config));
   }
 

@@ -20,7 +20,7 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentDefinition;
-import net.kuujo.vertigo.component.ComponentLocator;
+import net.kuujo.vertigo.spi.ComponentLocator;
 import net.kuujo.vertigo.component.impl.ComponentDefinitionImpl;
 import net.kuujo.vertigo.component.impl.ComponentDescriptorImpl;
 import net.kuujo.vertigo.io.connection.ConnectionDefinition;
@@ -28,6 +28,7 @@ import net.kuujo.vertigo.io.connection.SourceDefinition;
 import net.kuujo.vertigo.io.connection.TargetDefinition;
 import net.kuujo.vertigo.network.impl.NetworkDescriptorImpl;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
+import net.kuujo.vertigo.spi.NetworkLocator;
 import net.kuujo.vertigo.util.Json;
 
 import java.util.Collection;

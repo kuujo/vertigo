@@ -19,7 +19,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import net.kuujo.vertigo.network.NetworkDescriptor;
-import net.kuujo.vertigo.network.NetworkLocator;
+import net.kuujo.vertigo.spi.NetworkLocator;
 import net.kuujo.vertigo.util.Configs;
 
 /**

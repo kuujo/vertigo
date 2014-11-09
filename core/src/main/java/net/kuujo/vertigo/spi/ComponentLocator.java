@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network;
+package net.kuujo.vertigo.spi;
+
+import net.kuujo.vertigo.component.ComponentDescriptor;
 
 /**
- * Network locator.
+ * Component locator.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface NetworkLocator {
+public interface ComponentLocator {
 
   /**
-   * Loads a network descriptor for the given network.
+   * Locates the given component descriptor on the classpath.
    *
-   * @param network The network for which to load the descriptor.
-   * @return The network descriptor.
+   * @param component The component descriptor to locate.
+   * @return The loaded component descriptor.
    */
-  NetworkDescriptor locateNetwork(String network);
+  ComponentDescriptor locateComponent(String component);
 
 }

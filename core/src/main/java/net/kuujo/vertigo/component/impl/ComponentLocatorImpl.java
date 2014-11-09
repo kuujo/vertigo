@@ -19,7 +19,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import net.kuujo.vertigo.component.ComponentDescriptor;
-import net.kuujo.vertigo.component.ComponentLocator;
+import net.kuujo.vertigo.spi.ComponentLocator;
 import net.kuujo.vertigo.util.Configs;
 
 /**

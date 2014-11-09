@@ -21,9 +21,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.NetworkContext;
+import net.kuujo.vertigo.network.NetworkReference;
 import net.kuujo.vertigo.spi.VertigoFactory;
 
 /**
@@ -74,84 +73,12 @@ public interface Vertigo {
   }
 
   /**
-   * Creates a new uniquely named network.
+   * Returns a network reference for the given network.
    *
-   * @return A new network instance.
-   * @see Vertigo#createNetwork(String)
+   * @param id The unique ID of the network for which to return a reference.
+   * @return The network reference.
    */
-  Network createNetwork();
-
-  /**
-   * Creates a new network.
-   * 
-   * @param name The network name.
-   * @return A new network instance.
-   * @see Vertigo#createNetwork()
-   */
-  Network createNetwork(String name);
-
-  /**
-   * Creates a network configuration from json.
-   *
-   * @param json A json network configuration.
-   * @return A network configuration.
-   * @see Vertigo#createNetwork(String)
-   */
-  Network createNetwork(JsonObject json);
-
-  /**
-   * Deploys a bare network to an anonymous local-only cluster.<p>
-   *
-   * The network will be deployed with no components and no connections.
-   *
-   * @param name The name of the network to deploy.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String name);
-
-  /**
-   * Deploys a bare network to an anonymous local-only cluster.<p>
-   *
-   * The network will be deployed with no components and no connections.
-   *
-   * @param name The name of the network to deploy.
-   * @param doneHandler An asynchronous handler to be called once the network has
-   *        completed deployment.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(final String name, final Handler<AsyncResult<NetworkContext>> doneHandler);
-
-  /**
-   * Deploys a json network to an anonymous local-only cluster.<p>
-   *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
-   * being deployed to the cluster. The conversion is done synchronously, so if the
-   * configuration is invalid then this method may throw an exception.
-   *
-   * @param network The JSON network configuration. For the configuration format see
-   *        the project documentation.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(JsonObject network);
-
-  /**
-   * Deploys a json network to an anonymous local-only cluster.<p>
-   *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
-   * being deployed to the cluster. The conversion is done synchronously, so if the
-   * configuration is invalid then this method may throw an exception.
-   *
-   * @param network The JSON network configuration. For the configuration format see
-   *        the project documentation.
-   * @param doneHandler An asynchronous handler to be called once the network has
-   *        completed deployment.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(final JsonObject network, final Handler<AsyncResult<NetworkContext>> doneHandler);
+  NetworkReference network(String id);
 
   /**
    * Deploys a network to an anonymous local-only cluster.<p>
@@ -187,206 +114,36 @@ public interface Vertigo {
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo deployNetwork(final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler);
+  Vertigo deployNetwork(Network network, Handler<AsyncResult<NetworkReference>> doneHandler);
 
   /**
-   * Deploys a bare network to a specific cluster.<p>
-   *
-   * The network will be deployed with no components and no connections.
-   *
-   * @param cluster The cluster to which to deploy the network.
-   * @param name The name of the network to deploy.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String cluster, String name);
-
-  /**
-   * Deploys a bare network to a specific cluster.<p>
-   *
-   * The network will be deployed with no components and no connections.
-   *
-   * @param cluster The cluster to which to deploy the network.
-   * @param name The name of the network to deploy.
-   * @param doneHandler An asynchronous handler to be called once the network has
-   *        completed deployment.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String cluster, final String name, final Handler<AsyncResult<NetworkContext>> doneHandler);
-
-  /**
-   * Deploys a json network to a specific cluster.<p>
-   *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
-   * being deployed to the cluster. The conversion is done synchronously, so if the
-   * configuration is invalid then this method may throw an exception.
-   *
-   * @param cluster The cluster to which to deploy the network.
-   * @param network The JSON network configuration. For the configuration format see
-   *        the project documentation.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String cluster, JsonObject network);
-
-  /**
-   * Deploys a json network to a specific cluster.<p>
-   *
-   * The JSON network configuration will be converted to a {@link net.kuujo.vertigo.network.Network} before
-   * being deployed to the cluster. The conversion is done synchronously, so if the
-   * configuration is invalid then this method may throw an exception.
-   *
-   * @param cluster The cluster to which to deploy the network.
-   * @param network The JSON network configuration. For the configuration format see
-   *        the project documentation.
-   * @param doneHandler An asynchronous handler to be called once the network has
-   *        completed deployment.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String cluster, final JsonObject network, final Handler<AsyncResult<NetworkContext>> doneHandler);
-
-  /**
-   * Deploys a network to a specific cluster.<p>
-   *
-   * If the given network configuration's name matches the name of a network
-   * that is already running in the cluster then the given configuration will
-   * be <b>merged</b> with the running network's configuration. This allows networks
-   * to be dynamically updated with partial configurations. If the configuration
-   * matches the already running configuration then no changes will occur, so it's
-   * not necessary to check whether a network is already running if the configuration
-   * has not been altered.
-   *
-   * @param cluster The cluster to which to deploy the network.
-   * @param network The configuration of the network to deploy.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String cluster, Network network);
-
-  /**
-   * Deploys a network to a specific cluster.<p>
-   *
-   * If the given network configuration's name matches the name of a network
-   * that is already running in the cluster then the given configuration will
-   * be <b>merged</b> with the running network's configuration. This allows networks
-   * to be dynamically updated with partial configurations. If the configuration
-   * matches the already running configuration then no changes will occur, so it's
-   * not necessary to check whether a network is already running if the configuration
-   * has not been altered.
-   *
-   * @param cluster The cluster to which to deploy the network.
-   * @param network The configuration of the network to deploy.
-   * @param doneHandler An asynchronous handler to be called once the network has
-   *        completed deployment.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo deployNetwork(String cluster, final Network network, final Handler<AsyncResult<NetworkContext>> doneHandler);
-
-  /**
-   * Undeploys a complete network from the given cluster.<p>
+   * Undeploys a complete network.<p>
    *
    * This method does not require a network configuration for undeployment. Vertigo
    * will load the configuration from the fault-tolerant data store and undeploy
    * components internally. This allows networks to be undeployed without the network
    * configuration.
    *
-   * @param cluster The cluster from which to undeploy the network.
-   * @param name The name of the network to undeploy.
+   * @param id The ID of the network to undeploy.
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo undeployNetwork(String cluster, String name);
+  Vertigo undeployNetwork(String id);
 
   /**
-   * Undeploys a complete network from the given cluster.<p>
+   * Undeploys a complete network.<p>
    *
    * This method does not require a network configuration for undeployment. Vertigo
    * will load the configuration from the fault-tolerant data store and undeploy
    * components internally. This allows networks to be undeployed without the network
    * configuration.
    *
-   * @param cluster The cluster from which to undeploy the network.
-   * @param name The name of the network to undeploy.
+   * @param id The ID of the network to undeploy.
    * @param doneHandler An asynchronous handler to be called once the network is undeployed.
    * @return The Vertigo instance.
    */
   @Fluent
-  Vertigo undeployNetwork(String cluster, final String name, final Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Undeploys a network from the given cluster from a json configuration.<p>
-   *
-   * The JSON configuration will immediately be converted to a {@link net.kuujo.vertigo.network.Network} prior
-   * to undeploying the network. In order to undeploy the entire network, the configuration
-   * should be the same as the deployed configuration. Vertigo will use configuration
-   * components to determine whether two configurations are identical. If the given
-   * configuration is not identical to the running configuration, any components or
-   * connections in the json configuration that are present in the running network
-   * will be closed and removed from the running network.
-   *
-   * @param cluster The cluster from which to undeploy the network.
-   * @param network The JSON configuration to undeploy. For the configuration format see
-   *        the project documentation.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo undeployNetwork(String cluster, JsonObject network);
-
-  /**
-   * Undeploys a network from the given cluster from a json configuration.<p>
-   *
-   * The JSON configuration will immediately be converted to a {@link net.kuujo.vertigo.network.Network} prior
-   * to undeploying the network. In order to undeploy the entire network, the configuration
-   * should be the same as the deployed configuration. Vertigo will use configuration
-   * components to determine whether two configurations are identical. If the given
-   * configuration is not identical to the running configuration, any components or
-   * connections in the json configuration that are present in the running network
-   * will be closed and removed from the running network.
-   *
-   * @param cluster The cluster from which to undeploy the network.
-   * @param network The JSON configuration to undeploy. For the configuration format see
-   *        the project documentation.
-   * @param doneHandler An asynchronous handler to be called once the configuration is undeployed.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo undeployNetwork(String cluster, final JsonObject network, final Handler<AsyncResult<Void>> doneHandler);
-
-  /**
-   * Undeploys a network from the given cluster.<p>
-   *
-   * This method supports both partial and complete undeployment of networks. When
-   * undeploying networks by specifying a {@link net.kuujo.vertigo.network.Network}, the network configuration
-   * should contain all components and connections that are being undeployed. If the
-   * configuration's components and connections match all deployed components and
-   * connections then the entire network will be undeployed.
-   *
-   * @param cluster The cluster from which to undeploy the network.
-   * @param network The network configuration to undeploy.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo undeployNetwork(String cluster, Network network);
-
-  /**
-   * Undeploys a network from the given cluster.<p>
-   *
-   * This method supports both partial and complete undeployment of networks. When
-   * undeploying networks by specifying a {@link net.kuujo.vertigo.network.Network}, the network configuration
-   * should contain all components and connections that are being undeployed. If the
-   * configuration's components and connections match all deployed components and
-   * connections then the entire network will be undeployed.
-   *
-   * @param cluster The cluster from which to undeploy the network.
-   * @param network The network configuration to undeploy.
-   * @param doneHandler An asynchronous handler to be called once the configuration is undeployed.
-   * @return The Vertigo instance.
-   */
-  @Fluent
-  Vertigo undeployNetwork(String cluster, final Network network, final Handler<AsyncResult<Void>> doneHandler);
+  Vertigo undeployNetwork(String id, Handler<AsyncResult<Void>> doneHandler);
 
   static final VertigoFactory factory = ServiceHelper.loadFactory(VertigoFactory.class);
 

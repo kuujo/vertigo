@@ -17,8 +17,6 @@ package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.Output;
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
 
 /**
  * Output port to which messages are sent.<p>
@@ -35,7 +33,7 @@ import net.kuujo.vertigo.util.Openable;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputPort<T> extends Output<OutputPort<T>, T>, Openable<OutputPort<T>>, Closeable<OutputPort<T>> {
+public interface OutputPort<T> extends Output<OutputPort<T>, T> {
 
   /**
    * Returns the port name.

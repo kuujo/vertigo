@@ -23,6 +23,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 import java.util.TreeMap;
 import java.util.UUID;
@@ -32,7 +34,7 @@ import java.util.UUID;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputConnectionImpl<T> implements OutputConnection<T> {
+public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<OutputConnection<T>>, Closeable<OutputConnection<T>> {
   private static final String ACTION_HEADER = "action";
   private static final String ID_HEADER = "id";
   private static final String INDEX_HEADER = "index";
@@ -47,7 +49,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
   private final Logger log;
   private final Vertx vertx;
   private final EventBus eventBus;
-  private final OutputConnectionContext info;
+  private final OutputConnectionContext context;
   private final String outAddress;
   private final String inAddress;
   private MessageConsumer<Long> consumer;
@@ -82,24 +84,23 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
     }
   };
 
-  public OutputConnectionImpl(Vertx vertx, OutputConnectionContext info) {
+  public OutputConnectionImpl(Vertx vertx, OutputConnectionContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    this.info = info;
-    this.outAddress = String.format("%s.out", info.address());
-    this.inAddress = String.format("%s.in", info.address());
+    this.context = context;
+    this.outAddress = String.format("%s.out", context.address());
+    this.inAddress = String.format("%s.in", context.address());
     this.consumer = eventBus.consumer(inAddress);
-    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputConnectionImpl.class.getName(), info.target()));
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputConnectionImpl.class.getName(), context.target()));
   }
 
   @Override
   public String address() {
-    return info.address();
+    return context.address();
   }
 
-  @Override
-  public OutputConnectionContext info() {
-    return info;
+  public OutputConnectionContext context() {
+    return context;
   }
 
   @Override
@@ -135,23 +136,23 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
       if (result.failed()) {
         ReplyException failure = (ReplyException) result.cause();
         if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
-          log.warn(String.format("%s - Failed to connect to %s", OutputConnectionImpl.this, info.target()), result.cause());
+          log.warn(String.format("%s - Failed to connect to %s", OutputConnectionImpl.this, context.target()), result.cause());
           doneHandler.handle(Future.completedFuture(failure));
         } else if (failure.failureType().equals(ReplyFailure.TIMEOUT)) {
-          log.warn(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, info.target()));
+          log.warn(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, context.target()));
           connect(doneHandler);
         } else {
-          log.debug(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, info.target()));
+          log.debug(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, context.target()));
           vertx.setTimer(500, (timerId) -> {
             connect(doneHandler);
           });
         }
       } else if (result.result().body()) {
-        log.info(String.format("%s - Connected to %s", OutputConnectionImpl.this, info.target()));
+        log.info(String.format("%s - Connected to %s", OutputConnectionImpl.this, context.target()));
         open = true;
         doneHandler.handle(Future.completedFuture());
       } else {
-        log.debug(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, info.target()));
+        log.debug(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, context.target()));
         vertx.setTimer(500, (timerId) -> {
           connect(doneHandler);
         });
@@ -214,21 +215,21 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
       if (result.failed()) {
         ReplyException failure = (ReplyException) result.cause();
         if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
-          log.warn(String.format("%s - Failed to disconnect from %s", OutputConnectionImpl.this, info.target()), result.cause());
+          log.warn(String.format("%s - Failed to disconnect from %s", OutputConnectionImpl.this, context.target()), result.cause());
           doneHandler.handle(Future.completedFuture(failure));
         } else if (failure.failureType().equals(ReplyFailure.NO_HANDLERS)) {
-          log.info(String.format("%s - Disconnected from %s", OutputConnectionImpl.this, info.target()));
+          log.info(String.format("%s - Disconnected from %s", OutputConnectionImpl.this, context.target()));
           doneHandler.handle(Future.completedFuture());
         } else {
-          log.debug(String.format("%s - Disconnection from %s failed, retrying", OutputConnectionImpl.this, info.target()));
+          log.debug(String.format("%s - Disconnection from %s failed, retrying", OutputConnectionImpl.this, context.target()));
           disconnect(doneHandler);
         }
       } else if (result.result().body()) {
-        log.info(String.format("%s - Disconnected from %s", OutputConnectionImpl.this, info.target()));
+        log.info(String.format("%s - Disconnected from %s", OutputConnectionImpl.this, context.target()));
         open = false;
         doneHandler.handle(Future.completedFuture());
       } else {
-        log.debug(String.format("%s - Disconnection from %s failed, retrying", OutputConnectionImpl.this, info.target()));
+        log.debug(String.format("%s - Disconnection from %s failed, retrying", OutputConnectionImpl.this, context.target()));
         vertx.setTimer(500, (timerId) -> {
           disconnect(doneHandler);
         });
@@ -240,7 +241,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
    * Checks whether the connection is open.
    */
   private void checkOpen() {
-    if (!open) throw new IllegalStateException(String.format("%s - Connection to %s not open.", this, info.target()));
+    if (!open) throw new IllegalStateException(String.format("%s - Connection to %s not open.", this, context.target()));
   }
 
   /**
@@ -249,7 +250,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
   private void checkFull() {
     if (!full && messages.size() >= maxQueueSize) {
       full = true;
-      log.debug(String.format("%s - Connection to %s is full", this, info.target()));
+      log.debug(String.format("%s - Connection to %s is full", this, context.target()));
     }
   }
 
@@ -259,7 +260,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
   private void checkDrain() {
     if (full && !paused && messages.size() < maxQueueSize / 2) {
       full = false;
-      log.debug(String.format("%s - Connection to %s is drained", this, info.target()));
+      log.debug(String.format("%s - Connection to %s is drained", this, context.target()));
       if (drainHandler != null) {
         drainHandler.handle((Void) null);
       }
@@ -305,7 +306,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
    * Handles a connection pause.
    */
   private void doPause(long id) {
-    log.debug(String.format("%s - Paused connection to %s", this, info.target()));
+    log.debug(String.format("%s - Paused connection to %s", this, context.target()));
     paused = true;
   }
 
@@ -314,7 +315,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
    */
   private void doResume(long id) {
     if (paused) {
-      log.debug(String.format("%s - Resumed connection to %s", this, info.target()));
+      log.debug(String.format("%s - Resumed connection to %s", this, context.target()));
       paused = false;
       checkDrain();
     }
@@ -369,7 +370,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T> {
 
   @Override
   public String toString() {
-    return info.toString();
+    return context.toString();
   }
 
 }

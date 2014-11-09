@@ -17,8 +17,6 @@ package net.kuujo.vertigo.io;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.port.OutputPort;
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
 
 import java.util.Collection;
 
@@ -31,7 +29,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputCollector extends Openable<OutputCollector>, Closeable<OutputCollector> {
+public interface OutputCollector {
 
   /**
    * Returns a collection of output ports.

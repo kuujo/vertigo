@@ -29,7 +29,9 @@ import net.kuujo.vertigo.io.connection.impl.OutputConnectionImpl;
 import net.kuujo.vertigo.io.partition.Partitioner;
 import net.kuujo.vertigo.io.stream.OutputStream;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
+import net.kuujo.vertigo.util.Closeable;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Openable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,26 +41,26 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputStreamImpl<T> implements OutputStream<T> {
+public class OutputStreamImpl<T> implements OutputStream<T>, Openable<OutputStream<T>>, Closeable<OutputStream<T>> {
   private static final MultiMap EMPTY_HEADERS = new CaseInsensitiveHeaders();
   private final Logger log;
-  private final OutputStreamContext info;
-  private final Map<String, OutputConnection> connections = new HashMap<>();
+  private final OutputStreamContext context;
+  private final Map<String, OutputConnectionImpl> connections = new HashMap<>();
   private int maxQueueSize;
   private Partitioner partitioner;
 
-  public OutputStreamImpl(Vertx vertx, OutputStreamContext info) {
-    this.info = info;
-    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputStreamImpl.class.getName(), info.port().toString()));
-    info.connections().forEach((connection) -> {
+  public OutputStreamImpl(Vertx vertx, OutputStreamContext context) {
+    this.context = context;
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputStreamImpl.class.getName(), context.port().toString()));
+    context.connections().forEach((connection) -> {
       connections.put(connection.address(), new OutputConnectionImpl<>(vertx, connection));
     });
-    this.partitioner = info.partitioner();
+    this.partitioner = context.partitioner();
   }
 
   @Override
   public String id() {
-    return info.id();
+    return context.id();
   }
 
   @Override
@@ -69,14 +71,14 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
   @Override
   public OutputStream<T> open(Handler<AsyncResult<Void>> doneHandler) {
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size()).setHandler(doneHandler);
-    for (final OutputConnection connection : connections.values()) {
-      log.debug(String.format("%s - Opening connection to: %s", this, connection.info().target()));
+    for (final OutputConnectionImpl connection : connections.values()) {
+      log.debug(String.format("%s - Opening connection to: %s", this, connection.context().target()));
       connection.open((Handler<AsyncResult<Void>>)(result) -> {
         if (result.failed()) {
-          log.error(String.format("%s - Failed to open connection to: %s", OutputStreamImpl.this, connection.info().target()));
+          log.error(String.format("%s - Failed to open connection to: %s", OutputStreamImpl.this, connection.context().target()));
           counter.fail(result.cause());
         } else {
-          log.info(String.format("%s - Opened connection to: %s", OutputStreamImpl.this, connection.info().target()));
+          log.info(String.format("%s - Opened connection to: %s", OutputStreamImpl.this, connection.context().target()));
           counter.succeed();
         }
       });
@@ -128,7 +130,7 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
   @Override
   @SuppressWarnings("unchecked")
   public OutputStream<T> send(T message) {
-    for (OutputConnectionContext connectionInfo : partitioner.partition(EMPTY_HEADERS, info.connections())) {
+    for (OutputConnectionContext connectionInfo : partitioner.partition(EMPTY_HEADERS, context.connections())) {
       OutputConnection connection = connections.get(connectionInfo.address());
       if (connection != null) {
         connection.send(message);
@@ -140,7 +142,7 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
   @Override
   @SuppressWarnings("unchecked")
   public OutputStream<T> send(T message, MultiMap headers) {
-    for (OutputConnectionContext connectionInfo : partitioner.partition(headers, info.connections())) {
+    for (OutputConnectionContext connectionInfo : partitioner.partition(headers, context.connections())) {
       OutputConnection connection = connections.get(connectionInfo.address());
       if (connection != null) {
         connection.send(message, headers);
@@ -157,14 +159,14 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
   @Override
   public void close(Handler<AsyncResult<Void>> doneHandler) {
     final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size()).setHandler(doneHandler);
-    for (final OutputConnection connection : connections.values()) {
-      log.debug(String.format("%s - Closing connection to: %s", this, connection.info().target()));
+    for (final OutputConnectionImpl connection : connections.values()) {
+      log.debug(String.format("%s - Closing connection to: %s", this, connection.context().target()));
       connection.close((Handler<AsyncResult<Void>>)(result) -> {
         if (result.failed()) {
-          log.warn(String.format("%s - Failed to close connection to: %s", OutputStreamImpl.this, connection.info().target()));
+          log.warn(String.format("%s - Failed to close connection to: %s", OutputStreamImpl.this, connection.context().target()));
           counter.fail(result.cause());
         } else {
-          log.info(String.format("%s - Closed connection to: %s", OutputStreamImpl.this, connection.info().target()));
+          log.info(String.format("%s - Closed connection to: %s", OutputStreamImpl.this, connection.context().target()));
           counter.succeed();
         }
       });
@@ -173,7 +175,7 @@ public class OutputStreamImpl<T> implements OutputStream<T> {
 
   @Override
   public String toString() {
-    return info.toString();
+    return context.toString();
   }
 
 }

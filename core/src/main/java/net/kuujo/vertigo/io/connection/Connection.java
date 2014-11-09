@@ -15,9 +15,6 @@
  */
 package net.kuujo.vertigo.io.connection;
 
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
-
 /**
  * Connection between two partitions of two components.<p>
  *
@@ -27,10 +24,8 @@ import net.kuujo.vertigo.util.Openable;
  * uni-directional, so each connection has an input and an output side.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
- *
- * @param <T> The connection type.
  */
-public interface Connection<T extends Connection<T>> extends Openable<T>, Closeable<T> {
+public interface Connection {
 
   /**
    * Returns the connection address.

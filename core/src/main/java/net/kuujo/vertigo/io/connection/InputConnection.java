@@ -35,13 +35,5 @@ import net.kuujo.vertigo.io.ControllableInput;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface InputConnection<T> extends Connection<InputConnection<T>>, ControllableInput<InputConnection<T>, T> {
-
-  /**
-   * Returns the input connection context.
-   *
-   * @return The input connection context.
-   */
-  InputConnectionContext info();
-
+public interface InputConnection<T> extends Connection, ControllableInput<InputConnection<T>, T> {
 }

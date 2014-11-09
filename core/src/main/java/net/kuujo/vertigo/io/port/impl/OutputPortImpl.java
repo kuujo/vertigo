@@ -24,9 +24,7 @@ import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.stream.OutputStream;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.io.stream.impl.OutputStreamImpl;
-import net.kuujo.vertigo.util.Args;
-import net.kuujo.vertigo.util.CountingCompletionHandler;
-import net.kuujo.vertigo.util.TaskRunner;
+import net.kuujo.vertigo.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +34,12 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<OutputPort<T>, T> {
+public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<OutputPort<T>, T>, Openable<OutputPort<T>>, Closeable<OutputPort<T>> {
   private static final Logger log = LoggerFactory.getLogger(OutputPortImpl.class);
   private static final int DEFAULT_SEND_QUEUE_MAX_SIZE = 10000;
   private final Vertx vertx;
   private OutputPortContext info;
-  private final List<OutputStream<T>> streams = new ArrayList<>();
+  private final List<OutputStreamImpl<T>> streams = new ArrayList<>();
   private final TaskRunner tasks = new TaskRunner();
   private int maxQueueSize = DEFAULT_SEND_QUEUE_MAX_SIZE;
   private Handler<Void> drainHandler;
@@ -128,7 +126,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
         // opened. This helps ensure that we don't attempt to send messages
         // on a closed stream.
         for (OutputStreamContext output : info.streams()) {
-          final OutputStream<T> stream = new OutputStreamImpl<>(vertx, output);
+          final OutputStreamImpl<T> stream = new OutputStreamImpl<>(vertx, output);
           stream.setSendQueueMaxSize(maxQueueSize);
           stream.drainHandler(drainHandler);
           stream.open((result) -> {
@@ -161,7 +159,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
     // by queueing open/close operations as tasks.
     tasks.runTask((task) -> {
       if (open) {
-        List<OutputStream> streams = new ArrayList<>(OutputPortImpl.this.streams);
+        List<OutputStreamImpl> streams = new ArrayList<>(OutputPortImpl.this.streams);
         OutputPortImpl.this.streams.clear();
         open = false;
         final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(streams.size());
@@ -174,7 +172,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
             task.complete();
           }
         });
-        for (final OutputStream stream : streams) {
+        for (final OutputStreamImpl stream : streams) {
           stream.close(new Handler<AsyncResult<Void>>() {
             @Override
             public void handle(AsyncResult<Void> result) {

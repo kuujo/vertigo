@@ -36,8 +36,8 @@ import net.kuujo.vertigo.util.CountingCompletionHandler;
 public class ComponentInstanceImpl implements ComponentInstance {
   private final Vertx vertx;
   private final PartitionContext context;
-  private final InputCollector input;
-  private final OutputCollector output;
+  private final InputCollectorImpl input;
+  private final OutputCollectorImpl output;
   private final Logger logger;
 
   public ComponentInstanceImpl(Vertx vertx, PartitionContext context) {

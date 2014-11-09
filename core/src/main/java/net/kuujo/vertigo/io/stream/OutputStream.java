@@ -15,23 +15,21 @@
  */
 package net.kuujo.vertigo.io.stream;
 
-import net.kuujo.vertigo.util.Closeable;
 import net.kuujo.vertigo.io.ControllableOutput;
-import net.kuujo.vertigo.util.Openable;
 
 /**
  * Output stream.<p>
  *
  * The output stream represents a group of connections between the current
  * component partition and multiple partitions of another component. Each stream
- * uses an internal {@link net.kuujo.vertigo.output.partitioner2.Partitioner} to partition
+ * uses an internal {@link net.kuujo.vertigo.io.partition.Partitioner} to partition
  * connections to which to send each message. Each message sent on a stream
  * can be sent to a single connection or it can be copied to multiple connections
  * based on the selector implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface OutputStream<T> extends ControllableOutput<OutputStream<T>, T>, Openable<OutputStream<T>>, Closeable<OutputStream<T>> {
+public interface OutputStream<T> extends ControllableOutput<OutputStream<T>, T> {
 
   /**
    * Returns the output stream ID.

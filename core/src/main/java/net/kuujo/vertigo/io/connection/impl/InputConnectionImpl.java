@@ -30,13 +30,15 @@ import net.kuujo.vertigo.io.VertigoMessage;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.impl.VertigoMessageImpl;
+import net.kuujo.vertigo.util.Closeable;
+import net.kuujo.vertigo.util.Openable;
 
 /**
  * Input connection implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputConnectionImpl<T> implements InputConnection<T> {
+public class InputConnectionImpl<T> implements InputConnection<T>, Openable<InputConnection<T>>, Closeable<InputConnection<T>> {
   private static final String ACTION_HEADER = "action";
   private static final String ID_HEADER = "id";
   private static final String INDEX_HEADER = "index";
@@ -52,7 +54,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
   private final Logger log;
   private final Vertx vertx;
   private final EventBus eventBus;
-  private final InputConnectionContext info;
+  private final InputConnectionContext context;
   private final String inAddress;
   private final String outAddress;
   private MessageConsumer<T> consumer;
@@ -99,23 +101,22 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
     }
   };
 
-  public InputConnectionImpl(Vertx vertx, InputConnectionContext info) {
+  public InputConnectionImpl(Vertx vertx, InputConnectionContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
-    this.info = info;
-    this.inAddress = String.format("%s.in", info.address());
-    this.outAddress = String.format("%s.out", info.address());
-    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), info.address()));
+    this.context = context;
+    this.inAddress = String.format("%s.in", context.address());
+    this.outAddress = String.format("%s.out", context.address());
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.address()));
   }
 
   @Override
   public String address() {
-    return info.address();
+    return context.address();
   }
 
-  @Override
-  public InputConnectionContext info() {
-    return info;
+  public InputConnectionContext context() {
+    return context;
   }
 
   @Override
@@ -130,14 +131,14 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
       consumer.handler(internalMessageHandler);
       consumer.completionHandler((result) -> {
         if (result.succeeded()) {
-          log.info(String.format("%s - Opened connection to %s", InputConnectionImpl.this, info.source()));
+          log.info(String.format("%s - Opened connection to %s", InputConnectionImpl.this, context.source()));
           if (feedbackTimerID == 0) {
             log.debug(String.format("%s - Starting periodic ack timer with max batch interval: %d", InputConnectionImpl.this, MAX_BATCH_TIME));
             feedbackTimerID = vertx.setPeriodic(MAX_BATCH_TIME, internalTimer);
           }
           open = true;
         } else {
-          log.warn(String.format("%s - Failed to open connection to %s", InputConnectionImpl.this, info.source()));
+          log.warn(String.format("%s - Failed to open connection to %s", InputConnectionImpl.this, context.source()));
         }
         doneHandler.handle(result);
       });
@@ -205,7 +206,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
     if (!paused) {
       paused = true;
       if (open && connected) {
-        log.debug(String.format("%s - Pausing connection: %s", this, info.source()));
+        log.debug(String.format("%s - Pausing connection: %s", this, context.source()));
         eventBus.send(outAddress, null, new DeliveryOptions().addHeader(ACTION_HEADER, PAUSE_ACTION).addHeader(INDEX_HEADER, String
           .valueOf(lastReceived)));
       }
@@ -218,7 +219,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
     if (paused) {
       paused = false;
       if (open && connected) {
-        log.debug(String.format("%s - Resuming connection: %s", this, info.source()));
+        log.debug(String.format("%s - Resuming connection: %s", this, context.source()));
         eventBus.send(outAddress, null, new DeliveryOptions().addHeader(ACTION_HEADER, RESUME_ACTION).addHeader(INDEX_HEADER, String
           .valueOf(lastReceived)));
       }
@@ -243,7 +244,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
     if (messageHandler != null) {
       String id = message.headers().get(ID_HEADER);
       long index = Long.valueOf(message.headers().get(INDEX_HEADER));
-      VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, index, info.port().name(), message.body(), message.headers());
+      VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, index, context.port().name(), message.body(), message.headers());
 
       if (log.isDebugEnabled()) {
         log.debug(String.format("%s - Received: Message[id=%s, value=%s]", this, id, message));
@@ -261,10 +262,10 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
         connected = true;
       }
       message.reply(true);
-      log.debug(String.format("%s - Accepted connect request from %s", this, info.source()));
+      log.debug(String.format("%s - Accepted connect request from %s", this, context.source()));
     } else {
       message.reply(false);
-      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, info.source()));
+      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, context.source()));
     }
   }
 
@@ -277,10 +278,10 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
         connected = false;
       }
       message.reply(true);
-      log.debug(String.format("%s - Accepted disconnect request from %s", this, info.source()));
+      log.debug(String.format("%s - Accepted disconnect request from %s", this, context.source()));
     } else {
       message.reply(false);
-      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, info.source()));
+      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, context.source()));
     }
   }
 
@@ -299,7 +300,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
           feedbackTimerID = 0;
         }
         open = false;
-        log.info(String.format("%s - Closed connection from %s", InputConnectionImpl.this, info.source()));
+        log.info(String.format("%s - Closed connection from %s", InputConnectionImpl.this, context.source()));
         doneHandler.handle(result);
       });
     } else {
@@ -309,7 +310,7 @@ public class InputConnectionImpl<T> implements InputConnection<T> {
 
   @Override
   public String toString() {
-    return info.toString();
+    return context.toString();
   }
 
 }

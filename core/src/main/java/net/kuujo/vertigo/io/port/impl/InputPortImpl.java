@@ -23,13 +23,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.ControllableInput;
+import net.kuujo.vertigo.io.VertigoMessage;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.InputConnectionImpl;
 import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.io.port.InputPortContext;
-import net.kuujo.vertigo.io.VertigoMessage;
+import net.kuujo.vertigo.util.Closeable;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Openable;
 import net.kuujo.vertigo.util.TaskRunner;
 
 import java.util.ArrayList;
@@ -40,11 +42,11 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPort<T>, T> {
+public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPort<T>, T>, Openable<InputPort<T>>, Closeable<InputPort<T>> {
   private static final Logger log = LoggerFactory.getLogger(InputPortImpl.class);
   private final Vertx vertx;
   private InputPortContext info;
-  private final List<InputConnection<T>> connections = new ArrayList<>();
+  private final List<InputConnectionImpl<T>> connections = new ArrayList<>();
   private final TaskRunner tasks = new TaskRunner();
   @SuppressWarnings("rawtypes")
   private Handler<VertigoMessage<T>> messageHandler;
@@ -117,7 +119,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
         // on a close connection.
         connections.clear();
         for (InputConnectionContext connectionInfo : info.connections()) {
-          final InputConnection<T> connection = new InputConnectionImpl<>(vertx, connectionInfo);
+          final InputConnectionImpl<T> connection = new InputConnectionImpl<>(vertx, connectionInfo);
           connection.open((result) -> {
             if (result.failed()) {
               log.error(String.format("%s - Failed to open input connection: %s", InputPortImpl.this, connection));
@@ -141,7 +143,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
    * Sets up the given connection.
    */
   @SuppressWarnings("unchecked")
-  private InputConnection<T> setupConnection(InputConnection<T> connection) {
+  private InputConnectionImpl<T> setupConnection(InputConnectionImpl<T> connection) {
     log.debug(String.format("%s - Setting up connection: %s", this, connection));
     connection.messageHandler(messageHandler);
     if (paused) {
@@ -171,7 +173,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
           task.complete();
         });
 
-        for (final InputConnection connection : connections) {
+        for (final InputConnectionImpl connection : connections) {
           connection.close((Handler<AsyncResult<Void>>)(result) -> {
             if (result.failed()) {
               log.warn(String.format("%s - Failed to close input connection: %s", InputPortImpl.this, connection));

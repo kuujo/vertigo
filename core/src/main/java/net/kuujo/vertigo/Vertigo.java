@@ -21,6 +21,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
+import net.kuujo.vertigo.cluster.Cluster;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkReference;
 import net.kuujo.vertigo.spi.VertigoFactory;
@@ -71,6 +72,13 @@ public interface Vertigo {
   static void vertigoAsync(VertigoOptions options, Handler<AsyncResult<Vertigo>> resultHandler) {
     factory.vertigoAsync(options, resultHandler);
   }
+
+  /**
+   * Returns a reference to the Vertigo cluster.
+   *
+   * @return The Vertigo cluster.
+   */
+  Cluster cluster();
 
   /**
    * Returns a network reference for the given network.

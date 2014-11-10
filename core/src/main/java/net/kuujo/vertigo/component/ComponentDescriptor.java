@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.component;
 
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.port.PortDescriptor;
 
 import java.util.List;
 import java.util.Set;
@@ -130,14 +131,14 @@ public interface ComponentDescriptor {
    *
    * @return A set of explicitly defined component input ports.
    */
-  Set<String> input();
+  Set<PortDescriptor> input();
 
   /**
    * Returns a set of explicitly defined component output ports.
    *
    * @return A set of explicitly defined component output ports.
    */
-  Set<String> output();
+  Set<PortDescriptor> output();
 
   /**
    * Returns a list of component resources.

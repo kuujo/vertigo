@@ -15,14 +15,9 @@
  */
 package net.kuujo.vertigo.util;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigList;
-import com.typesafe.config.ConfigValue;
-import com.typesafe.config.ConfigValueType;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.ServiceHelper;
 import io.vertx.core.json.JsonObject;
-
-import java.util.Map;
+import net.kuujo.vertigo.spi.ConfigFormat;
 
 /**
  * Configuration utility.
@@ -32,51 +27,35 @@ import java.util.Map;
 public final class Configs {
 
   /**
-   * Converts a Typesafe configuration object to {@link JsonObject}
+   * Loads the global configuration.
    *
-   * @param config The Typesafe configuration object to convert.
-   * @return The converted configuration.
+   * @return The global configuration.
    */
-  @SuppressWarnings("unchecked")
-  public static JsonObject configObjectToJson(Config config) {
-    JsonObject json = new JsonObject();
-    for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
-      String key = entry.getKey();
-      ConfigValue value = entry.getValue();
-      if (key.contains(".")) {
-        key = key.substring(0, key.indexOf("."));
-        value = config.getValue(key);
-      }
-      if (value.valueType().equals(ConfigValueType.OBJECT)) {
-        json.put(key, configObjectToJson(config.getConfig(key)));
-      } else if (value.valueType().equals(ConfigValueType.LIST)) {
-        json.put(key, configListToJson(config.getList(key)));
-      } else  {
-        json.put(key, value.unwrapped());
-      }
-    }
-    return json;
+  public static JsonObject load() {
+    return format.load();
   }
 
   /**
-   * Converts a Typesafe configuration list to {@link JsonObject}
+   * Loads a named configuration.
    *
-   * @param configs The Typesafe configuration list to convert.
-   * @return The converted configuration.
+   * @param config The name of the configuration to load.
+   * @return The loaded configuration.
    */
-  @SuppressWarnings("unchecked")
-  private static JsonArray configListToJson(ConfigList configs) {
-    JsonArray json = new JsonArray();
-    for (ConfigValue value : configs) {
-      if (value.valueType().equals(ConfigValueType.OBJECT)) {
-        json.add(configObjectToJson((Config) value));
-      } else if (value.valueType().equals(ConfigValueType.LIST)) {
-        json.add(configListToJson((ConfigList) value));
-      } else {
-        json.add(value.unwrapped());
-      }
-    }
-    return json;
+  public static JsonObject load(String config) {
+    return format.load(config);
   }
+
+  /**
+   * Loads a named configuration.
+   *
+   * @param config The name of the configuration to load.
+   * @param defaults An object of default values to apply to the configuration.
+   * @return The loaded configuration.
+   */
+  public static JsonObject load(String config, JsonObject defaults) {
+    return format.load(config, defaults);
+  }
+
+  static ConfigFormat format = ServiceHelper.loadFactory(ConfigFormat.class);
 
 }

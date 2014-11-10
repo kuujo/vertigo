@@ -15,21 +15,39 @@
  */
 package net.kuujo.vertigo.spi;
 
-import net.kuujo.vertigo.network.NetworkDescriptor;
+import io.vertx.core.json.JsonObject;
 
 /**
- * Network locator.
+ * Vertigo configuration format.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface NetworkLocator {
+public interface ConfigFormat {
 
   /**
-   * Loads a network descriptor for the given network.
+   * Loads the global configuration.
    *
-   * @param network The network for which to load the descriptor.
-   * @return The network descriptor.
+   * @return The global configuration.
    */
-  NetworkDescriptor locateNetwork(String network);
+  JsonObject load();
+
+  /**
+   * Loads a named configuration.
+   *
+   * @param config The configuration name.
+   * @return The loaded configuration.
+   */
+  default JsonObject load(String config) {
+    return load(config, new JsonObject());
+  }
+
+  /**
+   * Loads a named configuration.
+   *
+   * @param config The configuration name.
+   * @param defaults The configuration default values.
+   * @return The loaded configuration.
+   */
+  JsonObject load(String config, JsonObject defaults);
 
 }

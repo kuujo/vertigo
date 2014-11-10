@@ -18,6 +18,8 @@ package net.kuujo.vertigo.component.impl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentDescriptor;
+import net.kuujo.vertigo.io.port.PortDescriptor;
+import net.kuujo.vertigo.io.port.impl.PortDescriptorImpl;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.HashSet;
@@ -37,8 +39,8 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
   private final int partitions;
   private final boolean worker;
   private final boolean multiThreaded;
-  private final Set<String> input;
-  private final Set<String> output;
+  private final Set<PortDescriptor> input;
+  private final Set<PortDescriptor> output;
   private final List<String> resources;
 
   public ComponentDescriptorImpl(ComponentDescriptor component) {
@@ -61,8 +63,16 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
     this.partitions = component.getInteger("partitions", 1);
     this.worker = component.getBoolean("worker");
     this.multiThreaded = component.getBoolean("multi-threaded");
-    this.input = new HashSet(component.getJsonArray("input", new JsonArray()).getList());
-    this.output = new HashSet(component.getJsonArray("output", new JsonArray()).getList());
+    JsonObject inputs = component.getJsonObject("input", new JsonObject());
+    this.input = new HashSet<>(inputs.size());
+    for (String input : inputs.fieldNames()) {
+      this.input.add(new PortDescriptorImpl(new JsonObject().put("name", input).put("type", inputs.getString(input))));
+    }
+    JsonObject outputs = component.getJsonObject("output", new JsonObject());
+    this.output = new HashSet<>(outputs.size());
+    for (String output : outputs.fieldNames()) {
+      this.output.add(new PortDescriptorImpl(new JsonObject().put("name", output).put("type", outputs.getString(output))));
+    }
     this.resources = component.getJsonArray("resources", new JsonArray()).getList();
   }
 
@@ -97,12 +107,12 @@ public class ComponentDescriptorImpl implements ComponentDescriptor {
   }
 
   @Override
-  public Set<String> input() {
+  public Set<PortDescriptor> input() {
     return input;
   }
 
   @Override
-  public Set<String> output() {
+  public Set<PortDescriptor> output() {
     return output;
   }
 

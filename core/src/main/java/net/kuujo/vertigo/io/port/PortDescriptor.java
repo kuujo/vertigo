@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.spi;
-
-import net.kuujo.vertigo.component.ComponentDescriptor;
+package net.kuujo.vertigo.io.port;
 
 /**
- * Component locator.
+ * Input/output port descriptor.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ComponentLocator {
+public interface PortDescriptor {
 
   /**
-   * Locates the given component descriptor on the classpath.
+   * Returns the port name.
    *
-   * @param component The component descriptor to locate.
-   * @return The loaded component descriptor.
+   * @return The port name.
    */
-  ComponentDescriptor locateComponent(String component);
+  String name();
+
+  /**
+   * Returns the port data type.
+   *
+   * @return The port data type.
+   */
+  Class<?> type();
 
 }

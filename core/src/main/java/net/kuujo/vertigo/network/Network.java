@@ -15,7 +15,6 @@
  */
 package net.kuujo.vertigo.network;
 
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
@@ -27,8 +26,7 @@ import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.network.impl.NetworkDescriptorImpl;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
-import net.kuujo.vertigo.spi.ComponentLocator;
-import net.kuujo.vertigo.spi.NetworkLocator;
+import net.kuujo.vertigo.util.Configs;
 
 import java.util.Collection;
 
@@ -55,7 +53,7 @@ public interface Network {
    * @return The constructed network object.
    */
   static Network network(String network) {
-    return new NetworkImpl(networkLocator.locateNetwork(network));
+    return new NetworkImpl(new NetworkDescriptorImpl(Configs.load(network, new JsonObject().put("vertigo", new JsonObject().put("network", network)))));
   }
 
   /**
@@ -75,7 +73,7 @@ public interface Network {
    * @return The constructed component configuration.
    */
   static ComponentInfo component(String component) {
-    return new ComponentInfoImpl(componentLocator.locateComponent(component));
+    return new ComponentInfoImpl(new ComponentDescriptorImpl(Configs.load(component, new JsonObject().put("vertigo", new JsonObject().put("component", component)))));
   }
 
   /**
@@ -210,8 +208,5 @@ public interface Network {
    * @return The connection info.
    */
   ConnectionInfo destroyConnection(ConnectionInfo connection);
-
-  static NetworkLocator networkLocator = ServiceHelper.loadFactory(NetworkLocator.class);
-  static ComponentLocator componentLocator = ServiceHelper.loadFactory(ComponentLocator.class);
 
 }

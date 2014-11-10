@@ -26,9 +26,6 @@ import io.vertx.core.json.JsonObject;
  */
 @Options
 public class VertigoOptions extends VertxOptions {
-  public static final String DATA_DIRECTORY = "data";
-
-  private String dataDirectory;
 
   public VertigoOptions() {
   }
@@ -41,31 +38,10 @@ public class VertigoOptions extends VertxOptions {
     super(options);
   }
 
-  /**
-   * Sets the Vertigo data directory.
-   *
-   * @param directory The Vertigo data directory.
-   * @return The Vertigo options.
-   */
-  public VertigoOptions setDataDirectory(String directory) {
-    this.dataDirectory = directory;
-    return this;
-  }
-
-  /**
-   * Returns the Vertigo data directory.
-   *
-   * @return The Vertigo data directory.
-   */
-  public String getDataDirectory() {
-    return dataDirectory;
-  }
-
   @Override
   public int hashCode() {
     int hashCode = 23;
     hashCode = 37 * hashCode + super.hashCode();
-    hashCode = 37 * hashCode + dataDirectory.hashCode();
     return hashCode;
   }
 

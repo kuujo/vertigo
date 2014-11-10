@@ -26,7 +26,9 @@ import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.port.impl.OutputPortImpl;
+import net.kuujo.vertigo.util.Closeable;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Openable;
 import net.kuujo.vertigo.util.TaskRunner;
 
 import java.util.Collection;
@@ -38,7 +40,7 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputCollectorImpl implements OutputCollector {
+public class OutputCollectorImpl implements OutputCollector, Openable<OutputCollector>, Closeable<OutputCollector> {
   private final Logger log;
   private final Vertx vertx;
   private OutputContext context;
@@ -97,11 +99,11 @@ public class OutputCollectorImpl implements OutputCollector {
 
         for (OutputPortContext output : context.ports()) {
           if (ports.containsKey(output.name())) {
-            ports.get(output.name()).open(startCounter);
+            ((Openable) ports.get(output.name())).open(startCounter);
           } else {
             final OutputPort port = new OutputPortImpl(vertx, output);
             log.debug(String.format("%s - Opening out port: %s", OutputCollectorImpl.this, output));
-            port.open((Handler<AsyncResult<Void>>)(result) -> {
+            ((Openable) port).open((Handler<AsyncResult<Void>>)(result) -> {
               if (result.failed()) {
                 log.error(String.format("%s - Failed to open out port: %s", OutputCollectorImpl.this, port));
                 startCounter.fail(result.cause());
@@ -145,7 +147,7 @@ public class OutputCollectorImpl implements OutputCollector {
 
         for (final OutputPort output : ports.values()) {
           log.debug(String.format("%s - Closing out port: %s", OutputCollectorImpl.this, output));
-          output.close((Handler<AsyncResult<Void>>)(result) -> {
+          ((Closeable) output).close((Handler<AsyncResult<Void>>)(result) -> {
             if (result.failed()) {
               log.warn(String.format("%s - Failed to close out port: %s", OutputCollectorImpl.this, output));
               stopCounter.fail(result.cause());

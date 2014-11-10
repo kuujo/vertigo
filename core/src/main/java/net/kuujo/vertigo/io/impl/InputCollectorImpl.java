@@ -27,7 +27,9 @@ import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.io.port.impl.InputPortImpl;
+import net.kuujo.vertigo.util.Closeable;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
+import net.kuujo.vertigo.util.Openable;
 import net.kuujo.vertigo.util.TaskRunner;
 
 import java.util.Collection;
@@ -39,7 +41,7 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputCollectorImpl implements InputCollector {
+public class InputCollectorImpl implements InputCollector, Openable<InputCollector>, Closeable<InputCollector> {
   private final Logger log;
   private final Vertx vertx;
   private InputContext context;
@@ -99,7 +101,7 @@ public class InputCollectorImpl implements InputCollector {
         for (final InputPortContext port : context.ports()) {
           log.debug(String.format("%s - Opening in port: %s", InputCollectorImpl.this, port));
           if (ports.containsKey(port.name())) {
-            ports.get(port.name()).open((Handler<AsyncResult<Void>>)(result) -> {
+            ((Openable) ports.get(port.name())).open((Handler<AsyncResult<Void>>)(result) -> {
               if (result.failed()) {
                 log.error(String.format("%s - Failed to open in port: %s", InputCollectorImpl.this, port));
                 startCounter.fail(result.cause());
@@ -152,7 +154,7 @@ public class InputCollectorImpl implements InputCollector {
 
         for (final InputPort port : ports.values()) {
           log.debug(String.format("%s - Closing in port: %s", InputCollectorImpl.this, port));
-          port.close((Handler<AsyncResult<Void>>)(result) -> {
+          ((Closeable) port).close((Handler<AsyncResult<Void>>)(result) -> {
             if (result.failed()) {
               log.warn(String.format("%s - Failed to close in port: %s", InputCollectorImpl.this, port));
               stopCounter.fail(result.cause());

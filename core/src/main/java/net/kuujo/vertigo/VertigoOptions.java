@@ -18,6 +18,7 @@ package net.kuujo.vertigo;
 import io.vertx.codegen.annotations.Options;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.util.Configs;
 
 /**
  * Vertigo options.
@@ -36,6 +37,7 @@ public class VertigoOptions extends VertxOptions {
 
   public VertigoOptions(JsonObject options) {
     super(options);
+    options.mergeIn(Configs.load());
   }
 
   @Override

@@ -25,6 +25,7 @@ import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkReference;
+import net.kuujo.vertigo.spi.ClusterFactory;
 
 /**
  * Vertigo cluster.

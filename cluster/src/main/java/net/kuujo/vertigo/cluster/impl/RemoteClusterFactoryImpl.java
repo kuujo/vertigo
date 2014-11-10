@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.cluster;
+package net.kuujo.vertigo.cluster.impl;
 
 import io.vertx.core.Vertx;
+import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.spi.ClusterFactory;
 
 /**
- * Vertigo cluster factory.
+ * Remote cluster factory implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ClusterFactory {
+public class RemoteClusterFactoryImpl implements ClusterFactory {
 
-  /**
-   * Creates a new cluster instance.
-   *
-   * @param vertx The Vert.x instance.
-   * @return A new cluster instance.
-   */
-  Cluster createCluster(Vertx vertx);
+  @Override
+  public Cluster createCluster(Vertx vertx) {
+    return null;
+  }
 
-  /**
-   * Creates a new cluster proxy.
-   *
-   * @param vertx The Vert.x instance.
-   * @return A new cluster proxy instance.
-   */
-  Cluster createClusterProxy(Vertx vertx);
+  @Override
+  public Cluster createClusterProxy(Vertx vertx) {
+    return null;
+  }
 
 }

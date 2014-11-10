@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.port;
-
-import io.vertx.core.ServiceHelper;
+package net.kuujo.vertigo.spi;
 
 /**
  * Port type resolver.
@@ -30,18 +28,6 @@ public interface PortTypeResolver {
    * @param type The port type string to resolve.
    * @return The port type class.
    */
-  static Class<?> resolveType(String type) {
-    return resolver.resolve(type);
-  }
-
-  /**
-   * Resolves a port type string.
-   *
-   * @param type The port type string to resolve.
-   * @return The port type class.
-   */
   Class<?> resolve(String type);
-
-  static PortTypeResolver resolver = ServiceHelper.loadFactory(PortTypeResolver.class);
 
 }

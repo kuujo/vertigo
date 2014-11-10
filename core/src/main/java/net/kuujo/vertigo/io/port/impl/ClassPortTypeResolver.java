@@ -15,41 +15,23 @@
  */
 package net.kuujo.vertigo.io.port.impl;
 
-import io.vertx.core.ServiceHelper;
-import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.port.PortDescriptor;
+import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.spi.PortTypeResolver;
 
 /**
- * Port descriptor implementation.
+ * Port type resolver impelementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class PortDescriptorImpl implements PortDescriptor {
-  private final String name;
-  private final Class<?> type;
-
-  public PortDescriptorImpl(PortDescriptor port) {
-    this.name = port.name();
-    this.type = port.type();
-  }
-
-  public PortDescriptorImpl(JsonObject port) {
-    this.name = port.getString("name");
-    String type = port.getString("type");
-    this.type = type != null ? resolver.resolve(type) : Object.class;
-  }
+public class ClassPortTypeResolver implements PortTypeResolver {
 
   @Override
-  public String name() {
-    return name;
+  public Class<?> resolve(String type) {
+    try {
+      return Class.forName(type);
+    } catch (ClassNotFoundException e) {
+      throw new VertigoException(e);
+    }
   }
-
-  @Override
-  public Class<?> type() {
-    return type;
-  }
-
-  static PortTypeResolver resolver = ServiceHelper.loadFactory(PortTypeResolver.class);
 
 }

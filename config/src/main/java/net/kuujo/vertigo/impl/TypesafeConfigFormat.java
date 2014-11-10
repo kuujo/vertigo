@@ -27,7 +27,7 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ConfigFormatImpl implements ConfigFormat {
+public class TypesafeConfigFormat implements ConfigFormat {
   private static final String DEFAULT_CONFIG = "vertigo-default";
   private static final String APPLICATION_CONFIG = "vertigo";
 

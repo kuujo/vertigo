@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.port.impl;
+package net.kuujo.vertigo.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.io.port.PortTypeResolver;
+import net.kuujo.vertigo.spi.PortTypeResolver;
 import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.Configs;
 
 /**
- * Port type resolver impelementation.
+ * Configuration based port type resolver.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class PortTypeResolverImpl implements PortTypeResolver {
+public class ConfigPortTypeResolver implements PortTypeResolver {
 
   @Override
   public Class<?> resolve(String type) {

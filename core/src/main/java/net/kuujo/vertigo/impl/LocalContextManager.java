@@ -54,7 +54,7 @@ public class LocalContextManager implements ContextManager {
 
     CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(partitionCount).setHandler(result -> {
       if (result.succeeded()) {
-        vertx.sharedData().<String, NetworkContext>getLocalMap(NETWORKS_KEY).put(network.id(), network);
+        vertx.sharedData().<String, NetworkContext>getLocalMap(NETWORKS_KEY).put(network.name(), network);
       }
       doneHandler.handle(result);
     });
@@ -70,7 +70,7 @@ public class LocalContextManager implements ContextManager {
           if (result.failed()) {
             counter.fail(result.cause());
           } else {
-            vertx.sharedData().<String, String>getLocalMap(network.id()).put(partition.address(), result.result());
+            vertx.sharedData().<String, String>getLocalMap(network.name()).put(partition.address(), result.result());
             counter.succeed();
           }
         });
@@ -81,12 +81,12 @@ public class LocalContextManager implements ContextManager {
 
   @Override
   public ContextManager undeployNetwork(NetworkContext network, Handler<AsyncResult<Void>> doneHandler) {
-    LocalMap<String, String> deploymentIds = vertx.sharedData().getLocalMap(network.id());
+    LocalMap<String, String> deploymentIds = vertx.sharedData().getLocalMap(network.name());
 
     CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(deploymentIds.size()).setHandler(result -> {
       if (result.succeeded()) {
-        vertx.sharedData().<String, NetworkContext>getLocalMap(NETWORKS_KEY).remove(network.id());
-        vertx.sharedData().<String, String>getLocalMap(network.id()).clear();
+        vertx.sharedData().<String, NetworkContext>getLocalMap(NETWORKS_KEY).remove(network.name());
+        vertx.sharedData().<String, String>getLocalMap(network.name()).clear();
       }
       doneHandler.handle(result);
     });

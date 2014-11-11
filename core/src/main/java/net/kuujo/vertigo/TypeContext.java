@@ -25,13 +25,6 @@ import io.vertx.core.shareddata.Shareable;
 public interface TypeContext<T extends TypeContext<T>> extends Shareable {
 
   /**
-   * Returns the type ID.
-   *
-   * @return The type ID.
-   */
-  String id();
-
-  /**
    * Returns a formatted representation of the type context.
    *
    * @param formatted Whether to format the type context.
@@ -52,14 +45,6 @@ public interface TypeContext<T extends TypeContext<T>> extends Shareable {
    * @param <T> The type built by the builder.
    */
   public static interface Builder<T extends Builder<T, U>, U extends TypeContext<U>> {
-
-    /**
-     * Sets the unique context ID.
-     *
-     * @param id The unique context ID.
-     * @return The context builder.
-     */
-    T setId(String id);
 
     /**
      * Builds the instance.

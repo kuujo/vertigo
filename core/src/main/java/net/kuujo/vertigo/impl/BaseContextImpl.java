@@ -24,12 +24,6 @@ import net.kuujo.vertigo.TypeContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class BaseContextImpl<T extends TypeContext<T>> implements TypeContext<T> {
-  protected String id;
-
-  @Override
-  public String id() {
-    return id;
-  }
 
   @Override
   public String toString(boolean formatted) {

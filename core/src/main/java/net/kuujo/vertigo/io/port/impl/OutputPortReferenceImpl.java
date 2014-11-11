@@ -46,7 +46,7 @@ public class OutputPortReferenceImpl<T> implements OutputPortReference<T> {
   @Override
   public InputPort<T> messageHandler(Handler<VertigoMessage<T>> handler) {
     vertx.eventBus().<T>consumer(address).handler(message -> {
-      handler.handle(new VertigoMessageImpl<T>(message.headers().get("id"), name, message.body(), message.headers()));
+      handler.handle(new VertigoMessageImpl<T>(message.headers().get("name"), name, message.body(), message.headers()));
     });
     return this;
   }

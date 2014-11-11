@@ -32,8 +32,8 @@ import java.util.*;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ComponentInfoImpl implements ComponentInfo {
-  private String id;
-  private String main;
+  private String name;
+  private String identifier;
   private JsonObject config;
   private int partitions;
   private boolean worker;
@@ -45,13 +45,13 @@ public class ComponentInfoImpl implements ComponentInfo {
   public ComponentInfoImpl() {
   }
 
-  public ComponentInfoImpl(String id) {
-    this.id = id;
+  public ComponentInfoImpl(String name) {
+    this.name = name;
   }
 
   public ComponentInfoImpl(ComponentInfo component) {
-    this.id = component.getId();
-    this.main = component.getMain();
+    this.name = component.getName();
+    this.identifier = component.getIdentifier();
     this.config = component.getConfig();
     this.partitions = component.getPartitions();
     this.worker = component.isWorker();
@@ -61,8 +61,8 @@ public class ComponentInfoImpl implements ComponentInfo {
 
   @SuppressWarnings("unchecked")
   public ComponentInfoImpl(JsonObject component) {
-    this.id = component.getString("id", UUID.randomUUID().toString());
-    this.main = Args.checkNotNull(component.getString("main"));
+    this.name = component.getString("name", UUID.randomUUID().toString());
+    this.identifier = Args.checkNotNull(component.getString("identifier"));
     this.config = component.getJsonObject("config", new JsonObject());
     this.partitions = component.getInteger("partitions", 1);
     this.worker = component.getBoolean("worker");
@@ -81,24 +81,24 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public String getId() {
-    return id;
+  public String getName() {
+    return name;
   }
 
   @Override
-  public ComponentInfo setId(String id) {
-    this.id = id;
+  public ComponentInfo setName(String name) {
+    this.name = name;
     return this;
   }
 
   @Override
-  public String getMain() {
-    return main;
+  public String getIdentifier() {
+    return identifier;
   }
 
   @Override
-  public ComponentInfo setMain(String main) {
-    this.main = main;
+  public ComponentInfo setIdentifier(String identifier) {
+    this.identifier = identifier;
     return this;
   }
 

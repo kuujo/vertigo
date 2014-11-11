@@ -60,13 +60,6 @@ public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext
     }
 
     @Override
-    public Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      port.id = id;
-      return this;
-    }
-
-    @Override
     public Builder setName(String name) {
       Args.checkNotNull(name, "name cannot be null");
       port.name = name;

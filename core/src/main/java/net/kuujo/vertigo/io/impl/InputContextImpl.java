@@ -65,13 +65,6 @@ public class InputContextImpl extends BaseContextImpl<InputContext> implements I
     }
 
     @Override
-    public Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      input.id = id;
-      return this;
-    }
-
-    @Override
     public Builder addPort(InputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       input.ports.put(port.name(), port);

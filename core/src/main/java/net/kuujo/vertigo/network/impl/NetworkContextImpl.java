@@ -32,15 +32,15 @@ import java.util.Map;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implements NetworkContext {
-  private String id;
+  private String name;
   private String address;
   private String version;
   private Network config;
   private Map<String, ComponentContext> components = new HashMap<>();
 
   @Override
-  public String id() {
-    return id;
+  public String name() {
+    return name;
   }
 
   @Override
@@ -88,9 +88,9 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     }
 
     @Override
-    public NetworkContext.Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      network.id = id;
+    public NetworkContext.Builder setName(String name) {
+      Args.checkNotNull(name, "name cannot be null");
+      network.name = name;
       return this;
     }
 
@@ -117,14 +117,14 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     @Override
     public Builder addComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
-      network.components.put(component.id(), component);
+      network.components.put(component.name(), component);
       return this;
     }
 
     @Override
     public Builder removeComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
-      network.components.remove(component.id());
+      network.components.remove(component.name());
       return this;
     }
 
@@ -132,7 +132,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     public Builder setComponents(ComponentContext... components) {
       network.components.clear();
       for (ComponentContext component : components) {
-        network.components.put(component.id(), component);
+        network.components.put(component.name(), component);
       }
       return this;
     }
@@ -142,7 +142,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
       Args.checkNotNull(components, "components cannot be null");
       network.components.clear();
       for (ComponentContext component : components) {
-        network.components.put(component.id(), component);
+        network.components.put(component.name(), component);
       }
       return this;
     }
@@ -151,7 +151,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
      * Checks network fields.
      */
     private void checkFields() {
-      Args.checkNotNull(network.id, "id cannot be null");
+      Args.checkNotNull(network.name, "name cannot be null");
       Args.checkNotNull(network.version, "version cannot be null");
       Args.checkNotNull(network.config, "configuration cannot be null");
       Args.checkNotNull(network.components, "components cannot be null");

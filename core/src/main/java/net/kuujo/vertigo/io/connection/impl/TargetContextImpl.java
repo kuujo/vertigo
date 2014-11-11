@@ -59,13 +59,6 @@ public class TargetContextImpl extends BaseContextImpl<TargetContext> implements
     }
 
     @Override
-    public TargetContext.Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      target.id = id;
-      return this;
-    }
-
-    @Override
     public Builder setComponent(String component) {
       target.component = component;
       return this;

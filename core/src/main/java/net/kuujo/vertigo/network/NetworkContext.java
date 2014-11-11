@@ -56,11 +56,11 @@ public interface NetworkContext extends TypeContext<NetworkContext> {
   /**
    * Returns the network ID.<p>
    *
-   * The network ID is unique to the network within a Vertigo cluster.
+   * The network name is unique to the network within a Vertigo cluster.
    *
-   * @return The network ID.
+   * @return The network name.
    */
-  String id();
+  String name();
 
   /**
    * Returns the network address.
@@ -115,12 +115,12 @@ public interface NetworkContext extends TypeContext<NetworkContext> {
   public static interface Builder extends TypeContext.Builder<Builder, NetworkContext> {
 
     /**
-     * Sets the network ID.
+     * Sets the network name.
      *
-     * @param id The unique network ID.
+     * @param name The unique network name.
      * @return The network context builder.
      */
-    Builder setId(String id);
+    Builder setName(String name);
 
     /**
      * Sets the network address.

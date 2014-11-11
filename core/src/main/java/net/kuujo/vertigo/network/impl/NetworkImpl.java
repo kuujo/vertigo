@@ -50,7 +50,7 @@ public class NetworkImpl implements Network {
   }
 
   public NetworkImpl(JsonObject network) {
-    this.id = Args.checkNotNull(network.getString(NETWORK_ID));
+    this.id = Args.checkNotNull(network.getString(NETWORK_NAME));
     JsonArray components = network.getJsonArray(NETWORK_COMPONENTS);
     if (components != null) {
       for (Object component : components) {
@@ -66,13 +66,13 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public String getId() {
+  public String getName() {
     return id;
   }
 
   @Override
-  public Network setId(String id) {
-    this.id = id;
+  public Network setName(String name) {
+    this.id = name;
     return this;
   }
 
@@ -84,7 +84,7 @@ public class NetworkImpl implements Network {
   @Override
   public ComponentInfo getComponent(String name) {
     for (ComponentInfo component : components) {
-      if (component.getId().equals(name)) {
+      if (component.getName().equals(name)) {
         return component;
       }
     }
@@ -94,7 +94,7 @@ public class NetworkImpl implements Network {
   @Override
   public boolean hasComponent(String name) {
     for (ComponentInfo component : components) {
-      if (component.getId().equals(name)) {
+      if (component.getName().equals(name)) {
         return true;
       }
     }
@@ -119,7 +119,7 @@ public class NetworkImpl implements Network {
     Iterator<ComponentInfo> iterator = components.iterator();
     while (iterator.hasNext()) {
       ComponentInfo component = iterator.next();
-      if (component.getId() != null && component.getId().equals(name)) {
+      if (component.getName() != null && component.getName().equals(name)) {
         iterator.remove();
         return component;
       }

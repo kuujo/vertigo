@@ -74,13 +74,6 @@ public class PartitionContextImpl extends BaseContextImpl<PartitionContext> impl
     }
 
     @Override
-    public Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      partition.id = id;
-      return this;
-    }
-
-    @Override
     public PartitionContext.Builder setAddress(String address) {
       partition.address = Args.checkNotNull(address, "address cannot be null");
       return this;

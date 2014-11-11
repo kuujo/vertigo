@@ -40,7 +40,7 @@ import net.kuujo.vertigo.util.Openable;
  */
 public class InputConnectionImpl<T> implements InputConnection<T>, Openable<InputConnection<T>>, Closeable<InputConnection<T>> {
   private static final String ACTION_HEADER = "action";
-  private static final String ID_HEADER = "id";
+  private static final String ID_HEADER = "name";
   private static final String INDEX_HEADER = "index";
   private static final String CONNECT_ACTION = "connect";
   private static final String DISCONNECT_ACTION = "disconnect";
@@ -247,7 +247,7 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
       VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, index, context.port().name(), message.body(), message.headers());
 
       if (log.isDebugEnabled()) {
-        log.debug(String.format("%s - Received: Message[id=%s, value=%s]", this, id, message));
+        log.debug(String.format("%s - Received: Message[name=%s, value=%s]", this, id, message));
       }
       messageHandler.handle(vertigoMessage);
     }

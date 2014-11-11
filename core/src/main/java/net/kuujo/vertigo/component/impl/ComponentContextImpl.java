@@ -43,7 +43,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   private NetworkContext network;
 
   @Override
-  public String id() {
+  public String name() {
     return id;
   }
 
@@ -77,18 +77,6 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     PartitionContext instance = null;
     for (PartitionContext info : partitions) {
       if (info.number() == partitionNumber) {
-        instance = info;
-        break;
-      }
-    }
-    return instance;
-  }
-
-  @Override
-  public PartitionContext partition(String id) {
-    PartitionContext instance = null;
-    for (PartitionContext info : partitions) {
-      if (info.id().equals(id)) {
         instance = info;
         break;
       }
@@ -131,9 +119,9 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public ComponentContext.Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      component.id = id;
+    public ComponentContext.Builder setName(String name) {
+      Args.checkNotNull(name, "name cannot be null");
+      component.id = name;
       return this;
     }
 
@@ -144,9 +132,9 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public Builder setMain(String main) {
-      Args.checkNotNull(main, "main cannot be null");
-      component.main = main;
+    public Builder setIdentifier(String identifier) {
+      Args.checkNotNull(identifier, "main cannot be null");
+      component.main = identifier;
       return this;
     }
 
@@ -172,7 +160,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     public Builder addPartition(PartitionContext partition) {
       Args.checkNotNull(partition, "partition cannot be null");
       for (PartitionContext context : component.partitions) {
-        if (context.id().equals(partition.id()) || context.number() == partition.number()) {
+        if (context.number() == partition.number()) {
           return this;
         }
       }
@@ -185,7 +173,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
       Args.checkNotNull(partition, "partition cannot be null");
       Iterator<PartitionContext> iterator = component.partitions.iterator();
       while (iterator.hasNext()) {
-        if (iterator.next().id().equals(partition.id())) {
+        if (iterator.next().number() == partition.number()) {
           iterator.remove();
         }
       }
@@ -246,7 +234,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
      * Checks all fields in the constructed component.
      */
     private void checkFields() {
-      Args.checkNotNull(component.id, "id cannot be null");
+      Args.checkNotNull(component.id, "name cannot be null");
       Args.checkNotNull(component.address, "address cannot be null");
     }
 

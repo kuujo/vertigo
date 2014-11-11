@@ -65,13 +65,6 @@ public class OutputContextImpl extends BaseContextImpl<OutputContext> implements
     }
 
     @Override
-    public Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      output.id = id;
-      return this;
-    }
-
-    @Override
     public Builder addPort(OutputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       output.ports.put(port.name(), port);

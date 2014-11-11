@@ -36,7 +36,7 @@ import java.util.UUID;
  */
 public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<OutputConnection<T>>, Closeable<OutputConnection<T>> {
   private static final String ACTION_HEADER = "action";
-  private static final String ID_HEADER = "id";
+  private static final String ID_HEADER = "name";
   private static final String INDEX_HEADER = "index";
   private static final String CONNECT_ACTION = "connect";
   private static final String DISCONNECT_ACTION = "disconnect";
@@ -350,7 +350,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
       options.setHeaders(headers);
 
       if (log.isDebugEnabled()) {
-        log.debug(String.format("%s - Send: Message[id=%s, message=%s]", this, id, message));
+        log.debug(String.format("%s - Send: Message[name=%s, message=%s]", this, id, message));
       }
       eventBus.send(inAddress, message, options);
       checkFull();

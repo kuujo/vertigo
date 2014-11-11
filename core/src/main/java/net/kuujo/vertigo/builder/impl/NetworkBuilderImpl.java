@@ -46,7 +46,7 @@ public class NetworkBuilderImpl implements NetworkBuilder {
 
   @Override
   public NetworkBuilder id(String id) {
-    network.setId(id);
+    network.setName(id);
     return this;
   }
 

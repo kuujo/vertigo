@@ -33,16 +33,16 @@ import java.util.Set;
 public interface ComponentInfo {
 
   /**
-   * <code>id</code> is a string indicating the network unique component id. This
+   * <code>name</code> is a string indicating the network unique component name. This
    * name is used as the basis for generating unique event bus addresses.
    */
-  public static final String COMPONENT_ID = "id";
+  public static final String COMPONENT_NAME = "name";
 
   /**
-   * <code>main</code> is a string indicating the verticle main. This field is required
+   * <code>identifier</code> is a string indicating the verticle identifier. This field is required
    * for all components.
    */
-  public static final String COMPONENT_MAIN = "main";
+  public static final String COMPONENT_IDENTIFIER = "identifier";
 
   /**
    * <code>config</code> is an object defining the configuration to pass to each instance
@@ -77,36 +77,36 @@ public interface ComponentInfo {
   public static final String COMPONENT_RESOURCES = "resources";
 
   /**
-   * Returns the component ID.
+   * Returns the component name.
    *
-   * @return The component ID.
+   * @return The component name.
    */
-  String getId();
+  String getName();
 
   /**
-   * Sets the component ID.
+   * Sets the component name.
    *
-   * @param id The component ID.
+   * @param name The component name.
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setId(String id);
+  ComponentInfo setName(String name);
 
   /**
-   * Returns the component main.
+   * Returns the component verticle identifier.
    *
-   * @return The component main.
+   * @return The component verticle identifier.
    */
-  String getMain();
+  String getIdentifier();
 
   /**
-   * Sets the component main.
+   * Sets the component verticle identifier.
    *
-   * @param main The component main.
+   * @param identifier The component verticle identifier.
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setMain(String main);
+  ComponentInfo setIdentifier(String identifier);
 
   /**
    * Returns the component configuration.

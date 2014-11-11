@@ -47,27 +47,27 @@ public final class ContextBuilder {
     NetworkContext.Builder context = NetworkContext.builder();
 
     // Set basic network configuration options.
-    context.setId(network.getId());
-    context.setAddress(network.getId());
+    context.setName(network.getName());
+    context.setAddress(network.getName());
     context.setVersion(UUID.randomUUID().toString());
     context.setConfig(network);
 
     // Set up network components without inputs. Inputs are stored in a map so
-    // that they can be set up after all component instances have been set up.
+    // that they can be set up after all component partitions have been set up.
     Map<String, ComponentContext> components = new HashMap<>(network.getComponents().size());
     for (ComponentInfo componentInfo : network.getComponents()) {
       // Set up basic component configuration options.
       ComponentContext.Builder component = ComponentContext.builder();
-      component.setId(componentInfo.getId());
-      String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getId(), componentInfo.getId());
+      component.setName(componentInfo.getName());
+      String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), componentInfo.getName());
       component.setAddress(address);
-      component.setMain(componentInfo.getMain());
+      component.setIdentifier(componentInfo.getIdentifier());
       component.setWorker(componentInfo.isWorker());
       component.setMultiThreaded(componentInfo.isMultiThreaded());
       component.setConfig(componentInfo.getConfig());
       component.setResources(componentInfo.getResources());
 
-      // Set up module instances.
+      // Set up component partitions.
       List<PartitionContext> partitions = new ArrayList<>(componentInfo.getPartitions());
       for (int i = 1; i <= componentInfo.getPartitions(); i++) {
         PartitionContext.Builder partition = PartitionContext.builder();
@@ -79,7 +79,7 @@ public final class ContextBuilder {
       }
       component.setPartitions(partitions);
 
-      components.put(componentInfo.getId(), component.build());
+      components.put(componentInfo.getName(), component.build());
     }
 
     // Iterate through connections and create connection contexts.
@@ -98,8 +98,8 @@ public final class ContextBuilder {
       // If a component is added to the configuration later then the context will need to
       // be rebuilt.
       if (source != null && target != null) {
-        ComponentInfo sourceInfo = network.getComponent(source.id());
-        ComponentInfo targetInfo = network.getComponent(target.id());
+        ComponentInfo sourceInfo = network.getComponent(source.name());
+        ComponentInfo targetInfo = network.getComponent(target.name());
 
         for (PartitionContext sourceContext : source.partitions()) {
           // Check if the port already exists on the source's output.

@@ -59,11 +59,11 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   }
 
   /**
-   * Returns the component ID.
+   * Returns the component name.
    *
-   * @return The component ID.
+   * @return The component name.
    */
-  String id();
+  String name();
 
   /**
    * Returns the component address.
@@ -109,14 +109,6 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   PartitionContext partition(int partitionNumber);
 
   /**
-   * Gets component partition context by partition id.
-   * 
-   * @param id The partition id.
-   * @return A component partition or <code>null</code> if the partition doesn't exist.
-   */
-  PartitionContext partition(String id);
-
-  /**
    * Returns a boolean indicating whether the verticle is a worker verticle.
    *
    * @return Indicates whether the verticle is a worker verticle.
@@ -151,12 +143,12 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   public static interface Builder extends TypeContext.Builder<Builder, ComponentContext> {
 
     /**
-     * Sets the component ID.
+     * Sets the component name.
      *
-     * @param id The component ID.
+     * @param name The component name.
      * @return The component context builder.
      */
-    Builder setId(String id);
+    Builder setName(String name);
 
     /**
      * Sets the component address.
@@ -167,12 +159,12 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
     Builder setAddress(String address);
 
     /**
-     * Sets the component main.
+     * Sets the component verticle identifier.
      *
-     * @param main The component main.
+     * @param identifier The component verticle identifier.
      * @return The component context builder.
      */
-    Builder setMain(String main);
+    Builder setIdentifier(String identifier);
 
     /**
      * Sets the component configuration.

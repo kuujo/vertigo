@@ -68,13 +68,6 @@ public class OutputStreamContextImpl extends BaseContextImpl<OutputStreamContext
     }
 
     @Override
-    public Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      stream.id = id;
-      return this;
-    }
-
-    @Override
     public Builder addConnection(OutputConnectionContext connection) {
       Args.checkNotNull(connection, "connection cannot be null");
       stream.connections.add(connection);

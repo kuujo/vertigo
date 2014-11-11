@@ -59,13 +59,6 @@ public class SourceContextImpl extends BaseContextImpl<SourceContext> implements
     }
 
     @Override
-    public SourceContext.Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      source.id = id;
-      return this;
-    }
-
-    @Override
     public Builder setComponent(String component) {
       source.component = component;
       return this;

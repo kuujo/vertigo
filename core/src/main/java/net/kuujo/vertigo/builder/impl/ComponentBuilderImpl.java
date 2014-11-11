@@ -44,7 +44,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
 
   @Override
   public ComponentBuilder main(String main) {
-    component.setMain(main);
+    component.setIdentifier(main);
     return this;
   }
 

@@ -50,13 +50,6 @@ public class OutputConnectionContextImpl extends BaseConnectionContextImpl<Outpu
     }
 
     @Override
-    public OutputConnectionContext.Builder setId(String id) {
-      Args.checkNotNull(id, "id cannot be null");
-      connection.id = id;
-      return this;
-    }
-
-    @Override
     public Builder setSource(SourceContext source) {
       Args.checkNotNull(source, "source cannot be null");
       connection.source = source;

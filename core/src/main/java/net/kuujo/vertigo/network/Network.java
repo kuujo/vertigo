@@ -39,10 +39,10 @@ import java.util.Collection;
 public interface Network {
 
   /**
-   * <code>id</code> is a string indicating the unique network ID. This is the
+   * <code>name</code> is a string indicating the unique network name. This is the
    * address at which the network will monitor network components. This field is required.
    */
-  static final String NETWORK_ID = "id";
+  static final String NETWORK_NAME = "name";
 
   /**
    * <code>components</code> is an object defining network component configurations. Each
@@ -120,28 +120,28 @@ public interface Network {
   /**
    * Returns a new network builder.
    *
-   * @param id The unique network ID.
+   * @param name The unique network name.
    * @return The network builder.
    */
-  static NetworkBuilder builder(String id) {
-    return new NetworkBuilderImpl(id);
+  static NetworkBuilder builder(String name) {
+    return new NetworkBuilderImpl(name);
   }
 
   /**
-   * Returns the unique network ID.
+   * Returns the unique network name.
    *
-   * @return The unique network ID.
+   * @return The unique network name.
    */
-  String getId();
+  String getName();
 
   /**
-   * Sets the unique network ID.
+   * Sets the unique network name.
    *
-   * @param id The unique network ID.
+   * @param name The unique network name.
    * @return The network configuration.
    */
   @Fluent
-  Network setId(String id);
+  Network setName(String name);
 
   /**
    * Gets a list of network components.
@@ -153,25 +153,25 @@ public interface Network {
   /**
    * Gets a component by name.
    *
-   * @param id The component id.
+   * @param name The component name.
    * @return The component info.
-   * @throws IllegalArgumentException If the given component id does not exist within
+   * @throws IllegalArgumentException If the given component name does not exist within
    *           the network.
    */
-  ComponentInfo getComponent(String id);
+  ComponentInfo getComponent(String name);
 
   /**
    * Returns a boolean indicating whether the network has a component.
    *
-   * @param id The component id.
+   * @param name The component name.
    * @return Indicates whether the component exists in the network.
    */
-  boolean hasComponent(String id);
+  boolean hasComponent(String name);
 
   /**
    * Adds a component to the network.
    *
-   * @param id The component id.
+   * @param id The component name.
    * @return The component info.
    */
   ComponentInfo addComponent(String id);

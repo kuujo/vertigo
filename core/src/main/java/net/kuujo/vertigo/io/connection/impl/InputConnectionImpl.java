@@ -105,14 +105,9 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
-    this.inAddress = String.format("%s.in", context.address());
-    this.outAddress = String.format("%s.out", context.address());
-    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.address()));
-  }
-
-  @Override
-  public String address() {
-    return context.address();
+    this.inAddress = String.format("%s.in", context.port().input().partition().address());
+    this.outAddress = String.format("%s.out", context.port().input().partition().address());
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.port().input().partition().address()));
   }
 
   public InputConnectionContext context() {
@@ -243,8 +238,7 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
   private void doMessage(final Message<T> message) {
     if (messageHandler != null) {
       String id = message.headers().get(ID_HEADER);
-      long index = Long.valueOf(message.headers().get(INDEX_HEADER));
-      VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, index, context.port().name(), message.body(), message.headers());
+      VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, context.port().name(), message.body(), message.headers());
 
       if (log.isDebugEnabled()) {
         log.debug(String.format("%s - Received: Message[name=%s, value=%s]", this, id, message));

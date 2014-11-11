@@ -45,7 +45,7 @@ public class OutputStreamImpl<T> implements OutputStream<T>, Openable<OutputStre
   private static final MultiMap EMPTY_HEADERS = new CaseInsensitiveHeaders();
   private final Logger log;
   private final OutputStreamContext context;
-  private final Map<String, OutputConnectionImpl> connections = new HashMap<>();
+  private final Map<Integer, OutputConnectionImpl> connections = new HashMap<>();
   private int maxQueueSize;
   private Partitioner partitioner;
 
@@ -53,14 +53,9 @@ public class OutputStreamImpl<T> implements OutputStream<T>, Openable<OutputStre
     this.context = context;
     this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputStreamImpl.class.getName(), context.port().toString()));
     context.connections().forEach((connection) -> {
-      connections.put(connection.address(), new OutputConnectionImpl<>(vertx, connection));
+      connections.put(connection.target().partition(), new OutputConnectionImpl<>(vertx, connection));
     });
     this.partitioner = context.partitioner();
-  }
-
-  @Override
-  public String id() {
-    return context.id();
   }
 
   @Override
@@ -130,8 +125,8 @@ public class OutputStreamImpl<T> implements OutputStream<T>, Openable<OutputStre
   @Override
   @SuppressWarnings("unchecked")
   public OutputStream<T> send(T message) {
-    for (OutputConnectionContext connectionInfo : partitioner.partition(EMPTY_HEADERS, context.connections())) {
-      OutputConnection connection = connections.get(connectionInfo.address());
+    for (OutputConnectionContext connectionContext : partitioner.partition(EMPTY_HEADERS, context.connections())) {
+      OutputConnection connection = connections.get(connectionContext.target().partition());
       if (connection != null) {
         connection.send(message);
       }
@@ -142,8 +137,8 @@ public class OutputStreamImpl<T> implements OutputStream<T>, Openable<OutputStre
   @Override
   @SuppressWarnings("unchecked")
   public OutputStream<T> send(T message, MultiMap headers) {
-    for (OutputConnectionContext connectionInfo : partitioner.partition(headers, context.connections())) {
-      OutputConnection connection = connections.get(connectionInfo.address());
+    for (OutputConnectionContext connectionContext : partitioner.partition(headers, context.connections())) {
+      OutputConnection connection = connections.get(connectionContext.target().partition());
       if (connection != null) {
         connection.send(message, headers);
       }

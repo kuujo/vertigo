@@ -68,14 +68,7 @@ public class InputCollectorImpl implements InputCollector, Openable<InputCollect
       if (open) {
         throw new IllegalStateException("cannot declare port on locked input collector");
       }
-      port = new InputPortImpl<>(vertx, InputPortContext.builder().setId(
-        String.format(
-          "%s:%s:%d:%s",
-          context.partition().component().network().name(),
-          context.partition().component().name(),
-          context.partition().number(),
-          name
-        )).setName(name).build());
+      port = new InputPortImpl<>(vertx, InputPortContext.builder().setName(name).build());
       ports.put(name, port);
     }
     return port;

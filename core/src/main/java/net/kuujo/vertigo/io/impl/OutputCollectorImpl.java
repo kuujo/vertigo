@@ -67,14 +67,7 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
       if (open) {
         throw new IllegalStateException("cannot declare port on locked output collector");
       }
-      port = new OutputPortImpl<>(vertx, OutputPortContext.builder().setId(
-        String.format(
-          "%s:%s:%d:%s",
-          context.partition().component().network().name(),
-          context.partition().component().name(),
-          context.partition().number(),
-          name
-        )).setName(name).build());
+      port = new OutputPortImpl<>(vertx, OutputPortContext.builder().setName(name).build());
       ports.put(name, port);
     }
     return port;

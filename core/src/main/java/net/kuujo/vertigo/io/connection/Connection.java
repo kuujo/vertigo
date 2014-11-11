@@ -26,12 +26,4 @@ package net.kuujo.vertigo.io.connection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Connection {
-
-  /**
-   * Returns the connection address.
-   *
-   * @return The connection address.
-   */
-  String address();
-
 }

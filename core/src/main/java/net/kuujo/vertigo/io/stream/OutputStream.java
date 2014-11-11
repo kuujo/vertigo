@@ -30,12 +30,4 @@ import net.kuujo.vertigo.io.ControllableOutput;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface OutputStream<T> extends ControllableOutput<OutputStream<T>, T> {
-
-  /**
-   * Returns the output stream ID.
-   *
-   * @return The unique output stream identifier.
-   */
-  String id();
-
 }

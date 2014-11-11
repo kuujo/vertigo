@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.stream;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.partition.Partitioner;
 import net.kuujo.vertigo.io.port.OutputPortContext;
@@ -34,7 +34,7 @@ import java.util.List;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputStreamContext extends Context<OutputStreamContext> {
+public interface OutputStreamContext extends TypeContext<OutputStreamContext> {
 
   /**
    * Returns a new output stream context builder.
@@ -79,7 +79,7 @@ public interface OutputStreamContext extends Context<OutputStreamContext> {
   /**
    * Output stream context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, OutputStreamContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, OutputStreamContext> {
 
     /**
      * Adds a connection to the stream.

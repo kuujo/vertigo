@@ -17,7 +17,7 @@
 package net.kuujo.vertigo.io.connection;
 
 
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 
 /**
  * Connection endpoint context.
@@ -26,7 +26,7 @@ import net.kuujo.vertigo.Context;
  *
  * @param <T> The endpoint type.
  */
-public interface EndpointContext<T extends EndpointContext<T>> extends Context<T> {
+public interface EndpointContext<T extends EndpointContext<T>> extends TypeContext<T> {
 
   /**
    * Returns the endpoint component name.

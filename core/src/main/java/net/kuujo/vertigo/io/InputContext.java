@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.io.impl.InputContextImpl;
 import net.kuujo.vertigo.io.port.InputPortContext;
@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputContext extends Context<InputContext> {
+public interface InputContext extends TypeContext<InputContext> {
 
   /**
    * Returns a new input context builder.
@@ -76,7 +76,7 @@ public interface InputContext extends Context<InputContext> {
   /**
    * Input context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, InputContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, InputContext> {
 
     /**
      * Adds an input port.

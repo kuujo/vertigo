@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.io.impl.OutputContextImpl;
 import net.kuujo.vertigo.io.port.OutputPortContext;
@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputContext extends Context<OutputContext> {
+public interface OutputContext extends TypeContext<OutputContext> {
 
   /**
    * Returns a new output context builder.
@@ -76,7 +76,7 @@ public interface OutputContext extends Context<OutputContext> {
   /**
    * Output context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, OutputContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, OutputContext> {
 
     /**
      * Adds an output port.

@@ -20,7 +20,7 @@ package net.kuujo.vertigo;
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface Context<T extends Context<T>> {
+public interface TypeContext<T extends TypeContext<T>> {
 
   /**
    * Returns the type ID.
@@ -49,7 +49,7 @@ public interface Context<T extends Context<T>> {
    *
    * @param <T> The type built by the builder.
    */
-  public static interface Builder<T extends Builder<T, U>, U extends Context<U>> {
+  public static interface Builder<T extends Builder<T, U>, U extends TypeContext<U>> {
 
     /**
      * Sets the unique context ID.

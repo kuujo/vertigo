@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 
 /**
  * Connection contexts represent a direct connection between two partitions
@@ -25,7 +25,7 @@ import net.kuujo.vertigo.Context;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ConnectionContext<T extends ConnectionContext<T>> extends Context<T> {
+public interface ConnectionContext<T extends ConnectionContext<T>> extends TypeContext<T> {
 
   /**
    * Returns the unique connection address.

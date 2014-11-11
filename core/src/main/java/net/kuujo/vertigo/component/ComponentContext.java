@@ -17,7 +17,7 @@ package net.kuujo.vertigo.component;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.component.impl.ComponentContextImpl;
 import net.kuujo.vertigo.network.NetworkContext;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ComponentContext extends Context<ComponentContext> {
+public interface ComponentContext extends TypeContext<ComponentContext> {
 
   /**
    * Returns a new component context builder.
@@ -141,7 +141,7 @@ public interface ComponentContext extends Context<ComponentContext> {
   /**
    * Component context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, ComponentContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, ComponentContext> {
 
     /**
      * Sets the component name.

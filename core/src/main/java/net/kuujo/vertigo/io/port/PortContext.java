@@ -15,14 +15,14 @@
  */
 package net.kuujo.vertigo.io.port;
 
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 
 /**
  * Port context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface PortContext<T extends PortContext<T>> extends Context<T> {
+public interface PortContext<T extends PortContext<T>> extends TypeContext<T> {
 
   /**
    * Returns the port name.

@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.connection.impl.SourceContextImpl;
 
 /**
@@ -49,7 +49,7 @@ public interface SourceContext extends EndpointContext<SourceContext> {
   /**
    * Source context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, SourceContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, SourceContext> {
 
     /**
      * Sets the source component.

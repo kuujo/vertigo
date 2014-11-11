@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.network;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.network.impl.NetworkContextImpl;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface NetworkContext extends Context<NetworkContext> {
+public interface NetworkContext extends TypeContext<NetworkContext> {
 
   /**
    * Returns a network context builder.
@@ -105,7 +105,7 @@ public interface NetworkContext extends Context<NetworkContext> {
   /**
    * Network context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, NetworkContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, NetworkContext> {
 
     /**
      * Sets the network name.

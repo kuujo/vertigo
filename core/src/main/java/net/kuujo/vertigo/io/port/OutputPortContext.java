@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.impl.OutputPortContextImpl;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
@@ -68,7 +68,7 @@ public interface OutputPortContext extends PortContext<OutputPortContext> {
   /**
    * Output port context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, OutputPortContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, OutputPortContext> {
 
     /**
      * Sets the port name.

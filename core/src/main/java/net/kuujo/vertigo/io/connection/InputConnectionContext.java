@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.Context;
+import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.connection.impl.InputConnectionContextImpl;
 import net.kuujo.vertigo.io.port.InputPortContext;
 
@@ -58,7 +58,7 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
   /**
    * Input connection context builder.
    */
-  public static interface Builder extends Context.Builder<Builder, InputConnectionContext> {
+  public static interface Builder extends TypeContext.Builder<Builder, InputConnectionContext> {
 
     /**
      * Sets the connection address.

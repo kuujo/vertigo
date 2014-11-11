@@ -15,16 +15,16 @@
  */
 package net.kuujo.vertigo.network.impl;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.ComponentDescriptor;
 import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.ConnectionDescriptor;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.io.connection.impl.ConnectionInfoImpl;
 import net.kuujo.vertigo.network.Network;
-import net.kuujo.vertigo.network.NetworkDescriptor;
+import net.kuujo.vertigo.util.Args;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,13 +49,19 @@ public class NetworkImpl implements Network {
     this.id = id;
   }
 
-  public NetworkImpl(NetworkDescriptor network) {
-    this.id = network.id();
-    for (ComponentDescriptor component : network.components()) {
-      this.components.add(new ComponentInfoImpl(component));
+  public NetworkImpl(JsonObject network) {
+    this.id = Args.checkNotNull(network.getString(NETWORK_ID));
+    JsonArray components = network.getJsonArray(NETWORK_COMPONENTS);
+    if (components != null) {
+      for (Object component : components) {
+        this.components.add(new ComponentInfoImpl((JsonObject) component));
+      }
     }
-    for (ConnectionDescriptor connection : network.connections()) {
-      this.connections.add(new ConnectionInfoImpl(connection));
+    JsonArray connections = network.getJsonArray(NETWORK_CONNECTIONS);
+    if (connections != null) {
+      for (Object connection : connections) {
+        this.connections.add(new ConnectionInfoImpl((JsonObject) connection));
+      }
     }
   }
 

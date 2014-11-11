@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.io.port.impl;
+
+import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.port.OutputPortInfo;
 
 /**
- * Base endpoint descriptor.
+ * Output port info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface EndpointDescriptor {
+public class OutputPortInfoImpl extends BasePortInfoImpl<OutputPortInfo> implements OutputPortInfo {
 
-  /**
-   * Returns the endpoint component ID.
-   *
-   * @return The endpoint component ID.
-   */
-  String component();
+  public OutputPortInfoImpl(String name, Class<?> type) {
+    super(name, type);
+  }
 
-  /**
-   * Returns the endpoint port.
-   *
-   * @return The endpoint port.
-   */
-  String port();
+  public OutputPortInfoImpl(JsonObject port) {
+    super(port);
+  }
 
 }

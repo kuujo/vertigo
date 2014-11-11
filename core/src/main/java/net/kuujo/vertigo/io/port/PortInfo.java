@@ -13,24 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
-
-import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.SourceDescriptor;
+package net.kuujo.vertigo.io.port;
 
 /**
- * Source descriptor implementation.
+ * Port info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class SourceDescriptorImpl extends EndpointDescriptorImpl implements SourceDescriptor {
+public interface PortInfo<T extends PortInfo<T>> {
 
-  public SourceDescriptorImpl(SourceDescriptor source) {
-    super(source);
-  }
+  /**
+   * Returns the port name.
+   *
+   * @return The port name.
+   */
+  String getName();
 
-  public SourceDescriptorImpl(JsonObject source) {
-    super(source);
-  }
+  /**
+   * Sets the port name.
+   *
+   * @param name The port name.
+   * @return The port info.
+   */
+  T setName(String name);
+
+  /**
+   * Returns the port type.
+   *
+   * @return The port type.
+   */
+  Class<?> getType();
+
+  /**
+   * Sets the port type.
+   *
+   * @param type The port type.
+   * @return The port info.
+   */
+  T setType(Class<?> type);
 
 }

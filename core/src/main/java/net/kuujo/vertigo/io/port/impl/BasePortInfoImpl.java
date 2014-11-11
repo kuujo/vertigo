@@ -13,55 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
+package net.kuujo.vertigo.io.port.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.EndpointInfo;
-import net.kuujo.vertigo.util.Args;
+import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.io.port.PortInfo;
 
 /**
- * Connection endpoint.
+ * Port info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class EndpointInfoImpl<T extends EndpointInfo<T>> implements EndpointInfo<T> {
-  protected String component;
-  protected String port;
+abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
+  private String name;
+  private Class<?> type;
 
-  protected EndpointInfoImpl() {
+  protected BasePortInfoImpl(String name, Class<?> type) {
+    this.name = name;
+    this.type = type;
   }
 
-  protected EndpointInfoImpl(T endpoint) {
-    this.component = endpoint.getComponent();
-    this.port = endpoint.getPort();
-  }
-
-  protected EndpointInfoImpl(JsonObject endpoint) {
-    this.component = Args.checkNotNull(endpoint.getString(ENDPOINT_COMPONENT));
-    this.port = Args.checkNotNull(endpoint.getString(ENDPOINT_PORT));
+  protected BasePortInfoImpl(JsonObject port) {
+    this.name = port.getString("name");
+    String type = port.getString("type");
+    if (type != null) {
+      try {
+        this.type = Class.forName(type);
+      } catch (ClassNotFoundException e) {
+        throw new VertigoException(e);
+      }
+    }
   }
 
   @Override
-  public String getComponent() {
-    return component;
+  public String getName() {
+    return name;
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public T setComponent(String component) {
-    this.component = component;
+  public T setName(String name) {
+    this.name = name;
     return (T) this;
   }
 
   @Override
-  public String getPort() {
-    return port;
+  public Class<?> getType() {
+    return type;
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public T setPort(String port) {
-    this.port = port;
+  public T setType(Class<?> type) {
+    this.type = type;
     return (T) this;
   }
 

@@ -31,6 +31,28 @@ import net.kuujo.vertigo.io.partition.Partitioner;
 public interface ConnectionInfo extends TypeInfo {
 
   /**
+   * <code>source</code> is an object defining the connection source. See the
+   * {@link SourceInfo} documentation for details on the source structure.
+   */
+  public static final String CONNECTION_SOURCE = "source";
+
+  /**
+   * <code>target</code> is an object defining the connection target. See the
+   * {@link TargetInfo} documentation for details on the target structure.
+   */
+  public static final String CONNECTION_TARGET = "target";
+
+  /**
+   * <code>partitioner</code> is an object defining the connection partitioner. The partitioner
+   * definition should contain a <code>type</code> which indicates the partitioner type,
+   * e.g. <code>round-robin</code>, <code>random</code>, <code>hash</code>, <code>fair</code>,
+   * <code>all</code>, or <code>custom</code>. If a <code>custom</code> selector is indicated
+   * then an additional <code>selector</code> field must be provided which indicates the
+   * custom selector class.
+   */
+  public static final String CONNECTION_PARTITIONER = "partitioner";
+
+  /**
    * Sets the connection source.
    *
    * @param source The connection source.

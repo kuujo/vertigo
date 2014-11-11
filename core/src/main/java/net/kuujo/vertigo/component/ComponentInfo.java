@@ -16,6 +16,8 @@
 package net.kuujo.vertigo.component;
 
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.InputInfo;
+import net.kuujo.vertigo.io.OutputInfo;
 
 import java.util.Collection;
 import java.util.Set;
@@ -26,6 +28,50 @@ import java.util.Set;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface ComponentInfo {
+
+  /**
+   * <code>id</code> is a string indicating the network unique component id. This
+   * name is used as the basis for generating unique event bus addresses.
+   */
+  public static final String COMPONENT_ID = "id";
+
+  /**
+   * <code>main</code> is a string indicating the verticle main. This field is required
+   * for all components.
+   */
+  public static final String COMPONENT_MAIN = "main";
+
+  /**
+   * <code>config</code> is an object defining the configuration to pass to each instance
+   * of the component. If no configuration is provided then an empty configuration will be
+   * passed to component instances.
+   */
+  public static final String COMPONENT_CONFIG = "config";
+
+  /**
+   * <code>partitions</code> is a number indicating the number of partitions of the
+   * component to deploy. Defaults to <code>1</code>
+   */
+  public static final String COMPONENT_PARTITIONS = "partitions";
+
+  /**
+   * <code>worker</code> is a boolean indicating whether this verticle should be deployed
+   * as a worker verticle. Defaults to <code>false</code>
+   */
+  public static final String COMPONENT_WORKER = "worker";
+
+  /**
+   * <code>multi-threaded</code> is a boolean indicating whether a worker verticle is
+   * multi-threaded. This option only applies to verticles where <code>worker</code> is
+   * <code>true</code>. Defaults to <code>false</code>
+   */
+  public static final String COMPONENT_MULTI_THREADED = "multi-threaded";
+
+  /**
+   * <code>resources</code> is a list of resources that should be distributed with this
+   * component when clustering.
+   */
+  public static final String COMPONENT_RESOURCES = "resources";
 
   /**
    * Returns the component ID.
@@ -116,6 +162,36 @@ public interface ComponentInfo {
    * @return The component info.
    */
   ComponentInfo setMultiThreaded(boolean multiThreaded);
+
+  /**
+   * Returns the component input info.
+   *
+   * @return The component input info.
+   */
+  InputInfo getInput();
+
+  /**
+   * Sets the component input info.
+   *
+   * @param input The component input info.
+   * @return The component info.
+   */
+  ComponentInfo setInput(InputInfo input);
+
+  /**
+   * Returns the component output info.
+   *
+   * @return The component output info.
+   */
+  OutputInfo getOutput();
+
+  /**
+   * Sets the component output info.
+   *
+   * @param output The component output info.
+   * @return The component info.
+   */
+  ComponentInfo setOutput(OutputInfo output);
 
   /**
    * Adds a resource to the component.

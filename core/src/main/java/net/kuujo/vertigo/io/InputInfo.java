@@ -13,23 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.io;
+
+import net.kuujo.vertigo.io.port.InputPortInfo;
 
 /**
- * Connection source descriptor.
+ * Input info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface SourceDescriptor extends EndpointDescriptor {
-
-  /**
-   * <code>component</code> indicates the source component name.
-   */
-  public static final String SOURCE_COMPONENT = "component";
-
-  /**
-   * <code>port</code> indicates the source output port.
-   */
-  public static final String SOURCE_PORT = "port";
-
+public interface InputInfo extends CollectorInfo<InputPortInfo> {
 }

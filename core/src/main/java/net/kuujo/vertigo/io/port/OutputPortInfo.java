@@ -13,24 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
-
-import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.TargetDescriptor;
+package net.kuujo.vertigo.io.port;
 
 /**
- * Source descriptor implementation.
+ * Output port info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TargetDescriptorImpl extends EndpointDescriptorImpl implements TargetDescriptor {
-
-  public TargetDescriptorImpl(TargetDescriptor target) {
-    super(target);
-  }
-
-  public TargetDescriptorImpl(JsonObject target) {
-    super(target);
-  }
-
+public interface OutputPortInfo extends PortInfo<OutputPortInfo> {
 }

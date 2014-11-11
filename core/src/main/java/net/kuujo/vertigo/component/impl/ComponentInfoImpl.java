@@ -15,14 +15,16 @@
  */
 package net.kuujo.vertigo.component.impl;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.ComponentDescriptor;
+import net.kuujo.vertigo.io.InputInfo;
+import net.kuujo.vertigo.io.OutputInfo;
+import net.kuujo.vertigo.io.impl.InputInfoImpl;
+import net.kuujo.vertigo.io.impl.OutputInfoImpl;
+import net.kuujo.vertigo.util.Args;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Component info implementation.
@@ -36,6 +38,8 @@ public class ComponentInfoImpl implements ComponentInfo {
   private int partitions;
   private boolean worker;
   private boolean multiThreaded;
+  private InputInfo input;
+  private OutputInfo output;
   private Set<String> resources = new HashSet<>();
 
   public ComponentInfoImpl() {
@@ -55,14 +59,25 @@ public class ComponentInfoImpl implements ComponentInfo {
     this.resources = new HashSet<>(component.getResources());
   }
 
-  public ComponentInfoImpl(ComponentDescriptor component) {
-    this.id = component.id();
-    this.main = component.main();
-    this.config = component.config();
-    this.partitions = component.partitions();
-    this.worker = component.worker();
-    this.multiThreaded = component.multiThreaded();
-    this.resources = new HashSet<>(component.resources());
+  @SuppressWarnings("unchecked")
+  public ComponentInfoImpl(JsonObject component) {
+    this.id = component.getString("id", UUID.randomUUID().toString());
+    this.main = Args.checkNotNull(component.getString("main"));
+    this.config = component.getJsonObject("config", new JsonObject());
+    this.partitions = component.getInteger("partitions", 1);
+    this.worker = component.getBoolean("worker");
+    this.multiThreaded = component.getBoolean("multi-threaded");
+    JsonObject inputs = component.getJsonObject("input", new JsonObject());
+    if (inputs == null) {
+      inputs = new JsonObject();
+    }
+    this.input = new InputInfoImpl(inputs);
+    JsonObject outputs = component.getJsonObject("output", new JsonObject());
+    if (outputs == null) {
+      outputs = new JsonObject();
+    }
+    this.output = new OutputInfoImpl(outputs);
+    this.resources = new HashSet(component.getJsonArray("resources", new JsonArray()).getList());
   }
 
   @Override
@@ -128,6 +143,28 @@ public class ComponentInfoImpl implements ComponentInfo {
   @Override
   public ComponentInfo setMultiThreaded(boolean multiThreaded) {
     this.multiThreaded = multiThreaded;
+    return this;
+  }
+
+  @Override
+  public InputInfo getInput() {
+    return input;
+  }
+
+  @Override
+  public ComponentInfo setInput(InputInfo input) {
+    this.input = input;
+    return this;
+  }
+
+  @Override
+  public OutputInfo getOutput() {
+    return output;
+  }
+
+  @Override
+  public ComponentInfo setOutput(OutputInfo output) {
+    this.output = output;
     return this;
   }
 

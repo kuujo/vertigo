@@ -15,8 +15,8 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
+import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.ConnectionDescriptor;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.io.partition.*;
@@ -33,28 +33,6 @@ import net.kuujo.vertigo.io.partition.*;
  */
 public class ConnectionInfoImpl implements ConnectionInfo {
 
-  /**
-   * <code>source</code> is an object defining the connection source. See the
-   * {@link net.kuujo.vertigo.io.connection.SourceInfo} documentation for details on the source structure.
-   */
-  public static final String CONNECTION_SOURCE = "source";
-
-  /**
-   * <code>target</code> is an object defining the connection target. See the
-   * {@link net.kuujo.vertigo.io.connection.TargetInfo} documentation for details on the target structure.
-   */
-  public static final String CONNECTION_TARGET = "target";
-
-  /**
-   * <code>partitioner</code> is an object defining the connection partitioner. The partitioner
-   * configuration should contain a <code>type</code> which indicates the partitioner type,
-   * e.g. <code>round-robin</code>, <code>random</code>, <code>hash</code>, <code>fair</code>,
-   * <code>all</code>, or <code>custom</code>. If a <code>custom</code> selector is indicated
-   * then an additional <code>selector</code> field must be provided which indicates the
-   * custom selector class.
-   */
-  public static final String CONNECTION_PARTITIONER = "partitioner";
-
   private SourceInfo source;
   private TargetInfo target;
   private Partitioner partitioner;
@@ -68,10 +46,48 @@ public class ConnectionInfoImpl implements ConnectionInfo {
     this.partitioner = connection.getPartitioner();
   }
 
-  public ConnectionInfoImpl(ConnectionDescriptor connection) {
-    this.source = new SourceInfoImpl(connection.source());
-    this.target = new TargetInfoImpl(connection.target());
-    this.partitioner = connection.partitioner();
+  public ConnectionInfoImpl(JsonObject connection) {
+    JsonObject source = connection.getJsonObject("source");
+    if (source == null) {
+      throw new IllegalArgumentException("Invalid connection descriptor: No connection source defined");
+    }
+    this.source = new SourceInfoImpl(source);
+    JsonObject target = connection.getJsonObject("target");
+    if (target == null) {
+      throw new IllegalArgumentException("Invalid connection descriptor: No connection target defined");
+    }
+    this.target = new TargetInfoImpl(target);
+    JsonObject jsonPartitioner = connection.getJsonObject("partitioner");
+    if (jsonPartitioner != null) {
+      String partitioner = jsonPartitioner.getString("type");
+      if (partitioner == null) {
+        throw new IllegalArgumentException("Invalid connection descriptor: No partitioner type defined");
+      }
+      switch (partitioner) {
+        case "round":
+          this.partitioner = new RoundRobinPartitioner();
+          break;
+        case "random":
+          this.partitioner = new RandomPartitioner();
+          break;
+        case "hash":
+          String header = jsonPartitioner.getString("header");
+          if (header != null) {
+            this.partitioner = new HashPartitioner(header);
+          } else {
+            this.partitioner = new RoundRobinPartitioner();
+          }
+          break;
+        case "all":
+          this.partitioner = new AllPartitioner();
+          break;
+        default:
+          this.partitioner = new RoundRobinPartitioner();
+          break;
+      }
+    } else {
+      this.partitioner = new RoundRobinPartitioner();
+    }
   }
 
   @Override

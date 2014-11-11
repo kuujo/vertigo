@@ -24,7 +24,6 @@ import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
-import net.kuujo.vertigo.network.impl.NetworkDescriptorImpl;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
 import net.kuujo.vertigo.util.Configs;
 
@@ -36,6 +35,27 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface Network {
+
+  /**
+   * <code>id</code> is a string indicating the unique network ID. This is the
+   * address at which the network will monitor network components. This field is required.
+   */
+  static final String NETWORK_ID = "id";
+
+  /**
+   * <code>components</code> is an object defining network component configurations. Each
+   * item in the object must be keyed by the unique component address, with each item
+   * being an object containing the component configuration. See the
+   * {@link net.kuujo.vertigo.component.ComponentInfo} interface for configuration options.
+   */
+  static final String NETWORK_COMPONENTS = "components";
+
+  /**
+   * <code>connections</code> is an array defining network connection configurations. Each
+   * item in the array must be an object defining a <code>source</code> and <code>target</code>
+   * configuration.
+   */
+  static final String NETWORK_CONNECTIONS = "connections";
 
   /**
    * Constructs a new network object.
@@ -53,7 +73,7 @@ public interface Network {
    * @return The constructed network object.
    */
   static Network network(String network) {
-    return new NetworkImpl(new NetworkDescriptorImpl(Configs.load(network, new JsonObject().put("vertigo", new JsonObject().put("network", network)))));
+    return new NetworkImpl(Configs.load(network, new JsonObject().put("vertigo", new JsonObject().put("network", network))));
   }
 
   /**
@@ -63,7 +83,7 @@ public interface Network {
    * @return The constructed network object.
    */
   static Network network(JsonObject network) {
-    return new NetworkImpl(new NetworkDescriptorImpl(network));
+    return new NetworkImpl(network);
   }
 
   /**

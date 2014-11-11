@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection;
+package net.kuujo.vertigo.io.port;
 
 /**
- * Immutable connection target descriptor.
+ * Input port info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TargetDescriptor extends EndpointDescriptor {
-
-  /**
-   * <code>component</code> indicates the target component name.
-   */
-  public static final String TARGET_COMPONENT = "component";
-
-  /**
-   * <code>port</code> indicates the target output port.
-   */
-  public static final String TARGET_PORT = "port";
-
+public interface InputPortInfo extends PortInfo<InputPortInfo> {
 }

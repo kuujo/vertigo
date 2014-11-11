@@ -52,6 +52,15 @@ public interface VertigoFactory {
   Vertigo vertigo(Vertx vertx);
 
   /**
+   * Creates a new Vertigo instance.
+   *
+   * @param vertx The underlying Vert.x instance.
+   * @param options The Vertigo options.
+   * @return The Vertigo instance.
+   */
+  Vertigo vertigo(Vertx vertx, VertigoOptions options);
+
+  /**
    * Asynchronously creates a new Vertigo instance.
    *
    * @param options The Vertigo options.

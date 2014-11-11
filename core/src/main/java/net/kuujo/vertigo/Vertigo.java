@@ -63,6 +63,17 @@ public interface Vertigo {
   }
 
   /**
+   * Creates a new Vertigo instance.
+   *
+   * @param vertx The underlying Vert.x instance.
+   * @param options The Vertigo options.
+   * @return The Vertigo instance.
+   */
+  static Vertigo vertigo(Vertx vertx, VertigoOptions options) {
+    return factory.vertigo(vertx, options);
+  }
+
+  /**
    * Asynchronously creates a new Vertigo instance.
    *
    * @param options The Vertigo options.
@@ -76,9 +87,11 @@ public interface Vertigo {
    * Returns a network reference for the given network.
    *
    * @param id The unique ID of the network for which to return a reference.
-   * @return The network reference.
+   * @param resultHandler An asynchronous handler to be called with a network reference.
+   * @return The Vertigo instance.
    */
-  NetworkReference network(String id);
+  @Fluent
+  Vertigo network(String id, Handler<AsyncResult<NetworkReference>> resultHandler);
 
   /**
    * Deploys a network to an anonymous local-only cluster.<p>

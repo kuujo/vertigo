@@ -117,14 +117,14 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     @Override
     public Builder addComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
-      network.components.put(component.name(), component);
+      network.components.put(component.id(), component);
       return this;
     }
 
     @Override
     public Builder removeComponent(ComponentContext component) {
       Args.checkNotNull(component, "component cannot be null");
-      network.components.remove(component.name());
+      network.components.remove(component.id());
       return this;
     }
 
@@ -132,7 +132,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     public Builder setComponents(ComponentContext... components) {
       network.components.clear();
       for (ComponentContext component : components) {
-        network.components.put(component.name(), component);
+        network.components.put(component.id(), component);
       }
       return this;
     }
@@ -142,7 +142,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
       Args.checkNotNull(components, "components cannot be null");
       network.components.clear();
       for (ComponentContext component : components) {
-        network.components.put(component.name(), component);
+        network.components.put(component.id(), component);
       }
       return this;
     }

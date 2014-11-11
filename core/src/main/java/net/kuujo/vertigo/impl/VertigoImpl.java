@@ -80,8 +80,13 @@ public class VertigoImpl implements Vertigo {
 
   @Override
   public Vertigo undeployNetwork(String id, Handler<AsyncResult<Void>> doneHandler) {
-    NetworkContext context = ContextBuilder.buildContext(Network.network(id));
-    manager.undeployNetwork(context, doneHandler);
+    manager.getNetwork(id, result -> {
+      if (result.failed()) {
+        Future.<Void>completedFuture(result.cause()).setHandler(doneHandler);
+      } else {
+        manager.undeployNetwork(result.result(), doneHandler);
+      }
+    });
     return this;
   }
 

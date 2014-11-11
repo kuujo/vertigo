@@ -15,12 +15,14 @@
  */
 package net.kuujo.vertigo;
 
+import io.vertx.core.shareddata.Shareable;
+
 /**
  * Immutable configuration information for Vertigo types.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeContext<T extends TypeContext<T>> {
+public interface TypeContext<T extends TypeContext<T>> extends Shareable {
 
   /**
    * Returns the type ID.

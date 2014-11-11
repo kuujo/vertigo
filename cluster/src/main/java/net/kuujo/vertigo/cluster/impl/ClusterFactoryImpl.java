@@ -24,7 +24,7 @@ import net.kuujo.vertigo.spi.ClusterFactory;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class RemoteClusterFactoryImpl implements ClusterFactory {
+public class ClusterFactoryImpl implements ClusterFactory {
 
   @Override
   public Cluster createCluster(Vertx vertx) {

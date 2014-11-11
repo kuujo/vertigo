@@ -27,14 +27,8 @@ import net.kuujo.vertigo.io.connection.SourceContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T>> extends BaseContextImpl<T> implements ConnectionContext<T> {
-  protected String address;
   protected SourceContext source;
   protected TargetContext target;
-
-  @Override
-  public String address() {
-    return address;
-  }
 
   @Override
   public SourceContext source() {

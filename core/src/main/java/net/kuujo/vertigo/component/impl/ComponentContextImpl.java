@@ -31,7 +31,8 @@ import java.util.*;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ComponentContextImpl extends BaseContextImpl<ComponentContext> implements ComponentContext {
-  private String name;
+  private String id;
+  private String address;
   private String main;
   private Component component;
   private JsonObject config;
@@ -42,8 +43,13 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   private NetworkContext network;
 
   @Override
-  public String name() {
-    return null;
+  public String id() {
+    return id;
+  }
+
+  @Override
+  public String address() {
+    return address;
   }
 
   @Override
@@ -132,9 +138,8 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public Builder setName(String name) {
-      Args.checkNotNull(name, "name cannot be null");
-      component.name = name;
+    public ComponentContext.Builder setAddress(String address) {
+      component.address = Args.checkNotNull(address, "address cannot be null");
       return this;
     }
 
@@ -241,7 +246,8 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
      * Checks all fields in the constructed component.
      */
     private void checkFields() {
-      Args.checkNotNull(component.name, "name cannot be null");
+      Args.checkNotNull(component.id, "id cannot be null");
+      Args.checkNotNull(component.address, "address cannot be null");
     }
 
     @Override

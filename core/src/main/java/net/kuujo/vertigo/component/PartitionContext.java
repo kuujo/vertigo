@@ -57,6 +57,13 @@ public interface PartitionContext extends TypeContext<PartitionContext> {
   }
 
   /**
+   * Returns the partition address.
+   *
+   * @return The partition address.
+   */
+  String address();
+
+  /**
    * Returns the partition number.
    * 
    * @return The partition number.
@@ -88,6 +95,14 @@ public interface PartitionContext extends TypeContext<PartitionContext> {
    * Instance context builder.
    */
   public static interface Builder extends TypeContext.Builder<Builder, PartitionContext> {
+
+    /**
+     * Sets the partition address.
+     *
+     * @param address The partition address.
+     * @return The partition context builder.
+     */
+    Builder setAddress(String address);
 
     /**
      * Sets the partition number.

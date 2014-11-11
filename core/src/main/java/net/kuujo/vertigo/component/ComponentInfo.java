@@ -247,5 +247,4 @@ public interface ComponentInfo {
    */
   Set<String> getResources();
 
-
 }

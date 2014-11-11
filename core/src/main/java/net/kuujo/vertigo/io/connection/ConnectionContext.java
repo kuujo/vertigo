@@ -28,13 +28,6 @@ import net.kuujo.vertigo.TypeContext;
 public interface ConnectionContext<T extends ConnectionContext<T>> extends TypeContext<T> {
 
   /**
-   * Returns the unique connection address.
-   *
-   * @return The unique connection address.
-   */
-  String address();
-
-  /**
    * Returns the connection source.
    *
    * @return The connection source.

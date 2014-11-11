@@ -28,10 +28,16 @@ import net.kuujo.vertigo.util.Args;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class PartitionContextImpl extends BaseContextImpl<PartitionContext> implements PartitionContext {
+  private String address;
   private int number;
   private InputContext input;
   private OutputContext output;
   private ComponentContext component;
+
+  @Override
+  public String address() {
+    return address;
+  }
 
   @Override
   public int number() {
@@ -71,6 +77,12 @@ public class PartitionContextImpl extends BaseContextImpl<PartitionContext> impl
     public Builder setId(String id) {
       Args.checkNotNull(id, "id cannot be null");
       partition.id = id;
+      return this;
+    }
+
+    @Override
+    public PartitionContext.Builder setAddress(String address) {
+      partition.address = Args.checkNotNull(address, "address cannot be null");
       return this;
     }
 

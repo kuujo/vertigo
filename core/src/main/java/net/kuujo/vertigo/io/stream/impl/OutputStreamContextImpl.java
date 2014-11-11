@@ -109,6 +109,12 @@ public class OutputStreamContextImpl extends BaseContextImpl<OutputStreamContext
     }
 
     @Override
+    public OutputStreamContext.Builder setPartitioner(Partitioner partitioner) {
+      stream.partitioner = Args.checkNotNull(partitioner, "partitioner cannot be null");
+      return this;
+    }
+
+    @Override
     public OutputStreamContextImpl build() {
       return stream;
     }

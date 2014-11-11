@@ -16,9 +16,9 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.TargetContext;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.SourceContext;
+import net.kuujo.vertigo.io.connection.TargetContext;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.util.Args;
 
@@ -53,13 +53,6 @@ public class OutputConnectionContextImpl extends BaseConnectionContextImpl<Outpu
     public OutputConnectionContext.Builder setId(String id) {
       Args.checkNotNull(id, "id cannot be null");
       connection.id = id;
-      return this;
-    }
-
-    @Override
-    public Builder setAddress(String address) {
-      Args.checkNotNull(address, "address cannot be null");
-      connection.address = address;
       return this;
     }
 

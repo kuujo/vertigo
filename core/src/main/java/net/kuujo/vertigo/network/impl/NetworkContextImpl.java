@@ -32,14 +32,20 @@ import java.util.Map;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implements NetworkContext {
-  private String name;
+  private String id;
+  private String address;
   private String version;
   private Network config;
   private Map<String, ComponentContext> components = new HashMap<>();
 
   @Override
-  public String name() {
-    return name;
+  public String id() {
+    return id;
+  }
+
+  @Override
+  public String address() {
+    return address;
   }
 
   @Override
@@ -89,9 +95,8 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
     }
 
     @Override
-    public Builder setName(String name) {
-      Args.checkNotNull(name, "name cannot be null");
-      network.name = name;
+    public NetworkContext.Builder setAddress(String address) {
+      network.address = Args.checkNotNull(address, "address cannot be null");
       return this;
     }
 
@@ -146,7 +151,7 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
      * Checks network fields.
      */
     private void checkFields() {
-      Args.checkNotNull(network.name, "name cannot be null");
+      Args.checkNotNull(network.id, "id cannot be null");
       Args.checkNotNull(network.version, "version cannot be null");
       Args.checkNotNull(network.config, "configuration cannot be null");
       Args.checkNotNull(network.components, "components cannot be null");

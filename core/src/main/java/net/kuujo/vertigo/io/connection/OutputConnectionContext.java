@@ -61,14 +61,6 @@ public interface OutputConnectionContext extends ConnectionContext<OutputConnect
   public static interface Builder extends TypeContext.Builder<Builder, OutputConnectionContext> {
 
     /**
-     * Sets the connection address.
-     *
-     * @param address The connection address.
-     * @return The output connection context builder.
-     */
-    Builder setAddress(String address);
-
-    /**
      * Sets the connection source context.
      *
      * @param source The connection source context.

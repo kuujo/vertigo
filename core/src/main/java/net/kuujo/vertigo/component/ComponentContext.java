@@ -59,11 +59,18 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   }
 
   /**
-   * Returns the component name.
+   * Returns the component ID.
    *
-   * @return The component name.
+   * @return The component ID.
    */
-  String name();
+  String id();
+
+  /**
+   * Returns the component address.
+   *
+   * @return The component address.
+   */
+  String address();
 
   /**
    * Returns the verticle main.
@@ -144,12 +151,20 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   public static interface Builder extends TypeContext.Builder<Builder, ComponentContext> {
 
     /**
-     * Sets the component name.
+     * Sets the component ID.
      *
-     * @param name The component name.
+     * @param id The component ID.
      * @return The component context builder.
      */
-    Builder setName(String name);
+    Builder setId(String id);
+
+    /**
+     * Sets the component address.
+     *
+     * @param address The component address.
+     * @return The component context builder.
+     */
+    Builder setAddress(String address);
 
     /**
      * Sets the component main.

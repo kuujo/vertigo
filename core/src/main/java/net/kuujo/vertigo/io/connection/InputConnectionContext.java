@@ -61,14 +61,6 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
   public static interface Builder extends TypeContext.Builder<Builder, InputConnectionContext> {
 
     /**
-     * Sets the connection address.
-     *
-     * @param address The connection address.
-     * @return The input connection context builder.
-     */
-    Builder setAddress(String address);
-
-    /**
      * Sets the connection source context.
      *
      * @param source The connection source context.

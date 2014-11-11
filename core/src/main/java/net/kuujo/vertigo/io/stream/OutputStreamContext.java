@@ -120,6 +120,15 @@ public interface OutputStreamContext extends TypeContext<OutputStreamContext> {
      * @return The output stream context builder.
      */
     Builder setPort(OutputPortContext port);
+
+    /**
+     * Sets the output partitioner.
+     *
+     * @param partitioner The output partitioner.
+     * @return The output stream context builder.
+     */
+    Builder setPartitioner(Partitioner partitioner);
+
   }
 
 }

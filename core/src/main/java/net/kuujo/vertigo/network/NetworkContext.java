@@ -95,19 +95,19 @@ public interface NetworkContext extends TypeContext<NetworkContext> {
   /**
    * Returns a boolean indicating whether the component exists.
    *
-   * @param name The name of the component to check.
+   * @param id The ID of the component to check.
    * @return Indicates whether a component with that name exists.
    */
-  boolean hasComponent(String name);
+  boolean hasComponent(String id);
 
   /**
-   * Returns a component context by name.
+   * Returns a component context by ID.
    * 
-   * @param name The component name.
+   * @param id The component ID.
    * @return A component context.
-   * @throws IllegalArgumentException If a component does not exist at the given name.
+   * @throws IllegalArgumentException If a component does not exist at the given ID.
    */
-  ComponentContext component(String name);
+  ComponentContext component(String id);
 
   /**
    * Network context builder.

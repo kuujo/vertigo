@@ -26,7 +26,6 @@ import net.kuujo.vertigo.io.VertigoMessage;
  */
 public class VertigoMessageImpl<T> implements VertigoMessage<T> {
   private String id;
-  private long index;
   private String port;
   private T body;
   private MultiMap headers;
@@ -34,9 +33,8 @@ public class VertigoMessageImpl<T> implements VertigoMessage<T> {
   public VertigoMessageImpl() {
   }
 
-  public VertigoMessageImpl(String id, long index, String port, T body, MultiMap headers) {
+  public VertigoMessageImpl(String id, String port, T body, MultiMap headers) {
     this.id = id;
-    this.index = index;
     this.port = port;
     this.body = body;
     this.headers = headers;
@@ -45,11 +43,6 @@ public class VertigoMessageImpl<T> implements VertigoMessage<T> {
   @Override
   public String id() {
     return id;
-  }
-
-  @Override
-  public long index() {
-    return index;
   }
 
   @Override

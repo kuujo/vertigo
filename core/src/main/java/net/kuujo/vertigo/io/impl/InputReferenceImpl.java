@@ -13,46 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.kuujo.vertigo.io.impl;
 
-package net.kuujo.vertigo.io;
-
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import net.kuujo.vertigo.io.InputReference;
+import net.kuujo.vertigo.io.port.InputPortReference;
+import net.kuujo.vertigo.io.port.impl.InputPortReferenceImpl;
 
 /**
- * Vertigo message.
+ * Input reference implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface VertigoMessage<T> {
+public class InputReferenceImpl implements InputReference {
+  private final Vertx vertx;
+  private final String address;
 
-  /**
-   * Returns the unique message identifier.
-   *
-   * @return The unique message identifier.
-   */
-  String id();
+  public InputReferenceImpl(Vertx vertx, String address) {
+    this.vertx = vertx;
+    this.address = address;
+  }
 
-  /**
-   * Returns the name of the port on which the message was received.
-   *
-   * @return The name of the port on which the message was received.
-   */
-  String port();
-
-  /**
-   * Returns the message body.
-   *
-   * @return The message body.
-   */
-  T body();
-
-  /**
-   * Returns the message headers.
-   *
-   * @return The message headers.
-   */
-  MultiMap headers();
+  @Override
+  public <T> InputPortReference<T> port(String name) {
+    return new InputPortReferenceImpl<>(vertx, address, name);
+  }
 
 }

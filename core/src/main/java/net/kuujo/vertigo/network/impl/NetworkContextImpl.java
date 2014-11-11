@@ -64,13 +64,13 @@ public class NetworkContextImpl extends BaseContextImpl<NetworkContext> implemen
   }
 
   @Override
-  public boolean hasComponent(String name) {
-    return components.containsKey(name);
+  public boolean hasComponent(String id) {
+    return components.containsKey(id);
   }
 
   @Override
-  public ComponentContext component(String name) {
-    return components.get(name);
+  public ComponentContext component(String id) {
+    return components.get(id);
   }
 
   /**

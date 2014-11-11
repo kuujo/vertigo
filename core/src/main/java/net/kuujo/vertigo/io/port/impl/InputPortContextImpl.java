@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
-import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.port.InputPortContext;
@@ -32,15 +31,9 @@ import java.util.List;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputPortContextImpl extends BaseContextImpl<InputPortContext> implements InputPortContext {
-  private String name;
+public class InputPortContextImpl extends BasePortContextImpl<InputPortContext> implements InputPortContext {
   private InputContext input;
   private List<InputConnectionContext> connections = new ArrayList<>();
-
-  @Override
-  public String name() {
-    return name;
-  }
 
   @Override
   public InputContext input() {
@@ -70,6 +63,12 @@ public class InputPortContextImpl extends BaseContextImpl<InputPortContext> impl
     public Builder setId(String id) {
       Args.checkNotNull(id, "id cannot be null");
       port.id = id;
+      return this;
+    }
+
+    @Override
+    public Builder setType(Class<?> type) {
+      port.type = Args.checkNotNull(type, "type cannot be null");
       return this;
     }
 

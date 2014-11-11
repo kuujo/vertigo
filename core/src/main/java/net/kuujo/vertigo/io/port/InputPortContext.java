@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputPortContext extends Context<InputPortContext> {
+public interface InputPortContext extends PortContext<InputPortContext> {
 
   /**
    * Returns a new input port context builder.
@@ -50,13 +50,6 @@ public interface InputPortContext extends Context<InputPortContext> {
   static Builder builder(InputPortContext port) {
     return new InputPortContextImpl.Builder((InputPortContextImpl) port);
   }
-
-  /**
-   * Returns the port name.
-   *
-   * @return The port name.
-   */
-  String name();
 
   /**
    * Returns the parent input context.
@@ -84,6 +77,14 @@ public interface InputPortContext extends Context<InputPortContext> {
      * @return The input port context builder.
      */
     Builder setName(String name);
+
+    /**
+     * Sets the port type.
+     *
+     * @param type The port type.
+     * @return The port context builder.
+     */
+    Builder setType(Class<?> type);
 
     /**
      * Adds a connection to the port.

@@ -17,8 +17,8 @@ package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.Context;
-import net.kuujo.vertigo.io.port.impl.OutputPortContextImpl;
 import net.kuujo.vertigo.io.OutputContext;
+import net.kuujo.vertigo.io.port.impl.OutputPortContextImpl;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
 
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputPortContext extends Context<OutputPortContext> {
+public interface OutputPortContext extends PortContext<OutputPortContext> {
 
   /**
    * Returns a new output port context builder.
@@ -50,13 +50,6 @@ public interface OutputPortContext extends Context<OutputPortContext> {
   static Builder builder(OutputPortContext port) {
     return new OutputPortContextImpl.Builder((OutputPortContextImpl) port);
   }
-
-  /**
-   * Returns the port name.
-   *
-   * @return The port name.
-   */
-  String name();
 
   /**
    * Returns the parent output context.
@@ -84,6 +77,14 @@ public interface OutputPortContext extends Context<OutputPortContext> {
      * @return The output port builder.
      */
     Builder setName(String name);
+
+    /**
+     * Sets the port type.
+     *
+     * @param type The port type.
+     * @return The port context builder.
+     */
+    Builder setType(Class<?> type);
 
     /**
      * Adds a stream to the output.

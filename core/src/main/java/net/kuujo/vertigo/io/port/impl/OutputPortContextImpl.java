@@ -16,7 +16,6 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
-import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
@@ -32,15 +31,9 @@ import java.util.Set;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputPortContextImpl extends BaseContextImpl<OutputPortContext> implements OutputPortContext {
-  private String name;
+public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext> implements OutputPortContext {
   private OutputContext output;
   private Set<OutputStreamContext> streams = new HashSet<>();
-
-  @Override
-  public String name() {
-    return name;
-  }
 
   @Override
   public OutputContext output() {
@@ -77,6 +70,12 @@ public class OutputPortContextImpl extends BaseContextImpl<OutputPortContext> im
     public Builder setName(String name) {
       Args.checkNotNull(name, "name cannot be null");
       port.name = name;
+      return this;
+    }
+
+    @Override
+    public Builder setType(Class<?> type) {
+      port.type = Args.checkNotNull(type, "type cannot be null");
       return this;
     }
 

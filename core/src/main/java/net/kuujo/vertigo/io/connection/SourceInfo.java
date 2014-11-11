@@ -15,10 +15,13 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
  * Connection source options.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface SourceInfo extends EndpointInfo<SourceInfo> {
 }

@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.component;
 
+import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
@@ -27,6 +29,7 @@ import java.util.Set;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface ComponentInfo {
 
   /**
@@ -86,6 +89,7 @@ public interface ComponentInfo {
    * @param id The component ID.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setId(String id);
 
   /**
@@ -101,6 +105,7 @@ public interface ComponentInfo {
    * @param main The component main.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setMain(String main);
 
   /**
@@ -116,6 +121,7 @@ public interface ComponentInfo {
    * @param config The component configuration.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setConfig(JsonObject config);
 
   /**
@@ -131,6 +137,7 @@ public interface ComponentInfo {
    * @param partitions The number of component partitions.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setPartitions(int partitions);
 
   /**
@@ -146,6 +153,7 @@ public interface ComponentInfo {
    * @param worker Whether the component is a worker.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setWorker(boolean worker);
 
   /**
@@ -161,6 +169,7 @@ public interface ComponentInfo {
    * @param multiThreaded Whether the component is multi-threaded.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setMultiThreaded(boolean multiThreaded);
 
   /**
@@ -176,6 +185,7 @@ public interface ComponentInfo {
    * @param input The component input info.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setInput(InputInfo input);
 
   /**
@@ -191,6 +201,7 @@ public interface ComponentInfo {
    * @param output The component output info.
    * @return The component info.
    */
+  @Fluent
   ComponentInfo setOutput(OutputInfo output);
 
   /**
@@ -199,6 +210,7 @@ public interface ComponentInfo {
    * @param resource The resource to add.
    * @return The component options.
    */
+  @Fluent
   ComponentInfo addResource(String resource);
 
   /**
@@ -207,6 +219,7 @@ public interface ComponentInfo {
    * @param resource The resource to remove.
    * @return The component options.
    */
+  @Fluent
   ComponentInfo removeResource(String resource);
 
   /**
@@ -215,6 +228,7 @@ public interface ComponentInfo {
    * @param resources The component resources.
    * @return The component options.
    */
+  @Fluent
   ComponentInfo setResources(String... resources);
 
   /**
@@ -223,6 +237,7 @@ public interface ComponentInfo {
    * @param resources The component resources.
    * @return The component options.
    */
+  @Fluent
   ComponentInfo setResources(Collection<String> resources);
 
   /**

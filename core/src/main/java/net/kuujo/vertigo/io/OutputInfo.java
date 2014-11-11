@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 
 /**
@@ -22,5 +23,6 @@ import net.kuujo.vertigo.io.port.OutputPortInfo;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface OutputInfo extends CollectorInfo<OutputPortInfo> {
 }

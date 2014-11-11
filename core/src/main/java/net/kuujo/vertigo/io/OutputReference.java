@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.port.OutputPortReference;
 
 /**
@@ -22,6 +23,7 @@ import net.kuujo.vertigo.io.port.OutputPortReference;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface OutputReference {
 
   /**

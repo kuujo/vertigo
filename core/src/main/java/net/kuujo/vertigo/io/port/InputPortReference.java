@@ -15,8 +15,13 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
+ * Input port reference.
+ *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface InputPortReference<T> extends OutputPort<T> {
 }

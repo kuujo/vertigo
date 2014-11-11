@@ -15,10 +15,13 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
  * Input port info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface InputPortInfo extends PortInfo<InputPortInfo> {
 }

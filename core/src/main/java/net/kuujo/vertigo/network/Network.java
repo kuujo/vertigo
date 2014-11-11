@@ -15,11 +15,12 @@
  */
 package net.kuujo.vertigo.network;
 
+import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.impl.ComponentDescriptorImpl;
 import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.SourceInfo;
@@ -34,6 +35,7 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface Network {
 
   /**
@@ -93,7 +95,7 @@ public interface Network {
    * @return The constructed component configuration.
    */
   static ComponentInfo component(String component) {
-    return new ComponentInfoImpl(new ComponentDescriptorImpl(Configs.load(component, new JsonObject().put("vertigo", new JsonObject().put("component", component)))));
+    return new ComponentInfoImpl(Configs.load(component, new JsonObject().put("vertigo", new JsonObject().put("component", component))));
   }
 
   /**
@@ -103,7 +105,7 @@ public interface Network {
    * @return The constructed component configuration.
    */
   static ComponentInfo component(JsonObject component) {
-    return new ComponentInfoImpl(new ComponentDescriptorImpl(component));
+    return new ComponentInfoImpl(component);
   }
 
   /**
@@ -138,6 +140,7 @@ public interface Network {
    * @param id The unique network ID.
    * @return The network configuration.
    */
+  @Fluent
   Network setId(String id);
 
   /**

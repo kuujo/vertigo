@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.network;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.component.ComponentReference;
 
 /**
@@ -22,6 +23,7 @@ import net.kuujo.vertigo.component.ComponentReference;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface NetworkReference {
 
   /**

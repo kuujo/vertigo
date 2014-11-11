@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.io.impl.OutputContextImpl;
@@ -28,6 +29,7 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface OutputContext extends Context<OutputContext> {
 
   /**

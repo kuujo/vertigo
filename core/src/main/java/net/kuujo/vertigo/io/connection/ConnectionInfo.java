@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.partition.Partitioner;
 
@@ -28,6 +29,7 @@ import net.kuujo.vertigo.io.partition.Partitioner;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface ConnectionInfo extends TypeInfo {
 
   /**

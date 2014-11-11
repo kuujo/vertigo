@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.Context;
 import net.kuujo.vertigo.io.connection.impl.OutputConnectionContextImpl;
 import net.kuujo.vertigo.io.stream.OutputStreamContext;
@@ -25,6 +26,7 @@ import net.kuujo.vertigo.io.stream.OutputStreamContext;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
+@VertxGen
 public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
 
   /**

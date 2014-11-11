@@ -15,12 +15,12 @@
  */
 package net.kuujo.vertigo.component;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Verticle;
 import io.vertx.core.VertxException;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.VerticleFactory;
+import net.kuujo.vertigo.util.Configs;
 
 /**
  * Component verticle factory.
@@ -37,18 +37,18 @@ public class ComponentFactory implements VerticleFactory {
   @Override
   public String resolve(String identifier, DeploymentOptions options, ClassLoader classLoader) throws Exception {
     identifier = VerticleFactory.removePrefix(identifier);
-    Config config = ConfigFactory.load(classLoader, identifier);
+    JsonObject config = Configs.load(identifier);
     String main = config.getString("main");
     if (main == null) {
       throw new VertxException(identifier + " does not contain a main field");
     }
 
-    Config deployment = config.getConfig("deployment");
+    JsonObject deployment = config.getJsonObject("deployment");
     if (deployment != null) {
-      if (deployment.hasPath("worker")) {
+      if (deployment.containsKey("worker")) {
         options.setWorker(deployment.getBoolean("worker"));
       }
-      if (deployment.hasPath("multi-threaded")) {
+      if (deployment.containsKey("multi-threaded")) {
         options.setMultiThreaded(deployment.getBoolean("multi-threaded"));
       }
     }

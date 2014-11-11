@@ -19,7 +19,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import net.kuujo.vertigo.io.VertigoMessage;
 import net.kuujo.vertigo.io.impl.VertigoMessageImpl;
-import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.io.port.OutputPortReference;
 
 /**
@@ -44,7 +43,7 @@ public class OutputPortReferenceImpl<T> implements OutputPortReference<T> {
   }
 
   @Override
-  public InputPort<T> messageHandler(Handler<VertigoMessage<T>> handler) {
+  public OutputPortReference<T> messageHandler(Handler<VertigoMessage<T>> handler) {
     vertx.eventBus().<T>consumer(address).handler(message -> {
       handler.handle(new VertigoMessageImpl<T>(message.headers().get("name"), name, message.body(), message.headers()));
     });

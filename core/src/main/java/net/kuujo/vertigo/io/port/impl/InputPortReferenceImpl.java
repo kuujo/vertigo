@@ -19,7 +19,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import net.kuujo.vertigo.io.port.InputPortReference;
-import net.kuujo.vertigo.io.port.OutputPort;
 
 /**
  * Input port reference implementation.
@@ -43,13 +42,13 @@ public class InputPortReferenceImpl<T> implements InputPortReference<T> {
   }
 
   @Override
-  public OutputPort<T> send(T message) {
+  public InputPortReference<T> send(T message) {
     vertx.eventBus().send(address, message, new DeliveryOptions().addHeader("port", name));
     return this;
   }
 
   @Override
-  public OutputPort<T> send(T message, MultiMap headers) {
+  public InputPortReference<T> send(T message, MultiMap headers) {
     vertx.eventBus().send(address, message, new DeliveryOptions().setHeaders(headers.add("port", name)));
     return this;
   }

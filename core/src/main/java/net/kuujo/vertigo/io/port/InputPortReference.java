@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.MultiMap;
 
 /**
  * Input port reference.
@@ -24,4 +25,11 @@ import io.vertx.codegen.annotations.VertxGen;
  */
 @VertxGen
 public interface InputPortReference<T> extends OutputPort<T> {
+
+  @Override
+  InputPortReference<T> send(T message);
+
+  @Override
+  InputPortReference<T> send(T message, MultiMap headers);
+
 }

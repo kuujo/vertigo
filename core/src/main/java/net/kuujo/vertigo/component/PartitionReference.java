@@ -13,25 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.network;
+package net.kuujo.vertigo.component;
 
-import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.component.ComponentReference;
+import net.kuujo.vertigo.io.InputReference;
+import net.kuujo.vertigo.io.OutputReference;
 
 /**
- * Network reference.
+ * Component partition reference.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface NetworkReference {
+public interface PartitionReference {
 
   /**
-   * Returns a reference to a component in the network.
+   * Returns a reference to the partition's input.
    *
-   * @param id The unique ID of the component to reference.
-   * @return The component reference.
+   * @return A reference to the partition's input.
    */
-  ComponentReference component(String id);
+  InputReference input();
+
+  /**
+   * Returns a reference to the partitions output.
+   *
+   * @return A reference to the partition's output.
+   */
+  OutputReference output();
 
 }

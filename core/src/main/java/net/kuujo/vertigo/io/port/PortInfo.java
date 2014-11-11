@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.core.eventbus.MessageCodec;
+
 /**
  * Port info.
  *
@@ -51,5 +53,20 @@ public interface PortInfo<T extends PortInfo<T>> {
    * @return The port info.
    */
   T setType(Class<?> type);
+
+  /**
+   * Returns the port type message codec class.
+   *
+   * @return The port type message codec class.
+   */
+  Class<? extends MessageCodec> getCodec();
+
+  /**
+   * Sets the port type message codec class.
+   *
+   * @param codec The port type message codec class.
+   * @return The port info.
+   */
+  T setCodec(Class<? extends MessageCodec> codec);
 
 }

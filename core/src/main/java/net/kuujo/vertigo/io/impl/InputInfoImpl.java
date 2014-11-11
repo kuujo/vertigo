@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io.impl;
 
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.CollectorInfo;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.port.InputPortInfo;
 import net.kuujo.vertigo.io.port.impl.InputPortInfoImpl;

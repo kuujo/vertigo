@@ -67,13 +67,6 @@ public interface SourceContext extends EndpointContext<SourceContext> {
      */
     Builder setPort(String port);
 
-    /**
-     * Sets the source partition.
-     *
-     * @param partition The source partition number.
-     * @return The source context builder.
-     */
-    Builder setPartition(int partition);
   }
 
 }

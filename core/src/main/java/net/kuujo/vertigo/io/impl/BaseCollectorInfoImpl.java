@@ -18,6 +18,7 @@ package net.kuujo.vertigo.io.impl;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.io.CollectorInfo;
+import net.kuujo.vertigo.io.port.InputPortInfo;
 import net.kuujo.vertigo.io.port.PortInfo;
 
 import java.util.Collection;
@@ -31,7 +32,7 @@ import java.util.function.BiFunction;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 abstract class BaseCollectorInfoImpl<T extends PortInfo<T>> implements CollectorInfo<T> {
-  private Map<String, T> ports = new HashMap<>();
+  private Map<String, T> ports = new HashMap<>(10);
   private final BiFunction<String, Class<?>, T> factory;
 
   protected BaseCollectorInfoImpl(JsonObject collector, BiFunction<String, Class<?>, T> factory) {
@@ -51,7 +52,7 @@ abstract class BaseCollectorInfoImpl<T extends PortInfo<T>> implements Collector
   }
 
   @Override
-  public CollectorInfo setPorts(Collection<T> ports) {
+  public CollectorInfo<T> setPorts(Collection<T> ports) {
     this.ports = new HashMap<>(ports.size());
     for (T port : ports) {
       this.ports.put(port.getName(), port);
@@ -65,8 +66,26 @@ abstract class BaseCollectorInfoImpl<T extends PortInfo<T>> implements Collector
   }
 
   @Override
-  public CollectorInfo setPort(String name, Class<?> type) {
+  public CollectorInfo<T> setPort(String name, Class<?> type) {
     ports.put(name, factory.apply(name, type));
+    return this;
+  }
+
+  @Override
+  public T addPort(String name) {
+    return addPort(name, Object.class);
+  }
+
+  @Override
+  public T addPort(String name, Class<?> type) {
+    T port = factory.apply(name, type);
+    ports.put(name, port);
+    return port;
+  }
+
+  @Override
+  public CollectorInfo<T> removePort(String name) {
+    ports.remove(name);
     return this;
   }
 

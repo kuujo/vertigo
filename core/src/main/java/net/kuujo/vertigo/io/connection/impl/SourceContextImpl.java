@@ -17,7 +17,6 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.io.connection.SourceContext;
-import net.kuujo.vertigo.util.Args;
 
 /**
  * Connection source context implementation.
@@ -27,7 +26,6 @@ import net.kuujo.vertigo.util.Args;
 public class SourceContextImpl extends BaseContextImpl<SourceContext> implements SourceContext {
   private String component;
   private String port;
-  private int partition;
 
   @Override
   public String component() {
@@ -37,11 +35,6 @@ public class SourceContextImpl extends BaseContextImpl<SourceContext> implements
   @Override
   public String port() {
     return port;
-  }
-
-  @Override
-  public int partition() {
-    return partition;
   }
 
   /**
@@ -67,12 +60,6 @@ public class SourceContextImpl extends BaseContextImpl<SourceContext> implements
     @Override
     public Builder setPort(String port) {
       source.port = port;
-      return this;
-    }
-
-    @Override
-    public Builder setPartition(int partition) {
-      source.partition = partition;
       return this;
     }
 

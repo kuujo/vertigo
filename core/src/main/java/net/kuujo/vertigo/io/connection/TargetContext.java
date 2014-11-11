@@ -67,13 +67,6 @@ public interface TargetContext extends EndpointContext<TargetContext> {
      */
     Builder setPort(String port);
 
-    /**
-     * Sets the target partition.
-     *
-     * @param partition The target partition number.
-     * @return The target context builder.
-     */
-    Builder setPartition(int partition);
   }
 
 }

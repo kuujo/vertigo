@@ -17,7 +17,6 @@ package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.io.partition.Partitioner;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -43,16 +42,6 @@ public interface ConnectionInfo extends TypeInfo {
    * {@link TargetInfo} documentation for details on the target structure.
    */
   public static final String CONNECTION_TARGET = "target";
-
-  /**
-   * <code>partitioner</code> is an object defining the connection partitioner. The partitioner
-   * definition should contain a <code>type</code> which indicates the partitioner type,
-   * e.g. <code>round-robin</code>, <code>random</code>, <code>hash</code>, <code>fair</code>,
-   * <code>all</code>, or <code>custom</code>. If a <code>custom</code> selector is indicated
-   * then an additional <code>selector</code> field must be provided which indicates the
-   * custom selector class.
-   */
-  public static final String CONNECTION_PARTITIONER = "partitioner";
 
   /**
    * Sets the connection source.
@@ -83,57 +72,5 @@ public interface ConnectionInfo extends TypeInfo {
    * @return The connection target.
    */
   TargetInfo getTarget();
-
-  /**
-   * Returns the connection partitioner.
-   *
-   * @return The connection partitioner.
-   */
-  Partitioner getPartitioner();
-
-  /**
-   * Sets the connection partitioner.
-   *
-   * @param partitioner The partitioner with which to partition individual connections.
-   * @return The connection configuration.
-   */
-  ConnectionInfo setPartitioner(Partitioner partitioner);
-
-  /**
-   * Sets a round-robin partitioner on the connection.
-   *
-   * @return The connection configuration.
-   */
-  ConnectionInfo roundPartition();
-
-  /**
-   * Sets a random partitioner on the connection.
-   *
-   * @return The connection configuration.
-   */
-  ConnectionInfo randomPartition();
-
-  /**
-   * Sets a mod-hash based partitioner on the connection.
-   *
-   * @param header The hash header.
-   * @return The connection configuration.
-   */
-  ConnectionInfo hashPartition(String header);
-
-  /**
-   * Sets an all partitioner on the connection.
-   *
-   * @return The connection configuration.
-   */
-  ConnectionInfo allPartition();
-
-  /**
-   * Sets a custom partitioner on the connection.
-   *
-   * @param partitioner The custom selector to set.
-   * @return The connection configuration.
-   */
-  ConnectionInfo partition(Partitioner partitioner);
 
 }

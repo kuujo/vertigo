@@ -40,7 +40,7 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param ports A collection of input ports.
    * @return The input info.
    */
-  CollectorInfo setPorts(Collection<T> ports);
+  CollectorInfo<T> setPorts(Collection<T> ports);
 
   /**
    * Returns info for a named port.
@@ -57,6 +57,31 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param type The port type class.
    * @return The port info.
    */
-  CollectorInfo setPort(String name, Class<?> type);
+  CollectorInfo<T> setPort(String name, Class<?> type);
+
+  /**
+   * Adds a named port.
+   *
+   * @param name The port name.
+   * @return The port info.
+   */
+  T addPort(String name);
+
+  /**
+   * Adds a named port.
+   *
+   * @param name The port name.
+   * @param type The port type class.
+   * @return The port info.
+   */
+  T addPort(String name, Class<?> type);
+
+  /**
+   * Removes a named port.
+   *
+   * @param name The port name.
+   * @return The collector info.
+   */
+  CollectorInfo<T> removePort(String name);
 
 }

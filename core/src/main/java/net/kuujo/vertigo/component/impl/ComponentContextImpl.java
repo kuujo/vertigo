@@ -19,10 +19,15 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.io.InputContext;
+import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Args;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Component context implementation.
@@ -35,9 +40,10 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   private String main;
   private Component component;
   private JsonObject config;
-  private List<PartitionContext> partitions = new ArrayList<>();
   private boolean worker;
   private boolean multiThreaded;
+  private InputContext input;
+  private OutputContext output;
   private Set<String> resources = new HashSet<>();
   private NetworkContext network;
 
@@ -67,23 +73,6 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   }
 
   @Override
-  public List<PartitionContext> partitions() {
-    return partitions;
-  }
-
-  @Override
-  public PartitionContext partition(int partitionNumber) {
-    PartitionContext instance = null;
-    for (PartitionContext info : partitions) {
-      if (info.number() == partitionNumber) {
-        instance = info;
-        break;
-      }
-    }
-    return instance;
-  }
-
-  @Override
   public boolean isWorker() {
     return worker;
   }
@@ -91,6 +80,16 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   @Override
   public boolean isMultiThreaded() {
     return multiThreaded;
+  }
+
+  @Override
+  public InputContext input() {
+    return input;
+  }
+
+  @Override
+  public OutputContext output() {
+    return output;
   }
 
   @Override
@@ -156,45 +155,14 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     }
 
     @Override
-    public Builder addPartition(PartitionContext partition) {
-      Args.checkNotNull(partition, "partition cannot be null");
-      for (PartitionContext context : component.partitions) {
-        if (context.number() == partition.number()) {
-          return this;
-        }
-      }
-      component.partitions.add(partition);
-      return this;
-    }
-
-     @Override
-    public Builder removePartition(PartitionContext partition) {
-      Args.checkNotNull(partition, "partition cannot be null");
-      Iterator<PartitionContext> iterator = component.partitions.iterator();
-      while (iterator.hasNext()) {
-        if (iterator.next().number() == partition.number()) {
-          iterator.remove();
-        }
-      }
+    public ComponentContext.Builder setInput(InputContext input) {
+      component.input = Args.checkNotNull(input, "input cannot be null");
       return this;
     }
 
     @Override
-    public Builder setPartitions(PartitionContext... partitions) {
-      component.partitions = new ArrayList<>(Arrays.asList(partitions));
-      return this;
-    }
-
-    @Override
-    public Builder setPartitions(Collection<PartitionContext> partitions) {
-      Args.checkNotNull(partitions, "partitions cannot be null");
-      component.partitions = new ArrayList<>(partitions);
-      return this;
-    }
-
-    @Override
-    public Builder clearPartitions() {
-      component.partitions.clear();
+    public ComponentContext.Builder setOutput(OutputContext output) {
+      component.output = Args.checkNotNull(output, "output cannot be null");
       return this;
     }
 

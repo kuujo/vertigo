@@ -19,6 +19,8 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.component.impl.ComponentContextImpl;
+import net.kuujo.vertigo.io.InputContext;
+import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.network.NetworkContext;
 
 import java.util.Collection;
@@ -110,6 +112,20 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   Set<String> resources();
 
   /**
+   * Returns the component input context.
+   *
+   * @return The component input context.
+   */
+  InputContext input();
+
+  /**
+   * Returns the component output context.
+   *
+   * @return The component output context.
+   */
+  OutputContext output();
+
+  /**
    * Returns the parent network context.
    * 
    * @return The parent network context.
@@ -168,6 +184,22 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
      * @return The component context builder.
      */
     Builder setMultiThreaded(boolean isMultiThreaded);
+
+    /**
+     * Sets the component input context.
+     *
+     * @param input The component input context.
+     * @return The component context builder.
+     */
+    Builder setInput(InputContext input);
+
+    /**
+     * Sets the component output context.
+     *
+     * @param output The component output context.
+     * @return The component context builder.
+     */
+    Builder setOutput(OutputContext output);
 
     /**
      * Adds a resource to the component.

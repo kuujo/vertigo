@@ -22,11 +22,12 @@ import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.connection.*;
 import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.io.port.OutputPortContext;
-import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Context builder.
@@ -65,19 +66,8 @@ public final class ContextBuilder {
       component.setMultiThreaded(componentInfo.isMultiThreaded());
       component.setConfig(componentInfo.getConfig());
       component.setResources(componentInfo.getResources());
-
-      // Set up component partitions.
-      List<PartitionContext> partitions = new ArrayList<>(componentInfo.getPartitions());
-      for (int i = 1; i <= componentInfo.getPartitions(); i++) {
-        PartitionContext.Builder partition = PartitionContext.builder();
-        partition.setAddress(String.format("%s-%d", address, i));
-        partition.setNumber(i);
-        partition.setInput(InputContext.builder().build());
-        partition.setOutput(OutputContext.builder().build());
-        partitions.add(partition.build());
-      }
-      component.setPartitions(partitions);
-
+      component.setInput(InputContext.builder().build());
+      component.setOutput(OutputContext.builder().build());
       components.put(componentInfo.getName(), component.build());
     }
 
@@ -100,84 +90,33 @@ public final class ContextBuilder {
         ComponentInfo sourceInfo = network.getComponent(source.name());
         ComponentInfo targetInfo = network.getComponent(target.name());
 
-        for (PartitionContext sourceContext : source.partitions()) {
-          // Check if the port already exists on the source's output.
-          OutputPortContext.Builder output = null;
-          for (OutputPortContext port : sourceContext.output().ports()) {
-            if (port.name().equals(connection.getSource().getPort())) {
-              output = OutputPortContext.builder(port);
-              break;
-            }
-          }
+        OutputPortContext.Builder output = OutputPortContext.builder(source.output().port(connection.getSource().getPort()))
+          .setName(connection.getSource().getPort())
+          .setType(sourceInfo.getOutput().getPort(connection.getSource().getPort()).getType());
 
-          // If the output port doesn't already exist then add it.
-          if (output == null) {
-            OutputPortContext port = OutputPortContext.builder()
-              .setName(connection.getSource().getPort())
-              .setType(sourceInfo.getOutput().getPort(connection.getSource().getPort()).getType())
-              .build();
-            OutputContext.builder(sourceContext.output())
-              .addPort(port).build();
-            output = OutputPortContext.builder(port);
-          }
+        output.addConnection(OutputConnectionContext.builder()
+          .setSource(SourceContext.builder()
+            .setComponent(connection.getSource().getComponent())
+            .setPort(connection.getSource().getPort())
+            .build())
+          .setTarget(TargetContext.builder()
+            .setComponent(connection.getTarget().getComponent())
+            .setPort(connection.getTarget().getPort()).build())
+          .setPort(output.build()).build());
 
-          // Set up an output stream from the output port.
-          OutputStreamContext.Builder outStream = OutputStreamContext.builder()
-            .setPartitioner(connection.getPartitioner());
+        InputPortContext.Builder input = InputPortContext.builder(target.input().port(connection.getTarget().getPort()))
+          .setName(connection.getTarget().getPort())
+          .setType(targetInfo.getInput().getPort(connection.getTarget().getPort()).getType());
 
-          // For each target instance, add a unique input connection for the output.
-          for (PartitionContext targetPartition : target.partitions()) {
-            // Check if the port already exists on the target's input.
-            InputPortContext.Builder input = null;
-            for (InputPortContext port : targetPartition.input().ports()) {
-              if (port.name().equals(connection.getTarget().getPort())) {
-                input = InputPortContext.builder(port);
-                break;
-              }
-            }
-
-            // If the input port doesn't already exist then add it.
-            if (input == null) {
-              InputPortContext port = InputPortContext.builder()
-                .setName(connection.getTarget().getPort())
-                .setType(targetInfo.getInput().getPort(connection.getTarget().getPort()).getType())
-                .build();
-              InputContext.builder(targetPartition.input())
-                .addPort(port).build();
-              input = InputPortContext.builder(port);
-            }
-
-            // Add an input connection to the input port.
-            InputConnectionContext.Builder inConnection = InputConnectionContext.builder();
-            inConnection.setSource(SourceContext.builder()
-              .setComponent(connection.getSource().getComponent())
-              .setPort(connection.getSource().getPort())
-              .setPartition(sourceContext.number()).build());
-            inConnection.setTarget(TargetContext.builder()
-              .setComponent(connection.getTarget().getComponent())
-              .setPort(connection.getTarget().getPort())
-              .setPartition(targetPartition.number()).build());
-
-            // Add the connection to the target input port.
-            input.addConnection(inConnection.build()).build();
-
-            // Add the new output connection to the output stream. This creates a one-to-many
-            // relationship between output connections and input connections, and input
-            // connections maintain a many-to-one relationship with output connections.
-            OutputConnectionContext.Builder outConnection = OutputConnectionContext.builder();
-            outConnection.setSource(SourceContext.builder()
-              .setComponent(connection.getSource().getComponent())
-              .setPort(connection.getSource().getPort()).build());
-            outConnection.setTarget(TargetContext.builder()
-              .setComponent(connection.getTarget().getComponent())
-              .setPort(connection.getTarget().getPort()).build());
-
-            outStream.addConnection(outConnection.build());
-          }
-
-          // Add the connection to the source instance's out port.
-          output.addStream(outStream.build()).build();
-        }
+        input.addConnection(InputConnectionContext.builder()
+          .setSource(SourceContext.builder()
+            .setComponent(connection.getSource().getComponent())
+            .setPort(connection.getSource().getPort())
+            .build())
+          .setTarget(TargetContext.builder()
+            .setComponent(connection.getTarget().getComponent())
+            .setPort(connection.getTarget().getPort()).build())
+          .build());
       }
     }
 

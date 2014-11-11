@@ -49,7 +49,7 @@ public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext
     }
 
     public Builder(OutputPortContextImpl port) {
-      this.port = port;
+      this.port = port != null ? port : new OutputPortContextImpl();
     }
 
     @Override

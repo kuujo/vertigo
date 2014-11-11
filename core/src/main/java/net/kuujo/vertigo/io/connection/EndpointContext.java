@@ -42,11 +42,4 @@ public interface EndpointContext<T extends EndpointContext<T>> extends TypeConte
    */
   String port();
 
-  /**
-   * Returns the endpoint partition number.
-   *
-   * @return The endpoint partition number.
-   */
-  int partition();
-
 }

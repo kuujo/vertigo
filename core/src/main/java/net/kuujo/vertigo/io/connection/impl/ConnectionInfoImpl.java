@@ -19,7 +19,6 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
-import net.kuujo.vertigo.io.partition.*;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -32,10 +31,8 @@ import net.kuujo.vertigo.io.partition.*;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class ConnectionInfoImpl implements ConnectionInfo {
-
   private SourceInfo source;
   private TargetInfo target;
-  private Partitioner partitioner;
 
   public ConnectionInfoImpl() {
   }
@@ -43,7 +40,6 @@ public class ConnectionInfoImpl implements ConnectionInfo {
   public ConnectionInfoImpl(ConnectionInfo connection) {
     this.source = connection.getSource();
     this.target = connection.getTarget();
-    this.partitioner = connection.getPartitioner();
   }
 
   public ConnectionInfoImpl(JsonObject connection) {
@@ -57,37 +53,6 @@ public class ConnectionInfoImpl implements ConnectionInfo {
       throw new IllegalArgumentException("Invalid connection descriptor: No connection target defined");
     }
     this.target = new TargetInfoImpl(target);
-    JsonObject jsonPartitioner = connection.getJsonObject("partitioner");
-    if (jsonPartitioner != null) {
-      String partitioner = jsonPartitioner.getString("type");
-      if (partitioner == null) {
-        throw new IllegalArgumentException("Invalid connection descriptor: No partitioner type defined");
-      }
-      switch (partitioner) {
-        case "round":
-          this.partitioner = new RoundRobinPartitioner();
-          break;
-        case "random":
-          this.partitioner = new RandomPartitioner();
-          break;
-        case "hash":
-          String header = jsonPartitioner.getString("header");
-          if (header != null) {
-            this.partitioner = new HashPartitioner(header);
-          } else {
-            this.partitioner = new RoundRobinPartitioner();
-          }
-          break;
-        case "all":
-          this.partitioner = new AllPartitioner();
-          break;
-        default:
-          this.partitioner = new RoundRobinPartitioner();
-          break;
-      }
-    } else {
-      this.partitioner = new RoundRobinPartitioner();
-    }
   }
 
   @Override
@@ -110,47 +75,6 @@ public class ConnectionInfoImpl implements ConnectionInfo {
   @Override
   public TargetInfo getTarget() {
     return target;
-  }
-
-  @Override
-  public Partitioner getPartitioner() {
-    return partitioner;
-  }
-
-  @Override
-  public ConnectionInfoImpl setPartitioner(Partitioner partitioner) {
-    this.partitioner = partitioner;
-    return this;
-  }
-
-  @Override
-  public ConnectionInfoImpl roundPartition() {
-    this.partitioner = new RoundRobinPartitioner();
-    return this;
-  }
-
-  @Override
-  public ConnectionInfoImpl randomPartition() {
-    this.partitioner = new RandomPartitioner();
-    return this;
-  }
-
-  @Override
-  public ConnectionInfoImpl hashPartition(String header) {
-    this.partitioner = new HashPartitioner(header);
-    return this;
-  }
-
-  @Override
-  public ConnectionInfoImpl allPartition() {
-    this.partitioner = new AllPartitioner();
-    return this;
-  }
-
-  @Override
-  public ConnectionInfoImpl partition(Partitioner partitioner) {
-    this.partitioner = partitioner;
-    return this;
   }
 
 }

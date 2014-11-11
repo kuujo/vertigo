@@ -20,6 +20,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
+import net.kuujo.vertigo.network.Network;
 
 import java.util.Collection;
 import java.util.Set;
@@ -224,5 +225,20 @@ public interface ComponentInfo {
    * @return The component resources.
    */
   Set<String> getResources();
+
+  /**
+   * Sets the parent network.
+   *
+   * @param network The parent network.
+   * @return The component info.
+   */
+  ComponentInfo setNetwork(Network network);
+
+  /**
+   * Returns the parent network.
+   *
+   * @return The parent network.
+   */
+  Network getNetwork();
 
 }

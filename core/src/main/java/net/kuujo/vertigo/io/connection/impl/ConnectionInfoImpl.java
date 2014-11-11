@@ -19,6 +19,8 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
 import net.kuujo.vertigo.io.connection.SourceInfo;
 import net.kuujo.vertigo.io.connection.TargetInfo;
+import net.kuujo.vertigo.io.port.InputPortInfo;
+import net.kuujo.vertigo.io.port.OutputPortInfo;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -40,6 +42,11 @@ public class ConnectionInfoImpl implements ConnectionInfo {
   public ConnectionInfoImpl(ConnectionInfo connection) {
     this.source = connection.getSource();
     this.target = connection.getTarget();
+  }
+
+  public ConnectionInfoImpl(OutputPortInfo output, InputPortInfo input) {
+    this.source = new SourceInfoImpl(output);
+    this.target = new TargetInfoImpl(input);
   }
 
   public ConnectionInfoImpl(JsonObject connection) {

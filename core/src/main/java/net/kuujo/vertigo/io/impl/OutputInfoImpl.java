@@ -16,19 +16,87 @@
 package net.kuujo.vertigo.io.impl;
 
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.io.port.impl.OutputPortInfoImpl;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * Output info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputInfoImpl extends BaseCollectorInfoImpl<OutputPortInfo> implements OutputInfo {
+public class OutputInfoImpl implements OutputInfo {
+  private ComponentInfo component;
+  private Map<String, OutputPortInfo> ports = new HashMap<>(10);
 
   public OutputInfoImpl(JsonObject output) {
-    super(output, OutputPortInfoImpl::new);
+    for (String key : output.fieldNames()) {
+      try {
+        ports.put(key, new OutputPortInfoImpl(key, Class.forName(output.getString(key))));
+      } catch (ClassNotFoundException e) {
+        throw new VertigoException(e);
+      }
+    }
   }
 
+  @Override
+  public ComponentInfo getComponent() {
+    return component;
+  }
+
+  @Override
+  public OutputInfo setComponent(ComponentInfo component) {
+    this.component = component;
+    return this;
+  }
+
+  @Override
+  public Collection<OutputPortInfo> getPorts() {
+    return ports.values();
+  }
+
+  @Override
+  public OutputInfo setPorts(Collection<OutputPortInfo> ports) {
+    this.ports.clear();
+    for (OutputPortInfo port : ports) {
+      this.ports.put(port.getName(), port.setComponent(component));
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPortInfo getPort(String name) {
+    return ports.get(name);
+  }
+
+  @Override
+  public OutputInfo setPort(String name, Class<?> type) {
+    this.ports.put(name, new OutputPortInfoImpl(name, type).setComponent(component));
+    return this;
+  }
+
+  @Override
+  public OutputPortInfo addPort(String name) {
+    return addPort(name, Object.class);
+  }
+
+  @Override
+  public OutputPortInfo addPort(String name, Class<?> type) {
+    OutputPortInfo port = new OutputPortInfoImpl(name, type).setComponent(component);
+    ports.put(name, port);
+    return port;
+  }
+
+  @Override
+  public OutputInfo removePort(String name) {
+    this.ports.remove(name);
+    return this;
+  }
 }

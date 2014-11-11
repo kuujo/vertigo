@@ -18,6 +18,7 @@ package net.kuujo.vertigo.io.port.impl;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.VertigoException;
+import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.io.port.PortInfo;
 
 /**
@@ -26,6 +27,7 @@ import net.kuujo.vertigo.io.port.PortInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
+  private ComponentInfo component;
   private String name;
   private Class<?> type;
   private Class<? extends MessageCodec> codec;
@@ -45,6 +47,18 @@ abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
         throw new VertigoException(e);
       }
     }
+  }
+
+  @Override
+  public ComponentInfo getComponent() {
+    return component;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setComponent(ComponentInfo component) {
+    this.component = component;
+    return (T) this;
   }
 
   @Override

@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.SourceInfo;
+import net.kuujo.vertigo.io.port.OutputPortInfo;
 
 /**
  * Connection source options.
@@ -31,6 +32,10 @@ public class SourceInfoImpl extends EndpointInfoImpl<SourceInfo> implements Sour
 
   public SourceInfoImpl(SourceInfo source) {
     super(source);
+  }
+
+  public SourceInfoImpl(OutputPortInfo port) {
+    super(port.getComponent().getName(), port.getName());
   }
 
   public SourceInfoImpl(JsonObject source) {

@@ -22,6 +22,7 @@ import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.io.impl.InputInfoImpl;
 import net.kuujo.vertigo.io.impl.OutputInfoImpl;
+import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
 
 import java.util.*;
@@ -40,6 +41,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   private InputInfo input;
   private OutputInfo output;
   private Set<String> resources = new HashSet<>();
+  private Network network;
 
   public ComponentInfoImpl() {
   }
@@ -55,6 +57,9 @@ public class ComponentInfoImpl implements ComponentInfo {
     this.worker = component.isWorker();
     this.multiThreaded = component.isMultiThreaded();
     this.resources = new HashSet<>(component.getResources());
+    this.input = component.getInput();
+    this.output = component.getOutput();
+    this.network = component.getNetwork();
   }
 
   @SuppressWarnings("unchecked")
@@ -68,12 +73,12 @@ public class ComponentInfoImpl implements ComponentInfo {
     if (inputs == null) {
       inputs = new JsonObject();
     }
-    this.input = new InputInfoImpl(inputs);
+    this.input = new InputInfoImpl(inputs).setComponent(this);
     JsonObject outputs = component.getJsonObject("output", new JsonObject());
     if (outputs == null) {
       outputs = new JsonObject();
     }
-    this.output = new OutputInfoImpl(outputs);
+    this.output = new OutputInfoImpl(outputs).setComponent(this);
     this.resources = new HashSet(component.getJsonArray("resources", new JsonArray()).getList());
   }
 
@@ -181,6 +186,17 @@ public class ComponentInfoImpl implements ComponentInfo {
   @Override
   public Set<String> getResources() {
     return resources;
+  }
+
+  @Override
+  public ComponentInfo setNetwork(Network network) {
+    this.network = network;
+    return this;
+  }
+
+  @Override
+  public Network getNetwork() {
+    return network;
   }
 
 }

@@ -20,9 +20,9 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.SourceInfo;
-import net.kuujo.vertigo.io.connection.TargetInfo;
 import net.kuujo.vertigo.io.connection.impl.ConnectionInfoImpl;
+import net.kuujo.vertigo.io.port.InputPortInfo;
+import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
 
@@ -37,7 +37,7 @@ import java.util.UUID;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class NetworkImpl implements Network {
-  private String id;
+  private String name;
   private final Collection<ComponentInfo> components = new ArrayList<>();
   private final Collection<ConnectionInfo> connections = new ArrayList<>();
 
@@ -45,16 +45,16 @@ public class NetworkImpl implements Network {
     this(UUID.randomUUID().toString());
   }
 
-  public NetworkImpl(String id) {
-    this.id = id;
+  public NetworkImpl(String name) {
+    this.name = name;
   }
 
   public NetworkImpl(JsonObject network) {
-    this.id = Args.checkNotNull(network.getString(NETWORK_NAME));
+    this.name = Args.checkNotNull(network.getString(NETWORK_NAME));
     JsonArray components = network.getJsonArray(NETWORK_COMPONENTS);
     if (components != null) {
       for (Object component : components) {
-        this.components.add(new ComponentInfoImpl((JsonObject) component));
+        this.components.add(new ComponentInfoImpl((JsonObject) component).setNetwork(this));
       }
     }
     JsonArray connections = network.getJsonArray(NETWORK_CONNECTIONS);
@@ -67,12 +67,12 @@ public class NetworkImpl implements Network {
 
   @Override
   public String getName() {
-    return id;
+    return name;
   }
 
   @Override
   public Network setName(String name) {
-    this.id = name;
+    this.name = name;
     return this;
   }
 
@@ -103,14 +103,14 @@ public class NetworkImpl implements Network {
 
   @Override
   public ComponentInfo addComponent(String name) {
-    ComponentInfo component = new ComponentInfoImpl(name);
+    ComponentInfo component = new ComponentInfoImpl(name).setNetwork(this);
     components.add(component);
     return component;
   }
 
   @Override
   public ComponentInfo addComponent(ComponentInfo component) {
-    components.add(component);
+    components.add(component.setNetwork(this));
     return component;
   }
 
@@ -152,8 +152,10 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public ConnectionInfo createConnection(SourceInfo source, TargetInfo target) {
-    return createConnection(new ConnectionInfoImpl().setSource(source).setTarget(target));
+  public ConnectionInfo createConnection(OutputPortInfo output, InputPortInfo input) {
+    ConnectionInfo connection = new ConnectionInfoImpl(output, input);
+    connections.add(connection);
+    return connection;
   }
 
   @Override

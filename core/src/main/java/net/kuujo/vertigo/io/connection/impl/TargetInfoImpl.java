@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.io.connection.TargetInfo;
+import net.kuujo.vertigo.io.port.InputPortInfo;
 
 /**
  * Connection target options.
@@ -31,6 +32,10 @@ public class TargetInfoImpl extends EndpointInfoImpl<TargetInfo> implements Targ
 
   public TargetInfoImpl(TargetInfo target) {
     super(target);
+  }
+
+  public TargetInfoImpl(InputPortInfo port) {
+    super(port.getComponent().getName(), port.getName());
   }
 
   public TargetInfoImpl(JsonObject target) {

@@ -36,6 +36,11 @@ public class EndpointInfoImpl<T extends EndpointInfo<T>> implements EndpointInfo
     this.port = endpoint.getPort();
   }
 
+  protected EndpointInfoImpl(String component, String port) {
+    this.component = component;
+    this.port = port;
+  }
+
   protected EndpointInfoImpl(JsonObject endpoint) {
     this.component = Args.checkNotNull(endpoint.getString(ENDPOINT_COMPONENT));
     this.port = Args.checkNotNull(endpoint.getString(ENDPOINT_PORT));

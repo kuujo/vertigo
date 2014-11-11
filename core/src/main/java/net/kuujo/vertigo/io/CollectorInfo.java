@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io;
 
 import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.io.port.PortInfo;
 
 import java.util.Collection;
@@ -25,14 +26,29 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
+public interface CollectorInfo<T extends CollectorInfo<T, U>, U extends PortInfo<U>> extends TypeInfo {
+
+  /**
+   * Returns the parent component.
+   *
+   * @return The parent component.
+   */
+  ComponentInfo getComponent();
+
+  /**
+   * Sets the parent component.
+   *
+   * @param component The parent component.
+   * @return The collector info.
+   */
+  T setComponent(ComponentInfo component);
 
   /**
    * Returns the set of ports.
    *
    * @return A collection of ports.
    */
-  Collection<T> getPorts();
+  Collection<U> getPorts();
 
   /**
    * Sets the input ports.
@@ -40,7 +56,7 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param ports A collection of input ports.
    * @return The input info.
    */
-  CollectorInfo<T> setPorts(Collection<T> ports);
+  T setPorts(Collection<U> ports);
 
   /**
    * Returns info for a named port.
@@ -48,7 +64,7 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param name The port name.
    * @return The port info.
    */
-  T getPort(String name);
+  U getPort(String name);
 
   /**
    * Sets info for a named port.
@@ -57,7 +73,7 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param type The port type class.
    * @return The port info.
    */
-  CollectorInfo<T> setPort(String name, Class<?> type);
+  T setPort(String name, Class<?> type);
 
   /**
    * Adds a named port.
@@ -65,7 +81,7 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param name The port name.
    * @return The port info.
    */
-  T addPort(String name);
+  U addPort(String name);
 
   /**
    * Adds a named port.
@@ -74,7 +90,7 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param type The port type class.
    * @return The port info.
    */
-  T addPort(String name, Class<?> type);
+  U addPort(String name, Class<?> type);
 
   /**
    * Removes a named port.
@@ -82,6 +98,6 @@ public interface CollectorInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param name The port name.
    * @return The collector info.
    */
-  CollectorInfo<T> removePort(String name);
+  T removePort(String name);
 
 }

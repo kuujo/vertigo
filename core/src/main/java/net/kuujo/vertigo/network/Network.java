@@ -23,8 +23,8 @@ import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
 import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.SourceInfo;
-import net.kuujo.vertigo.io.connection.TargetInfo;
+import net.kuujo.vertigo.io.port.InputPortInfo;
+import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
 import net.kuujo.vertigo.util.Configs;
 
@@ -171,10 +171,10 @@ public interface Network {
   /**
    * Adds a component to the network.
    *
-   * @param id The component name.
+   * @param name The component name.
    * @return The component info.
    */
-  ComponentInfo addComponent(String id);
+  ComponentInfo addComponent(String name);
 
   /**
    * Adds a component to the network.
@@ -218,11 +218,11 @@ public interface Network {
   /**
    * Creates a connection between two components.
    *
-   * @param source The source connection options.
-   * @param target The target connection options.
+   * @param output The source component's output port.
+   * @param input The target component's input port.
    * @return The connection info.
    */
-  ConnectionInfo createConnection(SourceInfo source, TargetInfo target);
+  ConnectionInfo createConnection(OutputPortInfo output, InputPortInfo input);
 
   /**
    * Destroys a connection between two components.

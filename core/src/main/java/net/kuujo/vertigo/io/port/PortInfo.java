@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.io.port;
 
 import io.vertx.core.eventbus.MessageCodec;
+import net.kuujo.vertigo.component.ComponentInfo;
 
 /**
  * Port info.
@@ -23,6 +24,21 @@ import io.vertx.core.eventbus.MessageCodec;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public interface PortInfo<T extends PortInfo<T>> {
+
+  /**
+   * Returns the parent component.
+   *
+   * @return The parent component.
+   */
+  ComponentInfo getComponent();
+
+  /**
+   * Sets the parent component.
+   *
+   * @param component The parent component.
+   * @return The port info.
+   */
+  T setComponent(ComponentInfo component);
 
   /**
    * Returns the port name.

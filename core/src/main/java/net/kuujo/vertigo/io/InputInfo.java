@@ -24,5 +24,5 @@ import net.kuujo.vertigo.io.port.InputPortInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputInfo extends CollectorInfo<InputPortInfo> {
+public interface InputInfo extends CollectorInfo<InputInfo, InputPortInfo> {
 }

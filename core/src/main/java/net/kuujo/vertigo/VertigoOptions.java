@@ -27,6 +27,7 @@ import net.kuujo.vertigo.util.Configs;
  */
 @Options
 public class VertigoOptions extends VertxOptions {
+  private String clusterAddress;
 
   public VertigoOptions() {
   }
@@ -40,10 +41,31 @@ public class VertigoOptions extends VertxOptions {
     options.mergeIn(Configs.load());
   }
 
+  /**
+   * Sets the Vertigo cluster address.
+   *
+   * @param address The Vertigo cluster address.
+   * @return The Vertigo options.
+   */
+  public VertigoOptions setClusterAddress(String address) {
+    this.clusterAddress = address;
+    return this;
+  }
+
+  /**
+   * Returns the Vertigo cluster address.
+   *
+   * @return The Vertigo cluster address.
+   */
+  public String getClusterAddress() {
+    return clusterAddress;
+  }
+
   @Override
   public int hashCode() {
     int hashCode = 23;
     hashCode = 37 * hashCode + super.hashCode();
+    hashCode = 37 * hashCode + clusterAddress.hashCode();
     return hashCode;
   }
 

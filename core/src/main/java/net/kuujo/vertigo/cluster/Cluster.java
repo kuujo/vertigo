@@ -40,20 +40,22 @@ public interface Cluster {
    * Creates a new Vertigo cluster client.
    *
    * @param vertx The Vert.x instance.
+   * @param options The cluster options.
    * @return The Vertigo cluster client.
    */
-  static Cluster create(Vertx vertx) {
-    return factory.createCluster(vertx);
+  static Cluster create(Vertx vertx, ClusterOptions options) {
+    return factory.createCluster(vertx, options);
   }
 
   /**
    * Creates a new Vertigo cluster proxy.
    *
    * @param vertx The Vert.x instance.
+   * @paran address The cluster address.
    * @return The Vertigo cluster proxy.
    */
-  static Cluster createProxy(Vertx vertx) {
-    return factory.createClusterProxy(vertx);
+  static Cluster createProxy(Vertx vertx, String address) {
+    return factory.createClusterProxy(vertx, address);
   }
 
   /**

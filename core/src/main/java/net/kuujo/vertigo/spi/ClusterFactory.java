@@ -17,6 +17,7 @@ package net.kuujo.vertigo.spi;
 
 import io.vertx.core.Vertx;
 import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterOptions;
 
 /**
  * Vertigo cluster factory.
@@ -29,16 +30,18 @@ public interface ClusterFactory {
    * Creates a new cluster instance.
    *
    * @param vertx The Vert.x instance.
+   * @param options The cluster options.
    * @return A new cluster instance.
    */
-  Cluster createCluster(Vertx vertx);
+  Cluster createCluster(Vertx vertx, ClusterOptions options);
 
   /**
    * Creates a new cluster proxy.
    *
    * @param vertx The Vert.x instance.
+   * @param address The cluster address.
    * @return A new cluster proxy instance.
    */
-  Cluster createClusterProxy(Vertx vertx);
+  Cluster createClusterProxy(Vertx vertx, String address);
 
 }

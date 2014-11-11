@@ -25,9 +25,9 @@ public interface ConnectionBuilder<T> {
   /**
    * Sets the connection component.
    *
-   * @param id The connection component ID.
+   * @param name The connection component name.
    * @return The connection builder.
    */
-  T component(String id);
+  T component(String name);
 
 }

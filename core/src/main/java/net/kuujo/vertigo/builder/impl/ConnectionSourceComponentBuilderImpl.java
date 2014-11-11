@@ -40,8 +40,8 @@ public class ConnectionSourceComponentBuilderImpl implements ConnectionSourceCom
   }
 
   @Override
-  public ConnectionSourceComponentBuilder main(String main) {
-    component.main(main);
+  public ConnectionSourceComponentBuilder identifier(String identifier) {
+    component.identifier(identifier);
     return this;
   }
 

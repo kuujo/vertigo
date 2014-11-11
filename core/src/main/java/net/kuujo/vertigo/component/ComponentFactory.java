@@ -38,9 +38,9 @@ public class ComponentFactory implements VerticleFactory {
   public String resolve(String identifier, DeploymentOptions options, ClassLoader classLoader) throws Exception {
     identifier = VerticleFactory.removePrefix(identifier);
     JsonObject config = Configs.load(identifier);
-    String main = config.getString("main");
+    String main = config.getString("identifier");
     if (main == null) {
-      throw new VertxException(identifier + " does not contain a main field");
+      throw new VertxException(identifier + " does not contain a identifier field");
     }
 
     JsonObject deployment = config.getJsonObject("deployment");

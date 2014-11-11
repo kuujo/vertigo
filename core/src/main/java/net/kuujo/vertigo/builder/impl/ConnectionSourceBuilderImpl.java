@@ -37,10 +37,10 @@ public class ConnectionSourceBuilderImpl implements ConnectionSourceBuilder {
   }
 
   @Override
-  public ConnectionSourceComponentBuilder component(String id) {
+  public ConnectionSourceComponentBuilder component(String name) {
     ConnectionInfo connection = network.network.createConnection(new ConnectionInfoImpl());
     connections.add(connection);
-    return new ConnectionSourceComponentBuilderImpl(network, network.component(id), connections, connection);
+    return new ConnectionSourceComponentBuilderImpl(network, network.component(name), connections, connection);
   }
 
 }

@@ -33,13 +33,6 @@ public interface TypeContext<T extends TypeContext<T>> extends Shareable {
   String toString(boolean formatted);
 
   /**
-   * Creates a copy of the type context.
-   *
-   * @return A copy of the type context and its children.
-   */
-  T copy();
-
-  /**
    * Type context builder.
    *
    * @param <T> The type built by the builder.

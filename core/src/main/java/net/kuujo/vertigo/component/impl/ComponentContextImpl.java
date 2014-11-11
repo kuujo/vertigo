@@ -133,7 +133,7 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
 
     @Override
     public Builder setIdentifier(String identifier) {
-      Args.checkNotNull(identifier, "main cannot be null");
+      Args.checkNotNull(identifier, "identifier cannot be null");
       component.main = identifier;
       return this;
     }

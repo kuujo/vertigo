@@ -27,11 +27,11 @@ import net.kuujo.vertigo.network.Network;
 public interface NetworkBuilder extends Builder<Network>, NetworkLikeBuilder<NetworkBuilder> {
 
   /**
-   * Sets the unique network ID.
+   * Sets the unique network name.
    *
-   * @param id The unique network ID.
+   * @param name The unique network name.
    * @return The network builder.
    */
-  NetworkBuilder id(String id);
+  NetworkBuilder name(String name);
 
 }

@@ -38,8 +38,8 @@ public class ConnectionTargetComponentBuilderImpl implements ConnectionTargetCom
   }
 
   @Override
-  public ConnectionTargetComponentBuilder main(String main) {
-    component.main(main);
+  public ConnectionTargetComponentBuilder identifier(String identifier) {
+    component.identifier(identifier);
     return this;
   }
 

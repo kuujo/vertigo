@@ -36,8 +36,8 @@ public class InitialConnectionTargetBuilderImpl implements ConnectionTargetBuild
   }
 
   @Override
-  public ConnectionTargetComponentBuilder component(String id) {
-    return new ConnectionTargetComponentBuilderImpl(network, network.component(id), connections);
+  public ConnectionTargetComponentBuilder component(String name) {
+    return new ConnectionTargetComponentBuilderImpl(network, network.component(name), connections);
   }
 
 }

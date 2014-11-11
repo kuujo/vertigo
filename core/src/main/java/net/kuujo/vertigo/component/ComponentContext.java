@@ -73,9 +73,9 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
   String address();
 
   /**
-   * Returns the verticle main.
+   * Returns the verticle identifier.
    *
-   * @return The verticle main.
+   * @return The verticle identifier.
    */
   String main();
 

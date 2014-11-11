@@ -26,11 +26,11 @@ import io.vertx.codegen.annotations.VertxGen;
 public interface ComponentBuilder extends NetworkLikeBuilder<ComponentBuilder>, ComponentLikeBuilder<ComponentBuilder> {
 
   /**
-   * Sets the unique component identifier.
+   * Sets the unique component name.
    *
-   * @param id The unique component ID.
+   * @param name The unique component name.
    * @return The component builder.
    */
-  ComponentBuilder id(String id);
+  ComponentBuilder name(String name);
 
 }

@@ -40,15 +40,15 @@ public class ConnectionTargetBuilderImpl implements ConnectionTargetBuilder {
   }
 
   @Override
-  public ConnectionTargetComponentBuilder component(String id) {
+  public ConnectionTargetComponentBuilder component(String name) {
     List<ConnectionInfo> newConnections = new ArrayList<>();
     for (ConnectionInfo connection : connections) {
       newConnections.add(network.network.createConnection(new ConnectionInfoImpl()
         .setSource(connection.getSource())
-        .setTarget(new TargetInfoImpl().setComponent(id))
+        .setTarget(new TargetInfoImpl().setComponent(name))
         .setPartitioner(connection.getPartitioner())));
     }
-    return new ConnectionTargetComponentBuilderImpl(network, network.component(id), newConnections);
+    return new ConnectionTargetComponentBuilderImpl(network, network.component(name), newConnections);
   }
 
 }

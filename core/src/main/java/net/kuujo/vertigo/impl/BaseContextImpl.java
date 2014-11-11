@@ -30,10 +30,4 @@ public abstract class BaseContextImpl<T extends TypeContext<T>> implements TypeC
     return getClass().getCanonicalName();
   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public T copy() {
-    return (T) this;
-  }
-
 }

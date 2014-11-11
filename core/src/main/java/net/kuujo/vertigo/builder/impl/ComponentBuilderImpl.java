@@ -37,14 +37,14 @@ public class ComponentBuilderImpl implements ComponentBuilder {
   }
 
   @Override
-  public ComponentBuilder id(String id) {
-    component.setId(id);
+  public ComponentBuilder name(String name) {
+    component.setName(name);
     return this;
   }
 
   @Override
-  public ComponentBuilder main(String main) {
-    component.setIdentifier(main);
+  public ComponentBuilder identifier(String identifier) {
+    component.setIdentifier(identifier);
     return this;
   }
 

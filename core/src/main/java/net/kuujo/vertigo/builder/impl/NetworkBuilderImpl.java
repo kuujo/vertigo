@@ -40,13 +40,13 @@ public class NetworkBuilderImpl implements NetworkBuilder {
     this.network = new NetworkImpl();
   }
 
-  public NetworkBuilderImpl(String id) {
-    this.network = new NetworkImpl(id);
+  public NetworkBuilderImpl(String name) {
+    this.network = new NetworkImpl(name);
   }
 
   @Override
-  public NetworkBuilder id(String id) {
-    network.setName(id);
+  public NetworkBuilder name(String name) {
+    network.setName(name);
     return this;
   }
 

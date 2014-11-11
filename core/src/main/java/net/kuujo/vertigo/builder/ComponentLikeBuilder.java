@@ -22,7 +22,7 @@ import io.vertx.core.json.JsonObject;
  */
 public interface ComponentLikeBuilder<T> {
 
-  T main(String main);
+  T identifier(String identifier);
 
   T config(JsonObject config);
 

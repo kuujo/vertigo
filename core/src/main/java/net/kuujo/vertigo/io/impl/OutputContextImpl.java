@@ -16,7 +16,7 @@
 
 package net.kuujo.vertigo.io.impl;
 
-import net.kuujo.vertigo.component.PartitionContext;
+import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPortContext;
@@ -32,12 +32,12 @@ import java.util.Map;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 public class OutputContextImpl extends BaseContextImpl<OutputContext> implements OutputContext {
-  private PartitionContext partition;
+  private ComponentContext component;
   private Map<String, OutputPortContext> ports = new HashMap<>();
 
   @Override
-  public PartitionContext partition() {
-    return partition;
+  public ComponentContext component() {
+    return component;
   }
 
   @Override
@@ -104,9 +104,9 @@ public class OutputContextImpl extends BaseContextImpl<OutputContext> implements
     }
 
     @Override
-    public Builder setPartition(PartitionContext partition) {
-      Args.checkNotNull(partition, "partition cannot be null");
-      output.partition = partition;
+    public Builder setComponent(ComponentContext component) {
+      Args.checkNotNull(component, "component cannot be null");
+      output.component = component;
       return this;
     }
 

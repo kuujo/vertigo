@@ -51,7 +51,7 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
   public OutputCollectorImpl(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
     this.context = context;
-    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", OutputCollectorImpl.class.getName(), context.partition().component().name(), context.partition().number()));
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputCollectorImpl.class.getName(), context.component().name()));
   }
 
   @Override

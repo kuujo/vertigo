@@ -18,7 +18,6 @@ package net.kuujo.vertigo.component.impl;
 import io.vertx.core.Vertx;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.ComponentReference;
-import net.kuujo.vertigo.component.PartitionReference;
 import net.kuujo.vertigo.io.InputReference;
 import net.kuujo.vertigo.io.OutputReference;
 import net.kuujo.vertigo.io.impl.InputReferenceImpl;

@@ -24,25 +24,18 @@ import net.kuujo.vertigo.util.Args;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Input port context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputPortContextImpl extends BasePortContextImpl<InputPortContext> implements InputPortContext {
+public class InputPortContextImpl extends BasePortContextImpl<InputPortContext, InputConnectionContext> implements InputPortContext {
   private InputContext input;
-  private List<InputConnectionContext> connections = new ArrayList<>();
 
   @Override
   public InputContext input() {
     return input;
-  }
-
-  @Override
-  public Collection<InputConnectionContext> connections() {
-    return connections;
   }
 
   /**

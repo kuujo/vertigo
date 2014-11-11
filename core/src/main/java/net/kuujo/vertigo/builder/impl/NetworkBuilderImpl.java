@@ -56,8 +56,8 @@ public class NetworkBuilderImpl implements NetworkBuilder {
   }
 
   @Override
-  public ComponentBuilder component(String id) {
-    return new ComponentBuilderImpl(this, network.hasComponent(id) ? network.getComponent(id) : network.addComponent(id));
+  public ComponentBuilder component(String name) {
+    return new ComponentBuilderImpl(this, network.hasComponent(name) ? network.getComponent(name) : network.addComponent(name));
   }
 
   @Override

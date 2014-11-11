@@ -17,7 +17,6 @@ package net.kuujo.vertigo.impl;
 
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.connection.*;

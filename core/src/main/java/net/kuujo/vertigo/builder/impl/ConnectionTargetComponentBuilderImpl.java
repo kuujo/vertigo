@@ -50,12 +50,6 @@ public class ConnectionTargetComponentBuilderImpl implements ConnectionTargetCom
   }
 
   @Override
-  public ConnectionTargetComponentBuilder partitions(int partitions) {
-    component.partitions(partitions);
-    return this;
-  }
-
-  @Override
   public ConnectionTargetComponentBuilder worker() {
     component.worker();
     return this;
@@ -103,8 +97,8 @@ public class ConnectionTargetComponentBuilderImpl implements ConnectionTargetCom
   }
 
   @Override
-  public ComponentBuilder component(String id) {
-    return network.component(id);
+  public ComponentBuilder component(String name) {
+    return network.component(name);
   }
 
   @Override

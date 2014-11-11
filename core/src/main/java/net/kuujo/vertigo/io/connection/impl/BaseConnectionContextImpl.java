@@ -16,19 +16,21 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import net.kuujo.vertigo.io.connection.ConnectionContext;
-import net.kuujo.vertigo.io.connection.TargetContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.io.connection.ConnectionContext;
 import net.kuujo.vertigo.io.connection.SourceContext;
+import net.kuujo.vertigo.io.connection.TargetContext;
+import net.kuujo.vertigo.io.port.PortContext;
 
 /**
  * Connection context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T>> extends BaseContextImpl<T> implements ConnectionContext<T> {
+public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T, U>, U extends PortContext<U, T>> extends BaseContextImpl<T> implements ConnectionContext<T,  U> {
   protected SourceContext source;
   protected TargetContext target;
+  protected U port;
 
   @Override
   public SourceContext source() {
@@ -38,6 +40,11 @@ public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T>> 
   @Override
   public TargetContext target() {
     return target;
+  }
+
+  @Override
+  public U port() {
+    return port;
   }
 
 }

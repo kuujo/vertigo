@@ -22,17 +22,11 @@ import net.kuujo.vertigo.component.impl.ComponentContextImpl;
 import net.kuujo.vertigo.network.NetworkContext;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
  * A component context which contains information regarding each component partition within
- * a single network component.<p>
- *
- * Contexts are immutable as they are constructed once a network has been deployed.
- * The component context is not actually used by any Vertigo object, but is a
- * wrapper around multiple {@link PartitionContext} partitions, with each partition
- * representing an partition of the component - a Vert.x verticle or module.<p>
+ * a single network component.
  * 
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
@@ -92,21 +86,6 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
    * @return The component configuration.
    */
   JsonObject config();
-
-  /**
-   * Gets a list of all component partition context.
-   * 
-   * @return A list of component partition context.
-   */
-  List<PartitionContext> partitions();
-
-  /**
-   * Gets component partition context by partition ID.
-   * 
-   * @param partitionNumber The partition number.
-   * @return A component partition or <code>null</code> if the partition doesn't exist.
-   */
-  PartitionContext partition(int partitionNumber);
 
   /**
    * Returns a boolean indicating whether the verticle is a worker verticle.
@@ -189,45 +168,6 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
      * @return The component context builder.
      */
     Builder setMultiThreaded(boolean isMultiThreaded);
-
-    /**
-     * Adds an partition to the component context.
-     *
-     * @param partition The partition context to add.
-     * @return The component context builder.
-     */
-    Builder addPartition(PartitionContext partition);
-
-    /**
-     * Removes an partition from the component context.
-     *
-     * @param partition The partition context to remove.
-     * @return The component context builder.
-     */
-    Builder removePartition(PartitionContext partition);
-
-    /**
-     * Sets the component partitions.
-     *
-     * @param partitions A collection of partition context to add.
-     * @return The component context builder.
-     */
-    Builder setPartitions(PartitionContext... partitions);
-
-    /**
-     * Sets the component partitions.
-     *
-     * @param partitions A collection of partition context to add.
-     * @return The component context builder.
-     */
-    Builder setPartitions(Collection<PartitionContext> partitions);
-
-    /**
-     * Clears all component partition context.
-     *
-     * @return The component context builder.
-     */
-    Builder clearPartitions();
 
     /**
      * Adds a resource to the component.

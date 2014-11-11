@@ -52,7 +52,7 @@ public class InputCollectorImpl implements InputCollector, Openable<InputCollect
   public InputCollectorImpl(Vertx vertx, InputContext context) {
     this.vertx = vertx;
     this.context = context;
-    this.log = LoggerFactory.getLogger(String.format("%s-%s-%d", InputCollectorImpl.class.getName(), context.partition().component().name(), context.partition().number()));
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputCollectorImpl.class.getName(), context.component().name()));
   }
 
   @Override

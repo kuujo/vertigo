@@ -27,7 +27,7 @@ import net.kuujo.vertigo.util.Args;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputConnectionContextImpl extends BaseConnectionContextImpl<InputConnectionContext> implements InputConnectionContext {
+public class InputConnectionContextImpl extends BaseConnectionContextImpl<InputConnectionContext, InputPortContext> implements InputConnectionContext {
   private InputPortContext port;
 
   @Override

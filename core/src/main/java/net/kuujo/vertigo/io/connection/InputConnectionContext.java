@@ -27,7 +27,7 @@ import net.kuujo.vertigo.io.port.InputPortContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputConnectionContext extends ConnectionContext<InputConnectionContext> {
+public interface InputConnectionContext extends ConnectionContext<InputConnectionContext, InputPortContext> {
 
   /**
    * Returns a new input connection context builder.
@@ -47,13 +47,6 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
   static Builder builder(InputConnectionContext connection) {
     return new InputConnectionContextImpl.Builder((InputConnectionContextImpl) connection);
   }
-
-  /**
-   * Returns the parent input port context.
-   *
-   * @return The parent port context.
-   */
-  InputPortContext port();
 
   /**
    * Input connection context builder.

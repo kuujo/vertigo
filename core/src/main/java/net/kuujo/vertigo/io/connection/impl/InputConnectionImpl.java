@@ -105,9 +105,9 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
-    this.inAddress = String.format("%s.in", context.port().input().partition().address());
-    this.outAddress = String.format("%s.out", context.port().input().partition().address());
-    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.port().input().partition().address()));
+    this.inAddress = String.format("%s.in", context.port().input().component().address());
+    this.outAddress = String.format("%s.out", context.port().input().component().address());
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.port().input().component().address()));
   }
 
   public InputConnectionContext context() {

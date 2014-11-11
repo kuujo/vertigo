@@ -28,14 +28,6 @@ import net.kuujo.vertigo.io.OutputReference;
 public interface ComponentReference {
 
   /**
-   * Returns a reference to a component's partition.
-   *
-   * @param partition The partition to reference.
-   * @return The partition reference.
-   */
-  PartitionReference partition(int partition);
-
-  /**
    * Returns a reference to the component's input.
    *
    * @return A reference to the component's input.

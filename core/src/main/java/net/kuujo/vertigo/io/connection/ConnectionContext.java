@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeContext;
+import net.kuujo.vertigo.io.port.PortContext;
 
 /**
  * Connection contexts represent a direct connection between two partitions
@@ -25,7 +26,7 @@ import net.kuujo.vertigo.TypeContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ConnectionContext<T extends ConnectionContext<T>> extends TypeContext<T> {
+public interface ConnectionContext<T extends ConnectionContext<T, U>, U extends PortContext<U, T>> extends TypeContext<T> {
 
   /**
    * Returns the connection source.
@@ -40,5 +41,12 @@ public interface ConnectionContext<T extends ConnectionContext<T>> extends TypeC
    * @return The connection target.
    */
   TargetContext target();
+
+  /**
+   * Returns the connection's parent port.
+   *
+   * @return The parent port context.
+   */
+  U port();
 
 }

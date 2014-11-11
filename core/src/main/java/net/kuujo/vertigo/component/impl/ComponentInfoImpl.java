@@ -35,7 +35,6 @@ public class ComponentInfoImpl implements ComponentInfo {
   private String name;
   private String identifier;
   private JsonObject config;
-  private int partitions;
   private boolean worker;
   private boolean multiThreaded;
   private InputInfo input;
@@ -53,7 +52,6 @@ public class ComponentInfoImpl implements ComponentInfo {
     this.name = component.getName();
     this.identifier = component.getIdentifier();
     this.config = component.getConfig();
-    this.partitions = component.getPartitions();
     this.worker = component.isWorker();
     this.multiThreaded = component.isMultiThreaded();
     this.resources = new HashSet<>(component.getResources());
@@ -64,7 +62,6 @@ public class ComponentInfoImpl implements ComponentInfo {
     this.name = component.getString("name", UUID.randomUUID().toString());
     this.identifier = Args.checkNotNull(component.getString("identifier"));
     this.config = component.getJsonObject("config", new JsonObject());
-    this.partitions = component.getInteger("partitions", 1);
     this.worker = component.getBoolean("worker");
     this.multiThreaded = component.getBoolean("multi-threaded");
     JsonObject inputs = component.getJsonObject("input", new JsonObject());
@@ -110,17 +107,6 @@ public class ComponentInfoImpl implements ComponentInfo {
   @Override
   public ComponentInfo setConfig(JsonObject config) {
     this.config = config;
-    return this;
-  }
-
-  @Override
-  public int getPartitions() {
-    return partitions;
-  }
-
-  @Override
-  public ComponentInfo setPartitions(int partitions) {
-    this.partitions = partitions;
     return this;
   }
 

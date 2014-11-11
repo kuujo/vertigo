@@ -16,16 +16,21 @@
 package net.kuujo.vertigo.io.port.impl;
 
 import net.kuujo.vertigo.impl.BaseContextImpl;
+import net.kuujo.vertigo.io.connection.ConnectionContext;
 import net.kuujo.vertigo.io.port.PortContext;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Base port context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class BasePortContextImpl<T extends PortContext<T>> extends BaseContextImpl<T> implements PortContext<T> {
+public class BasePortContextImpl<T extends PortContext<T, U>, U extends ConnectionContext<U>> extends BaseContextImpl<T> implements PortContext<T, U> {
   protected String name;
   protected Class<?> type;
+  protected Collection<U> connections = new ArrayList<>();
 
   @Override
   public String name() {
@@ -35,6 +40,11 @@ public class BasePortContextImpl<T extends PortContext<T>> extends BaseContextIm
   @Override
   public Class<?> type() {
     return type;
+  }
+
+  @Override
+  public Collection<U> connections() {
+    return connections;
   }
 
 }

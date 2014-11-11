@@ -22,18 +22,50 @@ import io.vertx.core.json.JsonObject;
  */
 public interface ComponentLikeBuilder<T> {
 
+  /**
+   * Sets the component identifier.
+   *
+   * @param identifier The component verticle identifier.
+   * @return The component builder.
+   */
   T identifier(String identifier);
 
+  /**
+   * Sets the component configuration.
+   *
+   * @param config The component configuration.
+   * @return The component builder.
+   */
   T config(JsonObject config);
 
-  T partitions(int partitions);
-
+  /**
+   * Sets the component as a worker verticle.
+   *
+   * @return The component builder.
+   */
   T worker();
 
+  /**
+   * Sets whether the component is a worker verticle.
+   *
+   * @param worker Whether the component is a worker verticle.
+   * @return The component builder.
+   */
   T worker(boolean worker);
 
+  /**
+   * Sets the component as multi-threaded.
+   *
+   * @return The component builder.
+   */
   T multiThreaded();
 
+  /**
+   * Sets whether the component is a multi-threaded verticle.
+   *
+   * @param multiThreaded Whether the component verticle is multi-threaded.
+   * @return The component builder.
+   */
   T multiThreaded(boolean multiThreaded);
 
 }

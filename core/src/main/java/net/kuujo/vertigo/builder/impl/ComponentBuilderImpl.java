@@ -55,12 +55,6 @@ public class ComponentBuilderImpl implements ComponentBuilder {
   }
 
   @Override
-  public ComponentBuilder partitions(int partitions) {
-    component.setPartitions(partitions);
-    return this;
-  }
-
-  @Override
   public ComponentBuilder worker() {
     component.setWorker(true);
     return this;
@@ -90,8 +84,8 @@ public class ComponentBuilderImpl implements ComponentBuilder {
   }
 
   @Override
-  public ComponentBuilder component(String id) {
-    return network.component(id);
+  public ComponentBuilder component(String name) {
+    return network.component(name);
   }
 
   @Override

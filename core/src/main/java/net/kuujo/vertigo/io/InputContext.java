@@ -17,7 +17,7 @@ package net.kuujo.vertigo.io;
 
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeContext;
-import net.kuujo.vertigo.component.PartitionContext;
+import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.io.impl.InputContextImpl;
 import net.kuujo.vertigo.io.port.InputPortContext;
 
@@ -52,11 +52,11 @@ public interface InputContext extends TypeContext<InputContext> {
   }
 
   /**
-   * Returns the parent partition context.
+   * Returns the parent component context.
    *
-   * @return The parent partition context.
+   * @return The parent component context.
    */
-  PartitionContext partition();
+  ComponentContext component();
 
   /**
    * Returns the input's port contexts.
@@ -118,12 +118,12 @@ public interface InputContext extends TypeContext<InputContext> {
     Builder clearPorts();
 
     /**
-     * Sets the parent partition context.
+     * Sets the parent component context.
      *
-     * @param partition The parent partition context.
+     * @param component The parent component context.
      * @return The input context builder.
      */
-    Builder setPartition(PartitionContext partition);
+    Builder setComponent(ComponentContext component);
   }
 
 }

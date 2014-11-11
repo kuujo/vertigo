@@ -52,12 +52,6 @@ public class ConnectionSourceComponentBuilderImpl implements ConnectionSourceCom
   }
 
   @Override
-  public ConnectionSourceComponentBuilder partitions(int partitions) {
-    component.partitions(partitions);
-    return this;
-  }
-
-  @Override
   public ConnectionSourceComponentBuilder worker() {
     component.worker();
     return this;
@@ -113,8 +107,8 @@ public class ConnectionSourceComponentBuilderImpl implements ConnectionSourceCom
   }
 
   @Override
-  public ComponentBuilder component(String id) {
-    return network.component(id);
+  public ComponentBuilder component(String name) {
+    return network.component(name);
   }
 
   @Override

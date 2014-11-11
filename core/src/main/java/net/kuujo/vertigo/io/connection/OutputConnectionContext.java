@@ -18,7 +18,7 @@ package net.kuujo.vertigo.io.connection;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.connection.impl.OutputConnectionContextImpl;
-import net.kuujo.vertigo.io.stream.OutputStreamContext;
+import net.kuujo.vertigo.io.port.OutputPortContext;
 
 /**
  * Output connection context represents a single partition's output to
@@ -27,7 +27,7 @@ import net.kuujo.vertigo.io.stream.OutputStreamContext;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext> {
+public interface OutputConnectionContext extends ConnectionContext<OutputConnectionContext, OutputPortContext> {
 
   /**
    * Returns a new output connection context builder.
@@ -47,13 +47,6 @@ public interface OutputConnectionContext extends ConnectionContext<OutputConnect
   static Builder builder(OutputConnectionContext connection) {
     return new OutputConnectionContextImpl.Builder((OutputConnectionContextImpl) connection);
   }
-
-  /**
-   * Returns the parent output stream context.
-   *
-   * @return The parent stream context.
-   */
-  OutputStreamContext stream();
 
   /**
    * Output connection context builder.
@@ -77,12 +70,12 @@ public interface OutputConnectionContext extends ConnectionContext<OutputConnect
     Builder setTarget(TargetContext target);
 
     /**
-     * Sets the parent output stream context.
+     * Sets the parent output port context.
      *
-     * @param stream The parent output stream context.
+     * @param port The parent output port context.
      * @return The output connection context builder.
      */
-    Builder setStream(OutputStreamContext stream);
+    Builder setPort(OutputPortContext port);
   }
 
 }

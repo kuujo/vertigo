@@ -21,7 +21,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.component.ComponentInstance;
-import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.InputCollectorImpl;

@@ -17,32 +17,25 @@
 package net.kuujo.vertigo.io.port.impl;
 
 import net.kuujo.vertigo.io.OutputContext;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.port.OutputPortContext;
-import net.kuujo.vertigo.io.stream.OutputStreamContext;
 import net.kuujo.vertigo.util.Args;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Output port context implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext> implements OutputPortContext {
+public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext, OutputConnectionContext> implements OutputPortContext {
   private OutputContext output;
-  private Set<OutputStreamContext> streams = new HashSet<>();
 
   @Override
   public OutputContext output() {
     return output;
-  }
-
-  @Override
-  public Collection<OutputStreamContext> streams() {
-    return streams;
   }
 
   /**
@@ -73,29 +66,29 @@ public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext
     }
 
     @Override
-    public Builder addStream(OutputStreamContext stream) {
-      Args.checkNotNull(stream, "stream cannot be null");
-      port.streams.add(stream);
+    public Builder addConnection(OutputConnectionContext connection) {
+      Args.checkNotNull(connection, "connection cannot be null");
+      port.connections.add(connection);
       return this;
     }
 
     @Override
-    public Builder removeStream(OutputStreamContext stream) {
-      Args.checkNotNull(stream, "stream cannot be null");
-      port.streams.remove(stream);
+    public Builder removeConnection(OutputConnectionContext connection) {
+      Args.checkNotNull(connection, "connection cannot be null");
+      port.connections.remove(connection);
       return this;
     }
 
     @Override
-    public Builder setStreams(OutputStreamContext... streams) {
-      port.streams = new HashSet<>(Arrays.asList(streams));
+    public Builder setConnections(OutputConnectionContext... connections) {
+      port.connections = new ArrayList<>(Arrays.asList(connections));
       return this;
     }
 
     @Override
-    public Builder setStreams(Collection<OutputStreamContext> streams) {
-      Args.checkNotNull(streams, "streams cannot be null");
-      port.streams = new HashSet<>(streams);
+    public Builder setConnections(Collection<OutputConnectionContext> connections) {
+      Args.checkNotNull(connections, "connections cannot be null");
+      port.connections = new ArrayList<>(connections);
       return this;
     }
 

@@ -16,12 +16,9 @@
 package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.OutputContext;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.port.impl.OutputPortContextImpl;
-import net.kuujo.vertigo.io.stream.OutputStreamContext;
-
-import java.util.Collection;
 
 /**
  * Output port context represents a set of output connections for a single
@@ -30,7 +27,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputPortContext extends PortContext<OutputPortContext> {
+public interface OutputPortContext extends PortContext<OutputPortContext, OutputConnectionContext> {
 
   /**
    * Returns a new output port context builder.
@@ -59,64 +56,9 @@ public interface OutputPortContext extends PortContext<OutputPortContext> {
   OutputContext output();
 
   /**
-   * Returns a collection of port streams.
-   *
-   * @return A collection of streams in the port.
-   */
-  Collection<OutputStreamContext> streams();
-
-  /**
    * Output port context builder.
    */
-  public static interface Builder extends TypeContext.Builder<Builder, OutputPortContext> {
-
-    /**
-     * Sets the port name.
-     *
-     * @param name The output port name.
-     * @return The output port builder.
-     */
-    Builder setName(String name);
-
-    /**
-     * Sets the port type.
-     *
-     * @param type The port type.
-     * @return The port context builder.
-     */
-    Builder setType(Class<?> type);
-
-    /**
-     * Adds a stream to the output.
-     *
-     * @param stream The output stream context to add.
-     * @return The output port context builder.
-     */
-    Builder addStream(OutputStreamContext stream);
-
-    /**
-     * Removes a stream from the output.
-     *
-     * @param stream The output stream context to remove.
-     * @return The output port context builder.
-     */
-    Builder removeStream(OutputStreamContext stream);
-
-    /**
-     * Sets all streams on the output.
-     *
-     * @param streams A collection of output stream context to add.
-     * @return The output port context builder.
-     */
-    Builder setStreams(OutputStreamContext... streams);
-
-    /**
-     * Sets all streams on the output.
-     *
-     * @param streams A collection of output stream context to add.
-     * @return The output port context builder.
-     */
-    Builder setStreams(Collection<OutputStreamContext> streams);
+  public static interface Builder extends PortContext.Builder<Builder, OutputPortContext, OutputConnectionContext> {
 
     /**
      * Sets the parent output context.
@@ -125,6 +67,7 @@ public interface OutputPortContext extends PortContext<OutputPortContext> {
      * @return The output port context builder.
      */
     Builder setOutput(OutputContext output);
+
   }
 
 }

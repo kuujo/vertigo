@@ -18,7 +18,6 @@ package net.kuujo.vertigo.component.impl;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.Component;
 import net.kuujo.vertigo.component.ComponentContext;
-import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.Args;

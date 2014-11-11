@@ -88,15 +88,10 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
-    this.outAddress = String.format("%s.out", context.address());
-    this.inAddress = String.format("%s.in", context.address());
+    this.outAddress = String.format("%s.out", context.port().output().component().address());
+    this.inAddress = String.format("%s.in", context.port().output().component().address());
     this.consumer = eventBus.consumer(inAddress);
-    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputConnectionImpl.class.getName(), context.target()));
-  }
-
-  @Override
-  public String address() {
-    return context.address();
+    this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputConnectionImpl.class.getName(), context.port().output().component().address()));
   }
 
   public OutputConnectionContext context() {

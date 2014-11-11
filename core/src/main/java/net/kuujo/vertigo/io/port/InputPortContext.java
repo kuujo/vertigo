@@ -16,12 +16,9 @@
 package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.port.impl.InputPortContextImpl;
-
-import java.util.Collection;
 
 /**
  * Input port context represents a set of input connections for a single
@@ -30,7 +27,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputPortContext extends PortContext<InputPortContext> {
+public interface InputPortContext extends PortContext<InputPortContext, InputConnectionContext> {
 
   /**
    * Returns a new input port context builder.
@@ -59,64 +56,9 @@ public interface InputPortContext extends PortContext<InputPortContext> {
   InputContext input();
 
   /**
-   * Returns a collection of input port connections.
-   *
-   * @return A list of input connections.
-   */
-  Collection<InputConnectionContext> connections();
-
-  /**
    * Input port context builder.
    */
-  public static interface Builder extends TypeContext.Builder<Builder, InputPortContext> {
-
-    /**
-     * Sets the port name.
-     *
-     * @param name The port name.
-     * @return The input port context builder.
-     */
-    Builder setName(String name);
-
-    /**
-     * Sets the port type.
-     *
-     * @param type The port type.
-     * @return The port context builder.
-     */
-    Builder setType(Class<?> type);
-
-    /**
-     * Adds a connection to the port.
-     *
-     * @param connection The input connection context.
-     * @return The input port context builder.
-     */
-    Builder addConnection(InputConnectionContext connection);
-
-    /**
-     * Removes a connection from the port.
-     *
-     * @param connection The input connection context.
-     * @return The input port context builder.
-     */
-    Builder removeConnection(InputConnectionContext connection);
-
-    /**
-     * Sets all connections on the port.
-     *
-     * @param connections A collection of input connection context.
-     * @return The input port context builder.
-     */
-    Builder setConnections(InputConnectionContext... connections);
-
-    /**
-     * Sets all connections on the port.
-     *
-     * @param connections A collection of input connection context.
-     * @return The input port context builder.
-     */
-    Builder setConnections(Collection<InputConnectionContext> connections);
+  public static interface Builder extends PortContext.Builder<Builder, InputPortContext, InputConnectionContext> {
 
     /**
      * Sets the parent input.
@@ -125,6 +67,7 @@ public interface InputPortContext extends PortContext<InputPortContext> {
      * @return The input port builder.
      */
     Builder setInput(InputContext input);
+
   }
 
 }

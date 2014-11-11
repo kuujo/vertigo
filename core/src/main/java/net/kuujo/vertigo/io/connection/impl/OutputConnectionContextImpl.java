@@ -19,7 +19,7 @@ package net.kuujo.vertigo.io.connection.impl;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.SourceContext;
 import net.kuujo.vertigo.io.connection.TargetContext;
-import net.kuujo.vertigo.io.stream.OutputStreamContext;
+import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.util.Args;
 
 /**
@@ -27,13 +27,7 @@ import net.kuujo.vertigo.util.Args;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputConnectionContextImpl extends BaseConnectionContextImpl<OutputConnectionContext> implements OutputConnectionContext {
-  private OutputStreamContext stream;
-
-  @Override
-  public OutputStreamContext stream() {
-    return stream;
-  }
+public class OutputConnectionContextImpl extends BaseConnectionContextImpl<OutputConnectionContext, OutputPortContext> implements OutputConnectionContext {
 
   /**
    * Output connection context builder.
@@ -64,9 +58,9 @@ public class OutputConnectionContextImpl extends BaseConnectionContextImpl<Outpu
     }
 
     @Override
-    public Builder setStream(OutputStreamContext stream) {
-      Args.checkNotNull(stream, "stream cannot be null");
-      connection.stream = stream;
+    public Builder setPort(OutputPortContext port) {
+      Args.checkNotNull(port, "port cannot be null");
+      connection.port = port;
       return this;
     }
 

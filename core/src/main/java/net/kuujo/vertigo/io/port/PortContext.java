@@ -16,13 +16,17 @@
 package net.kuujo.vertigo.io.port;
 
 import net.kuujo.vertigo.TypeContext;
+import net.kuujo.vertigo.io.connection.ConnectionContext;
+import net.kuujo.vertigo.io.connection.InputConnectionContext;
+
+import java.util.Collection;
 
 /**
  * Port context.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface PortContext<T extends PortContext<T>> extends TypeContext<T> {
+public interface PortContext<T extends PortContext<T, U>, U extends ConnectionContext<U>> extends TypeContext<T> {
 
   /**
    * Returns the port name.
@@ -37,5 +41,70 @@ public interface PortContext<T extends PortContext<T>> extends TypeContext<T> {
    * @return The port type.
    */
   Class<?> type();
+
+  /**
+   * Returns a collection of port connections.
+   *
+   * @return A collection of port connections.
+   */
+  Collection<U> connections();
+
+  /**
+   * Port context builder.
+   *
+   * @param <T> The builder type.
+   * @param <U> The port type.
+   */
+  public static interface Builder<T extends Builder<T, U, V>, U extends PortContext<U, V>, V extends ConnectionContext<V>> extends TypeContext.Builder<T, U> {
+
+    /**
+     * Sets the port name.
+     *
+     * @param name The output port name.
+     * @return The output port builder.
+     */
+    T setName(String name);
+
+    /**
+     * Sets the port type.
+     *
+     * @param type The port type.
+     * @return The port context builder.
+     */
+    T setType(Class<?> type);
+
+    /**
+     * Adds a connection to the port.
+     *
+     * @param connection The input connection context.
+     * @return The input port context builder.
+     */
+    T addConnection(V connection);
+
+    /**
+     * Removes a connection from the port.
+     *
+     * @param connection The input connection context.
+     * @return The input port context builder.
+     */
+    T removeConnection(V connection);
+
+    /**
+     * Sets all connections on the port.
+     *
+     * @param connections A collection of input connection context.
+     * @return The input port context builder.
+     */
+    T setConnections(V... connections);
+
+    /**
+     * Sets all connections on the port.
+     *
+     * @param connections A collection of input connection context.
+     * @return The input port context builder.
+     */
+    T setConnections(Collection<V> connections);
+
+  }
 
 }

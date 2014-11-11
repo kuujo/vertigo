@@ -20,7 +20,6 @@ import io.vertx.core.shareddata.LocalMap;
 import net.kuujo.vertigo.ContextManager;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.component.ComponentContext;
-import net.kuujo.vertigo.component.PartitionContext;
 import net.kuujo.vertigo.network.NetworkContext;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
 

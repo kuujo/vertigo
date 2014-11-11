@@ -52,12 +52,6 @@ public interface ComponentInfo {
   public static final String COMPONENT_CONFIG = "config";
 
   /**
-   * <code>partitions</code> is a number indicating the number of partitions of the
-   * component to deploy. Defaults to <code>1</code>
-   */
-  public static final String COMPONENT_PARTITIONS = "partitions";
-
-  /**
    * <code>worker</code> is a boolean indicating whether this verticle should be deployed
    * as a worker verticle. Defaults to <code>false</code>
    */
@@ -123,22 +117,6 @@ public interface ComponentInfo {
    */
   @Fluent
   ComponentInfo setConfig(JsonObject config);
-
-  /**
-   * Returns the number of component partitions.
-   *
-   * @return The number of component partitions.
-   */
-  int getPartitions();
-
-  /**
-   * Sets the number of component partitions.
-   *
-   * @param partitions The number of component partitions.
-   * @return The component info.
-   */
-  @Fluent
-  ComponentInfo setPartitions(int partitions);
 
   /**
    * Returns whether the component is a worker.

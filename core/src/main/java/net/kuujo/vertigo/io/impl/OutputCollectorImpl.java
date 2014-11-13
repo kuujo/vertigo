@@ -15,8 +15,6 @@
  */
 package net.kuujo.vertigo.io.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -27,8 +25,6 @@ import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.port.impl.OutputPortImpl;
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
 
 import java.util.*;
 
@@ -37,7 +33,7 @@ import java.util.*;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputCollectorImpl implements OutputCollector, Openable<OutputCollector>, Closeable<OutputCollector>, Handler<Message<Object>> {
+public class OutputCollectorImpl implements OutputCollector, Handler<Message<Object>> {
   private final Logger log;
   private final Vertx vertx;
   private OutputContext context;
@@ -47,6 +43,18 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
     this.vertx = vertx;
     this.context = context;
     this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputCollectorImpl.class.getName(), context.component().name()));
+    init();
+  }
+
+  /**
+   * Initializes the output.
+   */
+  private void init() {
+    for (OutputPortContext output : context.ports()) {
+      if (!ports.containsKey(output.name())) {
+        ports.put(output.name(), new OutputPortImpl(vertx, output));
+      }
+    }
   }
 
   @Override
@@ -74,33 +82,6 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
   @SuppressWarnings("unchecked")
   public <T> OutputPort<T> port(String name) {
     return ports.get(name);
-  }
-
-  @Override
-  public OutputCollector open() {
-    return open(null);
-  }
-
-  @Override
-  public OutputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
-    for (OutputPortContext output : context.ports()) {
-      if (!ports.containsKey(output.name())) {
-        ports.put(output.name(), new OutputPortImpl(vertx, output));
-      }
-    }
-    Future.<Void>completedFuture().setHandler(doneHandler);
-    return this;
-  }
-
-  @Override
-  public void close() {
-    close(null);
-  }
-
-  @Override
-  public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    ports.clear();
-    Future.<Void>completedFuture().setHandler(doneHandler);
   }
 
   @Override

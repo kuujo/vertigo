@@ -24,6 +24,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.ControllableInput;
 import net.kuujo.vertigo.io.VertigoMessage;
 import net.kuujo.vertigo.io.connection.InputConnection;
+import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.InputConnectionImpl;
 import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.io.port.InputPortContext;
@@ -40,7 +41,7 @@ import java.util.Map;
 public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPort<T>, T>, Handler<Message<T>> {
   private static final Logger log = LoggerFactory.getLogger(InputPortImpl.class);
   private final Vertx vertx;
-  private InputPortContext info;
+  private InputPortContext context;
   private final Map<String, InputConnectionImpl<T>> connections = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
   @SuppressWarnings("rawtypes")
@@ -48,14 +49,24 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
   private boolean open;
   private boolean paused;
 
-  public InputPortImpl(Vertx vertx, InputPortContext info) {
+  public InputPortImpl(Vertx vertx, InputPortContext context) {
     this.vertx = vertx;
-    this.info = info;
+    this.context = context;
+    init();
+  }
+
+  /**
+   * Initializes the output connections.
+   */
+  private void init() {
+    for (InputConnectionContext connection : context.connections()) {
+      connections.put(connection.target().address(), new InputConnectionImpl<T>(vertx, connection));
+    }
   }
 
   @Override
   public String name() {
-    return info.name();
+    return context.name();
   }
 
   @Override
@@ -101,7 +112,7 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
 
   @Override
   public String toString() {
-    return info.toString();
+    return context.toString();
   }
 
 }

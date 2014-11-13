@@ -16,8 +16,6 @@
 
 package net.kuujo.vertigo.io.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -27,9 +25,8 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.port.InputPort;
+import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.io.port.impl.InputPortImpl;
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
 import net.kuujo.vertigo.util.TaskRunner;
 
 import java.util.*;
@@ -39,7 +36,7 @@ import java.util.*;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputCollectorImpl implements InputCollector, Openable<InputCollector>, Closeable<InputCollector>, Handler<Message<Object>> {
+public class InputCollectorImpl implements InputCollector, Handler<Message<Object>> {
   private final Logger log;
   private final Vertx vertx;
   private InputContext context;
@@ -51,6 +48,18 @@ public class InputCollectorImpl implements InputCollector, Openable<InputCollect
     this.vertx = vertx;
     this.context = context;
     this.log = LoggerFactory.getLogger(String.format("%s-%s", InputCollectorImpl.class.getName(), context.component().name()));
+    init();
+  }
+
+  /**
+   * Initializes the output.
+   */
+  private void init() {
+    for (InputPortContext input : context.ports()) {
+      if (!ports.containsKey(input.name())) {
+        ports.put(input.name(), new InputPortImpl(vertx, input));
+      }
+    }
   }
 
   /**
@@ -83,56 +92,6 @@ public class InputCollectorImpl implements InputCollector, Openable<InputCollect
   @SuppressWarnings("unchecked")
   public <T> InputPort<T> port(String name) {
     return ports.get(name);
-  }
-
-  @Override
-  public InputCollector open() {
-    return open(null);
-  }
-
-  @Override
-  public InputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
-    // Prevent the object from being opened and closed simultaneously
-    // by queueing open/close operations as tasks.
-    tasks.runTask((task) -> {
-      if (consumer == null) {
-        consumer = vertx.eventBus().consumer(context.component().address());
-        consumer.handler(this);
-        consumer.completionHandler(result -> {
-          if (doneHandler != null) {
-            doneHandler.handle(result);
-          }
-          task.complete();
-        });
-      } else {
-        Future.<Void>completedFuture().setHandler(doneHandler);
-      }
-    });
-    return this;
-  }
-
-  @Override
-  public void close() {
-    close(null);
-  }
-
-  @Override
-  public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    // Prevent the object from being opened and closed simultaneously
-    // by queueing open/close operations as tasks.
-    tasks.runTask((task) -> {
-      if (consumer != null) {
-        consumer.unregister(result -> {
-          consumer = null;
-          if (doneHandler != null) {
-            doneHandler.handle(result);
-          }
-          task.complete();
-        });
-      } else {
-        Future.<Void>completedFuture().setHandler(doneHandler);
-      }
-    });
   }
 
   @Override

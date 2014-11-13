@@ -23,15 +23,13 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.ControllableOutput;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.OutputConnectionImpl;
 import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.util.Args;
-import net.kuujo.vertigo.util.TaskRunner;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,16 +41,24 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   private static final Logger log = LoggerFactory.getLogger(OutputPortImpl.class);
   private static final int DEFAULT_SEND_QUEUE_MAX_SIZE = 10000;
   private final Vertx vertx;
-  private OutputPortContext info;
+  private OutputPortContext context;
   private final Map<String, OutputConnectionImpl<T>> connections = new HashMap<>();
-  private final TaskRunner tasks = new TaskRunner();
   private int maxQueueSize = DEFAULT_SEND_QUEUE_MAX_SIZE;
   private Handler<Void> drainHandler;
-  private boolean open;
 
-  public OutputPortImpl(Vertx vertx, OutputPortContext info) {
+  public OutputPortImpl(Vertx vertx, OutputPortContext context) {
     this.vertx = vertx;
-    this.info = info;
+    this.context = context;
+    init();
+  }
+
+  /**
+   * Initializes the output connections.
+   */
+  private void init() {
+    for (OutputConnectionContext connection : context.connections()) {
+      connections.put(connection.target().address(), new OutputConnectionImpl<>(vertx, connection));
+    }
   }
 
   @Override
@@ -78,7 +84,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
 
   @Override
   public String name() {
-    return info.name();
+    return context.name();
   }
 
   @Override
@@ -142,7 +148,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
 
   @Override
   public String toString() {
-    return info.toString();
+    return context.toString();
   }
 
 }

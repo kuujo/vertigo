@@ -56,8 +56,6 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Messa
   private long lastReceived;
   private long lastFeedbackTime;
   private long feedbackTimerID;
-  private boolean open;
-  private boolean connected;
   private boolean paused;
 
   private final Handler<Long> internalTimer = new Handler<Long>() {
@@ -76,7 +74,7 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Messa
   private final Handler<Message<T>> internalMessageHandler = new Handler<Message<T>>() {
     @Override
     public void handle(Message<T> message) {
-      if (open && !paused) {
+      if (!paused) {
         String action = message.headers().get(ACTION_HEADER);
         switch (action) {
           case MESSAGE_ACTION:
@@ -96,6 +94,7 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Messa
     this.inAddress = String.format("%s.in", context.port().input().component().address());
     this.outAddress = String.format("%s.out", context.port().input().component().address());
     this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.port().input().component().address()));
+    feedbackTimerID = vertx.setPeriodic(MAX_BATCH_TIME, internalTimer);
   }
 
   @Override
@@ -134,14 +133,13 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Messa
     // Send a message to the other side of the connection indicating the
     // last message that we received in order. This will allow it to
     // purge messages we've already received from its queue.
-    if (open && connected) {
-      if (log.isDebugEnabled()) {
-        log.debug(String.format("%s - Acking messages up to: %d", this, lastReceived));
-      }
-      eventBus.send(outAddress, null, new DeliveryOptions().addHeader(ACTION_HEADER, ACK_ACTION).addHeader(INDEX_HEADER, String
-        .valueOf(lastReceived)));
-      lastFeedbackTime = System.currentTimeMillis();
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("%s - Acking messages up to: %d", this, lastReceived));
     }
+    eventBus.send(outAddress, null, new DeliveryOptions()
+      .addHeader(ACTION_HEADER, ACK_ACTION)
+      .addHeader(INDEX_HEADER, String.valueOf(lastReceived)));
+    lastFeedbackTime = System.currentTimeMillis();
   }
 
   /**
@@ -151,25 +149,23 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Messa
     // Send a "fail" message indicating the last message we received in order.
     // This will cause the other side of the connection to resend messages
     // in order from that point on.
-    if (open && connected) {
-      if (log.isDebugEnabled()) {
-        log.debug(String.format("%s - Received a message out of order: %d", this, lastReceived));
-      }
-      eventBus.send(outAddress, null, new DeliveryOptions().addHeader(ACTION_HEADER, FAIL_ACTION).addHeader(INDEX_HEADER, String
-        .valueOf(lastReceived)));
-      lastFeedbackTime = System.currentTimeMillis();
+    if (log.isDebugEnabled()) {
+      log.debug(String.format("%s - Received a message out of order: %d", this, lastReceived));
     }
+    eventBus.send(outAddress, null, new DeliveryOptions()
+      .addHeader(ACTION_HEADER, FAIL_ACTION)
+      .addHeader(INDEX_HEADER, String.valueOf(lastReceived)));
+    lastFeedbackTime = System.currentTimeMillis();
   }
 
   @Override
   public InputConnection<T> pause() {
     if (!paused) {
       paused = true;
-      if (open && connected) {
-        log.debug(String.format("%s - Pausing connection: %s", this, context.source()));
-        eventBus.send(outAddress, null, new DeliveryOptions().addHeader(ACTION_HEADER, PAUSE_ACTION).addHeader(INDEX_HEADER, String
-          .valueOf(lastReceived)));
-      }
+      log.debug(String.format("%s - Pausing connection: %s", this, context.source()));
+      eventBus.send(outAddress, null, new DeliveryOptions()
+        .addHeader(ACTION_HEADER, PAUSE_ACTION)
+        .addHeader(INDEX_HEADER, String.valueOf(lastReceived)));
     }
     return this;
   }
@@ -178,20 +174,16 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Messa
   public InputConnection<T> resume() {
     if (paused) {
       paused = false;
-      if (open && connected) {
-        log.debug(String.format("%s - Resuming connection: %s", this, context.source()));
-        eventBus.send(outAddress, null, new DeliveryOptions().addHeader(ACTION_HEADER, RESUME_ACTION).addHeader(INDEX_HEADER, String
-          .valueOf(lastReceived)));
-      }
+      log.debug(String.format("%s - Resuming connection: %s", this, context.source()));
+      eventBus.send(outAddress, null, new DeliveryOptions()
+        .addHeader(ACTION_HEADER, RESUME_ACTION)
+        .addHeader(INDEX_HEADER, String.valueOf(lastReceived)));
     }
     return this;
   }
 
   @Override
   public InputConnection<T> handler(Handler<VertigoMessage<T>> handler) {
-    if (open && handler == null) {
-      throw new IllegalStateException("cannot set null handler on locked connection");
-    }
     this.messageHandler = handler;
     return this;
   }

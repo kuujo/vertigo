@@ -16,6 +16,7 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
+import io.vertx.core.eventbus.MessageCodec;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.port.InputPortContext;
@@ -53,15 +54,27 @@ public class InputPortContextImpl extends BasePortContextImpl<InputPortContext, 
     }
 
     @Override
+    public Builder setName(String name) {
+      Args.checkNotNull(name, "name cannot be null");
+      port.name = name;
+      return this;
+    }
+
+    @Override
     public Builder setType(Class<?> type) {
       port.type = Args.checkNotNull(type, "type cannot be null");
       return this;
     }
 
     @Override
-    public Builder setName(String name) {
-      Args.checkNotNull(name, "name cannot be null");
-      port.name = name;
+    public Builder setCodec(Class<? extends MessageCodec> codec) {
+      port.codec = codec;
+      return this;
+    }
+
+    @Override
+    public Builder setPersistent(boolean persistent) {
+      port.persistent = persistent;
       return this;
     }
 

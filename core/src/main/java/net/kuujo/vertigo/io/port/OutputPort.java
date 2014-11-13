@@ -19,27 +19,10 @@ import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.io.Output;
 
 /**
- * Output port to which messages are sent.<p>
- *
- * The output port can contain any number of {@link net.kuujo.vertigo.io.stream.OutputStream}
- * to which it sends messages. Each message that is sent on the output port will
- * be sent on all underlying streams. Selection occurs within each stream
- * rather than at the port level.<p>
- *
- * Streams are constructed based on current network configuration information.
- * When the network configuration is updated, the port will automatically update
- * its internal streams.
+ * Output port to which messages are sent.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputPort<T> extends Output<OutputPort<T>, T> {
-
-  /**
-   * Returns the port name.
-   *
-   * @return The port name.
-   */
-  String name();
-
+public interface OutputPort<T> extends Port<OutputPort<T>>, Output<OutputPort<T>, T> {
 }

@@ -74,6 +74,24 @@ public class ConnectionTargetComponentBuilderImpl implements ConnectionTargetCom
   }
 
   @Override
+  public ConnectionTargetComponentBuilder stateful() {
+    component.stateful();
+    return this;
+  }
+
+  @Override
+  public ConnectionTargetComponentBuilder stateful(boolean stateful) {
+    component.stateful(stateful);
+    return this;
+  }
+
+  @Override
+  public ConnectionTargetComponentBuilder replicas(int replicas) {
+    component.replicas(replicas);
+    return this;
+  }
+
+  @Override
   public ConnectionTargetComponentBuilder port(String port) {
     for (ConnectionInfo connection : connections) {
       connection.getTarget().setPort(port);

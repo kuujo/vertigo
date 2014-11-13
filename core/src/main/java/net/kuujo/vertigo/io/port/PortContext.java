@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.core.eventbus.MessageCodec;
 import net.kuujo.vertigo.TypeContext;
 import net.kuujo.vertigo.io.connection.ConnectionContext;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
@@ -26,7 +27,7 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface PortContext<T extends PortContext<T, U>, U extends ConnectionContext<U>> extends TypeContext<T> {
+public interface PortContext<T extends PortContext<T, U>, U extends ConnectionContext<U, T>> extends TypeContext<T> {
 
   /**
    * Returns the port name.
@@ -43,6 +44,20 @@ public interface PortContext<T extends PortContext<T, U>, U extends ConnectionCo
   Class<?> type();
 
   /**
+   * Returns the port message codec.
+   *
+   * @return The port message codec.
+   */
+  Class<? extends MessageCodec> codec();
+
+  /**
+   * Returns whether the port is persistent.
+   *
+   * @return Whether the port is persistent.
+   */
+  boolean persistent();
+
+  /**
    * Returns a collection of port connections.
    *
    * @return A collection of port connections.
@@ -55,7 +70,7 @@ public interface PortContext<T extends PortContext<T, U>, U extends ConnectionCo
    * @param <T> The builder type.
    * @param <U> The port type.
    */
-  public static interface Builder<T extends Builder<T, U, V>, U extends PortContext<U, V>, V extends ConnectionContext<V>> extends TypeContext.Builder<T, U> {
+  public static interface Builder<T extends Builder<T, U, V>, U extends PortContext<U, V>, V extends ConnectionContext<V, U>> extends TypeContext.Builder<T, U> {
 
     /**
      * Sets the port name.
@@ -72,6 +87,22 @@ public interface PortContext<T extends PortContext<T, U>, U extends ConnectionCo
      * @return The port context builder.
      */
     T setType(Class<?> type);
+
+    /**
+     * Sets the port codec.
+     *
+     * @param codec The port codec.
+     * @return The port context builder.
+     */
+    T setCodec(Class<? extends MessageCodec> codec);
+
+    /**
+     * Sets whether the port is persistent.
+     *
+     * @param persistent Whether the port is persistent.
+     * @return The port context builder.
+     */
+    T setPersistent(boolean persistent);
 
     /**
      * Adds a connection to the port.

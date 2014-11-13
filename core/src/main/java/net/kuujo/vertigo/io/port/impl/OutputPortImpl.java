@@ -28,6 +28,7 @@ import net.kuujo.vertigo.io.connection.impl.OutputConnectionImpl;
 import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.util.Args;
+import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,18 +74,18 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   }
 
   @Override
-  public OutputPort<T> send(T message, Handler<AsyncResult<Void>> ackHandler) {
-    return null;
-  }
-
-  @Override
-  public OutputPort<T> send(T message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler) {
-    return null;
-  }
-
-  @Override
   public String name() {
     return context.name();
+  }
+
+  @Override
+  public OutputPort<T> checkpoint() {
+    return this;
+  }
+
+  @Override
+  public OutputPort<T> replay() {
+    return this;
   }
 
   @Override
@@ -145,6 +146,25 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
     }
     return this;
   }
+
+  @Override
+  public OutputPort<T> send(T message, Handler<AsyncResult<Void>> ackHandler) {
+    CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(connections.size());
+    for (OutputConnectionImpl<T> connection : connections.values()) {
+      connection.send(message, counter);
+    }
+    return this;
+  }
+
+  @Override
+  public OutputPort<T> send(T message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler) {
+    CountingCompletionHandler<Void> counter = new CountingCompletionHandler<>(connections.size());
+    for (OutputConnectionImpl<T> connection : connections.values()) {
+      connection.send(message, headers, counter);
+    }
+    return this;
+  }
+
 
   @Override
   public String toString() {

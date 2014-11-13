@@ -16,10 +16,7 @@
 package net.kuujo.vertigo.builder.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.builder.ComponentBuilder;
-import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
-import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
-import net.kuujo.vertigo.builder.NetworkBuilder;
+import net.kuujo.vertigo.builder.*;
 import net.kuujo.vertigo.component.ComponentInfo;
 
 /**
@@ -29,7 +26,7 @@ import net.kuujo.vertigo.component.ComponentInfo;
  */
 public class ComponentBuilderImpl implements ComponentBuilder {
   private final NetworkBuilder network;
-  private final ComponentInfo component;
+  final ComponentInfo component;
 
   public ComponentBuilderImpl(NetworkBuilder network, ComponentInfo component) {
     this.network = network;
@@ -76,6 +73,34 @@ public class ComponentBuilderImpl implements ComponentBuilder {
   public ComponentBuilder multiThreaded(boolean multiThreaded) {
     component.setMultiThreaded(multiThreaded);
     return this;
+  }
+
+  @Override
+  public ComponentBuilder stateful() {
+    component.setStateful(true);
+    return this;
+  }
+
+  @Override
+  public ComponentBuilder stateful(boolean stateful) {
+    component.setStateful(stateful);
+    return this;
+  }
+
+  @Override
+  public ComponentBuilder replicas(int replicas) {
+    component.setReplicas(replicas);
+    return this;
+  }
+
+  @Override
+  public InputBuilder input() {
+    return null;
+  }
+
+  @Override
+  public OutputBuilder output() {
+    return null;
   }
 
   @Override

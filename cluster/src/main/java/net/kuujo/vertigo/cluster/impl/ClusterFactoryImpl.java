@@ -17,6 +17,7 @@ package net.kuujo.vertigo.cluster.impl;
 
 import io.vertx.core.Vertx;
 import net.kuujo.vertigo.cluster.Cluster;
+import net.kuujo.vertigo.cluster.ClusterOptions;
 import net.kuujo.vertigo.spi.ClusterFactory;
 
 /**
@@ -27,12 +28,12 @@ import net.kuujo.vertigo.spi.ClusterFactory;
 public class ClusterFactoryImpl implements ClusterFactory {
 
   @Override
-  public Cluster createCluster(Vertx vertx) {
+  public Cluster createCluster(Vertx vertx, ClusterOptions options) {
     return null;
   }
 
   @Override
-  public Cluster createClusterProxy(Vertx vertx) {
+  public Cluster createClusterProxy(Vertx vertx, String address) {
     return null;
   }
 

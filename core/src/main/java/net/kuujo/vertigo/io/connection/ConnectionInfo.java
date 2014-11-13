@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import net.kuujo.vertigo.TypeInfo;
 
@@ -44,11 +45,23 @@ public interface ConnectionInfo extends TypeInfo {
   public static final String CONNECTION_TARGET = "target";
 
   /**
+   * <code>ordered</code> is a boolean indicating whether the connection is strongly ordered.
+   */
+  public static final String CONNECTION_ORDERED = "ordered";
+
+  /**
+   * <code>at-least-once</code> is a boolean indicating whether messages sent on the connection
+   * should be guaranteed to arrive at least once.
+   */
+  public static final String CONNECTION_AT_LEAST_ONCE = "at-least-once";
+
+  /**
    * Sets the connection source.
    *
    * @param source The connection source.
    * @return The connection info.
    */
+  @Fluent
   ConnectionInfo setSource(SourceInfo source);
 
   /**
@@ -64,6 +77,7 @@ public interface ConnectionInfo extends TypeInfo {
    * @param target The connection target.
    * @return The connection info.
    */
+  @Fluent
   ConnectionInfo setTarget(TargetInfo target);
 
   /**
@@ -72,5 +86,37 @@ public interface ConnectionInfo extends TypeInfo {
    * @return The connection target.
    */
   TargetInfo getTarget();
+
+  /**
+   * Sets whether the connection is strongly ordered.
+   *
+   * @param ordered Whether the connection is strongly ordered.
+   * @return The connection info.
+   */
+  @Fluent
+  ConnectionInfo setOrdered(boolean ordered);
+
+  /**
+   * Returns whether the connection is strongly ordered.
+   *
+   * @return Whether the connection is strongly ordered.
+   */
+  boolean isOrdered();
+
+  /**
+   * Sets whether the connection is at least once.
+   *
+   * @param atLeastOnce Whether the connection is at least once.
+   * @return The connection info.
+   */
+  @Fluent
+  ConnectionInfo setAtLeastOnce(boolean atLeastOnce);
+
+  /**
+   * Returns whether the connection is at least once.
+   *
+   * @return Whether the connection is at least once.
+   */
+  boolean isAtLeastOnce();
 
 }

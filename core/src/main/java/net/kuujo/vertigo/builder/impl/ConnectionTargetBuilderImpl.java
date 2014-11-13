@@ -45,8 +45,7 @@ public class ConnectionTargetBuilderImpl implements ConnectionTargetBuilder {
     for (ConnectionInfo connection : connections) {
       newConnections.add(network.network.createConnection(new ConnectionInfoImpl()
         .setSource(connection.getSource())
-        .setTarget(new TargetInfoImpl().setComponent(name))
-        .setPartitioner(connection.getPartitioner())));
+        .setTarget(new TargetInfoImpl().setComponent(name))));
     }
     return new ConnectionTargetComponentBuilderImpl(network, network.component(name), newConnections);
   }

@@ -49,9 +49,7 @@ public class LocalContextManager implements ContextManager {
 
   @Override
   public ContextManager deployNetwork(NetworkContext network, Handler<AsyncResult<Void>> doneHandler) {
-    int partitionCount = countPartitions(network);
-
-    CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(partitionCount).setHandler(result -> {
+    CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(network.components().size()).setHandler(result -> {
       if (result.succeeded()) {
         vertx.sharedData().<String, NetworkContext>getLocalMap(NETWORKS_KEY).put(network.name(), network);
       }
@@ -59,21 +57,18 @@ public class LocalContextManager implements ContextManager {
     });
 
     for (ComponentContext component : network.components()) {
-      for (PartitionContext partition : component.partitions()) {
-        // TODO: Pass the partition context in as part of the verticle configuration.
-        DeploymentOptions options = new DeploymentOptions();
-        options.setConfig(component.config());
-        options.setWorker(component.isWorker());
-        options.setMultiThreaded(component.isMultiThreaded());
-        vertx.deployVerticle(component.main(), options, result -> {
-          if (result.failed()) {
-            counter.fail(result.cause());
-          } else {
-            vertx.sharedData().<String, String>getLocalMap(network.name()).put(partition.address(), result.result());
-            counter.succeed();
-          }
-        });
-      }
+      DeploymentOptions options = new DeploymentOptions();
+      options.setConfig(component.config());
+      options.setWorker(component.worker());
+      options.setMultiThreaded(component.multiThreaded());
+      vertx.deployVerticle(component.main(), options, result -> {
+        if (result.failed()) {
+          counter.fail(result.cause());
+        } else {
+          vertx.sharedData().<String, String>getLocalMap(network.name()).put(component.address(), result.result());
+          counter.succeed();
+        }
+      });
     }
     return this;
   }
@@ -91,25 +86,12 @@ public class LocalContextManager implements ContextManager {
     });
 
     for (ComponentContext component : network.components()) {
-      for (PartitionContext partition : component.partitions()) {
-        String deploymentId = deploymentIds.get(partition.address());
-        if (deploymentId != null) {
-          vertx.undeployVerticle(deploymentId, counter);
-        }
+      String deploymentId = deploymentIds.get(component.address());
+      if (deploymentId != null) {
+        vertx.undeployVerticle(deploymentId, counter);
       }
     }
     return this;
-  }
-
-  /**
-   * Counts the total number of partitions in the network.
-   */
-  private int countPartitions(NetworkContext network) {
-    int partitionCount = 0;
-    for (ComponentContext component : network.components()) {
-      partitionCount += component.partitions().size();
-    }
-    return partitionCount;
   }
 
 }

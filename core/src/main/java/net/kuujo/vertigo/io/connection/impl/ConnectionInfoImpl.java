@@ -35,6 +35,8 @@ import net.kuujo.vertigo.io.port.OutputPortInfo;
 public class ConnectionInfoImpl implements ConnectionInfo {
   private SourceInfo source;
   private TargetInfo target;
+  private boolean ordered;
+  private boolean atLeastOnce;
 
   public ConnectionInfoImpl() {
   }
@@ -42,6 +44,8 @@ public class ConnectionInfoImpl implements ConnectionInfo {
   public ConnectionInfoImpl(ConnectionInfo connection) {
     this.source = connection.getSource();
     this.target = connection.getTarget();
+    this.ordered = connection.isOrdered();
+    this.atLeastOnce = connection.isAtLeastOnce();
   }
 
   public ConnectionInfoImpl(OutputPortInfo output, InputPortInfo input) {
@@ -60,6 +64,8 @@ public class ConnectionInfoImpl implements ConnectionInfo {
       throw new IllegalArgumentException("Invalid connection descriptor: No connection target defined");
     }
     this.target = new TargetInfoImpl(target);
+    this.ordered = connection.getBoolean("ordered", false);
+    this.atLeastOnce = connection.getBoolean("at-least-once", false);
   }
 
   @Override
@@ -82,6 +88,28 @@ public class ConnectionInfoImpl implements ConnectionInfo {
   @Override
   public TargetInfo getTarget() {
     return target;
+  }
+
+  @Override
+  public ConnectionInfo setOrdered(boolean ordered) {
+    this.ordered = ordered;
+    return this;
+  }
+
+  @Override
+  public boolean isOrdered() {
+    return ordered;
+  }
+
+  @Override
+  public ConnectionInfo setAtLeastOnce(boolean atLeastOnce) {
+    this.atLeastOnce = atLeastOnce;
+    return this;
+  }
+
+  @Override
+  public boolean isAtLeastOnce() {
+    return atLeastOnce;
   }
 
 }

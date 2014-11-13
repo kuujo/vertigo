@@ -16,6 +16,7 @@
 
 package net.kuujo.vertigo.io.port.impl;
 
+import io.vertx.core.eventbus.MessageCodec;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.port.OutputPortContext;
@@ -62,6 +63,18 @@ public class OutputPortContextImpl extends BasePortContextImpl<OutputPortContext
     @Override
     public Builder setType(Class<?> type) {
       port.type = Args.checkNotNull(type, "type cannot be null");
+      return this;
+    }
+
+    @Override
+    public Builder setCodec(Class<? extends MessageCodec> codec) {
+      port.codec = codec;
+      return this;
+    }
+
+    @Override
+    public Builder setPersistent(boolean persistent) {
+      port.persistent = persistent;
       return this;
     }
 

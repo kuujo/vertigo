@@ -15,23 +15,45 @@
  */
 package net.kuujo.vertigo.builder;
 
-import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.eventbus.MessageCodec;
 
 /**
- * Component builder.
+ * Component port builder.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface ComponentBuilder extends NetworkLikeBuilder<ComponentBuilder>, ComponentLikeBuilder<ComponentBuilder> {
+public interface PortBuilder<T extends PortBuilder<T>> {
 
   /**
-   * Sets the unique component name.
+   * Sets the port type.
    *
-   * @param name The unique component name.
-   * @return The component builder.
+   * @param type The port type.
+   * @return The port builder.
    */
-  ComponentBuilder name(String name);
+  T type(Class<?> type);
+
+  /**
+   * Sets the port codec.
+   *
+   * @param codec The port codec.
+   * @return The port builder.
+   */
+  T codec(Class<? extends MessageCodec> codec);
+
+  /**
+   * Sets the port as persistent.
+   *
+   * @return The port builder.
+   */
+  T persistent();
+
+  /**
+   * Sets whether the port is persistent.
+   *
+   * @param persistent Whether the port is persistent.
+   * @return The port builder.
+   */
+  T persistent(boolean persistent);
 
   /**
    * Returns the component input builder.

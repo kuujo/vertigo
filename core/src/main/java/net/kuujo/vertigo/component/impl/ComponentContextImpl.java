@@ -42,6 +42,8 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   private JsonObject config;
   private boolean worker;
   private boolean multiThreaded;
+  private boolean stateful;
+  private int replicas;
   private InputContext input;
   private OutputContext output;
   private Set<String> resources = new HashSet<>();
@@ -73,13 +75,23 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
   }
 
   @Override
-  public boolean isWorker() {
+  public boolean worker() {
     return worker;
   }
 
   @Override
-  public boolean isMultiThreaded() {
+  public boolean multiThreaded() {
     return multiThreaded;
+  }
+
+  @Override
+  public boolean stateful() {
+    return stateful;
+  }
+
+  @Override
+  public int replicas() {
+    return replicas;
   }
 
   @Override
@@ -151,6 +163,18 @@ public class ComponentContextImpl extends BaseContextImpl<ComponentContext> impl
     @Override
     public Builder setMultiThreaded(boolean isMultiThreaded) {
       component.multiThreaded = isMultiThreaded;
+      return this;
+    }
+
+    @Override
+    public ComponentContext.Builder setStateful(boolean isStateful) {
+      component.stateful = isStateful;
+      return this;
+    }
+
+    @Override
+    public ComponentContext.Builder setReplicas(int replicas) {
+      component.replicas = Args.checkPositive(replicas, "replicas must be a positive integer");
       return this;
     }
 

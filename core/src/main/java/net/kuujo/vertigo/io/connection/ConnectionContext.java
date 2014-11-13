@@ -43,6 +43,20 @@ public interface ConnectionContext<T extends ConnectionContext<T, U>, U extends 
   TargetContext target();
 
   /**
+   * Returns whether the connection is ordered.
+   *
+   * @return Whether the connection is ordered.
+   */
+  boolean ordered();
+
+  /**
+   * Returns whether the connection is at-least-once.
+   *
+   * @return Whether the connection is at-least-once.
+   */
+  boolean atLeastOnce();
+
+  /**
    * Returns the connection's parent port.
    *
    * @return The parent port context.

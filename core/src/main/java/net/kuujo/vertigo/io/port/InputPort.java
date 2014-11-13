@@ -29,13 +29,5 @@ import net.kuujo.vertigo.io.Input;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface InputPort<T> extends Input<InputPort<T>, T> {
-
-  /**
-   * Returns the port name.
-   *
-   * @return The port name.
-   */
-  String name();
-
+public interface InputPort<T> extends Port<InputPort<T>>, Input<InputPort<T>, T> {
 }

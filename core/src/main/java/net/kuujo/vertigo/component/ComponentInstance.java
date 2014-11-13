@@ -20,6 +20,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
@@ -88,6 +89,31 @@ public interface ComponentInstance {
    * @return The logger for the component partition.
    */
   Logger logger();
+
+  /**
+   * Returns the component state.
+   *
+   * @return The component state.
+   */
+  JsonObject state();
+
+  /**
+   * Performs a checkpoint of the component state.
+   *
+   * @param handler A handler to be called with the component state.
+   * @return The component instance.
+   */
+  @Fluent
+  ComponentInstance checkpoint(Handler<JsonObject> handler);
+
+  /**
+   * Recovers the component state.
+   *
+   * @param handler A handler to be called with the component state.
+   * @return The component instance.
+   */
+  @Fluent
+  ComponentInstance recover(Handler<JsonObject> handler);
 
   /**
    * Starts the component.

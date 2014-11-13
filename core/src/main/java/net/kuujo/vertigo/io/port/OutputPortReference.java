@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io.port;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
+import net.kuujo.vertigo.io.Input;
 import net.kuujo.vertigo.io.VertigoMessage;
 
 /**
@@ -25,9 +26,13 @@ import net.kuujo.vertigo.io.VertigoMessage;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface OutputPortReference<T> extends InputPort<T> {
+public interface OutputPortReference<T> extends Input<OutputPortReference<T>, T> {
 
-  @Override
-  OutputPortReference<T> handler(Handler<VertigoMessage<T>> handler);
+  /**
+   * Returns the port name.
+   *
+   * @return The port name.
+   */
+  String name();
 
 }

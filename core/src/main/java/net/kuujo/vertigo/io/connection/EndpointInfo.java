@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.connection;
 
+import io.vertx.codegen.annotations.Fluent;
 import net.kuujo.vertigo.TypeInfo;
 
 /**
@@ -47,6 +48,7 @@ public interface EndpointInfo<T extends EndpointInfo<T>> extends TypeInfo {
    * @param component The endpoint component.
    * @return The endpoint partition.
    */
+  @Fluent
   @SuppressWarnings("unchecked")
   T setComponent(String component);
 
@@ -63,6 +65,7 @@ public interface EndpointInfo<T extends EndpointInfo<T>> extends TypeInfo {
    * @param port The endpoint port.
    * @return The endpoint partition.
    */
+  @Fluent
   @SuppressWarnings("unchecked")
   T setPort(String port);
 

@@ -22,6 +22,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.ReplyFailure;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.component.ComponentContext;
@@ -49,6 +50,9 @@ public class ComponentInstanceImpl implements ComponentInstance, Handler<Message
   private final InputCollectorImpl input;
   private final OutputCollectorImpl output;
   private final Logger logger;
+  private JsonObject state;
+  private Handler<JsonObject> checkpointHandler;
+  private Handler<JsonObject> recoverHandler;
   private MessageConsumer<Object> consumer;
 
   public ComponentInstanceImpl(Vertx vertx, ComponentContext context) {
@@ -104,6 +108,23 @@ public class ComponentInstanceImpl implements ComponentInstance, Handler<Message
           message.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), String.format("Invalid action %s", action));
       }
     }
+  }
+
+  @Override
+  public JsonObject state() {
+    return state;
+  }
+
+  @Override
+  public ComponentInstance checkpoint(Handler<JsonObject> handler) {
+    checkpointHandler = handler;
+    return this;
+  }
+
+  @Override
+  public ComponentInstance recover(Handler<JsonObject> handler) {
+    recoverHandler = handler;
+    return this;
   }
 
   @Override

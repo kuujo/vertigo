@@ -38,6 +38,8 @@ public class ComponentInfoImpl implements ComponentInfo {
   private JsonObject config;
   private boolean worker;
   private boolean multiThreaded;
+  private boolean stateful;
+  private int replicas;
   private InputInfo input;
   private OutputInfo output;
   private Set<String> resources = new HashSet<>();
@@ -56,6 +58,8 @@ public class ComponentInfoImpl implements ComponentInfo {
     this.config = component.getConfig();
     this.worker = component.isWorker();
     this.multiThreaded = component.isMultiThreaded();
+    this.stateful = component.isStateful();
+    this.replicas = component.getReplicas();
     this.resources = new HashSet<>(component.getResources());
     this.input = component.getInput();
     this.output = component.getOutput();
@@ -67,8 +71,10 @@ public class ComponentInfoImpl implements ComponentInfo {
     this.name = component.getString("name", UUID.randomUUID().toString());
     this.identifier = Args.checkNotNull(component.getString("identifier"));
     this.config = component.getJsonObject("config", new JsonObject());
-    this.worker = component.getBoolean("worker");
-    this.multiThreaded = component.getBoolean("multi-threaded");
+    this.worker = component.getBoolean("worker", false);
+    this.multiThreaded = component.getBoolean("multi-threaded", false);
+    this.stateful = component.getBoolean("stateful", false);
+    this.replicas = component.getInteger("replicas", 1);
     JsonObject inputs = component.getJsonObject("input", new JsonObject());
     if (inputs == null) {
       inputs = new JsonObject();
@@ -135,6 +141,28 @@ public class ComponentInfoImpl implements ComponentInfo {
   public ComponentInfo setMultiThreaded(boolean multiThreaded) {
     this.multiThreaded = multiThreaded;
     return this;
+  }
+
+  @Override
+  public ComponentInfo setStateful(boolean stateful) {
+    this.stateful = stateful;
+    return this;
+  }
+
+  @Override
+  public boolean isStateful() {
+    return stateful;
+  }
+
+  @Override
+  public ComponentInfo setReplicas(int replication) {
+    this.replicas = replicas;
+    return this;
+  }
+
+  @Override
+  public int getReplicas() {
+    return replicas;
   }
 
   @Override

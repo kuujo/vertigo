@@ -15,16 +15,12 @@
  */
 package net.kuujo.vertigo.io.port;
 
-import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.io.Output;
-
 /**
- * Input port reference.
+ * Base port type.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface InputPortReference<T> extends Output<InputPortReference<T>, T> {
+public interface Port<T extends Port<T>> {
 
   /**
    * Returns the port name.
@@ -32,5 +28,19 @@ public interface InputPortReference<T> extends Output<InputPortReference<T>, T> 
    * @return The port name.
    */
   String name();
+
+  /**
+   * Checkpoints the port.
+   *
+   * @return The port instance.
+   */
+  T checkpoint();
+
+  /**
+   * Replays persistent messages in the port.
+   *
+   * @return The port instance.
+   */
+  T replay();
 
 }

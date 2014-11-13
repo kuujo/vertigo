@@ -68,4 +68,27 @@ public interface ComponentLikeBuilder<T> {
    */
   T multiThreaded(boolean multiThreaded);
 
+  /**
+   * Sets the component as stateful.
+   *
+   * @return The component builder.
+   */
+  T stateful();
+
+  /**
+   * Sets whether the component is stateful.
+   *
+   * @param stateful Whether the component is stateful.
+   * @return The component builder.
+   */
+  T stateful(boolean stateful);
+
+  /**
+   * Sets the number of component replicas.
+   *
+   * @param replicas The number of component replicas.
+   * @return The component builder.
+   */
+  T replicas(int replicas);
+
 }

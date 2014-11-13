@@ -76,6 +76,24 @@ public class ConnectionSourceComponentBuilderImpl implements ConnectionSourceCom
   }
 
   @Override
+  public ConnectionSourceComponentBuilder stateful() {
+    component.stateful();
+    return this;
+  }
+
+  @Override
+  public ConnectionSourceComponentBuilder stateful(boolean stateful) {
+    component.stateful(stateful);
+    return this;
+  }
+
+  @Override
+  public ConnectionSourceComponentBuilder replicas(int replicas) {
+    component.replicas(replicas);
+    return this;
+  }
+
+  @Override
   public ConnectionSourceComponentBuilder port(String port) {
     connection.getSource().setPort(port);
     return this;

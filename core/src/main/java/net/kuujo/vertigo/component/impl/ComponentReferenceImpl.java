@@ -38,11 +38,6 @@ public class ComponentReferenceImpl implements ComponentReference {
   }
 
   @Override
-  public PartitionReference partition(int partition) {
-    return new PartitionReferenceImpl(vertx, context.partition(partition));
-  }
-
-  @Override
   public InputReference input() {
     return new InputReferenceImpl(vertx, context.address());
   }

@@ -13,24 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.port;
+package net.kuujo.vertigo.component;
 
-import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.io.Output;
+import io.vertx.core.json.JsonObject;
 
 /**
- * Input port reference.
+ * Abstract stateful component.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface InputPortReference<T> extends Output<InputPortReference<T>, T> {
+public abstract class AbstractStatefulComponent extends AbstractComponent {
 
   /**
-   * Returns the port name.
+   * Called when a component checkpoint is performed.
    *
-   * @return The port name.
+   * @param state The checkpoint state to populate.
    */
-  String name();
+  protected abstract void checkpoint(JsonObject state);
+
+  /**
+   * Called when the component is recovering from a previous checkpoint.
+   *
+   * @param state The checkpoint state from which to recover.
+   */
+  protected abstract void recover(JsonObject state);
 
 }

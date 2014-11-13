@@ -24,4 +24,15 @@ import io.vertx.codegen.annotations.VertxGen;
  */
 @VertxGen
 public interface SourceInfo extends EndpointInfo<SourceInfo> {
+
+  /**
+   * <code>component</code> indicates the source component name.
+   */
+  public static final String SOURCE_COMPONENT = "component";
+
+  /**
+   * <code>port</code> indicates the source port.
+   */
+  public static final String SOURCE_PORT = "port";
+
 }

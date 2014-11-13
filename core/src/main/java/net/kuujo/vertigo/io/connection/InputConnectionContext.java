@@ -70,6 +70,22 @@ public interface InputConnectionContext extends ConnectionContext<InputConnectio
     Builder setTarget(TargetContext target);
 
     /**
+     * Sets whether the connection is ordered.
+     *
+     * @param ordered Whether the connection is ordered.
+     * @return The connection context builder.
+     */
+    Builder setOrdered(boolean ordered);
+
+    /**
+     * Sets whether the connection is at-least-once.
+     *
+     * @param atLeastOnce Whether the connection is at-least-once.
+     * @return The connection context builder.
+     */
+    Builder setAtLeastOnce(boolean atLeastOnce);
+
+    /**
      * Sets the parent input port context.
      *
      * @param port The parent input port context.

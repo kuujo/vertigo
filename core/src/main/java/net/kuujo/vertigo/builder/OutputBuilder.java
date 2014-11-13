@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.port;
-
-import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.io.Output;
+package net.kuujo.vertigo.builder;
 
 /**
- * Input port reference.
+ * Component output builder.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-@VertxGen
-public interface InputPortReference<T> extends Output<InputPortReference<T>, T> {
+public interface OutputBuilder extends ComponentLikeBuilder<OutputBuilder> {
 
   /**
-   * Returns the port name.
+   * Returns a port builder for the given port.
    *
-   * @return The port name.
+   * @param name The port name.
+   * @return The port builder.
    */
-  String name();
+  OutputPortBuilder port(String name);
 
 }

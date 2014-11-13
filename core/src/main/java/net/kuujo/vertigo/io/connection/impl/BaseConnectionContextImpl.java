@@ -30,6 +30,8 @@ import net.kuujo.vertigo.io.port.PortContext;
 public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T, U>, U extends PortContext<U, T>> extends BaseContextImpl<T> implements ConnectionContext<T,  U> {
   protected SourceContext source;
   protected TargetContext target;
+  protected boolean ordered;
+  protected boolean atLeastOnce;
   protected U port;
 
   @Override
@@ -40,6 +42,16 @@ public abstract class BaseConnectionContextImpl<T extends ConnectionContext<T, U
   @Override
   public TargetContext target() {
     return target;
+  }
+
+  @Override
+  public boolean ordered() {
+    return ordered;
+  }
+
+  @Override
+  public boolean atLeastOnce() {
+    return atLeastOnce;
   }
 
   @Override

@@ -21,7 +21,9 @@ import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.connection.*;
 import net.kuujo.vertigo.io.port.InputPortContext;
+import net.kuujo.vertigo.io.port.InputPortInfo;
 import net.kuujo.vertigo.io.port.OutputPortContext;
+import net.kuujo.vertigo.io.port.OutputPortInfo;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
 
@@ -62,12 +64,39 @@ public final class ContextBuilder {
       String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), componentInfo.getName());
       component.setAddress(address);
       component.setIdentifier(componentInfo.getIdentifier());
+      component.setConfig(componentInfo.getConfig());
       component.setWorker(componentInfo.isWorker());
       component.setMultiThreaded(componentInfo.isMultiThreaded());
-      component.setConfig(componentInfo.getConfig());
+      component.setStateful(componentInfo.isStateful());
+      component.setReplicas(componentInfo.getReplicas());
       component.setResources(componentInfo.getResources());
-      component.setInput(InputContext.builder().build());
-      component.setOutput(OutputContext.builder().build());
+
+      // Set up component input ports.
+      InputContext.Builder input = InputContext.builder();
+      for (InputPortInfo port : componentInfo.getInput().getPorts()) {
+        input.addPort(InputPortContext.builder()
+          .setName(port.getName())
+          .setType(port.getType())
+          .setCodec(port.getCodec())
+          .setPersistent(port.isPersistent())
+          .setInput(input.build())
+          .build());
+      }
+      component.setInput(input.build());
+
+      // Set up component output ports.
+      OutputContext.Builder output = OutputContext.builder();
+      for (OutputPortInfo port : componentInfo.getOutput().getPorts()) {
+        output.addPort(OutputPortContext.builder()
+          .setName(port.getName())
+          .setType(port.getType())
+          .setCodec(port.getCodec())
+          .setPersistent(port.isPersistent())
+          .setOutput(output.build())
+          .build());
+      }
+      component.setOutput(output.build());
+
       components.put(componentInfo.getName(), component.build());
     }
 
@@ -90,6 +119,7 @@ public final class ContextBuilder {
         ComponentInfo sourceInfo = network.getComponent(source.name());
         ComponentInfo targetInfo = network.getComponent(target.name());
 
+        // Add the connection to the source's output port context.
         OutputPortContext.Builder output = OutputPortContext.builder(source.output().port(connection.getSource().getPort()))
           .setName(connection.getSource().getPort())
           .setType(sourceInfo.getOutput().getPort(connection.getSource().getPort()).getType());
@@ -98,12 +128,16 @@ public final class ContextBuilder {
           .setSource(SourceContext.builder()
             .setComponent(connection.getSource().getComponent())
             .setPort(connection.getSource().getPort())
+            .setAddress(source.address())
             .build())
           .setTarget(TargetContext.builder()
             .setComponent(connection.getTarget().getComponent())
-            .setPort(connection.getTarget().getPort()).build())
+            .setPort(connection.getTarget().getPort())
+            .setAddress(target.address())
+            .build())
           .setPort(output.build()).build());
 
+        // Add the connection to the target's input port context.
         InputPortContext.Builder input = InputPortContext.builder(target.input().port(connection.getTarget().getPort()))
           .setName(connection.getTarget().getPort())
           .setType(targetInfo.getInput().getPort(connection.getTarget().getPort()).getType());
@@ -112,10 +146,13 @@ public final class ContextBuilder {
           .setSource(SourceContext.builder()
             .setComponent(connection.getSource().getComponent())
             .setPort(connection.getSource().getPort())
+            .setAddress(source.address())
             .build())
           .setTarget(TargetContext.builder()
             .setComponent(connection.getTarget().getComponent())
-            .setPort(connection.getTarget().getPort()).build())
+            .setPort(connection.getTarget().getPort())
+            .setAddress(target.address())
+            .build())
           .build());
       }
     }

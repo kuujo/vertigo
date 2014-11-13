@@ -15,8 +15,7 @@
  */
 package net.kuujo.vertigo.io.port.impl;
 
-import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.DeliveryOptions;
 import net.kuujo.vertigo.io.port.InputPortReference;
 
@@ -50,6 +49,30 @@ public class InputPortReferenceImpl<T> implements InputPortReference<T> {
   @Override
   public InputPortReference<T> send(T message, MultiMap headers) {
     vertx.eventBus().send(address, message, new DeliveryOptions().setHeaders(headers.add("port", name)));
+    return this;
+  }
+
+  @Override
+  public InputPortReference<T> send(T message, Handler<AsyncResult<Void>> ackHandler) {
+    vertx.eventBus().send(address, message, new DeliveryOptions().addHeader("port", name), result -> {
+      if (result.succeeded()) {
+        Future.<Void>completedFuture().setHandler(ackHandler);
+      } else {
+        Future.<Void>completedFuture(result.cause()).setHandler(ackHandler);
+      }
+    });
+    return this;
+  }
+
+  @Override
+  public InputPortReference<T> send(T message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler) {
+    vertx.eventBus().send(address, message, new DeliveryOptions().setHeaders(headers.add("port", name)), result -> {
+      if (result.succeeded()) {
+        Future.<Void>completedFuture().setHandler(ackHandler);
+      } else {
+        Future.<Void>completedFuture(result.cause()).setHandler(ackHandler);
+      }
+    });
     return this;
   }
 

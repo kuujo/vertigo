@@ -64,6 +64,18 @@ public class InputConnectionContextImpl extends BaseConnectionContextImpl<InputC
     }
 
     @Override
+    public Builder setOrdered(boolean ordered) {
+      connection.ordered = ordered;
+      return this;
+    }
+
+    @Override
+    public Builder setAtLeastOnce(boolean atLeastOnce) {
+      connection.atLeastOnce = atLeastOnce;
+      return this;
+    }
+
+    @Override
     public Builder setPort(InputPortContext port) {
       Args.checkNotNull(port, "port cannot be null");
       connection.port = port;

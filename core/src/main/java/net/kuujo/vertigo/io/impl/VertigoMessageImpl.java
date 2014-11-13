@@ -53,4 +53,12 @@ public class VertigoMessageImpl<T> implements VertigoMessage<T> {
     return headers;
   }
 
+  @Override
+  public void ack() {
+  }
+
+  @Override
+  public void fail() {
+  }
+
 }

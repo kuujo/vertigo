@@ -184,6 +184,38 @@ public interface ComponentInfo {
   ComponentInfo setOutput(OutputInfo output);
 
   /**
+   * Sets whether the component is stateful.
+   *
+   * @param stateful Whether the component is stateful.
+   * @return The component info.
+   */
+  @Fluent
+  ComponentInfo setStateful(boolean stateful);
+
+  /**
+   * Returns whether the component is stateful.
+   *
+   * @return Whether the component is stateful.
+   */
+  boolean isStateful();
+
+  /**
+   * Sets the component replication factor.
+   *
+   * @param replication The component replication factor.
+   * @return The component info.
+   */
+  @Fluent
+  ComponentInfo setReplicas(int replication);
+
+  /**
+   * Returns the component replication factor.
+   *
+   * @return The component replication factor.
+   */
+  int getReplicas();
+
+  /**
    * Adds a resource to the component.
    *
    * @param resource The resource to add.

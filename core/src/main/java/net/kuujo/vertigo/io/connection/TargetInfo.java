@@ -24,4 +24,15 @@ import io.vertx.codegen.annotations.VertxGen;
  */
 @VertxGen
 public interface TargetInfo extends EndpointInfo<TargetInfo> {
+
+  /**
+   * <code>component</code> indicates the target component name.
+   */
+  public static final String TARGET_COMPONENT = "component";
+
+  /**
+   * <code>port</code> indicates the target port.
+   */
+  public static final String TARGET_PORT = "port";
+
 }

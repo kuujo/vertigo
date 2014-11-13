@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.port.impl;
 
+import io.vertx.core.eventbus.MessageCodec;
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.io.connection.ConnectionContext;
 import net.kuujo.vertigo.io.port.PortContext;
@@ -27,9 +28,11 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class BasePortContextImpl<T extends PortContext<T, U>, U extends ConnectionContext<U>> extends BaseContextImpl<T> implements PortContext<T, U> {
+abstract class BasePortContextImpl<T extends PortContext<T, U>, U extends ConnectionContext<U, T>> extends BaseContextImpl<T> implements PortContext<T, U> {
   protected String name;
   protected Class<?> type;
+  protected Class<? extends MessageCodec> codec;
+  protected boolean persistent;
   protected Collection<U> connections = new ArrayList<>();
 
   @Override
@@ -40,6 +43,16 @@ public class BasePortContextImpl<T extends PortContext<T, U>, U extends Connecti
   @Override
   public Class<?> type() {
     return type;
+  }
+
+  @Override
+  public Class<? extends MessageCodec> codec() {
+    return codec;
+  }
+
+  @Override
+  public boolean persistent() {
+    return persistent;
   }
 
   @Override

@@ -15,11 +15,13 @@
  */
 package net.kuujo.vertigo.io.port.impl;
 
+import io.vertx.core.ServiceHelper;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.io.port.PortInfo;
+import net.kuujo.vertigo.spi.PortTypeResolver;
 
 /**
  * Port info implementation.
@@ -27,26 +29,34 @@ import net.kuujo.vertigo.io.port.PortInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
+  private static final PortTypeResolver resolver = ServiceHelper.loadFactory(PortTypeResolver.class);
   private ComponentInfo component;
   private String name;
   private Class<?> type;
   private Class<? extends MessageCodec> codec;
+  private boolean persistent;
 
   protected BasePortInfoImpl(String name, Class<?> type) {
     this.name = name;
     this.type = type;
   }
 
+  @SuppressWarnings("unchecked")
   protected BasePortInfoImpl(JsonObject port) {
     this.name = port.getString("name");
     String type = port.getString("type");
     if (type != null) {
+      this.type = resolver.resolve(type);
+    }
+    String codec = port.getString("codec");
+    if (codec != null) {
       try {
-        this.type = Class.forName(type);
+        this.codec = (Class<? extends MessageCodec>) Class.forName(codec);
       } catch (ClassNotFoundException e) {
         throw new VertigoException(e);
       }
     }
+    this.persistent = port.getBoolean("persistent", false);
   }
 
   @Override
@@ -96,4 +106,17 @@ abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
     this.codec = codec;
     return (T) this;
   }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public T setPersistent(boolean persistent) {
+    this.persistent = persistent;
+    return (T) this;
+  }
+
+  @Override
+  public boolean isPersistent() {
+    return persistent;
+  }
+
 }

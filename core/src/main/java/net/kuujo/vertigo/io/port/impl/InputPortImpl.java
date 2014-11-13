@@ -70,6 +70,16 @@ public class InputPortImpl<T> implements InputPort<T>, ControllableInput<InputPo
   }
 
   @Override
+  public InputPort<T> checkpoint() {
+    return this;
+  }
+
+  @Override
+  public InputPort<T> replay() {
+    return this;
+  }
+
+  @Override
   public void handle(Message<T> message) {
     String source = message.headers().get("source");
     if (source != null) {

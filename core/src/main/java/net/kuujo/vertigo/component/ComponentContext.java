@@ -94,7 +94,7 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
    *
    * @return Indicates whether the verticle is a worker verticle.
    */
-  boolean isWorker();
+  boolean worker();
 
   /**
    * Returns a boolean indicating whether the verticle is a worker and is multi-threaded.
@@ -102,7 +102,21 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
    *
    * @return Indicates whether the verticle is a worker and is multi-threaded.
    */
-  boolean isMultiThreaded();
+  boolean multiThreaded();
+
+  /**
+   * Returns a boolean indicating whether the component is stateful.
+   *
+   * @return Indicates whether the component is stateful.
+   */
+  boolean stateful();
+
+  /**
+   * Returns the number of component replicas.
+   *
+   * @return The number of component replicas.
+   */
+  int replicas();
 
   /**
    * Returns the component resources.
@@ -184,6 +198,22 @@ public interface ComponentContext extends TypeContext<ComponentContext> {
      * @return The component context builder.
      */
     Builder setMultiThreaded(boolean isMultiThreaded);
+
+    /**
+     * Sets whether the component is stateful.
+     *
+     * @param isStateful Whether the component is stateful.
+     * @return The component context builder.
+     */
+    Builder setStateful(boolean isStateful);
+
+    /**
+     * Sets the number of component replicas.
+     *
+     * @param replicas The number of component replicas.
+     * @return The component context builder.
+     */
+    Builder setReplicas(int replicas);
 
     /**
      * Sets the component input context.

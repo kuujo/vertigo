@@ -26,6 +26,26 @@ import net.kuujo.vertigo.component.ComponentInfo;
 public interface PortInfo<T extends PortInfo<T>> {
 
   /**
+   * <code>name</code> is a string indicating the port name.
+   */
+  public static final String PORT_NAME = "name";
+
+  /**
+   * <code>type</code> is a string indicating the port type.
+   */
+  public static final String PORT_TYPE = "type";
+
+  /**
+   * <code>codec</code> is a string class name of a port codec.
+   */
+  public static final String PORT_CODEC = "codec";
+
+  /**
+   * <code>persistent</code> is a boolean indicating whether the port is persistent.
+   */
+  public static final String PORT_PERSISTENT = "persistent";
+
+  /**
    * Returns the parent component.
    *
    * @return The parent component.
@@ -84,5 +104,20 @@ public interface PortInfo<T extends PortInfo<T>> {
    * @return The port info.
    */
   T setCodec(Class<? extends MessageCodec> codec);
+
+  /**
+   * Sets whether the port is persistent.
+   *
+   * @param persistent Whether the port is persistent.
+   * @return The port info.
+   */
+  T setPersistent(boolean persistent);
+
+  /**
+   * Returns whether the port is persistent.
+   *
+   * @return Whether the port is persistent.
+   */
+  boolean isPersistent();
 
 }

@@ -15,30 +15,36 @@
  */
 package net.kuujo.vertigo.io.port.impl;
 
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.ControllableOutput;
-import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.OutputConnectionImpl;
 import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
-import net.kuujo.vertigo.util.*;
+import net.kuujo.vertigo.util.Args;
+import net.kuujo.vertigo.util.TaskRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Output port implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<OutputPort<T>, T>, Openable<OutputPort<T>>, Closeable<OutputPort<T>> {
+public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<OutputPort<T>, T>, Handler<Message<T>> {
   private static final Logger log = LoggerFactory.getLogger(OutputPortImpl.class);
   private static final int DEFAULT_SEND_QUEUE_MAX_SIZE = 10000;
   private final Vertx vertx;
   private OutputPortContext info;
-  private final List<OutputConnectionImpl<T>> connections = new ArrayList<>();
+  private final Map<String, OutputConnectionImpl<T>> connections = new HashMap<>();
   private final TaskRunner tasks = new TaskRunner();
   private int maxQueueSize = DEFAULT_SEND_QUEUE_MAX_SIZE;
   private Handler<Void> drainHandler;
@@ -50,6 +56,27 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   }
 
   @Override
+  public void handle(Message<T> message) {
+    String source = message.headers().get("source");
+    if (source != null) {
+      OutputConnectionImpl<T> connection = connections.get(source);
+      if (connection != null) {
+        connection.handle(message);
+      }
+    }
+  }
+
+  @Override
+  public OutputPort<T> send(T message, Handler<AsyncResult<Void>> ackHandler) {
+    return null;
+  }
+
+  @Override
+  public OutputPort<T> send(T message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler) {
+    return null;
+  }
+
+  @Override
   public String name() {
     return info.name();
   }
@@ -58,7 +85,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   public OutputPort<T> setSendQueueMaxSize(int maxSize) {
     Args.checkPositive(maxSize, "max size must be a positive number");
     this.maxQueueSize = maxSize;
-    for (OutputConnectionImpl connection : connections) {
+    for (OutputConnectionImpl connection : connections.values()) {
       connection.setSendQueueMaxSize(maxQueueSize);
     }
     return this;
@@ -72,7 +99,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   @Override
   public int size() {
     int highest = 0;
-    for (OutputConnectionImpl connection : connections) {
+    for (OutputConnectionImpl connection : connections.values()) {
       highest = Math.max(highest, connection.size());
     }
     return highest;
@@ -80,7 +107,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
 
   @Override
   public boolean sendQueueFull() {
-    for (OutputConnectionImpl stream : connections) {
+    for (OutputConnectionImpl stream : connections.values()) {
       if (stream.sendQueueFull()) {
         return true;
       }
@@ -91,110 +118,15 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
   @Override
   public OutputPort<T> drainHandler(Handler<Void> handler) {
     this.drainHandler = handler;
-    for (OutputConnectionImpl connection : connections) {
+    for (OutputConnectionImpl connection : connections.values()) {
       connection.drainHandler(handler);
     }
     return this;
   }
 
   @Override
-  public OutputPort<T> open() {
-    return open(null);
-  }
-
-  @Override
-  public OutputPort<T> open(final Handler<AsyncResult<Void>> doneHandler) {
-    // Prevent the object from being opened and closed simultaneously
-    // by queueing open/close operations as tasks.
-    tasks.runTask((task) -> {
-      if (!open) {
-        connections.clear();
-        open = true;
-        final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(info.connections().size());
-        counter.setHandler(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            if (doneHandler != null) {
-              doneHandler.handle(result);
-            }
-            task.complete();
-          }
-        });
-
-        // Only add connections to the stream list once the stream has been
-        // opened. This helps ensure that we don't attempt to send messages
-        // on a closed stream.
-        for (OutputConnectionContext output : info.connections()) {
-          final OutputConnectionImpl<T> connection = new OutputConnectionImpl<>(vertx, output);
-          connection.setSendQueueMaxSize(maxQueueSize);
-          connection.drainHandler(drainHandler);
-          connection.open((result) -> {
-            if (result.failed()) {
-              log.error(String.format("%s - Failed to open output connection: %s", OutputPortImpl.this, connection));
-              counter.fail(result.cause());
-            } else {
-              log.info(String.format("%s - Opened output connection: %s", OutputPortImpl.this, connection));
-              connections.add(connection);
-              counter.succeed();
-            }
-          });
-        }
-      } else {
-        doneHandler.handle(Future.completedFuture());
-        task.complete();
-      }
-    });
-    return this;
-  }
-
-  @Override
-  public void close() {
-    close(null);
-  }
-
-  @Override
-  public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    // Prevent the object from being opened and closed simultaneously
-    // by queueing open/close operations as tasks.
-    tasks.runTask((task) -> {
-      if (open) {
-        List<OutputConnectionImpl> connections = new ArrayList<>(OutputPortImpl.this.connections);
-        OutputPortImpl.this.connections.clear();
-        open = false;
-        final CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(connections.size());
-        counter.setHandler(new Handler<AsyncResult<Void>>() {
-          @Override
-          public void handle(AsyncResult<Void> result) {
-            if (doneHandler != null) {
-              doneHandler.handle(result);
-            }
-            task.complete();
-          }
-        });
-        for (final OutputConnectionImpl connection : connections) {
-          connection.close(new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> result) {
-              if (result.failed()) {
-                log.warn(String.format("%s - Failed to close output connection: %s", OutputPortImpl.this, connection));
-                counter.fail(result.cause());
-              } else {
-                log.info(String.format("%s - Closed output connection: %s", OutputPortImpl.this, connection));
-                counter.succeed();
-              }
-            }
-          });
-        }
-      } else {
-        doneHandler.handle(Future.completedFuture());
-        task.complete();
-      }
-    });
-  }
-
-  @Override
   public OutputPort<T> send(T message) {
-    for (OutputConnectionImpl<T> connection : connections) {
+    for (OutputConnectionImpl<T> connection : connections.values()) {
       connection.send(message);
     }
     return this;
@@ -202,7 +134,7 @@ public class OutputPortImpl<T> implements OutputPort<T>, ControllableOutput<Outp
 
   @Override
   public OutputPort<T> send(T message, MultiMap headers) {
-    for (OutputConnectionImpl<T> connection : connections) {
+    for (OutputConnectionImpl<T> connection : connections.values()) {
       connection.send(message, headers);
     }
     return this;

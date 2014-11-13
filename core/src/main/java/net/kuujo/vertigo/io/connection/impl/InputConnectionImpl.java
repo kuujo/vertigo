@@ -16,8 +16,6 @@
 
 package net.kuujo.vertigo.io.connection.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -30,20 +28,16 @@ import net.kuujo.vertigo.io.VertigoMessage;
 import net.kuujo.vertigo.io.connection.InputConnection;
 import net.kuujo.vertigo.io.connection.InputConnectionContext;
 import net.kuujo.vertigo.io.impl.VertigoMessageImpl;
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
 
 /**
  * Input connection implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputConnectionImpl<T> implements InputConnection<T>, Openable<InputConnection<T>>, Closeable<InputConnection<T>> {
+public class InputConnectionImpl<T> implements InputConnection<T>, Handler<Message<T>> {
   private static final String ACTION_HEADER = "action";
   private static final String ID_HEADER = "name";
   private static final String INDEX_HEADER = "index";
-  private static final String CONNECT_ACTION = "connect";
-  private static final String DISCONNECT_ACTION = "disconnect";
   private static final String MESSAGE_ACTION = "message";
   private static final String ACK_ACTION = "ack";
   private static final String FAIL_ACTION = "fail";
@@ -90,12 +84,6 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
               doMessage(message);
             }
             break;
-          case CONNECT_ACTION:
-            doConnect(message);
-            break;
-          case DISCONNECT_ACTION:
-            doDisconnect(message);
-            break;
         }
       }
     }
@@ -110,35 +98,12 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
     this.log = LoggerFactory.getLogger(String.format("%s-%s", InputConnectionImpl.class.getName(), context.port().input().component().address()));
   }
 
-  public InputConnectionContext context() {
-    return context;
-  }
-
   @Override
-  public InputConnection<T> open() {
-    return open(null);
-  }
-
-  @Override
-  public InputConnection<T> open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (consumer == null) {
-      consumer = eventBus.consumer(inAddress);
-      consumer.handler(internalMessageHandler);
-      consumer.completionHandler((result) -> {
-        if (result.succeeded()) {
-          log.info(String.format("%s - Opened connection to %s", InputConnectionImpl.this, context.source()));
-          if (feedbackTimerID == 0) {
-            log.debug(String.format("%s - Starting periodic ack timer with max batch interval: %d", InputConnectionImpl.this, MAX_BATCH_TIME));
-            feedbackTimerID = vertx.setPeriodic(MAX_BATCH_TIME, internalTimer);
-          }
-          open = true;
-        } else {
-          log.warn(String.format("%s - Failed to open connection to %s", InputConnectionImpl.this, context.source()));
-        }
-        doneHandler.handle(result);
-      });
+  public void handle(Message<T> message) {
+    Long index = Long.valueOf(message.headers().get("index"));
+    if (index != null && checkIndex(index)) {
+      doMessage(message);
     }
-    return this;
   }
 
   /**
@@ -223,7 +188,7 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
   }
 
   @Override
-  public InputConnection<T> messageHandler(Handler<VertigoMessage<T>> handler) {
+  public InputConnection<T> handler(Handler<VertigoMessage<T>> handler) {
     if (open && handler == null) {
       throw new IllegalStateException("cannot set null handler on locked connection");
     }
@@ -238,67 +203,12 @@ public class InputConnectionImpl<T> implements InputConnection<T>, Openable<Inpu
   private void doMessage(final Message<T> message) {
     if (messageHandler != null) {
       String id = message.headers().get(ID_HEADER);
-      VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, context.port().name(), message.body(), message.headers());
+      VertigoMessage<T> vertigoMessage = new VertigoMessageImpl<T>(id, message.body(), message.headers());
 
       if (log.isDebugEnabled()) {
         log.debug(String.format("%s - Received: Message[name=%s, value=%s]", this, id, message));
       }
       messageHandler.handle(vertigoMessage);
-    }
-  }
-
-  /**
-   * Handles connect.
-   */
-  private void doConnect(final Message<T> message) {
-    if (open) {
-      if (!connected) {
-        connected = true;
-      }
-      message.reply(true);
-      log.debug(String.format("%s - Accepted connect request from %s", this, context.source()));
-    } else {
-      message.reply(false);
-      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, context.source()));
-    }
-  }
-
-  /**
-   * Handles disconnect.
-   */
-  private void doDisconnect(final Message<T> message) {
-    if (open) {
-      if (connected) {
-        connected = false;
-      }
-      message.reply(true);
-      log.debug(String.format("%s - Accepted disconnect request from %s", this, context.source()));
-    } else {
-      message.reply(false);
-      log.debug(String.format("%s - Rejected connect request from %s, connection not open", this, context.source()));
-    }
-  }
-
-  @Override
-  public void close() {
-    close(null);
-  }
-
-  @Override
-  public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    if (consumer != null) {
-      consumer.unregister((result) -> {
-        if (feedbackTimerID > 0) {
-          log.debug(String.format("%s - Stopping periodic ack timer", InputConnectionImpl.this));
-          vertx.cancelTimer(feedbackTimerID);
-          feedbackTimerID = 0;
-        }
-        open = false;
-        log.info(String.format("%s - Closed connection from %s", InputConnectionImpl.this, context.source()));
-        doneHandler.handle(result);
-      });
-    } else {
-      doneHandler.handle(Future.completedFuture());
     }
   }
 

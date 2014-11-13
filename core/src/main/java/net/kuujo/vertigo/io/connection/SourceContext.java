@@ -67,6 +67,14 @@ public interface SourceContext extends EndpointContext<SourceContext> {
      */
     Builder setPort(String port);
 
+    /**
+     * Sets the source address.
+     *
+     * @param address The source address.
+     * @return The source context builder.
+     */
+    Builder setAddress(String address);
+
   }
 
 }

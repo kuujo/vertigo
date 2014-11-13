@@ -15,16 +15,19 @@
  */
 package net.kuujo.vertigo.io.connection.impl;
 
-import io.vertx.core.*;
-import io.vertx.core.eventbus.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.connection.OutputConnection;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
-import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.Openable;
 
 import java.util.TreeMap;
 import java.util.UUID;
@@ -34,12 +37,11 @@ import java.util.UUID;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<OutputConnection<T>>, Closeable<OutputConnection<T>> {
+public class OutputConnectionImpl<T> implements OutputConnection<T>, Handler<Message<T>> {
   private static final String ACTION_HEADER = "action";
+  private static final String PORT_HEADER = "port";
   private static final String ID_HEADER = "name";
   private static final String INDEX_HEADER = "index";
-  private static final String CONNECT_ACTION = "connect";
-  private static final String DISCONNECT_ACTION = "disconnect";
   private static final String MESSAGE_ACTION = "message";
   private static final String ACK_ACTION = "ack";
   private static final String FAIL_ACTION = "fail";
@@ -50,109 +52,39 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
   private final Vertx vertx;
   private final EventBus eventBus;
   private final OutputConnectionContext context;
-  private final String outAddress;
-  private final String inAddress;
-  private MessageConsumer<Long> consumer;
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private Handler<Void> drainHandler;
   private long currentMessage = 1;
   private final TreeMap<Long, JsonObject> messages = new TreeMap<>();
-  private boolean open;
+  private final TreeMap<Long, Handler<AsyncResult<Void>>> ackHandlers = new TreeMap<>();
   private boolean full;
   private boolean paused;
-
-  private final Handler<Message<Long>> internalMessageHandler = new Handler<Message<Long>>() {
-    @Override
-    public void handle(Message<Long> message) {
-      String action = message.headers().get(ACTION_HEADER);
-      if (action != null) {
-        switch (action) {
-          case ACK_ACTION:
-            doAck(message.body());
-            break;
-          case FAIL_ACTION:
-            doFail(message.body());
-            break;
-          case PAUSE_ACTION:
-            doPause(message.body());
-            break;
-          case RESUME_ACTION:
-            doResume(message.body());
-            break;
-        }
-      }
-    }
-  };
 
   public OutputConnectionImpl(Vertx vertx, OutputConnectionContext context) {
     this.vertx = vertx;
     this.eventBus = vertx.eventBus();
     this.context = context;
-    this.outAddress = String.format("%s.out", context.port().output().component().address());
-    this.inAddress = String.format("%s.in", context.port().output().component().address());
-    this.consumer = eventBus.consumer(inAddress);
     this.log = LoggerFactory.getLogger(String.format("%s-%s", OutputConnectionImpl.class.getName(), context.port().output().component().address()));
   }
 
-  public OutputConnectionContext context() {
-    return context;
-  }
-
   @Override
-  public OutputConnection<T> open() {
-    return open(null);
-  }
-
-  @Override
-  public OutputConnection<T> open(final Handler<AsyncResult<Void>> doneHandler) {
-    if (consumer == null) {
-      consumer = eventBus.consumer(outAddress);
-      consumer.handler(internalMessageHandler);
-      consumer.completionHandler((result) -> {
-        if (result.failed()) {
-          doneHandler.handle(result);
-        } else {
-          connect(doneHandler);
-        }
-      });
+  public void handle(Message<T> message) {
+    String action = message.headers().get(ACTION_HEADER);
+    Long id = Long.valueOf(message.headers().get(INDEX_HEADER));
+    switch (action) {
+      case ACK_ACTION:
+        doAck(id);
+        break;
+      case FAIL_ACTION:
+        doFail(id);
+        break;
+      case PAUSE_ACTION:
+        doPause(id);
+        break;
+      case RESUME_ACTION:
+        doResume(id);
+        break;
     }
-    return this;
-  }
-
-  /**
-   * Connects to the other side of the connection.
-   */
-  private void connect(final Handler<AsyncResult<Void>> doneHandler) {
-    // Recursively send "connect" messages to the other side of the connection
-    // until we get a response. This gives the other side of the connection time
-    // to open and ensures that the connection doesn't claim it's open until
-    // the other side has registered a handler and responded at least once.
-    eventBus.send(inAddress, new JsonObject(), new DeliveryOptions().setSendTimeout(1000).addHeader(ACTION_HEADER, CONNECT_ACTION), (Handler<AsyncResult<Message<Boolean>>>) (result) -> {
-      if (result.failed()) {
-        ReplyException failure = (ReplyException) result.cause();
-        if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
-          log.warn(String.format("%s - Failed to connect to %s", OutputConnectionImpl.this, context.target()), result.cause());
-          doneHandler.handle(Future.completedFuture(failure));
-        } else if (failure.failureType().equals(ReplyFailure.TIMEOUT)) {
-          log.warn(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, context.target()));
-          connect(doneHandler);
-        } else {
-          log.debug(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, context.target()));
-          vertx.setTimer(500, (timerId) -> {
-            connect(doneHandler);
-          });
-        }
-      } else if (result.result().body()) {
-        log.info(String.format("%s - Connected to %s", OutputConnectionImpl.this, context.target()));
-        open = true;
-        doneHandler.handle(Future.completedFuture());
-      } else {
-        log.debug(String.format("%s - Connection to %s failed, retrying", OutputConnectionImpl.this, context.target()));
-        vertx.setTimer(500, (timerId) -> {
-          connect(doneHandler);
-        });
-      }
-    });
   }
 
   @Override
@@ -180,63 +112,6 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
   public OutputConnection<T> drainHandler(Handler<Void> handler) {
     this.drainHandler = handler;
     return this;
-  }
-
-  @Override
-  public void close() {
-    close(null);
-  }
-
-  @Override
-  public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    if (consumer != null) {
-      consumer.unregister((result) -> {
-        if (result.failed()) {
-          doneHandler.handle(result);
-        } else {
-          disconnect(doneHandler);
-        }
-      });
-    } else {
-      doneHandler.handle(Future.completedFuture());
-    }
-  }
-
-  /**
-   * Disconnects from the other side of the connection.
-   */
-  private void disconnect(final Handler<AsyncResult<Void>> doneHandler) {
-    eventBus.send(inAddress, new JsonObject(), new DeliveryOptions().setSendTimeout(5000).addHeader(ACTION_HEADER, DISCONNECT_ACTION), (Handler<AsyncResult<Message<Boolean>>>) (result) -> {
-      if (result.failed()) {
-        ReplyException failure = (ReplyException) result.cause();
-        if (failure.failureType().equals(ReplyFailure.RECIPIENT_FAILURE)) {
-          log.warn(String.format("%s - Failed to disconnect from %s", OutputConnectionImpl.this, context.target()), result.cause());
-          doneHandler.handle(Future.completedFuture(failure));
-        } else if (failure.failureType().equals(ReplyFailure.NO_HANDLERS)) {
-          log.info(String.format("%s - Disconnected from %s", OutputConnectionImpl.this, context.target()));
-          doneHandler.handle(Future.completedFuture());
-        } else {
-          log.debug(String.format("%s - Disconnection from %s failed, retrying", OutputConnectionImpl.this, context.target()));
-          disconnect(doneHandler);
-        }
-      } else if (result.result().body()) {
-        log.info(String.format("%s - Disconnected from %s", OutputConnectionImpl.this, context.target()));
-        open = false;
-        doneHandler.handle(Future.completedFuture());
-      } else {
-        log.debug(String.format("%s - Disconnection from %s failed, retrying", OutputConnectionImpl.this, context.target()));
-        vertx.setTimer(500, (timerId) -> {
-          disconnect(doneHandler);
-        });
-      }
-    });
-  }
-
-  /**
-   * Checks whether the connection is open.
-   */
-  private void checkOpen() {
-    if (!open) throw new IllegalStateException(String.format("%s - Connection to %s not open.", this, context.target()));
   }
 
   /**
@@ -293,7 +168,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
     // Now that all the entries before the given ID have been removed,
     // just iterate over the messages map and resend all the messages.
     for (JsonObject message : messages.values()) {
-      eventBus.send(inAddress, message);
+      eventBus.send(context.target().address(), message);
     }
   }
 
@@ -319,23 +194,21 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
   /**
    * Sends a message.
    */
-  private OutputConnection<T> doSend(Object value) {
-    return doSend(value, null);
-  }
-
-  /**
-   * Sends a message.
-   */
-  private OutputConnection<T> doSend(Object message, MultiMap headers) {
-    checkOpen();
-
-    if (open && !paused) {
+  private OutputConnection<T> doSend(Object message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler) {
+    if (!paused) {
       // Generate a unique ID and monotonically increasing index for the message.
       String id = UUID.randomUUID().toString();
       long index = currentMessage++;
 
+      if (ackHandler != null) {
+        ackHandlers.put(index, ackHandler);
+      }
+
       // Set up the message headers.
-      DeliveryOptions options = new DeliveryOptions();
+      DeliveryOptions options = new DeliveryOptions()
+        .addHeader(PORT_HEADER, context.target().port())
+        .addHeader(ID_HEADER, id)
+        .addHeader(INDEX_HEADER, String.valueOf(index));
       if (headers == null) {
         headers = new CaseInsensitiveHeaders();
       }
@@ -347,7 +220,7 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
       if (log.isDebugEnabled()) {
         log.debug(String.format("%s - Send: Message[name=%s, message=%s]", this, id, message));
       }
-      eventBus.send(inAddress, message, options);
+      eventBus.send(context.target().address(), message, options);
       checkFull();
     }
     return this;
@@ -355,12 +228,22 @@ public class OutputConnectionImpl<T> implements OutputConnection<T>, Openable<Ou
 
   @Override
   public OutputConnection<T> send(T message) {
-    return doSend(message);
+    return doSend(message, null, null);
   }
 
   @Override
   public OutputConnection<T> send(T message, MultiMap headers) {
-    return doSend(message, headers);
+    return doSend(message, headers, null);
+  }
+
+  @Override
+  public OutputConnection<T> send(T message, Handler<AsyncResult<Void>> ackHandler) {
+    return doSend(message, null, ackHandler);
+  }
+
+  @Override
+  public OutputConnection<T> send(T message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler) {
+    return doSend(message, headers, ackHandler);
   }
 
   @Override

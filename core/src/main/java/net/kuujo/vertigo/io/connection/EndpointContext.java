@@ -42,4 +42,11 @@ public interface EndpointContext<T extends EndpointContext<T>> extends TypeConte
    */
   String port();
 
+  /**
+   * Returns the endpoint address.
+   *
+   * @return The endpoint address.
+   */
+  String address();
+
 }

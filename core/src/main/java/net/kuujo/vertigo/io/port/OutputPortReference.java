@@ -28,6 +28,6 @@ import net.kuujo.vertigo.io.VertigoMessage;
 public interface OutputPortReference<T> extends InputPort<T> {
 
   @Override
-  OutputPortReference<T> messageHandler(Handler<VertigoMessage<T>> handler);
+  OutputPortReference<T> handler(Handler<VertigoMessage<T>> handler);
 
 }

@@ -67,6 +67,14 @@ public interface TargetContext extends EndpointContext<TargetContext> {
      */
     Builder setPort(String port);
 
+    /**
+     * Sets the target address.
+     *
+     * @param address The target address.
+     * @return The target context builder.
+     */
+    Builder setAddress(String address);
+
   }
 
 }

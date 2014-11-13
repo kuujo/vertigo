@@ -17,6 +17,7 @@ package net.kuujo.vertigo.io.connection.impl;
 
 import net.kuujo.vertigo.impl.BaseContextImpl;
 import net.kuujo.vertigo.io.connection.TargetContext;
+import net.kuujo.vertigo.util.Args;
 
 /**
  * Connection source context implementation.
@@ -26,6 +27,7 @@ import net.kuujo.vertigo.io.connection.TargetContext;
 public class TargetContextImpl extends BaseContextImpl<TargetContext> implements TargetContext {
   private String component;
   private String port;
+  private String address;
 
   @Override
   public String component() {
@@ -35,6 +37,11 @@ public class TargetContextImpl extends BaseContextImpl<TargetContext> implements
   @Override
   public String port() {
     return port;
+  }
+
+  @Override
+  public String address() {
+    return address;
   }
 
   /**
@@ -60,6 +67,12 @@ public class TargetContextImpl extends BaseContextImpl<TargetContext> implements
     @Override
     public Builder setPort(String port) {
       target.port = port;
+      return this;
+    }
+
+    @Override
+    public Builder setAddress(String address) {
+      target.address = Args.checkNotNull(address, "address cannot be null");
       return this;
     }
 

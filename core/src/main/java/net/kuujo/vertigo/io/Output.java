@@ -15,6 +15,8 @@
  */
 package net.kuujo.vertigo.io;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 
 /**
@@ -43,5 +45,24 @@ public interface Output<T extends Output<T, U>, U> {
    * @return The output partition.
    */
   T send(U message, MultiMap headers);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @param ackHandler An asynchronous handler to be called when the message is acked.
+   * @return The output partition.
+   */
+  T send(U message, Handler<AsyncResult<Void>> ackHandler);
+
+  /**
+   * Sends a message on the output.
+   *
+   * @param message The message to send.
+   * @param headers The message headers.
+   * @param ackHandler An asynchronous handler to be called when the message is acked.
+   * @return The output partition.
+   */
+  T send(U message, MultiMap headers, Handler<AsyncResult<Void>> ackHandler);
 
 }

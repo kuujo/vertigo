@@ -16,8 +16,12 @@
 package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.component.ComponentContext;
@@ -33,12 +37,19 @@ import net.kuujo.vertigo.util.CountingCompletionHandler;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ComponentInstanceImpl implements ComponentInstance {
+public class ComponentInstanceImpl implements ComponentInstance, Handler<Message<Object>> {
+  private static final String ACTION_HEADER = "action";
+  private static final String MESSAGE_ACTION = "message";
+  private static final String ACK_ACTION = "ack";
+  private static final String FAIL_ACTION = "fail";
+  private static final String PAUSE_ACTION = "pause";
+  private static final String RESUME_ACTION = "resume";
   private final Vertx vertx;
   private final ComponentContext context;
   private final InputCollectorImpl input;
   private final OutputCollectorImpl output;
   private final Logger logger;
+  private MessageConsumer<Object> consumer;
 
   public ComponentInstanceImpl(Vertx vertx, ComponentContext context) {
     this.vertx = vertx;
@@ -74,15 +85,41 @@ public class ComponentInstanceImpl implements ComponentInstance {
   }
 
   @Override
+  public void handle(Message<Object> message) {
+    String action = message.headers().get(ACTION_HEADER);
+    if (action == null) {
+      input.handle(message);
+    } else {
+      switch (action) {
+        case MESSAGE_ACTION:
+          input.handle(message);
+          break;
+        case ACK_ACTION:
+        case FAIL_ACTION:
+        case PAUSE_ACTION:
+        case RESUME_ACTION:
+          output.handle(message);
+          break;
+        default:
+          message.fail(ReplyFailure.RECIPIENT_FAILURE.toInt(), String.format("Invalid action %s", action));
+      }
+    }
+  }
+
+  @Override
   public ComponentInstance start() {
     return start(null);
   }
 
   @Override
   public ComponentInstance start(Handler<AsyncResult<Void>> doneHandler) {
-    CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(doneHandler);
-    output.open(counter);
-    input.open(counter);
+    if (consumer == null) {
+      consumer = vertx.eventBus().consumer(context.address());
+      consumer.handler(this);
+      consumer.completionHandler(doneHandler);
+    } else {
+      Future.<Void>completedFuture().setHandler(doneHandler);
+    }
     return this;
   }
 
@@ -93,9 +130,11 @@ public class ComponentInstanceImpl implements ComponentInstance {
 
   @Override
   public void stop(Handler<AsyncResult<Void>> doneHandler) {
-    CountingCompletionHandler<Void> counter = new CountingCompletionHandler<Void>(2).setHandler(doneHandler);
-    input.close(counter);
-    output.close(counter);
+    if (consumer != null) {
+      consumer.unregister(doneHandler);
+    } else {
+      Future.<Void>completedFuture().setHandler(doneHandler);
+    }
   }
 
 }

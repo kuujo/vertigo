@@ -19,6 +19,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import net.kuujo.vertigo.io.OutputCollector;
@@ -27,26 +28,20 @@ import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.port.impl.OutputPortImpl;
 import net.kuujo.vertigo.util.Closeable;
-import net.kuujo.vertigo.util.CountingCompletionHandler;
 import net.kuujo.vertigo.util.Openable;
-import net.kuujo.vertigo.util.TaskRunner;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Output collector implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class OutputCollectorImpl implements OutputCollector, Openable<OutputCollector>, Closeable<OutputCollector> {
+public class OutputCollectorImpl implements OutputCollector, Openable<OutputCollector>, Closeable<OutputCollector>, Handler<Message<Object>> {
   private final Logger log;
   private final Vertx vertx;
   private OutputContext context;
-  private final Map<String, OutputPort> ports = new HashMap<>();
-  private final TaskRunner tasks = new TaskRunner();
-  private boolean open;
+  private final Map<String, OutputPortImpl> ports = new HashMap<>();
 
   public OutputCollectorImpl(Vertx vertx, OutputContext context) {
     this.vertx = vertx;
@@ -55,22 +50,30 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
   }
 
   @Override
+  @SuppressWarnings("unchecked")
+  public void handle(Message<Object> message) {
+    String portName = message.headers().get("port");
+    if (portName != null) {
+      OutputPortImpl port = ports.get(portName);
+      if (port != null) {
+        port.handle(message);
+      }
+    }
+  }
+
+  @Override
   public Collection<OutputPort> ports() {
-    return ports.values();
+    List<OutputPort> ports = new ArrayList<>(this.ports.size());
+    for (OutputPortImpl port : this.ports.values()) {
+      ports.add(port);
+    }
+    return ports;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public <T> OutputPort<T> port(String name) {
-    OutputPort<T> port = ports.get(name);
-    if (port == null) {
-      if (open) {
-        throw new IllegalStateException("cannot declare port on locked output collector");
-      }
-      port = new OutputPortImpl<>(vertx, OutputPortContext.builder().setName(name).build());
-      ports.put(name, port);
-    }
-    return port;
+    return ports.get(name);
   }
 
   @Override
@@ -80,40 +83,12 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
 
   @Override
   public OutputCollector open(final Handler<AsyncResult<Void>> doneHandler) {
-    // Prevent the object from being opened and closed simultaneously
-    // by queueing open/close operations as tasks.
-    tasks.runTask((task) -> {
-      if (!open) {
-        final CountingCompletionHandler<Void> startCounter = new CountingCompletionHandler<Void>(context.ports().size());
-        startCounter.setHandler((result) -> {
-          doneHandler.handle(result);
-          task.complete();
-        });
-
-        for (OutputPortContext output : context.ports()) {
-          if (ports.containsKey(output.name())) {
-            ((Openable) ports.get(output.name())).open(startCounter);
-          } else {
-            final OutputPort port = new OutputPortImpl(vertx, output);
-            log.debug(String.format("%s - Opening out port: %s", OutputCollectorImpl.this, output));
-            ((Openable) port).open((Handler<AsyncResult<Void>>)(result) -> {
-              if (result.failed()) {
-                log.error(String.format("%s - Failed to open out port: %s", OutputCollectorImpl.this, port));
-                startCounter.fail(result.cause());
-              } else {
-                log.info(String.format("%s - Opened out port: %s", OutputCollectorImpl.this, port));
-                ports.put(port.name(), port);
-                startCounter.succeed();
-              }
-            });
-          }
-        }
-        open = true;
-      } else {
-        doneHandler.handle(Future.completedFuture());
-        task.complete();
+    for (OutputPortContext output : context.ports()) {
+      if (!ports.containsKey(output.name())) {
+        ports.put(output.name(), new OutputPortImpl(vertx, output));
       }
-    });
+    }
+    Future.<Void>completedFuture().setHandler(doneHandler);
     return this;
   }
 
@@ -124,37 +99,8 @@ public class OutputCollectorImpl implements OutputCollector, Openable<OutputColl
 
   @Override
   public void close(final Handler<AsyncResult<Void>> doneHandler) {
-    // Prevent the object from being opened and closed simultaneously
-    // by queueing open/close operations as tasks.
-    tasks.runTask((task) -> {
-      if (open) {
-        final CountingCompletionHandler<Void> stopCounter = new CountingCompletionHandler<Void>(ports.size());
-        stopCounter.setHandler((result) -> {
-          if (result.succeeded()) {
-            ports.clear();
-            open = false;
-          }
-          doneHandler.handle(result);
-          task.complete();
-        });
-
-        for (final OutputPort output : ports.values()) {
-          log.debug(String.format("%s - Closing out port: %s", OutputCollectorImpl.this, output));
-          ((Closeable) output).close((Handler<AsyncResult<Void>>)(result) -> {
-            if (result.failed()) {
-              log.warn(String.format("%s - Failed to close out port: %s", OutputCollectorImpl.this, output));
-              stopCounter.fail(result.cause());
-            } else {
-              log.info(String.format("%s - Closed out port: %s", OutputCollectorImpl.this, output));
-              stopCounter.succeed();
-            }
-          });
-        }
-      } else {
-        doneHandler.handle(Future.completedFuture());
-        task.complete();
-      }
-    });
+    ports.clear();
+    Future.<Void>completedFuture().setHandler(doneHandler);
   }
 
   @Override

@@ -35,13 +35,6 @@ public interface VertigoMessage<T> {
   String id();
 
   /**
-   * Returns the name of the port on which the message was received.
-   *
-   * @return The name of the port on which the message was received.
-   */
-  String port();
-
-  /**
    * Returns the message body.
    *
    * @return The message body.
@@ -54,5 +47,15 @@ public interface VertigoMessage<T> {
    * @return The message headers.
    */
   MultiMap headers();
+
+  /**
+   * Acks the message.
+   */
+  void ack();
+
+  /**
+   * Fails the message.
+   */
+  void fail();
 
 }

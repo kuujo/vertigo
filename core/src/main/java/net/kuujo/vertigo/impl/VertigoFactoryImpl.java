@@ -22,7 +22,6 @@ import io.vertx.core.Vertx;
 import net.kuujo.vertigo.Vertigo;
 import net.kuujo.vertigo.VertigoOptions;
 import net.kuujo.vertigo.spi.VertigoFactory;
-import net.kuujo.vertigo.util.Configs;
 
 /**
  * Vertigo factory implementation.
@@ -33,7 +32,7 @@ public class VertigoFactoryImpl implements VertigoFactory {
 
   @Override
   public Vertigo vertigo() {
-    return vertigo(new VertigoOptions(Configs.load()));
+    return vertigo(new VertigoOptions());
   }
 
   @Override
@@ -43,7 +42,7 @@ public class VertigoFactoryImpl implements VertigoFactory {
 
   @Override
   public Vertigo vertigo(Vertx vertx) {
-    return vertigo(vertx, new VertigoOptions(Configs.load()));
+    return vertigo(vertx, new VertigoOptions());
   }
 
   @Override

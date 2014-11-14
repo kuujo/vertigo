@@ -25,6 +25,11 @@ import net.kuujo.vertigo.io.port.InputPortConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
+import net.kuujo.vertigo.spi.ComponentValidator;
+import net.kuujo.vertigo.spi.ConnectionValidator;
+import net.kuujo.vertigo.spi.NetworkValidator;
+import net.kuujo.vertigo.spi.PortValidator;
+import net.kuujo.vertigo.util.Validators;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +50,9 @@ public final class ContextBuilder {
    * @return A new network context.
    */
   public static NetworkContext buildContext(Network network) {
+    // Validate the network configuration.
+    Validators.validate(network, NetworkValidator.class);
+
     NetworkContext.Builder context = NetworkContext.builder();
 
     // Set basic network configuration options.
@@ -56,23 +64,30 @@ public final class ContextBuilder {
     // Set up network components without inputs. Inputs are stored in a map so
     // that they can be set up after all component partitions have been set up.
     Map<String, ComponentContext> components = new HashMap<>(network.getComponents().size());
-    for (ComponentConfig componentInfo : network.getComponents()) {
+    for (ComponentConfig componentConfig : network.getComponents()) {
+      // Validate the component configuration.
+      Validators.validate(componentConfig, ComponentValidator.class);
+
       // Set up basic component configuration options.
       ComponentContext.Builder component = ComponentContext.builder();
-      component.setName(componentInfo.getName());
-      String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), componentInfo.getName());
+      component.setName(componentConfig.getName());
+      String address = String.format(COMPONENT_ADDRESS_PATTERN, network.getName(), componentConfig.getName());
       component.setAddress(address);
-      component.setIdentifier(componentInfo.getIdentifier());
-      component.setConfig(componentInfo.getConfig());
-      component.setWorker(componentInfo.isWorker());
-      component.setMultiThreaded(componentInfo.isMultiThreaded());
-      component.setStateful(componentInfo.isStateful());
-      component.setReplicas(componentInfo.getReplicas());
-      component.setResources(componentInfo.getResources());
+      component.setIdentifier(componentConfig.getIdentifier());
+      component.setConfig(componentConfig.getConfig());
+      component.setWorker(componentConfig.isWorker());
+      component.setMultiThreaded(componentConfig.isMultiThreaded());
+      component.setStateful(componentConfig.isStateful());
+      component.setReplicas(componentConfig.getReplicas());
+      component.setResources(componentConfig.getResources());
 
       // Set up component input ports.
       InputContext.Builder input = InputContext.builder();
-      for (InputPortConfig port : componentInfo.getInput().getPorts()) {
+      for (InputPortConfig port : componentConfig.getInput().getPorts()) {
+        // Validate the port configuration.
+        Validators.validate(port, PortValidator.class);
+
+        // Add the port to the input.
         input.addPort(InputPortContext.builder()
           .setName(port.getName())
           .setType(port.getType())
@@ -85,7 +100,11 @@ public final class ContextBuilder {
 
       // Set up component output ports.
       OutputContext.Builder output = OutputContext.builder();
-      for (OutputPortConfig port : componentInfo.getOutput().getPorts()) {
+      for (OutputPortConfig port : componentConfig.getOutput().getPorts()) {
+        // Validate the port configuration.
+        Validators.validate(port, PortValidator.class);
+
+        // Add the port to the output.
         output.addPort(OutputPortContext.builder()
           .setName(port.getName())
           .setType(port.getType())
@@ -96,7 +115,7 @@ public final class ContextBuilder {
       }
       component.setOutput(output.build());
 
-      components.put(componentInfo.getName(), component.build());
+      components.put(componentConfig.getName(), component.build());
     }
 
     // Iterate through connections and create connection contexts.
@@ -108,6 +127,9 @@ public final class ContextBuilder {
     // single instance of the source component. This simplifies back pressure and
     // resolving ordering issues in many-to-many component relationships.
     for (ConnectionConfig connection : network.getConnections()) {
+      // Validate the connection.
+      Validators.validate(connection, ConnectionValidator.class);
+
       ComponentContext source = components.get(connection.getSource().getComponent());
       ComponentContext target = components.get(connection.getTarget().getComponent());
 

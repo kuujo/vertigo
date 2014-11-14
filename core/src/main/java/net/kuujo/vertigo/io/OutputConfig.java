@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
+package net.kuujo.vertigo.io;
+
+import io.vertx.codegen.annotations.VertxGen;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 
 /**
- * Base type for definitions.
+ * Component output info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeInfo {
+@VertxGen
+public interface OutputConfig extends CollectorConfig<OutputConfig, OutputPortConfig> {
 }

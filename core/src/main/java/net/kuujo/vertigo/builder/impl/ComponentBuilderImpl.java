@@ -17,7 +17,7 @@ package net.kuujo.vertigo.builder.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.*;
-import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.component.ComponentConfig;
 
 /**
  * Component builder implementation.
@@ -26,9 +26,9 @@ import net.kuujo.vertigo.component.ComponentInfo;
  */
 public class ComponentBuilderImpl implements ComponentBuilder {
   private final NetworkBuilder network;
-  final ComponentInfo component;
+  final ComponentConfig component;
 
-  public ComponentBuilderImpl(NetworkBuilder network, ComponentInfo component) {
+  public ComponentBuilderImpl(NetworkBuilder network, ComponentConfig component) {
     this.network = network;
     this.component = component;
   }

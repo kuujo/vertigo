@@ -17,10 +17,10 @@ package net.kuujo.vertigo.io.impl;
 
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.io.InputInfo;
-import net.kuujo.vertigo.io.port.InputPortInfo;
-import net.kuujo.vertigo.io.port.impl.InputPortInfoImpl;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.io.InputConfig;
+import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.impl.InputPortConfigImpl;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,14 +31,14 @@ import java.util.Map;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputInfoImpl implements InputInfo {
-  private ComponentInfo component;
-  private Map<String, InputPortInfo> ports = new HashMap<>(10);
+public class InputConfigImpl implements InputConfig {
+  private ComponentConfig component;
+  private Map<String, InputPortConfig> ports = new HashMap<>(10);
 
-  public InputInfoImpl(JsonObject output) {
+  public InputConfigImpl(JsonObject output) {
     for (String key : output.fieldNames()) {
       try {
-        ports.put(key, new InputPortInfoImpl(key, Class.forName(output.getString(key))));
+        ports.put(key, new InputPortConfigImpl(key, Class.forName(output.getString(key))));
       } catch (ClassNotFoundException e) {
         throw new VertigoException(e);
       }
@@ -46,55 +46,55 @@ public class InputInfoImpl implements InputInfo {
   }
 
   @Override
-  public ComponentInfo getComponent() {
+  public ComponentConfig getComponent() {
     return component;
   }
 
   @Override
-  public InputInfo setComponent(ComponentInfo component) {
+  public InputConfig setComponent(ComponentConfig component) {
     this.component = component;
     return this;
   }
 
   @Override
-  public Collection<InputPortInfo> getPorts() {
+  public Collection<InputPortConfig> getPorts() {
     return ports.values();
   }
 
   @Override
-  public InputInfo setPorts(Collection<InputPortInfo> ports) {
+  public InputConfig setPorts(Collection<InputPortConfig> ports) {
     this.ports.clear();
-    for (InputPortInfo port : ports) {
+    for (InputPortConfig port : ports) {
       this.ports.put(port.getName(), port.setComponent(component));
     }
     return this;
   }
 
   @Override
-  public InputPortInfo getPort(String name) {
+  public InputPortConfig getPort(String name) {
     return ports.get(name);
   }
 
   @Override
-  public InputInfo setPort(String name, Class<?> type) {
-    this.ports.put(name, new InputPortInfoImpl(name, type).setComponent(component));
+  public InputConfig setPort(String name, Class<?> type) {
+    this.ports.put(name, new InputPortConfigImpl(name, type).setComponent(component));
     return this;
   }
 
   @Override
-  public InputPortInfo addPort(String name) {
+  public InputPortConfig addPort(String name) {
     return addPort(name, Object.class);
   }
 
   @Override
-  public InputPortInfo addPort(String name, Class<?> type) {
-    InputPortInfo port = new InputPortInfoImpl(name, type).setComponent(component);
+  public InputPortConfig addPort(String name, Class<?> type) {
+    InputPortConfig port = new InputPortConfigImpl(name, type).setComponent(component);
     ports.put(name, port);
     return port;
   }
 
   @Override
-  public InputInfo removePort(String name) {
+  public InputConfig removePort(String name) {
     this.ports.remove(name);
     return this;
   }

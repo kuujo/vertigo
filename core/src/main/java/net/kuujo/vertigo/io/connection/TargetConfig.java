@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.port.impl;
+package net.kuujo.vertigo.io.connection;
 
-import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.port.InputPortInfo;
+import io.vertx.codegen.annotations.VertxGen;
 
 /**
- * Input port info implementation.
+ * Connection target options.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class InputPortInfoImpl extends BasePortInfoImpl<InputPortInfo> implements InputPortInfo {
+@VertxGen
+public interface TargetConfig extends EndpointConfig<TargetConfig> {
 
-  public InputPortInfoImpl(String name, Class<?> type) {
-    super(name, type);
-  }
+  /**
+   * <code>component</code> indicates the target component name.
+   */
+  public static final String TARGET_COMPONENT = "component";
 
-  public InputPortInfoImpl(JsonObject port) {
-    super(port);
-  }
+  /**
+   * <code>port</code> indicates the target port.
+   */
+  public static final String TARGET_PORT = "port";
 
 }

@@ -19,8 +19,8 @@ import io.vertx.core.ServiceHelper;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.VertigoException;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.io.port.PortInfo;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.io.port.PortConfig;
 import net.kuujo.vertigo.spi.PortTypeResolver;
 
 /**
@@ -28,21 +28,21 @@ import net.kuujo.vertigo.spi.PortTypeResolver;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
+abstract class BasePortConfigImpl<T extends PortConfig<T>> implements PortConfig<T> {
   private static final PortTypeResolver resolver = ServiceHelper.loadFactory(PortTypeResolver.class);
-  private ComponentInfo component;
+  private ComponentConfig component;
   private String name;
   private Class<?> type;
   private Class<? extends MessageCodec> codec;
   private boolean persistent;
 
-  protected BasePortInfoImpl(String name, Class<?> type) {
+  protected BasePortConfigImpl(String name, Class<?> type) {
     this.name = name;
     this.type = type;
   }
 
   @SuppressWarnings("unchecked")
-  protected BasePortInfoImpl(JsonObject port) {
+  protected BasePortConfigImpl(JsonObject port) {
     this.name = port.getString("name");
     String type = port.getString("type");
     if (type != null) {
@@ -60,13 +60,13 @@ abstract class BasePortInfoImpl<T extends PortInfo<T>> implements PortInfo<T> {
   }
 
   @Override
-  public ComponentInfo getComponent() {
+  public ComponentConfig getComponent() {
     return component;
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public T setComponent(ComponentInfo component) {
+  public T setComponent(ComponentConfig component) {
     this.component = component;
     return (T) this;
   }

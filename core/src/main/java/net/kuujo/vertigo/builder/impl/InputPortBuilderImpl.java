@@ -18,7 +18,7 @@ package net.kuujo.vertigo.builder.impl;
 import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.*;
-import net.kuujo.vertigo.io.port.InputPortInfo;
+import net.kuujo.vertigo.io.port.InputPortConfig;
 
 /**
  * Input port builder implementation.
@@ -27,9 +27,9 @@ import net.kuujo.vertigo.io.port.InputPortInfo;
  */
 public class InputPortBuilderImpl implements InputPortBuilder {
   private final ComponentBuilderImpl component;
-  private final InputPortInfo port;
+  private final InputPortConfig port;
 
-  public InputPortBuilderImpl(ComponentBuilderImpl component, InputPortInfo port) {
+  public InputPortBuilderImpl(ComponentBuilderImpl component, InputPortConfig port) {
     this.component = component;
     this.port = port;
   }

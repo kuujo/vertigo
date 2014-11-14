@@ -16,11 +16,11 @@
 package net.kuujo.vertigo.io.connection.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.SourceInfo;
-import net.kuujo.vertigo.io.connection.TargetInfo;
-import net.kuujo.vertigo.io.port.InputPortInfo;
-import net.kuujo.vertigo.io.port.OutputPortInfo;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
+import net.kuujo.vertigo.io.connection.SourceConfig;
+import net.kuujo.vertigo.io.connection.TargetConfig;
+import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -32,66 +32,66 @@ import net.kuujo.vertigo.io.port.OutputPortInfo;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ConnectionInfoImpl implements ConnectionInfo {
-  private SourceInfo source;
-  private TargetInfo target;
+public class ConnectionConfigImpl implements ConnectionConfig {
+  private SourceConfig source;
+  private TargetConfig target;
   private boolean ordered;
   private boolean atLeastOnce;
 
-  public ConnectionInfoImpl() {
+  public ConnectionConfigImpl() {
   }
 
-  public ConnectionInfoImpl(ConnectionInfo connection) {
+  public ConnectionConfigImpl(ConnectionConfig connection) {
     this.source = connection.getSource();
     this.target = connection.getTarget();
     this.ordered = connection.isOrdered();
     this.atLeastOnce = connection.isAtLeastOnce();
   }
 
-  public ConnectionInfoImpl(OutputPortInfo output, InputPortInfo input) {
-    this.source = new SourceInfoImpl(output);
-    this.target = new TargetInfoImpl(input);
+  public ConnectionConfigImpl(OutputPortConfig output, InputPortConfig input) {
+    this.source = new SourceConfigImpl(output);
+    this.target = new TargetConfigImpl(input);
   }
 
-  public ConnectionInfoImpl(JsonObject connection) {
+  public ConnectionConfigImpl(JsonObject connection) {
     JsonObject source = connection.getJsonObject("source");
     if (source == null) {
       throw new IllegalArgumentException("Invalid connection descriptor: No connection source defined");
     }
-    this.source = new SourceInfoImpl(source);
+    this.source = new SourceConfigImpl(source);
     JsonObject target = connection.getJsonObject("target");
     if (target == null) {
       throw new IllegalArgumentException("Invalid connection descriptor: No connection target defined");
     }
-    this.target = new TargetInfoImpl(target);
+    this.target = new TargetConfigImpl(target);
     this.ordered = connection.getBoolean("ordered", false);
     this.atLeastOnce = connection.getBoolean("at-least-once", false);
   }
 
   @Override
-  public ConnectionInfoImpl setSource(SourceInfo source) {
+  public ConnectionConfigImpl setSource(SourceConfig source) {
     this.source = source;
     return this;
   }
 
   @Override
-  public SourceInfo getSource() {
+  public SourceConfig getSource() {
     return source;
   }
 
   @Override
-  public ConnectionInfoImpl setTarget(TargetInfo target) {
+  public ConnectionConfigImpl setTarget(TargetConfig target) {
     this.target = target;
     return this;
   }
 
   @Override
-  public TargetInfo getTarget() {
+  public TargetConfig getTarget() {
     return target;
   }
 
   @Override
-  public ConnectionInfo setOrdered(boolean ordered) {
+  public ConnectionConfig setOrdered(boolean ordered) {
     this.ordered = ordered;
     return this;
   }
@@ -102,7 +102,7 @@ public class ConnectionInfoImpl implements ConnectionInfo {
   }
 
   @Override
-  public ConnectionInfo setAtLeastOnce(boolean atLeastOnce) {
+  public ConnectionConfig setAtLeastOnce(boolean atLeastOnce) {
     this.atLeastOnce = atLeastOnce;
     return this;
   }

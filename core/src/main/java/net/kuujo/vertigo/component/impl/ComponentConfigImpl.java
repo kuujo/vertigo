@@ -17,11 +17,11 @@ package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.io.InputInfo;
-import net.kuujo.vertigo.io.OutputInfo;
-import net.kuujo.vertigo.io.impl.InputInfoImpl;
-import net.kuujo.vertigo.io.impl.OutputInfoImpl;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.io.InputConfig;
+import net.kuujo.vertigo.io.OutputConfig;
+import net.kuujo.vertigo.io.impl.InputConfigImpl;
+import net.kuujo.vertigo.io.impl.OutputConfigImpl;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
 
@@ -32,7 +32,7 @@ import java.util.*;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class ComponentInfoImpl implements ComponentInfo {
+public class ComponentConfigImpl implements ComponentConfig {
   private String name;
   private String identifier;
   private JsonObject config;
@@ -40,19 +40,19 @@ public class ComponentInfoImpl implements ComponentInfo {
   private boolean multiThreaded;
   private boolean stateful;
   private int replicas;
-  private InputInfo input;
-  private OutputInfo output;
+  private InputConfig input;
+  private OutputConfig output;
   private Set<String> resources = new HashSet<>();
   private Network network;
 
-  public ComponentInfoImpl() {
+  public ComponentConfigImpl() {
   }
 
-  public ComponentInfoImpl(String name) {
+  public ComponentConfigImpl(String name) {
     this.name = name;
   }
 
-  public ComponentInfoImpl(ComponentInfo component) {
+  public ComponentConfigImpl(ComponentConfig component) {
     this.name = component.getName();
     this.identifier = component.getIdentifier();
     this.config = component.getConfig();
@@ -67,7 +67,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @SuppressWarnings("unchecked")
-  public ComponentInfoImpl(JsonObject component) {
+  public ComponentConfigImpl(JsonObject component) {
     this.name = component.getString("name", UUID.randomUUID().toString());
     this.identifier = Args.checkNotNull(component.getString("identifier"));
     this.config = component.getJsonObject("config", new JsonObject());
@@ -79,12 +79,12 @@ public class ComponentInfoImpl implements ComponentInfo {
     if (inputs == null) {
       inputs = new JsonObject();
     }
-    this.input = new InputInfoImpl(inputs).setComponent(this);
+    this.input = new InputConfigImpl(inputs).setComponent(this);
     JsonObject outputs = component.getJsonObject("output", new JsonObject());
     if (outputs == null) {
       outputs = new JsonObject();
     }
-    this.output = new OutputInfoImpl(outputs).setComponent(this);
+    this.output = new OutputConfigImpl(outputs).setComponent(this);
     this.resources = new HashSet(component.getJsonArray("resources", new JsonArray()).getList());
   }
 
@@ -94,7 +94,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setName(String name) {
+  public ComponentConfig setName(String name) {
     this.name = name;
     return this;
   }
@@ -105,7 +105,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setIdentifier(String identifier) {
+  public ComponentConfig setIdentifier(String identifier) {
     this.identifier = identifier;
     return this;
   }
@@ -116,7 +116,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setConfig(JsonObject config) {
+  public ComponentConfig setConfig(JsonObject config) {
     this.config = config;
     return this;
   }
@@ -127,7 +127,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setWorker(boolean worker) {
+  public ComponentConfig setWorker(boolean worker) {
     this.worker = worker;
     return this;
   }
@@ -138,13 +138,13 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setMultiThreaded(boolean multiThreaded) {
+  public ComponentConfig setMultiThreaded(boolean multiThreaded) {
     this.multiThreaded = multiThreaded;
     return this;
   }
 
   @Override
-  public ComponentInfo setStateful(boolean stateful) {
+  public ComponentConfig setStateful(boolean stateful) {
     this.stateful = stateful;
     return this;
   }
@@ -155,7 +155,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setReplicas(int replication) {
+  public ComponentConfig setReplicas(int replication) {
     this.replicas = replicas;
     return this;
   }
@@ -166,47 +166,47 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public InputInfo getInput() {
+  public InputConfig getInput() {
     return input;
   }
 
   @Override
-  public ComponentInfo setInput(InputInfo input) {
+  public ComponentConfig setInput(InputConfig input) {
     this.input = input;
     return this;
   }
 
   @Override
-  public OutputInfo getOutput() {
+  public OutputConfig getOutput() {
     return output;
   }
 
   @Override
-  public ComponentInfo setOutput(OutputInfo output) {
+  public ComponentConfig setOutput(OutputConfig output) {
     this.output = output;
     return this;
   }
 
   @Override
-  public ComponentInfo addResource(String resource) {
+  public ComponentConfig addResource(String resource) {
     resources.add(resource);
     return this;
   }
 
   @Override
-  public ComponentInfo removeResource(String resource) {
+  public ComponentConfig removeResource(String resource) {
     resources.remove(resource);
     return this;
   }
 
   @Override
-  public ComponentInfo setResources(String... resources) {
+  public ComponentConfig setResources(String... resources) {
     this.resources = new HashSet<>(Arrays.asList(resources));
     return this;
   }
 
   @Override
-  public ComponentInfo setResources(Collection<String> resources) {
+  public ComponentConfig setResources(Collection<String> resources) {
     this.resources = new HashSet<>(resources);
     return this;
   }
@@ -217,7 +217,7 @@ public class ComponentInfoImpl implements ComponentInfo {
   }
 
   @Override
-  public ComponentInfo setNetwork(Network network) {
+  public ComponentConfig setNetwork(Network network) {
     this.network = network;
     return this;
   }

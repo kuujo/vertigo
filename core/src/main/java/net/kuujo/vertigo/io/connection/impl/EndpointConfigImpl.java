@@ -16,7 +16,7 @@
 package net.kuujo.vertigo.io.connection.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.EndpointInfo;
+import net.kuujo.vertigo.io.connection.EndpointConfig;
 import net.kuujo.vertigo.util.Args;
 
 /**
@@ -24,24 +24,24 @@ import net.kuujo.vertigo.util.Args;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class EndpointInfoImpl<T extends EndpointInfo<T>> implements EndpointInfo<T> {
+public class EndpointConfigImpl<T extends EndpointConfig<T>> implements EndpointConfig<T> {
   protected String component;
   protected String port;
 
-  protected EndpointInfoImpl() {
+  protected EndpointConfigImpl() {
   }
 
-  protected EndpointInfoImpl(T endpoint) {
+  protected EndpointConfigImpl(T endpoint) {
     this.component = endpoint.getComponent();
     this.port = endpoint.getPort();
   }
 
-  protected EndpointInfoImpl(String component, String port) {
+  protected EndpointConfigImpl(String component, String port) {
     this.component = component;
     this.port = port;
   }
 
-  protected EndpointInfoImpl(JsonObject endpoint) {
+  protected EndpointConfigImpl(JsonObject endpoint) {
     this.component = Args.checkNotNull(endpoint.getString(ENDPOINT_COMPONENT));
     this.port = Args.checkNotNull(endpoint.getString(ENDPOINT_PORT));
   }

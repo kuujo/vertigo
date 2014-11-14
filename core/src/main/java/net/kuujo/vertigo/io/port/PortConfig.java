@@ -16,15 +16,15 @@
 package net.kuujo.vertigo.io.port;
 
 import io.vertx.core.eventbus.MessageCodec;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.ComponentInfo;
+import net.kuujo.vertigo.TypeConfig;
+import net.kuujo.vertigo.component.ComponentConfig;
 
 /**
  * Port info.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface PortInfo<T extends PortInfo<T>> extends TypeInfo {
+public interface PortConfig<T extends PortConfig<T>> extends TypeConfig {
 
   /**
    * <code>name</code> is a string indicating the port name.
@@ -51,7 +51,7 @@ public interface PortInfo<T extends PortInfo<T>> extends TypeInfo {
    *
    * @return The parent component.
    */
-  ComponentInfo getComponent();
+  ComponentConfig getComponent();
 
   /**
    * Sets the parent component.
@@ -59,7 +59,7 @@ public interface PortInfo<T extends PortInfo<T>> extends TypeInfo {
    * @param component The parent component.
    * @return The port info.
    */
-  T setComponent(ComponentInfo component);
+  T setComponent(ComponentConfig component);
 
   /**
    * Returns the port name.

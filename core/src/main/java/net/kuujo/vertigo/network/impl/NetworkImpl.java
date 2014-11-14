@@ -17,12 +17,12 @@ package net.kuujo.vertigo.network.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
-import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.impl.ConnectionInfoImpl;
-import net.kuujo.vertigo.io.port.InputPortInfo;
-import net.kuujo.vertigo.io.port.OutputPortInfo;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.component.impl.ComponentConfigImpl;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
+import net.kuujo.vertigo.io.connection.impl.ConnectionConfigImpl;
+import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
 
@@ -38,8 +38,8 @@ import java.util.UUID;
  */
 public class NetworkImpl implements Network {
   private String name;
-  private final Collection<ComponentInfo> components = new ArrayList<>();
-  private final Collection<ConnectionInfo> connections = new ArrayList<>();
+  private final Collection<ComponentConfig> components = new ArrayList<>();
+  private final Collection<ConnectionConfig> connections = new ArrayList<>();
 
   public NetworkImpl() {
     this(UUID.randomUUID().toString());
@@ -54,13 +54,13 @@ public class NetworkImpl implements Network {
     JsonArray components = network.getJsonArray(NETWORK_COMPONENTS);
     if (components != null) {
       for (Object component : components) {
-        this.components.add(new ComponentInfoImpl((JsonObject) component).setNetwork(this));
+        this.components.add(new ComponentConfigImpl((JsonObject) component).setNetwork(this));
       }
     }
     JsonArray connections = network.getJsonArray(NETWORK_CONNECTIONS);
     if (connections != null) {
       for (Object connection : connections) {
-        this.connections.add(new ConnectionInfoImpl((JsonObject) connection));
+        this.connections.add(new ConnectionConfigImpl((JsonObject) connection));
       }
     }
   }
@@ -77,13 +77,13 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public Collection<ComponentInfo> getComponents() {
+  public Collection<ComponentConfig> getComponents() {
     return components;
   }
 
   @Override
-  public ComponentInfo getComponent(String name) {
-    for (ComponentInfo component : components) {
+  public ComponentConfig getComponent(String name) {
+    for (ComponentConfig component : components) {
       if (component.getName().equals(name)) {
         return component;
       }
@@ -93,7 +93,7 @@ public class NetworkImpl implements Network {
 
   @Override
   public boolean hasComponent(String name) {
-    for (ComponentInfo component : components) {
+    for (ComponentConfig component : components) {
       if (component.getName().equals(name)) {
         return true;
       }
@@ -102,23 +102,23 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public ComponentInfo addComponent(String name) {
-    ComponentInfo component = new ComponentInfoImpl(name).setNetwork(this);
+  public ComponentConfig addComponent(String name) {
+    ComponentConfig component = new ComponentConfigImpl(name).setNetwork(this);
     components.add(component);
     return component;
   }
 
   @Override
-  public ComponentInfo addComponent(ComponentInfo component) {
+  public ComponentConfig addComponent(ComponentConfig component) {
     components.add(component.setNetwork(this));
     return component;
   }
 
   @Override
-  public ComponentInfo removeComponent(String name) {
-    Iterator<ComponentInfo> iterator = components.iterator();
+  public ComponentConfig removeComponent(String name) {
+    Iterator<ComponentConfig> iterator = components.iterator();
     while (iterator.hasNext()) {
-      ComponentInfo component = iterator.next();
+      ComponentConfig component = iterator.next();
       if (component.getName() != null && component.getName().equals(name)) {
         iterator.remove();
         return component;
@@ -128,10 +128,10 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public ComponentInfo removeComponent(ComponentInfo component) {
-    Iterator<ComponentInfo> iterator = components.iterator();
+  public ComponentConfig removeComponent(ComponentConfig component) {
+    Iterator<ComponentConfig> iterator = components.iterator();
     while (iterator.hasNext()) {
-      ComponentInfo info = iterator.next();
+      ComponentConfig info = iterator.next();
       if (info.equals(component)) {
         iterator.remove();
         return component;
@@ -141,28 +141,28 @@ public class NetworkImpl implements Network {
   }
 
   @Override
-  public Collection<ConnectionInfo> getConnections() {
+  public Collection<ConnectionConfig> getConnections() {
     return connections;
   }
 
   @Override
-  public ConnectionInfo createConnection(ConnectionInfo connection) {
+  public ConnectionConfig createConnection(ConnectionConfig connection) {
     connections.add(connection);
     return connection;
   }
 
   @Override
-  public ConnectionInfo createConnection(OutputPortInfo output, InputPortInfo input) {
-    ConnectionInfo connection = new ConnectionInfoImpl(output, input);
+  public ConnectionConfig createConnection(OutputPortConfig output, InputPortConfig input) {
+    ConnectionConfig connection = new ConnectionConfigImpl(output, input);
     connections.add(connection);
     return connection;
   }
 
   @Override
-  public ConnectionInfo destroyConnection(ConnectionInfo connection) {
-    Iterator<ConnectionInfo> iterator = connections.iterator();
+  public ConnectionConfig destroyConnection(ConnectionConfig connection) {
+    Iterator<ConnectionConfig> iterator = connections.iterator();
     while (iterator.hasNext()) {
-      ConnectionInfo c = iterator.next();
+      ConnectionConfig c = iterator.next();
       if (c.equals(connection)) {
         iterator.remove();
         return c;

@@ -17,7 +17,7 @@ package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.TypeConfig;
 
 /**
  * A connection represents a link between two components within a network.<p>
@@ -30,17 +30,17 @@ import net.kuujo.vertigo.TypeInfo;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ConnectionInfo extends TypeInfo {
+public interface ConnectionConfig extends TypeConfig {
 
   /**
    * <code>source</code> is an object defining the connection source. See the
-   * {@link SourceInfo} documentation for details on the source structure.
+   * {@link SourceConfig} documentation for details on the source structure.
    */
   public static final String CONNECTION_SOURCE = "source";
 
   /**
    * <code>target</code> is an object defining the connection target. See the
-   * {@link TargetInfo} documentation for details on the target structure.
+   * {@link TargetConfig} documentation for details on the target structure.
    */
   public static final String CONNECTION_TARGET = "target";
 
@@ -62,14 +62,14 @@ public interface ConnectionInfo extends TypeInfo {
    * @return The connection info.
    */
   @Fluent
-  ConnectionInfo setSource(SourceInfo source);
+  ConnectionConfig setSource(SourceConfig source);
 
   /**
    * Returns the connection source.
    *
    * @return The connection source.
    */
-  SourceInfo getSource();
+  SourceConfig getSource();
 
   /**
    * Sets the connection target.
@@ -78,14 +78,14 @@ public interface ConnectionInfo extends TypeInfo {
    * @return The connection info.
    */
   @Fluent
-  ConnectionInfo setTarget(TargetInfo target);
+  ConnectionConfig setTarget(TargetConfig target);
 
   /**
    * Returns the connection target.
    *
    * @return The connection target.
    */
-  TargetInfo getTarget();
+  TargetConfig getTarget();
 
   /**
    * Sets whether the connection is strongly ordered.
@@ -94,7 +94,7 @@ public interface ConnectionInfo extends TypeInfo {
    * @return The connection info.
    */
   @Fluent
-  ConnectionInfo setOrdered(boolean ordered);
+  ConnectionConfig setOrdered(boolean ordered);
 
   /**
    * Returns whether the connection is strongly ordered.
@@ -110,7 +110,7 @@ public interface ConnectionInfo extends TypeInfo {
    * @return The connection info.
    */
   @Fluent
-  ConnectionInfo setAtLeastOnce(boolean atLeastOnce);
+  ConnectionConfig setAtLeastOnce(boolean atLeastOnce);
 
   /**
    * Returns whether the connection is at least once.

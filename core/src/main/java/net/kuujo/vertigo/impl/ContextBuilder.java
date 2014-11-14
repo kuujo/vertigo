@@ -15,15 +15,14 @@
  */
 package net.kuujo.vertigo.impl;
 
+import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.ComponentContext;
-import net.kuujo.vertigo.component.ComponentInfo;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.connection.*;
-import net.kuujo.vertigo.io.port.InputPortContext;
-import net.kuujo.vertigo.io.port.InputPortInfo;
-import net.kuujo.vertigo.io.port.OutputPortContext;
-import net.kuujo.vertigo.io.port.OutputPortInfo;
+import net.kuujo.vertigo.io.port.*;
+import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.NetworkContext;
 
@@ -57,7 +56,7 @@ public final class ContextBuilder {
     // Set up network components without inputs. Inputs are stored in a map so
     // that they can be set up after all component partitions have been set up.
     Map<String, ComponentContext> components = new HashMap<>(network.getComponents().size());
-    for (ComponentInfo componentInfo : network.getComponents()) {
+    for (ComponentConfig componentInfo : network.getComponents()) {
       // Set up basic component configuration options.
       ComponentContext.Builder component = ComponentContext.builder();
       component.setName(componentInfo.getName());
@@ -73,7 +72,7 @@ public final class ContextBuilder {
 
       // Set up component input ports.
       InputContext.Builder input = InputContext.builder();
-      for (InputPortInfo port : componentInfo.getInput().getPorts()) {
+      for (InputPortConfig port : componentInfo.getInput().getPorts()) {
         input.addPort(InputPortContext.builder()
           .setName(port.getName())
           .setType(port.getType())
@@ -86,7 +85,7 @@ public final class ContextBuilder {
 
       // Set up component output ports.
       OutputContext.Builder output = OutputContext.builder();
-      for (OutputPortInfo port : componentInfo.getOutput().getPorts()) {
+      for (OutputPortConfig port : componentInfo.getOutput().getPorts()) {
         output.addPort(OutputPortContext.builder()
           .setName(port.getName())
           .setType(port.getType())
@@ -108,7 +107,7 @@ public final class ContextBuilder {
     // connection only listens on a single event bus address for messages from a
     // single instance of the source component. This simplifies back pressure and
     // resolving ordering issues in many-to-many component relationships.
-    for (ConnectionInfo connection : network.getConnections()) {
+    for (ConnectionConfig connection : network.getConnections()) {
       ComponentContext source = components.get(connection.getSource().getComponent());
       ComponentContext target = components.get(connection.getTarget().getComponent());
 
@@ -116,8 +115,8 @@ public final class ContextBuilder {
       // If a component is added to the configuration later then the context will need to
       // be rebuilt.
       if (source != null && target != null) {
-        ComponentInfo sourceInfo = network.getComponent(source.name());
-        ComponentInfo targetInfo = network.getComponent(target.name());
+        ComponentConfig sourceInfo = network.getComponent(source.name());
+        ComponentConfig targetInfo = network.getComponent(target.name());
 
         // Add the connection to the source's output port context.
         OutputPortContext.Builder output = OutputPortContext.builder(source.output().port(connection.getSource().getPort()))

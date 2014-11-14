@@ -13,33 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
+package net.kuujo.vertigo.io.port.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.TargetInfo;
-import net.kuujo.vertigo.io.port.InputPortInfo;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 
 /**
- * Connection target options.
+ * Output port info implementation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TargetInfoImpl extends EndpointInfoImpl<TargetInfo> implements TargetInfo {
+public class OutputPortConfigImpl extends BasePortConfigImpl<OutputPortConfig> implements OutputPortConfig {
 
-  public TargetInfoImpl() {
-    super();
+  public OutputPortConfigImpl(String name, Class<?> type) {
+    super(name, type);
   }
 
-  public TargetInfoImpl(TargetInfo target) {
-    super(target);
-  }
-
-  public TargetInfoImpl(InputPortInfo port) {
-    super(port.getComponent().getName(), port.getName());
-  }
-
-  public TargetInfoImpl(JsonObject target) {
-    super(target);
+  public OutputPortConfigImpl(JsonObject port) {
+    super(port);
   }
 
 }

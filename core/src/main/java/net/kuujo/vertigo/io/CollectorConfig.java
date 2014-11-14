@@ -15,9 +15,9 @@
  */
 package net.kuujo.vertigo.io;
 
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.io.port.PortInfo;
+import net.kuujo.vertigo.TypeConfig;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.io.port.PortConfig;
 
 import java.util.Collection;
 
@@ -26,14 +26,14 @@ import java.util.Collection;
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface CollectorInfo<T extends CollectorInfo<T, U>, U extends PortInfo<U>> extends TypeInfo {
+public interface CollectorConfig<T extends CollectorConfig<T, U>, U extends PortConfig<U>> extends TypeConfig {
 
   /**
    * Returns the parent component.
    *
    * @return The parent component.
    */
-  ComponentInfo getComponent();
+  ComponentConfig getComponent();
 
   /**
    * Sets the parent component.
@@ -41,7 +41,7 @@ public interface CollectorInfo<T extends CollectorInfo<T, U>, U extends PortInfo
    * @param component The parent component.
    * @return The collector info.
    */
-  T setComponent(ComponentInfo component);
+  T setComponent(ComponentConfig component);
 
   /**
    * Returns the set of ports.

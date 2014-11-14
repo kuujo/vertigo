@@ -19,8 +19,8 @@ import net.kuujo.vertigo.builder.ComponentBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
 import net.kuujo.vertigo.builder.NetworkBuilder;
-import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.connection.impl.ConnectionInfoImpl;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
+import net.kuujo.vertigo.io.connection.impl.ConnectionConfigImpl;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
 
@@ -67,7 +67,7 @@ public class NetworkBuilderImpl implements NetworkBuilder {
 
   @Override
   public ConnectionSourceComponentBuilder connect(String component) {
-    ConnectionInfo connection = network.createConnection(new ConnectionInfoImpl());
+    ConnectionConfig connection = network.createConnection(new ConnectionConfigImpl());
     return new ConnectionSourceBuilderImpl(this, new ArrayList<>(Arrays.asList(connection))).component(component);
   }
 

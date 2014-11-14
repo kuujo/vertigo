@@ -23,7 +23,7 @@ import io.vertx.codegen.annotations.VertxGen;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface SourceInfo extends EndpointInfo<SourceInfo> {
+public interface SourceConfig extends EndpointConfig<SourceConfig> {
 
   /**
    * <code>component</code> indicates the source component name.

@@ -20,11 +20,11 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
-import net.kuujo.vertigo.component.ComponentInfo;
-import net.kuujo.vertigo.component.impl.ComponentInfoImpl;
-import net.kuujo.vertigo.io.connection.ConnectionInfo;
-import net.kuujo.vertigo.io.port.InputPortInfo;
-import net.kuujo.vertigo.io.port.OutputPortInfo;
+import net.kuujo.vertigo.component.ComponentConfig;
+import net.kuujo.vertigo.component.impl.ComponentConfigImpl;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
+import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
 import net.kuujo.vertigo.util.Configs;
 
@@ -48,7 +48,7 @@ public interface Network {
    * <code>components</code> is an object defining network component configurations. Each
    * item in the object must be keyed by the unique component address, with each item
    * being an object containing the component configuration. See the
-   * {@link net.kuujo.vertigo.component.ComponentInfo} interface for configuration options.
+   * {@link net.kuujo.vertigo.component.ComponentConfig} interface for configuration options.
    */
   static final String NETWORK_COMPONENTS = "components";
 
@@ -94,8 +94,8 @@ public interface Network {
    * @param component The component configuration name.
    * @return The constructed component configuration.
    */
-  static ComponentInfo component(String component) {
-    return new ComponentInfoImpl(Configs.load(component, new JsonObject().put("vertigo", new JsonObject().put("component", component))));
+  static ComponentConfig component(String component) {
+    return new ComponentConfigImpl(Configs.load(component, new JsonObject().put("vertigo", new JsonObject().put("component", component))));
   }
 
   /**
@@ -104,8 +104,8 @@ public interface Network {
    * @param component The JSON component configuration.
    * @return The constructed component configuration.
    */
-  static ComponentInfo component(JsonObject component) {
-    return new ComponentInfoImpl(component);
+  static ComponentConfig component(JsonObject component) {
+    return new ComponentConfigImpl(component);
   }
 
   /**
@@ -148,7 +148,7 @@ public interface Network {
    *
    * @return A list of network components.
    */
-  Collection<ComponentInfo> getComponents();
+  Collection<ComponentConfig> getComponents();
 
   /**
    * Gets a component by name.
@@ -158,7 +158,7 @@ public interface Network {
    * @throws IllegalArgumentException If the given component name does not exist within
    *           the network.
    */
-  ComponentInfo getComponent(String name);
+  ComponentConfig getComponent(String name);
 
   /**
    * Returns a boolean indicating whether the network has a component.
@@ -174,7 +174,7 @@ public interface Network {
    * @param name The component name.
    * @return The component info.
    */
-  ComponentInfo addComponent(String name);
+  ComponentConfig addComponent(String name);
 
   /**
    * Adds a component to the network.
@@ -182,7 +182,7 @@ public interface Network {
    * @param component The component info.
    * @return The component info.
    */
-  ComponentInfo addComponent(ComponentInfo component);
+  ComponentConfig addComponent(ComponentConfig component);
 
   /**
    * Removes a component from the network.
@@ -190,7 +190,7 @@ public interface Network {
    * @param name The component name.
    * @return The component info.
    */
-  ComponentInfo removeComponent(String name);
+  ComponentConfig removeComponent(String name);
 
   /**
    * Removes a component from the network.
@@ -198,14 +198,14 @@ public interface Network {
    * @param component The component info.
    * @return The component info.
    */
-  ComponentInfo removeComponent(ComponentInfo component);
+  ComponentConfig removeComponent(ComponentConfig component);
 
   /**
    * Returns a collection of network connections.
    *
    * @return A collection of connections in the network.
    */
-  Collection<ConnectionInfo> getConnections();
+  Collection<ConnectionConfig> getConnections();
 
   /**
    * Creates a connection between two components.
@@ -213,7 +213,7 @@ public interface Network {
    * @param connection The new connection options.
    * @return The connection info.
    */
-  ConnectionInfo createConnection(ConnectionInfo connection);
+  ConnectionConfig createConnection(ConnectionConfig connection);
 
   /**
    * Creates a connection between two components.
@@ -222,7 +222,7 @@ public interface Network {
    * @param input The target component's input port.
    * @return The connection info.
    */
-  ConnectionInfo createConnection(OutputPortInfo output, InputPortInfo input);
+  ConnectionConfig createConnection(OutputPortConfig output, InputPortConfig input);
 
   /**
    * Destroys a connection between two components.
@@ -230,6 +230,6 @@ public interface Network {
    * @param connection The connection to destroy.
    * @return The connection info.
    */
-  ConnectionInfo destroyConnection(ConnectionInfo connection);
+  ConnectionConfig destroyConnection(ConnectionConfig connection);
 
 }

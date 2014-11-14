@@ -20,7 +20,7 @@ import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.builder.InputBuilder;
 import net.kuujo.vertigo.builder.OutputBuilder;
 import net.kuujo.vertigo.builder.OutputPortBuilder;
-import net.kuujo.vertigo.io.port.OutputPortInfo;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 
 /**
  * Output port builder implementation.
@@ -29,9 +29,9 @@ import net.kuujo.vertigo.io.port.OutputPortInfo;
  */
 public class OutputPortBuilderImpl implements OutputPortBuilder {
   private final ComponentBuilderImpl component;
-  private final OutputPortInfo port;
+  private final OutputPortConfig port;
 
-  public OutputPortBuilderImpl(ComponentBuilderImpl component, OutputPortInfo port) {
+  public OutputPortBuilderImpl(ComponentBuilderImpl component, OutputPortConfig port) {
     this.component = component;
     this.port = port;
   }

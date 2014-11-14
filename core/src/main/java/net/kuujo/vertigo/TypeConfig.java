@@ -13,33 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo.io.connection.impl;
-
-import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.io.connection.SourceInfo;
-import net.kuujo.vertigo.io.port.OutputPortInfo;
+package net.kuujo.vertigo;
 
 /**
- * Connection source options.
+ * Base type for definitions.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class SourceInfoImpl extends EndpointInfoImpl<SourceInfo> implements SourceInfo {
-
-  public SourceInfoImpl() {
-    super();
-  }
-
-  public SourceInfoImpl(SourceInfo source) {
-    super(source);
-  }
-
-  public SourceInfoImpl(OutputPortInfo port) {
-    super(port.getComponent().getName(), port.getName());
-  }
-
-  public SourceInfoImpl(JsonObject source) {
-    super(source);
-  }
-
+public interface TypeConfig {
 }

@@ -16,14 +16,14 @@
 package net.kuujo.vertigo.io.connection;
 
 import io.vertx.codegen.annotations.Fluent;
-import net.kuujo.vertigo.TypeInfo;
+import net.kuujo.vertigo.TypeConfig;
 
 /**
  * Connection endpoint.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface EndpointInfo<T extends EndpointInfo<T>> extends TypeInfo {
+public interface EndpointConfig<T extends EndpointConfig<T>> extends TypeConfig {
 
   /**
    * <code>component</code> indicates the endpoint component name.

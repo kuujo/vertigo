@@ -18,9 +18,9 @@ package net.kuujo.vertigo.component;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.TypeInfo;
-import net.kuujo.vertigo.io.InputInfo;
-import net.kuujo.vertigo.io.OutputInfo;
+import net.kuujo.vertigo.TypeConfig;
+import net.kuujo.vertigo.io.InputConfig;
+import net.kuujo.vertigo.io.OutputConfig;
 import net.kuujo.vertigo.network.Network;
 
 import java.util.Collection;
@@ -32,7 +32,7 @@ import java.util.Set;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ComponentInfo extends TypeInfo {
+public interface ComponentConfig extends TypeConfig {
 
   /**
    * <code>name</code> is a string indicating the network unique component name. This
@@ -86,7 +86,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setName(String name);
+  ComponentConfig setName(String name);
 
   /**
    * Returns the component verticle identifier.
@@ -102,7 +102,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setIdentifier(String identifier);
+  ComponentConfig setIdentifier(String identifier);
 
   /**
    * Returns the component configuration.
@@ -118,7 +118,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setConfig(JsonObject config);
+  ComponentConfig setConfig(JsonObject config);
 
   /**
    * Returns whether the component is a worker.
@@ -134,7 +134,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setWorker(boolean worker);
+  ComponentConfig setWorker(boolean worker);
 
   /**
    * Returns whether the component is multi-threaded.
@@ -150,14 +150,14 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setMultiThreaded(boolean multiThreaded);
+  ComponentConfig setMultiThreaded(boolean multiThreaded);
 
   /**
    * Returns the component input info.
    *
    * @return The component input info.
    */
-  InputInfo getInput();
+  InputConfig getInput();
 
   /**
    * Sets the component input info.
@@ -166,14 +166,14 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setInput(InputInfo input);
+  ComponentConfig setInput(InputConfig input);
 
   /**
    * Returns the component output info.
    *
    * @return The component output info.
    */
-  OutputInfo getOutput();
+  OutputConfig getOutput();
 
   /**
    * Sets the component output info.
@@ -182,7 +182,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setOutput(OutputInfo output);
+  ComponentConfig setOutput(OutputConfig output);
 
   /**
    * Sets whether the component is stateful.
@@ -191,7 +191,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setStateful(boolean stateful);
+  ComponentConfig setStateful(boolean stateful);
 
   /**
    * Returns whether the component is stateful.
@@ -207,7 +207,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component info.
    */
   @Fluent
-  ComponentInfo setReplicas(int replication);
+  ComponentConfig setReplicas(int replication);
 
   /**
    * Returns the component replication factor.
@@ -223,7 +223,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component options.
    */
   @Fluent
-  ComponentInfo addResource(String resource);
+  ComponentConfig addResource(String resource);
 
   /**
    * Removes a resource from the component.
@@ -232,7 +232,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component options.
    */
   @Fluent
-  ComponentInfo removeResource(String resource);
+  ComponentConfig removeResource(String resource);
 
   /**
    * Sets the component resources.
@@ -241,7 +241,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component options.
    */
   @Fluent
-  ComponentInfo setResources(String... resources);
+  ComponentConfig setResources(String... resources);
 
   /**
    * Sets the component resources.
@@ -250,7 +250,7 @@ public interface ComponentInfo extends TypeInfo {
    * @return The component options.
    */
   @Fluent
-  ComponentInfo setResources(Collection<String> resources);
+  ComponentConfig setResources(Collection<String> resources);
 
   /**
    * Returns the component resources.
@@ -265,7 +265,7 @@ public interface ComponentInfo extends TypeInfo {
    * @param network The parent network.
    * @return The component info.
    */
-  ComponentInfo setNetwork(Network network);
+  ComponentConfig setNetwork(Network network);
 
   /**
    * Returns the parent network.

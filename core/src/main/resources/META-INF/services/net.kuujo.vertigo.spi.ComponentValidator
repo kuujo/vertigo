@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-net.kuujo.vertigo.impl.EmptyConfigFormat
+net.kuujo.vertigo.component.impl.BasicComponentValidator

@@ -15,6 +15,7 @@
  */
 package net.kuujo.vertigo.io.port;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
 
 import java.lang.annotation.ElementType;
@@ -39,16 +40,42 @@ public @interface PortInfo {
   /**
    * The port type.
    */
-  Class<?> type();
+  Class<?> type() default Object.class;
 
   /**
    * The port message codec.
    */
-  Class<? extends MessageCodec> codec();
+  Class<? extends MessageCodec> codec() default None.class;
 
   /**
    * Indicates whether the port is persistent.
    */
-  boolean persistent();
+  boolean persistent() default false;
+
+  /**
+   * Empty message codec.
+   */
+  public static class None implements MessageCodec {
+    @Override
+    public String name() {
+      throw new IllegalStateException("Invalid message codec");
+    }
+    @Override
+    public void encodeToWire(Buffer buffer, Object o) {
+      throw new IllegalStateException("Invalid message codec");
+    }
+    @Override
+    public Object decodeFromWire(int pos, Buffer buffer) {
+      throw new IllegalStateException("Invalid message codec");
+    }
+    @Override
+    public Object transform(Object o) {
+      throw new IllegalStateException("Invalid message codec");
+    }
+    @Override
+    public byte systemCodecID() {
+      throw new IllegalStateException("Invalid message codec");
+    }
+  }
 
 }

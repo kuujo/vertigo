@@ -18,6 +18,7 @@ package net.kuujo.vertigo.component;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.TypeInfo;
 import net.kuujo.vertigo.io.InputInfo;
 import net.kuujo.vertigo.io.OutputInfo;
 import net.kuujo.vertigo.network.Network;
@@ -31,7 +32,7 @@ import java.util.Set;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface ComponentInfo {
+public interface ComponentInfo extends TypeInfo {
 
   /**
    * <code>name</code> is a string indicating the network unique component name. This

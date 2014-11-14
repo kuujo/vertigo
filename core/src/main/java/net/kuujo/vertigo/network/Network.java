@@ -18,15 +18,19 @@ package net.kuujo.vertigo.network;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.TypeConfig;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.component.impl.ComponentConfigImpl;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
+import net.kuujo.vertigo.io.connection.impl.ConnectionConfigImpl;
 import net.kuujo.vertigo.io.port.InputPortConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
-import net.kuujo.vertigo.util.Configs;
+import net.kuujo.vertigo.spi.ComponentResolver;
+import net.kuujo.vertigo.spi.NetworkResolver;
+import net.kuujo.vertigo.util.Resolvers;
 
 import java.util.Collection;
 
@@ -36,7 +40,7 @@ import java.util.Collection;
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
 @VertxGen
-public interface Network {
+public interface Network extends TypeConfig {
 
   /**
    * <code>name</code> is a string indicating the unique network name. This is the
@@ -65,7 +69,7 @@ public interface Network {
    * @return A new uniquely identified network configuration.
    */
   static Network network() {
-    return new NetworkImpl();
+    return Resolvers.resolve(new NetworkImpl(), NetworkResolver.class);
   }
 
   /**
@@ -75,7 +79,7 @@ public interface Network {
    * @return The constructed network object.
    */
   static Network network(String network) {
-    return new NetworkImpl(Configs.load(network, new JsonObject().put("vertigo", new JsonObject().put("network", network))));
+    return Resolvers.resolve(new NetworkImpl(network), NetworkResolver.class);
   }
 
   /**
@@ -85,7 +89,17 @@ public interface Network {
    * @return The constructed network object.
    */
   static Network network(JsonObject network) {
-    return new NetworkImpl(network);
+    return Resolvers.resolve(new NetworkImpl(network), NetworkResolver.class);
+  }
+
+  /**
+   * Constructs a network object from a JSON configuration.
+   *
+   * @param network The JSON network configuration.
+   * @return The constructed network object.
+   */
+  static Network network(Network network) {
+    return Resolvers.resolve(network, NetworkResolver.class);
   }
 
   /**
@@ -95,7 +109,7 @@ public interface Network {
    * @return The constructed component configuration.
    */
   static ComponentConfig component(String component) {
-    return new ComponentConfigImpl(Configs.load(component, new JsonObject().put("vertigo", new JsonObject().put("component", component))));
+    return Resolvers.resolve(new ComponentConfigImpl(component), ComponentResolver.class);
   }
 
   /**
@@ -105,7 +119,48 @@ public interface Network {
    * @return The constructed component configuration.
    */
   static ComponentConfig component(JsonObject component) {
-    return new ComponentConfigImpl(component);
+    return Resolvers.resolve(new ComponentConfigImpl(component), ComponentResolver.class);
+  }
+
+  /**
+   * Constructs a component object from a JSON configuration.
+   *
+   * @param component The JSON component configuration.
+   * @return The constructed component configuration.
+   */
+  static ComponentConfig component(ComponentConfig component) {
+    return Resolvers.resolve(component, ComponentResolver.class);
+  }
+
+  /**
+   * Constructs a connection configuration from JSON configuration.
+   *
+   * @param output The source component's output port.
+   * @param input The target component's input port.
+   * @return The constructed connection configuration.
+   */
+  static ConnectionConfig connection(OutputPortConfig output, InputPortConfig input) {
+    return new ConnectionConfigImpl(output, input);
+  }
+
+  /**
+   * Constructs a connection configuration from JSON configuration.
+   *
+   * @param connection The JSON connection configuration.
+   * @return The constructed connection configuration.
+   */
+  static ConnectionConfig connection(JsonObject connection) {
+    return new ConnectionConfigImpl(connection);
+  }
+
+  /**
+   * Constructs a connection configuration from JSON configuration.
+   *
+   * @param connection The JSON connection configuration.
+   * @return The constructed connection configuration.
+   */
+  static ConnectionConfig connection(ConnectionConfig connection) {
+    return connection;
   }
 
   /**

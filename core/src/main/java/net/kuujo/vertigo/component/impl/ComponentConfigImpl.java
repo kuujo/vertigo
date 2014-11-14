@@ -22,6 +22,8 @@ import net.kuujo.vertigo.io.InputConfig;
 import net.kuujo.vertigo.io.OutputConfig;
 import net.kuujo.vertigo.io.impl.InputConfigImpl;
 import net.kuujo.vertigo.io.impl.OutputConfigImpl;
+import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
 
@@ -42,7 +44,7 @@ public class ComponentConfigImpl implements ComponentConfig {
   private int replicas;
   private InputConfig input;
   private OutputConfig output;
-  private Set<String> resources = new HashSet<>();
+  private Set<String> resources = new HashSet<>(10);
   private Network network;
 
   public ComponentConfigImpl() {
@@ -66,26 +68,8 @@ public class ComponentConfigImpl implements ComponentConfig {
     this.network = component.getNetwork();
   }
 
-  @SuppressWarnings("unchecked")
   public ComponentConfigImpl(JsonObject component) {
-    this.name = component.getString("name", UUID.randomUUID().toString());
-    this.identifier = Args.checkNotNull(component.getString("identifier"));
-    this.config = component.getJsonObject("config", new JsonObject());
-    this.worker = component.getBoolean("worker", false);
-    this.multiThreaded = component.getBoolean("multi-threaded", false);
-    this.stateful = component.getBoolean("stateful", false);
-    this.replicas = component.getInteger("replicas", 1);
-    JsonObject inputs = component.getJsonObject("input", new JsonObject());
-    if (inputs == null) {
-      inputs = new JsonObject();
-    }
-    this.input = new InputConfigImpl(inputs).setComponent(this);
-    JsonObject outputs = component.getJsonObject("output", new JsonObject());
-    if (outputs == null) {
-      outputs = new JsonObject();
-    }
-    this.output = new OutputConfigImpl(outputs).setComponent(this);
-    this.resources = new HashSet(component.getJsonArray("resources", new JsonArray()).getList());
+    update(component);
   }
 
   @Override
@@ -225,6 +209,77 @@ public class ComponentConfigImpl implements ComponentConfig {
   @Override
   public Network getNetwork() {
     return network;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void update(JsonObject component) {
+    if (this.name == null) {
+      this.name = component.getString(COMPONENT_NAME, UUID.randomUUID().toString());
+    }
+    if (this.identifier == null) {
+      this.identifier = Args.checkNotNull(component.getString(COMPONENT_IDENTIFIER));
+    }
+    if (component.containsKey(COMPONENT_CONFIG)) {
+      this.config = component.getJsonObject(COMPONENT_CONFIG);
+    }
+    if (component.containsKey(COMPONENT_WORKER)) {
+      this.worker = component.getBoolean(COMPONENT_WORKER);
+    }
+    if (component.containsKey(COMPONENT_MULTI_THREADED)) {
+      this.multiThreaded = component.getBoolean(COMPONENT_MULTI_THREADED);
+    }
+    if (component.containsKey(COMPONENT_STATEFUL)) {
+      this.stateful = component.getBoolean(COMPONENT_STATEFUL);
+    }
+    if (component.containsKey(COMPONENT_REPLICAS)) {
+      this.replicas = component.getInteger(COMPONENT_REPLICAS, 1);
+    }
+    if (component.containsKey(COMPONENT_RESOURCES)) {
+      this.resources.addAll(component.getJsonArray(COMPONENT_RESOURCES, new JsonArray()).getList());
+    }
+    JsonObject inputs = component.getJsonObject(COMPONENT_INPUT);
+    if (inputs == null) {
+      inputs = new JsonObject();
+    }
+    if (this.input == null) {
+      this.input = new InputConfigImpl(inputs).setComponent(this);
+    } else {
+      this.input.update(inputs);
+    }
+    JsonObject outputs = component.getJsonObject(COMPONENT_OUTPUT);
+    if (outputs == null) {
+      outputs = new JsonObject();
+    }
+    if (this.output == null) {
+      this.output = new OutputConfigImpl(outputs).setComponent(this);
+    } else {
+      this.output.update(outputs);
+    }
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.put(COMPONENT_NAME, name);
+    json.put(COMPONENT_IDENTIFIER, identifier);
+    json.put(COMPONENT_CONFIG, config);
+    json.put(COMPONENT_WORKER, worker);
+    json.put(COMPONENT_MULTI_THREADED, multiThreaded);
+    json.put(COMPONENT_STATEFUL, stateful);
+    json.put(COMPONENT_REPLICAS, replicas);
+    json.put(COMPONENT_RESOURCES, new JsonArray(Arrays.asList(resources.toArray(new String[resources.size()]))));
+    JsonArray input = new JsonArray();
+    for (InputPortConfig port : this.input.getPorts()) {
+      input.add(port.toJson());
+    }
+    json.put(COMPONENT_INPUT, input);
+    JsonArray output = new JsonArray();
+    for (OutputPortConfig port : this.output.getPorts()) {
+      output.add(port.toJson());
+    }
+    json.put(COMPONENT_OUTPUT, output);
+    return json;
   }
 
 }

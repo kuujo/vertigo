@@ -20,6 +20,7 @@ import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.io.OutputConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
+import net.kuujo.vertigo.io.port.PortConfig;
 import net.kuujo.vertigo.io.port.impl.OutputPortConfigImpl;
 
 import java.util.Collection;
@@ -98,4 +99,21 @@ public class OutputConfigImpl implements OutputConfig {
     this.ports.remove(name);
     return this;
   }
+
+  @Override
+  public void update(JsonObject output) {
+    for (String key : output.fieldNames()) {
+      ports.put(key, new OutputPortConfigImpl(output.put(PortConfig.PORT_NAME, key)));
+    }
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    for (Map.Entry<String, OutputPortConfig> entry : ports.entrySet()) {
+      json.put(entry.getKey(), entry.getValue().toJson());
+    }
+    return json;
+  }
+
 }

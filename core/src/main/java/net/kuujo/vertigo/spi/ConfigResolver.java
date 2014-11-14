@@ -13,29 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
-
-import io.vertx.core.json.JsonObject;
+package net.kuujo.vertigo.spi;
 
 /**
- * Base type for definitions.
+ * Configuration resolver.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeConfig {
+public interface ConfigResolver<T> {
 
   /**
-   * Applies a JSON configuration to the configuration.
+   * Returns the resolver weight.
    *
-   * @param config The JSON configuration to apply.
+   * @return The resolver weight.
    */
-  void update(JsonObject config);
+  default int weight() {
+    return 0;
+  }
 
   /**
-   * Returns a JSON representation of the configuration.
+   * Resolves the configuration for the given object.
    *
-   * @return A JSON object representation of the configuration.
+   * @param value The value for which to resolve the configuration.
+   * @return The resolved configuration.
    */
-  JsonObject toJson();
+  T resolve(T value);
 
 }

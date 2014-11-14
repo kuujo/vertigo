@@ -16,10 +16,10 @@
 package net.kuujo.vertigo.io.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.io.InputConfig;
 import net.kuujo.vertigo.io.port.InputPortConfig;
+import net.kuujo.vertigo.io.port.PortConfig;
 import net.kuujo.vertigo.io.port.impl.InputPortConfigImpl;
 
 import java.util.Collection;
@@ -35,14 +35,11 @@ public class InputConfigImpl implements InputConfig {
   private ComponentConfig component;
   private Map<String, InputPortConfig> ports = new HashMap<>(10);
 
+  public InputConfigImpl() {
+  }
+
   public InputConfigImpl(JsonObject output) {
-    for (String key : output.fieldNames()) {
-      try {
-        ports.put(key, new InputPortConfigImpl(key, Class.forName(output.getString(key))));
-      } catch (ClassNotFoundException e) {
-        throw new VertigoException(e);
-      }
-    }
+    update(output);
   }
 
   @Override
@@ -98,4 +95,21 @@ public class InputConfigImpl implements InputConfig {
     this.ports.remove(name);
     return this;
   }
+
+  @Override
+  public void update(JsonObject output) {
+    for (String key : output.fieldNames()) {
+      ports.put(key, new InputPortConfigImpl(output.put(PortConfig.PORT_NAME, key)));
+    }
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    for (Map.Entry<String, InputPortConfig> entry : ports.entrySet()) {
+      json.put(entry.getKey(), entry.getValue().toJson());
+    }
+    return json;
+  }
+
 }

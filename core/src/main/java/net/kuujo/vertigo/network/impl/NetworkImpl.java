@@ -18,9 +18,7 @@ package net.kuujo.vertigo.network.impl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.kuujo.vertigo.component.ComponentConfig;
-import net.kuujo.vertigo.component.impl.ComponentConfigImpl;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
-import net.kuujo.vertigo.io.connection.impl.ConnectionConfigImpl;
 import net.kuujo.vertigo.io.port.InputPortConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
@@ -50,19 +48,7 @@ public class NetworkImpl implements Network {
   }
 
   public NetworkImpl(JsonObject network) {
-    this.name = Args.checkNotNull(network.getString(NETWORK_NAME));
-    JsonArray components = network.getJsonArray(NETWORK_COMPONENTS);
-    if (components != null) {
-      for (Object component : components) {
-        this.components.add(new ComponentConfigImpl((JsonObject) component).setNetwork(this));
-      }
-    }
-    JsonArray connections = network.getJsonArray(NETWORK_CONNECTIONS);
-    if (connections != null) {
-      for (Object connection : connections) {
-        this.connections.add(new ConnectionConfigImpl((JsonObject) connection));
-      }
-    }
+    update(network);
   }
 
   @Override
@@ -103,14 +89,14 @@ public class NetworkImpl implements Network {
 
   @Override
   public ComponentConfig addComponent(String name) {
-    ComponentConfig component = new ComponentConfigImpl(name).setNetwork(this);
+    ComponentConfig component = Network.component(name).setNetwork(this);
     components.add(component);
     return component;
   }
 
   @Override
   public ComponentConfig addComponent(ComponentConfig component) {
-    components.add(component.setNetwork(this));
+    components.add(Network.component(component).setNetwork(this));
     return component;
   }
 
@@ -147,13 +133,13 @@ public class NetworkImpl implements Network {
 
   @Override
   public ConnectionConfig createConnection(ConnectionConfig connection) {
-    connections.add(connection);
+    connections.add(Network.connection(connection));
     return connection;
   }
 
   @Override
   public ConnectionConfig createConnection(OutputPortConfig output, InputPortConfig input) {
-    ConnectionConfig connection = new ConnectionConfigImpl(output, input);
+    ConnectionConfig connection = Network.connection(output, input);
     connections.add(connection);
     return connection;
   }
@@ -169,6 +155,40 @@ public class NetworkImpl implements Network {
       }
     }
     return null;
+  }
+
+  @Override
+  public void update(JsonObject network) {
+    this.name = Args.checkNotNull(network.getString(NETWORK_NAME));
+    JsonObject components = network.getJsonObject(NETWORK_COMPONENTS);
+    if (components != null) {
+      for (String name : components.fieldNames()) {
+        this.components.add(Network.component(components.getJsonObject(name)).setName(name).setNetwork(this));
+      }
+    }
+    JsonArray connections = network.getJsonArray(NETWORK_CONNECTIONS);
+    if (connections != null) {
+      for (Object connection : connections) {
+        this.connections.add(Network.connection((JsonObject) connection));
+      }
+    }
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.put(NETWORK_NAME, name);
+    JsonObject components = new JsonObject();
+    for (ComponentConfig component : this.components) {
+      components.put(component.getName(), component.toJson());
+    }
+    json.put(NETWORK_COMPONENTS, components);
+    JsonArray connections = new JsonArray();
+    for (ConnectionConfig connection : this.connections) {
+      connections.add(connection.toJson());
+    }
+    json.put(NETWORK_CONNECTIONS, connections);
+    return json;
   }
 
 }

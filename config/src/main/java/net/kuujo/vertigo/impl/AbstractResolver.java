@@ -15,69 +15,30 @@
  */
 package net.kuujo.vertigo.impl;
 
-import com.typesafe.config.*;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigList;
+import com.typesafe.config.ConfigValue;
+import com.typesafe.config.ConfigValueType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.spi.ConfigFormat;
 
 import java.util.Map;
 
 /**
- * Configuration format implementation.
+ * Base class for resolvers.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public class TypesafeConfigFormat implements ConfigFormat {
-  private static final String DEFAULT_CONFIG = "vertigo-default";
-  private static final String APPLICATION_CONFIG = "vertigo";
-
-  @Override
-  public JsonObject load() {
-    return configObjectToJson(ConfigFactory.parseResourcesAnySyntax(APPLICATION_CONFIG)
-      .withFallback(ConfigFactory.parseResourcesAnySyntax(DEFAULT_CONFIG)).resolve());
-  }
-
-  @Override
-  public JsonObject load(String config, JsonObject defaults) {
-    Config parsed = ConfigFactory.parseResourcesAnySyntax(config);
-    JsonObject flattened = flattenObject(defaults);
-    Config merge = ConfigFactory.empty();
-    for (String key : flattened.fieldNames()) {
-      merge = merge.withValue(key, ConfigValueFactory.fromAnyRef(flattened.getValue(key)));
-    }
-    return configObjectToJson(parsed.withFallback(merge).resolve());
-  }
+abstract class AbstractResolver {
 
   /**
-   * Flattens a multi-dimensional JSON object.
-   */
-  private static JsonObject flattenObject(JsonObject object) {
-    return flattenObject(object, new JsonObject(), null);
-  }
-
-  /**
-   * Flattens a multi-dimensional JSON object.
-   */
-  private static JsonObject flattenObject(JsonObject object, JsonObject flattened, String compositeKey) {
-    for (String key : object.fieldNames()) {
-      Object value = object.getValue(key);
-      if (value instanceof JsonObject) {
-        flattenObject((JsonObject) value, flattened, compositeKey != null ? compositeKey + "." + key : key);
-      } else {
-        flattened.put(compositeKey != null ? compositeKey + "." + key : key, value);
-      }
-    }
-    return flattened;
-  }
-
-  /**
-   * Converts a Typesafe configuration object to {@link JsonObject}
+   * Converts a Typesafe configuration object to {@link io.vertx.core.json.JsonObject}
    *
    * @param config The Typesafe configuration object to convert.
    * @return The converted configuration.
    */
   @SuppressWarnings("unchecked")
-  private static JsonObject configObjectToJson(Config config) {
+  protected static JsonObject configObjectToJson(Config config) {
     JsonObject json = new JsonObject();
     for (Map.Entry<String, ConfigValue> entry : config.entrySet()) {
       String key = entry.getKey();
@@ -104,7 +65,7 @@ public class TypesafeConfigFormat implements ConfigFormat {
    * @return The converted configuration.
    */
   @SuppressWarnings("unchecked")
-  private static JsonArray configListToJson(ConfigList configs) {
+  protected static JsonArray configListToJson(ConfigList configs) {
     JsonArray json = new JsonArray();
     for (ConfigValue value : configs) {
       if (value.valueType() == ConfigValueType.OBJECT) {

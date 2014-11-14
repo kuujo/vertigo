@@ -41,22 +41,8 @@ abstract class BasePortConfigImpl<T extends PortConfig<T>> implements PortConfig
     this.type = type;
   }
 
-  @SuppressWarnings("unchecked")
   protected BasePortConfigImpl(JsonObject port) {
-    this.name = port.getString("name");
-    String type = port.getString("type");
-    if (type != null) {
-      this.type = resolver.resolve(type);
-    }
-    String codec = port.getString("codec");
-    if (codec != null) {
-      try {
-        this.codec = (Class<? extends MessageCodec>) Class.forName(codec);
-      } catch (ClassNotFoundException e) {
-        throw new VertigoException(e);
-      }
-    }
-    this.persistent = port.getBoolean("persistent", false);
+    update(port);
   }
 
   @Override
@@ -117,6 +103,39 @@ abstract class BasePortConfigImpl<T extends PortConfig<T>> implements PortConfig
   @Override
   public boolean isPersistent() {
     return persistent;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void update(JsonObject port) {
+    if (this.name == null) {
+      this.name = port.getString(PORT_NAME);
+    }
+    String type = port.getString(PORT_TYPE);
+    if (type != null) {
+      this.type = resolver.resolve(type);
+    }
+    String codec = port.getString(PORT_CODEC);
+    if (codec != null) {
+      try {
+        this.codec = (Class<? extends MessageCodec>) Class.forName(codec);
+      } catch (ClassNotFoundException e) {
+        throw new VertigoException(e);
+      }
+    }
+    if (port.containsKey(PORT_PERSISTENT)) {
+      this.persistent = port.getBoolean(PORT_PERSISTENT, false);
+    }
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.put(PORT_NAME, name);
+    json.put(PORT_TYPE, type.getName());
+    json.put(PORT_CODEC, codec != null ? codec.getName() : null);
+    json.put(PORT_PERSISTENT, persistent);
+    return json;
   }
 
 }

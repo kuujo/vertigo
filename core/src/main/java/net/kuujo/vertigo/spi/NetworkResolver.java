@@ -13,29 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
+package net.kuujo.vertigo.spi;
 
-import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.network.Network;
 
 /**
- * Base type for definitions.
+ * Network configuration resolver.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeConfig {
-
-  /**
-   * Applies a JSON configuration to the configuration.
-   *
-   * @param config The JSON configuration to apply.
-   */
-  void update(JsonObject config);
-
-  /**
-   * Returns a JSON representation of the configuration.
-   *
-   * @return A JSON object representation of the configuration.
-   */
-  JsonObject toJson();
-
+public interface NetworkResolver extends ConfigResolver<Network> {
 }

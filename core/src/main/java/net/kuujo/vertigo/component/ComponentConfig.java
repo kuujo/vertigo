@@ -35,42 +35,64 @@ import java.util.Set;
 public interface ComponentConfig extends TypeConfig {
 
   /**
-   * <code>name</code> is a string indicating the network unique component name. This
+   * {@code name} is a string indicating the network unique component name. This
    * name is used as the basis for generating unique event bus addresses.
    */
   public static final String COMPONENT_NAME = "name";
 
   /**
-   * <code>identifier</code> is a string indicating the verticle identifier. This field is required
+   * {@code identifier} is a string indicating the verticle identifier. This field is required
    * for all components.
    */
   public static final String COMPONENT_IDENTIFIER = "identifier";
 
   /**
-   * <code>config</code> is an object defining the configuration to pass to each instance
+   * {@code config} is an object defining the configuration to pass to each instance
    * of the component. If no configuration is provided then an empty configuration will be
    * passed to component instances.
    */
   public static final String COMPONENT_CONFIG = "config";
 
   /**
-   * <code>worker</code> is a boolean indicating whether this verticle should be deployed
-   * as a worker verticle. Defaults to <code>false</code>
+   * {@code worker} is a boolean indicating whether this verticle should be deployed
+   * as a worker verticle. Defaults to {@code false}
    */
   public static final String COMPONENT_WORKER = "worker";
 
   /**
-   * <code>multi-threaded</code> is a boolean indicating whether a worker verticle is
-   * multi-threaded. This option only applies to verticles where <code>worker</code> is
-   * <code>true</code>. Defaults to <code>false</code>
+   * {@code multi-threaded} is a boolean indicating whether a worker verticle is
+   * multi-threaded. This option only applies to verticles where {@code worker} is
+   * {@code true}. Defaults to {@code false}
    */
   public static final String COMPONENT_MULTI_THREADED = "multi-threaded";
 
   /**
-   * <code>resources</code> is a list of resources that should be distributed with this
+   * {@code stateful} is a boolean indicating whether a component is stateful. Defaults
+   * to {@code false}
+   */
+  public static final String COMPONENT_STATEFUL = "stateful";
+
+  /**
+   * {@code replicas} is an integer indicating the number of replicas to deploy
+   * for components where {@code stateful} is {@code true}. Defaults to {@code 1}
+   */
+  public static final String COMPONENT_REPLICAS = "replicas";
+
+  /**
+   * {@code resources} is a list of resources that should be distributed with this
    * component when clustering.
    */
   public static final String COMPONENT_RESOURCES = "resources";
+
+  /**
+   * {@code input} is a list of component input port configurations.
+   */
+  public static final String COMPONENT_INPUT = "input";
+
+  /**
+   * {@code output} is a list of component output port configurations.
+   */
+  public static final String COMPONENT_OUTPUT = "output";
 
   /**
    * Returns the component name.

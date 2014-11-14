@@ -15,39 +15,12 @@
  */
 package net.kuujo.vertigo.spi;
 
-import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.component.ComponentConfig;
 
 /**
- * Vertigo configuration format.
+ * Component resolver.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface ConfigFormat {
-
-  /**
-   * Loads the global configuration.
-   *
-   * @return The global configuration.
-   */
-  JsonObject load();
-
-  /**
-   * Loads a named configuration.
-   *
-   * @param config The configuration name.
-   * @return The loaded configuration.
-   */
-  default JsonObject load(String config) {
-    return load(config, new JsonObject());
-  }
-
-  /**
-   * Loads a named configuration.
-   *
-   * @param config The configuration name.
-   * @param defaults The configuration default values.
-   * @return The loaded configuration.
-   */
-  JsonObject load(String config, JsonObject defaults);
-
+public interface ComponentResolver extends ConfigResolver<ComponentConfig> {
 }

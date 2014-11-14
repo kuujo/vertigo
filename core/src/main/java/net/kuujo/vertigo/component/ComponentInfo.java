@@ -13,29 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
+package net.kuujo.vertigo.component;
 
-import io.vertx.core.json.JsonObject;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Base type for definitions.
+ * Java component configuration annotation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeConfig {
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ComponentInfo {
 
   /**
-   * Applies a JSON configuration to the configuration.
-   *
-   * @param config The JSON configuration to apply.
+   * Indicates whether the component should be deployed as a worker.
    */
-  void update(JsonObject config);
+  boolean worker() default false;
 
   /**
-   * Returns a JSON representation of the configuration.
-   *
-   * @return A JSON object representation of the configuration.
+   * Indicates whether the worker verticle should be deployed as multi-threaded.
    */
-  JsonObject toJson();
+  boolean multiThreaded() default false;
+
+  /**
+   * Indicates whether the component is stateful.
+   */
+  boolean stateful() default false;
 
 }

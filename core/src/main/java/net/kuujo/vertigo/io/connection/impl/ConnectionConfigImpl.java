@@ -54,18 +54,7 @@ public class ConnectionConfigImpl implements ConnectionConfig {
   }
 
   public ConnectionConfigImpl(JsonObject connection) {
-    JsonObject source = connection.getJsonObject("source");
-    if (source == null) {
-      throw new IllegalArgumentException("Invalid connection descriptor: No connection source defined");
-    }
-    this.source = new SourceConfigImpl(source);
-    JsonObject target = connection.getJsonObject("target");
-    if (target == null) {
-      throw new IllegalArgumentException("Invalid connection descriptor: No connection target defined");
-    }
-    this.target = new TargetConfigImpl(target);
-    this.ordered = connection.getBoolean("ordered", false);
-    this.atLeastOnce = connection.getBoolean("at-least-once", false);
+    update(connection);
   }
 
   @Override
@@ -110,6 +99,40 @@ public class ConnectionConfigImpl implements ConnectionConfig {
   @Override
   public boolean isAtLeastOnce() {
     return atLeastOnce;
+  }
+
+  @Override
+  public void update(JsonObject connection) {
+    if (connection.containsKey(CONNECTION_SOURCE)) {
+      if (this.source == null) {
+        this.source = new SourceConfigImpl(connection.getJsonObject(CONNECTION_SOURCE));
+      } else {
+        this.source.update(connection.getJsonObject(CONNECTION_SOURCE));
+      }
+    }
+    if (connection.containsKey(CONNECTION_TARGET)) {
+      if (this.target == null) {
+        this.target = new TargetConfigImpl(connection.getJsonObject(CONNECTION_TARGET));
+      } else {
+        this.target.update(connection.getJsonObject(CONNECTION_TARGET));
+      }
+    }
+    if (connection.containsKey(CONNECTION_ORDERED)) {
+      this.ordered = connection.getBoolean(CONNECTION_ORDERED);
+    }
+    if (connection.containsKey(CONNECTION_AT_LEAST_ONCE)) {
+      this.atLeastOnce = connection.getBoolean(CONNECTION_AT_LEAST_ONCE);
+    }
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.put(CONNECTION_SOURCE, source != null ? source.toJson() : null);
+    json.put(CONNECTION_TARGET, target != null ? target.toJson() : null);
+    json.put(CONNECTION_ORDERED, ordered);
+    json.put(CONNECTION_AT_LEAST_ONCE, atLeastOnce);
+    return json;
   }
 
 }

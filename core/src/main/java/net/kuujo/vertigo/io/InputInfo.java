@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.kuujo.vertigo;
+package net.kuujo.vertigo.io;
 
-import io.vertx.core.json.JsonObject;
+import net.kuujo.vertigo.io.port.PortInfo;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Base type for definitions.
+ * Java input info annotation.
  *
  * @author <a href="http://github.com/kuujo">Jordan Halterman</a>
  */
-public interface TypeConfig {
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface InputInfo {
 
   /**
-   * Applies a JSON configuration to the configuration.
-   *
-   * @param config The JSON configuration to apply.
+   * A list of input ports.
    */
-  void update(JsonObject config);
-
-  /**
-   * Returns a JSON representation of the configuration.
-   *
-   * @return A JSON object representation of the configuration.
-   */
-  JsonObject toJson();
+  PortInfo[] value();
 
 }

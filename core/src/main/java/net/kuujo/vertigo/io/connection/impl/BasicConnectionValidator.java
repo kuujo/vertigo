@@ -38,10 +38,10 @@ public class BasicConnectionValidator implements ConnectionValidator {
       throw new ValidationException("Connection source port cannot be null");
     }
     if (connection.getTarget().getComponent() == null) {
-      throw new ValidationException("Connection source component cannot be null");
+      throw new ValidationException("Connection target component cannot be null");
     }
     if (connection.getTarget().getPort() == null) {
-      throw new ValidationException("Connection source port cannot be null");
+      throw new ValidationException("Connection target port cannot be null");
     }
   }
 

@@ -39,6 +39,8 @@ Vert.x verticles) and distributed across a Vert.x cluster.
 
 For an in-depth explanation of how Vertigo works, see [how it works](#how-it-works)
 
+![YourKit](http://s13.postimg.org/nyb38p1ev/yklogo.png)
+
 YourKit is generously supporting Vertigo and other open-source projects with its
 full-featured Java Profiler. Take a look at YourKit's leading software products:
 [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) and

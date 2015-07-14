@@ -24,14 +24,13 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import net.kuujo.vertigo.component.ComponentContext;
 import net.kuujo.vertigo.component.ComponentInstance;
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.impl.InputCollectorImpl;
 import net.kuujo.vertigo.io.impl.OutputCollectorImpl;
-import net.kuujo.vertigo.util.CountingCompletionHandler;
 
 /**
  * Component partition implementation.
@@ -139,7 +138,7 @@ public class ComponentInstanceImpl implements ComponentInstance, Handler<Message
       consumer.handler(this);
       consumer.completionHandler(doneHandler);
     } else {
-      Future.<Void>completedFuture().setHandler(doneHandler);
+      Future.<Void> succeededFuture().setHandler(doneHandler);
     }
     return this;
   }
@@ -154,7 +153,7 @@ public class ComponentInstanceImpl implements ComponentInstance, Handler<Message
     if (consumer != null) {
       consumer.unregister(doneHandler);
     } else {
-      Future.<Void>completedFuture().setHandler(doneHandler);
+      Future.<Void> succeededFuture().setHandler(doneHandler);
     }
   }
 

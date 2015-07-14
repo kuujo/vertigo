@@ -16,6 +16,7 @@
 package net.kuujo.vertigo.component;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Verticle;
 import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
@@ -35,7 +36,7 @@ public class ComponentFactory implements VerticleFactory {
   }
 
   @Override
-  public String resolve(String identifier, DeploymentOptions options, ClassLoader classLoader) throws Exception {
+  public void resolve(String identifier, DeploymentOptions options, ClassLoader classLoader, Future<String> resolution) {
     identifier = VerticleFactory.removePrefix(identifier);
     JsonObject config = Configs.load(identifier);
     String main = config.getString("identifier");
@@ -52,7 +53,8 @@ public class ComponentFactory implements VerticleFactory {
         options.setMultiThreaded(deployment.getBoolean("multi-threaded"));
       }
     }
-    return main;
+
+    resolution.complete(main);
   }
 
   @Override

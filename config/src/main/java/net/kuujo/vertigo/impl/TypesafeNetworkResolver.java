@@ -15,10 +15,11 @@
  */
 package net.kuujo.vertigo.impl;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.spi.NetworkResolver;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * Typesafe configuration based network resolver.

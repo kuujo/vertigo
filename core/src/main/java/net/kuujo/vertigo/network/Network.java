@@ -18,6 +18,9 @@ package net.kuujo.vertigo.network;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Collection;
+
 import net.kuujo.vertigo.TypeConfig;
 import net.kuujo.vertigo.builder.NetworkBuilder;
 import net.kuujo.vertigo.builder.impl.NetworkBuilderImpl;
@@ -31,8 +34,6 @@ import net.kuujo.vertigo.network.impl.NetworkImpl;
 import net.kuujo.vertigo.spi.ComponentResolver;
 import net.kuujo.vertigo.spi.NetworkResolver;
 import net.kuujo.vertigo.util.Resolvers;
-
-import java.util.Collection;
 
 /**
  * Vertigo network.

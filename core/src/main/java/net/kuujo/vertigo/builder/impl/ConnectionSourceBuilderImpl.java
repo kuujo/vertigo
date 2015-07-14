@@ -15,12 +15,12 @@
  */
 package net.kuujo.vertigo.builder.impl;
 
+import java.util.Collection;
+
 import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
 import net.kuujo.vertigo.io.connection.impl.ConnectionConfigImpl;
-
-import java.util.Collection;
 
 /**
  * Component source builder implementation.
@@ -40,6 +40,9 @@ public class ConnectionSourceBuilderImpl implements ConnectionSourceBuilder {
   public ConnectionSourceComponentBuilder component(String name) {
     ConnectionConfig connection = network.network.createConnection(new ConnectionConfigImpl());
     connections.add(connection);
+
+    connection.getSource().setComponent(name);
+    
     return new ConnectionSourceComponentBuilderImpl(network, network.component(name), connections, connection);
   }
 

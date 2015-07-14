@@ -20,7 +20,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import net.kuujo.vertigo.io.ControllableInput;
 import net.kuujo.vertigo.io.VertigoMessage;
 import net.kuujo.vertigo.io.connection.InputConnection;
@@ -29,9 +33,6 @@ import net.kuujo.vertigo.io.connection.impl.InputConnectionImpl;
 import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.util.TaskRunner;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Input port implementation.

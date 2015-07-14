@@ -21,15 +21,20 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.kuujo.vertigo.io.InputCollector;
 import net.kuujo.vertigo.io.InputContext;
 import net.kuujo.vertigo.io.port.InputPort;
 import net.kuujo.vertigo.io.port.InputPortContext;
 import net.kuujo.vertigo.io.port.impl.InputPortImpl;
 import net.kuujo.vertigo.util.TaskRunner;
-
-import java.util.*;
 
 /**
  * Input collector implementation.

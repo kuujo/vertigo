@@ -39,6 +39,8 @@ public class ConnectionConfigImpl implements ConnectionConfig {
   private boolean atLeastOnce;
 
   public ConnectionConfigImpl() {
+    this.source = new SourceConfigImpl();
+    this.target = new TargetConfigImpl();
   }
 
   public ConnectionConfigImpl(ConnectionConfig connection) {

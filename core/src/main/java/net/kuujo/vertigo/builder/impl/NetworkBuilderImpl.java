@@ -15,18 +15,16 @@
  */
 package net.kuujo.vertigo.builder.impl;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
 import net.kuujo.vertigo.builder.ComponentBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
 import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
 import net.kuujo.vertigo.builder.NetworkBuilder;
-import net.kuujo.vertigo.io.connection.ConnectionConfig;
-import net.kuujo.vertigo.io.connection.impl.ConnectionConfigImpl;
+import net.kuujo.vertigo.component.impl.ComponentConfigImpl;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.network.impl.NetworkImpl;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.UUID;
 
 /**
  * Network builder implementation.
@@ -57,7 +55,14 @@ public class NetworkBuilderImpl implements NetworkBuilder {
 
   @Override
   public ComponentBuilder component(String name) {
-    return new ComponentBuilderImpl(this, network.hasComponent(name) ? network.getComponent(name) : network.addComponent(name));
+    return new ComponentBuilderImpl(this, network.hasComponent(name) ?
+      network.getComponent(name) : network.addComponent(name));
+  }
+
+  public ComponentBuilder component(String name, String identifier) {
+    return new ComponentBuilderImpl(this, network.hasComponent(name) ?
+      network.getComponent(name) :
+      network.addComponent(new ComponentConfigImpl().setName(name).setIdentifier(identifier)));
   }
 
   @Override
@@ -67,8 +72,7 @@ public class NetworkBuilderImpl implements NetworkBuilder {
 
   @Override
   public ConnectionSourceComponentBuilder connect(String component) {
-    ConnectionConfig connection = network.createConnection(new ConnectionConfigImpl());
-    return new ConnectionSourceBuilderImpl(this, new ArrayList<>(Arrays.asList(connection))).component(component);
+    return new ConnectionSourceBuilderImpl(this, new ArrayList<>()).component(component);
   }
 
   @Override

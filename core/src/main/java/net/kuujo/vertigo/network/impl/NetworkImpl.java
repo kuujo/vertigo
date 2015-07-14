@@ -17,17 +17,18 @@ package net.kuujo.vertigo.network.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.UUID;
+
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
 import net.kuujo.vertigo.io.port.InputPortConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.UUID;
 
 /**
  * Network implementation.

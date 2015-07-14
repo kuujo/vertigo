@@ -21,7 +21,11 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import net.kuujo.vertigo.io.ControllableOutput;
 import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 import net.kuujo.vertigo.io.connection.impl.OutputConnectionImpl;
@@ -29,9 +33,6 @@ import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.util.Args;
 import net.kuujo.vertigo.util.CountingCompletionHandler;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Output port implementation.

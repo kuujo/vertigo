@@ -38,6 +38,15 @@ public interface NetworkLikeBuilder<T> {
   ComponentBuilder component(String name);
 
   /**
+   * Returns a component builder for a new or existing component.
+   *
+   * @param name
+   *          The unique ID of the component.
+   * @return The component builder.
+   */
+  ComponentBuilder component(String name, String identifier);
+
+  /**
    * Returns a connection builder.
    *
    * @return A new connection builder.

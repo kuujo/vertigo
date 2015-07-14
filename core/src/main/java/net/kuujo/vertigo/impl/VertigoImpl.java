@@ -47,9 +47,10 @@ public class VertigoImpl implements Vertigo {
   public Vertigo network(String id, Handler<AsyncResult<NetworkReference>> resultHandler) {
     manager.getNetwork(id, result -> {
       if (result.failed()) {
-        Future.<NetworkReference>completedFuture(result.cause()).setHandler(resultHandler);
+          Future.<NetworkReference> failedFuture(result.cause()).setHandler(resultHandler);
       } else {
-        Future.<NetworkReference>completedFuture(new NetworkReferenceImpl(vertx, result.result())).setHandler(resultHandler);
+        Future.<NetworkReference> succeededFuture(new NetworkReferenceImpl(vertx, result.result())).
+          setHandler(resultHandler);
       }
     });
     return this;
@@ -65,9 +66,9 @@ public class VertigoImpl implements Vertigo {
     NetworkContext context = ContextBuilder.buildContext(network);
     manager.deployNetwork(context, result -> {
       if (result.failed()) {
-        Future.<NetworkReference>completedFuture(result.cause()).setHandler(doneHandler);
+        Future.<NetworkReference> failedFuture(result.cause()).setHandler(doneHandler);
       } else {
-        Future.<NetworkReference>completedFuture(new NetworkReferenceImpl(vertx, context)).setHandler(doneHandler);
+        Future.<NetworkReference> succeededFuture(new NetworkReferenceImpl(vertx, context)).setHandler(doneHandler);
       }
     });
     return this;
@@ -82,7 +83,7 @@ public class VertigoImpl implements Vertigo {
   public Vertigo undeployNetwork(String id, Handler<AsyncResult<Void>> doneHandler) {
     manager.getNetwork(id, result -> {
       if (result.failed()) {
-        Future.<Void>completedFuture(result.cause()).setHandler(doneHandler);
+        Future.<Void> failedFuture(result.cause()).setHandler(doneHandler);
       } else {
         manager.undeployNetwork(result.result(), doneHandler);
       }

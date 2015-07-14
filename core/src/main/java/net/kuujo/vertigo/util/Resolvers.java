@@ -15,9 +15,15 @@
  */
 package net.kuujo.vertigo.util;
 
-import net.kuujo.vertigo.spi.ConfigResolver;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 
-import java.util.*;
+import net.kuujo.vertigo.spi.ConfigResolver;
 
 /**
  * Configuration resolver utilities.
@@ -37,7 +43,8 @@ public final class Resolvers {
   @SuppressWarnings("unchecked")
   public static <T extends ConfigResolver<?>> T[] loadOrderedResolvers(Class<T> type) {
     if (Resolvers.resolvers.containsKey(type)) {
-      return (T[]) Resolvers.resolvers.get(type).toArray();
+      return (T[]) Resolvers.resolvers.get(type).
+        toArray((T[]) Array.newInstance(type, Resolvers.resolvers.get(type).size()));
     }
 
     // Get a list of resolvers.
@@ -52,7 +59,7 @@ public final class Resolvers {
       return a.weight() < b.weight() ? -1 : 1;
     });
     Resolvers.resolvers.put(type, resolvers);
-    return (T[]) resolvers.toArray();
+    return (T[]) resolvers.toArray((T[]) Array.newInstance(type, resolvers.size()));
   }
 
   /**

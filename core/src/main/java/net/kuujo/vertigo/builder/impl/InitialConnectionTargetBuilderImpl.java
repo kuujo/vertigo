@@ -15,11 +15,11 @@
  */
 package net.kuujo.vertigo.builder.impl;
 
+import java.util.Collection;
+
 import net.kuujo.vertigo.builder.ConnectionTargetBuilder;
 import net.kuujo.vertigo.builder.ConnectionTargetComponentBuilder;
 import net.kuujo.vertigo.io.connection.ConnectionConfig;
-
-import java.util.Collection;
 
 /**
  * Special connection target builder for the first connection target builder.
@@ -37,6 +37,7 @@ public class InitialConnectionTargetBuilderImpl implements ConnectionTargetBuild
 
   @Override
   public ConnectionTargetComponentBuilder component(String name) {
+    this.connections.forEach(c -> c.getTarget().setComponent(name));
     return new ConnectionTargetComponentBuilderImpl(network, network.component(name), connections);
   }
 

@@ -16,10 +16,15 @@
 package net.kuujo.vertigo.builder.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.builder.*;
-import net.kuujo.vertigo.io.connection.ConnectionConfig;
 
 import java.util.Collection;
+
+import net.kuujo.vertigo.builder.ComponentBuilder;
+import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
+import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
+import net.kuujo.vertigo.builder.ConnectionTargetBuilder;
+import net.kuujo.vertigo.builder.ConnectionTargetComponentBuilder;
+import net.kuujo.vertigo.io.connection.ConnectionConfig;
 
 /**
  * Connection target component builder implementation.
@@ -117,6 +122,11 @@ public class ConnectionTargetComponentBuilderImpl implements ConnectionTargetCom
   @Override
   public ComponentBuilder component(String name) {
     return network.component(name);
+  }
+
+  @Override
+  public ComponentBuilder component(String name, String identifier) {
+    return component(name).identifier(identifier);
   }
 
   @Override

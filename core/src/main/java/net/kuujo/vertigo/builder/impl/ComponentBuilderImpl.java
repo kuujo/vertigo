@@ -16,7 +16,12 @@
 package net.kuujo.vertigo.builder.impl;
 
 import io.vertx.core.json.JsonObject;
-import net.kuujo.vertigo.builder.*;
+import net.kuujo.vertigo.builder.ComponentBuilder;
+import net.kuujo.vertigo.builder.ConnectionSourceBuilder;
+import net.kuujo.vertigo.builder.ConnectionSourceComponentBuilder;
+import net.kuujo.vertigo.builder.InputBuilder;
+import net.kuujo.vertigo.builder.NetworkBuilder;
+import net.kuujo.vertigo.builder.OutputBuilder;
 import net.kuujo.vertigo.component.ComponentConfig;
 
 /**
@@ -121,6 +126,11 @@ public class ComponentBuilderImpl implements ComponentBuilder {
   @Override
   public ConnectionSourceComponentBuilder connect(String component) {
     return network.connect(component);
+  }
+
+  @Override
+  public ComponentBuilder component(String name, String identifier) {
+    return component(name).identifier(identifier);
   }
 
 }

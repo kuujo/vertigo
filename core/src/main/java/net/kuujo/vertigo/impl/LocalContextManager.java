@@ -15,7 +15,11 @@
  */
 package net.kuujo.vertigo.impl;
 
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
 import net.kuujo.vertigo.ContextManager;
 import net.kuujo.vertigo.VertigoException;
@@ -40,9 +44,11 @@ public class LocalContextManager implements ContextManager {
   public ContextManager getNetwork(String id, Handler<AsyncResult<NetworkContext>> doneHandler) {
     NetworkContext context = vertx.sharedData().<String, NetworkContext>getLocalMap(NETWORKS_KEY).get(id);
     if (context == null) {
-      Future.<NetworkContext>completedFuture(new VertigoException(String.format("Invalid network %s: Network not found", id))).setHandler(doneHandler);
+      Future.<NetworkContext> failedFuture(
+        new VertigoException(String.format("Invalid network %s: Network not found", id))).
+        setHandler(doneHandler);
     } else {
-      Future.completedFuture(context).setHandler(doneHandler);
+      Future.succeededFuture(context).setHandler(doneHandler);
     }
     return this;
   }
@@ -88,7 +94,7 @@ public class LocalContextManager implements ContextManager {
     for (ComponentContext component : network.components()) {
       String deploymentId = deploymentIds.get(component.address());
       if (deploymentId != null) {
-        vertx.undeployVerticle(deploymentId, counter);
+        vertx.undeploy(deploymentId, counter);
       }
     }
     return this;

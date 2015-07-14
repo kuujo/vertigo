@@ -16,16 +16,17 @@
 package net.kuujo.vertigo.io.impl;
 
 import io.vertx.core.json.JsonObject;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.kuujo.vertigo.VertigoException;
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.io.OutputConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.io.port.PortConfig;
 import net.kuujo.vertigo.io.port.impl.OutputPortConfigImpl;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Output info implementation.
@@ -44,6 +45,9 @@ public class OutputConfigImpl implements OutputConfig {
         throw new VertigoException(e);
       }
     }
+  }
+
+  public OutputConfigImpl() {
   }
 
   @Override

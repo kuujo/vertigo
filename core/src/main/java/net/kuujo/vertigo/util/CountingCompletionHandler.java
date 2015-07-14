@@ -61,7 +61,7 @@ public class CountingCompletionHandler<T> implements Handler<AsyncResult<T>> {
   public void fail(Throwable t) {
     if (!failed) {
       if (doneHandler != null) {
-        doneHandler.handle(Future.completedFuture(t));
+        doneHandler.handle(Future.failedFuture(t));
       } else {
         cause = t;
       }
@@ -86,10 +86,10 @@ public class CountingCompletionHandler<T> implements Handler<AsyncResult<T>> {
   private void checkDone() {
     if (doneHandler != null) {
       if (cause != null) {
-        doneHandler.handle(Future.completedFuture(cause));
+        doneHandler.handle(Future.failedFuture(cause));
       } else {
         if (count == required) {
-          doneHandler.handle(Future.completedFuture());
+          doneHandler.handle(Future.succeededFuture());
         }
       }
     }

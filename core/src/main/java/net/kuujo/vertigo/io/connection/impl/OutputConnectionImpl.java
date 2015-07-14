@@ -25,12 +25,13 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import net.kuujo.vertigo.io.connection.OutputConnection;
-import net.kuujo.vertigo.io.connection.OutputConnectionContext;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.TreeMap;
 import java.util.UUID;
+
+import net.kuujo.vertigo.io.connection.OutputConnection;
+import net.kuujo.vertigo.io.connection.OutputConnectionContext;
 
 /**
  * Default output connection implementation.

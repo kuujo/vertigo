@@ -19,14 +19,19 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.kuujo.vertigo.io.OutputCollector;
 import net.kuujo.vertigo.io.OutputContext;
 import net.kuujo.vertigo.io.port.OutputPort;
 import net.kuujo.vertigo.io.port.OutputPortContext;
 import net.kuujo.vertigo.io.port.impl.OutputPortImpl;
-
-import java.util.*;
 
 /**
  * Output collector implementation.

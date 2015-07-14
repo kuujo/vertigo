@@ -17,6 +17,13 @@ package net.kuujo.vertigo.component.impl;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 import net.kuujo.vertigo.component.ComponentConfig;
 import net.kuujo.vertigo.io.InputConfig;
 import net.kuujo.vertigo.io.OutputConfig;
@@ -26,8 +33,6 @@ import net.kuujo.vertigo.io.port.InputPortConfig;
 import net.kuujo.vertigo.io.port.OutputPortConfig;
 import net.kuujo.vertigo.network.Network;
 import net.kuujo.vertigo.util.Args;
-
-import java.util.*;
 
 /**
  * Component info implementation.
@@ -48,13 +53,17 @@ public class ComponentConfigImpl implements ComponentConfig {
   private Network network;
 
   public ComponentConfigImpl() {
+    this.output = new OutputConfigImpl();
+    this.input = new InputConfigImpl();
   }
 
   public ComponentConfigImpl(String name) {
+    this();
     this.name = name;
   }
 
   public ComponentConfigImpl(ComponentConfig component) {
+    this();
     this.name = component.getName();
     this.identifier = component.getIdentifier();
     this.config = component.getConfig();

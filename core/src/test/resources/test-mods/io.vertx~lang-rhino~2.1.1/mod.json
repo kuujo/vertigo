@@ -1,0 +1,11 @@
+{
+  "system": true,
+  "resident": true,
+  "includes": "io.vertx~lang-js~1.1.0",
+
+  "description":"JavaScript language implementation module for Vert.x - Uses Rhino as the JavaScript engine",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "purplefox",
+  "keywords": ["js", "javascript", "rhino", "language", "http", "ecmascript"],
+  "homepage": "https://github.com/vert-x/mod-lang-rhino"
+}

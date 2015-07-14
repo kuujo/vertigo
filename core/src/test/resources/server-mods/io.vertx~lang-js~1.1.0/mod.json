@@ -1,0 +1,11 @@
+{
+  "system": true,
+  "resident": true,
+
+  "description": "This is the Javascript language module for Vert.x. This module provides only the Javascript API files and is not dependent on any specific javascript runtime. Currently, this module is known to work with Rhino 1.7R4, DynJS 2.1.1, and possibly with Nashorn. Applications will not use or specify this module directly. Rather, it is a dependency of the lang-rhino, lang-dynjs and lang-nashorn modules and is loaded on demand.",
+
+  "licenses":["The Apache Software License Version 2.0"],
+  "author": "Lance Ball @lanceball",
+  "keywords": ["js", "javascript", "ecmascript", "language", "system", "resident"],
+  "homepage": "https://github.com/vert-x/mod-lang-js"
+}
